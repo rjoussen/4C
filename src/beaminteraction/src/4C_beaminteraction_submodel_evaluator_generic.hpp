@@ -13,6 +13,7 @@
 #include "4C_beaminteraction_str_model_evaluator.hpp"
 #include "4C_inpar_beaminteraction.hpp"
 
+
 namespace NOX
 {
   namespace Solver
@@ -220,6 +221,8 @@ namespace BeamInteraction
       Solid::ModelEvaluator::BeamInteractionDataState& beam_interaction_data_state();
       std::shared_ptr<Solid::ModelEvaluator::BeamInteractionDataState>&
       beam_interaction_data_state_ptr();
+      const std::shared_ptr<Solid::ModelEvaluator::BeamInteractionDataState>&
+      beam_interaction_data_state_ptr() const;
       Solid::ModelEvaluator::BeamInteractionDataState const& beam_interaction_data_state() const;
 
       BeamInteraction::BeamCrosslinkerHandler& beam_crosslinker_handler();
@@ -237,6 +240,18 @@ namespace BeamInteraction
       BeamInteraction::Utils::MapExtractor& ele_type_map_extractor();
       std::shared_ptr<BeamInteraction::Utils::MapExtractor>& ele_type_map_extractor_ptr();
       BeamInteraction::Utils::MapExtractor const& ele_type_map_extractor() const;
+
+      //! \brief returns the dof row map of the Lagrange Multipliers
+      virtual std::shared_ptr<const FourC::Core::LinAlg::Map> get_lagrange_map() const
+      {
+        return nullptr;
+      }
+
+      //! Method used to assemble the force vector while using Lagrange Multipliers
+      virtual void assemble_force(Core::LinAlg::Vector<double>& f) const {};
+
+      //! Method used to assemble the stiffness matrix while using Lagrange Multipliers
+      virtual void assemble_stiff(Core::LinAlg::SparseOperator& jac) const {};
 
       //! @}
      protected:
