@@ -257,6 +257,8 @@ namespace Core::Materials
     mvl_reformulated_Johnson_Cook,        ///< reformulation of the Johnson-Cook
                                           ///< viscoplasticity law, as presented in
                                           ///< Mareau (Mech. Mat. 143, 2020)
+    mvl_Anand,                            ///< Anand viscoplasticity law, as presented in
+                                          ///< Anand et al. (J. Electrochem. Soc. 166, 2019)
     mix_growth_strategy_isotropic,        ///< Isotropic growth law for growth remodel mixture rule
     mix_growth_strategy_anisotropic,  ///< Anisotropic growth law for growth remodel mixture rule
     mix_growth_strategy_stiffness,    ///< Growth modeled as an expansion of the entire cell (growth

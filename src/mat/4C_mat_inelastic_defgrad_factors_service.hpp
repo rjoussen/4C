@@ -46,6 +46,12 @@ namespace Mat
                        // analytical evaluation of the linearization
     FailedSolAnalytLinearization,  // solution of the linear system in the analytical linearization
                                    // failed
+    FailedComputationFlowResistance,  // failed in the computation of the flow resistance via time
+                                      // integration of the hardening-rate equation (e.g., Anand
+                                      // model)
+    FailedComputationFlowResistanceDerivs,  // failed in the computation of the flow resistance
+                                            // derivatives (e.g., Anand model)
+
   };
 
   /// enum class for error management actions in InelasticDefgradTransvIsotropElastViscoplast
@@ -80,12 +86,23 @@ namespace Mat
         return "Error in InelasticDefgradTransvIsotropElastViscoplast: Local Newton Loop did not "
                "converge for the given loop settings!";
       case Mat::ViscoplastErrorType::SingularJacobian:
-        return "Error in InelasticDefgradTransvIsotropElastViscoplast: singular Jacobian after  "
-               "converged Local Newton Loop, which does not allow for the analytical evaluation of "
+        return "Error in InelasticDefgradTransvIsotropElastViscoplast: singular Jacobian after "
+               "converged Local Newton Loop, which does not allow for the analytical evaluation "
+               "of "
                "the linearization!";
       case Mat::ViscoplastErrorType::FailedSolAnalytLinearization:
         return "Error in InelasticDefgradTransvIsotropElastViscoplast: solution of the linear "
-               "system  in the analytical linearization failed";
+               "system "
+               "in the analytical linearization failed";
+        break;
+      case Mat::ViscoplastErrorType::FailedComputationFlowResistance:
+        return "Error in InelasticDefgradTransvIsotropElastViscoplast: Failed while computing the "
+               "flow resistance of the viscoplasticity law";
+        break;
+      case Mat::ViscoplastErrorType::FailedComputationFlowResistanceDerivs:
+        return "Error in InelasticDefgradTransvIsotropElastViscoplast: Failed while computing the "
+               "derivatives of the flow resistance of the viscoplasticity law";
+        break;
       default:
         FOUR_C_THROW("to_string(Mat::ViscoplastErrorType): You should not be here!");
     }
@@ -104,7 +121,7 @@ namespace Mat
   /// get the time integration type (Local Newton Loop of
   /// InelasticDefgradTransvIsotropElastViscoplast) from the
   /// user-specified string in the input file
-  ViscoplastTimIntType get_time_integration_type(const std::string &timint_string);
+  ViscoplastTimIntType get_time_integration_type(const std::string& timint_string);
 
   // names of the various error types
   inline std::map<ViscoplastErrorType, std::string> ViscoplastErrorNames = {
@@ -242,7 +259,7 @@ namespace Mat
       csv_writer_->register_data_vector("Total repredictorizations", 1, 16);
       csv_writer_->register_data_vector("Total line searches", 1, 16);
       csv_writer_->register_data_vector("Total time", 1, 16);
-      for (const auto &[key, value] : Mat::ViscoplastErrorNames)
+      for (const auto& [key, value] : Mat::ViscoplastErrorNames)
       {
         csv_writer_->register_data_vector(
             "Evaluated Error " + std::to_string(static_cast<int>(key)) + ": " + value, 1, 16);
@@ -259,7 +276,7 @@ namespace Mat
       total_num_of_repredict_ += eval_num_of_repredict_;
       total_num_of_line_search_ += eval_num_of_line_search_;
       total_time_ += eval_time_;
-      for (const auto &[error_type, error_count] : eval_error_map_)
+      for (const auto& [error_type, error_count] : eval_error_map_)
       {
         total_error_map_[error_type] += error_count;
       }
@@ -281,7 +298,7 @@ namespace Mat
       output_data["Evaluation time"] = {static_cast<double>(eval_time_)};
       output_data["Total time"] = {static_cast<double>(total_time_)};
 
-      for (const auto &[key, value] : Mat::ViscoplastErrorNames)
+      for (const auto& [key, value] : Mat::ViscoplastErrorNames)
       {
         output_data["Evaluated Error " + std::to_string(static_cast<int>(key)) + ": " + value] = {
             static_cast<double>(eval_error_map_[key])};

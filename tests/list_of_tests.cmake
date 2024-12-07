@@ -771,6 +771,7 @@ four_c_test(TEST_FILE mat_gtn_solid_necking_bar_with_f0_fc_h8.dat NP 2 RESTART_S
 four_c_test(TEST_FILE mat_holzapfelcardio.dat NP 2)
 four_c_test(TEST_FILE mat_humphreycardio.dat NP 2)
 four_c_test(TEST_FILE mat_iso_viscoplast_refJC_log_timint.dat NP 1 RESTART_STEP 90)
+four_c_test(TEST_FILE mat_iso_viscoplast_anand_log_timint.dat NP 1 RESTART_STEP 90)
 four_c_test(TEST_FILE mat_muscle_combo_hex.dat NP 2 RESTART_STEP 140)
 four_c_test(TEST_FILE mat_muscle_combo_hex_act_map_every_timestep.dat NP 2 RESTART_STEP 140)
 four_c_test(TEST_FILE mat_muscle_combo_hex_act_map_interpolation.dat NP 2 RESTART_STEP 20)

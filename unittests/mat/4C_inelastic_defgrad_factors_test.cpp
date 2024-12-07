@@ -16,11 +16,14 @@
 #include "4C_mat_inelastic_defgrad_factors.hpp"
 #include "4C_mat_inelastic_defgrad_factors_service.hpp"
 #include "4C_mat_par_bundle.hpp"
+#include "4C_mat_vplast_anand.hpp"
 #include "4C_mat_vplast_law.hpp"
 #include "4C_mat_vplast_reform_johnsoncook.hpp"
 #include "4C_unittest_utils_assertions_test.hpp"
 #include "4C_utils_exceptions.hpp"
 #include "4C_utils_singleton_owner.hpp"
+
+#include <cmath>
 
 
 
@@ -70,11 +73,11 @@ namespace
       iFin_lin_temp_iso_solution_(0, 0) = iFin_lin_temp_iso_solution_(1, 1) = iFin_lin_temp_iso_solution_(2, 2) = 1.006073023359708;
 
       // set up reference solution of inverse inelastic deformation gradient and plastic strain of InelasticDefgradTransvIsotropElastViscoplast
-      iFin_transv_isotrop_elast_viscoplast_solution_.clear();
-      iFin_transv_isotrop_elast_viscoplast_solution_(0,0)= 0.988; iFin_transv_isotrop_elast_viscoplast_solution_(0, 1) = 0.006; iFin_transv_isotrop_elast_viscoplast_solution_(0, 2) = 0.008;
-      iFin_transv_isotrop_elast_viscoplast_solution_(1,0)= -0.005; iFin_transv_isotrop_elast_viscoplast_solution_(1, 1) = 0.997; iFin_transv_isotrop_elast_viscoplast_solution_(1, 2) = -0.004;
-      iFin_transv_isotrop_elast_viscoplast_solution_(2,0)= -0.003; iFin_transv_isotrop_elast_viscoplast_solution_(2, 1) = -0.002; iFin_transv_isotrop_elast_viscoplast_solution_(2, 2) = 0.999;
-      plastic_strain_transv_isotrop_elast_viscoplast_solution_ = 1.1;
+      iFin_transv_isotrop_vplast_refJC_solution_.clear();
+      iFin_transv_isotrop_vplast_refJC_solution_(0,0)= 0.988; iFin_transv_isotrop_vplast_refJC_solution_(0, 1) = 0.006; iFin_transv_isotrop_vplast_refJC_solution_(0, 2) = 0.008;
+      iFin_transv_isotrop_vplast_refJC_solution_(1,0)= -0.005; iFin_transv_isotrop_vplast_refJC_solution_(1, 1) = 0.997; iFin_transv_isotrop_vplast_refJC_solution_(1, 2) = -0.004;
+      iFin_transv_isotrop_vplast_refJC_solution_(2,0)= -0.003; iFin_transv_isotrop_vplast_refJC_solution_(2, 1) = -0.002; iFin_transv_isotrop_vplast_refJC_solution_(2, 2) = 0.999;
+      plastic_strain_transv_isotrop_vplast_refJC_solution_ = 1.1;
 
 
       // clang-format on
@@ -285,57 +288,58 @@ namespace
 
       // create InelasticDefgradTransvIsotropElastViscoplast object initialize container for
       // material parameters
-      Core::IO::InputParameterContainer inelastic_defgrad_transv_isotrop_elast_viscoplast_data;
-      inelastic_defgrad_transv_isotrop_elast_viscoplast_data.add("VISCOPLAST_LAW_ID", 4);
-      inelastic_defgrad_transv_isotrop_elast_viscoplast_data.add("FIBER_READER_ID", 5);
-      inelastic_defgrad_transv_isotrop_elast_viscoplast_data.add("YIELD_COND_A", 1.0);
-      inelastic_defgrad_transv_isotrop_elast_viscoplast_data.add("YIELD_COND_B", 2.0);
-      inelastic_defgrad_transv_isotrop_elast_viscoplast_data.add("YIELD_COND_F", 2.5);
-      inelastic_defgrad_transv_isotrop_elast_viscoplast_data.add(
+      Core::IO::InputParameterContainer inelastic_defgrad_transv_isotrop_vplast_refJC_data;
+      inelastic_defgrad_transv_isotrop_vplast_refJC_data.add("VISCOPLAST_LAW_ID", 4);
+      inelastic_defgrad_transv_isotrop_vplast_refJC_data.add("FIBER_READER_ID", 5);
+      inelastic_defgrad_transv_isotrop_vplast_refJC_data.add("YIELD_COND_A", 1.0);
+      inelastic_defgrad_transv_isotrop_vplast_refJC_data.add("YIELD_COND_B", 2.0);
+      inelastic_defgrad_transv_isotrop_vplast_refJC_data.add("YIELD_COND_F", 2.5);
+      inelastic_defgrad_transv_isotrop_vplast_refJC_data.add(
           "ANISOTROPY", std::string("transvisotrop"));
-      inelastic_defgrad_transv_isotrop_elast_viscoplast_data.add(
+      inelastic_defgrad_transv_isotrop_vplast_refJC_data.add(
           "TIME_INTEGRATION_HIST_VARS", std::string("log"));
-      inelastic_defgrad_transv_isotrop_elast_viscoplast_data.add("USE_PRED_ADAPT", true);
-      inelastic_defgrad_transv_isotrop_elast_viscoplast_data.add("USE_LINE_SEARCH", true);
-      inelastic_defgrad_transv_isotrop_elast_viscoplast_data.add("USE_SUBSTEPPING", false);
-      inelastic_defgrad_transv_isotrop_elast_viscoplast_data.add("MAX_HALVE_NUM_SUBSTEP", 1);
-      inelastic_defgrad_transv_isotrop_elast_viscoplast_data.add(
+      inelastic_defgrad_transv_isotrop_vplast_refJC_data.add("USE_PRED_ADAPT", true);
+      inelastic_defgrad_transv_isotrop_vplast_refJC_data.add("USE_LINE_SEARCH", true);
+      inelastic_defgrad_transv_isotrop_vplast_refJC_data.add("USE_SUBSTEPPING", false);
+      inelastic_defgrad_transv_isotrop_vplast_refJC_data.add("MAX_HALVE_NUM_SUBSTEP", 1);
+      inelastic_defgrad_transv_isotrop_vplast_refJC_data.add(
           "MAX_PLASTIC_STRAIN_INCR", std::exp(30.0));
-      inelastic_defgrad_transv_isotrop_elast_viscoplast_data.add(
+      inelastic_defgrad_transv_isotrop_vplast_refJC_data.add(
           "MAX_PLASTIC_STRAIN_DERIV_INCR", std::exp(30.0));
-      inelastic_defgrad_transv_isotrop_elast_viscoplast_data.add("ANALYZE_TIMINT", false);
+      inelastic_defgrad_transv_isotrop_vplast_refJC_data.add("ANALYZE_TIMINT", false);
+
 
       // get pointer to parameter class
-      params_transv_isotrop_elast_viscoplast_ =
+      params_transv_isotrop_vplast_refJC_ =
           std::dynamic_pointer_cast<Mat::PAR::InelasticDefgradTransvIsotropElastViscoplast>(
               std::shared_ptr(Mat::make_parameter(1,
                   Core::Materials::MaterialType::mfi_transv_isotrop_elast_viscoplast,
-                  inelastic_defgrad_transv_isotrop_elast_viscoplast_data)));
-      Core::IO::InputParameterContainer inelastic_defgrad_isotrop_elast_viscoplast_data;
+                  inelastic_defgrad_transv_isotrop_vplast_refJC_data)));
 
       // analogously for the purely isotropic viscoplastic material
-      inelastic_defgrad_isotrop_elast_viscoplast_data.add("VISCOPLAST_LAW_ID", 4);
-      inelastic_defgrad_isotrop_elast_viscoplast_data.add("FIBER_READER_ID", 5);
-      inelastic_defgrad_isotrop_elast_viscoplast_data.add("YIELD_COND_A", 1.0);
-      inelastic_defgrad_isotrop_elast_viscoplast_data.add("YIELD_COND_B", 2.0);
-      inelastic_defgrad_isotrop_elast_viscoplast_data.add("YIELD_COND_F", 2.5);
-      inelastic_defgrad_isotrop_elast_viscoplast_data.add("ANISOTROPY", std::string("isotrop"));
-      inelastic_defgrad_isotrop_elast_viscoplast_data.add(
+      Core::IO::InputParameterContainer inelastic_defgrad_isotrop_vplast_refJC_data;
+      inelastic_defgrad_isotrop_vplast_refJC_data.add("VISCOPLAST_LAW_ID", 4);
+      inelastic_defgrad_isotrop_vplast_refJC_data.add("FIBER_READER_ID", 5);
+      inelastic_defgrad_isotrop_vplast_refJC_data.add("YIELD_COND_A", 1.0);
+      inelastic_defgrad_isotrop_vplast_refJC_data.add("YIELD_COND_B", 2.0);
+      inelastic_defgrad_isotrop_vplast_refJC_data.add("YIELD_COND_F", 2.5);
+      inelastic_defgrad_isotrop_vplast_refJC_data.add("ANISOTROPY", std::string("isotrop"));
+      inelastic_defgrad_isotrop_vplast_refJC_data.add(
           "TIME_INTEGRATION_HIST_VARS", std::string("log"));
-      inelastic_defgrad_isotrop_elast_viscoplast_data.add("USE_PRED_ADAPT", true);
-      inelastic_defgrad_isotrop_elast_viscoplast_data.add("USE_LINE_SEARCH", true);
-      inelastic_defgrad_isotrop_elast_viscoplast_data.add("USE_SUBSTEPPING", false);
-      inelastic_defgrad_isotrop_elast_viscoplast_data.add("MAX_HALVE_NUM_SUBSTEP", 1);
-      inelastic_defgrad_isotrop_elast_viscoplast_data.add(
-          "MAX_PLASTIC_STRAIN_INCR", std::exp(30.0));
-      inelastic_defgrad_isotrop_elast_viscoplast_data.add(
+      inelastic_defgrad_isotrop_vplast_refJC_data.add("USE_PRED_ADAPT", true);
+      inelastic_defgrad_isotrop_vplast_refJC_data.add("USE_LINE_SEARCH", true);
+      inelastic_defgrad_isotrop_vplast_refJC_data.add("USE_SUBSTEPPING", false);
+      inelastic_defgrad_isotrop_vplast_refJC_data.add("MAX_HALVE_NUM_SUBSTEP", 1);
+      inelastic_defgrad_isotrop_vplast_refJC_data.add("MAX_PLASTIC_STRAIN_INCR", std::exp(30.0));
+      inelastic_defgrad_isotrop_vplast_refJC_data.add(
           "MAX_PLASTIC_STRAIN_DERIV_INCR", std::exp(30.0));
-      inelastic_defgrad_isotrop_elast_viscoplast_data.add("ANALYZE_TIMINT", false);
-      params_isotrop_elast_viscoplast_ =
+      inelastic_defgrad_isotrop_vplast_refJC_data.add("ANALYZE_TIMINT", false);
+
+      params_isotrop_vplast_refJC_ =
           std::dynamic_pointer_cast<Mat::PAR::InelasticDefgradTransvIsotropElastViscoplast>(
               std::shared_ptr(Mat::make_parameter(1,
                   Core::Materials::MaterialType::mfi_transv_isotrop_elast_viscoplast,
-                  inelastic_defgrad_isotrop_elast_viscoplast_data)));
+                  inelastic_defgrad_isotrop_vplast_refJC_data)));
 
 
       // manually create vector of elastic potentials
@@ -352,8 +356,20 @@ namespace
       auto elastic_summand = Mat::Elastic::Summand::factory(200);
       pot_sum_el.emplace_back(elastic_summand);
 
+      // for the Anand viscoplasticity, we add other isotropic elasticity parameters
+      std::vector<std::shared_ptr<Mat::Elastic::Summand>> pot_sum_el_Anand;
+      Core::IO::InputParameterContainer elast_pot_coup_neo_hooke_Anand_data;
+      elast_pot_coup_neo_hooke_Anand_data.add("YOUNG", 7.810e3);
+      elast_pot_coup_neo_hooke_Anand_data.add("NUE", 0.38);
+      problem.materials()->insert(
+          2000, Mat::make_parameter(2000, Core::Materials::MaterialType::mes_coupneohooke,
+                    elast_pot_coup_neo_hooke_Anand_data));
+      elastic_summand = Mat::Elastic::Summand::factory(2000);
+      pot_sum_el_Anand.emplace_back(elastic_summand);
 
-      // manually create viscoplastic law
+
+
+      // manually create viscoplastic law (Reformulated Johnson-Cook and Anand)
       Core::IO::InputParameterContainer viscoplastic_law_reformulated_Johnson_Cook_data;
       viscoplastic_law_reformulated_Johnson_Cook_data.add("STRAIN_RATE_PREFAC", 1.0);
       viscoplastic_law_reformulated_Johnson_Cook_data.add("STRAIN_RATE_EXP_FAC", 0.1);
@@ -369,6 +385,20 @@ namespace
               std::make_shared<Mat::Viscoplastic::ReformulatedJohnsonCook>(
                   problem.materials()->parameter_by_id(400));
 
+      Core::IO::InputParameterContainer viscoplastic_law_Anand_data;
+      viscoplastic_law_Anand_data.add("STRAIN_RATE_PREFAC", 0.0138);
+      viscoplastic_law_Anand_data.add("STRAIN_RATE_SENS", 0.15);
+      viscoplastic_law_Anand_data.add("INIT_FLOW_RES", 0.95);
+      viscoplastic_law_Anand_data.add("HARDEN_RATE_PREFAC", 10.0);
+      viscoplastic_law_Anand_data.add("HARDEN_RATE_SENS", 2.0);
+      viscoplastic_law_Anand_data.add("FLOW_RES_SAT_FAC", 2.0);
+      viscoplastic_law_Anand_data.add("FLOW_RES_SAT_EXP", 0.05);
+      // add material to problem instance
+      problem.materials()->insert(
+          4000, Mat::make_parameter(
+                    4000, Core::Materials::MaterialType::mvl_Anand, viscoplastic_law_Anand_data));
+      std::shared_ptr<Mat::Viscoplastic::Anand> viscoplastic_law_Anand =
+          std::make_shared<Mat::Viscoplastic::Anand>(problem.materials()->parameter_by_id(4000));
 
       // create the parameter container for the fiber reader
       Core::IO::InputParameterContainer fiber_reader_data;
@@ -401,39 +431,41 @@ namespace
       Mat::Elastic::CoupTransverselyIsotropic fiber_reader_{params_fiber_reader_.get()};
 
       // finally construct the InelasticDefgradTransvIsotropElastViscoplast objects
-      transv_isotrop_elast_viscoplast_ =
+      transv_isotrop_vplast_refJC_ =
           std::make_shared<Mat::InelasticDefgradTransvIsotropElastViscoplast>(
-              params_transv_isotrop_elast_viscoplast_.get(),
-              viscoplastic_law_reformulated_Johnson_Cook, fiber_reader_, pot_sum_el,
-              pot_sum_el_transv_iso);
-
-      isotrop_elast_viscoplast_ =
-          std::make_shared<Mat::InelasticDefgradTransvIsotropElastViscoplast>(
-              params_isotrop_elast_viscoplast_.get(), viscoplastic_law_reformulated_Johnson_Cook,
+              params_transv_isotrop_vplast_refJC_.get(), viscoplastic_law_reformulated_Johnson_Cook,
               fiber_reader_, pot_sum_el, pot_sum_el_transv_iso);
 
+      isotrop_vplast_refJC_ = std::make_shared<Mat::InelasticDefgradTransvIsotropElastViscoplast>(
+          params_isotrop_vplast_refJC_.get(), viscoplastic_law_reformulated_Johnson_Cook,
+          fiber_reader_, pot_sum_el, pot_sum_el_transv_iso);
+      isotrop_vplast_Anand_ = std::make_shared<Mat::InelasticDefgradTransvIsotropElastViscoplast>(
+          params_isotrop_vplast_refJC_.get(), viscoplastic_law_Anand, fiber_reader_,
+          pot_sum_el_Anand, pot_sum_el_transv_iso);
+
       // define setup parameter for InelasticDefGradTransvIsotropElastViscoplast
-      Core::IO::InputParameterContainer setup_transv_isotrop_elast_viscoplast;
-      setup_transv_isotrop_elast_viscoplast.add<std::optional<std::vector<double>>>(
+      Core::IO::InputParameterContainer setup_transv_isotrop_vplast_refJC;
+      setup_transv_isotrop_vplast_refJC.add<std::optional<std::vector<double>>>(
           "FIBER1", std::vector<double>{0.0, 0.0, 1.0});
-      setup_transv_isotrop_elast_viscoplast.add<std::optional<std::vector<double>>>(
+      setup_transv_isotrop_vplast_refJC.add<std::optional<std::vector<double>>>(
           "RAD", std::nullopt);
-      setup_transv_isotrop_elast_viscoplast.add<std::optional<std::vector<double>>>(
+      setup_transv_isotrop_vplast_refJC.add<std::optional<std::vector<double>>>(
           "AXI", std::nullopt);
-      setup_transv_isotrop_elast_viscoplast.add<std::optional<std::vector<double>>>(
+      setup_transv_isotrop_vplast_refJC.add<std::optional<std::vector<double>>>(
           "CIR", std::nullopt);
 
       // call setup method for InelasticDefGradTransvIsotropElastViscoplast
-      transv_isotrop_elast_viscoplast_->setup(8, setup_transv_isotrop_elast_viscoplast);
-      isotrop_elast_viscoplast_->setup(8, setup_transv_isotrop_elast_viscoplast);
+      transv_isotrop_vplast_refJC_->setup(8, setup_transv_isotrop_vplast_refJC);
+      isotrop_vplast_refJC_->setup(8, setup_transv_isotrop_vplast_refJC);
+      isotrop_vplast_Anand_->setup(8, setup_transv_isotrop_vplast_refJC);
 
       // parameter list for InelasticDefGradTransvIsotropElastViscoplast
-      Teuchos::ParameterList param_list_transv_isotrop_elast_viscoplast{};
-      param_list_transv_isotrop_elast_viscoplast.set<double>("delta time", 1.0e-6);
+      Teuchos::ParameterList param_list_transv_isotrop_vplast_refJC{};
+      param_list_transv_isotrop_vplast_refJC.set<double>("delta time", 1.0e-6);
       // call pre_evaluate
-      transv_isotrop_elast_viscoplast_->pre_evaluate(
-          param_list_transv_isotrop_elast_viscoplast, 0, 0);
-      isotrop_elast_viscoplast_->pre_evaluate(param_list_transv_isotrop_elast_viscoplast, 0, 0);
+      transv_isotrop_vplast_refJC_->pre_evaluate(param_list_transv_isotrop_vplast_refJC, 0, 0);
+      isotrop_vplast_refJC_->pre_evaluate(param_list_transv_isotrop_vplast_refJC, 0, 0);
+      isotrop_vplast_Anand_->pre_evaluate(param_list_transv_isotrop_vplast_refJC, 0, 0);
     }
 
     void set_up_state_quantities_solution()
@@ -1137,9 +1169,9 @@ namespace
     Core::LinAlg::Matrix<3, 3> iFin_lin_temp_iso_solution_;
     // reference solution of inverse inelastic deformation gradient using
     // InelasticDefgradTransvIsotropElastViscoplast
-    Core::LinAlg::Matrix<3, 3> iFin_transv_isotrop_elast_viscoplast_solution_;
+    Core::LinAlg::Matrix<3, 3> iFin_transv_isotrop_vplast_refJC_solution_;
     // reference solution of plastic strain using InelasticDefgradTransvIsotropElastViscoplast
-    double plastic_strain_transv_isotrop_elast_viscoplast_solution_;
+    double plastic_strain_transv_isotrop_vplast_refJC_solution_;
     // pointer to object that evaluates a linear shape
     std::shared_ptr<Mat::InelasticDefgradLinearShape> linear_shape_;
     // pointer to object that evaluates a polynomial shape
@@ -1169,33 +1201,36 @@ namespace
     // pointer to parameters of InelasticDefgradLinTempIso
     std::shared_ptr<Mat::PAR::InelasticDefgradLinTempIso> params_lin_temp_iso_;
     // pointer to InelasticDefgradTransvIsotropElastViscoplast (transversely isotropic, logarithmic
-    // substepping)
-    std::shared_ptr<Mat::InelasticDefgradTransvIsotropElastViscoplast>
-        transv_isotrop_elast_viscoplast_;
-    // pointer to InelasticDefgradTransvIsotropElastViscoplast (isotropic, logarithmic substepping)
-    std::shared_ptr<Mat::InelasticDefgradTransvIsotropElastViscoplast> isotrop_elast_viscoplast_;
+    // substepping, Reformulated Johnson-Cook viscoplasticity)
+    std::shared_ptr<Mat::InelasticDefgradTransvIsotropElastViscoplast> transv_isotrop_vplast_refJC_;
+    // pointer to InelasticDefgradTransvIsotropElastViscoplast (isotropic, logarithmic substepping,
+    // Reformulated Johnson-Cook viscoplasticity)
+    std::shared_ptr<Mat::InelasticDefgradTransvIsotropElastViscoplast> isotrop_vplast_refJC_;
+    // pointer to InelasticDefgradTransvIsotropElastViscoplast (isotropic, logarithmic substepping,
+    // Anand viscoplasticity)
+    std::shared_ptr<Mat::InelasticDefgradTransvIsotropElastViscoplast> isotrop_vplast_Anand_;
     // pointer to parameters of InelasticDefgradTransvIsotropElastViscoplast (transversely
-    // isotropic, logarithmic substepping)
+    // isotropic, logarithmic substepping, Reformulated Johnson-Cook viscoplasticity)
     std::shared_ptr<Mat::PAR::InelasticDefgradTransvIsotropElastViscoplast>
-        params_transv_isotrop_elast_viscoplast_;
+        params_transv_isotrop_vplast_refJC_;
     // pointer to parameters of InelasticDefgradTransvIsotropElastViscoplast (isotropic, logarithmic
-    // substepping)
+    // substepping, Reformulated Johnson-Cook viscoplasticity)
     std::shared_ptr<Mat::PAR::InelasticDefgradTransvIsotropElastViscoplast>
-        params_isotrop_elast_viscoplast_;
+        params_isotrop_vplast_refJC_;
     // reference StateQuantities struct of InelasticDefgradTransvIsotropElastViscoplast
-    // (transversely isotropic, logarithmic substepping)
+    // (transversely isotropic, logarithmic substepping, Reformulated Johnson-Cook viscoplasticity)
     Mat::InelasticDefgradTransvIsotropElastViscoplast::StateQuantities
         state_quantities_solution_transv_isotrop_;
     // reference StateQuantities struct of InelasticDefgradTransvIsotropElastViscoplast (isotropic,
-    // logarithmic substepping)
+    // logarithmic substepping, Reformulated Johnson-Cook viscoplasticity)
     Mat::InelasticDefgradTransvIsotropElastViscoplast::StateQuantities
         state_quantities_solution_isotrop_;
     // reference StateQuantityDerivatives struct of InelasticDefgradTransvIsotropElastViscoplast
-    // (transversely isotropic, logarithmic substepping)
+    // (transversely isotropic, logarithmic substepping, Reformulated Johnson-Cook viscoplasticity)
     Mat::InelasticDefgradTransvIsotropElastViscoplast::StateQuantityDerivatives
         state_quantity_derivatives_solution_transv_isotrop_;
     // reference StateQuantityDerivatives struct of InelasticDefgradTransvIsotropElastViscoplast
-    // (isotropic, logarithmic substepping)
+    // (isotropic, logarithmic substepping, Reformulated Johnson-Cook viscoplasticity)
     Mat::InelasticDefgradTransvIsotropElastViscoplast::StateQuantityDerivatives
         state_quantity_derivatives_solution_isotrop_;
 
@@ -1583,14 +1618,14 @@ namespace
     // compute StateQuantities objects
     Mat::InelasticDefgradTransvIsotropElastViscoplast::StateQuantities
         computed_state_quantities_transv_isotrop =
-            transv_isotrop_elast_viscoplast_->evaluate_state_quantities(CM,
-                iFin_transv_isotrop_elast_viscoplast_solution_,
-                plastic_strain_transv_isotrop_elast_viscoplast_solution_, err_status, 1.0,
+            transv_isotrop_vplast_refJC_->evaluate_state_quantities(CM,
+                iFin_transv_isotrop_vplast_refJC_solution_,
+                plastic_strain_transv_isotrop_vplast_refJC_solution_, err_status, 1.0,
                 Mat::ViscoplastStateQuantityEvalType::FullEval);
     Mat::InelasticDefgradTransvIsotropElastViscoplast::StateQuantities
-        computed_state_quantities_isotrop = isotrop_elast_viscoplast_->evaluate_state_quantities(CM,
-            iFin_transv_isotrop_elast_viscoplast_solution_,
-            plastic_strain_transv_isotrop_elast_viscoplast_solution_, err_status, 1.0,
+        computed_state_quantities_isotrop = isotrop_vplast_refJC_->evaluate_state_quantities(CM,
+            iFin_transv_isotrop_vplast_refJC_solution_,
+            plastic_strain_transv_isotrop_vplast_refJC_solution_, err_status, 1.0,
             Mat::ViscoplastStateQuantityEvalType::FullEval);
     if (err_status != Mat::ViscoplastErrorType::NoErrors)
     {
@@ -1649,16 +1684,16 @@ namespace
     // compute StateQuantityDerivatives objects
     Mat::InelasticDefgradTransvIsotropElastViscoplast::StateQuantityDerivatives
         computed_state_quantity_derivatives_transv_isotrop =
-            transv_isotrop_elast_viscoplast_->evaluate_state_quantity_derivatives(CM,
-                iFin_transv_isotrop_elast_viscoplast_solution_,
-                plastic_strain_transv_isotrop_elast_viscoplast_solution_, err_status, 1.0,
+            transv_isotrop_vplast_refJC_->evaluate_state_quantity_derivatives(CM,
+                iFin_transv_isotrop_vplast_refJC_solution_,
+                plastic_strain_transv_isotrop_vplast_refJC_solution_, err_status, 1.0,
                 Mat::ViscoplastStateQuantityDerivEvalType::FullEval, true);
 
     Mat::InelasticDefgradTransvIsotropElastViscoplast::StateQuantityDerivatives
         computed_state_quantity_derivatives_isotrop =
-            isotrop_elast_viscoplast_->evaluate_state_quantity_derivatives(CM,
-                iFin_transv_isotrop_elast_viscoplast_solution_,
-                plastic_strain_transv_isotrop_elast_viscoplast_solution_, err_status, 1.0,
+            isotrop_vplast_refJC_->evaluate_state_quantity_derivatives(CM,
+                iFin_transv_isotrop_vplast_refJC_solution_,
+                plastic_strain_transv_isotrop_vplast_refJC_solution_, err_status, 1.0,
                 Mat::ViscoplastStateQuantityDerivEvalType::FullEval, true);
 
     if (err_status != Mat::ViscoplastErrorType::NoErrors)

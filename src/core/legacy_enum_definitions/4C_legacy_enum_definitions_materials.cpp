@@ -251,6 +251,8 @@ std::string_view Core::Materials::to_string(Core::Materials::MaterialType materi
       return "MAT_InelasticDefgradTransvIsotropElastViscoplast";
     case mvl_reformulated_Johnson_Cook:
       return "MAT_ViscoplasticLawReformulatedJohnsonCook";
+    case mvl_Anand:
+      return "MAT_ViscoplasticLawAnand";
     case m_sc_dep_interp:
       return "MAT_ScDepInterp";
     case m_constraintmixture:

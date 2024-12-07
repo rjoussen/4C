@@ -12,6 +12,7 @@
 #include "4C_inpar_structure.hpp"
 #include "4C_io_file_reader.hpp"
 #include "4C_io_input_spec_builders.hpp"
+#include "4C_legacy_enum_definitions_materials.hpp"
 #include "4C_mat_electrode.hpp"
 
 #include <cmath>
@@ -2792,6 +2793,32 @@ std::unordered_map<Core::Materials::MaterialType, Core::IO::InputSpec> Global::v
                             "rule $\\dot{P} = \\dot{P}_0 \\exp \\left( \\frac{ \\Sigma_{eq}}{C "
                             "\\Sigma_y} - \\frac{1}{C} \\right) - \\dot{P}_0$ and hardening law), "
                             "as shown in Mareau et al. (Mechanics of Materials 143, 2020)"});
+  }
+
+  /*----------------------------------------------------------------------*/
+  {
+    known_materials[Core::Materials::mvl_Anand] = group("MAT_ViscoplasticLawAnand",
+        {
+            parameter<double>("STRAIN_RATE_PREFAC",
+                {.description = "plastic strain rate prefactor $A \\exp( - Q / R / T)$"}),
+            parameter<double>("STRAIN_RATE_SENS",
+                {.description =
+                        "sensitivity of the plastic strain rate w.r.t. stress factor $ m $"}),
+
+            parameter<double>(
+                "INIT_FLOW_RES", {.description = "initial flow resistance $ S(t_0) $"}),
+
+            parameter<double>(
+                "HARDEN_RATE_SENS", {.description = "hardening rate sensitivity $ a $"}),
+            parameter<double>(
+                "HARDEN_RATE_PREFAC", {.description = "hardening rate prefactor $ H_0 $"}),
+            parameter<double>("FLOW_RES_SAT_FAC",
+                {.description = "prefactor of the flow resistance saturation $ S_* $"}),
+            parameter<double>("FLOW_RES_SAT_EXP",
+                {.description = "exponent of the flow resistance saturation $ N $"}),
+        },
+        {.description = "Anand viscoplastic law (comprising flow rule and hardening "
+                        "law), as shown in Anand et al. (J. Electrochem. Soc. 166, 2019)"});
   }
 
   /*----------------------------------------------------------------------*/
