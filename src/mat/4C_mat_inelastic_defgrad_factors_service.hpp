@@ -10,6 +10,11 @@
 
 #include "4C_config.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
+#include "4C_comm_utils.hpp"
+#include "4C_fem_discretization.hpp"
+#include "4C_global_data.hpp"
+#include "4C_io_runtime_csv_writer.hpp"
 #include "4C_utils_exceptions.hpp"
 
 #include <map>
@@ -21,7 +26,8 @@ FOUR_C_NAMESPACE_OPEN
 namespace Mat
 {
   /// enum class for error types in InelasticDefgradTransvIsotropElastViscoplast, used for
-  /// triggering the substepping procedures
+  /// triggering different procedures (e.g. substepping) during the
+  /// Local Newton Loop
   enum class ViscoplastErrorType
   {
     NoErrors,
@@ -40,6 +46,15 @@ namespace Mat
                        // analytical evaluation of the linearization
     FailedSolAnalytLinearization,  // solution of the linear system in the analytical linearization
                                    // failed
+  };
+
+  /// enum class for error management actions in InelasticDefgradTransvIsotropElastViscoplast
+  enum class ViscoplastErrorActions
+  {
+    Continue,             // continue without any errors (NoErrors)
+    ReturnSolWithErrors,  // return the current solution with errors (if the maximum substepping
+                          // settings have been reached)
+    NextIter,             // go to next iteration after performing certain reset steps
   };
 
   /// to_string: error types to error messages in InelasticDefgradTransvIsotropElastViscoplast
@@ -89,8 +104,195 @@ namespace Mat
   /// get the time integration type (Local Newton Loop of
   /// InelasticDefgradTransvIsotropElastViscoplast) from the
   /// user-specified string in the input file
-  ViscoplastTimIntType get_time_integration_type(std::string timint_string);
+  ViscoplastTimIntType get_time_integration_type(const std::string &timint_string);
 
+  // names of the various error types
+  inline std::map<ViscoplastErrorType, std::string> ViscoplastErrorNames = {
+      {ViscoplastErrorType::NegativePlasticStrain, "NegativePlasticStrain"},
+      {ViscoplastErrorType::OverflowError, "OverflowError"},
+      {ViscoplastErrorType::NoPlasticIncompressibility, "NoPlasticIncompressibility"},
+      {ViscoplastErrorType::FailedSolLinSystLNL, "FailedSolLinSystLNL"},
+      {ViscoplastErrorType::FailedDetermLineSearchParam, "FailedDetermLineSearchParam"},
+      {ViscoplastErrorType::NoConvergenceLNL, "NoConvergenceLNL"},
+      {ViscoplastErrorType::SingularJacobian, "SingularJacobian"},
+      {ViscoplastErrorType::FailedSolAnalytLinearization, "FailedSolAnalytLinearization"},
+  };
+
+  //! class containing utilities for analyzing the material time integration:
+  //! error types, number of line searches, ... (InelastDefgradTransvIsotropElastViscoplast)
+  class TimIntAnalysisUtils
+  {
+   public:
+    // number of substeps for the current evaluation (LNL)
+    unsigned int eval_num_of_substeps_ = 0;
+
+    // total number of substeps
+    unsigned int total_num_of_substeps_ = 0;
+
+    // number of iterations for the current evaluation (LNL)
+    unsigned int eval_num_of_iters_ = 0;
+
+    // total number of LNL iterations
+    unsigned int total_num_of_iters_ = 0;
+
+    // number of repredictorizations for the current evaluation (LNL)
+    unsigned int eval_num_of_repredict_ = 0;
+
+    // total number of LNL repredictorizations
+    unsigned int total_num_of_repredict_ = 0;
+
+    // number of line searches for the current evaluation (LNL)
+    unsigned int eval_num_of_line_search_ = 0;
+
+    // total number of LNL line searches
+    unsigned int total_num_of_line_search_ = 0;
+
+    // timer for the current evaluation, from the start of preevaluate to the end of update
+    Teuchos::Time eval_teuchos_timer_{
+        "InelasticDefgradTransvIsotropElastViscoplast::from_preevaluate_to_update"};
+
+    // evaluation time
+    double eval_time_;
+
+    // total time
+    double total_time_;
+
+    // error map of the current evaluation, from the first preevaluate of this time step to the
+    // first preevaluate of the next
+    std::map<Mat::ViscoplastErrorType, unsigned int> eval_error_map_ = {
+        {Mat::ViscoplastErrorType::NegativePlasticStrain, 0},
+        {Mat::ViscoplastErrorType::OverflowError, 0},
+        {Mat::ViscoplastErrorType::NoPlasticIncompressibility, 0},
+        {Mat::ViscoplastErrorType::FailedSolLinSystLNL, 0},
+        {Mat::ViscoplastErrorType::FailedDetermLineSearchParam, 0},
+        {Mat::ViscoplastErrorType::NoConvergenceLNL, 0},
+        {Mat::ViscoplastErrorType::SingularJacobian, 0},
+        {Mat::ViscoplastErrorType::FailedSolAnalytLinearization, 0}};
+
+    // error map of the total evaluation
+    std::map<Mat::ViscoplastErrorType, unsigned int> total_error_map_ = {
+        {Mat::ViscoplastErrorType::NegativePlasticStrain, 0},
+        {Mat::ViscoplastErrorType::OverflowError, 0},
+        {Mat::ViscoplastErrorType::NoPlasticIncompressibility, 0},
+        {Mat::ViscoplastErrorType::FailedSolLinSystLNL, 0},
+        {Mat::ViscoplastErrorType::FailedDetermLineSearchParam, 0},
+        {Mat::ViscoplastErrorType::NoConvergenceLNL, 0},
+        {Mat::ViscoplastErrorType::SingularJacobian, 0},
+        {Mat::ViscoplastErrorType::FailedSolAnalytLinearization, 0}};
+
+
+    // runtime csv writer
+    std::optional<Core::IO::RuntimeCsvWriter> csv_writer_;
+
+    // simulation time instant and time step
+    double sim_time_ = 0.0;
+    int sim_timestep_ = 0.0;
+
+    // was the pre_evaluate method of the first element called?
+    bool pre_eval_called_ = false;
+
+    // how often was the update method called? (max. num_of_global_elements if one processor is
+    // considered)
+    int num_update_calls_ = 0;
+
+    // reset method
+    void reset()
+    {
+      eval_num_of_substeps_ = 0;
+      eval_num_of_iters_ = 0;
+      eval_num_of_repredict_ = 0;
+      eval_num_of_line_search_ = 0;
+      eval_teuchos_timer_.reset();
+      eval_time_ = 0;
+      eval_error_map_ = {{Mat::ViscoplastErrorType::NegativePlasticStrain, 0},
+          {Mat::ViscoplastErrorType::OverflowError, 0},
+          {Mat::ViscoplastErrorType::NoPlasticIncompressibility, 0},
+          {Mat::ViscoplastErrorType::FailedSolLinSystLNL, 0},
+          {Mat::ViscoplastErrorType::FailedDetermLineSearchParam, 0},
+          {Mat::ViscoplastErrorType::NoConvergenceLNL, 0},
+          {Mat::ViscoplastErrorType::SingularJacobian, 0},
+          {Mat::ViscoplastErrorType::FailedSolAnalytLinearization, 0}};
+    }
+
+    // initialize csv_writer only if required
+    void init_csv_writer()
+    {
+      // get structure discretization
+      std::shared_ptr<Core::FE::Discretization> structure_dis =
+          Global::Problem::instance()->get_dis("structure");
+
+      // check whether we are using a single processor! (no implementation for multiple processors
+      // yet, and also not really required)
+      int my_rank = Core::Communication::my_mpi_rank(structure_dis->get_comm());
+      FOUR_C_ASSERT_ALWAYS(my_rank == 0,
+          "InelasticDefgradTransvIsotropElastViscoplast: No implementation of time integration "
+          "output "
+          "for multiple processors");
+
+      // create csv_writer and register its columns
+      csv_writer_.emplace(
+          my_rank, *Global::Problem::instance()->output_control_file(), "timint_output");
+      csv_writer_->register_data_vector("Evaluated substeps", 1, 16);
+      csv_writer_->register_data_vector("Evaluated iterations", 1, 16);
+      csv_writer_->register_data_vector("Evaluated repredictorizations", 1, 16);
+      csv_writer_->register_data_vector("Evaluated line searches", 1, 16);
+      csv_writer_->register_data_vector("Evaluation time", 1, 16);
+      csv_writer_->register_data_vector("Total substeps", 1, 16);
+      csv_writer_->register_data_vector("Total iterations", 1, 16);
+      csv_writer_->register_data_vector("Total repredictorizations", 1, 16);
+      csv_writer_->register_data_vector("Total line searches", 1, 16);
+      csv_writer_->register_data_vector("Total time", 1, 16);
+      for (const auto &[key, value] : Mat::ViscoplastErrorNames)
+      {
+        csv_writer_->register_data_vector(
+            "Evaluated Error " + std::to_string(static_cast<int>(key)) + ": " + value, 1, 16);
+        csv_writer_->register_data_vector(
+            "Total Error " + std::to_string(static_cast<int>(key)) + ": " + value, 1, 16);
+      }
+    }
+
+    // update total values
+    void update_total()
+    {
+      total_num_of_substeps_ += eval_num_of_substeps_;
+      total_num_of_iters_ += eval_num_of_iters_;
+      total_num_of_repredict_ += eval_num_of_repredict_;
+      total_num_of_line_search_ += eval_num_of_line_search_;
+      total_time_ += eval_time_;
+      for (const auto &[error_type, error_count] : eval_error_map_)
+      {
+        total_error_map_[error_type] += error_count;
+      }
+    }
+
+    // write to csv after each timestep
+    void write_to_csv()
+    {
+      // output data
+      std::map<std::string, std::vector<double>> output_data;
+      output_data["Evaluated substeps"] = {static_cast<double>(eval_num_of_substeps_)};
+      output_data["Total substeps"] = {static_cast<double>(total_num_of_substeps_)};
+      output_data["Evaluated iterations"] = {static_cast<double>(eval_num_of_iters_)};
+      output_data["Total iterations"] = {static_cast<double>(total_num_of_iters_)};
+      output_data["Evaluated repredictorizations"] = {static_cast<double>(eval_num_of_repredict_)};
+      output_data["Total repredictorizations"] = {static_cast<double>(total_num_of_repredict_)};
+      output_data["Evaluated line searches"] = {static_cast<double>(eval_num_of_line_search_)};
+      output_data["Total line searches"] = {static_cast<double>(total_num_of_line_search_)};
+      output_data["Evaluation time"] = {static_cast<double>(eval_time_)};
+      output_data["Total time"] = {static_cast<double>(total_time_)};
+
+      for (const auto &[key, value] : Mat::ViscoplastErrorNames)
+      {
+        output_data["Evaluated Error " + std::to_string(static_cast<int>(key)) + ": " + value] = {
+            static_cast<double>(eval_error_map_[key])};
+        output_data["Total Error " + std::to_string(static_cast<int>(key)) + ": " + value] = {
+            static_cast<double>(total_error_map_[key])};
+      }
+
+      // write output data to csv
+      csv_writer_->write_data_to_file(sim_time_, sim_timestep_, output_data);
+    }
+  };
 
   /// enum class for state quantity evaluations in
   /// InelasticDefgradTransvIsotropElastViscoplast: what is the aim of

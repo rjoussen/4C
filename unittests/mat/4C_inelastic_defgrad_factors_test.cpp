@@ -303,6 +303,7 @@ namespace
           "MAX_PLASTIC_STRAIN_INCR", std::exp(30.0));
       inelastic_defgrad_transv_isotrop_elast_viscoplast_data.add(
           "MAX_PLASTIC_STRAIN_DERIV_INCR", std::exp(30.0));
+      inelastic_defgrad_transv_isotrop_elast_viscoplast_data.add("ANALYZE_TIMINT", false);
 
       // get pointer to parameter class
       params_transv_isotrop_elast_viscoplast_ =
@@ -329,6 +330,7 @@ namespace
           "MAX_PLASTIC_STRAIN_INCR", std::exp(30.0));
       inelastic_defgrad_isotrop_elast_viscoplast_data.add(
           "MAX_PLASTIC_STRAIN_DERIV_INCR", std::exp(30.0));
+      inelastic_defgrad_isotrop_elast_viscoplast_data.add("ANALYZE_TIMINT", false);
       params_isotrop_elast_viscoplast_ =
           std::dynamic_pointer_cast<Mat::PAR::InelasticDefgradTransvIsotropElastViscoplast>(
               std::shared_ptr(Mat::make_parameter(1,

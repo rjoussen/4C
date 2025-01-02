@@ -318,8 +318,11 @@ namespace Mat
       //! get boolean: use line search to avoid negative plastic strains
       //! in the Local Newton Loop? (true: yes, false: no)
       [[nodiscard]] bool bool_line_search() const { return bool_line_search_; };
-      //! get boolean: use substepping in the ? (true: yes, false: no)
+      //! get boolean: use substepping in the time integration scheme? (true: yes, false: no)
       [[nodiscard]] bool bool_substep() const { return bool_substep_; };
+      //! get boolean: analyze time integration scheme and write
+      //! output to csv? (true: yes, false: no)
+      [[nodiscard]] bool bool_analyze_timint() const { return bool_analyze_timint_; };
       //! get maximum number of times a time step can be halved into smaller and smaller substeps
       [[nodiscard]] unsigned int max_halve_number() const
       {
@@ -401,6 +404,9 @@ namespace Mat
 
       //! boolean: use substepping? (true: yes, false: no)
       const bool bool_substep_;
+
+      //! boolean: analyze time integration and write output to csv?
+      const bool bool_analyze_timint_;
 
       //! maximum number of times the given time step can be halved before reaching the minimum
       //! allowed substep length
@@ -1587,13 +1593,17 @@ namespace Mat
       //! maximum allowed number of predictor adaptations
       const unsigned int max_num_of_pred_adapt_;
 
+      //! current predictor
+      Core::LinAlg::Matrix<10, 1> pred_;
+
       //! constructor
       PredInterpFactors(const double xi_user, const unsigned int max_num_of_pred_adapt)
           : xi_user_(xi_user),
             xi_(xi_user),
             xi_l_(0.0),
             xi_u_(1.0),
-            max_num_of_pred_adapt_(max_num_of_pred_adapt){};
+            max_num_of_pred_adapt_(max_num_of_pred_adapt),
+            pred_{Core::LinAlg::Matrix<10, 1>{true}} {};
 
       //! method to reset the non-const variables of the class
       void reset_non_const_vars()
@@ -1601,6 +1611,7 @@ namespace Mat
         xi_ = xi_user_;
         xi_l_ = 0.0;
         xi_u_ = 1.0;
+        pred_.clear();
       }
     };
     //! instance of PredInterpFactors
@@ -1777,6 +1788,7 @@ namespace Mat
      * Local Newton Loop \f$ \boldsymbol{r}_{\boldsymbol{s}_i} \f$
      * @param[in] incr increment \f$ \Delta \boldsymbol{s}_{i+1} \f$ for
      * the update of the solution vector
+     * @param[out] err_status error status
      * @return line search parameter \f$ \alpha \f$
      *
      */
@@ -1784,13 +1796,14 @@ namespace Mat
         const Core::LinAlg::Matrix<10, 1>& curr_res, const Core::LinAlg::Matrix<10, 1>& incr,
         Mat::ViscoplastErrorType& err_status);
 
+
     /*!
      * @brief Setup new substep in the Local Newton Loop in case of an encountered evaluation error
      *
-     * @param[in, out] substep_params parameters of the substepping procedure
-     * @param[out] sol current solution vector of the Local Newton Loop (reset to the last
+     * @param[in,out] substep_params parameters of the substepping procedure
+     * @param[in,out] sol current solution vector of the Local Newton Loop (reset to the last
      * converged value within this method)
-     * @param[out] curr_CM current right Cauchy-Green deformation tensor, interpolated using
+     * @param[in,out] curr_CM current right Cauchy-Green deformation tensor, interpolated using
      * the reference matrices of the time step (interpolated again within this method with the
      * updated new substep length)
      * @return error status for the new substep (true: no errors, false: we have halved the time
@@ -1799,6 +1812,25 @@ namespace Mat
      */
     bool prepare_new_substep(SubstepParams& substep_params, Core::LinAlg::Matrix<10, 1>& sol,
         Core::LinAlg::Matrix<3, 3>& curr_CM);
+
+    /*!
+     * @brief Routine utilized during the Local Newton Loop
+     * evaluations. The performed steps depend on the input error status
+     * and the user settings (e.g. substepping, repredictorization, ...).
+     *
+     *
+     * @param[in] err_status error status
+     * @param[in,out] substep_params parameters of the substepping procedure
+     * @param[in,out] sol current solution vector of the Local Newton Loop (reset to the last
+     * converged value within this method)
+     * @param[in,out] curr_CM current right Cauchy-Green deformation tensor, interpolated using
+     * the reference matrices of the time step (interpolated again within this method with the
+     * updated new substep length)
+     * @return action to be performed subsequently in the LNL
+     */
+    Mat::ViscoplastErrorActions manage_evaluation_error(const Mat::ViscoplastErrorType &err_status,
+        SubstepParams &substep_params, Core::LinAlg::Matrix<10, 1> &sol,
+        Core::LinAlg::Matrix<3, 3> &curr_CM);
 
     /*!
      * @brief Evaluate the additional cmat stiffness tensor using a perturbation-based approach, if
