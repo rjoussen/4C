@@ -14,6 +14,7 @@
 #include "4C_io_input_spec_builders.hpp"
 #include "4C_mat_electrode.hpp"
 
+#include <cmath>
 #include <filesystem>
 #include <string>
 
@@ -2698,32 +2699,75 @@ std::unordered_map<Core::Materials::MaterialType, Core::IO::InputSpec> Global::v
             parameter<int>(
                 "FIBER_READER_ID", {.description = "MAT ID of the used fiber direction reader for "
                                                    "transversely isotropic behavior"}),
-            parameter<double>("YIELD_COND_A",
-                {.description = "transversely isotropic version of the Hill(1948) yield condition: "
-                                "parameter A, following the notation in Dafalias 1989, "
-                                "International Journal of Plasticity, Vol. 5"}),
-            parameter<double>("YIELD_COND_B",
-                {.description = "transversely isotropic version of the Hill(1948) yield condition: "
-                                "parameter B, following the notation in Dafalias 1989, "
-                                "International Journal of Plasticity, Vol. 5"}),
-            parameter<double>("YIELD_COND_F",
-                {.description = "transversely isotropic version of the Hill(1948) yield condition: "
-                                "parameter F, following the notation in Dafalias 1989, "
-                                "International Journal of Plasticity, Vol. 5"}),
+            parameter<double>(
+                "YIELD_COND_A", {.description = "transversely isotropic version of the Hill(1948) "
+                                                "yield condition: parameter A, "
+                                                "following "
+                                                "the notation in Dafalias 1989, International "
+                                                "Journal of Plasticity, Vol. 5"}),
+            parameter<double>(
+                "YIELD_COND_B", {.description = "transversely isotropic version of the Hill(1948) "
+                                                "yield condition: parameter B, "
+                                                "following "
+                                                "the notation in Dafalias 1989, International "
+                                                "Journal of Plasticity, Vol. 5"}),
+            parameter<double>(
+                "YIELD_COND_F", {.description = "transversely isotropic version of the Hill(1948) "
+                                                "yield condition: parameter F, "
+                                                "following "
+                                                "the notation in Dafalias 1989, International "
+                                                "Journal of Plasticity, Vol. 5"}),
             parameter<std::string>("ANISOTROPY",
-                {.description = "Anisotropy type: transversely isotropic (transvisotrop; "
-                                "transverseisotropic; transverselyisotropic) | isotropic (isotrop; "
-                                "isotropic; Default)"}),
-            parameter<bool>("LOG_SUBSTEP",
-                {.description = "boolean: time integration of internal variables using logarithmic "
-                                "substepping (True) or standard substepping (False)?"}),
+                {.description =
+                        "Anisotropy type: transversely isotropic (transvisotrop; "
+                        "transverseisotropic; "
+                        "transverselyisotropic) | isotropic (isotrop; isotropic; Default)"}),
+            parameter<std::string>("TIME_INTEGRATION_HIST_VARS",
+                {.description =
+                        "time integration of internal variables: standard | log (logarithmic "
+                        "transformation of the "
+                        "evolution equation for the plastic deformation gradient)",
+                    .default_value = "log"}),
+            parameter<bool>("USE_PRED_ADAPT",
+                {.description = "boolean: use predictor adaptation before and in the "
+                                "Local Newton Loop? (true: yes, false: "
+                                "no)",
+                    .default_value = true}),
+            parameter<bool>("USE_LINE_SEARCH",
+                {.description = "boolean: use line search in the Local Newton Loop to "
+                                "avoid negative plastic strains? "
+                                "(true: yes, false: no)",
+                    .default_value = true}),
+            parameter<bool>("USE_SUBSTEPPING",
+                {.description =
+                        "boolean: use substepping in the Local Newton Loop? (true: yes, false: no)",
+                    .default_value = false}),
             parameter<int>("MAX_HALVE_NUM_SUBSTEP",
-                {.description = "maximum number of times the global time step can be halved in the "
-                                "substepping procedure"}),
+                {.description = "maximum number of times the global time step can "
+                                "be halved in the substepping procedure",
+                    .default_value = 10}),
+            parameter<double>("MAX_PLASTIC_STRAIN_INCR",
+                {.description = "maximum evaluable plastic strain increment, "
+                                "used for checking possible overflow errors",
+                    .default_value = std::exp(30.0)}),
+            parameter<double>("MAX_PLASTIC_STRAIN_DERIV_INCR",
+                {.description =
+                        "maximum evaluable increment of the plastic strain derivatives, i.e. $ "
+                        "\\Delta t "
+                        "\\frac{\\partial \\dot{\\varepsilon}^{\\text{p}}}{\\partial s}, ~ s \\in "
+                        "\\left\\{ "
+                        "\\varepsilon^{\\text{p}}, "
+                        "\\overline{\\sigma}  \\right\\}$ , used for checking possible overflow "
+                        "errors",
+                    .default_value = std::exp(30.0)}),
         },
-        {.description = "Versatile transversely isotropic (or isotropic) viscoplasticity model for "
-                        "finite deformations with isotropic hardening, using user-defined "
-                        "viscoplasticity laws (flow rule + hardening model)"});
+        {
+            .description = "        Versatile transversely isotropic (or isotropic) "
+                           "viscoplasticity model for finite "
+                           "deformations with isotropic hardening, using user-defined "
+                           "viscoplasticity laws (flow rule "
+                           "+ hardening model)",
+        });
   }
 
   /*----------------------------------------------------------------------*/

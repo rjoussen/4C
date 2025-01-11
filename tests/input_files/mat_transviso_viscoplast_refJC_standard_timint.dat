@@ -1,5 +1,5 @@
 -------------------------------------------------------------TITLE
-Simple test case based on 1hex8 element with isotropic elastic-viscoplastic
+Simple test case based on 1hex8 element with transversely-isotropic elastic-viscoplastic
 behavior in a finite strain setting. The following conditions are assumed:
 - element is stretched at a constant strain rate
 - element can freely contract in lateral dimensions
@@ -7,13 +7,13 @@ behavior in a finite strain setting. The following conditions are assumed:
 Reformulated Johnson-Cook law, as shown in:
    Mareau: A thermodynamically consistent formulation of the Johnson-Cook
            model, Mechanics of Materials 143, 2020
-- time integration of internal variables using logarithmic substepping, as shown in:
+- time integration of internal variables using standard substepping, as shown in:
    Ana: Continuum Modeling and Calibration of Viscoplasticity in the Context
 	of the Lithium Anode in Solid-State Batteries
 	(Master's Thesis, Institute for Computational Mechanics, TU Munich, 2024)
 ------------------------------------------------------PROBLEM SIZE
 DIM           3
--------------------------------------------------------PROBLEM TYPE
+------------------------------------------------------PROBLEM TYPE
 PROBLEMTYPE                      Structure
 ----------------------------------------------------------------IO
 STRUCT_STRESS                   cauchy
@@ -42,7 +42,7 @@ SOLVER                          UMFPACK
 ---------------------------------------------------------MATERIALS
 MAT 1 MAT_MultiplicativeSplitDefgradElastHyper NUMMATEL 1 MATIDSEL 2 NUMFACINEL 1 INELDEFGRADFACIDS 3 DENS 7830.0
 MAT 2 ELAST_CoupNeoHooke YOUNG 200.0e3 NUE 0.29
-MAT 3 MAT_InelasticDefgradTransvIsotropElastViscoplast VISCOPLAST_LAW_ID 4 FIBER_READER_ID 5 YIELD_COND_A 0.0 YIELD_COND_B 0.0 YIELD_COND_F 0.0 ANISOTROPY isotrop LOG_SUBSTEP True MAX_HALVE_NUM_SUBSTEP 10
+MAT 3 MAT_InelasticDefgradTransvIsotropElastViscoplast VISCOPLAST_LAW_ID 4 FIBER_READER_ID 5 YIELD_COND_A 1.0 YIELD_COND_B 2.0 YIELD_COND_F 2.5 ANISOTROPY transvisotrop TIME_INTEGRATION_HIST_VARS standard USE_PRED_ADAPT True USE_LINE_SEARCH True USE_SUBSTEPPING False MAX_HALVE_NUM_SUBSTEP 1
 MAT 4 MAT_ViscoplasticLawReformulatedJohnsonCook STRAIN_RATE_PREFAC 1.0e0 STRAIN_RATE_EXP_FAC 0.014 INIT_YIELD_STRENGTH 792.0e-0 ISOTROP_HARDEN_PREFAC 510.0e-0 ISOTROP_HARDEN_EXP 0.26
 MAT 5 ELAST_CoupTransverselyIsotropic ALPHA 1.0 BETA 1.0 GAMMA 1.0 ANGLE 0 STR_TENS_ID 100
 MAT 100 ELAST_StructuralTensor STRATEGY Standard
@@ -50,14 +50,14 @@ MAT 100 ELAST_StructuralTensor STRATEGY Standard
 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 2 TIMES 0.0 1.60e16 DESCRIPTION (exp(1.0e2*t)-1.0)
 ------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 4 QUANTITY dispy VALUE -3.96619353942104843e-03 TOLERANCE 4.0e-11
-STRUCTURE DIS structure NODE 5 QUANTITY dispx VALUE -3.96619353942213090e-03 TOLERANCE 4.0e-11
-STRUCTURE DIS structure NODE 8 QUANTITY dispx VALUE -3.96619353942162696e-03 TOLERANCE 4.0e-11
-STRUCTURE DIS structure NODE 8 QUANTITY dispy VALUE -3.96619353942309367e-03 TOLERANCE 4.0e-11
+STRUCTURE DIS structure NODE 4 QUANTITY dispy VALUE -4.27030146003678102e-03 TOLERANCE 4.3e-11
+STRUCTURE DIS structure NODE 5 QUANTITY dispx VALUE -4.27030146003751221e-03 TOLERANCE 4.3e-11
+STRUCTURE DIS structure NODE 8 QUANTITY dispx VALUE -4.27030146003706899e-03 TOLERANCE 4.3e-11
+STRUCTURE DIS structure NODE 8 QUANTITY dispy VALUE -4.27030146003779497e-03 TOLERANCE 4.3e-11
 STRUCTURE DIS structure NODE 8 QUANTITY dispz VALUE  1.00501670841679491e-02 TOLERANCE 1.0e-10
-STRUCTURE DIS structure NODE 6 QUANTITY dispx VALUE -3.96619353942174319e-03 TOLERANCE 4.0e-11
-STRUCTURE DIS structure NODE 4 QUANTITY stress_zz VALUE  9.78458600965294636e+02 TOLERANCE 9.8e-04
-STRUCTURE DIS structure NODE 8 QUANTITY stress_zz VALUE  9.78458600965331243e+02 TOLERANCE 9.8e-04
+STRUCTURE DIS structure NODE 6 QUANTITY dispx VALUE -4.27030146003716440e-03 TOLERANCE 4.3e-11
+STRUCTURE DIS structure NODE 4 QUANTITY stress_zz VALUE  6.86928060578976101e+02 TOLERANCE 6.9e-04
+STRUCTURE DIS structure NODE 8 QUANTITY stress_zz VALUE  6.86928060579862404e+02 TOLERANCE 6.9e-04
 ------------------------------------DESIGN POINT DIRICH CONDITIONS
 // bottom_vertex_full
 E 1 NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT none none none

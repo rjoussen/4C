@@ -13,6 +13,7 @@
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_linalg_utils_tensor_interpolation.hpp"
 #include "4C_mat_elast_couptransverselyisotropic.hpp"
+#include "4C_mat_inelastic_defgrad_factors_service.hpp"
 #include "4C_mat_multiplicative_split_defgrad_elasthyper.hpp"
 #include "4C_mat_vplast_law.hpp"
 #include "4C_material_parameter_base.hpp"
@@ -21,6 +22,7 @@
 
 #include <Teuchos_ParameterList.hpp>
 
+#include <cmath>
 #include <memory>
 #include <vector>
 
@@ -310,14 +312,30 @@ namespace Mat
       [[nodiscard]] double yield_cond_f() const { return yield_cond_f_; };
       //! get boolean: transversely isotropic material? (true: yes, false: isotropic)
       [[nodiscard]] bool bool_transv_isotropy() const { return bool_transv_isotropy_; };
-      //! get boolean: logarithmic substepping? (true: yes, false: standard substepping)
-      [[nodiscard]] bool bool_log_substepping() const { return bool_log_substepping_; };
+      //! get boolean: use predictor adaptation before and in the Local
+      //! Newton Loop? (true: yes, false: no)
+      [[nodiscard]] bool bool_pred_adapt() const { return bool_pred_adapt_; };
+      //! get boolean: use line search to avoid negative plastic strains
+      //! in the Local Newton Loop? (true: yes, false: no)
+      [[nodiscard]] bool bool_line_search() const { return bool_line_search_; };
+      //! get boolean: use substepping in the ? (true: yes, false: no)
+      [[nodiscard]] bool bool_substep() const { return bool_substep_; };
       //! get maximum number of times a time step can be halved into smaller and smaller substeps
       [[nodiscard]] unsigned int max_halve_number() const
       {
         return static_cast<unsigned int>(max_halve_number_);
-      };
-
+      }
+      //! get the type of time integration for the evolution equations
+      //! of history variables
+      [[nodiscard]] Mat::ViscoplastTimIntType timint_type() const { return timint_type_; };
+      //! get maximum, numerically evaluable plastic strain increment
+      [[nodiscard]] double max_plastic_strain_incr() const { return max_plastic_strain_incr_; };
+      //! get maximum, numerically evaluable value for the increment of
+      //! the plastic strain derivatives (dt * derivative)
+      [[nodiscard]] double max_plastic_strain_deriv_incr() const
+      {
+        return max_plastic_strain_deriv_incr_;
+      }
 
       //! read anisotropy type (true: transversely-isotropic, false: isotropic)
       bool read_anisotropy_type(std::string anisotropy_type)
@@ -363,9 +381,26 @@ namespace Mat
       //! boolean: transversely isotropic? (true: yes, false: isotropic)
       const bool bool_transv_isotropy_;
 
-      //! boolean: computation method --> logarithmic substepping? (true: yes, false: standard
-      //! substepping)
-      const bool bool_log_substepping_;
+      //! computation method for the time integration of the
+      //! history variables
+      const Mat::ViscoplastTimIntType timint_type_;
+
+      //! maximum, numerically evaluable plastic strain increment
+      const double max_plastic_strain_incr_;
+
+      //! maximum, numerically evaluable increment of
+      //! plastic strain derivatives (time_step * derivative)
+      const double max_plastic_strain_deriv_incr_;
+
+      //! boolean: use predictor adaptation? (true: yes, false: no)
+      const bool bool_pred_adapt_;
+
+      //! boolean: use line search to avoid negative plastic strains in
+      //! the Local Newton Loop? (true: yes, false: no)
+      const bool bool_line_search_;
+
+      //! boolean: use substepping? (true: yes, false: no)
+      const bool bool_substep_;
 
       //! maximum number of times the given time step can be halved before reaching the minimum
       //! allowed substep length
@@ -1371,10 +1406,14 @@ namespace Mat
      * @param[in] plastic_strain plastic strain  \f$ \varepsilon_{\text{p}} \f$
      * @param[out] err_status error status
      * @param[in] dt time step (or substep) length used for time integration
+     * @param[in] eval_type evaluation type: full evaluation or only
+     * partial evaluation, e.g. stop once the plastic strain rate has
+     * been evaluated
      */
     StateQuantities evaluate_state_quantities(const Core::LinAlg::Matrix<3, 3>& CM,
         const Core::LinAlg::Matrix<3, 3>& iFinM, const double plastic_strain,
-        Mat::ViscoplastErrorType& err_status, const double dt);
+        Mat::ViscoplastErrorType& err_status, const double dt,
+        const Mat::ViscoplastStateQuantityEvalType& eval_type);
 
     /*! @brief Evaluate the current state variable derivatives with respect to the right
      * Cauchy-Green deformation tensor, the inverse plastic deformation gradient and the equivalent
@@ -1388,12 +1427,16 @@ namespace Mat
      * @param[in] dt time step length  \f$ \Delta t
      * \f$ (used for the integration)
      * @param[in] eval_state boolean: do we want to also evaluate the current state first (true)
-     *                       or is this already available from the current state variables (false)
+     *                       or is this already available from the
+     *                       current state variables (false)
+     * @param[in] eval_type evaluation type: full evaluation or only
+     * partial evaluation, e.g. stop once the derivatives of the plastic strain rate have
+     * been evaluated
      */
     StateQuantityDerivatives evaluate_state_quantity_derivatives(
         const Core::LinAlg::Matrix<3, 3>& CM, const Core::LinAlg::Matrix<3, 3>& iFinM,
         const double plastic_strain, Mat::ViscoplastErrorType& err_status, const double dt,
-        const bool eval_state = false);
+        const Mat::ViscoplastStateQuantityDerivEvalType& eval_type, const bool eval_state = false);
 
     //! return the fiber direction of transverse isotropy for the considered element
     Core::LinAlg::Matrix<3, 1> get_fiber_direction() { return m_; }
@@ -1477,6 +1520,10 @@ namespace Mat
       //! (equivalent) plastic strain at the last time step (for all Gauss points)
       std::vector<double> last_plastic_strain_;
 
+      //! last (reduced) deformation gradient: used to in the predictor
+      //! adaptation routine
+      std::vector<Core::LinAlg::Matrix<3, 3>> last_defgrad_;
+
       //! temporary variable, for which we store the right Cauchy-Green deformation tensor at each
       //! evaluation (used in order to update last_rightCG_ once outer NR converges) (for all Gauss
       //! points)
@@ -1516,6 +1563,48 @@ namespace Mat
     //! tensor interpolation: 1D reference locations (we always interpolate between 0.0 and 1.0
     //! based on the reference matrices of the current time step)
     const std::vector<double> ref_locs_{0.0, 1.0};
+
+    //! class containing utilities for predictor interpolation
+    class PredInterpFactors
+    {
+     public:
+      //! interpolation factor set by the user
+      const double xi_user_;
+
+      //! current interpolation factor (\f$ \xi \f$)
+      double xi_;
+
+      //! lower interpolation factor (\f$ \xi_{\text{l}} \f$):
+      //! effectively, this is the lower factor for which the predictor
+      //! leads to a numerically evaluable state
+      double xi_l_;
+
+      //! upper interpolation factor (\f$ \xi_{\text{u}} \f$):
+      //! effectively, this is the upper factor for which the predictor
+      //! leads to plastic strain rate == 0.0
+      double xi_u_;
+
+      //! maximum allowed number of predictor adaptations
+      const unsigned int max_num_of_pred_adapt_;
+
+      //! constructor
+      PredInterpFactors(const double xi_user, const unsigned int max_num_of_pred_adapt)
+          : xi_user_(xi_user),
+            xi_(xi_user),
+            xi_l_(0.0),
+            xi_u_(1.0),
+            max_num_of_pred_adapt_(max_num_of_pred_adapt){};
+
+      //! method to reset the non-const variables of the class
+      void reset_non_const_vars()
+      {
+        xi_ = xi_user_;
+        xi_l_ = 0.0;
+        xi_u_ = 1.0;
+      }
+    };
+    //! instance of PredInterpFactors
+    PredInterpFactors pred_interp_factors_;
 
     //! struct with substepping parameters
     struct SubstepParams
@@ -1609,6 +1698,23 @@ namespace Mat
         const Core::LinAlg::Matrix<10, 1>& x, const Core::LinAlg::Matrix<3, 3>& last_iFinM,
         const double last_plastic_strain, const double dt, Mat::ViscoplastErrorType& err_status);
 
+    /*!
+     * @brief Adapt the predictor of the Local Newton Loop to yield
+     * a numerically evaluable state
+     *
+     * @param[in] FM deformation gradient
+     * @param[in] original_pred original predictor consisting of the
+     * Voigt representation of the inverse plastic deformation gradient
+     * \f$ \boldsymbol{F}^{\text{p}^{-1}} \f$ (components 0 to 8), and
+     * the plastic strain \f$ \varepsilon^{\text{p}} \f$
+     * @param[in] check_original_pred check whether the original
+     * predictor is numerically evaluable? (true: yes, false: no)
+     * @return adapted predictor with the same structure as the original
+     * predictor
+     */
+    Core::LinAlg::Matrix<10, 1> adapt_predictor_local_newton_loop(
+        const Core::LinAlg::Matrix<10, 1>& original_pred, const Core::LinAlg::Matrix<3, 3>& FM,
+        const bool check_original_pred = true);
 
     /*!
      * @brief Local Newton Loop in order to calculate the current inverse plastic deformation
@@ -1624,6 +1730,59 @@ namespace Mat
     Core::LinAlg::Matrix<10, 1> local_newton_loop(const Core::LinAlg::Matrix<3, 3>& defgrad,
         const Core::LinAlg::Matrix<10, 1>& x, Mat::ViscoplastErrorType& err_status);
 
+    /*!
+     * @brief Compute the plastic strain \f$
+     * \varepsilon^{\text{p}}_{n+1} \f$, given the equivalent stress \f$
+     * \overline{\sigma} \f$.
+     *
+     * The computation is performed using the discretized evolution
+     * equation (Backward Euler):
+     * \f$ \varepsilon^{\text{p}}_{n+1} =  \varepsilon^{\text{p}}_{n} +
+     * \Delta t v^{\text{p}}(\overline{sigma}_{n+1},
+     * \varepsilon^{\text{p}}_{n+1}) \f$, where \f$
+     * v^{\text{p}}(\overline{\sigma}, \varepsilon^{\text{p}})  \f$
+     * is characteristic to the employed flow rule.
+     *
+     *
+     * @param[in] equiv_stress equivalent stress \f$ \overline{\sigma}_{n+1} \f$
+     * @param[in] last_plastic_strain plastic strain at the last time instant \f$
+     * \varepsilon^{\text{p}}_{n} \f$
+     * @param[in] dt time step \f$ \Delta t \f$
+     * @param[out] err_status error status
+     * @return plastic strain \f$ \varepsilon^{\text{p}}_{n+1} \f$
+     */
+    double integrate_plastic_strain(const double equiv_stress, const double last_plastic_strain,
+        const double dt, Mat::ViscoplastErrorType& err_status);
+
+    /*!
+     * @brief Get the line search parameter for the current iteration of
+     * the Local Newton Loop
+     *
+     * @note During the iterations of the Local Newton Loop, the plastic
+     * strain can be updated as to become negative, which is both
+     * nonphysical and problematic in the computation of certain
+     * viscoplasticity flow rules and/or hardening models. To address
+     * this, we compute a line search parameter $\alpha_i$
+     * to update the solution f$ \boldsymbol{s}_{i+1} =
+     * \boldsymbol{s}_{i} + \alpha_i \Delta \boldsymbol{s}_{i+1} \f$
+     * such that the negative plastic strain is limited to positive
+     * values. For the inexact line search, we use the backtracking
+     * algorithm as presented in:
+     *
+     * -# Andrei 2022, Modern Numerical Nonlinear Optimization, Vol.
+     * 195, Springer Optimization and its Applications, DOI: 10.1007/978-3-031-08720-2
+     * @param[in] curr_sol solution of the current iteration of the
+     * Local Newton Loop \f$ \boldsymbol{s}_i \f$
+     * @param[in] curr_res residual of the current interation of the
+     * Local Newton Loop \f$ \boldsymbol{r}_{\boldsymbol{s}_i} \f$
+     * @param[in] incr increment \f$ \Delta \boldsymbol{s}_{i+1} \f$ for
+     * the update of the solution vector
+     * @return line search parameter \f$ \alpha \f$
+     *
+     */
+    double get_line_search_parameter(const Core::LinAlg::Matrix<10, 1>& curr_sol,
+        const Core::LinAlg::Matrix<10, 1>& curr_res, const Core::LinAlg::Matrix<10, 1>& incr,
+        Mat::ViscoplastErrorType& err_status);
 
     /*!
      * @brief Setup new substep in the Local Newton Loop in case of an encountered evaluation error

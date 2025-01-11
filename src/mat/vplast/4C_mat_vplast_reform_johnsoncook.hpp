@@ -105,12 +105,12 @@ namespace Mat
           const double equiv_stress, const double equiv_plastic_strain) override;
 
       double evaluate_plastic_strain_rate(const double equiv_stress,
-          const double equiv_plastic_strain, const double dt, const bool log_substep,
+          const double equiv_plastic_strain, const double dt, const double max_plastic_strain_incr,
           Mat::ViscoplastErrorType& err_status, const bool update_hist_var) override;
 
       Core::LinAlg::Matrix<2, 1> evaluate_derivatives_of_plastic_strain_rate(
           const double equiv_stress, const double equiv_plastic_strain, const double dt,
-          const bool log_substep, Mat::ViscoplastErrorType& err_status,
+          const double max_plastic_strain_deriv_incr, Mat::ViscoplastErrorType& err_status,
           const bool update_hist_var) override;
 
       void setup(const int numgp, const Core::IO::InputParameterContainer& container) override {};

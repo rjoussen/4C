@@ -274,7 +274,7 @@ Core::LinAlg::SecondOrderTensorInterpolator<loc_dim>::get_interpolated_matrix(
 
   // interpolation setting: exponential decay factor of the weighting function in Satheesh,
   // 2024, 10.1002/nme.7373, Eq. (21)
-  double c = 10.0;
+  double c = 20.0;
 
   // index of the base matrix, which is the matrix located nearest to the
   // interpolation location
@@ -566,6 +566,77 @@ void Core::LinAlg::matrix_3x3_polar_decomposition(const Core::LinAlg::Matrix<3, 
                                 spectral_pairs[0].second(0) * spectral_pairs[1].second(2);
   spectral_pairs[2].second(2) = spectral_pairs[0].second(0) * spectral_pairs[1].second(1) -
                                 spectral_pairs[0].second(1) * spectral_pairs[1].second(0);
+}
+
+
+Core::LinAlg::Matrix<3, 3> Core::LinAlg::matrix_3x3_material_stretch(
+    const Core::LinAlg::Matrix<3, 3>& inp_matrix)
+{
+  // auxiliaries
+  Core::LinAlg::Matrix<3, 3> temp3x3(true);
+
+  // compute squared stretch tensors U
+  Core::LinAlg::Matrix<3, 3> U_squared(true);
+  U_squared.multiply_tn(1.0, inp_matrix, inp_matrix, 0.0);
+
+  // decompose squared stretch tensors U
+  Core::LinAlg::Matrix<3, 3> eigenvectors_U(true);
+  Core::LinAlg::Matrix<3, 3> eigenvalues_U(true);
+  temp3x3.clear();
+  Core::LinAlg::syev(U_squared, temp3x3, eigenvectors_U);
+  eigenvalues_U(0, 0) = std::sqrt(temp3x3(0, 0));
+  eigenvalues_U(1, 1) = std::sqrt(temp3x3(1, 1));
+  eigenvalues_U(2, 2) = std::sqrt(temp3x3(2, 2));
+  // scale eigenvectors matrix to yield determinant 1
+  eigenvectors_U.scale(Core::FADUtils::signum(eigenvectors_U.determinant()) * 1.0 /
+                       std::pow(std::abs(eigenvectors_U.determinant()), 1.0 / 3.0));
+
+  // compute resulting stretch and rotation tensors, along with the eigenvalue matrix
+  temp3x3.multiply_nn(1.0, eigenvectors_U, eigenvalues_U, 0.0);
+  Core::LinAlg::Matrix<3, 3> U_matrix{true};
+  U_matrix.multiply_nt(1.0, temp3x3, eigenvectors_U, 0.0);
+
+  return U_matrix;
+}
+
+Core::LinAlg::Matrix<3, 3> Core::LinAlg::matrix_3x3_spatial_stretch(
+    const Core::LinAlg::Matrix<3, 3>& inp_matrix)
+{
+  // auxiliaries
+  Core::LinAlg::Matrix<3, 3> temp3x3(true);
+  Core::LinAlg::Matrix<3, 1> temp3x1(true);
+
+  // compute squared stretch tensors U
+  Core::LinAlg::Matrix<3, 3> U_squared(true);
+  U_squared.multiply_tn(1.0, inp_matrix, inp_matrix, 0.0);
+
+  // decompose squared stretch tensors U
+  Core::LinAlg::Matrix<3, 3> eigenvectors_U(true);
+  Core::LinAlg::Matrix<3, 3> eigenvalues_U(true);
+  temp3x3.clear();
+  Core::LinAlg::syev(U_squared, temp3x3, eigenvectors_U);
+  eigenvalues_U(0, 0) = std::sqrt(temp3x3(0, 0));
+  eigenvalues_U(1, 1) = std::sqrt(temp3x3(1, 1));
+  eigenvalues_U(2, 2) = std::sqrt(temp3x3(2, 2));
+  // scale eigenvectors matrix to yield determinant 1
+  eigenvectors_U.scale(Core::FADUtils::signum(eigenvectors_U.determinant()) * 1.0 /
+                       std::pow(std::abs(eigenvectors_U.determinant()), 1.0 / 3.0));
+
+  // compute resulting stretch and rotation tensors, along with the eigenvalue matrix
+  temp3x3.multiply_nn(1.0, eigenvectors_U, eigenvalues_U, 0.0);
+  Core::LinAlg::Matrix<3, 3> U_matrix{true};
+  U_matrix.multiply_nt(1.0, temp3x3, eigenvectors_U, 0.0);
+  temp3x3.invert(U_matrix);
+  Core::LinAlg::Matrix<3, 3> R_matrix{true};
+  R_matrix.multiply_nn(1.0, inp_matrix, temp3x3, 0.0);
+
+  // compute \f$ \boldsymbol{v} = \boldsymbol{R} \boldsymbol{U}
+  // \boldsymbol{R}^T \f$
+  Core::LinAlg::Matrix<3, 3> v_matrix{true};
+  temp3x3.multiply_nn(1.0, R_matrix, U_matrix, 0.0);
+  v_matrix.multiply_nt(1.0, temp3x3, R_matrix, 0.0);
+
+  return v_matrix;
 }
 
 

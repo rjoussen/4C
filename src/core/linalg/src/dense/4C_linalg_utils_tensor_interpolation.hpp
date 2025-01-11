@@ -152,6 +152,30 @@ namespace Core::LinAlg
       std::array<std::pair<double, Core::LinAlg::Matrix<3, 1>>, 3>& spectral_pairs);
 
   /*!
+   * @brief Compute the symmetric, positive-definite material stretch $\boldsymbol{U}$ from the
+   * invertible matrix \f$ \boldsymbol{T} = \boldsymbol{R}
+   * \boldsymbol{U} \f$
+   *
+   * @param[in]  inp_matrix  input matrix \boldsymbol{T} to be decomposed
+   * @return  material stretch \boldsymbol{U}
+   */
+  Core::LinAlg::Matrix<3, 3> matrix_3x3_material_stretch(
+      const Core::LinAlg::Matrix<3, 3>& inp_matrix);
+
+  /*!
+   * @brief Compute the symmetric, positive-definite spatial stretch $\boldsymbol{v}$ from the
+   * invertible matrix \f$ \boldsymbol{T} = \boldsymbol{v}
+   * \boldsymbol{R} \f$
+   *
+   * @param[in]  inp_matrix  input matrix \boldsymbol{T} to be decomposed
+   * @return  spatial stretch \boldsymbol{v}
+   */
+  Core::LinAlg::Matrix<3, 3> matrix_3x3_spatial_stretch(
+      const Core::LinAlg::Matrix<3, 3>& inp_matrix);
+
+
+
+  /*!
    * @brief Calculate the rotation vector from a given rotation matrix, using Spurrier's algorithm
    *
    *
