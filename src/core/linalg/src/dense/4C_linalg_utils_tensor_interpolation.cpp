@@ -274,7 +274,7 @@ Core::LinAlg::SecondOrderTensorInterpolator<loc_dim>::get_interpolated_matrix(
 
   // interpolation setting: exponential decay factor of the weighting function in Satheesh,
   // 2024, 10.1002/nme.7373, Eq. (21)
-  double c = 20.0;
+  double c = 10.0;
 
   // index of the base matrix, which is the matrix located nearest to the
   // interpolation location

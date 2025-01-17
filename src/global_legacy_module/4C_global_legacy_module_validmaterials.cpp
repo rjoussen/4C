@@ -2760,6 +2760,17 @@ std::unordered_map<Core::Materials::MaterialType, Core::IO::InputSpec> Global::v
                         "\\overline{\\sigma}  \\right\\}$ , used for checking possible overflow "
                         "errors",
                     .default_value = std::exp(30.0)}),
+            parameter<double>("INTERP_FACT_PRED_ADAPT",
+                {.description =
+                        "interpolation factor $ \\xi_{\\text{user}}$ utilized in the predictor "
+                        "adaptation (default: 0.5)",
+                    .default_value = 0.5}),
+            parameter<int>("MAX_NUM_PRED_ADAPT",
+                {.description =
+                        "maximum number of predictor adaptations and repredictorizations allowed "
+                        "in a single Local Newton Loop"
+                        "until error is thrown (default: 10)",
+                    .default_value = 10}),
             parameter<bool>("ANALYZE_TIMINT",
                 {.description = "boolean: analyze the time integration scheme in regards "
                                 "to the implemented features "

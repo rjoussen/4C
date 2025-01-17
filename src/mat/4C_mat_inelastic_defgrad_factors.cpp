@@ -8,6 +8,7 @@
 #include "4C_mat_inelastic_defgrad_factors.hpp"
 
 #include "4C_global_data.hpp"
+#include "4C_io_pstream.hpp"
 #include "4C_legacy_enum_definitions_materials.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_linalg_fixedsizematrix_solver.hpp"
@@ -33,6 +34,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <iomanip>
+#include <ios>
 #include <iostream>
 #include <map>
 #include <memory>
@@ -658,6 +660,8 @@ Mat::PAR::InelasticDefgradTransvIsotropElastViscoplast::
       bool_line_search_(matdata.parameters.get<bool>("USE_LINE_SEARCH")),
       bool_substep_(matdata.parameters.get<bool>("USE_SUBSTEPPING")),
       bool_analyze_timint_(matdata.parameters.get<bool>("ANALYZE_TIMINT")),
+      interp_factor_pred_adapt_(matdata.parameters.get<double>("INTERP_FACT_PRED_ADAPT")),
+      max_num_pred_adapt_(matdata.parameters.get<int>("MAX_NUM_PRED_ADAPT")),
       max_halve_number_(matdata.parameters.get<int>("MAX_HALVE_NUM_SUBSTEP"))
 {
   if (max_halve_number_ < 0) FOUR_C_THROW("Parameter MAX_HALVE_NUM_SUBSTEP must be >= 0!");
@@ -1662,7 +1666,8 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::InelasticDefgradTransvIsotrop
       potsumel_transviso_(std::move(pot_sum_el_transv_iso)),
       viscoplastic_law_(std::move(viscoplastic_law)),
       fiber_reader_(std::move(fiber_reader)),
-      pred_interp_factors_(0.1, 10)
+      pred_interp_factors_(
+          parameter()->interp_factor_pred_adapt(), parameter()->max_num_pred_adapt())
 {
   // set time step size to 0.0 (this is set to the correct and current value in the preevaluate
   // method)
@@ -1700,6 +1705,9 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::InelasticDefgradTransvIsotrop
 
   // analysis: initialize csv writer
   if (parameter()->bool_analyze_timint()) timint_analysis_utils.init_csv_writer();
+
+  // DEBUG
+  std::cout << std::fixed << std::setprecision(5);
 }
 
 
@@ -2549,6 +2557,7 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_inverse_inelast
     if (parameter()->bool_pred_adapt())
     {
       x_adapted = adapt_predictor_local_newton_loop(x, FredM);
+      ++pred_interp_factors_.num_of_pred_adapt_;
     }
     Core::LinAlg::Matrix<10, 1> sol = local_newton_loop(FredM, x_adapted, err_status);
 
@@ -2936,6 +2945,7 @@ Core::LinAlg::Matrix<10, 1> Mat::InelasticDefgradTransvIsotropElastViscoplast::l
 {
   // auxiliaries
   Core::LinAlg::Matrix<10, 10> temp10x10(true);
+  Core::LinAlg::Matrix<10, 1> temp10x1(true);
 
   // calculate right Cauchy-Green deformation tensor
   Core::LinAlg::Matrix<3, 3> CM(true);
@@ -2987,7 +2997,11 @@ Core::LinAlg::Matrix<10, 1> Mat::InelasticDefgradTransvIsotropElastViscoplast::l
   // initialize error management action
   Mat::ViscoplastErrorActions err_action{Mat::ViscoplastErrorActions::Continue};
 
-  // substepping procedure
+  // DEBUG
+  std::cout << "-----Here comes the LNL with CM: " << std::endl;
+  CM.print(std::cout);
+
+  // substepping procedures
   while (substep_params.substep_counter <= substep_params.total_num_of_substeps)
   {
     // reset iteration counter
@@ -3012,6 +3026,12 @@ Core::LinAlg::Matrix<10, 1> Mat::InelasticDefgradTransvIsotropElastViscoplast::l
       // increment iteration counter
       ++substep_params.iter;
 
+      // DEBUG
+      std::cout << "iter: " << substep_params.iter << std::endl;
+      std::cout << "sol: " << std::endl;
+      sol.print(std::cout);
+
+
       // timint analysis: increment iterations
       if (parameter()->bool_analyze_timint()) ++timint_analysis_utils.eval_num_of_iters_;
 
@@ -3025,7 +3045,6 @@ Core::LinAlg::Matrix<10, 1> Mat::InelasticDefgradTransvIsotropElastViscoplast::l
       err_action = manage_evaluation_error(err_status, substep_params, sol, curr_CM);
       if (err_action == Mat::ViscoplastErrorActions::ReturnSolWithErrors) return sol;
       if (err_action == Mat::ViscoplastErrorActions::NextIter) continue;
-
 
       // 2-norm of the residual
       residualNorm2 = residual.norm2();
@@ -3104,10 +3123,15 @@ Core::LinAlg::Matrix<10, 1> Mat::InelasticDefgradTransvIsotropElastViscoplast::l
       // scale residual by -1.0, in order to use it for the solution of the loop equation
       residual.scale(-1.0);
 
+      // set temp to residual: this will be changed during the solution,
+      // and we want to keep the residual unchanged in order to provide
+      // it to the line search algorithm
+      temp10x1 = residual;
+
       // solve loop equation
       dx.clear();                                      // reset
       solver_10_10_1.set_matrix(jacMat);               // set A=jacMat
-      solver_10_10_1.set_vectors(dx, residual);        // set dx=increment, residual=RHS
+      solver_10_10_1.set_vectors(dx, temp10x1);        // set dx=increment, residual=RHS
       solver_10_10_1.factor_with_equilibration(true);  // "some easy type of preconditioning"
       int err2 = solver_10_10_1.factor();              // factoring
       int err = solver_10_10_1.solve();                // X = A^-1 B
@@ -3120,10 +3144,24 @@ Core::LinAlg::Matrix<10, 1> Mat::InelasticDefgradTransvIsotropElastViscoplast::l
         if (err_action == Mat::ViscoplastErrorActions::NextIter) continue;
       }
 
+      // DEBUG
+      std::cout << std::fixed << std::setprecision(2);
+      std::cout << "jacobian" << std::endl;
+      jacMat.print(std::cout);
+      std::cout << std::fixed << std::setprecision(5);
+      std::cout << "residual" << std::endl;
+      residual.print(std::cout);
+      std::cout << "residual_norm: " << residualNorm2 << std::endl;
+      std::cout << "dx" << std::endl;
+      dx.print(std::cout);
+
       // compute line search parameter
       if (parameter()->bool_line_search())
       {
-        alpha = get_line_search_parameter(sol, residual, dx, err_status);
+        // DEBUG
+        std::cout << "...using line search to get the step size" << std::endl;
+
+        alpha = get_line_search_parameter(sol, curr_CM, residual, dx, err_status);
 
         if (alpha != 1.0)
         {
@@ -3145,8 +3183,6 @@ Core::LinAlg::Matrix<10, 1> Mat::InelasticDefgradTransvIsotropElastViscoplast::l
           timint_analysis_utils.update_total();
           timint_analysis_utils.write_to_csv();
         }
-
-
 
         FOUR_C_THROW("Computation of line search parameter was not successful!");
       }
@@ -3396,14 +3432,35 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::adapt_predictor_local_newton_
   Core::LinAlg::Matrix<3, 3> iFin_adapt_pred{true};
   double plastic_strain_adapt_pred{0.0};
 
+  // DEBUG
+  std::cout << "-----enter predictor adaptation" << std::endl;
+  // DEBUG
+  std::cout << "ref_matrices: " << std::endl;
+  std::cout << "* at \\xi = 0 " << std::endl;
+  ref_matrices[0].print(std::cout);
+  std::cout << "* at \\xi = 1 " << std::endl;
+  ref_matrices[1].print(std::cout);
+
+
+
+  // specify minimum acceptable plastic strain increment
+  double min_plastic_strain_incr = 1.0e-10;
+
   // reset the error status to no errors and set the current equivalent
   // plastic strain rate to 0.0, and start the procedure of determining
   // the interpolation factor $\xi$
   err_status = Mat::ViscoplastErrorType::NoErrors;
   state_quantities_.curr_equiv_plastic_strain_rate_ = 0.0;
-  while (state_quantities_.curr_equiv_plastic_strain_rate_ == 0.0 ||
+  while (state_quantities_.curr_equiv_plastic_strain_rate_ * time_step_settings_.dt_ <=
+             min_plastic_strain_incr ||
          err_status != Mat::ViscoplastErrorType::NoErrors)
   {
+    // DEBUG
+    std::cout << pred_interp_factors_.xi_l_ << " <= (\\xi = " << pred_interp_factors_.xi_
+              << ") <= " << pred_interp_factors_.xi_u_ << std::endl;
+
+    err_status = Mat::ViscoplastErrorType::NoErrors;
+
     // interpolate predictor of the inverse plastic deformation gradient
     iFin_adapt_pred = tensor_interpolator_.get_interpolated_matrix(
         ref_matrices, ref_locs, pred_interp_factors_.xi_);
@@ -3411,38 +3468,70 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::adapt_predictor_local_newton_
     // evaluate the current state with the adapted predictor
     state_quantities_ = evaluate_state_quantities(CM, iFin_adapt_pred, original_pred(9), err_status,
         time_step_settings_.dt_, Mat::ViscoplastStateQuantityEvalType::PlasticStrainRateOnly);
+
+    // evaluate derivatives of the state quantities
     if (err_status == Mat::ViscoplastErrorType::NoErrors)
+    {
+      // DEBUG
+      std::cout << "Successfully evaluated state with interpolated Fp" << std::endl;
+
       state_quantity_derivatives_ = evaluate_state_quantity_derivatives(CM, iFin_adapt_pred,
           original_pred(9), err_status, time_step_settings_.dt_,
           Mat::ViscoplastStateQuantityDerivEvalType::PlasticStrainRateDerivsOnly);
+    }
 
-    // solve for the updated plastic strain
-    err_status = Mat::ViscoplastErrorType::NoErrors;
-    plastic_strain_adapt_pred = integrate_plastic_strain(state_quantities_.curr_equiv_stress_,
-        time_step_quantities_.last_plastic_strain_[gp_], time_step_settings_.dt_, err_status);
 
+    // solve for the updated plastic strain (integrate evolution
+    // equation with the adapted plastic deformation gradient)
     if (err_status == Mat::ViscoplastErrorType::NoErrors)
     {
-      // reevaluate the current state with the adapted predictor
+      // DEBUG
+      std::cout
+          << "Successfully evaluated the derivatives of the state quantities with interpolated Fp"
+          << std::endl;
+
+      plastic_strain_adapt_pred = integrate_plastic_strain(state_quantities_.curr_equiv_stress_,
+          time_step_quantities_.last_plastic_strain_[gp_], time_step_settings_.dt_, err_status);
+    }
+
+    // reevaluate the current state with the adapted predictor
+    if (err_status == Mat::ViscoplastErrorType::NoErrors)
+    {
+      // DEBUG
+      std::cout << "Successfully integrated plastic strain with interpolated Fp" << std::endl;
+
       state_quantities_ =
           evaluate_state_quantities(CM, iFin_adapt_pred, plastic_strain_adapt_pred, err_status,
               time_step_settings_.dt_, Mat::ViscoplastStateQuantityEvalType::PlasticStrainRateOnly);
-      if (err_status == Mat::ViscoplastErrorType::NoErrors)
-        state_quantity_derivatives_ = evaluate_state_quantity_derivatives(CM, iFin_adapt_pred,
-            plastic_strain_adapt_pred, err_status, time_step_settings_.dt_,
-            Mat::ViscoplastStateQuantityDerivEvalType::PlasticStrainRateDerivsOnly);
     }
+
+    // reevaluate the plastic strain rate derivatives
+    if (err_status == Mat::ViscoplastErrorType::NoErrors)
+    {
+      // DEBUG
+      std::cout << "Successfully re-evaluated state quantities with interpolated Fp and integrated "
+                   "plastic strain "
+                << std::endl;
+
+      state_quantity_derivatives_ = evaluate_state_quantity_derivatives(CM, iFin_adapt_pred,
+          plastic_strain_adapt_pred, err_status, time_step_settings_.dt_,
+          Mat::ViscoplastStateQuantityDerivEvalType::PlasticStrainRateDerivsOnly);
+    }
+
+
     // if there was an evaluation error: set \f$ \xi_{\text{curr}}
     // \leftarrow  \xi_{\text{curr}} \xi_{\text{user}}\f$
     if (err_status != Mat::ViscoplastErrorType::NoErrors)
     {
+      // DEBUG
+      std::cout << to_string(err_status) << std::endl;
+
       // adapt the lower bound of the xi parameter and recompute
       // interpolation factor
       pred_interp_factors_.xi_l_ = pred_interp_factors_.xi_;
       pred_interp_factors_.xi_ =
           pred_interp_factors_.xi_l_ +
           pred_interp_factors_.xi_user_ * (pred_interp_factors_.xi_u_ - pred_interp_factors_.xi_l_);
-      err_status = Mat::ViscoplastErrorType::NoErrors;
 
       continue;
     }
@@ -3451,7 +3540,8 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::adapt_predictor_local_newton_
     // "under" the yield surface): set \f$ \xi_{\text{curr}} \leftarrow
     // \xi_{\text{curr}} + \xi_{\text{user}} ( 1.0 - \xi_{\text{curr}})
     // \f$
-    if (state_quantities_.curr_equiv_plastic_strain_rate_ == 0.0)
+    if (state_quantities_.curr_equiv_plastic_strain_rate_ * time_step_settings_.dt_ <=
+        min_plastic_strain_incr)
     {
       // adapt the upper bound of the parameter xi and recompute the
       // interpolation factor
@@ -3470,40 +3560,12 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::adapt_predictor_local_newton_
 }
 
 double Mat::InelasticDefgradTransvIsotropElastViscoplast::get_line_search_parameter(
-    const Core::LinAlg::Matrix<10, 1>& curr_sol, const Core::LinAlg::Matrix<10, 1>& curr_res,
-    const Core::LinAlg::Matrix<10, 1>& incr, Mat::ViscoplastErrorType& err_status)
+    const Core::LinAlg::Matrix<10, 1>& curr_sol, const Core::LinAlg::Matrix<3, 3>& CM,
+    const Core::LinAlg::Matrix<10, 1>& curr_res, const Core::LinAlg::Matrix<10, 1>& incr,
+    Mat::ViscoplastErrorType& err_status)
 {
-  // declare output line search parameter
-  double alpha = 1.0;
-
-  // check whether the plastic strain becomes negative if the
-  // full Newton step is applied
-  if (curr_sol(9) + incr(9) >= 0.0)
-  {
-    err_status = Mat::ViscoplastErrorType::NoErrors;
-    return alpha;
-  }
-
-  // set upper bound of the parameter
-  double alpha_u = curr_sol(9) / std::abs(incr(9));
-  if (alpha_u == 0.0)
-  {
-    err_status = Mat::ViscoplastErrorType::FailedDetermLineSearchParam;
-    return -1.0;
-  }
-  alpha = alpha_u;
-
-  // declare updated solution (updated via the line search parameter)
-  Core::LinAlg::Matrix<10, 1> sol{true};
-  sol.update(1.0, curr_sol, alpha, incr, 0.0);
-
-  // declare residual to be computed with the updated line search parameter
-  Core::LinAlg::Matrix<10, 1> res{true};
-
-  // compute residual norm of the current iteration and declare the
-  // residual norm to be computed
-  double curr_res_norm = curr_res.norm2();
-  double res_norm{1.0e8};
+  // DEBUG
+  std::cout << std::scientific << std::setprecision(4);
 
   // set necessary decrease parameter \f$ \rho \in \left(0, \frac{1}{2}\right) \f$ of the
   // backtracking algorithm
@@ -3513,7 +3575,50 @@ double Mat::InelasticDefgradTransvIsotropElastViscoplast::get_line_search_parame
   const double alpha_dec_fac = 0.9;
   // set maximum times we want to decrease the line search parameter,
   // before rejecting it
-  const unsigned int max_dec_times = 10;
+  const unsigned int max_dec_times = 50;
+
+  // declare output line search parameter
+  double alpha = 1.0;
+
+  // declare updated solution (updated via the line search parameter)
+  Core::LinAlg::Matrix<10, 1> next_sol{true};
+  next_sol.update(1.0, curr_sol, alpha, incr, 0.0);
+
+  // set upper bound of the step size (maximum step size)
+  double alpha_u = 1.0;
+
+  // adapt the maximum step size to eventual negative plastic strains
+  if (next_sol(9) < 0.0) alpha_u = curr_sol(9) / std::abs(incr(9));
+
+  // DEBUG
+  std::cout << "line search: max. step size alpha_u: " << alpha_u << std::endl;
+
+
+  // set our current step size to the maximum step size
+  alpha = alpha_u;
+  // consistently update the next solution
+  next_sol.update(1.0, curr_sol, alpha, incr, 0.0);
+
+  // declare residual to be computed with the updated line search step
+  Core::LinAlg::Matrix<10, 1> next_res{true};
+
+  // compute residual norm of the current iteration and declare the
+  // residual norm of the updated solution to be computed
+  double curr_res_norm = curr_res.norm2();
+  // square the obtained residual in order to obtain the consistent
+  // minimization function \f$ f = \| r \|^2 \f$
+  double curr_f = curr_res_norm * curr_res_norm;
+  double next_res_norm{1.0e8};
+  double next_f{1.0e8};
+
+  // DEBUG
+  std::cout << "line search: curr_res_norm: " << curr_res_norm << std::endl;
+  std::cout << "line search: curr_f: " << curr_f << std::endl;
+
+  // compute squared increment, used afterwards to check the
+  // backtracking condition
+  double incr_squared = incr.norm2();
+  incr_squared *= incr_squared;
 
   // counter for the times we have decreased the line search parameter
   // in the backtracking algorithm
@@ -3526,19 +3631,37 @@ double Mat::InelasticDefgradTransvIsotropElastViscoplast::get_line_search_parame
     // increment number of parameter decrease steps
     ++dec_times;
 
+    // DEBUG
+    std::cout << "line search: loop: iter: " << dec_times << "/" << max_dec_times
+              << ": alpha = " << alpha << std::endl;
+
+    // reset error status
+    err_status = Mat::ViscoplastErrorType::NoErrors;
+
     // compute the residual associated with the upper bound
-    res = calculate_local_newton_loop_residual(time_step_quantities_.current_rightCG_[gp_], sol,
-        time_step_quantities_.last_plastic_defgrd_inverse_[gp_],
+    next_res = calculate_local_newton_loop_residual(time_step_quantities_.current_rightCG_[gp_],
+        next_sol, time_step_quantities_.last_plastic_defgrd_inverse_[gp_],
         time_step_quantities_.last_plastic_strain_[gp_], time_step_settings_.dt_, err_status);
     if (err_status == Mat::ViscoplastErrorType::NoErrors)
     {
-      res_norm = res.norm2();
+      next_res_norm = next_res.norm2();
+      // square the obtained residual in order to obtain the consistent
+      // minimization function \f$ f = \| r \|^2 \f$
+      next_f = next_res_norm * next_res_norm;
+
+      // DEBUG
+      std::cout << "line search: loop: next_res_norm: " << next_res_norm << std::endl;
+      std::cout << "line search: loop: next_f: " << next_f << std::endl;
     }
     else
     {
       // decrease line search parameter
       alpha *= alpha_dec_fac;
-      sol.update(1.0, curr_sol, alpha, incr, 0.0);
+      next_sol.update(1.0, curr_sol, alpha, incr, 0.0);
+
+      // DEBUG
+      std::cout << "There was an evaluation error; we proceed with the next iteration" << std::endl;
+      std::cout << to_string(err_status) << std::endl;
 
       continue;
     }
@@ -3551,16 +3674,24 @@ double Mat::InelasticDefgradTransvIsotropElastViscoplast::get_line_search_parame
       return -1.0;
     }
 
+    // DEBUG
+    std::cout << "line search: check condition: is next_f = " << next_f << " < "
+              << std::to_string(curr_f - 2.0 * rho * alpha * incr_squared) << "?" << std::endl;
+
     // check backtracking condition
-    if (res_norm < curr_res_norm - rho * alpha)
+    if (next_f < curr_f - 2.0 * rho * alpha * incr_squared)
     {
+      // DEBUG
+      std::cout << "line search: FOUND alpha = " << alpha << std::endl;
+
+
       err_status = Mat::ViscoplastErrorType::NoErrors;
       return alpha;
     }
 
     // decrease line search parameter
     alpha *= alpha_dec_fac;
-    sol.update(1.0, curr_sol, alpha, incr, 0.0);
+    next_sol.update(1.0, curr_sol, alpha, incr, 0.0);
   }
 }
 
@@ -3583,6 +3714,9 @@ double Mat::InelasticDefgradTransvIsotropElastViscoplast::integrate_plastic_stra
   double residual = 1.0e10;
   double jacobian = 1.0e10;
 
+  // DEBUG
+  std::cout << "integrate_plastic_strain: equiv_stress: " << equiv_stress << std::endl;
+
   // Newton-Raphson loop
   while (true)
   {
@@ -3590,16 +3724,30 @@ double Mat::InelasticDefgradTransvIsotropElastViscoplast::integrate_plastic_stra
     ++iter;
 
     // check whether the maximum number of iterations was reached
-    FOUR_C_ASSERT_ALWAYS(
-        iter < max_iter, "Could not integrate plastic strain with the given settings!");
+    if (iter > max_iter)
+    {
+      std::cout << "WARNING:" << std::endl;
+      std::cout << "Could not integrate plastic strain with the given settings!" << std::endl;
+      err_status = Mat::ViscoplastErrorType::OverflowError;
+      return -1;
+    }
+
 
     // compute plastic strain rate from the viscoplasticity law
     plastic_strain_rate = viscoplastic_law_->evaluate_plastic_strain_rate(
         equiv_stress, plastic_strain, dt, parameter()->max_plastic_strain_incr(), err_status);
 
+    // return directly when encountering error
+    if (err_status != Mat::ViscoplastErrorType::NoErrors) return -1;
+
     // compute residual
     residual = plastic_strain - last_plastic_strain - dt * plastic_strain_rate;
 
+    // DEBUG
+    std::cout << "integrate_plastic_strain: iter" << iter << "/" << max_iter
+              << ": plastic_strain: " << plastic_strain << "-> residual: " << residual << std::endl;
+
+    // return solution
     if (std::abs(residual) < tol) return plastic_strain;
 
     // compute derivative of the plastic strain rate w.r.t. plastic
@@ -3609,7 +3757,7 @@ double Mat::InelasticDefgradTransvIsotropElastViscoplast::integrate_plastic_stra
     deriv_plastic_strain_rate = temp2x1(1);
 
     // throw error
-    FOUR_C_ASSERT_ALWAYS(err_status == Mat::ViscoplastErrorType::NoErrors, to_string(err_status));
+    if (err_status != Mat::ViscoplastErrorType::NoErrors) return -1;
 
     // compute jacobian
     jacobian = 1.0 - dt * deriv_plastic_strain_rate;
@@ -3629,55 +3777,62 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::manage_evaluation_error(
   {
     return Mat::ViscoplastErrorActions::Continue;
   }
-  else
+
+  // DEBUG
+  std::cout << "There was an error in the LNL: " << to_string(err_status) << std::endl;
+
+  // timint analysis: add error
+  if (parameter()->bool_analyze_timint())
+    ++timint_analysis_utils.eval_error_map_[static_cast<Mat::ViscoplastErrorType>(err_status)];
+
+  // ERROR MANAGEMENT STRATEGY 1: substepping procedure
+  if (parameter()->bool_substep())
   {
-    // timint analysis: add error
-    if (parameter()->bool_analyze_timint())
-      ++timint_analysis_utils.eval_error_map_[static_cast<Mat::ViscoplastErrorType>(err_status)];
-
-    // substepping procedure
-    if (parameter()->bool_substep())
+    const bool new_substep_status = prepare_new_substep(substep_params, sol, curr_CM);
+    if (!new_substep_status)
     {
-      const bool new_substep_status = prepare_new_substep(substep_params, sol, curr_CM);
-      if (!new_substep_status)
-      {
-        // timint analysis: add number of substeps
-        if (parameter()->bool_analyze_timint())
-          timint_analysis_utils.eval_num_of_substeps_ += substep_params.substep_counter;
+      // timint analysis: add number of substeps
+      if (parameter()->bool_analyze_timint())
+        timint_analysis_utils.eval_num_of_substeps_ += substep_params.substep_counter;
 
-        return Mat::ViscoplastErrorActions::ReturnSolWithErrors;  // return with error
-      }
-      return Mat::ViscoplastErrorActions::NextIter;
+      return Mat::ViscoplastErrorActions::ReturnSolWithErrors;  // return with error
     }
-
-    // reset predictor of the solution
-    if (parameter()->bool_pred_adapt())
-    {
-      pred_interp_factors_.xi_l_ = pred_interp_factors_.xi_;
-      pred_interp_factors_.xi_ =
-          pred_interp_factors_.xi_l_ +
-          pred_interp_factors_.xi_user_ * (pred_interp_factors_.xi_u_ - pred_interp_factors_.xi_l_);
-      sol = adapt_predictor_local_newton_loop(
-          pred_interp_factors_.pred_, time_step_quantities_.current_defgrad_[gp_], false);
-
-      // timint analysis: increment number of repredictorizations
-      if (parameter()->bool_analyze_timint()) ++timint_analysis_utils.eval_num_of_repredict_;
-
-      // go to next iteration
-      return Mat::ViscoplastErrorActions::NextIter;
-    }
-
-    // timint analysis: write to csv
-    if (parameter()->bool_analyze_timint())
-    {
-      timint_analysis_utils.eval_time_ = timint_analysis_utils.eval_teuchos_timer_.stop();
-      timint_analysis_utils.update_total();
-      timint_analysis_utils.write_to_csv();
-    }
-
-    FOUR_C_THROW(Mat::to_string(err_status));
+    return Mat::ViscoplastErrorActions::NextIter;
   }
+
+  // ERROR MANAGEMENT STRATEGY 2: reset predictor of the solution
+  if (parameter()->bool_pred_adapt())
+  {
+    pred_interp_factors_.xi_l_ = pred_interp_factors_.xi_;
+    pred_interp_factors_.xi_ =
+        pred_interp_factors_.xi_l_ +
+        pred_interp_factors_.xi_user_ * (pred_interp_factors_.xi_u_ - pred_interp_factors_.xi_l_);
+    ++pred_interp_factors_.num_of_pred_adapt_;
+    FOUR_C_ASSERT_ALWAYS(
+        pred_interp_factors_.num_of_pred_adapt_ <= pred_interp_factors_.max_num_pred_adapt_,
+        "Maximum number of predictor adaptations / repredictorizations within a single Local "
+        "Newton Loop exceeded!");
+    sol = adapt_predictor_local_newton_loop(
+        pred_interp_factors_.pred_, time_step_quantities_.current_defgrad_[gp_], false);
+
+    // timint analysis: increment number of repredictorizations
+    if (parameter()->bool_analyze_timint()) ++timint_analysis_utils.eval_num_of_repredict_;
+
+    // go to next iteration
+    return Mat::ViscoplastErrorActions::NextIter;
+  }
+
+  // timint analysis: write to csv
+  if (parameter()->bool_analyze_timint())
+  {
+    timint_analysis_utils.eval_time_ = timint_analysis_utils.eval_teuchos_timer_.stop();
+    timint_analysis_utils.update_total();
+    timint_analysis_utils.write_to_csv();
+  }
+
+  FOUR_C_THROW(Mat::to_string(err_status));
 }
+
 
 
 FOUR_C_NAMESPACE_CLOSE

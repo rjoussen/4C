@@ -339,6 +339,10 @@ namespace Mat
       {
         return max_plastic_strain_deriv_incr_;
       }
+      //! get user-specified interpolation factor for the predictor adaptation
+      [[nodiscard]] double interp_factor_pred_adapt() const { return interp_factor_pred_adapt_; }
+      //! get user-specified interpolation factor for the predictor adaptation
+      [[nodiscard]] int max_num_pred_adapt() const { return max_num_pred_adapt_; }
 
       //! read anisotropy type (true: transversely-isotropic, false: isotropic)
       bool read_anisotropy_type(std::string anisotropy_type)
@@ -407,6 +411,15 @@ namespace Mat
 
       //! boolean: analyze time integration and write output to csv?
       const bool bool_analyze_timint_;
+
+      //! user-specified interpolation factor \f$ \xi_{\mathrm{user}}
+      //! \f$ utilized in the predictor adaptation
+      const double interp_factor_pred_adapt_;
+
+      //! maximum number of predictor adaptations and
+      //! repredictorizations allowed in a single Local Newton Loop
+      //! until error is thrown
+      const int max_num_pred_adapt_;
 
       //! maximum number of times the given time step can be halved before reaching the minimum
       //! allowed substep length
@@ -1590,19 +1603,23 @@ namespace Mat
       //! leads to plastic strain rate == 0.0
       double xi_u_;
 
+      //! current number of predictor adaptations
+      unsigned int num_of_pred_adapt_;
+
       //! maximum allowed number of predictor adaptations
-      const unsigned int max_num_of_pred_adapt_;
+      const unsigned int max_num_pred_adapt_;
 
       //! current predictor
       Core::LinAlg::Matrix<10, 1> pred_;
 
       //! constructor
-      PredInterpFactors(const double xi_user, const unsigned int max_num_of_pred_adapt)
+      PredInterpFactors(const double xi_user, const unsigned int max_num_pred_adapt)
           : xi_user_(xi_user),
             xi_(xi_user),
             xi_l_(0.0),
             xi_u_(1.0),
-            max_num_of_pred_adapt_(max_num_of_pred_adapt),
+            num_of_pred_adapt_(0),
+            max_num_pred_adapt_(max_num_pred_adapt),
             pred_{Core::LinAlg::Matrix<10, 1>{true}} {};
 
       //! method to reset the non-const variables of the class
@@ -1612,6 +1629,7 @@ namespace Mat
         xi_l_ = 0.0;
         xi_u_ = 1.0;
         pred_.clear();
+        num_of_pred_adapt_ = 0;
       }
     };
     //! instance of PredInterpFactors
@@ -1784,7 +1802,8 @@ namespace Mat
      * 195, Springer Optimization and its Applications, DOI: 10.1007/978-3-031-08720-2
      * @param[in] curr_sol solution of the current iteration of the
      * Local Newton Loop \f$ \boldsymbol{s}_i \f$
-     * @param[in] curr_res residual of the current interation of the
+     * @param[in] CM right Cauchy_Green deformation tensor \f$ \boldsymbol{C} \f$ in matrix form
+     * @param[in] curr_res residual of the current iteration of the
      * Local Newton Loop \f$ \boldsymbol{r}_{\boldsymbol{s}_i} \f$
      * @param[in] incr increment \f$ \Delta \boldsymbol{s}_{i+1} \f$ for
      * the update of the solution vector
@@ -1793,8 +1812,8 @@ namespace Mat
      *
      */
     double get_line_search_parameter(const Core::LinAlg::Matrix<10, 1>& curr_sol,
-        const Core::LinAlg::Matrix<10, 1>& curr_res, const Core::LinAlg::Matrix<10, 1>& incr,
-        Mat::ViscoplastErrorType& err_status);
+        const Core::LinAlg::Matrix<3, 3>& CM, const Core::LinAlg::Matrix<10, 1>& curr_res,
+        const Core::LinAlg::Matrix<10, 1>& incr, Mat::ViscoplastErrorType& err_status);
 
 
     /*!
@@ -1828,9 +1847,9 @@ namespace Mat
      * updated new substep length)
      * @return action to be performed subsequently in the LNL
      */
-    Mat::ViscoplastErrorActions manage_evaluation_error(const Mat::ViscoplastErrorType &err_status,
-        SubstepParams &substep_params, Core::LinAlg::Matrix<10, 1> &sol,
-        Core::LinAlg::Matrix<3, 3> &curr_CM);
+    Mat::ViscoplastErrorActions manage_evaluation_error(const Mat::ViscoplastErrorType& err_status,
+        SubstepParams& substep_params, Core::LinAlg::Matrix<10, 1>& sol,
+        Core::LinAlg::Matrix<3, 3>& curr_CM);
 
     /*!
      * @brief Evaluate the additional cmat stiffness tensor using a perturbation-based approach, if
