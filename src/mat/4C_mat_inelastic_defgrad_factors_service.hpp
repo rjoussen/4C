@@ -140,42 +140,69 @@ namespace Mat
   class TimIntAnalysisUtils
   {
    public:
-    // number of substeps for the current evaluation (LNL)
+    //! number of substeps for the current evaluation (LNL)
     unsigned int eval_num_of_substeps_ = 0;
 
-    // total number of substeps
+    //! total number of substeps
     unsigned int total_num_of_substeps_ = 0;
 
-    // number of iterations for the current evaluation (LNL)
+    //! number of iterations for the current evaluation (LNL)
     unsigned int eval_num_of_iters_ = 0;
 
-    // total number of LNL iterations
+    //! total number of LNL iterations
     unsigned int total_num_of_iters_ = 0;
 
-    // number of repredictorizations for the current evaluation (LNL)
+    //! number of repredictorizations for the current evaluation (LNL)
     unsigned int eval_num_of_repredict_ = 0;
 
-    // total number of LNL repredictorizations
+    //! total number of LNL repredictorizations
     unsigned int total_num_of_repredict_ = 0;
 
-    // number of line searches for the current evaluation (LNL)
+    //! number of line searches for the current evaluation (LNL)
     unsigned int eval_num_of_line_search_ = 0;
 
-    // total number of LNL line searches
+    //! line search: the number of times the step size \f$ \alpha \f$ of
+    //! the last iteration (Local Newton Loop) deviates from 1.0
+    //! (currently evaluated time step)
+    unsigned int eval_num_of_alpha_neq_1_last_iter = 0;
+
+    //! line search: the number of times the step size \f$ \alpha \f$
+    //! deviates from 1.0 in all iterations of the Local Newton Loop
+    //! (currently evaluated time step)
+    unsigned int eval_num_of_alpha_neq_1 = 0;
+
+    //! total number of LNL line searches
     unsigned int total_num_of_line_search_ = 0;
 
-    // timer for the current evaluation, from the start of preevaluate to the end of update
+    //! line search: total number of times the step size \f$ \alpha \f$ of
+    //! the last iteration (Local Newton Loop) deviates from 1.0
+    unsigned int total_num_of_alpha_neq_1_last_iter = 0;
+
+    //! line search: the number of times the step size \f$ \alpha \f$
+    //! deviates from 1.0 in all iterations of the Local Newton Loop
+    //! (currently evaluated time step)
+    unsigned int total_num_of_alpha_neq_1 = 0;
+
+    //! number of times the LNL convergences directly in its first
+    //! iteration (due to a good predictor!) for the current evaluation
+    unsigned int eval_num_of_first_iter_convergences = 0;
+
+    //! total number of times the LNL convergences directly in its first
+    //! iteration (due to a good predictor!)
+    unsigned int total_num_of_first_iter_convergences = 0;
+
+    //! timer for the current evaluation, from the start of preevaluate to the end of update
     Teuchos::Time eval_teuchos_timer_{
         "InelasticDefgradTransvIsotropElastViscoplast::from_preevaluate_to_update"};
 
-    // evaluation time
+    //! evaluation time
     double eval_time_;
 
-    // total time
+    //! total time
     double total_time_;
 
-    // error map of the current evaluation, from the first preevaluate of this time step to the
-    // first preevaluate of the next
+    //! error map of the current evaluation, from the first preevaluate of this time step to the
+    //! first preevaluate of the next
     std::map<Mat::ViscoplastErrorType, unsigned int> eval_error_map_ = {
         {Mat::ViscoplastErrorType::NegativePlasticStrain, 0},
         {Mat::ViscoplastErrorType::OverflowError, 0},
@@ -186,7 +213,7 @@ namespace Mat
         {Mat::ViscoplastErrorType::SingularJacobian, 0},
         {Mat::ViscoplastErrorType::FailedSolAnalytLinearization, 0}};
 
-    // error map of the total evaluation
+    //! error map of the total evaluation
     std::map<Mat::ViscoplastErrorType, unsigned int> total_error_map_ = {
         {Mat::ViscoplastErrorType::NegativePlasticStrain, 0},
         {Mat::ViscoplastErrorType::OverflowError, 0},
@@ -197,22 +224,21 @@ namespace Mat
         {Mat::ViscoplastErrorType::SingularJacobian, 0},
         {Mat::ViscoplastErrorType::FailedSolAnalytLinearization, 0}};
 
-
-    // runtime csv writer
+    //! runtime csv writer
     std::optional<Core::IO::RuntimeCsvWriter> csv_writer_;
 
-    // simulation time instant and time step
+    //! simulation time instant and time step
     double sim_time_ = 0.0;
     int sim_timestep_ = 0.0;
 
-    // was the pre_evaluate method of the first element called?
+    //! was the pre_evaluate method of the first element called?
     bool pre_eval_called_ = false;
 
-    // how often was the update method called? (max. num_of_global_elements if one processor is
-    // considered)
+    //! how often was the update method called? (max. num_of_global_elements if one processor is
+    //! considered)
     int num_update_calls_ = 0;
 
-    // reset method
+    //! reset method
     void reset()
     {
       eval_num_of_substeps_ = 0;
@@ -229,9 +255,12 @@ namespace Mat
           {Mat::ViscoplastErrorType::NoConvergenceLNL, 0},
           {Mat::ViscoplastErrorType::SingularJacobian, 0},
           {Mat::ViscoplastErrorType::FailedSolAnalytLinearization, 0}};
+      eval_num_of_alpha_neq_1 = 0;
+      eval_num_of_alpha_neq_1_last_iter = 0;
+      eval_num_of_first_iter_convergences = 0;
     }
 
-    // initialize csv_writer only if required
+    //! initialize csv_writer
     void init_csv_writer()
     {
       // get structure discretization
@@ -249,32 +278,40 @@ namespace Mat
       // create csv_writer and register its columns
       csv_writer_.emplace(
           my_rank, *Global::Problem::instance()->output_control_file(), "timint_output");
-      csv_writer_->register_data_vector("Evaluated substeps", 1, 16);
-      csv_writer_->register_data_vector("Evaluated iterations", 1, 16);
-      csv_writer_->register_data_vector("Evaluated repredictorizations", 1, 16);
-      csv_writer_->register_data_vector("Evaluated line searches", 1, 16);
-      csv_writer_->register_data_vector("Evaluation time", 1, 16);
+      csv_writer_->register_data_vector("Eval. substeps", 1, 16);
+      csv_writer_->register_data_vector("Eval. iterations", 1, 16);
+      csv_writer_->register_data_vector("Eval. repredictorizations", 1, 16);
+      csv_writer_->register_data_vector("Eval. line searches", 1, 16);
+      csv_writer_->register_data_vector("Eval. # of times: alpha neq 1 (all LNL iters)", 1, 16);
+      csv_writer_->register_data_vector("Eval. # of times: alpha neq 1 (last LNL iter)", 1, 16);
+      csv_writer_->register_data_vector("Eval. # of first LNL iter. convergences", 1, 16);
+      csv_writer_->register_data_vector("Eval. time", 1, 16);
       csv_writer_->register_data_vector("Total substeps", 1, 16);
       csv_writer_->register_data_vector("Total iterations", 1, 16);
       csv_writer_->register_data_vector("Total repredictorizations", 1, 16);
       csv_writer_->register_data_vector("Total line searches", 1, 16);
+      csv_writer_->register_data_vector("Total # of times: alpha neq 1 (all LNL iters)", 1, 16);
+      csv_writer_->register_data_vector("Total # of times: alpha neq 1 (last LNL iter)", 1, 16);
+      csv_writer_->register_data_vector("Total # of first LNL iter. convergences", 1, 16);
       csv_writer_->register_data_vector("Total time", 1, 16);
       for (const auto& [key, value] : Mat::ViscoplastErrorNames)
       {
         csv_writer_->register_data_vector(
-            "Evaluated Error " + std::to_string(static_cast<int>(key)) + ": " + value, 1, 16);
+            "Eval. Error " + std::to_string(static_cast<int>(key)) + ": " + value, 1, 16);
         csv_writer_->register_data_vector(
             "Total Error " + std::to_string(static_cast<int>(key)) + ": " + value, 1, 16);
       }
     }
 
-    // update total values
+    //! update total values
     void update_total()
     {
       total_num_of_substeps_ += eval_num_of_substeps_;
       total_num_of_iters_ += eval_num_of_iters_;
       total_num_of_repredict_ += eval_num_of_repredict_;
       total_num_of_line_search_ += eval_num_of_line_search_;
+      total_num_of_alpha_neq_1 += eval_num_of_alpha_neq_1;
+      total_num_of_alpha_neq_1_last_iter += eval_num_of_alpha_neq_1_last_iter;
       total_time_ += eval_time_;
       for (const auto& [error_type, error_count] : eval_error_map_)
       {
@@ -282,25 +319,38 @@ namespace Mat
       }
     }
 
-    // write to csv after each timestep
+    //! write to csv after each timestep
     void write_to_csv()
     {
       // output data
       std::map<std::string, std::vector<double>> output_data;
-      output_data["Evaluated substeps"] = {static_cast<double>(eval_num_of_substeps_)};
+      output_data["Eval. substeps"] = {static_cast<double>(eval_num_of_substeps_)};
       output_data["Total substeps"] = {static_cast<double>(total_num_of_substeps_)};
-      output_data["Evaluated iterations"] = {static_cast<double>(eval_num_of_iters_)};
+      output_data["Eval. iterations"] = {static_cast<double>(eval_num_of_iters_)};
       output_data["Total iterations"] = {static_cast<double>(total_num_of_iters_)};
-      output_data["Evaluated repredictorizations"] = {static_cast<double>(eval_num_of_repredict_)};
+      output_data["Eval. repredictorizations"] = {static_cast<double>(eval_num_of_repredict_)};
       output_data["Total repredictorizations"] = {static_cast<double>(total_num_of_repredict_)};
-      output_data["Evaluated line searches"] = {static_cast<double>(eval_num_of_line_search_)};
+      output_data["Eval. line searches"] = {static_cast<double>(eval_num_of_line_search_)};
       output_data["Total line searches"] = {static_cast<double>(total_num_of_line_search_)};
-      output_data["Evaluation time"] = {static_cast<double>(eval_time_)};
+      output_data["Eval. time"] = {static_cast<double>(eval_time_)};
       output_data["Total time"] = {static_cast<double>(total_time_)};
+      output_data["Eval. # of times: alpha neq 1 (all LNL iters)"] = {
+          static_cast<double>(eval_num_of_alpha_neq_1)};
+      output_data["Eval. # of times: alpha neq 1 (last LNL iter)"] = {
+          static_cast<double>(eval_num_of_alpha_neq_1_last_iter)};
+      output_data["Eval. # of first LNL iter. convergences"] = {
+          static_cast<double>(eval_num_of_first_iter_convergences)};
+      output_data["Total # of times: alpha neq 1 (all LNL iters)"] = {
+          static_cast<double>(total_num_of_alpha_neq_1)};
+      output_data["Total # of times: alpha neq 1 (last LNL iter)"] = {
+          static_cast<double>(total_num_of_alpha_neq_1_last_iter)};
+      output_data["Total # of first LNL iter. convergences"] = {
+          static_cast<double>(total_num_of_first_iter_convergences)};
+
 
       for (const auto& [key, value] : Mat::ViscoplastErrorNames)
       {
-        output_data["Evaluated Error " + std::to_string(static_cast<int>(key)) + ": " + value] = {
+        output_data["Eval. Error " + std::to_string(static_cast<int>(key)) + ": " + value] = {
             static_cast<double>(eval_error_map_[key])};
         output_data["Total Error " + std::to_string(static_cast<int>(key)) + ": " + value] = {
             static_cast<double>(total_error_map_[key])};

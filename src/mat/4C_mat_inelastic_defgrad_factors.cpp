@@ -3058,6 +3058,21 @@ Core::LinAlg::Matrix<10, 1> Mat::InelasticDefgradTransvIsotropElastViscoplast::l
           viscoplastic_law_->update_gp_state(gp_);
         }
 
+        // timint analysis:
+        if (parameter()->bool_analyze_timint())
+        {
+          // add number of times the step size of the
+          // line search algorithm deviates from 1.0 in the last iter
+          if (std::abs(alpha - 1.0) > 1.0e-8)
+            timint_analysis_utils.eval_num_of_alpha_neq_1_last_iter += 1;
+
+          // add number of first iteration convergences
+          if (substep_params.iter == 1)
+            timint_analysis_utils.eval_num_of_first_iter_convergences += 1;
+        }
+
+
+
         // break out of the substep NR loop
         break;
       }
@@ -3135,11 +3150,13 @@ Core::LinAlg::Matrix<10, 1> Mat::InelasticDefgradTransvIsotropElastViscoplast::l
       if (parameter()->bool_line_search())
       {
         alpha = get_line_search_parameter(sol, curr_CM, residual, dx, err_status);
+        // timint analysis: increment number of searches
+        if (parameter()->bool_analyze_timint()) ++timint_analysis_utils.eval_num_of_line_search_;
 
-        if (alpha != 1.0)
+        if (std::abs(alpha - 1.0) > 1.0e-8)
         {
           // timint analysis: increment number of searches
-          if (parameter()->bool_analyze_timint()) ++timint_analysis_utils.eval_num_of_line_search_;
+          if (parameter()->bool_analyze_timint()) ++timint_analysis_utils.eval_num_of_alpha_neq_1;
         }
       }  // otherwise it is the default value alpha = 1
       if (err_status == Mat::ViscoplastErrorType::NoErrors)
