@@ -38,6 +38,7 @@
 #include <iostream>
 #include <map>
 #include <memory>
+#include <ostream>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -2573,7 +2574,7 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_inverse_inelast
         timint_analysis_utils.write_to_csv();
       }
 
-      FOUR_C_THROW(Mat::to_string(err_status));
+      FOUR_C_THROW(debug_get_error_info(Mat::to_string(err_status)));
     }
     // extract the inverse inelastic defgrad from the LNL solution
     iFinM = extract_inverse_inelastic_defgrad(sol);
@@ -3109,7 +3110,7 @@ Core::LinAlg::Matrix<10, 1> Mat::InelasticDefgradTransvIsotropElastViscoplast::l
           timint_analysis_utils.update_total();
           timint_analysis_utils.write_to_csv();
         }
-        FOUR_C_THROW(Mat::to_string(err_status));
+        FOUR_C_THROW(debug_get_error_info(Mat::to_string(err_status)));
       }
 
       // compute Jacobian
@@ -3174,7 +3175,8 @@ Core::LinAlg::Matrix<10, 1> Mat::InelasticDefgradTransvIsotropElastViscoplast::l
           timint_analysis_utils.write_to_csv();
         }
 
-        FOUR_C_THROW("Computation of line search parameter was not successful!");
+        FOUR_C_THROW(
+            debug_get_error_info("Computation of line search parameter was not successful!"));
       }
     }
   }
@@ -3725,8 +3727,9 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::manage_evaluation_error(
     ++pred_interp_factors_.num_of_pred_adapt_;
     FOUR_C_ASSERT_ALWAYS(
         pred_interp_factors_.num_of_pred_adapt_ <= pred_interp_factors_.max_num_pred_adapt_,
-        "Maximum number of predictor adaptations / repredictorizations within a single Local "
-        "Newton Loop exceeded!");
+        debug_get_error_info(
+            "Maximum number of predictor adaptations / repredictorizations within a single Local "
+            "Newton Loop exceeded!"));
     sol = adapt_predictor_local_newton_loop(
         pred_interp_factors_.pred_, time_step_quantities_.current_defgrad_[gp_], false);
 
@@ -3745,7 +3748,59 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::manage_evaluation_error(
     timint_analysis_utils.write_to_csv();
   }
 
-  FOUR_C_THROW(Mat::to_string(err_status));
+  FOUR_C_THROW(debug_get_error_info(Mat::to_string(err_status)));
+}
+
+std::string Mat::InelasticDefgradTransvIsotropElastViscoplast::debug_get_error_info(
+    const std::string& base_error_string)
+{
+  // auxiliaries
+  std::ostringstream temp_ostream;
+
+  // declare the extended error message
+  std::string extended_error_string{""};
+
+  // get relevant error info
+  extended_error_string += "BASE ERROR: \n";
+  extended_error_string += base_error_string + "\n";
+  extended_error_string +=
+      "-> At EleID: " + std::to_string(ele_gid_) + ". At GP: " + std::to_string(gp_) + ".\n";
+  extended_error_string += std::string(10, '.') + "\n";
+
+  // add the relevant last_ values
+  extended_error_string += "LAST_ VALUES: \n";
+  extended_error_string += "last_plastic_defgrd_inverse: \n";
+  time_step_quantities_.last_plastic_defgrd_inverse_[gp_].print(temp_ostream);
+  extended_error_string += temp_ostream.str();
+  temp_ostream.str("");
+  extended_error_string +=
+      "last_plastic_strain: " + std::to_string(time_step_quantities_.last_plastic_strain_[gp_]) +
+      "\n";
+  extended_error_string += "last_defgrad: \n";
+  time_step_quantities_.last_defgrad_[gp_].print(temp_ostream);
+  extended_error_string += temp_ostream.str();
+  temp_ostream.str("");
+  extended_error_string += "last_rightCG: \n";
+  time_step_quantities_.last_rightCG_[gp_].print(temp_ostream);
+  extended_error_string += temp_ostream.str();
+  temp_ostream.str("");
+  extended_error_string += viscoplastic_law_->debug_get_error_info(gp_);
+  extended_error_string += std::string(10, '.') + "\n";
+
+  // add the current right CG tensor
+  extended_error_string += "CURRENT_ VALUES: \n";
+  extended_error_string += "current_defgrad: \n";
+  time_step_quantities_.current_defgrad_[gp_].print(temp_ostream);
+  extended_error_string += temp_ostream.str();
+  temp_ostream.str("");
+  extended_error_string += "current_rightCG: \n";
+  time_step_quantities_.current_rightCG_[gp_].print(temp_ostream);
+  extended_error_string += temp_ostream.str();
+  temp_ostream.str("");
+  extended_error_string += std::string(10, '.');
+
+
+  return extended_error_string;
 }
 
 

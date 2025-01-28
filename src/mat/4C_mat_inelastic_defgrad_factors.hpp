@@ -1873,6 +1873,19 @@ namespace Mat
     void evaluate_additional_cmat_perturb_based(const Core::LinAlg::Matrix<3, 3>& FredM,
         Core::LinAlg::Matrix<6, 6>& cmatadd, const Core::LinAlg::Matrix<3, 3>& iFin_other,
         const Core::LinAlg::Matrix<6, 9>& dSdiFinj);
+
+    /*!
+     * @brief Get an extensive error message to be displayed when the
+     * simulation terminates. This is used for debugging the time
+     * integration in more detail. This message contains a base error
+     * message which describes what failed in a short form - this is
+     * then extended with information on the element ID, the Gauss
+     * Point, the last_ values and so on...
+     *
+     * @param[in] base_error_string base error message to be extended
+     * with further information
+     */
+    std::string debug_get_error_info(const std::string& base_error_string);
   };
 }  // namespace Mat
 

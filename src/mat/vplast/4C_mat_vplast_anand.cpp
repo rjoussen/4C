@@ -17,6 +17,7 @@
 #include "4C_utils_fad.hpp"
 
 #include <cmath>
+#include <string>
 #include <utility>
 
 FOUR_C_NAMESPACE_OPEN
@@ -523,6 +524,22 @@ Core::LinAlg::Matrix<2, 1> Mat::Viscoplastic::Anand::compute_derivatives_of_flow
   derivs_of_flow_resistance(1, 0) = inv_temp * harden_tang;
 
   return derivs_of_flow_resistance;
+}
+
+std::string Mat::Viscoplastic::Anand::debug_get_error_info(int gp)
+{
+  // declare error message for output
+  std::string extended_error_message;
+
+  extended_error_message += "---> VISCOPLASTIC LAW: Anand \n";
+  extended_error_message +=
+      "last_flow_resistance: " + std::to_string(time_step_quantities_.last_flow_resistance_[gp_]) +
+      "\n";
+  extended_error_message +=
+      "last_plastic_strain: " + std::to_string(time_step_quantities_.last_plastic_strain_[gp_]) +
+      "\n";
+
+  return extended_error_message;
 }
 
 FOUR_C_NAMESPACE_CLOSE

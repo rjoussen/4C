@@ -133,6 +133,8 @@ namespace Mat
 
       void unpack_viscoplastic_law(Core::Communication::UnpackBuffer& buffer) override;
 
+      std::string debug_get_error_info(int gp) override;
+
      private:
       /// current Gauss point
       int gp_;
@@ -178,15 +180,15 @@ namespace Mat
 
         /// constructor
         ConstPars(const double prefac, const double expon, const double init_flow_resistance,
-            const double harden_rate_prefac, const double harden_rate_sensitiv,
+            const double harden_rate_prefac, const double harden_rate_sensitive,
             const double flow_res_sat_prefac, const double flow_res_sat_exp)
             : p(prefac),
               log_p(std::log(p)),
               e(expon),
               log_p_e(std::log(prefac * expon)),
               H_0(harden_rate_prefac),
-              a(harden_rate_sensitiv),
-              aH_0(harden_rate_prefac * harden_rate_sensitiv),
+              a(harden_rate_sensitive),
+              aH_0(harden_rate_prefac * harden_rate_sensitive),
               S_star(flow_res_sat_prefac),
               inv_S_star(1.0 / flow_res_sat_prefac),
               N(flow_res_sat_exp),

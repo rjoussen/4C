@@ -183,6 +183,15 @@ namespace Mat
 
       virtual void unpack_viscoplastic_law(Core::Communication::UnpackBuffer& buffer) = 0;
 
+      /*!
+       * @brief Get information on the eventual last_ quantities of the
+       * viscoplasticity law, to be shown during the error message at
+       * the termination of the simulation.
+       *
+       * @param[in] gp    Gauss point
+       */
+      virtual std::string debug_get_error_info(int gp) { return ""; };
+
      private:
       /// material parameters
       Core::Mat::PAR::Parameter* params_;
