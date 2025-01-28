@@ -1460,6 +1460,28 @@ namespace Mat
     //! return the fiber direction of transverse isotropy for the considered element
     Core::LinAlg::Matrix<3, 1> get_fiber_direction() { return m_; }
 
+    /*!
+     * @brief Set the last_ time step quantities of the material at a
+     * specified GP. To be
+     * used during the debugging of the time integration algorithm.
+     * @note to be used only for debugging purposes!
+     */
+    void debug_set_last_quantities(const int gp,
+        const Core::LinAlg::Matrix<3, 3>& last_plastic_defgrad_inverse,
+        const double last_plastic_strain, const Core::LinAlg::Matrix<3, 3>& last_defgrad,
+        const Core::LinAlg::Matrix<3, 3>& last_rightCG);
+
+    /*!
+     * @brief Get the utilized viscoplastic law object.
+     * @note to be used only for debugging purposes!
+     */
+    std::shared_ptr<Mat::Viscoplastic::Law> debug_get_viscoplastic_law()
+    {
+      return viscoplastic_law_;
+    };
+
+
+
    private:
     //! struct containing constant tensors which depend on the constant fiber direction \f$
     //! \boldsymbol{m} \f$
@@ -1858,7 +1880,8 @@ namespace Mat
      * @note For further information on the procedure, refer to:
      *       -# Master's Thesis : Dragos-Corneliu Ana, Continuum Modeling and Calibration of
      * Viscoplasticity in the Context of the Lithium Anode in Solid State Batteries, Supervisor:
-     * Christoph Schmidt, 2024
+     *
+     Christoph Schmidt, 2024
      *
      * @param[in] FredM reduced deformation gradient \f$ \boldsymbol{F}_{\text{red}} =
      * \boldsymbol{F} \boldsymbol{F_{\text{in,other}}^{-1}} \f$ accounting for all the already

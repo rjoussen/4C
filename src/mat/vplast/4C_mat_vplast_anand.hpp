@@ -133,7 +133,11 @@ namespace Mat
 
       void unpack_viscoplastic_law(Core::Communication::UnpackBuffer& buffer) override;
 
-      std::string debug_get_error_info(int gp) override;
+      std::string debug_get_error_info(const int gp) override;
+
+      void debug_set_last_values(
+          const int gp, const double last_flow_resistance, const double last_plastic_strain);
+
 
      private:
       /// current Gauss point
@@ -293,6 +297,7 @@ namespace Mat
       };
       TimeStepQuantities time_step_quantities_;
     };
+
 
   }  // namespace Viscoplastic
 

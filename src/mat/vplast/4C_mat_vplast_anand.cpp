@@ -526,7 +526,7 @@ Core::LinAlg::Matrix<2, 1> Mat::Viscoplastic::Anand::compute_derivatives_of_flow
   return derivs_of_flow_resistance;
 }
 
-std::string Mat::Viscoplastic::Anand::debug_get_error_info(int gp)
+std::string Mat::Viscoplastic::Anand::debug_get_error_info(const int gp)
 {
   // declare error message for output
   std::string extended_error_message;
@@ -540,6 +540,13 @@ std::string Mat::Viscoplastic::Anand::debug_get_error_info(int gp)
       "\n";
 
   return extended_error_message;
+}
+
+void Mat::Viscoplastic::Anand::debug_set_last_values(
+    const int gp, const double last_flow_resistance, const double last_plastic_strain)
+{
+  time_step_quantities_.last_flow_resistance_[gp] = last_flow_resistance;
+  time_step_quantities_.last_plastic_strain_[gp] = last_plastic_strain;
 }
 
 FOUR_C_NAMESPACE_CLOSE

@@ -24,6 +24,7 @@
 #include "4C_utils_singleton_owner.hpp"
 
 #include <cmath>
+#include <memory>
 
 
 
@@ -1767,5 +1768,87 @@ namespace
     FOUR_C_EXPECT_NEAR(state_quantity_derivatives_solution_isotrop_.curr_dlpdepsp_,
         computed_state_quantity_derivatives_isotrop.curr_dlpdepsp_, 1.0e-6);
   }
+  TEST_F(InelasticDefgradFactorsTest, DummyTest)
+  {
+    // define last_values to be set for InelasticDefgradTransvIsotropElastViscoplast
+    Core::LinAlg::Matrix<3, 3> last_plastic_defgrad_inverse{true};
+    last_plastic_defgrad_inverse(0, 0) = 1.0;
+    last_plastic_defgrad_inverse(0, 1) = 0.0;
+    last_plastic_defgrad_inverse(0, 2) = 0.0;
+    last_plastic_defgrad_inverse(1, 0) = 0.0;
+    last_plastic_defgrad_inverse(1, 1) = 1.0;
+    last_plastic_defgrad_inverse(1, 2) = 0.0;
+    last_plastic_defgrad_inverse(2, 0) = 0.0;
+    last_plastic_defgrad_inverse(2, 1) = 0.0;
+    last_plastic_defgrad_inverse(2, 2) = 1.0;
+    double last_plastic_strain = 0.0;
+    Core::LinAlg::Matrix<3, 3> last_defgrad{true};
+    last_defgrad(0, 0) = 1.0;
+    last_defgrad(0, 1) = 0.0;
+    last_defgrad(0, 2) = 0.0;
+    last_defgrad(1, 0) = 0.0;
+    last_defgrad(1, 1) = 1.0;
+    last_defgrad(1, 2) = 0.0;
+    last_defgrad(2, 0) = 0.0;
+    last_defgrad(2, 1) = 0.0;
+    last_defgrad(2, 2) = 1.0;
+    Core::LinAlg::Matrix<3, 3> last_rightCG{true};
+    last_rightCG(0, 0) = 1.0;
+    last_rightCG(0, 1) = 0.0;
+    last_rightCG(0, 2) = 0.0;
+    last_rightCG(1, 0) = 0.0;
+    last_rightCG(1, 1) = 1.0;
+    last_rightCG(1, 2) = 0.0;
+    last_rightCG(2, 0) = 0.0;
+    last_rightCG(2, 1) = 0.0;
+    last_rightCG(2, 2) = 1.0;
+    // set the values at the 0-th GP
+    isotrop_vplast_Anand_->debug_set_last_quantities(
+        0, last_plastic_defgrad_inverse, last_plastic_strain, last_defgrad, last_rightCG);
+
+    // define last_values to be set for the viscoplastic law (Anand)
+    double last_flow_resistance = 0.75;
+    double last_plastic_strain_vp = 0.0;
+    // set the values at the 0-th GP
+    std::dynamic_pointer_cast<Mat::Viscoplastic::Anand>(
+        isotrop_vplast_Anand_->debug_get_viscoplastic_law())
+        ->debug_set_last_values(0, last_flow_resistance, last_plastic_strain_vp);
+
+    // set other variables needed for evaluation
+    Core::LinAlg::Matrix<3, 3> current_defgrad{true};
+    current_defgrad(0, 0) = 1.0;
+    current_defgrad(0, 1) = 0.0;
+    current_defgrad(0, 2) = 0.0;
+    current_defgrad(1, 0) = 0.0;
+    current_defgrad(1, 1) = 1.0;
+    current_defgrad(1, 2) = 0.0;
+    current_defgrad(2, 0) = 0.0;
+    current_defgrad(2, 1) = 0.0;
+    current_defgrad(2, 2) = 2.0;
+    Core::LinAlg::Matrix<3, 3>* current_defgrad_ptr = &current_defgrad;
+    Core::LinAlg::Matrix<3, 3> iFin_other{
+        true};  // should always be the unit tensor during debugging
+    iFin_other(0, 0) = 1.0;
+    iFin_other(0, 1) = 0.0;
+    iFin_other(0, 2) = 0.0;
+    iFin_other(1, 0) = 0.0;
+    iFin_other(1, 1) = 1.0;
+    iFin_other(1, 2) = 0.0;
+    iFin_other(2, 0) = 0.0;
+    iFin_other(2, 1) = 0.0;
+    iFin_other(2, 2) = 1.0;
+    Core::LinAlg::Matrix<3, 3> iFinM{
+        true};  // only declared, to be able to pass it to the evaluation function
+
+    // evaluate
+    isotrop_vplast_Anand_->evaluate_inverse_inelastic_def_grad(
+        current_defgrad_ptr, iFin_other, iFinM);
+
+    // compare the results
+    // WE SHOULD ACTUALLY NOT BE HERE BEFORE DEBUGGING!!!
+    FOUR_C_THROW("Dummy test error");
+    FOUR_C_EXPECT_NEAR(last_rightCG, last_rightCG, 1.0e-6);
+  }
+
 
 }  // namespace

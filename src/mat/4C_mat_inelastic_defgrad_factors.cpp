@@ -1887,6 +1887,13 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_state_quantities(
     state_quantities.curr_equiv_stress_ = std::sqrt(3.0 / 2.0 * Me_dev_sym_contract_Me_dev_sym);
   }
 
+  // DEBUG
+  std::cout << "curr_equiv_stress: " << state_quantities.curr_equiv_stress_ << std::endl;
+  std::cout << "plastic_strain: " << plastic_strain << std::endl;
+  std::cout << "dt: " << dt << std::endl;
+  std::cout << "max_plastic_strain_incr: " << parameter()->max_plastic_strain_incr() << std::endl;
+  std::cout << "update_hist_var: " << update_hist_var_ << std::endl;
+
   // calculate equivalent plastic strain rate using the viscoplastic law
   state_quantities.curr_equiv_plastic_strain_rate_ =
       viscoplastic_law_->evaluate_plastic_strain_rate(state_quantities.curr_equiv_stress_,
@@ -2498,6 +2505,10 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_inverse_inelast
     const Core::LinAlg::Matrix<3, 3>* defgrad, const Core::LinAlg::Matrix<3, 3>& iFin_other,
     Core::LinAlg::Matrix<3, 3>& iFinM)
 {
+#ifdef DEBUGVISCOPLAST
+  std::cout << "I. evaluate_inverse_inelastic_def_grad" << std::endl;
+#endif
+
   // reduced deformation gradient FredM, taking into account all the already computed inelastic
   // factors
   //    \f$ \boldsymbol{F_{\text{red}}} = \boldsymbol{F} \boldsymbol{F_{\text{in,other}}^{-1}} \f$
@@ -3803,6 +3814,16 @@ std::string Mat::InelasticDefgradTransvIsotropElastViscoplast::debug_get_error_i
   return extended_error_string;
 }
 
+void Mat::InelasticDefgradTransvIsotropElastViscoplast::debug_set_last_quantities(const int gp,
+    const Core::LinAlg::Matrix<3, 3>& last_plastic_defgrad_inverse,
+    const double last_plastic_strain, const Core::LinAlg::Matrix<3, 3>& last_defgrad,
+    const Core::LinAlg::Matrix<3, 3>& last_rightCG)
+{
+  time_step_quantities_.last_plastic_defgrd_inverse_[gp] = last_plastic_defgrad_inverse;
+  time_step_quantities_.last_plastic_strain_[gp] = last_plastic_strain;
+  time_step_quantities_.last_defgrad_[gp] = last_defgrad;
+  time_step_quantities_.last_rightCG_[gp] = last_rightCG;
+}
 
 
 FOUR_C_NAMESPACE_CLOSE
