@@ -383,8 +383,8 @@ namespace Mat
                                   // derivatives of the plastic strain rate have been evaluated
   };
 
-/// defines
-#define DEBUGVISCOPLAST /* flag for debug output (viscoplastic material) */
+  /// defines
+  // define DEBUGVISCOPLAST /* flag for debug output (viscoplastic material) */
 
 }  // namespace Mat
 
