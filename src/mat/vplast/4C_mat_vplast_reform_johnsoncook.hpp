@@ -113,17 +113,21 @@ namespace Mat
           const double max_plastic_strain_deriv_incr, Mat::ViscoplastErrorType& err_status,
           const bool update_hist_var) override;
 
-      void setup(const int numgp, const Core::IO::InputParameterContainer& container) override {};
-
-      void pre_evaluate(int gp) override {};
+      void setup(const int numgp, const Core::IO::InputParameterContainer& container) override;
 
       void update() override {};
 
       void update_gp_state(int gp) override {};
 
-      void pack_viscoplastic_law(Core::Communication::PackBuffer& data) const override {};
+      void pack_viscoplastic_law(Core::Communication::PackBuffer& data) const override;
 
-      void unpack_viscoplastic_law(Core::Communication::UnpackBuffer& buffer) override {};
+      void unpack_viscoplastic_law(Core::Communication::UnpackBuffer& buffer) override;
+
+      void register_output_data_names(
+          std::unordered_map<std::string, int>& names_and_size) const override;
+
+      bool evaluate_output_data(
+          const std::string& name, Core::LinAlg::SerialDenseMatrix& data) const override;
 
      private:
       /// struct containing constant parameters to be evaluated only once
@@ -171,6 +175,16 @@ namespace Mat
 
       /// instance of ConstPars struct
       const ConstPars const_pars_;
+
+      //! struct containing quantities at the current time point (i.e., at \f[ t_n \f]). The
+      //! quantities are tracked at all Gauss points, in order to update them simultaneously during
+      //! the update method call
+      struct TimeStepQuantities
+      {
+        //! yield strength (for all Gauss points)
+        std::vector<double> current_yield_strength_;
+      };
+      TimeStepQuantities time_step_quantities_;
     };
 
   }  // namespace Viscoplastic

@@ -1692,6 +1692,9 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::InelasticDefgradTransvIsotrop
   time_step_quantities_.current_plastic_strain_.resize(1, 0.0);  // value irrelevant at this point
   time_step_quantities_.last_substep_plastic_strain_.resize(1, 0.0);
 
+  // update current_ value of the equivalent stress
+  time_step_quantities_.current_stress_.resize(1.0, 0.0);  // value irrelevant at this point
+
   // default values of the right CG tensor: unit tensor
   time_step_quantities_.last_rightCG_.resize(1, const_non_mat_tensors.id3x3_);
   time_step_quantities_.current_rightCG_.resize(
@@ -2548,6 +2551,7 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_inverse_inelast
     {
       time_step_quantities_.current_plastic_defgrd_inverse_[gp_] = iFinM;
       time_step_quantities_.current_plastic_strain_[gp_] = plastic_strain_pred;
+      time_step_quantities_.current_stress_[gp_] = state_quantities_.curr_equiv_stress_;
     }
   }
   else  // predictor does not suffice
@@ -2601,6 +2605,7 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_inverse_inelast
     {
       time_step_quantities_.current_plastic_defgrd_inverse_[gp_] = iFinM;
       time_step_quantities_.current_plastic_strain_[gp_] = sol(9);
+      time_step_quantities_.current_stress_[gp_] = state_quantities_.curr_equiv_stress_;
     }
   }
 
@@ -2610,6 +2615,8 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_inverse_inelast
   time_step_quantities_.current_plastic_defgrd_inverse_[gp_].print(std::cout);
   std::cout << "current_plastic_strain: " << std::endl;
   std::cout << time_step_quantities_.current_plastic_strain_[gp_] << std::endl;
+  std::cout << "current_stress: " << std::endl;
+  std::cout << time_step_quantities_.current_stress_[gp_] << std::endl;
   std::cout << std::string(60, '-') << std::endl;
 #endif
 }
@@ -2678,6 +2685,11 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::setup(
       numgp, time_step_quantities_.last_plastic_strain_[0]);  // value irrelevant at this point
   time_step_quantities_.last_substep_plastic_strain_.resize(
       numgp, time_step_quantities_.last_substep_plastic_strain_[0]);
+
+  // default values of the equivalent stress for ALL Gauss Points
+  time_step_quantities_.current_stress_.resize(
+      numgp, time_step_quantities_.current_stress_[0]);  // value irrelevant at this point
+
 
   // default values of the right CG deformation tensor for ALL Gauss Points
   time_step_quantities_.last_rightCG_.resize(numgp, time_step_quantities_.last_rightCG_[0]);
@@ -2766,6 +2778,10 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::unpack_inelastic(
   time_step_quantities_.current_plastic_strain_.resize(
       time_step_quantities_.last_plastic_strain_.size(),
       time_step_quantities_.last_plastic_strain_[0]);  // value irrelevant
+  time_step_quantities_.current_stress_.resize(time_step_quantities_.last_plastic_strain_.size(),
+      0.0);  // value irrelevant
+
+
 
   // set evaluated deformation gradient to 0, to make sure that the inverse inelastic deformation
   // gradient is evaluated fully after the restart
@@ -3945,5 +3961,83 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::debug_set_last_quantitie
   time_step_quantities_.last_rightCG_[gp] = last_rightCG;
 }
 
+void Mat::InelasticDefgradTransvIsotropElastViscoplast::register_output_data_names(
+    std::unordered_map<std::string, int>& names_and_size) const
+{
+  names_and_size["inverse_plastic_defgrad"] = 9;
+  names_and_size["plastic_strain"] = 1;
+  names_and_size["equiv_stress"] = 1;
+  names_and_size["defgrad"] = 9;
+  names_and_size["rightCG"] = 9;
+  viscoplastic_law_->register_output_data_names(names_and_size);
+}
 
+bool Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_output_data(
+    const std::string& name, Core::LinAlg::SerialDenseMatrix& data) const
+{
+  // auxiliaries
+  Core::LinAlg::Matrix<9, 1> temp9x1{true};
+
+  if (name == "inverse_plastic_defgrad")
+  {
+    for (int gp = 0;
+        gp < static_cast<int>(time_step_quantities_.current_plastic_defgrd_inverse_.size()); ++gp)
+    {
+      Core::LinAlg::Voigt::matrix_3x3_to_9x1(
+          time_step_quantities_.current_plastic_defgrd_inverse_[gp], temp9x1);
+
+      for (int col = 0; col < 9; ++col)
+      {
+        data(gp, col) = temp9x1(col);
+      }
+    }
+    return true;
+  }
+  else if (name == "plastic_strain")
+  {
+    for (int gp = 0; gp < static_cast<int>(time_step_quantities_.current_plastic_strain_.size());
+        ++gp)
+    {
+      data(gp, 0) = time_step_quantities_.current_plastic_strain_[gp];
+    }
+    return true;
+  }
+  else if (name == "equiv_stress")
+  {
+    for (int gp = 0; gp < static_cast<int>(time_step_quantities_.current_stress_.size()); ++gp)
+    {
+      data(gp, 0) = time_step_quantities_.current_stress_[gp];
+    }
+    return true;
+  }
+  else if (name == "defgrad")
+  {
+    for (int gp = 0; gp < static_cast<int>(time_step_quantities_.current_defgrad_.size()); ++gp)
+    {
+      Core::LinAlg::Voigt::matrix_3x3_to_9x1(time_step_quantities_.current_defgrad_[gp], temp9x1);
+
+      for (int col = 0; col < 9; ++col)
+      {
+        data(gp, col) = temp9x1(col);
+      }
+    }
+    return true;
+  }
+  else if (name == "rightCG")
+  {
+    for (int gp = 0; gp < static_cast<int>(time_step_quantities_.current_rightCG_.size()); ++gp)
+    {
+      Core::LinAlg::Voigt::matrix_3x3_to_9x1(time_step_quantities_.current_rightCG_[gp], temp9x1);
+
+
+      for (int col = 0; col < 9; ++col)
+      {
+        data(gp, col) = temp9x1(col);
+      }
+    }
+    return true;
+  }
+
+  return viscoplastic_law_->evaluate_output_data(name, data);
+}
 FOUR_C_NAMESPACE_CLOSE

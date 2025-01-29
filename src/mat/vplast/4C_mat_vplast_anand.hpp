@@ -133,6 +133,12 @@ namespace Mat
 
       void unpack_viscoplastic_law(Core::Communication::UnpackBuffer& buffer) override;
 
+      void register_output_data_names(
+          std::unordered_map<std::string, int>& names_and_size) const override;
+
+      bool evaluate_output_data(
+          const std::string& name, Core::LinAlg::SerialDenseMatrix& data) const override;
+
       std::string debug_get_error_info(const int gp) override;
 
       void debug_set_last_values(

@@ -1042,6 +1042,20 @@ void Mat::MultiplicativeSplitDefgradElastHyper::set_concentration_gp(const doubl
     inelastic_->fac_def_grad_in()[p].second->set_concentration_gp(concentration);
 }
 
+void Mat::MultiplicativeSplitDefgradElastHyper::register_output_data_names(
+    std::unordered_map<std::string, int>& names_and_size) const
+{
+  // register output for the inelastic defgrad factors
+  inelastic_->register_output_data_names(names_and_size);
+}
+
+bool Mat::MultiplicativeSplitDefgradElastHyper::evaluate_output_data(
+    const std::string& name, Core::LinAlg::SerialDenseMatrix& data) const
+{
+  // evaluate GP output for the inelastic defgrad factors
+  return inelastic_->evaluate_output_data(name, data);
+}
+
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
 void Mat::InelasticFactorsHandler::assign_to_source(
@@ -1192,6 +1206,35 @@ Mat::MultiplicativeSplitDefgradElastHyper::evaluate_kinematic_quantities(
                            // components in this function --> we deal with them separately
 
   return quantities;
+}
+
+void Mat::InelasticFactorsHandler::register_output_data_names(
+    std::unordered_map<std::string, int>& names_and_size) const
+{
+  // loop over all inelastic contributions
+  for (int i = 0; i < num_inelastic_def_grad(); ++i)
+  {
+    facdefgradin_[i].second->register_output_data_names(names_and_size);
+  }
+}
+
+bool Mat::InelasticFactorsHandler::evaluate_output_data(
+    const std::string& name, Core::LinAlg::SerialDenseMatrix& data) const
+{
+  // declare the number of inelastic defgrad factors for which we use Gauss
+  // point data
+  int num_inel_fac_GP_data = 0;
+
+  // loop over all inelastic contributions
+  for (int i = 0; i < num_inelastic_def_grad(); ++i)
+  {
+    if (facdefgradin_[i].second->evaluate_output_data(name, data))
+    {
+      ++num_inel_fac_GP_data;
+    };
+  }
+
+  return (num_inel_fac_GP_data > 0);
 }
 
 

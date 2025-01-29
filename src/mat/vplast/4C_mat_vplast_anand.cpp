@@ -18,6 +18,7 @@
 
 #include <cmath>
 #include <string>
+#include <unordered_map>
 #include <utility>
 
 FOUR_C_NAMESPACE_OPEN
@@ -131,7 +132,7 @@ void Mat::Viscoplastic::Anand::unpack_viscoplastic_law(Core::Communication::Unpa
 {
   // NOTE: factory method is called during assign_to_source in the unpack method of the
   // multiplicative split framework --> the param class of the viscoplastic law is created, we only
-  // need to unpack the history variablesj
+  // need to unpack the history variables
   if (parameter() != nullptr)
   {
     // unpack last_ values inside time_step_quantities_
@@ -547,6 +548,28 @@ void Mat::Viscoplastic::Anand::debug_set_last_values(
 {
   time_step_quantities_.last_flow_resistance_[gp] = last_flow_resistance;
   time_step_quantities_.last_plastic_strain_[gp] = last_plastic_strain;
+}
+
+void Mat::Viscoplastic::Anand::register_output_data_names(
+    std::unordered_map<std::string, int>& names_and_size) const
+{
+  names_and_size["flow_resistance"] = 1;
+}
+
+bool Mat::Viscoplastic::Anand::evaluate_output_data(
+    const std::string& name, Core::LinAlg::SerialDenseMatrix& data) const
+{
+  if (name == "flow_resistance")
+  {
+    for (int gp = 0; gp < static_cast<int>(time_step_quantities_.current_flow_resistance_.size());
+        ++gp)
+    {
+      data(gp, 0) = time_step_quantities_.current_flow_resistance_[gp];
+    }
+    return true;
+  }
+
+  return false;
 }
 
 FOUR_C_NAMESPACE_CLOSE

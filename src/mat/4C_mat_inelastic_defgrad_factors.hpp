@@ -15,6 +15,7 @@
 #include "4C_mat_elast_couptransverselyisotropic.hpp"
 #include "4C_mat_inelastic_defgrad_factors_service.hpp"
 #include "4C_mat_multiplicative_split_defgrad_elasthyper.hpp"
+#include "4C_mat_so3_material.hpp"
 #include "4C_mat_vplast_law.hpp"
 #include "4C_material_parameter_base.hpp"
 #include "4C_utils_exceptions.hpp"
@@ -24,6 +25,7 @@
 
 #include <cmath>
 #include <memory>
+#include <unordered_map>
 #include <vector>
 
 FOUR_C_NAMESPACE_OPEN
@@ -649,6 +651,32 @@ namespace Mat
     virtual void pack_inelastic(Core::Communication::PackBuffer& data) const = 0;
 
     virtual void unpack_inelastic(Core::Communication::UnpackBuffer& data) = 0;
+
+    /*!
+     * @brief Register names of the internal data that should be saved during runtime output
+     *
+     * @param[out] name_and_size Unordered map of names of the data with the respective vector size
+     */
+    virtual void register_output_data_names(
+        std::unordered_map<std::string, int>& names_and_size) const
+    {
+    }
+
+    /*!
+     * @brief Evaluate internal data for every Gauss point saved for output during runtime
+     * output
+     *
+     * @param[in] name  Name of the data to export
+     * @param[out] data NUMGPxNUMDATA Matrix holding the data
+     *
+     * @return true if data is set by the material, otherwise false
+     */
+    virtual bool evaluate_output_data(
+        const std::string& name, Core::LinAlg::SerialDenseMatrix& data) const
+    {
+      return false;
+    }
+
 
    private:
     /// material parameters
@@ -1416,8 +1444,15 @@ namespace Mat
 
     void unpack_inelastic(Core::Communication::UnpackBuffer& buffer) override;
 
-    /*! @brief Evaluate the current state variables based on a given right Cauchy-Green deformation
-     * tensor, given inverse plastic deformation gradient and given equivalent plastic strain
+    void register_output_data_names(
+        std::unordered_map<std::string, int>& names_and_size) const override;
+
+    bool evaluate_output_data(
+        const std::string& name, Core::LinAlg::SerialDenseMatrix& data) const override;
+
+    /*! @brief Evaluate the current state variables based on a given right Cauchy-Green
+     * deformation tensor, given inverse plastic deformation gradient and given equivalent
+     * plastic strain
      *
      * @param[in] CM right Cauchy-Green deformation tensor \f[ \boldsymbol{C} \f] in matrix form
      * @param[in] iFinM inverse inelastic deformation gradient
@@ -1580,6 +1615,9 @@ namespace Mat
 
       //! current plastic strain (for all Gauss points)
       std::vector<double> current_plastic_strain_;
+
+      //! current equivalent stress (for all Gauss points)
+      std::vector<double> current_stress_;
 
       //! inverse plastic deformation gradient at the last computed time instant (after the last
       //! converged substep)

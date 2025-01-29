@@ -7,6 +7,7 @@
 
 #include "4C_mat_vplast_reform_johnsoncook.hpp"
 
+#include "4C_comm_pack_buffer.hpp"
 #include "4C_global_data.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_mat_par_bundle.hpp"
@@ -79,6 +80,15 @@ double Mat::Viscoplastic::ReformulatedJohnsonCook::evaluate_plastic_strain_rate(
 
   // stress ratio
   double stress_ratio = evaluate_stress_ratio(equiv_stress, equiv_plastic_strain);
+  if (stress_ratio >= 1.0)
+  {
+    double inv_stress_ratio = 1.0 / stress_ratio;
+    // save the current values
+    if (update_hist_var)
+    {
+      time_step_quantities_.current_yield_strength_[gp_] = equiv_stress * inv_stress_ratio;
+    }
+  }
 
   // then we check the yield condition
   if (stress_ratio >= 1.0)
@@ -177,5 +187,58 @@ Mat::Viscoplastic::ReformulatedJohnsonCook::evaluate_derivatives_of_plastic_stra
 
   return equiv_plastic_strain_rate_ders;
 }
+
+void Mat::Viscoplastic::ReformulatedJohnsonCook::setup(
+    const int numgp, const Core::IO::InputParameterContainer& container)
+{
+  time_step_quantities_.current_yield_strength_.resize(numgp, parameter()->init_yield_strength());
+}
+
+void Mat::Viscoplastic::ReformulatedJohnsonCook::register_output_data_names(
+    std::unordered_map<std::string, int>& names_and_size) const
+{
+  names_and_size["yield_strength"] = 1;
+}
+
+bool Mat::Viscoplastic::ReformulatedJohnsonCook::evaluate_output_data(
+    const std::string& name, Core::LinAlg::SerialDenseMatrix& data) const
+{
+  if (name == "yield_strength")
+  {
+    for (int gp = 0; gp < static_cast<int>(time_step_quantities_.current_yield_strength_.size());
+        ++gp)
+    {
+      data(gp, 0) = time_step_quantities_.current_yield_strength_[gp];
+    }
+    return true;
+  }
+
+  return false;
+}
+
+void Mat::Viscoplastic::ReformulatedJohnsonCook::pack_viscoplastic_law(
+    Core::Communication::PackBuffer& data) const
+{
+  // pack relevant variables
+  if (parameter() != nullptr)
+  {
+    // we need to pack this current value since it also saves the number
+    // of Gauss points
+    add_to_pack(data, time_step_quantities_.current_yield_strength_);
+  }
+}
+
+void Mat::Viscoplastic::ReformulatedJohnsonCook::unpack_viscoplastic_law(
+    Core::Communication::UnpackBuffer& buffer)
+{
+  // NOTE: factory method is called during assign_to_source in the unpack method of the
+  // multiplicative split framework --> the param class of the viscoplastic law is created, we only
+  // need to unpack the history variables
+  if (parameter() != nullptr)
+  {
+    extract_from_pack(buffer, time_step_quantities_.current_yield_strength_);
+  }
+}
+
 
 FOUR_C_NAMESPACE_CLOSE

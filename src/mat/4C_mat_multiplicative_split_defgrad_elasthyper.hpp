@@ -134,6 +134,24 @@ namespace Mat
     /// Unpack
     void unpack_inelastic(Core::Communication::UnpackBuffer& buffer);
 
+    /*!
+     * @brief Register names of the internal data that should be saved during runtime output
+     *
+     * @param[out] name_and_size Unordered map of names of the data with the respective vector size
+     */
+    void register_output_data_names(std::unordered_map<std::string, int>& names_and_size) const;
+
+    /*!
+     * @brief Evaluate internal data for every Gauss point saved for output during runtime
+     * output
+     *
+     * @param[in] name  Name of the data to export
+     * @param[out] data NUMGPxNUMDATA Matrix holding the data
+     *
+     * @return true if data is set by the material, otherwise false
+     */
+    bool evaluate_output_data(const std::string& name, Core::LinAlg::SerialDenseMatrix& data) const;
+
    private:
     /// vector that holds pairs of inelastic contribution and respective source
     std::vector<std::pair<PAR::InelasticSource, std::shared_ptr<Mat::InelasticDefgradFactors>>>
@@ -282,6 +300,12 @@ namespace Mat
     void setup(int numgp, const Core::IO::InputParameterContainer& container) override;
 
     void update() override;
+
+    void register_output_data_names(
+        std::unordered_map<std::string, int>& names_and_size) const override;
+
+    bool evaluate_output_data(
+        const std::string& name, Core::LinAlg::SerialDenseMatrix& data) const override;
 
     /*!
      * @brief Evaluate off-diagonal stiffness matrix (required for monolithic algorithms)

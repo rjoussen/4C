@@ -164,7 +164,7 @@ namespace Mat
        *
        * @param[in] gp      Current Gauss point
        */
-      virtual void pre_evaluate(int gp) = 0;
+      virtual void pre_evaluate(int gp) { gp_ = gp; };
 
       /*!
        * @brief Update history variables of the viscoplasticity law for next time step
@@ -183,6 +183,26 @@ namespace Mat
 
       virtual void unpack_viscoplastic_law(Core::Communication::UnpackBuffer& buffer) = 0;
 
+      virtual void register_output_data_names(
+          std::unordered_map<std::string, int>& names_and_size) const
+      {
+      }
+
+      /*!
+       * @brief Evaluate internal data for every Gauss point saved for output during runtime
+       * output
+       *
+       * @param[in] name  Name of the data to export
+       * @param[out] data NUMGPxNUMDATA Matrix holding the data
+       *
+       * @return true if data is set by the material, otherwise false
+       */
+      virtual bool evaluate_output_data(
+          const std::string& name, Core::LinAlg::SerialDenseMatrix& data) const
+      {
+        return false;
+      }
+
       /*!
        * @brief Get information on the eventual last_ quantities of the
        * viscoplasticity law, to be shown during the error message at
@@ -191,6 +211,11 @@ namespace Mat
        * @param[in] gp    Gauss point
        */
       virtual std::string debug_get_error_info(int gp) { return ""; };
+
+     protected:
+      /// Gauss point
+      int gp_;
+
 
      private:
       /// material parameters
