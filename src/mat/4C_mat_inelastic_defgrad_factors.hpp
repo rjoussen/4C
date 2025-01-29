@@ -333,6 +333,11 @@ namespace Mat
       //! get the type of time integration for the evolution equations
       //! of history variables
       [[nodiscard]] Mat::ViscoplastTimIntType timint_type() const { return timint_type_; };
+      //! get the type of material linearization used
+      [[nodiscard]] Mat::ViscoplastLinearizationType linearization_type() const
+      {
+        return linearization_type_;
+      };
       //! get maximum, numerically evaluable plastic strain increment
       [[nodiscard]] double max_plastic_strain_incr() const { return max_plastic_strain_incr_; };
       //! get maximum, numerically evaluable value for the increment of
@@ -393,6 +398,9 @@ namespace Mat
       //! computation method for the time integration of the
       //! history variables
       const Mat::ViscoplastTimIntType timint_type_;
+
+      //! linearization method
+      const Mat::ViscoplastLinearizationType linearization_type_;
 
       //! maximum, numerically evaluable plastic strain increment
       const double max_plastic_strain_incr_;

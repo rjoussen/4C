@@ -474,6 +474,17 @@ Mat::ViscoplastTimIntType Mat::get_time_integration_type(const std::string& timi
   FOUR_C_THROW("You should not be here!");
 }
 
+/// get the material linearization type (InelasticDefgradTransvIsotropElastViscoplast) from the
+/// user-specified string in the input file
+Mat::ViscoplastLinearizationType Mat::get_linearization_type(
+    const std::string& linearization_string)
+{
+  if (linearization_string == "analytic") return Mat::ViscoplastLinearizationType::Analytic;
+  if (linearization_string == "perturb_based")
+    return Mat::ViscoplastLinearizationType::PerturbBased;
+
+  FOUR_C_THROW("You should not be here!");
+}
 
 
 /*--------------------------------------------------------------------*
@@ -654,6 +665,8 @@ Mat::PAR::InelasticDefgradTransvIsotropElastViscoplast::
           read_anisotropy_type(matdata.parameters.get<std::string>("ANISOTROPY"))),
       timint_type_(get_time_integration_type(
           matdata.parameters.get<std::string>("TIME_INTEGRATION_HIST_VARS"))),
+      linearization_type_(
+          get_linearization_type(matdata.parameters.get<std::string>("LINEARIZATION"))),
       max_plastic_strain_incr_(matdata.parameters.get<double>("MAX_PLASTIC_STRAIN_INCR")),
       max_plastic_strain_deriv_incr_(
           matdata.parameters.get<double>("MAX_PLASTIC_STRAIN_DERIV_INCR")),
@@ -2390,6 +2403,13 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_additional_cmat
   //      \boldsymbol{F}_{\text{in},2}^{-1} \dots \f$ up to the current inelastic factor
   Core::LinAlg::Matrix<3, 3> FredM(true);
   FredM.multiply_nn(1.0, *defgrad, iFin_other, 0.0);
+
+  if (parameter()->linearization_type() == Mat::ViscoplastLinearizationType::PerturbBased)
+  {
+    evaluate_additional_cmat_perturb_based(FredM, cmatadd, iFin_other, dSdiFinj);
+    return;
+  }
+
 
   // reduced right Cauchy-Green deformation tensor
   Core::LinAlg::Matrix<3, 3> CredM(true);

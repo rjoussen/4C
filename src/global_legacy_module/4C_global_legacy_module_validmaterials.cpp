@@ -2694,8 +2694,9 @@ std::unordered_map<Core::Materials::MaterialType, Core::IO::InputSpec> Global::v
   {
     known_materials[Core::Materials::mfi_transv_isotrop_elast_viscoplast] = group(
         "MAT_InelasticDefgradTransvIsotropElastViscoplast",
-        {parameter<int>(
-             "VISCOPLAST_LAW_ID", {.description = "MAT ID of the corresponding viscoplastic law"}),
+        {
+            parameter<int>("VISCOPLAST_LAW_ID",
+                {.description = "MAT ID of the corresponding viscoplastic law"}),
             parameter<int>(
                 "FIBER_READER_ID", {.description = "MAT ID of the used fiber direction reader for "
                                                    "transversely isotropic behavior"}),
@@ -2778,7 +2779,13 @@ std::unordered_map<Core::Materials::MaterialType, Core::IO::InputSpec> Global::v
                                 "writing key performance factors (e.g. "
                                 "number of iterations, number of substeps, ...) to a csv "
                                 "file? If true: yes, false: no",
-                    .default_value = false})},
+                    .default_value = false}),
+            parameter<std::string>("LINEARIZATION",
+                {.description =
+                        "utilized material linearization: analytic | perturb_based (based on "
+                        "perturbations of the current state)",
+                    .default_value = "analytic"}),
+        },
         {.description = "Versatile transversely isotropic (or isotropic) viscoplasticity model for "
                         "finite deformations with isotropic hardening, using user-defined "
                         "viscoplasticity laws (flow rule + hardening model)"});
