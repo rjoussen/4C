@@ -397,7 +397,7 @@ namespace Mat
   };
 
   /// defines
-  // define DEBUGVISCOPLAST /* flag for debug output (viscoplastic material) */
+  // #define DEBUGVISCOPLAST /* flag for debug output (viscoplastic material) */
 
 }  // namespace Mat
 

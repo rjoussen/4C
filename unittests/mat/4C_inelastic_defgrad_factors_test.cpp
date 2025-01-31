@@ -339,7 +339,7 @@ namespace
       inelastic_defgrad_isotrop_vplast_refJC_data.add("MAX_PLASTIC_STRAIN_INCR", std::exp(30.0));
       inelastic_defgrad_isotrop_vplast_refJC_data.add(
           "MAX_PLASTIC_STRAIN_DERIV_INCR", std::exp(30.0));
-      inelastic_defgrad_isotrop_vplast_refJC_data.add("INTERP_FACT_PRED_ADAPT", 0.5);
+      inelastic_defgrad_isotrop_vplast_refJC_data.add("INTERP_FACT_PRED_ADAPT", 0.1);
       inelastic_defgrad_isotrop_vplast_refJC_data.add("MAX_NUM_PRED_ADAPT", 10);
       inelastic_defgrad_isotrop_vplast_refJC_data.add("ANALYZE_TIMINT", false);
       inelastic_defgrad_isotrop_vplast_refJC_data.add("LINEARIZATION", std::string("analytic"));
@@ -380,11 +380,19 @@ namespace
 
       // manually create viscoplastic law (Reformulated Johnson-Cook and Anand)
       Core::IO::InputParameterContainer viscoplastic_law_reformulated_Johnson_Cook_data;
+      /*
+            viscoplastic_law_reformulated_Johnson_Cook_data.add("STRAIN_RATE_PREFAC", 1.0);
+            viscoplastic_law_reformulated_Johnson_Cook_data.add("STRAIN_RATE_EXP_FAC", 0.1);
+            viscoplastic_law_reformulated_Johnson_Cook_data.add("INIT_YIELD_STRENGTH",
+            20000.0);
+            viscoplastic_law_reformulated_Johnson_Cook_data.add("ISOTROP_HARDEN_PREFAC", 5000.0);
+            viscoplastic_law_reformulated_Johnson_Cook_data.add("ISOTROP_HARDEN_EXP", 0.2);
+      */
       viscoplastic_law_reformulated_Johnson_Cook_data.add("STRAIN_RATE_PREFAC", 1.0);
-      viscoplastic_law_reformulated_Johnson_Cook_data.add("STRAIN_RATE_EXP_FAC", 0.1);
-      viscoplastic_law_reformulated_Johnson_Cook_data.add("INIT_YIELD_STRENGTH", 20000.0);
-      viscoplastic_law_reformulated_Johnson_Cook_data.add("ISOTROP_HARDEN_PREFAC", 5000.0);
-      viscoplastic_law_reformulated_Johnson_Cook_data.add("ISOTROP_HARDEN_EXP", 0.2);
+      viscoplastic_law_reformulated_Johnson_Cook_data.add("STRAIN_RATE_EXP_FAC", 0.014);
+      viscoplastic_law_reformulated_Johnson_Cook_data.add("INIT_YIELD_STRENGTH", 792.0);
+      viscoplastic_law_reformulated_Johnson_Cook_data.add("ISOTROP_HARDEN_PREFAC", 510.0);
+      viscoplastic_law_reformulated_Johnson_Cook_data.add("ISOTROP_HARDEN_EXP", 0.26);
       // add material to problem instance
       problem.materials()->insert(400,
           Mat::make_parameter(400, Core::Materials::MaterialType::mvl_reformulated_Johnson_Cook,
@@ -1775,39 +1783,45 @@ namespace
   {
     // define last_values to be set for InelasticDefgradTransvIsotropElastViscoplast
     Core::LinAlg::Matrix<3, 3> last_plastic_defgrad_inverse{true};
-    last_plastic_defgrad_inverse(0, 0) = 1.0;
-    last_plastic_defgrad_inverse(0, 1) = 0.0;
-    last_plastic_defgrad_inverse(0, 2) = 0.0;
-    last_plastic_defgrad_inverse(1, 0) = 0.0;
-    last_plastic_defgrad_inverse(1, 1) = 1.0;
-    last_plastic_defgrad_inverse(1, 2) = 0.0;
-    last_plastic_defgrad_inverse(2, 0) = 0.0;
-    last_plastic_defgrad_inverse(2, 1) = 0.0;
-    last_plastic_defgrad_inverse(2, 2) = 1.0;
-    double last_plastic_strain = 0.0;
+    last_plastic_defgrad_inverse(0, 0) = 0.636516;
+    last_plastic_defgrad_inverse(0, 1) = 0.650653;
+    last_plastic_defgrad_inverse(0, 2) = -1.10612e-11;
+    last_plastic_defgrad_inverse(1, 0) = 0.181159;
+    last_plastic_defgrad_inverse(1, 1) = 1.78026;
+    last_plastic_defgrad_inverse(1, 2) = -1.12744e-10;
+    last_plastic_defgrad_inverse(2, 0) = 4.71595e-11;
+    last_plastic_defgrad_inverse(2, 1) = -7.83534e-11;
+    last_plastic_defgrad_inverse(2, 2) = 0.984941;
+
+    double last_plastic_strain = 1.009606;
     Core::LinAlg::Matrix<3, 3> last_defgrad{true};
-    last_defgrad(0, 0) = 1.0;
-    last_defgrad(0, 1) = 0.0;
-    last_defgrad(0, 2) = 0.0;
-    last_defgrad(1, 0) = 0.0;
-    last_defgrad(1, 1) = 1.0;
-    last_defgrad(1, 2) = 0.0;
-    last_defgrad(2, 0) = 0.0;
-    last_defgrad(2, 1) = 0.0;
+    last_defgrad(0, 0) = 0.861802;
+    last_defgrad(0, 1) = 0.13457;
+    last_defgrad(0, 2) = 6.44661e-11;
+    last_defgrad(1, 0) = -1.51629;
+    last_defgrad(1, 1) = 0.871844;
+    last_defgrad(1, 2) = 1.77005e-10;
+    last_defgrad(2, 0) = 8.88178e-16;
+    last_defgrad(2, 1) = -8.88178e-16;
     last_defgrad(2, 2) = 1.0;
+
     Core::LinAlg::Matrix<3, 3> last_rightCG{true};
-    last_rightCG(0, 0) = 1.0;
-    last_rightCG(0, 1) = 0.0;
-    last_rightCG(0, 2) = 0.0;
-    last_rightCG(1, 0) = 0.0;
-    last_rightCG(1, 1) = 1.0;
-    last_rightCG(1, 2) = 0.0;
-    last_rightCG(2, 0) = 0.0;
-    last_rightCG(2, 1) = 0.0;
+    last_rightCG(0, 0) = 3.04183;
+    last_rightCG(0, 1) = -1.20599;
+    last_rightCG(0, 2) = -2.12832e-10;
+    last_rightCG(1, 0) = -1.20599;
+    last_rightCG(1, 1) = 0.778221;
+    last_rightCG(1, 2) = 1.62995e-10;
+    last_rightCG(2, 0) = -2.12832e-10;
+    last_rightCG(2, 1) = 1.62995e-10;
     last_rightCG(2, 2) = 1.0;
+
     // set the values at the 0-th GP
     isotrop_vplast_Anand_->debug_set_last_quantities(
         0, last_plastic_defgrad_inverse, last_plastic_strain, last_defgrad, last_rightCG);
+    isotrop_vplast_refJC_->debug_set_last_quantities(
+        0, last_plastic_defgrad_inverse, last_plastic_strain, last_defgrad, last_rightCG);
+
 
     // define last_values to be set for the viscoplastic law (Anand)
     double last_flow_resistance = 0.75;
@@ -1819,15 +1833,15 @@ namespace
 
     // set other variables needed for evaluation
     Core::LinAlg::Matrix<3, 3> current_defgrad{true};
-    current_defgrad(0, 0) = 1.0;
-    current_defgrad(0, 1) = 0.0;
-    current_defgrad(0, 2) = 0.0;
-    current_defgrad(1, 0) = 0.0;
-    current_defgrad(1, 1) = 1.0;
-    current_defgrad(1, 2) = 0.0;
-    current_defgrad(2, 0) = 0.0;
-    current_defgrad(2, 1) = 0.0;
-    current_defgrad(2, 2) = 2.0;
+    current_defgrad(0, 0) = 0.861495;
+    current_defgrad(0, 1) = 0.134531;
+    current_defgrad(0, 2) = 6.58457e-11;
+    current_defgrad(1, 0) = -1.5209;
+    current_defgrad(1, 1) = 0.871478;
+    current_defgrad(1, 2) = 1.81654e-10;
+    current_defgrad(2, 0) = 8.88178e-16;
+    current_defgrad(2, 1) = -8.88178e-16;
+    current_defgrad(2, 2) = 1.0;
     Core::LinAlg::Matrix<3, 3>* current_defgrad_ptr = &current_defgrad;
     Core::LinAlg::Matrix<3, 3> iFin_other{
         true};  // should always be the unit tensor during debugging
@@ -1843,8 +1857,18 @@ namespace
     Core::LinAlg::Matrix<3, 3> iFinM{
         true};  // only declared, to be able to pass it to the evaluation function
 
+    // parameter list for InelasticDefGradTransvIsotropElastViscoplast
+    Teuchos::ParameterList param_list_transv_isotrop_vplast_refJC{};
+    param_list_transv_isotrop_vplast_refJC.set<double>("delta time", 1.0e-3);
+    // call pre_evaluate
+    isotrop_vplast_Anand_->pre_evaluate(param_list_transv_isotrop_vplast_refJC, 0, 0);
+    isotrop_vplast_refJC_->pre_evaluate(param_list_transv_isotrop_vplast_refJC, 0, 0);
+
+
     // evaluate
-    isotrop_vplast_Anand_->evaluate_inverse_inelastic_def_grad(
+    //    isotrop_vplast_Anand_->evaluate_inverse_inelastic_def_grad(
+    //       current_defgrad_ptr, iFin_other, iFinM);
+    isotrop_vplast_refJC_->evaluate_inverse_inelastic_def_grad(
         current_defgrad_ptr, iFin_other, iFinM);
 
     // if the evaluation was successful, then the test is passed

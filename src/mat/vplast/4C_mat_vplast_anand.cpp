@@ -547,7 +547,9 @@ void Mat::Viscoplastic::Anand::debug_set_last_values(
     const int gp, const double last_flow_resistance, const double last_plastic_strain)
 {
   time_step_quantities_.last_flow_resistance_[gp] = last_flow_resistance;
+  time_step_quantities_.last_substep_flow_resistance_[gp] = last_flow_resistance;
   time_step_quantities_.last_plastic_strain_[gp] = last_plastic_strain;
+  time_step_quantities_.last_substep_plastic_strain_[gp] = last_plastic_strain;
 }
 
 void Mat::Viscoplastic::Anand::register_output_data_names(
