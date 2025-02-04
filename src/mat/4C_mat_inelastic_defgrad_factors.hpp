@@ -338,6 +338,8 @@ namespace Mat
       {
         return linearization_type_;
       };
+      //! DEBUG: set linearization type
+      void debug_set_linearization_type(const std::string linearization_type);
       //! get maximum, numerically evaluable plastic strain increment
       [[nodiscard]] double max_plastic_strain_incr() const { return max_plastic_strain_incr_; };
       //! get maximum, numerically evaluable value for the increment of
@@ -400,7 +402,7 @@ namespace Mat
       const Mat::ViscoplastTimIntType timint_type_;
 
       //! linearization method
-      const Mat::ViscoplastLinearizationType linearization_type_;
+      Mat::ViscoplastLinearizationType linearization_type_;
 
       //! maximum, numerically evaluable plastic strain increment
       const double max_plastic_strain_incr_;
@@ -1522,6 +1524,15 @@ namespace Mat
     {
       return viscoplastic_law_;
     };
+
+    /*!
+     * @brief Set the flag for updating history variables.
+     * @note to be used only for debugging purposes!
+     */
+    void debug_set_update_hist_var(const bool update_hist_var)
+    {
+      update_hist_var_ = update_hist_var;
+    }
 
 
 

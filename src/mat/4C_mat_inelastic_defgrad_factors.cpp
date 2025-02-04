@@ -2426,12 +2426,19 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_additional_cmat
                time_step_quantities_.last_plastic_strain_[gp_]) > 0.0)
   {
     // ----- analytical linearization ----- //
-    // if error encountered: perform perturbation-based linearization
 
     // calculate Jacobian
     Core::LinAlg::Matrix<10, 1> current_sol =
         wrap_unknowns(time_step_quantities_.current_plastic_defgrd_inverse_[gp_],
             time_step_quantities_.current_plastic_strain_[gp_]);
+
+#ifdef DEBUGVISCOPLAST
+    std::cout << "current_sol: " << std::endl;
+    current_sol.print(std::cout);
+#endif
+
+
+
     Core::LinAlg::Matrix<10, 10> jacMat(true);
     viscoplastic_law_->pre_evaluate(gp_);  // set last_substep <- last_
     jacMat = calculate_jacobian(CredM, current_sol,
@@ -2508,6 +2515,12 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_additional_cmat
 
     // disassemble the solution vector
     Core::LinAlg::Matrix<9, 6> diFinjdCV = extract_derivative_of_inv_inelastic_defgrad(SOL);
+
+#ifdef DEBUGVISCOPLAST
+    std::cout << "Analytical linearization: diFindC" << std::endl;
+    diFinjdCV.print(std::cout);
+#endif
+
 
     // compute additional term to stiffness matrix additional_cmat
     cmatadd.multiply_nn(2.0, dSdiFinj, diFinjdCV, 1.0);
@@ -2654,7 +2667,7 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_inverse_inelast
   std::cout << "current_stress: " << std::endl;
   std::cout << time_step_quantities_.current_stress_[gp_] << std::endl;
   std::cout << std::string(60, '-') << std::endl;
-  FOUR_C_THROW(debug_get_error_info("Error thrown by me after inverse_inelastic_defgrad"));
+  // FOUR_C_THROW(debug_get_error_info("Error thrown by me after inverse_inelastic_defgrad"));
 
 #endif
 }
@@ -3453,6 +3466,12 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_additional_cmat
     }
   }
 
+#ifdef DEBUGVISCOPLAST
+  std::cout << "Perturbation-based linearization: diFindC" << std::endl;
+  diFindC_FD.print(std::cout);
+#endif
+
+
   // compute additional term to stiffness matrix additional_cmat
   cmatadd.multiply_nn(2.0, dSdiFinj, diFindC_FD, 1.0);
 
@@ -4162,4 +4181,11 @@ bool Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_output_data(
 
   return viscoplastic_law_->evaluate_output_data(name, data);
 }
+
+void Mat::PAR::InelasticDefgradTransvIsotropElastViscoplast::debug_set_linearization_type(
+    const std::string linearization_type)
+{
+  linearization_type_ = get_linearization_type(linearization_type);
+}
+
 FOUR_C_NAMESPACE_CLOSE
