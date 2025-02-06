@@ -8,6 +8,7 @@
 #include <gtest/gtest.h>
 
 #include "4C_global_data.hpp"
+#include "4C_inpar_ssi.hpp"
 #include "4C_io_input_parameter_container.templates.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_linalg_fixedsizematrix_voigt_notation.hpp"
@@ -15,6 +16,8 @@
 #include "4C_mat_electrode.hpp"
 #include "4C_mat_inelastic_defgrad_factors.hpp"
 #include "4C_mat_inelastic_defgrad_factors_service.hpp"
+#include "4C_mat_multiplicative_split_defgrad_elasthyper.hpp"
+#include "4C_mat_multiplicative_split_defgrad_elasthyper_service.hpp"
 #include "4C_mat_par_bundle.hpp"
 #include "4C_mat_vplast_anand.hpp"
 #include "4C_mat_vplast_law.hpp"
@@ -1885,10 +1888,138 @@ namespace
     isotrop_vplast_refJC_->evaluate_inverse_inelastic_def_grad(
         current_defgrad_ptr, iFin_other, iFinM);
 
+    // ----------------------------------------------------------------------- //
+    // START:: CREATE MULT. SPLIT MATERIAL CONTAINING THIS INELASTIC DEFGRAD
+    // FACTOR
+    // ----------------------------------------------------------------------- //
+
     // declare dummy variables not really required for this simple
     // linearization analysis (we use the DEBUGVISCOPLAST comments)
-    Core::LinAlg::Matrix<6, 1> iCV{true};
-    Core::LinAlg::Matrix<6, 9> dSdiFinj{true};
+    // do problem instance specific stuff
+    const int problemid(0);
+    Global::Problem& problem = (*Global::Problem::instance());
+    problem.materials()->set_read_from_problem(problemid);
+
+    // create MultiplicativeSplitDefgrad_ElastHyper object;
+    // initialize container for material parameters first
+    const int matid_multsplit(90000);
+    const int matid_elastic(90001);
+    const int inelastic_defgrad_id(90002);
+    const int reformjc_vplast_law_id(400);
+    // const int anand_vplast_law_id(4000);
+    const int fiber_reader_id(90004);
+    const int elast_struct_tens_id(90005);
+    Core::IO::InputParameterContainer multiplicativeSplitDefgradData;
+
+    multiplicativeSplitDefgradData.add("NUMMATEL", 1);
+    std::vector<int> matids_elastic = {matid_elastic};
+    multiplicativeSplitDefgradData.add("MATIDSEL", matids_elastic);
+    multiplicativeSplitDefgradData.add("NUMFACINEL", 1);
+    std::vector<int> inelastic_defgrad_factor_ids = {inelastic_defgrad_id};
+    multiplicativeSplitDefgradData.add("INELDEFGRADFACIDS", inelastic_defgrad_factor_ids);
+    multiplicativeSplitDefgradData.add("DENS", 7.85e-9);
+
+    // add elastic material to problem instance
+    problem.materials()->insert(matid_multsplit,
+        Mat::make_parameter(1,
+            Core::Materials::MaterialType::m_multiplicative_split_defgrad_elasthyper,
+            multiplicativeSplitDefgradData));
+
+    // set up elastic material to be added to problem instance
+    Core::IO::InputParameterContainer mat_elastic_neo_hooke_data;
+    mat_elastic_neo_hooke_data.add("YOUNG", 200.0e3);
+    mat_elastic_neo_hooke_data.add("NUE", 0.3);
+
+    // add elastic material to problem instance
+    problem.materials()->insert(
+        matid_elastic, Mat::make_parameter(1, Core::Materials::MaterialType::mes_coupneohooke,
+                           mat_elastic_neo_hooke_data));
+
+    // set up inelastic material to be added to problem instance (WE
+    // CLONE OUR CURRENT MATERIAL)
+    Core::IO::InputParameterContainer mat_inelastic_data =
+        isotrop_vplast_refJC_->parameter()->raw_parameters();
+    mat_inelastic_data.add("VISCOPLAST_LAW_ID", reformjc_vplast_law_id);  // refJC
+    mat_inelastic_data.add("FIBER_READER_ID", fiber_reader_id);
+
+    // add inelastic material to problem instance
+    problem.materials()->insert(inelastic_defgrad_id,
+        Mat::make_parameter(1, Core::Materials::MaterialType::mfi_transv_isotrop_elast_viscoplast,
+            mat_inelastic_data));
+
+    // set up fiber reader
+    Core::IO::InputParameterContainer fiber_reader_data;
+    fiber_reader_data.add("ALPHA", 1.0);
+    fiber_reader_data.add("BETA", 1.0);
+    fiber_reader_data.add("GAMMA", 1.0);
+    fiber_reader_data.add("ANGLE", 0.0);
+    fiber_reader_data.add("FIBER", 1);
+    fiber_reader_data.add("INIT", 1);
+    fiber_reader_data.add("STR_TENS_ID", elast_struct_tens_id);
+
+    // set up elastic structural tensor
+    Core::IO::InputParameterContainer elast_struct_tens_data;
+    elast_struct_tens_data.add("STRATEGY", std::string("Standard"));
+    elast_struct_tens_data.add("DISTR", std::string("none"));
+    elast_struct_tens_data.add("C1", 1.0);
+    elast_struct_tens_data.add("C2", 0.0);
+    elast_struct_tens_data.add("C3", 0.0);
+    elast_struct_tens_data.add("C4", 1e16);
+
+    // add elastic structural tensor to problem instance
+    problem.materials()->insert(elast_struct_tens_id,
+        Mat::make_parameter(
+            1, Core::Materials::MaterialType::mes_structuraltensorstratgy, elast_struct_tens_data));
+
+
+    // add fiber reader to problem instance
+    problem.materials()->insert(fiber_reader_id,
+        Mat::make_parameter(
+            1, Core::Materials::MaterialType::mes_couptransverselyisotropic, fiber_reader_data));
+
+
+    // set parameter list
+    auto parameter_list_pointer = std::make_shared<Teuchos::ParameterList>();
+    parameter_list_pointer->sublist("STRUCTURAL DYNAMIC", false)
+        .set("MASSLIN", Inpar::Solid::MassLin::ml_none);
+    parameter_list_pointer->sublist("SSI CONTROL")
+        .set("COUPALGO", Inpar::SSI::SolutionSchemeOverFields::ssi_IterStagg);
+
+    // set the parameter list in the global problem
+    problem.set_parameter_list(parameter_list_pointer);
+
+    // get pointer to parameter class
+    std::shared_ptr<Mat::PAR::MultiplicativeSplitDefgradElastHyper>
+        parameters_multiplicative_split_defgrad =
+            std::make_shared<Mat::PAR::MultiplicativeSplitDefgradElastHyper>(
+                Core::Mat::PAR::Parameter::Data{.parameters = multiplicativeSplitDefgradData});
+
+    // setup pointer to MultiplicativeSplitDefgrad_ElastHyper object
+    std::shared_ptr<Mat::MultiplicativeSplitDefgradElastHyper> multiplicative_split_defgrad =
+        std::make_shared<Mat::MultiplicativeSplitDefgradElastHyper>(
+            parameters_multiplicative_split_defgrad.get());
+
+    // ----------------------------------------------------------------------- //
+    // END:: CREATE MULT. SPLIT MATERIAL CONTAINING THIS INELASTIC DEFGRAD
+    // FACTOR
+    // ----------------------------------------------------------------------- //
+
+    // determine dSdiFinj with the multiplicative split material
+    Mat::MultiplicativeSplitDefgradElastHyper::KinematicQuantities kin_quantities{};
+    kin_quantities.iFinM = iFinM;
+    kin_quantities.detFin = 1.0 / kin_quantities.iFinM.determinant();
+    multiplicative_split_defgrad->evaluate_kin_quant_elast(current_defgrad_ptr, kin_quantities);
+    multiplicative_split_defgrad->evaluate_invariant_derivatives(kin_quantities.prinv, 0, 0,
+        kin_quantities.dPIe,
+        kin_quantities.ddPIIe);  // NOTE: we exclude the transversely isotropic hyperelastic
+                                 // components in this function --> we deal with them separately
+    Mat::MultiplicativeSplitDefgradElastHyper::StressFactors stress_factors;
+    Mat::calculate_gamma_delta(stress_factors.gamma, stress_factors.delta, kin_quantities.prinv,
+        kin_quantities.dPIe, kin_quantities.ddPIIe);
+    Core::LinAlg::Matrix<6, 9> dSdiFinj =
+        multiplicative_split_defgrad->evaluated_sdi_fin(kin_quantities, stress_factors);
+
+    // declare cmatadd
     Core::LinAlg::Matrix<6, 6> cmatadd{true};
 
     // linearize: analytical and perturbation based
@@ -1898,10 +2029,12 @@ namespace
     // isotrop_vplast_Anand_->evaluate_additional_cmat(
     //    current_defgrad_ptr, iFin_other, iFinM, iCV, dSdiFinj, cmatadd);
     isotrop_vplast_refJC_->evaluate_additional_cmat(
-        current_defgrad_ptr, iFin_other, iFinM, iCV, dSdiFinj, cmatadd);
+        current_defgrad_ptr, iFin_other, iFinM, kin_quantities.iCV, dSdiFinj, cmatadd);
+
+    cmatadd.clear();
     isotrop_vplast_refJC_->parameter()->debug_set_linearization_type("perturb_based");
     isotrop_vplast_refJC_->evaluate_additional_cmat(
-        current_defgrad_ptr, iFin_other, iFinM, iCV, dSdiFinj, cmatadd);
+        current_defgrad_ptr, iFin_other, iFinM, kin_quantities.iCV, dSdiFinj, cmatadd);
 
 
     // compare the results
