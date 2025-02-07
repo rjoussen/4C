@@ -1884,6 +1884,8 @@ namespace Mat
      * @param[in] CM right Cauchy_Green deformation tensor \f$ \boldsymbol{C} \f$ in matrix form
      * @param[in] curr_res residual of the current iteration of the
      * Local Newton Loop \f$ \boldsymbol{r}_{\boldsymbol{s}_i} \f$
+     * @param[in] tolLNL tolerance used for determining the solution in
+     * the Local Newton Loop
      * @param[in] incr increment \f$ \Delta \boldsymbol{s}_{i+1} \f$ for
      * the update of the solution vector
      * @param[out] err_status error status
@@ -1892,7 +1894,8 @@ namespace Mat
      */
     double get_line_search_parameter(const Core::LinAlg::Matrix<10, 1>& curr_sol,
         const Core::LinAlg::Matrix<3, 3>& CM, const Core::LinAlg::Matrix<10, 1>& curr_res,
-        const Core::LinAlg::Matrix<10, 1>& incr, Mat::ViscoplastErrorType& err_status);
+        const double tolLNL, const Core::LinAlg::Matrix<10, 1>& incr,
+        Mat::ViscoplastErrorType& err_status);
 
 
     /*!
