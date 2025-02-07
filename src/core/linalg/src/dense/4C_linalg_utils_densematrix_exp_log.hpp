@@ -35,10 +35,12 @@ namespace Core::LinAlg
    * @note Computation method depends on the norm of the input matrix.
    *
    * @param[in] input input matrix
+   * @param[in,out] err_status Error status: 0 if the evaluation was
+   * successful, -1 otherwise
    * @returns matrix exponential of the input matrix
    */
   template <unsigned int dim>
-  Matrix<dim, dim> matrix_exp(const Matrix<dim, dim>& input);
+  Matrix<dim, dim> matrix_exp(const Matrix<dim, dim>& input, int& err_status);
 
   /*!
    * @brief Computes the (principal) matrix logarithm of a given real matrix, using either the
@@ -53,10 +55,12 @@ namespace Core::LinAlg
    * possess positive real parts.
    *
    * @param[in] input input matrix
+   * @param[in,out] err_status Error status: 0 if the evaluation was
+   * successful, -1 otherwise
    * @returns principal matrix logarithm of the input matrix
    */
   template <unsigned int dim>
-  Matrix<dim, dim> matrix_log(const Matrix<dim, dim>& input);
+  Matrix<dim, dim> matrix_log(const Matrix<dim, dim>& input, int& err_status);
 
   /*!
    * @brief Computes the first derivative of the matrix exponential (general, not necessarily
@@ -67,10 +71,12 @@ namespace Core::LinAlg
    * 2008, Section B.2
    *
    * @param[in] input input 3x3 matrix
+   * @param[in,out] err_status Error status: 0 if the evaluation was
+   * successful, -1 otherwise
    * @return first derivative of input matrix exponential w.r.t. input matrix, specified in Voigt
    * notation
    */
-  Matrix<9, 9> matrix_3x3_exp_1st_deriv(const Matrix<3, 3>& input);
+  Matrix<9, 9> matrix_3x3_exp_1st_deriv(const Matrix<3, 3>& input, int& err_status);
 
   /*!
    * @brief Computes the derivative of the matrix logarithm (general, not necessarily symmetric
@@ -82,10 +88,12 @@ namespace Core::LinAlg
    * Mathematics, 2008
    *
    * @param[in] input input 3x3 matrix
+   * @param[in,out] err_status Error status: 0 if the evaluation was
+   * successful, -1 otherwise
    * @return derivative of input matrix logarithm w.r.t. input matrix, specified in Voigt
    * notation
    */
-  Matrix<9, 9> matrix_3x3_log_1st_deriv(const Matrix<3, 3>& input);
+  Matrix<9, 9> matrix_3x3_log_1st_deriv(const Matrix<3, 3>& input, int& err_status);
 
 
   /*!
@@ -97,10 +105,12 @@ namespace Core::LinAlg
    * 2008, Section A.5
    *
    * @param[in] input input 3x3 matrix
+   * @param[in,out] err_status Error status: 0 if the evaluation was
+   * successful, -1 otherwise
    * @return derivative of input matrix exponential w.r.t. input matrix, specified in Voigt
    * stress-stress form
    */
-  Matrix<6, 6> sym_matrix_3x3_exp_1st_deriv(const Matrix<3, 3>& input);
+  Matrix<6, 6> sym_matrix_3x3_exp_1st_deriv(const Matrix<3, 3>& input, int& err_status);
 
   /*!
    * @brief Computes the exponential of a symmetric matrix along with the first and second
@@ -113,12 +123,14 @@ namespace Core::LinAlg
    * @param[in] input input 3x3 matrix
    * @param[out] exp exponential of the input matrix
    * @param[out] dexp_mat first derivative of exponential w.r.t. matrix
+   * @param[in,out] err_status Error status: 0 if the evaluation was
+   * successful, -1 otherwise
    * @param[out] ddexp_mat second derivative of exponential w.r.t. matrix
    * notation
    */
   void sym_matrix_3x3_exp_2nd_deriv_voigt(const Core::LinAlg::Matrix<3, 3>& input,
       Core::LinAlg::Matrix<3, 3>& exp, Core::LinAlg::Matrix<6, 6>& dexp_mat,
-      Core::LinAlg::Matrix<6, 6>* ddexp_mat);
+      Core::LinAlg::Matrix<6, 6>* ddexp_mat, int& err_status);
 
 }  // namespace Core::LinAlg
 

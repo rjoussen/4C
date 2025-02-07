@@ -16,13 +16,16 @@
 #include "4C_linalg_four_tensor.hpp"
 #include "4C_linalg_utils_densematrix_eigen.hpp"
 
+#include <boost/fusion/view/joint_view/detail/deref_impl.hpp>
+
 FOUR_C_NAMESPACE_OPEN
 
 using vmap = Core::LinAlg::Voigt::IndexMappings;
 
 
 template <unsigned int dim>
-Core::LinAlg::Matrix<dim, dim> Core::LinAlg::matrix_exp(const Core::LinAlg::Matrix<dim, dim>& input)
+Core::LinAlg::Matrix<dim, dim> Core::LinAlg::matrix_exp(
+    const Core::LinAlg::Matrix<dim, dim>& input, int& err_status)
 {
   // declare output matrix
   Core::LinAlg::Matrix<dim, dim> output(true);
@@ -34,6 +37,7 @@ Core::LinAlg::Matrix<dim, dim> Core::LinAlg::matrix_exp(const Core::LinAlg::Matr
   if (mat_norm == 0.)
   {
     for (unsigned int i = 0; i < dim; i++) output(i, i) = 1.;
+    err_status = 0;
     return output;
   }
 
@@ -62,9 +66,18 @@ Core::LinAlg::Matrix<dim, dim> Core::LinAlg::matrix_exp(const Core::LinAlg::Matr
       output.update(1. / facn, tmp, 1.);
     }
 
-    // throw error if no convergence is reached after the maximum number of terms
-    FOUR_C_ASSERT_ALWAYS(n < n_max, "Matrix exponential unconverged in %i steps.", n);
+    // throw error if no convergence is reached after the maximum number
+    // of terms
+    if (n > n_max)
+    {
+      std::cout << "Matrix exponential unconverged in " << n
+                << "steps, for the following matrix: " << std::endl;
+      input.print(std::cout);
+      err_status = 1;
+      return output;
+    }
 
+    err_status = 0;
     return output;
   }
   else
@@ -72,7 +85,7 @@ Core::LinAlg::Matrix<dim, dim> Core::LinAlg::matrix_exp(const Core::LinAlg::Matr
     // spectral decomposition for higher matrix norms
     Core::LinAlg::Matrix<dim, dim, std::complex<double>> eigenval_matrix(true);
     Core::LinAlg::Matrix<dim, dim, std::complex<double>> eigenvect_matrix(true);
-    Core::LinAlg::Matrix<dim, dim> temp_input(input);
+    const Core::LinAlg::Matrix<dim, dim> temp_input(input);
     Core::LinAlg::geev(temp_input, eigenval_matrix, eigenvect_matrix);
 
     // get the exponentials of the eigenvalues
@@ -99,12 +112,14 @@ Core::LinAlg::Matrix<dim, dim> Core::LinAlg::matrix_exp(const Core::LinAlg::Matr
       }
     }
 
+    err_status = 0;
     return output;
   }
 }
 
 template <unsigned int dim>
-Core::LinAlg::Matrix<dim, dim> Core::LinAlg::matrix_log(const Core::LinAlg::Matrix<dim, dim>& input)
+Core::LinAlg::Matrix<dim, dim> Core::LinAlg::matrix_log(
+    const Core::LinAlg::Matrix<dim, dim>& input, int& err_status)
 {
   // auxiliaries
   Core::LinAlg::Matrix<dim, dim> id(true);
@@ -141,8 +156,16 @@ Core::LinAlg::Matrix<dim, dim> Core::LinAlg::matrix_log(const Core::LinAlg::Matr
     while (A_minus_id_m.norm2() > conv_tol)
     {
       // check whether the maximum number of terms was reached
-      FOUR_C_ASSERT_ALWAYS(
-          m <= m_max, "Couldn't compute the matrix logarithm using the Taylor series!");
+      if (m > m_max)
+      {
+        std::cout << "Couldn't compute the matrix logarithm using the Taylor series for the "
+                     "following matrix: "
+                  << std::endl;
+        input.print(std::cout);
+        err_status = 1;
+        return output;
+      }
+      FOUR_C_ASSERT_ALWAYS(m <= m_max, "");
 
       // update output matrix
       output.update(std::pow(-1.0, m + 1) / m, A_minus_id_m, 1.0);
@@ -154,6 +177,8 @@ Core::LinAlg::Matrix<dim, dim> Core::LinAlg::matrix_log(const Core::LinAlg::Matr
       // increment m
       m += 1;
     }
+
+    err_status = 0;
     return output;
   }
 
@@ -188,8 +213,15 @@ Core::LinAlg::Matrix<dim, dim> Core::LinAlg::matrix_log(const Core::LinAlg::Matr
     while (update_mat_2mpl1.norm2() > conv_tol)
     {
       // check whether the maximum number of terms was reached
-      FOUR_C_ASSERT_ALWAYS(
-          m <= m_max, "Couldn't compute the matrix logarithm using the Gregory series!");
+      if (m > m_max)
+      {
+        std::cout << "Couldn't compute the matrix logarithm using the Gregory series for the "
+                     "following matrix: "
+                  << std::endl;
+        input.print(std::cout);
+        err_status = 1;
+        return output;
+      }
 
       // update output matrix
       output.update(-2.0 / (2.0 * m + 1.0), update_mat_2mpl1, 1.0);
@@ -202,6 +234,7 @@ Core::LinAlg::Matrix<dim, dim> Core::LinAlg::matrix_log(const Core::LinAlg::Matr
       m += 1;
     }
 
+    err_status = 0;
     return output;
   }
   // spectral decomposition as the last resort
@@ -215,11 +248,16 @@ Core::LinAlg::Matrix<dim, dim> Core::LinAlg::matrix_log(const Core::LinAlg::Matr
     // get the (principal) logarithms of the eigenvalues
     for (unsigned int i = 0; i < dim; ++i)
     {
-      FOUR_C_ASSERT_ALWAYS(eigenval_matrix(i, i).real() >= 0.0,
-          "The current matrix logarithm implementation only considers the case where all "
-          "eigenvalues "
-          "possess positive real parts! This is not given here, real part:  %d",
-          eigenval_matrix(i, i).real());
+      if (eigenval_matrix(i, i).real() < 0.0)
+      {
+        std::cout
+            << "The current matrix logarithm implementation only considers the case where all "
+               "eigenvalues "
+               "possess positive real parts! This is not given here, real part of eigenval number "
+            << i << ": " << eigenval_matrix(i, i).real() << std::endl;
+        err_status = 1;
+        return output;
+      }
       eigenval_matrix(i, i) = std::log(eigenval_matrix(i, i));
     }
 
@@ -241,12 +279,13 @@ Core::LinAlg::Matrix<dim, dim> Core::LinAlg::matrix_log(const Core::LinAlg::Matr
       }
     }
 
+    err_status = 0;
     return output;
   }
 }
 
 Core::LinAlg::Matrix<9, 9> Core::LinAlg::matrix_3x3_exp_1st_deriv(
-    const Core::LinAlg::Matrix<3, 3>& input)
+    const Core::LinAlg::Matrix<3, 3>& input, int& err_status)
 {
   // declare output variable
   Core::LinAlg::Matrix<9, 9> output(true);
@@ -280,7 +319,14 @@ Core::LinAlg::Matrix<9, 9> Core::LinAlg::matrix_3x3_exp_1st_deriv(
     tmp2 = tmp1;
   }
 
-  FOUR_C_ASSERT_ALWAYS(nIter < 50, "matrix exponential unconverged in %i steps", nIter);
+  if (nIter > 50)
+  {
+    std::cout << "Matrix exponential unconverged in " << nIter
+              << " steps for the following matrix: " << std::endl;
+    input.print(std::cout);
+    err_status = 1;
+    return output;
+  }
   nmax = nIter;
 
   // compose derivative of matrix exponential (non-symmetric Voigt-notation)
@@ -289,11 +335,12 @@ Core::LinAlg::Matrix<9, 9> Core::LinAlg::matrix_3x3_exp_1st_deriv(
       Core::LinAlg::Tensor::add_non_symmetric_product(
           1. / fac[n], Xn.at(m - 1), Xn.at(n - m), output);
 
+  err_status = 0;
   return output;
 }
 
 Core::LinAlg::Matrix<6, 6> Core::LinAlg::sym_matrix_3x3_exp_1st_deriv(
-    const Core::LinAlg::Matrix<3, 3>& input)
+    const Core::LinAlg::Matrix<3, 3>& input, int& err_status)
 {
   // get matrix norm
   double norm = input.norm2();
@@ -309,6 +356,7 @@ Core::LinAlg::Matrix<6, 6> Core::LinAlg::sym_matrix_3x3_exp_1st_deriv(
   // direct calculation for zero-matrix
   if (norm == 0.)
   {
+    err_status = 0;
     return id4sharp;
   }
 
@@ -343,7 +391,14 @@ Core::LinAlg::Matrix<6, 6> Core::LinAlg::sym_matrix_3x3_exp_1st_deriv(
       Xn.push_back(tmp1);
       tmp2 = tmp1;
     }
-    FOUR_C_ASSERT_ALWAYS(nIter < 50, "matrix exponential unconverged in %i steps", nIter);
+    if (nIter > 50)
+    {
+      std::cout << "Matrix exponential unconverged in " << nIter
+                << " steps for the following matrix: " << std::endl;
+      input.print(std::cout);
+      err_status = 1;
+      return output;
+    }
     nmax = nIter;
 
     // compose derivative of matrix exponential (symmetric Voigt-notation)
@@ -420,7 +475,13 @@ Core::LinAlg::Matrix<6, 6> Core::LinAlg::sym_matrix_3x3_exp_1st_deriv(
         c = 2;
       }
       else
-        FOUR_C_THROW("you should not be here");
+      {
+        std::cout << "You should not be here, in the matrix exponential evaluation of: "
+                  << std::endl;
+        input.print(std::cout);
+        err_status = 1;
+        return output;
+      }
 
       // in souza eq. (A.53):
       s1 = (exp(EW(a, a)) - exp(EW(c, c))) / (pow(EW(a, a) - EW(c, c), 2.0)) -
@@ -492,13 +553,19 @@ Core::LinAlg::Matrix<6, 6> Core::LinAlg::sym_matrix_3x3_exp_1st_deriv(
       }  // end loop over all eigenvalues
     }
     else
-      FOUR_C_THROW("you should not be here.");
+    {
+      std::cout << "You should not be here, in the matrix exponential evaluation of: " << std::endl;
+      input.print(std::cout);
+      err_status = 1;
+      return output;
+    }
   }
+  err_status = 0;
   return output;
 }
 
 Core::LinAlg::Matrix<9, 9> Core::LinAlg::matrix_3x3_log_1st_deriv(
-    const Core::LinAlg::Matrix<3, 3>& input)
+    const Core::LinAlg::Matrix<3, 3>& input, int& err_status)
 {
   // auxiliaries
   Core::LinAlg::Matrix<3, 3> id_3x3(true);
@@ -552,8 +619,15 @@ Core::LinAlg::Matrix<9, 9> Core::LinAlg::matrix_3x3_log_1st_deriv(
     while (dA_minus_id_m_dA.norm2() > conv_tol)
     {
       // check whether the maximum number of terms was reached
-      FOUR_C_ASSERT_ALWAYS(
-          m <= m_max, "Couldn't compute the matrix logarithm derivative using the Taylor series!");
+      if (m > m_max)
+      {
+        std::cout << "Couldn't compute the matrix logarithm derivative using the Taylor series for "
+                     "the following matrix: "
+                  << std::endl;
+        input.print(std::cout);
+        err_status = 1;
+        return output;
+      }
 
       // update output matrix
       output.update(std::pow(-1.0, m + 1.0) / m, dA_minus_id_m_dA, 1.0);
@@ -587,6 +661,7 @@ Core::LinAlg::Matrix<9, 9> Core::LinAlg::matrix_3x3_log_1st_deriv(
       // increment m
       m += 1;
     }
+    err_status = 0;
     return output;
   }
   // alternatively, employ the Gregory series
@@ -656,8 +731,17 @@ Core::LinAlg::Matrix<9, 9> Core::LinAlg::matrix_3x3_log_1st_deriv(
     while (true)
     {
       // check whether we have reached the maximum number of terms
-      FOUR_C_ASSERT_ALWAYS(
-          m <= m_max, "Couldn't compute the matrix logarithm derivative using the Gregory series!");
+      if (m > m_max)
+      {
+        std::cout
+            << "Couldn't compute the matrix logarithm derivative using the Gregory series for "
+               "the following matrix: "
+            << std::endl;
+        input.print(std::cout);
+        err_status = 1;
+        return output;
+      }
+
 
       // update output matrix
       if ((m % 2 == 1))
@@ -693,6 +777,7 @@ Core::LinAlg::Matrix<9, 9> Core::LinAlg::matrix_3x3_log_1st_deriv(
       // return if converged
       if ((dupdateMat_dA_m.norm2() < conv_tol) && (m > 1))
       {
+        err_status = 0;
         return output;
       }
 
@@ -704,7 +789,7 @@ Core::LinAlg::Matrix<9, 9> Core::LinAlg::matrix_3x3_log_1st_deriv(
 
 void Core::LinAlg::sym_matrix_3x3_exp_2nd_deriv_voigt(const Core::LinAlg::Matrix<3, 3>& input,
     Core::LinAlg::Matrix<3, 3>& exp, Core::LinAlg::Matrix<6, 6>& dexp_mat,
-    Core::LinAlg::Matrix<6, 6>* ddexp_mat)
+    Core::LinAlg::Matrix<6, 6>* ddexp_mat, int& err_status)
 {
   // declare arrays of derivatives
   Core::LinAlg::Matrix<3, 3> matrix_exp_1st_deriv[6];
@@ -782,8 +867,16 @@ void Core::LinAlg::sym_matrix_3x3_exp_2nd_deriv_voigt(const Core::LinAlg::Matrix
 
   } while (k < kmax && ak.norm2() > 1.e-16);
 
+  if (k > kmax)
+  {
+    std::cout << "Matrix exponential unconverged with " << k
+              << " summands for the following matrix: " << std::endl;
+    input.print(std::cout);
+    err_status = 1;
+    return;
+  }
 
-  FOUR_C_ASSERT_ALWAYS(k < kmax, "Matrix exponential unconverged with %i summands", k);
+
 
   // Additions: 1. Map first derivative from [6](3,3) to (6,6)
   for (int i = 0; i < 6; i++)
@@ -803,18 +896,19 @@ void Core::LinAlg::sym_matrix_3x3_exp_2nd_deriv_voigt(const Core::LinAlg::Matrix
           ddexp_mat[J](I, vmap::non_symmetric_tensor_to_voigt9_index(k, l)) =
               matrix_exp_2nd_deriv[I][J](k, l);
         }
+  err_status = 0;
   return;
 }
 
 
 // explicit instantiation of template functions
 template Core::LinAlg::Matrix<2, 2> Core::LinAlg::matrix_exp<2>(
-    const Core::LinAlg::Matrix<2, 2>& input);
+    const Core::LinAlg::Matrix<2, 2>& input, int& err_status);
 template Core::LinAlg::Matrix<3, 3> Core::LinAlg::matrix_exp<3>(
-    const Core::LinAlg::Matrix<3, 3>& input);
+    const Core::LinAlg::Matrix<3, 3>& input, int& err_status);
 template Core::LinAlg::Matrix<2, 2> Core::LinAlg::matrix_log<2>(
-    const Core::LinAlg::Matrix<2, 2>& input);
+    const Core::LinAlg::Matrix<2, 2>& input, int& err_status);
 template Core::LinAlg::Matrix<3, 3> Core::LinAlg::matrix_log<3>(
-    const Core::LinAlg::Matrix<3, 3>& input);
+    const Core::LinAlg::Matrix<3, 3>& input, int& err_status);
 
 FOUR_C_NAMESPACE_CLOSE
