@@ -14,6 +14,7 @@
 #include "4C_mat_vplast_law.hpp"
 
 #include <cmath>
+#include <string>
 #include <utility>
 
 FOUR_C_NAMESPACE_OPEN

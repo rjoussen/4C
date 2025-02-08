@@ -12,6 +12,7 @@
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 #include "4C_unittest_utils_assertions_test.hpp"
+#include "4C_utils_exceptions.hpp"
 
 #include <complex>
 
@@ -37,7 +38,9 @@ namespace
     exp_A_ref(1, 0) = 1.1887942346;
     exp_A_ref(1, 1) = 1.4087656857;
 
-    Core::LinAlg::Matrix<2, 2> exp_A = Core::LinAlg::matrix_exp(A);
+    int exp_err_status = 0;
+    Core::LinAlg::Matrix<2, 2> exp_A = Core::LinAlg::matrix_exp(A, exp_err_status);
+    FOUR_C_ASSERT_ALWAYS(exp_err_status == 0, "Stop computation due to exponential evaluation");
 
     FOUR_C_EXPECT_NEAR(exp_A, exp_A_ref, 1.0e-9);
   }
@@ -56,7 +59,9 @@ namespace
     log_A_ref(1, 0) = 0.0009413169;
     log_A_ref(1, 1) = -0.2949441044;
 
-    Core::LinAlg::Matrix<2, 2> log_A = Core::LinAlg::matrix_log(A);
+    int log_err_status = 0;
+    Core::LinAlg::Matrix<2, 2> log_A = Core::LinAlg::matrix_log(A, log_err_status);
+    FOUR_C_ASSERT_ALWAYS(log_err_status == 0, "Stop computation due to logarithm evaluation");
 
     FOUR_C_EXPECT_NEAR(log_A, log_A_ref, 1.0e-9);
   }
@@ -85,7 +90,9 @@ namespace
     exp_A_ref(2, 1) = 0.8535273999;
     exp_A_ref(2, 2) = 3.2314443053;
 
-    Core::LinAlg::Matrix<3, 3> exp_A = Core::LinAlg::matrix_exp(A);
+    int exp_err_status = 0;
+    Core::LinAlg::Matrix<3, 3> exp_A = Core::LinAlg::matrix_exp(A, exp_err_status);
+    FOUR_C_ASSERT_ALWAYS(exp_err_status == 0, "Stop computation due to exp evaluation");
 
     FOUR_C_EXPECT_NEAR(exp_A, exp_A_ref, 1.0e-9);
   }
@@ -184,7 +191,10 @@ namespace
     dexp_dA_ref(8, 6) = 0.4114189775;
     dexp_dA_ref(8, 7) = 0.2051507417;
     dexp_dA_ref(8, 8) = 1.5237256921;
-    Core::LinAlg::Matrix<9, 9> dexp_dA = Core::LinAlg::matrix_3x3_exp_1st_deriv(A);
+
+    int exp_err_status = 0;
+    Core::LinAlg::Matrix<9, 9> dexp_dA = Core::LinAlg::matrix_3x3_exp_1st_deriv(A, exp_err_status);
+    FOUR_C_ASSERT_ALWAYS(exp_err_status == 0, "Stop computation due to exponential evaluation");
 
     FOUR_C_EXPECT_NEAR(dexp_dA, dexp_dA_ref, 1.0e-9);
   }
@@ -240,8 +250,10 @@ namespace
     dexp_dA_ref(5, 4) = 0.1130414528;
     dexp_dA_ref(5, 5) = 0.9065591579;
 
-
-    Core::LinAlg::Matrix<6, 6> dexp_dA = Core::LinAlg::sym_matrix_3x3_exp_1st_deriv(A);
+    int exp_err_status = 0;
+    Core::LinAlg::Matrix<6, 6> dexp_dA =
+        Core::LinAlg::sym_matrix_3x3_exp_1st_deriv(A, exp_err_status);
+    FOUR_C_ASSERT_ALWAYS(exp_err_status == 0, "Stop computation due to exponential evaluation");
 
     FOUR_C_EXPECT_NEAR(dexp_dA, dexp_dA_ref, 1.0e-9);
   }
@@ -270,7 +282,9 @@ namespace
     log_A_ref(2, 1) = 0.6125140275;
     log_A_ref(2, 2) = -1.0555537527;
 
-    Core::LinAlg::Matrix<3, 3> log_A = Core::LinAlg::matrix_log(A);
+    int log_err_status = 0;
+    Core::LinAlg::Matrix<3, 3> log_A = Core::LinAlg::matrix_log(A, log_err_status);
+    FOUR_C_ASSERT_ALWAYS(log_err_status == 0, "Stop computation due to logarithm evaluation");
 
     FOUR_C_EXPECT_NEAR(log_A, log_A_ref, 1.0e-9);
   }
@@ -369,7 +383,10 @@ namespace
     dlog_dA_ref(8, 6) = -0.5072404690;
     dlog_dA_ref(8, 7) = -0.8059376443;
     dlog_dA_ref(8, 8) = 1.3969978711;
-    Core::LinAlg::Matrix<9, 9> dlog_dA = Core::LinAlg::matrix_3x3_log_1st_deriv(A);
+
+    int log_err_status = 0;
+    Core::LinAlg::Matrix<9, 9> dlog_dA = Core::LinAlg::matrix_3x3_log_1st_deriv(A, log_err_status);
+    FOUR_C_ASSERT_ALWAYS(log_err_status, "Stop computation due to logarithm evaluation");
 
     FOUR_C_EXPECT_NEAR(dlog_dA, dlog_dA_ref, 1.0e-9);
   }

@@ -16,6 +16,7 @@
 #include "4C_linalg_utils_densematrix_inverse.hpp"
 #include "4C_mat_elast_summand.hpp"
 #include "4C_mat_par_bundle.hpp"
+#include "4C_utils_exceptions.hpp"
 
 #include <Teuchos_SerialDenseSolver.hpp>
 
@@ -422,8 +423,13 @@ void Mat::PlasticElastHyperVCU::evaluate(const Core::LinAlg::Matrix<3, 3>* defgr
     // Get exp, Dexp and DDexp
     Core::LinAlg::Matrix<3, 3> input_dLp(dLp);
     input_dLp.scale(-1.);
-    Core::LinAlg::Matrix<3, 3> expOut = Core::LinAlg::matrix_exp(input_dLp);
-    Core::LinAlg::Matrix<6, 6> dexpOut_mat = Core::LinAlg::sym_matrix_3x3_exp_1st_deriv(input_dLp);
+    int exp_err_status = 0;
+    Core::LinAlg::Matrix<3, 3> expOut = Core::LinAlg::matrix_exp(input_dLp, exp_err_status);
+    FOUR_C_ASSERT_ALWAYS(exp_err_status, "Stop computation due to exponential evaluation");
+    Core::LinAlg::Matrix<6, 6> dexpOut_mat =
+        Core::LinAlg::sym_matrix_3x3_exp_1st_deriv(input_dLp, exp_err_status);
+    FOUR_C_ASSERT_ALWAYS(
+        exp_err_status, "Stop computation due to exponential derivative evaluation");
 
     plastic_defgrd_inverse_[gp].multiply(last_plastic_defgrd_inverse_[gp], expOut);
     delta_alpha_i_[gp] = sqrt(2. / 3.) * dLp.norm2();
@@ -646,12 +652,18 @@ void Mat::PlasticElastHyperVCU::evaluate_rhs(const int gp, const Core::LinAlg::M
   // Get exp, Dexp and DDexp
   Core::LinAlg::Matrix<3, 3> dLpIn(dLp);
   dLpIn.scale(-1.);
-  Core::LinAlg::Matrix<3, 3> expOut = Core::LinAlg::matrix_exp(dLpIn);
-  Core::LinAlg::Matrix<6, 6> dexpOut_mat = Core::LinAlg::sym_matrix_3x3_exp_1st_deriv(dLpIn);
+  int exp_err_status = 0;
+  Core::LinAlg::Matrix<3, 3> expOut = Core::LinAlg::matrix_exp(dLpIn, exp_err_status);
+  FOUR_C_ASSERT_ALWAYS(exp_err_status, "Stop computation due to exponential evaluation");
+  Core::LinAlg::Matrix<6, 6> dexpOut_mat =
+      Core::LinAlg::sym_matrix_3x3_exp_1st_deriv(dLpIn, exp_err_status);
+  FOUR_C_ASSERT_ALWAYS(exp_err_status, "Stop computation due to exponential derivative evaluation");
 
   Core::LinAlg::Matrix<3, 3> fpi_incr(dLp);
   fpi_incr.scale(-1.);
-  Core::LinAlg::Matrix<6, 6> derivExpMinusLP = Core::LinAlg::sym_matrix_3x3_exp_1st_deriv(fpi_incr);
+  Core::LinAlg::Matrix<6, 6> derivExpMinusLP =
+      Core::LinAlg::sym_matrix_3x3_exp_1st_deriv(fpi_incr, exp_err_status);
+  FOUR_C_ASSERT_ALWAYS(exp_err_status, "Stop computation due to exponential derivative evaluation");
 
   Core::LinAlg::Matrix<3, 3> fetrial;
   fetrial.multiply(defgrd, last_plastic_defgrd_inverse_[gp]);
@@ -897,7 +909,11 @@ void Mat::PlasticElastHyperVCU::ce2nd_deriv(const Core::LinAlg::Matrix<3, 3>* de
   Core::LinAlg::Matrix<3, 3> exp_dLp;
   Core::LinAlg::Matrix<6, 6> Dexp_dLp_mat;
   Core::LinAlg::Matrix<6, 6> D2exp_VOIGT[6];
-  Core::LinAlg::sym_matrix_3x3_exp_2nd_deriv_voigt(minus_dLp, exp_dLp, Dexp_dLp_mat, D2exp_VOIGT);
+  int exp_err_status = 0;
+  Core::LinAlg::sym_matrix_3x3_exp_2nd_deriv_voigt(
+      minus_dLp, exp_dLp, Dexp_dLp_mat, D2exp_VOIGT, exp_err_status);
+  FOUR_C_ASSERT_ALWAYS(
+      exp_err_status == 0, "Stop computation due to exponential derivative evaluation");
 
   Core::LinAlg::Matrix<3, 3> exp_dLp_cetrial;
   exp_dLp_cetrial.multiply(exp_dLp, cetrial);

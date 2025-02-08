@@ -2005,7 +2005,13 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_state_quantities(
   if (parameter()->timint_type() == Mat::ViscoplastTimIntType::Standard)
   {
     temp3x3.update(-dt, state_quantities.curr_lpM_, 0.0);
-    state_quantities.curr_EpM_ = Core::LinAlg::matrix_exp(temp3x3);
+    int exp_err_status = 0;
+    state_quantities.curr_EpM_ = Core::LinAlg::matrix_exp(temp3x3, exp_err_status);
+    if (exp_err_status == 1)
+    {
+      err_status = Mat::ViscoplastErrorType::FailedExpEval;
+      return state_quantities;
+    }
   }
 
   return state_quantities;
@@ -2383,7 +2389,14 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_state_quantity_deriv
     // compute derivative of exponential ...
 
     // ... w.r.t. its argument
-    Core::LinAlg::Matrix<9, 9> expderivV = Core::LinAlg::matrix_3x3_exp_1st_deriv(min_dt_lpM);
+    int exp_err_status = 0;
+    Core::LinAlg::Matrix<9, 9> expderivV =
+        Core::LinAlg::matrix_3x3_exp_1st_deriv(min_dt_lpM, exp_err_status);
+    if (exp_err_status)
+    {
+      err_status = Mat::ViscoplastErrorType::FailedExpEval;
+      return state_quantity_derivatives;
+    }
 
     // ... w.r.t. inverse inelastic defgrad
     state_quantity_derivatives.curr_dEpdiFin_.multiply_nn(
@@ -2685,7 +2698,10 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_inverse_inelast
         timint_analysis_utils.write_to_csv();
       }
 
-      FOUR_C_THROW(debug_get_error_info(Mat::to_string(err_status)));
+      // output error and then throw (in order to display the error on
+      // the right processor)
+      std::cout << debug_get_error_info(Mat::to_string(err_status)) << std::endl;
+      FOUR_C_THROW("See above");
     }
     // extract the inverse inelastic defgrad from the LNL solution
     iFinM = extract_inverse_inelastic_defgrad(sol);
@@ -2711,7 +2727,7 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_inverse_inelast
     std::cout << "current_stress: " << std::endl;
     std::cout << time_step_quantities_.current_stress_[gp_] << std::endl;
     std::cout << std::string(60, '-') << std::endl;
-    //    FOUR_C_THROW(debug_get_error_info("Error thrown by me after inverse_inelastic_defgrad"));
+    // FOUR_C_THROW(debug_get_error_info("Error thrown by me after inverse_inelastic_defgrad"));
   }
 #endif
 }
@@ -2933,7 +2949,13 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::calculate_local_newton_loop_r
     last_FinM.invert(last_iFinM);
     Core::LinAlg::Matrix<3, 3> T(true);
     T.multiply_nn(1.0, last_FinM, iFinM, 0.0);
-    Core::LinAlg::Matrix<3, 3> logT = Core::LinAlg::matrix_log(T);
+    int log_err_status = 0;
+    Core::LinAlg::Matrix<3, 3> logT = Core::LinAlg::matrix_log(T, log_err_status);
+    if (log_err_status == 1)
+    {
+      err_status = Mat::ViscoplastErrorType::FailedLogEval;
+      return Core::LinAlg::Matrix<10, 1>{true};
+    }
 
     // calculate residual of the equation for inelastic defgrad
     resFM.update(1.0, logT, dt, state_quantities_.curr_lpM_, 0.0);
@@ -3041,7 +3063,13 @@ Core::LinAlg::Matrix<10, 10> Mat::InelasticDefgradTransvIsotropElastViscoplast::
     last_FinM.invert(last_iFinM);
     Core::LinAlg::Matrix<3, 3> T(true);
     T.multiply_nn(1.0, last_FinM, iFinM, 0.0);
-    Core::LinAlg::Matrix<9, 9> dlogTdT = Core::LinAlg::matrix_3x3_log_1st_deriv(T);
+    int log_err_status = 0;
+    Core::LinAlg::Matrix<9, 9> dlogTdT = Core::LinAlg::matrix_3x3_log_1st_deriv(T, log_err_status);
+    if (log_err_status == 1)
+    {
+      err_status = Mat::ViscoplastErrorType::FailedLogEval;
+      return Core::LinAlg::Matrix<10, 10>{true};
+    }
     Core::LinAlg::Matrix<9, 9> dTdiFin(true);
     Core::LinAlg::Tensor::add_non_symmetric_product(
         1.0, last_FinM, const_non_mat_tensors.id3x3_, dTdiFin);
@@ -3298,7 +3326,11 @@ Core::LinAlg::Matrix<10, 1> Mat::InelasticDefgradTransvIsotropElastViscoplast::l
           timint_analysis_utils.update_total();
           timint_analysis_utils.write_to_csv();
         }
-        FOUR_C_THROW(debug_get_error_info(Mat::to_string(err_status)));
+
+        // output error and then throw (in order to display the error on
+        // the right processor)
+        std::cout << debug_get_error_info(Mat::to_string(err_status)) << std::endl;
+        FOUR_C_THROW("See above");
       }
 
       // compute Jacobian
@@ -3363,8 +3395,10 @@ Core::LinAlg::Matrix<10, 1> Mat::InelasticDefgradTransvIsotropElastViscoplast::l
           timint_analysis_utils.write_to_csv();
         }
 
-        FOUR_C_THROW(
-            debug_get_error_info("Computation of line search parameter was not successful!"));
+        // output error and then throw (in order to display the error on
+        // the right processor)
+        std::cout << debug_get_error_info(Mat::to_string(err_status)) << std::endl;
+        FOUR_C_THROW("See above");
       }
     }
   }
@@ -3815,7 +3849,7 @@ double Mat::InelasticDefgradTransvIsotropElastViscoplast::get_line_search_parame
   const double alpha_dec_fac = 0.9;
   // set maximum times we want to decrease the line search parameter,
   // before rejecting it
-  const unsigned int max_dec_times = 50;
+  const unsigned int max_dec_times = 200;
 
   // declare output line search parameter
   double alpha = 1.0;
@@ -3829,6 +3863,15 @@ double Mat::InelasticDefgradTransvIsotropElastViscoplast::get_line_search_parame
 
   // adapt the maximum step size to eventual negative plastic strains
   if (next_sol(9) < 0.0) alpha_u = curr_sol(9) / std::abs(incr(9));
+
+#ifdef DEBUGVPLAST_TIMINT
+  if (((ele_gid_ == debug_ele_gid) || (debug_ele_gid < -1)) &&
+      ((gp_ == debug_gp) || (debug_ele_gid < 0)))
+  {
+    std::cout << "alpha_u: " << alpha_u << std::endl;
+  }
+
+#endif
 
   // set our current step size to the maximum step size
   alpha = alpha_u;
@@ -4138,11 +4181,18 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::manage_evaluation_error(
         pred_interp_factors_.xi_l_ +
         pred_interp_factors_.xi_user_ * (pred_interp_factors_.xi_u_ - pred_interp_factors_.xi_l_);
     ++pred_interp_factors_.num_of_pred_adapt_;
-    FOUR_C_ASSERT_ALWAYS(
-        pred_interp_factors_.num_of_pred_adapt_ <= pred_interp_factors_.max_num_pred_adapt_,
-        debug_get_error_info(
-            "Maximum number of predictor adaptations / repredictorizations within a single Local "
-            "Newton Loop exceeded!"));
+
+    // check whether predictor adaptation still possible
+    if (pred_interp_factors_.num_of_pred_adapt_ > pred_interp_factors_.max_num_pred_adapt_)
+    {
+      std::cout << debug_get_error_info(
+                       "Maximum number of predictor adaptations / repredictorizations within a "
+                       "single Local "
+                       "Newton Loop exceeded!")
+                << std::endl;
+      FOUR_C_THROW("See above");
+    }
+
     sol = adapt_predictor_local_newton_loop(
         pred_interp_factors_.pred_, time_step_quantities_.current_defgrad_[gp_], false);
 

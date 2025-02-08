@@ -15,6 +15,7 @@
 #include "4C_linalg_utils_densematrix_exp_log.hpp"
 #include "4C_mat_par_bundle.hpp"
 #include "4C_mat_service.hpp"
+#include "4C_utils_exceptions.hpp"
 
 #include <Teuchos_SerialDenseSolver.hpp>
 
@@ -1016,7 +1017,11 @@ void Mat::PlasticElastHyper::evaluate_ncp(const Core::LinAlg::Matrix<3, 3>* mStr
     // matrix exponential derivative
     Core::LinAlg::Matrix<3, 3> tmp(*deltaDp);
     tmp.scale(-1.);
-    Core::LinAlg::Matrix<6, 6> Dexp = Core::LinAlg::sym_matrix_3x3_exp_1st_deriv(tmp);
+    int exp_err_status = 0;
+    Core::LinAlg::Matrix<6, 6> Dexp =
+        Core::LinAlg::sym_matrix_3x3_exp_1st_deriv(tmp, exp_err_status);
+    FOUR_C_ASSERT_ALWAYS(
+        exp_err_status == 0, "Stop computation due to exponential derivative evaluation");
 
     // Derivative of inverse plastic deformation gradient
     Core::LinAlg::Matrix<9, 6> dFpiDdeltaDp(true);
@@ -1521,7 +1526,10 @@ void Mat::PlasticElastHyper::evaluate_nc_pand_spin(const Core::LinAlg::Matrix<3,
     // matrix exponential derivative
     Core::LinAlg::Matrix<3, 3> tmp(*deltaLp);
     tmp.scale(-1.);
-    Core::LinAlg::Matrix<9, 9> Dexp = Core::LinAlg::matrix_3x3_exp_1st_deriv(tmp);
+    int exp_err_status = 0;
+    Core::LinAlg::Matrix<9, 9> Dexp = Core::LinAlg::matrix_3x3_exp_1st_deriv(tmp, exp_err_status);
+    FOUR_C_ASSERT_ALWAYS(
+        exp_err_status == 0, "Stop computation due to exponential derivative evaluation");
 
     // Derivative of inverse plastic deformation gradient
     Core::LinAlg::Matrix<9, 9> dFpiDdeltaLp(true);
@@ -1959,7 +1967,9 @@ void Mat::PlasticElastHyper::update_gp(const int gp, const Core::LinAlg::Matrix<
     // update plastic deformation gradient
     Core::LinAlg::Matrix<3, 3> tmp;
     tmp.update(-1., *deltaDp);
-    Core::LinAlg::Matrix<3, 3> exp_tmp = Core::LinAlg::matrix_exp(tmp);
+    int exp_err_status = 0;
+    Core::LinAlg::Matrix<3, 3> exp_tmp = Core::LinAlg::matrix_exp(tmp, exp_err_status);
+    FOUR_C_ASSERT_ALWAYS(exp_err_status == 0, "Stop computation due to exponential evaluation");
     Core::LinAlg::Matrix<3, 3> fpi_last = last_plastic_defgrd_inverse_[gp];
     last_plastic_defgrd_inverse_[gp].multiply(fpi_last, exp_tmp);
     // update isotropic hardening
@@ -1984,7 +1994,9 @@ void Mat::PlasticElastHyper::evaluate_kin_quant_elast(const Core::LinAlg::Matrix
   Core::LinAlg::Matrix<3, 3> invpldefgrd;
   Core::LinAlg::Matrix<3, 3>& InvPlasticDefgrdLast = last_plastic_defgrd_inverse_[gp];
   tmp.update(-1., *deltaLp);
-  Core::LinAlg::Matrix<3, 3> exp_tmp = Core::LinAlg::matrix_exp(tmp);
+  int exp_err_status = 0;
+  Core::LinAlg::Matrix<3, 3> exp_tmp = Core::LinAlg::matrix_exp(tmp, exp_err_status);
+  FOUR_C_ASSERT_ALWAYS(exp_err_status == 0, "Stop computation due to exponential evaluation");
   invpldefgrd.multiply(InvPlasticDefgrdLast, exp_tmp);
 
   // inverse plastic right Cauchy-Green
@@ -2050,7 +2062,9 @@ int Mat::PlasticElastHyper::evaluate_kin_quant_plast(const Core::LinAlg::Matrix<
   Core::LinAlg::Matrix<3, 3> tmp33;
   Core::LinAlg::Matrix<3, 3>& InvPlasticDefgrdLast = last_plastic_defgrd_inverse_[gp];
   tmp.update(-1., *deltaLp);
-  Core::LinAlg::Matrix<3, 3> exp_tmp = Core::LinAlg::matrix_exp(tmp);
+  int exp_err_status = 0;
+  Core::LinAlg::Matrix<3, 3> exp_tmp = Core::LinAlg::matrix_exp(tmp, exp_err_status);
+  FOUR_C_ASSERT_ALWAYS(exp_err_status == 0, "Stop computation due to exponential evaluation");
   invpldefgrd_.multiply(InvPlasticDefgrdLast, exp_tmp);
 
   tmp33.multiply(*defgrd, invpldefgrd_);

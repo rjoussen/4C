@@ -51,7 +51,8 @@ namespace Mat
                                       // model)
     FailedComputationFlowResistanceDerivs,  // failed in the computation of the flow resistance
                                             // derivatives (e.g., Anand model)
-
+    FailedLogEval,  // failed evaluation of the matrix logarithm or its derivative
+    FailedExpEval,  // failed evaluation of the matrix exponential or its derivative
   };
 
   /// enum class for error management actions in InelasticDefgradTransvIsotropElastViscoplast
@@ -103,6 +104,14 @@ namespace Mat
         return "Error in InelasticDefgradTransvIsotropElastViscoplast: Failed while computing the "
                "derivatives of the flow resistance of the viscoplasticity law";
         break;
+      case Mat::ViscoplastErrorType::FailedLogEval:
+        return "Error in InelasticDefgradTransvIsotropElastViscoplast: Failed in evaluating the "
+               "matrix logarithm or its derivative with respect to the argument";
+        break;
+      case Mat::ViscoplastErrorType::FailedExpEval:
+        return "Error in InelasticDefgradTransvIsotropElastViscoplast: Failed in evaluating the "
+               "matrix exponential or its derivative with respect to the argument";
+        break;
       default:
         FOUR_C_THROW("to_string(Mat::ViscoplastErrorType): You should not be here!");
     }
@@ -146,6 +155,8 @@ namespace Mat
       {ViscoplastErrorType::NoConvergenceLNL, "NoConvergenceLNL"},
       {ViscoplastErrorType::SingularJacobian, "SingularJacobian"},
       {ViscoplastErrorType::FailedSolAnalytLinearization, "FailedSolAnalytLinearization"},
+      {ViscoplastErrorType::FailedLogEval, "FailedLogEval"},
+      {ViscoplastErrorType::FailedExpEval, "FailedExpEval"},
   };
 
   //! class containing utilities for analyzing the material time integration:
@@ -224,7 +235,10 @@ namespace Mat
         {Mat::ViscoplastErrorType::FailedDetermLineSearchParam, 0},
         {Mat::ViscoplastErrorType::NoConvergenceLNL, 0},
         {Mat::ViscoplastErrorType::SingularJacobian, 0},
-        {Mat::ViscoplastErrorType::FailedSolAnalytLinearization, 0}};
+        {Mat::ViscoplastErrorType::FailedSolAnalytLinearization, 0},
+        {Mat::ViscoplastErrorType::FailedLogEval, 0},
+        {Mat::ViscoplastErrorType::FailedExpEval, 0},
+    };
 
     //! error map of the total evaluation
     std::map<Mat::ViscoplastErrorType, unsigned int> total_error_map_ = {
@@ -235,7 +249,10 @@ namespace Mat
         {Mat::ViscoplastErrorType::FailedDetermLineSearchParam, 0},
         {Mat::ViscoplastErrorType::NoConvergenceLNL, 0},
         {Mat::ViscoplastErrorType::SingularJacobian, 0},
-        {Mat::ViscoplastErrorType::FailedSolAnalytLinearization, 0}};
+        {Mat::ViscoplastErrorType::FailedSolAnalytLinearization, 0},
+        {Mat::ViscoplastErrorType::FailedLogEval, 0},
+        {Mat::ViscoplastErrorType::FailedExpEval, 0},
+    };
 
     //! runtime csv writer
     std::optional<Core::IO::RuntimeCsvWriter> csv_writer_;
@@ -260,14 +277,18 @@ namespace Mat
       eval_num_of_line_search_ = 0;
       eval_teuchos_timer_.reset();
       eval_time_ = 0;
-      eval_error_map_ = {{Mat::ViscoplastErrorType::NegativePlasticStrain, 0},
+      eval_error_map_ = {
+          {Mat::ViscoplastErrorType::NegativePlasticStrain, 0},
           {Mat::ViscoplastErrorType::OverflowError, 0},
           {Mat::ViscoplastErrorType::NoPlasticIncompressibility, 0},
           {Mat::ViscoplastErrorType::FailedSolLinSystLNL, 0},
           {Mat::ViscoplastErrorType::FailedDetermLineSearchParam, 0},
           {Mat::ViscoplastErrorType::NoConvergenceLNL, 0},
           {Mat::ViscoplastErrorType::SingularJacobian, 0},
-          {Mat::ViscoplastErrorType::FailedSolAnalytLinearization, 0}};
+          {Mat::ViscoplastErrorType::FailedSolAnalytLinearization, 0},
+          {Mat::ViscoplastErrorType::FailedLogEval, 0},
+          {Mat::ViscoplastErrorType::FailedExpEval, 0},
+      };
       eval_num_of_alpha_neq_1 = 0;
       eval_num_of_alpha_neq_1_last_iter = 0;
       eval_num_of_first_iter_convergences = 0;
@@ -396,19 +417,19 @@ namespace Mat
                                   // derivatives of the plastic strain rate have been evaluated
   };
 
-/// defines
-// flag for debug output (viscoplastic material) related to
-// time integration
-#define DEBUGVPLAST_TIMINT
+  /// defines
+  // flag for debug output (viscoplastic material) related to
+  // time integration
+  // #define DEBUGVPLAST_TIMINT
 
-// flag for debug output (viscoplastic material) related to the
-// inverse inelastic defgrad computation; less detailed than
-// DEBUGVPLAST_TIMINT
-#define DEBUGVPLAST_INELDEFGRAD
+  // flag for debug output (viscoplastic material) related to the
+  // inverse inelastic defgrad computation; less detailed than
+  // DEBUGVPLAST_TIMINT
+  // #define DEBUGVPLAST_INELDEFGRAD
 
   // flag for debug output (viscoplastic material) related to the
   // stiffness contribution
-#define DEBUGVPLAST_LINEARIZATION
+  // #define DEBUGVPLAST_LINEARIZATION
 
 }  // namespace Mat
 
