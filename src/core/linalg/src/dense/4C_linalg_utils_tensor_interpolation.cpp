@@ -17,6 +17,8 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace
 {
+  // #define DEBUG_TENSORINTERP  // debugging flag for tensor interpolation
+
   /*!
    * @brief Order the eigenpairs of a given matrix w.r.t. the eigenpairs of a reference
    * matrix to yield minimal rotations between corresponding eigenvectors (eigenvalues assumed
@@ -511,6 +513,38 @@ Core::LinAlg::SecondOrderTensorInterpolator<loc_dim>::get_interpolated_matrix(
   output.multiply_nn(1.0, lambda_interp, Q_interp, 0.0);
   temp3x3.multiply_tn(1.0, Q_interp, output, 0.0);
   output.multiply_nn(1.0, R_interp, temp3x3, 0.0);
+
+
+#ifdef DEBUG_TENSORINTERP
+  std::cout << std::string(30, '-') << "TENSOR INTERPOLATION DEBUGGING (1D INTERP)"
+            << std::string(30, '-') << std::endl;
+  std::cout << "EIGENVAL: " << std::endl;
+  std::cout << "xi = 0: " << std::endl;
+  std::cout << all_spectral_pairs[0][0].first << ", " << all_spectral_pairs[0][1].first << ", "
+            << all_spectral_pairs[0][2].first << std::endl;
+  std::cout << "--> xi = " << interp_loc(0) << ":" << std::endl;
+  std::cout << lambda_interp(0, 0) << ", " << lambda_interp(1, 1) << ", " << lambda_interp(2, 2)
+            << std::endl;
+  std::cout << "xi = 1: " << std::endl;
+  std::cout << all_spectral_pairs[1][0].first << ", " << all_spectral_pairs[1][1].first << ", "
+            << all_spectral_pairs[1][2].first << std::endl;
+  std::cout << "Q: " << std::endl;
+  std::cout << "xi = 0: " << std::endl;
+  all_Q[0].print(std::cout);
+  std::cout << "--> xi = " << interp_loc(0) << ":" << std::endl;
+  Q_interp.print(std::cout);
+  std::cout << "xi = 1: " << std::endl;
+  all_Q[1].print(std::cout);
+  std::cout << "R: " << std::endl;
+  std::cout << "xi = 0: " << std::endl;
+  all_R[0].print(std::cout);
+  std::cout << "--> xi = " << interp_loc(0) << ":" << std::endl;
+  R_interp.print(std::cout);
+  std::cout << "xi = 1: " << std::endl;
+  all_R[1].print(std::cout);
+  std::cout << std::string(100, '-') << std::endl;
+#endif
+
 
   return output;
 }

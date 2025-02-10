@@ -308,10 +308,10 @@ namespace
       inelastic_defgrad_transv_isotrop_vplast_refJC_data.add("USE_LINE_SEARCH", true);
       inelastic_defgrad_transv_isotrop_vplast_refJC_data.add("USE_SUBSTEPPING", false);
       inelastic_defgrad_transv_isotrop_vplast_refJC_data.add("MAX_HALVE_NUM_SUBSTEP", 1);
+      inelastic_defgrad_transv_isotrop_vplast_refJC_data.add("MAX_PLASTIC_STRAIN_INCR", 1.0e13);
       inelastic_defgrad_transv_isotrop_vplast_refJC_data.add(
-          "MAX_PLASTIC_STRAIN_INCR", std::exp(30.0));
-      inelastic_defgrad_transv_isotrop_vplast_refJC_data.add(
-          "MAX_PLASTIC_STRAIN_DERIV_INCR", std::exp(30.0));
+          "MAX_PLASTIC_STRAIN_DERIV_INCR", 1.0e13);
+      inelastic_defgrad_transv_isotrop_vplast_refJC_data.add("ANALYZE_TIMINT", false);
       inelastic_defgrad_transv_isotrop_vplast_refJC_data.add("INTERP_FACT_PRED_ADAPT", 0.5);
       inelastic_defgrad_transv_isotrop_vplast_refJC_data.add("MAX_NUM_PRED_ADAPT", 10);
       inelastic_defgrad_transv_isotrop_vplast_refJC_data.add("ANALYZE_TIMINT", false);
@@ -341,9 +341,8 @@ namespace
       inelastic_defgrad_isotrop_vplast_refJC_data.add("USE_LINE_SEARCH", true);
       inelastic_defgrad_isotrop_vplast_refJC_data.add("USE_SUBSTEPPING", false);
       inelastic_defgrad_isotrop_vplast_refJC_data.add("MAX_HALVE_NUM_SUBSTEP", 1);
-      inelastic_defgrad_isotrop_vplast_refJC_data.add("MAX_PLASTIC_STRAIN_INCR", std::exp(30.0));
-      inelastic_defgrad_isotrop_vplast_refJC_data.add(
-          "MAX_PLASTIC_STRAIN_DERIV_INCR", std::exp(30.0));
+      inelastic_defgrad_isotrop_vplast_refJC_data.add("MAX_PLASTIC_STRAIN_INCR", 1.0e10);
+      inelastic_defgrad_isotrop_vplast_refJC_data.add("MAX_PLASTIC_STRAIN_DERIV_INCR", 1.0e10);
       inelastic_defgrad_isotrop_vplast_refJC_data.add("INTERP_FACT_PRED_ADAPT", 0.1);
       inelastic_defgrad_isotrop_vplast_refJC_data.add("MAX_NUM_PRED_ADAPT", 10);
       inelastic_defgrad_isotrop_vplast_refJC_data.add("ANALYZE_TIMINT", false);
@@ -1786,444 +1785,47 @@ namespace
         computed_state_quantity_derivatives_isotrop.curr_dlpdepsp_, 1.0e-6);
   }
 
-  TEST_F(InelasticDefgradFactorsTest, DummyViscoplastAllDerivsFDTest)
-  {
-    // set material to be considered
-    std::shared_ptr<Mat::InelasticDefgradTransvIsotropElastViscoplast> iso_visco_mat =
-        isotrop_vplast_refJC_;
-    // set linearization type to be displayed
-    const bool display_perturbed = true;
-    // set perturbation factor
-    double pert_fact = 1.0e-10;
-
-
-    // define last_values to be set for InelasticDefgradTransvIsotropElastViscoplast
-    Core::LinAlg::Matrix<3, 3> last_plastic_defgrd_inverse{true};
-    last_plastic_defgrd_inverse(0, 0) = 1.0000000000000000;
-    last_plastic_defgrd_inverse(0, 1) = 0.0000000000000000;
-    last_plastic_defgrd_inverse(0, 2) = 0.0000000000000000;
-    last_plastic_defgrd_inverse(1, 0) = 0.0000000000000000;
-    last_plastic_defgrd_inverse(1, 1) = 1.0000000000000000;
-    last_plastic_defgrd_inverse(1, 2) = 0.0000000000000000;
-    last_plastic_defgrd_inverse(2, 0) = 0.0000000000000000;
-    last_plastic_defgrd_inverse(2, 1) = 0.0000000000000000;
-    last_plastic_defgrd_inverse(2, 2) = 1.0000000000000000;
-
-
-    double last_plastic_strain = 0.0000000000000000;
-
-
-    Core::LinAlg::Matrix<3, 3> last_defgrad{true};
-    last_defgrad(0, 0) = 0.9997853272113209;
-    last_defgrad(0, 1) = 0.0103408129273699;
-    last_defgrad(0, 2) = 0.0000000000000001;
-    last_defgrad(1, 0) = -0.0134776585979054;
-    last_defgrad(1, 1) = 0.9955713926000324;
-    last_defgrad(1, 2) = 0.0000000000000020;
-    last_defgrad(2, 0) = 0.0000000000000000;
-    last_defgrad(2, 1) = 0.0000000000000000;
-    last_defgrad(2, 2) = 0.9999999999999999;
-
-
-
-    Core::LinAlg::Matrix<3, 3> last_rightCG{true};
-    last_rightCG(0, 0) = 0.9997523477883296;
-    last_rightCG(0, 1) = -0.0030793783030828;
-    last_rightCG(0, 2) = 0.0000000000000001;
-    last_rightCG(1, 0) = -0.0030793783030828;
-    last_rightCG(1, 1) = 0.9912693301755666;
-    last_rightCG(1, 2) = 0.0000000000000020;
-    last_rightCG(2, 0) = 0.0000000000000001;
-    last_rightCG(2, 1) = 0.0000000000000020;
-    last_rightCG(2, 2) = 0.9999999999999998;
-
-
-
-    // set the values at the 0-th GP
-    iso_visco_mat->debug_set_last_quantities(
-        0, last_plastic_defgrd_inverse, last_plastic_strain, last_defgrad, last_rightCG);
-
-
-    // define last_values to be set for the viscoplastic law (Anand)
-    // double last_flow_resistance = 0.75;
-    // double last_plastic_strain_vp = 0.0;
-    // set the values at the 0-th GP
-    // std::dynamic_pointer_cast<Mat::Viscoplastic::Anand>(
-    //     iso_visco_mat->debug_get_viscoplastic_law())
-    //    ->debug_set_last_values(0, last_flow_resistance, last_plastic_strain_vp);
-
-    // set other variables needed for evaluation
-    Core::LinAlg::Matrix<3, 3> current_defgrad{true};
-    current_defgrad(0, 0) = 0.9997779240768407;
-    current_defgrad(0, 1) = 0.0105735632872044;
-    current_defgrad(0, 2) = 0.0000000000000002;
-    current_defgrad(1, 0) = -0.0136825937092844;
-    current_defgrad(1, 1) = 0.9954457199031490;
-    current_defgrad(1, 2) = -0.0000000000000012;
-    current_defgrad(2, 0) = 0.0000000000000000;
-    current_defgrad(2, 1) = 0.0000000000000000;
-    current_defgrad(2, 2) = 0.9999999999999999;
-
-    // calculate current CM
-    Core::LinAlg::Matrix<3, 3> current_rightCG{true};
-    current_rightCG.multiply_tn(1.0, current_defgrad, current_defgrad, 0.0);
-
-    Core::LinAlg::Matrix<3, 3> iFin_other{
-        true};  // should always be the unit tensor during debugging
-    iFin_other(0, 0) = 1.0;
-    iFin_other(0, 1) = 0.0;
-    iFin_other(0, 2) = 0.0;
-    iFin_other(1, 0) = 0.0;
-    iFin_other(1, 1) = 1.0;
-    iFin_other(1, 2) = 0.0;
-    iFin_other(2, 0) = 0.0;
-    iFin_other(2, 1) = 0.0;
-    iFin_other(2, 2) = 1.0;
-
-    // set inverse inelastic defgrad iFinM
-    Core::LinAlg::Matrix<3, 3> iFinM{
-        true};  // only declared, to be able to pass it to the evaluation function
-    iFinM(0, 0) = 1.0;
-    iFinM(0, 1) = 0.0;
-    iFinM(0, 2) = 0.0;
-    iFinM(1, 0) = 0.0;
-    iFinM(1, 1) = 1.0;
-    iFinM(1, 2) = 0.0;
-    iFinM(2, 0) = 0.0;
-    iFinM(2, 1) = 0.0;
-    iFinM(2, 2) = 1.0;
-
-    // set plastic strain
-    double plastic_strain = 0.0;
-
-    // set time step
-    const double dt = 1.0e-3;
-
-    // parameter list for InelasticDefGradTransvIsotropElastViscoplast
-    Teuchos::ParameterList param_list{};
-    param_list.set<double>("delta time", dt);
-    // call pre_evaluate
-    iso_visco_mat->pre_evaluate(param_list, 0, 0);
-
-    // set boolean for updating history variables
-    iso_visco_mat->debug_set_update_hist_var(true);
-
-    // declare error status
-    Mat::ViscoplastErrorType err_status = Mat::ViscoplastErrorType::NoErrors;
-
-    // evaluate state quantities
-    Mat::InelasticDefgradTransvIsotropElastViscoplast::StateQuantities state_quantities{};
-    state_quantities = iso_visco_mat->evaluate_state_quantities(current_rightCG, iFinM,
-        plastic_strain, err_status, dt, Mat::ViscoplastStateQuantityEvalType::FullEval);
-    FOUR_C_ASSERT_ALWAYS(
-        err_status == Mat::ViscoplastErrorType::NoErrors, "Could not evaluate state");
-
-    // evaluate state quantity derivatives
-    Mat::InelasticDefgradTransvIsotropElastViscoplast::StateQuantityDerivatives
-        state_quantity_derivs{};
-    state_quantity_derivs =
-        iso_visco_mat->evaluate_state_quantity_derivatives(current_rightCG, iFinM, plastic_strain,
-            err_status, dt, Mat::ViscoplastStateQuantityDerivEvalType::FullEval, true);
-    FOUR_C_ASSERT_ALWAYS(
-        err_status == Mat::ViscoplastErrorType::NoErrors, "Could not evaluate state derivatives");
-
-    // set the update history variable to false in the upcoming
-    // perturbation procedure
-    iso_visco_mat->debug_set_update_hist_var(false);
-
-    // define quantities we look at during perturbations
-    Core::LinAlg::Matrix<6, 9> dMe_dev_sym_diFin_pert{true};
-    Core::LinAlg::Matrix<6, 6> dMe_dev_sym_dC_pert{true};
-
-    Core::LinAlg::Matrix<1, 9> dsigma_diFin_pert{true};
-    Core::LinAlg::Matrix<1, 6> dsigma_dC_pert{true};
-
-    Core::LinAlg::Matrix<1, 9> dpsr_diFin_pert{true};
-    Core::LinAlg::Matrix<1, 1> dpsr_dsigma_pert{true};
-    Core::LinAlg::Matrix<1, 1> dpsr_depsp_pert{true};
-    Core::LinAlg::Matrix<1, 6> dpsr_dC_pert{true};
-
-    Core::LinAlg::Matrix<9, 9> dlp_diFin_pert{true};
-    Core::LinAlg::Matrix<9, 1> dlp_depsp_pert{true};
-    Core::LinAlg::Matrix<9, 6> dlp_dC_pert{true};
-
-
-
-    // define the entire indices array used in the perturbations
-    std::map<int, std::tuple<int, int>> indices_mapping{
-        {0, {0, 0}},
-        {1, {1, 1}},
-        {2, {2, 2}},
-        {3, {0, 1}},
-        {4, {1, 2}},
-        {5, {0, 2}},
-        {6, {1, 0}},
-        {7, {2, 1}},
-        {8, {2, 0}},
-    };
-
-    // define the perturbed state quantities
-    Mat::InelasticDefgradTransvIsotropElastViscoplast::StateQuantities perturbed_state_quantities{};
-
-    // ----- VARIATION iFinM ----- //
-
-    Core::LinAlg::Matrix<3, 3> perturbed_iFin{true};
-    for (auto iter = indices_mapping.begin(); iter != indices_mapping.end(); ++iter)
-    {
-      // perturb iFin
-      perturbed_iFin = iFinM;
-      perturbed_iFin(std::get<0>(iter->second), std::get<1>(iter->second)) += pert_fact;
-
-      // evaluate perturbed state
-      perturbed_state_quantities =
-          iso_visco_mat->evaluate_state_quantities(current_rightCG, perturbed_iFin, plastic_strain,
-              err_status, dt, Mat::ViscoplastStateQuantityEvalType::FullEval);
-      FOUR_C_ASSERT_ALWAYS(err_status == Mat::ViscoplastErrorType::NoErrors,
-          "Could not evaluate perturbed state (variation iFin)");
-
-      // update components of the required derivative
-      for (int j = 0; j < 9; ++j)
-      {
-        dlp_diFin_pert(j, iter->first) +=
-            1.0 / pert_fact *
-            (perturbed_state_quantities.curr_lpM_(
-                 std::get<0>(indices_mapping[j]), std::get<1>(indices_mapping[j])) -
-                state_quantities.curr_lpM_(
-                    std::get<0>(indices_mapping[j]), std::get<1>(indices_mapping[j])));
-      }
-      for (int j = 0; j < 6; ++j)
-      {
-        dMe_dev_sym_diFin_pert(j, iter->first) +=
-            1.0 / pert_fact *
-            (perturbed_state_quantities.curr_Me_dev_sym_M_(
-                 std::get<0>(indices_mapping[j]), std::get<1>(indices_mapping[j])) -
-                state_quantities.curr_Me_dev_sym_M_(std::get<0>(indices_mapping[j]),
-                    std::get<1>(indices_mapping[j])));  // do we need the 1/2 factor, and also in
-                                                        // the perturb.
-                                                        // based
-                                                        // linearization?
-      }
-      dsigma_diFin_pert(0, iter->first) =
-          1.0 / pert_fact *
-          (perturbed_state_quantities.curr_equiv_stress_ - state_quantities.curr_equiv_stress_);
-
-      dpsr_diFin_pert(0, iter->first) =
-          1.0 / pert_fact *
-          (perturbed_state_quantities.curr_equiv_plastic_strain_rate_ -
-              state_quantities.curr_equiv_plastic_strain_rate_);
-    }
-
-    // ----- VARIATION CM ----- //
-
-    Core::LinAlg::Matrix<3, 3> perturbed_CM{true};
-    for (int i = 0; i < 6; ++i)
-    {
-      // perturb CM
-      perturbed_CM = current_rightCG;
-      perturbed_CM(std::get<0>(indices_mapping[i]), std::get<1>(indices_mapping[i])) +=
-          pert_fact / 2.0;
-      perturbed_CM(std::get<1>(indices_mapping[i]), std::get<0>(indices_mapping[i])) +=
-          pert_fact / 2.0;
-
-      // evaluate perturbed state
-      perturbed_state_quantities = iso_visco_mat->evaluate_state_quantities(perturbed_CM, iFinM,
-          plastic_strain, err_status, dt, Mat::ViscoplastStateQuantityEvalType::FullEval);
-      FOUR_C_ASSERT_ALWAYS(err_status == Mat::ViscoplastErrorType::NoErrors,
-          "Could not evaluate perturbed state (variation CM)");
-
-      // update components of the required derivative
-      for (int j = 0; j < 9; ++j)
-      {
-        dlp_dC_pert(j, i) += 1.0 / pert_fact *
-                             (perturbed_state_quantities.curr_lpM_(std::get<0>(indices_mapping[j]),
-                                  std::get<1>(indices_mapping[j])) -
-                                 state_quantities.curr_lpM_(std::get<0>(indices_mapping[j]),
-                                     std::get<1>(indices_mapping[j])));
-      }
-      for (int j = 0; j < 6; ++j)
-      {
-        dMe_dev_sym_dC_pert(j, i) +=
-            1.0 / pert_fact *
-            (perturbed_state_quantities.curr_Me_dev_sym_M_(
-                 std::get<0>(indices_mapping[j]), std::get<1>(indices_mapping[j])) -
-                state_quantities.curr_Me_dev_sym_M_(std::get<0>(indices_mapping[j]),
-                    std::get<1>(indices_mapping[j])));  // do we need the 1/2 factor, and also in
-                                                        // the perturb.
-                                                        // based
-                                                        // linearization?
-      }
-      dsigma_dC_pert(0, i) =
-          1.0 / pert_fact *
-          (perturbed_state_quantities.curr_equiv_stress_ - state_quantities.curr_equiv_stress_);
-
-
-      dpsr_dC_pert(0, i) = 1.0 / pert_fact *
-                           (perturbed_state_quantities.curr_equiv_plastic_strain_rate_ -
-                               state_quantities.curr_equiv_plastic_strain_rate_);
-    }
-
-    // ----- VARIATION PLAST. STRAIN (AND EQUIV. STRESS) ----- //
-
-    double perturbed_plastic_strain{plastic_strain + pert_fact};
-    // evaluate perturbed state
-    perturbed_state_quantities = iso_visco_mat->evaluate_state_quantities(current_rightCG, iFinM,
-        perturbed_plastic_strain, err_status, dt, Mat::ViscoplastStateQuantityEvalType::FullEval);
-    FOUR_C_ASSERT_ALWAYS(err_status == Mat::ViscoplastErrorType::NoErrors,
-        "Could not evaluate perturbed state (variation plastic strain)");
-
-    // update components of the required derivative
-    for (int j = 0; j < 9; ++j)
-    {
-      dlp_depsp_pert(j, 0) += 1.0 / pert_fact *
-                              (perturbed_state_quantities.curr_lpM_(std::get<0>(indices_mapping[j]),
-                                   std::get<1>(indices_mapping[j])) -
-                                  state_quantities.curr_lpM_(std::get<0>(indices_mapping[j]),
-                                      std::get<1>(indices_mapping[j])));
-    }
-    for (int j = 0; j < 6; ++j)
-    {
-    }
-    dpsr_depsp_pert(0, 0) = 1.0 / pert_fact *
-                            (perturbed_state_quantities.curr_equiv_plastic_strain_rate_ -
-                                state_quantities.curr_equiv_plastic_strain_rate_);
-
-    double perturbed_stress{state_quantities.curr_equiv_stress_ + pert_fact};
-    double psr_perturbed_stress =
-        iso_visco_mat->debug_get_viscoplastic_law()->evaluate_plastic_strain_rate(
-            perturbed_stress, plastic_strain, dt, 1.0e30, err_status);
-    FOUR_C_ASSERT_ALWAYS(err_status == Mat::ViscoplastErrorType::NoErrors,
-        "Could not evaluate perturbed state (variation equiv. stress)");
-    dpsr_dsigma_pert(0, 0) =
-        1.0 / pert_fact * (psr_perturbed_stress - state_quantities.curr_equiv_plastic_strain_rate_);
-
-
-    // auxiliary matrices for output
-    Core::LinAlg::Matrix<1, 9> temp1x9{true};
-    Core::LinAlg::Matrix<1, 6> temp1x6{true};
-
-    // OUTPUT in versus-style
-    std::cout << "OUTPUT of FD-CHECK:" << std::endl;
-    if (display_perturbed)
-    {
-      std::cout << "..........PERTURBED DERIVS.........." << std::endl;
-
-      std::cout << "dMe_dev_sym_diFin: " << std::endl;
-      dMe_dev_sym_diFin_pert.print(std::cout);
-
-      std::cout << "dMe_dev_sym_dC: " << std::endl;
-      dMe_dev_sym_dC_pert.print(std::cout);
-
-      std::cout << "dsigma_diFin: " << std::endl;
-      dsigma_diFin_pert.print(std::cout);
-
-      std::cout << "dsigma_dC: " << std::endl;
-      dsigma_dC_pert.print(std::cout);
-
-      std::cout << "dpsr_diFin: " << std::endl;
-      dpsr_diFin_pert.print(std::cout);
-
-      std::cout << "dpsr_dC: " << std::endl;
-      dpsr_dC_pert.print(std::cout);
-
-      std::cout << "dpsr_dsigma: " << std::endl;
-      std::cout << dpsr_dsigma_pert(0) << std::endl;
-
-      std::cout << "dpsr_depsp: " << std::endl;
-      std::cout << dpsr_depsp_pert(0) << std::endl;
-
-      std::cout << "dlp_diFin: " << std::endl;
-      dlp_diFin_pert.print(std::cout);
-
-      std::cout << "dlp_dC: " << std::endl;
-      dlp_dC_pert.print(std::cout);
-    }
-    else
-    {
-      std::cout << "..........EVALUATED DERIVS.........." << std::endl;
-
-      std::cout << "dMe_dev_sym_diFin: " << std::endl;
-      state_quantity_derivs.curr_dMe_dev_sym_diFin_.print(std::cout);
-
-      std::cout << "dMe_dev_sym_dC: " << std::endl;
-      state_quantity_derivs.curr_dMe_dev_sym_dC_.print(std::cout);
-
-      std::cout << "dsigma_diFin: " << std::endl;
-      state_quantity_derivs.curr_dequiv_stress_diFin_.print(std::cout);
-
-      std::cout << "dsigma_dC: " << std::endl;
-      state_quantity_derivs.curr_dequiv_stress_dC_.print(std::cout);
-
-      std::cout << "dpsr_diFin: " << std::endl;
-      temp1x9.update(state_quantity_derivs.curr_dpsr_dequiv_stress_,
-          state_quantity_derivs.curr_dequiv_stress_diFin_, 0.0);
-      temp1x9.print(std::cout);
-
-      std::cout << "dpsr_dC: " << std::endl;
-      temp1x6.update(state_quantity_derivs.curr_dpsr_dequiv_stress_,
-          state_quantity_derivs.curr_dequiv_stress_dC_, 0.0);
-      temp1x6.print(std::cout);
-
-      std::cout << "dpsr_dsigma: " << std::endl;
-      std::cout << state_quantity_derivs.curr_dpsr_dequiv_stress_ << std::endl;
-
-      std::cout << "dpsr_depsp: " << std::endl;
-      std::cout << state_quantity_derivs.curr_dpsr_depsp_ << std::endl;
-
-      std::cout << "dlp_diFin: " << std::endl;
-      state_quantity_derivs.curr_dlpdiFin_.print(std::cout);
-
-      std::cout << "dlp_dC: " << std::endl;
-      state_quantity_derivs.curr_dlpdC_.print(std::cout);
-    }
-
-
-    // throw error to have output
-    FOUR_C_THROW("Throw Error for FD-Check");
-  }
-
   TEST_F(InelasticDefgradFactorsTest, DummyViscoplastTimIntLinearizTest)
   {
     // define last_values to be set for InelasticDefgradTransvIsotropElastViscoplast
     Core::LinAlg::Matrix<3, 3> last_plastic_defgrd_inverse{true};
-    last_plastic_defgrd_inverse(0, 0) = 1.0000000000000000;
-    last_plastic_defgrd_inverse(0, 1) = 0.0000000000000000;
-    last_plastic_defgrd_inverse(0, 2) = 0.0000000000000000;
-    last_plastic_defgrd_inverse(1, 0) = 0.0000000000000000;
-    last_plastic_defgrd_inverse(1, 1) = 1.0000000000000000;
-    last_plastic_defgrd_inverse(1, 2) = 0.0000000000000000;
-    last_plastic_defgrd_inverse(2, 0) = 0.0000000000000000;
-    last_plastic_defgrd_inverse(2, 1) = 0.0000000000000000;
-    last_plastic_defgrd_inverse(2, 2) = 1.0000000000000000;
+    last_plastic_defgrd_inverse(0, 0) = 0.7799447943653105;
+    last_plastic_defgrd_inverse(0, 1) = 0.6717937212153998;
+    last_plastic_defgrd_inverse(0, 2) = -0.0000000000040838;
+    last_plastic_defgrd_inverse(1, 0) = 0.3020939183947698;
+    last_plastic_defgrd_inverse(1, 1) = 1.5657053121955613;
+    last_plastic_defgrd_inverse(1, 2) = -0.0000000000002554;
+    last_plastic_defgrd_inverse(2, 0) = -0.0000000000011122;
+    last_plastic_defgrd_inverse(2, 1) = 0.0000000000070020;
+    last_plastic_defgrd_inverse(2, 2) = 0.9821070791314345;
 
 
 
-    double last_plastic_strain = 0.0000000000000000;
+    double last_plastic_strain = 0.8947623269281545;
 
 
     Core::LinAlg::Matrix<3, 3> last_defgrad{true};
-    last_defgrad(0, 0) = 0.9962527930483470;
-    last_defgrad(0, 1) = 0.0255731437380345;
-    last_defgrad(0, 2) = 0.0000000000000765;
-    last_defgrad(1, 0) = -0.0270266720962624;
-    last_defgrad(1, 1) = 1.0017741563408098;
-    last_defgrad(1, 2) = -0.0000000000003348;
-    last_defgrad(2, 0) = 0.0000000000000002;
+    last_defgrad(0, 0) = 0.7241001029935439;
+    last_defgrad(0, 1) = 0.1761787498957881;
+    last_defgrad(0, 2) = -0.0000000000037455;
+    last_defgrad(1, 0) = -1.3648389655342599;
+    last_defgrad(1, 1) = 0.9759870878727099;
+    last_defgrad(1, 2) = -0.0000000000095394;
+    last_defgrad(2, 0) = 0.0000000000000001;
     last_defgrad(2, 1) = 0.0000000000000000;
-    last_defgrad(2, 2) = 1.0000000000000000;
-
+    last_defgrad(2, 2) = 1.0000000000000002;
 
 
     Core::LinAlg::Matrix<3, 3> last_rightCG{true};
-    last_rightCG(0, 0) = 0.9932500686612314;
-    last_rightCG(0, 1) = -0.0015973057618893;
-    last_rightCG(0, 2) = 0.0000000000000855;
-    last_rightCG(1, 0) = -0.0015973057618893;
-    last_rightCG(1, 1) = 1.0042054459929874;
-    last_rightCG(1, 2) = -0.0000000000003335;
-    last_rightCG(2, 0) = 0.0000000000000855;
-    last_rightCG(2, 1) = -0.0000000000003335;
-    last_rightCG(2, 2) = 1.0000000000000000;
-
+    last_rightCG(0, 0) = 2.3871063609958894;
+    last_rightCG(0, 1) = -1.2044941564421703;
+    last_rightCG(0, 2) = 0.0000000000103077;
+    last_rightCG(1, 0) = -1.2044941564421703;
+    last_rightCG(1, 1) = 0.9835897476090955;
+    last_rightCG(1, 2) = -0.0000000000099702;
+    last_rightCG(2, 0) = 0.0000000000103077;
+    last_rightCG(2, 1) = -0.0000000000099702;
+    last_rightCG(2, 2) = 1.0000000000000004;
 
 
     // set the values at the 0-th GP
@@ -2243,17 +1845,15 @@ namespace
 
     // set other variables needed for evaluation
     Core::LinAlg::Matrix<3, 3> current_defgrad{true};
-    current_defgrad(0, 0) = 0.9948391692476263;
-    current_defgrad(0, 1) = 0.0279501341106699;
-    current_defgrad(0, 2) = -0.0000000000004720;
-    current_defgrad(1, 0) = -0.0298864486026118;
-    current_defgrad(1, 1) = 1.0031544822258729;
-    current_defgrad(1, 2) = 0.0000000000013676;
-    current_defgrad(2, 0) = 0.0000000000000002;
+    current_defgrad(0, 0) = 0.7227210102623968;
+    current_defgrad(0, 1) = 0.1768048705148126;
+    current_defgrad(0, 2) = 0.0000000000029728;
+    current_defgrad(1, 0) = -1.3705327073134841;
+    current_defgrad(1, 1) = 0.9749990823169901;
+    current_defgrad(1, 2) = -0.0000000000095437;
+    current_defgrad(2, 0) = 0.0000000000000001;
     current_defgrad(2, 1) = 0.0000000000000000;
-    current_defgrad(2, 2) = 1.0000000000000000;
-
-
+    current_defgrad(2, 2) = 1.0000000000000002;
 
     Core::LinAlg::Matrix<3, 3>* current_defgrad_ptr = &current_defgrad;
     Core::LinAlg::Matrix<3, 3> iFin_other{
@@ -2281,20 +1881,11 @@ namespace
     //    isotrop_vplast_Anand_->debug_set_update_hist_var(true);
     isotrop_vplast_refJC_->debug_set_update_hist_var(true);
 
-    // DEBUG
-    std::cout << "Will we evaluate the inverse inelastic defgrad?" << std::endl;
-
-
-
     // evaluate
     //    isotrop_vplast_Anand_->evaluate_inverse_inelastic_def_grad(
     //       current_defgrad_ptr, iFin_other, iFinM);
     isotrop_vplast_refJC_->evaluate_inverse_inelastic_def_grad(
         current_defgrad_ptr, iFin_other, iFinM);
-
-    // DEBUG
-    std::cout << "Did we evaluate the inverse inelastic defgrad?" << std::endl;
-
 
 
     // ----------------------------------------------------------------------- //
@@ -2448,7 +2039,7 @@ namespace
 
     // compare the results
     // WE SHOULD ACTUALLY NOT BE HERE BEFORE DEBUGGING!!!
-    // FOUR_C_THROW("Dummy test error");
+    FOUR_C_THROW("Dummy test error");
   }
 
 

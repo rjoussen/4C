@@ -10,6 +10,7 @@
 #include "4C_comm_pack_buffer.hpp"
 #include "4C_global_data.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
+#include "4C_mat_inelastic_defgrad_factors_service.hpp"
 #include "4C_mat_par_bundle.hpp"
 #include "4C_mat_vplast_law.hpp"
 
@@ -120,6 +121,9 @@ Mat::Viscoplastic::ReformulatedJohnsonCook::evaluate_derivatives_of_plastic_stra
     const double max_plastic_strain_deriv_incr, Mat::ViscoplastErrorType& err_status,
     const bool update_hist_var)
 {
+  // declare derivatives to be computed
+  Core::LinAlg::Matrix<2, 1> equiv_plastic_strain_rate_ders(true);
+
   // first set error status to "no errors"
   err_status = Mat::ViscoplastErrorType::NoErrors;
 
@@ -156,9 +160,6 @@ Mat::Viscoplastic::ReformulatedJohnsonCook::evaluate_derivatives_of_plastic_stra
   const double log_dt = std::log(dt);
 
   // computation of derivatives
-
-  // first we set derivatives to 0
-  Core::LinAlg::Matrix<2, 1> equiv_plastic_strain_rate_ders(true);
 
   // then we check the yield condition
   if (evaluate_stress_ratio(equiv_stress, used_equiv_plastic_strain) >= 1.0)
