@@ -2442,6 +2442,17 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_additional_cmat
   Core::LinAlg::Matrix<3, 3> FredM(true);
   FredM.multiply_nn(1.0, *defgrad, iFin_other, 0.0);
 
+#ifdef DEBUGVPLAST_LINEARIZATION
+  if (debug_output_ele_gp(debug_ele_gid_vec, debug_gp_vec, ele_gid_, gp_))
+  {
+    std::cout << "...do we even get into the linearization for ele_gid: " << ele_gid_
+              << "; gp: " << gp_ << std::endl;
+    std::cout << "...equiv_plastic_strain_rate: "
+              << state_quantities_.curr_equiv_plastic_strain_rate_ << std::endl;
+  }
+#endif
+
+
 
   // reduced right Cauchy-Green deformation tensor
   Core::LinAlg::Matrix<3, 3> CredM(true);
@@ -2453,9 +2464,15 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_additional_cmat
   // declare error status (no errors)
   Mat::ViscoplastErrorType err_status = Mat::ViscoplastErrorType::NoErrors;
 
+  // recompute the state to make sure that everything is evaluated properly after circumventing the
+  // stiffness evaluation
+  state_quantities_ =
+      evaluate_state_quantities(CredM, time_step_quantities_.current_plastic_defgrd_inverse_[gp_],
+          time_step_quantities_.current_plastic_strain_[gp_], err_status, time_step_settings_.dt_,
+          Mat::ViscoplastStateQuantityEvalType::FullEval);
+
   // calculate linearization term only if we have plastic strain
-  if (std::abs(time_step_quantities_.current_plastic_strain_[gp_] -
-               time_step_quantities_.last_plastic_strain_[gp_]) > 0.0)
+  if (std::abs(state_quantities_.curr_equiv_plastic_strain_rate_) > 0.0)
   {
     // ----- perturbation-based linearization ----- //
     if (parameter()->linearization_type() == Mat::ViscoplastLinearizationType::PerturbBased)
@@ -2464,17 +2481,29 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_additional_cmat
       return;
     }
 
+#ifdef DEBUGVPLAST_LINEARIZATION
+    if (debug_output_ele_gp(debug_ele_gid_vec, debug_gp_vec, ele_gid_, gp_))
+    {
+      std::cout << "we walk into the analytic linearization" << std::endl;
+    }
+#endif
 
 
     // ----- analytical linearization ----- //
 
-    // evaluate the state prior to evaluating the Jacobian and the RHS
-    // (this needs to be done in the current implementation since the
-    // derivative evaluation does not automatically evaluate the state)
-    state_quantities_ =
-        evaluate_state_quantities(CredM, time_step_quantities_.current_plastic_defgrd_inverse_[gp_],
-            time_step_quantities_.current_plastic_strain_[gp_], err_status, time_step_settings_.dt_,
-            Mat::ViscoplastStateQuantityEvalType::FullEval);
+
+#ifdef DEBUGVPLAST_LINEARIZATION
+    if (debug_output_ele_gp(debug_ele_gid_vec, debug_gp_vec, ele_gid_, gp_))
+    {
+      std::cout << "...evaluated state quantities in analytical linearization" << std::endl;
+      if (err_status != Mat::ViscoplastErrorType::NoErrors)
+      {
+        std::cout << "there was an error: " << to_string(err_status) << std::endl;
+      }
+    }
+#endif
+
+
     if (err_status != Mat::ViscoplastErrorType::NoErrors)
     {
       evaluate_additional_cmat_perturb_based(FredM, cmatadd, iFin_other, dSdiFinj);
@@ -2493,6 +2522,18 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_additional_cmat
     jacMat = calculate_jacobian(CredM, current_sol,
         time_step_quantities_.last_plastic_defgrd_inverse_[gp_],
         time_step_quantities_.last_plastic_strain_[gp_], time_step_settings_.dt_, err_status);
+
+#ifdef DEBUGVPLAST_LINEARIZATION
+    if (debug_output_ele_gp(debug_ele_gid_vec, debug_gp_vec, ele_gid_, gp_))
+    {
+      std::cout << "...evaluated jacobian" << std::endl;
+      if (err_status != Mat::ViscoplastErrorType::NoErrors)
+      {
+        std::cout << "there was an error: " << to_string(err_status) << std::endl;
+      }
+    }
+#endif
+
     if (err_status != Mat::ViscoplastErrorType::NoErrors)
     {
       evaluate_additional_cmat_perturb_based(FredM, cmatadd, iFin_other, dSdiFinj);
@@ -2555,12 +2596,31 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_additional_cmat
     solver.factor_with_equilibration(true);
     int err = solver.solve();  // X = A^-1 B
     int err2 = solver.factor();
+
+#ifdef DEBUGVPLAST_LINEARIZATION
+    if (debug_output_ele_gp(debug_ele_gid_vec, debug_gp_vec, ele_gid_, gp_))
+    {
+      std::cout << "...solved linear system" << std::endl;
+    }
+#endif
+
+
     if ((err != 0) || (err2 != 0))
     {
+#ifdef DEBUGVPLAST_LINEARIZATION
+      if (debug_output_ele_gp(debug_ele_gid_vec, debug_gp_vec, ele_gid_, gp_))
+      {
+        std::cout << "...but there was an error..." << std::endl;
+      }
+#endif
+
+
       err_status = ViscoplastErrorType::FailedSolAnalytLinearization;
       evaluate_additional_cmat_perturb_based(FredM, cmatadd, iFin_other, dSdiFinj);
       return;
     }
+
+
 
     // disassemble the solution vector
     Core::LinAlg::Matrix<9, 6> diFinjdCV = extract_derivative_of_inv_inelastic_defgrad(SOL);
@@ -2608,6 +2668,17 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_inverse_inelast
   FredM.multiply_nn(1.0, *defgrad, iFin_other, 0.0);
   Core::LinAlg::Matrix<3, 3> CredM(true);
   CredM.multiply_tn(1.0, FredM, FredM, 0.0);
+
+#ifdef DEBUGVPLAST_LINEARIZATION
+  std::cout << std::scientific << std::setprecision(6);
+  if (debug_output_ele_gp(debug_ele_gid_vec, debug_gp_vec, ele_gid_, gp_))
+  {
+    std::cout << "EVAL_INV_INEL_DEFGRAD: " << std::endl;
+    std::cout << "defgrad: " << std::endl;
+    defgrad->print(std::cout);
+  }
+#endif
+
 
   // check whether we have already evaluated the inverse inelastic deformation gradient for the
   // given reduced deformation gradient
@@ -2929,6 +3000,15 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::unpack_inelastic(
       time_step_quantities_.last_substep_plastic_defgrd_inverse_.size(),
       Core::LinAlg::Matrix<3, 3>{true});
 
+  // DEBUG
+  static int called = false;
+  if (!called)
+  {
+    std::cout << "UNPACK called for ele_gid_ == 6: " << std::endl;
+    std::cout << "gp 0: current_defgrad: " << std::endl;
+    time_step_quantities_.current_defgrad_[0].print(std::cout);
+    called = true;
+  }
 
   // now that the fiber direction is available, we set the material-dependent constant tensors
   // with it
