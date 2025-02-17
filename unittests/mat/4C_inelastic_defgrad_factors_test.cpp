@@ -1845,15 +1845,16 @@ namespace
 
     // set other variables needed for evaluation
     Core::LinAlg::Matrix<3, 3> current_defgrad{true};
-    current_defgrad(0, 0) = 0.7227210102623968;
-    current_defgrad(0, 1) = 0.1768048705148126;
-    current_defgrad(0, 2) = 0.0000000000029728;
-    current_defgrad(1, 0) = -1.3705327073134841;
-    current_defgrad(1, 1) = 0.9749990823169901;
-    current_defgrad(1, 2) = -0.0000000000095437;
-    current_defgrad(2, 0) = 0.0000000000000001;
+    current_defgrad(0, 0) = 0.9495521406408685;
+    current_defgrad(0, 1) = 0.0822756509928580;
+    current_defgrad(0, 2) = 0.0000000002431954;
+    current_defgrad(1, 0) = -3.1022983060634637;
+    current_defgrad(1, 1) = 0.7419900024887491;
+    current_defgrad(1, 2) = -0.0000000002164365;
+    current_defgrad(2, 0) = -0.0000000000000002;
     current_defgrad(2, 1) = 0.0000000000000000;
-    current_defgrad(2, 2) = 1.0000000000000002;
+    current_defgrad(2, 2) = 1.0000000000000000;
+
 
     Core::LinAlg::Matrix<3, 3>* current_defgrad_ptr = &current_defgrad;
     Core::LinAlg::Matrix<3, 3> iFin_other{
@@ -1987,6 +1988,8 @@ namespace
 
     // set the parameter list in the global problem
     problem.set_parameter_list(parameter_list_pointer);
+    parameter_list_pointer->sublist("SSI CONTROL")
+        .set("COUPALGO", Inpar::SSI::SolutionSchemeOverFields::ssi_IterStagg);
 
     // get pointer to parameter class
     std::shared_ptr<Mat::PAR::MultiplicativeSplitDefgradElastHyper>

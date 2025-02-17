@@ -334,12 +334,22 @@ Core::LinAlg::SecondOrderTensorInterpolator<loc_dim>::get_interpolated_matrix(
   // all normalized weights \f$ \tilde{w}_j  \f$
   std::vector<double> all_norm_weights(ref_matrices.size());
 
-  // first loop through the reference matrices
+  // decompose the base matrix (STEP 1 (Satheesh, 2024, 10.1002/nme.7373, Section 2.5): polar
+  // decomposition of each matrix) -> done here in order to provide the rotation R of the base
+  // matrix in the subsequent loop over all matrices
+  matrix_3x3_polar_decomposition(ref_matrices[base_ind], all_R[base_ind], all_U[base_ind],
+      all_lambda[base_ind], all_spectral_pairs[base_ind]);
+
+  // first loop over all the reference matrices (polar decomposition + calculation of relative R
+  // rotation matrices, vectors + unnormalized weights)
   for (unsigned int i = 0; i < ref_locs.size(); ++i)
   {
-    // STEP 1 (Satheesh, 2024, 10.1002/nme.7373, Section 2.5): polar decomposition of each matrix
-    matrix_3x3_polar_decomposition(
-        ref_matrices[i], all_R[i], all_U[i], all_lambda[i], all_spectral_pairs[i]);
+    if (i != base_ind)
+    {
+      // STEP 1 (Satheesh, 2024, 10.1002/nme.7373, Section 2.5): polar decomposition of each matrix
+      matrix_3x3_polar_decomposition(
+          ref_matrices[i], all_R[i], all_U[i], all_lambda[i], all_spectral_pairs[i]);
+    }
 
     // STEP 3 (Satheesh, 2024, 10.1002/nme.7373, Section 2.5): interpolate rotation matrices
     // get relative rotation matrices
@@ -350,7 +360,7 @@ Core::LinAlg::SecondOrderTensorInterpolator<loc_dim>::get_interpolated_matrix(
 
     // compute unnormalized weights of interpolation points
     diff_locs.update(1.0, ref_locs[i], -1.0, interp_loc, 0.0);
-    all_unnorm_weights[i] = std::exp(-c * diff_locs.norm2());
+    all_unnorm_weights[i] = std::exp(-c * diff_locs.norm2() * diff_locs.norm2());
     sum_of_unnorm_weights += all_unnorm_weights[i];
   }
 
@@ -542,6 +552,21 @@ Core::LinAlg::SecondOrderTensorInterpolator<loc_dim>::get_interpolated_matrix(
   R_interp.print(std::cout);
   std::cout << "xi = 1: " << std::endl;
   all_R[1].print(std::cout);
+  std::cout << "...rel: " << std::endl;
+  std::cout << "Q_rel_vect (interp): " << std::endl;
+  rot_vect_Q_rel_interp.print(std::cout);
+  std::cout << "R_rel_vect (interp): " << std::endl;
+  rot_vect_R_rel_interp.print(std::cout);
+  std::cout << "R_rel_vect (left): " << std::endl;
+  all_rot_vect_R_rel[0].print(std::cout);
+  std::cout << "R_rel_vect (right): " << std::endl;
+  all_rot_vect_R_rel[1].print(std::cout);
+  all_R_rel[0].print(std::cout);
+  all_R_rel[1].print(std::cout);
+  std::cout << "base_ind: " << base_ind << std::endl;
+  std::cout << "all_R[base_ind]: " << std::endl;
+  all_R[base_ind].print(std::cout);
+  std::cout << "...weights: " << all_norm_weights[0] << ", " << all_norm_weights[1] << std::endl;
   std::cout << std::string(100, '-') << std::endl;
 #endif
 

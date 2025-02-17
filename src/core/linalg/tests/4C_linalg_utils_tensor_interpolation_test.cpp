@@ -9,9 +9,15 @@
 
 #include "4C_linalg_utils_tensor_interpolation.hpp"
 
+#include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_unittest_utils_assertions_test.hpp"
 
+#include <array>
 #include <cmath>
+#include <iomanip>
+#include <ios>
+#include <utility>
+#include <vector>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -191,6 +197,212 @@ namespace
 
     FOUR_C_EXPECT_NEAR(T_interp, T_ref, 1.0e-9);
   }
+
+  TEST(LinalgTensorInterpolationTest, General1DInterpTest)
+  {
+    // set left matrix (loc = 0)
+    Core::LinAlg::Matrix<3, 3> left_matrix{true};
+    left_matrix(0, 0) = 1.802440e-01;
+    left_matrix(0, 1) = 7.461039e-01;
+    left_matrix(0, 2) = -3.148670e-10;
+    left_matrix(1, 0) = -5.701622e-01;
+    left_matrix(1, 1) = 3.263754e+00;
+    left_matrix(1, 2) = -8.927429e-10;
+    left_matrix(2, 0) = 1.019112e-10;
+    left_matrix(2, 1) = 1.152076e-10;
+    left_matrix(2, 2) = 9.865120e-01;
+    // perform polar decomposition of left matrix
+    Core::LinAlg::Matrix<3, 3> left_matrix_R{true};
+    Core::LinAlg::Matrix<3, 3> left_matrix_U{true};
+    Core::LinAlg::Matrix<3, 3> left_matrix_lambda{true};
+    std::array<std::pair<double, Core::LinAlg::Matrix<3, 1>>, 3> left_matrix_spectral;
+    Core::LinAlg::matrix_3x3_polar_decomposition(
+        left_matrix, left_matrix_R, left_matrix_U, left_matrix_lambda, left_matrix_spectral);
+    // build Q left matrix
+    Core::LinAlg::Matrix<3, 3> left_matrix_Q{true};
+    left_matrix_Q(0, 0) = left_matrix_spectral[0].second(0);
+    left_matrix_Q(0, 1) = left_matrix_spectral[0].second(1);
+    left_matrix_Q(0, 2) = left_matrix_spectral[0].second(2);
+    left_matrix_Q(1, 0) = left_matrix_spectral[1].second(0);
+    left_matrix_Q(1, 1) = left_matrix_spectral[1].second(1);
+    left_matrix_Q(1, 2) = left_matrix_spectral[1].second(2);
+    left_matrix_Q(2, 0) = left_matrix_spectral[2].second(0);
+    left_matrix_Q(2, 1) = left_matrix_spectral[2].second(1);
+    left_matrix_Q(2, 2) = left_matrix_spectral[2].second(2);
+    // get the rotation vectors
+    Core::LinAlg::Matrix<3, 1> left_matrix_R_vect =
+        Core::LinAlg::calc_rot_vect_from_rot_matrix(left_matrix_R);
+    Core::LinAlg::Matrix<3, 1> left_matrix_Q_vect =
+        Core::LinAlg::calc_rot_vect_from_rot_matrix(left_matrix_Q);
+
+    // set right matrix (loc = 1)
+    Core::LinAlg::Matrix<3, 3> right_matrix{true};
+    right_matrix(0, 0) = 4.337834e-01;
+    right_matrix(0, 1) = 6.330147e-01;
+    right_matrix(0, 2) = -9.099803e-11;
+    right_matrix(1, 0) = 6.330147e-01;
+    right_matrix(1, 1) = 3.260640e+00;
+    right_matrix(1, 2) = -1.181847e-10;
+    right_matrix(2, 0) = -9.099803e-11;
+    right_matrix(2, 1) = -1.181847e-10;
+    right_matrix(2, 2) = 9.864815e-01;
+    // perform polar decomposition of right matrix
+    Core::LinAlg::Matrix<3, 3> right_matrix_R{true};
+    Core::LinAlg::Matrix<3, 3> right_matrix_U{true};
+    Core::LinAlg::Matrix<3, 3> right_matrix_lambda{true};
+    std::array<std::pair<double, Core::LinAlg::Matrix<3, 1>>, 3> right_matrix_spectral;
+    Core::LinAlg::matrix_3x3_polar_decomposition(
+        right_matrix, right_matrix_R, right_matrix_U, right_matrix_lambda, right_matrix_spectral);
+    // build Q matrix
+    Core::LinAlg::Matrix<3, 3> right_matrix_Q{true};
+    right_matrix_Q(0, 0) = right_matrix_spectral[0].second(0);
+    right_matrix_Q(0, 1) = right_matrix_spectral[0].second(1);
+    right_matrix_Q(0, 2) = right_matrix_spectral[0].second(2);
+    right_matrix_Q(1, 0) = right_matrix_spectral[1].second(0);
+    right_matrix_Q(1, 1) = right_matrix_spectral[1].second(1);
+    right_matrix_Q(1, 2) = right_matrix_spectral[1].second(2);
+    right_matrix_Q(2, 0) = right_matrix_spectral[2].second(0);
+    right_matrix_Q(2, 1) = right_matrix_spectral[2].second(1);
+    right_matrix_Q(2, 2) = right_matrix_spectral[2].second(2);
+    // get the rotation vectors
+    Core::LinAlg::Matrix<3, 1> right_matrix_R_vect =
+        Core::LinAlg::calc_rot_vect_from_rot_matrix(right_matrix_R);
+    Core::LinAlg::Matrix<3, 1> right_matrix_Q_vect =
+        Core::LinAlg::calc_rot_vect_from_rot_matrix(right_matrix_Q);
+
+    // create interpolator
+    Core::LinAlg::SecondOrderTensorInterpolator<1> interp(1);
+
+    // get interp matrix (loc = specified)
+    double loc = 5.695328e-01;
+    std::vector<Core::LinAlg::Matrix<3, 3>> ref_matrices{left_matrix, right_matrix};
+    std::vector<double> ref_locs{0.0, 1.0};
+    Core::LinAlg::Matrix<3, 3> interp_matrix =
+        interp.get_interpolated_matrix(ref_matrices, ref_locs, loc);
+
+    // perform polar decomposition of interp matrix
+    Core::LinAlg::Matrix<3, 3> interp_matrix_R{true};
+    Core::LinAlg::Matrix<3, 3> interp_matrix_U{true};
+    Core::LinAlg::Matrix<3, 3> interp_matrix_lambda{true};
+    std::array<std::pair<double, Core::LinAlg::Matrix<3, 1>>, 3> interp_matrix_spectral;
+    Core::LinAlg::matrix_3x3_polar_decomposition(interp_matrix, interp_matrix_R, interp_matrix_U,
+        interp_matrix_lambda, interp_matrix_spectral);
+    // build Q matrix
+    Core::LinAlg::Matrix<3, 3> interp_matrix_Q{true};
+    interp_matrix_Q(0, 0) = interp_matrix_spectral[0].second(0);
+    interp_matrix_Q(0, 1) = interp_matrix_spectral[0].second(1);
+    interp_matrix_Q(0, 2) = interp_matrix_spectral[0].second(2);
+    interp_matrix_Q(1, 0) = interp_matrix_spectral[1].second(0);
+    interp_matrix_Q(1, 1) = interp_matrix_spectral[1].second(1);
+    interp_matrix_Q(1, 2) = interp_matrix_spectral[1].second(2);
+    interp_matrix_Q(2, 0) = interp_matrix_spectral[2].second(0);
+    interp_matrix_Q(2, 1) = interp_matrix_spectral[2].second(1);
+    interp_matrix_Q(2, 2) = interp_matrix_spectral[2].second(2);
+    // get the rotation vectors
+    Core::LinAlg::Matrix<3, 1> interp_matrix_R_vect =
+        Core::LinAlg::calc_rot_vect_from_rot_matrix(interp_matrix_R);
+    Core::LinAlg::Matrix<3, 1> interp_matrix_Q_vect =
+        Core::LinAlg::calc_rot_vect_from_rot_matrix(interp_matrix_Q);
+
+    // define corresponding weighting during interpolation
+    double c = 10.0;  // THE SAME VALUE HAS TO BE SPECIFIED IN THE INTERPOLATION ROUTINE AS WELL
+    double left_unnorm = std::exp(-c * loc * loc);
+    double right_unnorm = std::exp(-c * (1.0 - loc) * (1.0 - loc));
+    double left_weight = left_unnorm / (left_unnorm + right_unnorm);
+    double right_weight = right_unnorm / (left_unnorm + right_unnorm);
+
+    // verify eigenvalues
+    Core::LinAlg::Matrix<3, 3> lambda_ref{true};
+    lambda_ref(2, 2) = std::exp(left_weight * std::log(left_matrix_spectral[0].first) +
+                                right_weight * std::log(right_matrix_spectral[0].first));
+    lambda_ref(1, 1) = std::exp(left_weight * std::log(left_matrix_spectral[1].first) +
+                                right_weight * std::log(right_matrix_spectral[1].first));
+    lambda_ref(0, 0) = std::exp(left_weight * std::log(left_matrix_spectral[2].first) +
+                                right_weight * std::log(right_matrix_spectral[2].first));
+
+    FOUR_C_EXPECT_NEAR(interp_matrix_lambda, lambda_ref, 1.0e-9);
+
+    // compute relative rotation matrices
+    Core::LinAlg::Matrix<3, 3>& Q_master = right_matrix_Q;
+    Core::LinAlg::Matrix<3, 3>& R_master = right_matrix_R;
+    if (loc < 0.5)
+    {
+      Q_master = left_matrix_Q;
+      R_master = left_matrix_R;
+    }
+    Core::LinAlg::Matrix<3, 3> left_matrix_Q_rel{true};
+    left_matrix_Q_rel.multiply_tn(1.0, Q_master, left_matrix_Q, 0.0);
+    Core::LinAlg::Matrix<3, 3> right_matrix_Q_rel{true};
+    right_matrix_Q_rel.multiply_tn(1.0, Q_master, right_matrix_Q, 0.0);
+    Core::LinAlg::Matrix<3, 3> interp_matrix_Q_rel{true};
+    interp_matrix_Q_rel.multiply_tn(1.0, Q_master, interp_matrix_Q, 0.0);
+    Core::LinAlg::Matrix<3, 3> left_matrix_R_rel{true};
+    left_matrix_R_rel.multiply_tn(1.0, R_master, left_matrix_R, 0.0);
+    Core::LinAlg::Matrix<3, 3> right_matrix_R_rel{true};
+    right_matrix_R_rel.multiply_tn(1.0, R_master, right_matrix_R, 0.0);
+    Core::LinAlg::Matrix<3, 3> interp_matrix_R_rel{true};
+    interp_matrix_R_rel.multiply_tn(1.0, R_master, interp_matrix_R, 0.0);
+    // compute relative rotation vectors
+    Core::LinAlg::Matrix<3, 1> left_matrix_Q_rel_vect =
+        Core::LinAlg::calc_rot_vect_from_rot_matrix(left_matrix_Q_rel);
+    Core::LinAlg::Matrix<3, 1> right_matrix_Q_rel_vect =
+        Core::LinAlg::calc_rot_vect_from_rot_matrix(right_matrix_Q_rel);
+    Core::LinAlg::Matrix<3, 1> interp_matrix_Q_rel_vect =
+        Core::LinAlg::calc_rot_vect_from_rot_matrix(interp_matrix_Q_rel);
+    Core::LinAlg::Matrix<3, 1> left_matrix_R_rel_vect =
+        Core::LinAlg::calc_rot_vect_from_rot_matrix(left_matrix_R_rel);
+    Core::LinAlg::Matrix<3, 1> right_matrix_R_rel_vect =
+        Core::LinAlg::calc_rot_vect_from_rot_matrix(right_matrix_R_rel);
+    Core::LinAlg::Matrix<3, 1> interp_matrix_R_rel_vect =
+        Core::LinAlg::calc_rot_vect_from_rot_matrix(interp_matrix_R_rel);
+
+
+    // verify rotation vectors
+    Core::LinAlg::Matrix<3, 1> Q_rel_vect_ref{true};
+    Core::LinAlg::Matrix<3, 1> R_rel_vect_ref{true};
+    // build P-matrix
+    Core::LinAlg::Matrix<2, 2> P{true};
+    P(0, 0) = left_weight + right_weight;
+    P(0, 1) = right_weight;
+    P(1, 0) = right_weight;
+    P(1, 1) = right_weight;
+    // get inverse of the P-matrix
+    Core::LinAlg::Matrix<2, 2> iP{true};
+    iP.invert(P);
+    // declare coefficient <a_i> vector and right-hand side <b_i> vector
+    Core::LinAlg::Matrix<2, 1> a_i{true};
+    Core::LinAlg::Matrix<2, 1> b_i{true};
+    // build Q vector (reference)
+    for (int i = 0; i < 3; ++i)
+    {
+      // build b_i vector
+      b_i(0) = left_weight * left_matrix_Q_rel_vect(i) + right_weight * right_matrix_Q_rel_vect(i);
+      b_i(1) = right_weight * right_matrix_Q_rel_vect(i);
+
+      // get corresponding coefficients
+      a_i.multiply(1.0, iP, b_i, 0.0);
+
+      // compute corresponding rotation vector contribution (interpolation)
+      Q_rel_vect_ref(i) = 1.0 * a_i(0) + loc * a_i(1);
+    }
+    // build R vector (reference)
+    for (int i = 0; i < 3; ++i)
+    {
+      // build b_i vector
+      b_i(0) = left_weight * left_matrix_R_rel_vect(i) + right_weight * right_matrix_R_rel_vect(i);
+      b_i(1) = right_weight * right_matrix_R_rel_vect(i);
+
+      // get corresponding coefficients
+      a_i.multiply(1.0, iP, b_i, 0.0);
+
+      // compute corresponding rotation vector contribution (interpolation)
+      R_rel_vect_ref(i) = 1.0 * a_i(0) + loc * a_i(1);
+    }
+
+    FOUR_C_EXPECT_NEAR(interp_matrix_Q_rel_vect, Q_rel_vect_ref, 1.0e-9);
+    FOUR_C_EXPECT_NEAR(interp_matrix_R_rel_vect, R_rel_vect_ref, 1.0e-9);
+  }
+
 
 
 }  // namespace

@@ -386,7 +386,7 @@ namespace
 
     int log_err_status = 0;
     Core::LinAlg::Matrix<9, 9> dlog_dA = Core::LinAlg::matrix_3x3_log_1st_deriv(A, log_err_status);
-    FOUR_C_ASSERT_ALWAYS(log_err_status, "Stop computation due to logarithm evaluation");
+    FOUR_C_ASSERT_ALWAYS(log_err_status == 0, "Stop computation due to logarithm evaluation");
 
     FOUR_C_EXPECT_NEAR(dlog_dA, dlog_dA_ref, 1.0e-9);
   }

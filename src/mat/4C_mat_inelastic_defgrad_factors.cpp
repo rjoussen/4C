@@ -463,10 +463,12 @@ namespace
 
 
 
-  // DEBUG
+  // DEBUG utils (InelasticDefgradTransvIsotropElastViscoplast)
   // define ele_gid to be debugged
-  const std::vector<int> debug_ele_gid_vec{606, 607, 622, 623, 638, 639};
-  const std::vector<int> debug_gp_vec{-1};
+  // const std::vector<int> debug_ele_gid_vec{606, 607, 622, 623, 638, 639};
+  const std::vector<int> debug_ele_gid_vec{0};
+  // const std::vector<int> debug_gp_vec{-1};
+  const std::vector<int> debug_gp_vec{0};
   bool debug_output_ele_gp(const std::vector<int>& ele_gid_vec, const std::vector<int>& gp_vec,
       const int ele_gid, const int gp)
 
@@ -3000,16 +3002,6 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::unpack_inelastic(
       time_step_quantities_.last_substep_plastic_defgrd_inverse_.size(),
       Core::LinAlg::Matrix<3, 3>{true});
 
-  // DEBUG
-  static int called = false;
-  if (!called)
-  {
-    std::cout << "UNPACK called for ele_gid_ == 6: " << std::endl;
-    std::cout << "gp 0: current_defgrad: " << std::endl;
-    time_step_quantities_.current_defgrad_[0].print(std::cout);
-    called = true;
-  }
-
   // now that the fiber direction is available, we set the material-dependent constant tensors
   // with it
   const_mat_tensors_.set_material_const_tensors(m_);
@@ -3754,6 +3746,15 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::adapt_predictor_local_newton_
   Core::LinAlg::Matrix<3, 3> Fnp_iFin{true};
   Fnp_iFin.multiply_nn(1.0, FM, time_step_quantities_.last_plastic_defgrd_inverse_[gp_], 0.0);
 
+#ifdef DEBUGVPLAST_TIMINT
+  if (debug_output_ele_gp(debug_ele_gid_vec, debug_gp_vec, ele_gid_, gp_))
+  {
+    std::cout << "Fnp_iFin: " << std::endl;
+    Fnp_iFin.print(std::cout);
+  }
+#endif
+
+
   // determine stretch factor $\boldsymbol{U}_{\boldsymbol{F}_{n+1}
   // \boldsymbol{F}^{\text{p}^{-1}}_n}$ and its inverse
   Core::LinAlg::Matrix<3, 3> U_Fnp_iFin = Core::LinAlg::matrix_3x3_material_stretch(Fnp_iFin);
@@ -3830,6 +3831,16 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::adapt_predictor_local_newton_
     // predictor adaptation steps
     if (pred_adapt_step_counter > max_num_pred_adapt_steps)
     {
+// consistency check
+#ifdef DEBUGVPLAST_TIMINT
+      if (debug_output_ele_gp(debug_ele_gid_vec, debug_gp_vec, ele_gid_, gp_))
+      {
+        std::cout << "The predictor adaptation has failed. Let's look at the consistency check: "
+                  << std::endl;
+      }
+#endif
+
+
       std::cout << debug_get_error_info("Could not adapt the predictor at all") << std::endl;
       FOUR_C_THROW("See above");
     }
@@ -3859,9 +3870,31 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::adapt_predictor_local_newton_
     state_quantities_ = evaluate_state_quantities(CM, iFin_adapt_pred, original_pred(9), err_status,
         time_step_settings_.dt_, Mat::ViscoplastStateQuantityEvalType::PlasticStrainRateOnly);
 
+#ifdef DEBUGVPLAST_TIMINT
+    if (debug_output_ele_gp(debug_ele_gid_vec, debug_gp_vec, ele_gid_, gp_))
+    {
+      std::cout << "stress_ratio (orig. plastic strain " << original_pred(9) << " ):  "
+                << std::to_string(viscoplastic_law_->evaluate_stress_ratio(
+                       state_quantities_.curr_equiv_stress_, original_pred(9)))
+                << std::endl;
+    }
+#endif
+
+
+
     // evaluate derivatives of the state quantities
     if (err_status == Mat::ViscoplastErrorType::NoErrors)
     {
+#ifdef DEBUGVPLAST_TIMINT
+      if (debug_output_ele_gp(debug_ele_gid_vec, debug_gp_vec, ele_gid_, gp_))
+      {
+        std::cout << "ps_incr (orig. plastic strain " << original_pred(9) << " ):  "
+                  << std::to_string(time_step_settings_.dt_ *
+                                    state_quantities_.curr_equiv_plastic_strain_rate_)
+                  << " versus " << min_plastic_strain_incr << std::endl;
+      }
+#endif
+
       state_quantity_derivatives_ = evaluate_state_quantity_derivatives(CM, iFin_adapt_pred,
           original_pred(9), err_status, time_step_settings_.dt_,
           Mat::ViscoplastStateQuantityDerivEvalType::PlasticStrainRateDerivsOnly);
@@ -3879,6 +3912,17 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::adapt_predictor_local_newton_
     // reevaluate the current state with the adapted predictor
     if (err_status == Mat::ViscoplastErrorType::NoErrors)
     {
+#ifdef DEBUGVPLAST_TIMINT
+      if (debug_output_ele_gp(debug_ele_gid_vec, debug_gp_vec, ele_gid_, gp_))
+      {
+        std::cout << "ps_incr (integr. plastic strain " << plastic_strain_adapt_pred << "):  "
+                  << std::to_string(time_step_settings_.dt_ *
+                                    state_quantities_.curr_equiv_plastic_strain_rate_)
+                  << " versus " << min_plastic_strain_incr << std::endl;
+      }
+#endif
+
+
       state_quantities_ =
           evaluate_state_quantities(CM, iFin_adapt_pred, plastic_strain_adapt_pred, err_status,
               time_step_settings_.dt_, Mat::ViscoplastStateQuantityEvalType::PlasticStrainRateOnly);
