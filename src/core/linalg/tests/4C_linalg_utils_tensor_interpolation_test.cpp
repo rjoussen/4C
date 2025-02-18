@@ -30,7 +30,7 @@ namespace
 
     Core::LinAlg::Matrix<3, 3> temp3x3(true);
 
-    Core::LinAlg::SecondOrderTensorInterpolator<1> interp(1);
+    Core::LinAlg::TensorInterpolation::SecondOrderTensorInterpolator<1> interp(1);
 
     std::vector<Core::LinAlg::Matrix<3, 3>> ref_matrices;
     std::vector<Core::LinAlg::Matrix<1, 1>> ref_locs;
@@ -110,7 +110,7 @@ namespace
 
     Core::LinAlg::Matrix<3, 3> temp3x3(true);
 
-    Core::LinAlg::SecondOrderTensorInterpolator<1> interp(1);
+    Core::LinAlg::TensorInterpolation::SecondOrderTensorInterpolator<1> interp(1);
 
     std::vector<Core::LinAlg::Matrix<3, 3>> ref_matrices;
     std::vector<Core::LinAlg::Matrix<1, 1>> ref_locs;
@@ -271,7 +271,7 @@ namespace
         Core::LinAlg::calc_rot_vect_from_rot_matrix(right_matrix_Q);
 
     // create interpolator
-    Core::LinAlg::SecondOrderTensorInterpolator<1> interp(1);
+    Core::LinAlg::TensorInterpolation::SecondOrderTensorInterpolator<1> interp(1);
 
     // get interp matrix (loc = specified)
     double loc = 5.695328e-01;

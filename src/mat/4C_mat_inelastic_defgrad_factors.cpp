@@ -3321,6 +3321,14 @@ Core::LinAlg::Matrix<10, 1> Mat::InelasticDefgradTransvIsotropElastViscoplast::l
     {
       curr_CM = tensor_interpolator_.get_interpolated_matrix(ref_matrices_, ref_locs_,
           (substep_params.t + substep_params.curr_dt) / time_step_settings_.dt_);
+      if (tensor_interpolator_.get_err_type() !=
+          Core::LinAlg::TensorInterpolation::TensorInterpErrorType::NoErrors)
+      {
+        std::cout << debug_get_error_info(Core::LinAlg::TensorInterpolation::to_string(
+                         tensor_interpolator_.get_err_type()))
+                  << std::endl;
+        FOUR_C_THROW("See above");
+      }
     }
     else
     {
@@ -3633,6 +3641,15 @@ bool Mat::InelasticDefgradTransvIsotropElastViscoplast::prepare_new_substep(
   // recompute the current right CG
   curr_CM = tensor_interpolator_.get_interpolated_matrix(
       ref_matrices_, ref_locs_, (t + curr_dt) / time_step_settings_.dt_);
+  if (tensor_interpolator_.get_err_type() !=
+      Core::LinAlg::TensorInterpolation::TensorInterpErrorType::NoErrors)
+  {
+    std::cout << debug_get_error_info(Core::LinAlg::TensorInterpolation::to_string(
+                     tensor_interpolator_.get_err_type()))
+              << std::endl;
+    FOUR_C_THROW("See above");
+  }
+
 
 
   // reset iteration counter to 0, as we restart the Newton-Raphson Loop
@@ -3910,6 +3927,14 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::adapt_predictor_local_newton_
       // interpolate predictor of the inverse plastic deformation gradient
       iFin_adapt_pred = tensor_interpolator_.get_interpolated_matrix(
           ref_matrices, ref_locs, pred_interp_factors_.current_xi_[gp_]);
+      if (tensor_interpolator_.get_err_type() !=
+          Core::LinAlg::TensorInterpolation::TensorInterpErrorType::NoErrors)
+      {
+        std::cout << debug_get_error_info(Core::LinAlg::TensorInterpolation::to_string(
+                         tensor_interpolator_.get_err_type()))
+                  << std::endl;
+        FOUR_C_THROW("See above");
+      }
     }
 #ifdef DEBUGVPLAST_TIMINT
     if (debug_output_ele_gp(debug_ele_gid_vec, debug_gp_vec, ele_gid_, gp_))
@@ -4434,7 +4459,8 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::manage_evaluation_error(
     timint_analysis_utils.write_to_csv();
   }
 
-  FOUR_C_THROW(debug_get_error_info(Mat::to_string(err_status)));
+  std::cout << debug_get_error_info(Mat::to_string(err_status)) << std::endl;
+  FOUR_C_THROW("See above");
 }
 
 std::string Mat::InelasticDefgradTransvIsotropElastViscoplast::debug_get_error_info(

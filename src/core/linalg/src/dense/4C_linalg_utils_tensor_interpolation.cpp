@@ -254,11 +254,14 @@ namespace
 
 template <unsigned int loc_dim>
 Core::LinAlg::Matrix<3, 3>
-Core::LinAlg::SecondOrderTensorInterpolator<loc_dim>::get_interpolated_matrix(
+Core::LinAlg::TensorInterpolation::SecondOrderTensorInterpolator<loc_dim>::get_interpolated_matrix(
     const std::vector<Core::LinAlg::Matrix<3, 3>>& ref_matrices,
     const std::vector<Core::LinAlg::Matrix<loc_dim, 1>>& ref_locs,
     const Core::LinAlg::Matrix<loc_dim, 1>& interp_loc)
 {
+  // reset error type
+  reset_err_type();
+
   // declare output variable
   Core::LinAlg::Matrix<3, 3> output(true);
 
@@ -466,9 +469,10 @@ Core::LinAlg::SecondOrderTensorInterpolator<loc_dim>::get_interpolated_matrix(
   solver.factorWithEquilibration(true);
   solver.solveToRefinedSolution(true);
   if (solver.factor() or solver.solve())
-    FOUR_C_THROW(
-        "Solution of linear system of equations during second-order tensor interpolation failed "
-        "(for rotation matrix Q)!");
+  {
+    err_type_ = TensorInterpErrorType::LinSystFailQMatrix;
+    return Core::LinAlg::Matrix<3, 3>{true};
+  }
 
   // solve for the coefficients of R
   solver.setMatrix(Teuchos::rcpFromRef(copy_P));
@@ -476,9 +480,11 @@ Core::LinAlg::SecondOrderTensorInterpolator<loc_dim>::get_interpolated_matrix(
   solver.factorWithEquilibration(true);
   solver.solveToRefinedSolution(true);
   if (solver.factor() or solver.solve())
-    FOUR_C_THROW(
-        "Solution of linear system of equations during second-order tensor interpolation failed "
-        "(for rotation matrix R)!");
+  {
+    err_type_ = TensorInterpErrorType::LinSystFailRMatrix;
+    return Core::LinAlg::Matrix<3, 3>{true};
+  }
+
 
 
   // get relative rotation vectors at interpolation points...
@@ -569,7 +575,6 @@ Core::LinAlg::SecondOrderTensorInterpolator<loc_dim>::get_interpolated_matrix(
   std::cout << "...weights: " << all_norm_weights[0] << ", " << all_norm_weights[1] << std::endl;
   std::cout << std::string(100, '-') << std::endl;
 #endif
-
 
   return output;
 }
@@ -824,7 +829,8 @@ Core::LinAlg::Matrix<3, 3> Core::LinAlg::calc_rot_matrix_from_rot_vect(
 }
 
 template <>
-Core::LinAlg::Matrix<3, 3> Core::LinAlg::SecondOrderTensorInterpolator<1>::get_interpolated_matrix(
+Core::LinAlg::Matrix<3, 3>
+Core::LinAlg::TensorInterpolation::SecondOrderTensorInterpolator<1>::get_interpolated_matrix(
     const std::vector<Core::LinAlg::Matrix<3, 3>>& ref_matrices,
     const std::vector<double>& ref_locs, const double interp_loc)
 {
@@ -852,8 +858,8 @@ Core::LinAlg::Matrix<3, 3> Core::LinAlg::SecondOrderTensorInterpolator<1>::get_i
 
 
 // explicit instantiation of template functions
-template class Core::LinAlg::SecondOrderTensorInterpolator<1>;
-template class Core::LinAlg::SecondOrderTensorInterpolator<2>;
-template class Core::LinAlg::SecondOrderTensorInterpolator<3>;
+template class Core::LinAlg::TensorInterpolation::SecondOrderTensorInterpolator<1>;
+template class Core::LinAlg::TensorInterpolation::SecondOrderTensorInterpolator<2>;
+template class Core::LinAlg::TensorInterpolation::SecondOrderTensorInterpolator<3>;
 
 FOUR_C_NAMESPACE_CLOSE
