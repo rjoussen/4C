@@ -4474,8 +4474,6 @@ std::string Mat::InelasticDefgradTransvIsotropElastViscoplast::debug_get_error_i
   std::cout << std::fixed << std::setprecision(16) << std::endl;
   temp_ostream << std::fixed << std::setprecision(16) << std::endl;
 
-
-
   // declare the extended error message
   std::string extended_error_string{""};
 
@@ -4524,6 +4522,11 @@ std::string Mat::InelasticDefgradTransvIsotropElastViscoplast::debug_get_error_i
   extended_error_string += temp_ostream.str();
   temp_ostream.str("");
   extended_error_string += viscoplastic_law_->debug_get_error_info(gp_);
+  extended_error_string += "last_xi (predictor adaptation): \n";
+  extended_error_string += "Double<1,1> \n";
+  temp_ostream << pred_interp_factors_.last_xi_[gp_] << std::endl;
+  extended_error_string += temp_ostream.str();
+  temp_ostream.str("");
   extended_error_string += std::string(10, '.') + "\n";
 
   // add the current values

@@ -1757,6 +1757,7 @@ namespace Mat
       void unpack(Core::Communication::UnpackBuffer& buffer)
       {
         Core::Communication::extract_from_pack(buffer, last_xi_);
+        current_xi_ = last_xi_;
       }
     };
     //! instance of PredInterpFactors

@@ -305,6 +305,7 @@ namespace
       inelastic_defgrad_transv_isotrop_vplast_refJC_data.add(
           "TIME_INTEGRATION_HIST_VARS", std::string("log"));
       inelastic_defgrad_transv_isotrop_vplast_refJC_data.add("USE_PRED_ADAPT", true);
+      inelastic_defgrad_transv_isotrop_vplast_refJC_data.add("USE_LAST_PRED_ADAPT_FACT", true);
       inelastic_defgrad_transv_isotrop_vplast_refJC_data.add("USE_LINE_SEARCH", true);
       inelastic_defgrad_transv_isotrop_vplast_refJC_data.add("USE_SUBSTEPPING", false);
       inelastic_defgrad_transv_isotrop_vplast_refJC_data.add("MAX_HALVE_NUM_SUBSTEP", 1);
@@ -338,6 +339,7 @@ namespace
       inelastic_defgrad_isotrop_vplast_refJC_data.add(
           "TIME_INTEGRATION_HIST_VARS", std::string("log"));
       inelastic_defgrad_isotrop_vplast_refJC_data.add("USE_PRED_ADAPT", true);
+      inelastic_defgrad_isotrop_vplast_refJC_data.add("USE_LAST_PRED_ADAPT_FACT", true);
       inelastic_defgrad_isotrop_vplast_refJC_data.add("USE_LINE_SEARCH", true);
       inelastic_defgrad_isotrop_vplast_refJC_data.add("USE_SUBSTEPPING", false);
       inelastic_defgrad_isotrop_vplast_refJC_data.add("MAX_HALVE_NUM_SUBSTEP", 1);
