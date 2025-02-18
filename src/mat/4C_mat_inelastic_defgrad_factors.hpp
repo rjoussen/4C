@@ -10,6 +10,8 @@
 
 #include "4C_config.hpp"
 
+#include "4C_comm_pack_buffer.hpp"
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_linalg_utils_tensor_interpolation.hpp"
 #include "4C_mat_elast_couptransverselyisotropic.hpp"
@@ -317,6 +319,12 @@ namespace Mat
       //! get boolean: use predictor adaptation before and in the Local
       //! Newton Loop? (true: yes, false: no)
       [[nodiscard]] bool bool_pred_adapt() const { return bool_pred_adapt_; };
+      //! get boolean: use the predictor interpolation factor from the predictor adaptation
+      //! performed in the previous step at each GP to boost the performance? (true: yes, false: no)
+      [[nodiscard]] bool bool_use_last_pred_adapt_fact() const
+      {
+        return bool_use_last_pred_adapt_fact_;
+      };
       //! get boolean: use line search to avoid negative plastic strains
       //! in the Local Newton Loop? (true: yes, false: no)
       [[nodiscard]] bool bool_line_search() const { return bool_line_search_; };
@@ -413,6 +421,10 @@ namespace Mat
 
       //! boolean: use predictor adaptation? (true: yes, false: no)
       const bool bool_pred_adapt_;
+
+      //! boolean: use predictor adaptation factor from the previous time step at the GP as a
+      //! performance-boost?
+      const bool bool_use_last_pred_adapt_fact_;
 
       //! boolean: use line search to avoid negative plastic strains in
       //! the Local Newton Loop? (true: yes, false: no)
@@ -1612,6 +1624,14 @@ namespace Mat
       //! inverse plastic deformation gradient at the last time step (for all Gauss points)
       std::vector<Core::LinAlg::Matrix<3, 3>> last_plastic_defgrd_inverse_;
 
+      //! material stretch of the inverse plastic deformation gradient
+      //! at the last time step (for all Gauss points)
+      std::vector<Core::LinAlg::Matrix<3, 3>> last_plastic_defgrd_inverse_matstretch_;
+
+      //! rotation of the inverse plastic deformation gradient
+      //! at the last time step (for all Gauss points)
+      std::vector<Core::LinAlg::Matrix<3, 3>> last_plastic_defgrd_inverse_rot_;
+
       //! (equivalent) plastic strain at the last time step (for all Gauss points)
       std::vector<double> last_plastic_strain_;
 
@@ -1669,8 +1689,11 @@ namespace Mat
       //! interpolation factor set by the user
       const double xi_user_;
 
-      //! current interpolation factor (\f$ \xi \f$)
-      double xi_;
+      //! current interpolation factors \f$ \xi \f$ (saved for all GP)
+      std::vector<double> current_xi_;
+
+      //! last interpolation factors \f$ \xi_n \f$ (saved for all GP)
+      std::vector<double> last_xi_;
 
       //! lower interpolation factor (\f$ \xi_{\text{l}} \f$):
       //! effectively, this is the lower factor for which the predictor
@@ -1694,21 +1717,46 @@ namespace Mat
       //! constructor
       PredInterpFactors(const double xi_user, const unsigned int max_num_pred_adapt)
           : xi_user_(xi_user),
-            xi_(xi_user),
             xi_l_(0.0),
             xi_u_(1.0),
             num_of_pred_adapt_(0),
             max_num_pred_adapt_(max_num_pred_adapt),
-            pred_{Core::LinAlg::Matrix<10, 1>{true}} {};
-
-      //! method to reset the non-const variables of the class
-      void reset_non_const_vars()
+            pred_{Core::LinAlg::Matrix<10, 1>{true}}
       {
-        xi_ = xi_user_;
+        last_xi_.resize(1, 0.0);
+        current_xi_.resize(1, 0.0);
+      };
+
+      //! setup method: set the correct number of Gauss Points to track the internal variables of
+      //! the class
+      void setup(const int num_gp)
+      {
+        last_xi_.resize(num_gp, last_xi_[0]);
+        current_xi_.resize(num_gp, current_xi_[0]);
+      }
+
+      //! preevaluate method: reset the non-const variables of the class at specific GP
+      void pre_evaluate(const int gp)
+      {
         xi_l_ = 0.0;
         xi_u_ = 1.0;
         pred_.clear();
         num_of_pred_adapt_ = 0;
+      }
+
+      //! update method: update the internal variables of the class
+      void update() { last_xi_ = current_xi_; }
+
+      //! pack method
+      void pack(Core::Communication::PackBuffer& data) const
+      {
+        Core::Communication::add_to_pack(data, last_xi_);
+      }
+
+      //! unpack method
+      void unpack(Core::Communication::UnpackBuffer& buffer)
+      {
+        Core::Communication::extract_from_pack(buffer, last_xi_);
       }
     };
     //! instance of PredInterpFactors

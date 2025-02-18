@@ -2772,6 +2772,12 @@ std::unordered_map<Core::Materials::MaterialType, Core::IO::InputSpec> Global::v
                         "in a single Local Newton Loop"
                         "until error is thrown (default: 10)",
                     .default_value = 10}),
+            parameter<bool>("USE_LAST_PRED_ADAPT_FACT",
+                {.description =
+                        "utilize the predictor interpolation factor from the predictor adaptation "
+                        "of the "
+                        "previous time step at each GP to boost the performance? (default: true)",
+                    .default_value = true}),
             parameter<bool>("ANALYZE_TIMINT",
                 {.description = "boolean: analyze the time integration scheme in regards "
                                 "to the implemented features "
