@@ -1526,7 +1526,7 @@ namespace Mat
     void debug_set_last_quantities(const int gp,
         const Core::LinAlg::Matrix<3, 3>& last_plastic_defgrad_inverse,
         const double last_plastic_strain, const Core::LinAlg::Matrix<3, 3>& last_defgrad,
-        const Core::LinAlg::Matrix<3, 3>& last_rightCG);
+        const Core::LinAlg::Matrix<3, 3>& last_rightCG, const double last_xi);
 
     /*!
      * @brief Get the utilized viscoplastic law object.

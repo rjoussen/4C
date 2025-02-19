@@ -3845,9 +3845,6 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::adapt_predictor_local_newton_
   Core::LinAlg::Matrix<3, 3> iFin_adapt_pred{true};
   double plastic_strain_adapt_pred{0.0};
 
-  // specify minimum acceptable plastic strain increment
-  double min_plastic_strain_incr = 1.0e-10;
-
 #ifdef DEBUGVPLAST_TIMINT
   if (debug_output_ele_gp(debug_ele_gid_vec, debug_gp_vec, ele_gid_, gp_))
   {
@@ -3870,8 +3867,7 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::adapt_predictor_local_newton_
   // the interpolation factor $\xi$
   err_status = Mat::ViscoplastErrorType::NoErrors;
   state_quantities_.curr_equiv_plastic_strain_rate_ = 0.0;
-  while (state_quantities_.curr_equiv_plastic_strain_rate_ * time_step_settings_.dt_ <=
-             min_plastic_strain_incr ||
+  while (state_quantities_.curr_equiv_plastic_strain_rate_ * time_step_settings_.dt_ <= 0.0 ||
          err_status != Mat::ViscoplastErrorType::NoErrors)
   {
     ++pred_adapt_step_counter;
@@ -3880,16 +3876,6 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::adapt_predictor_local_newton_
     // predictor adaptation steps
     if (pred_adapt_step_counter > max_num_pred_adapt_steps)
     {
-// consistency check
-#ifdef DEBUGVPLAST_TIMINT
-      if (debug_output_ele_gp(debug_ele_gid_vec, debug_gp_vec, ele_gid_, gp_))
-      {
-        std::cout << "The predictor adaptation has failed. Let's look at the consistency check: "
-                  << std::endl;
-      }
-#endif
-
-
       std::cout << debug_get_error_info("Could not adapt the predictor at all") << std::endl;
       FOUR_C_THROW("See above");
     }
@@ -3976,7 +3962,7 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::adapt_predictor_local_newton_
         std::cout << "ps_incr (orig. plastic strain " << original_pred(9) << " ):  "
                   << std::to_string(time_step_settings_.dt_ *
                                     state_quantities_.curr_equiv_plastic_strain_rate_)
-                  << " versus " << min_plastic_strain_incr << std::endl;
+                  << std::endl;
       }
 #endif
 
@@ -4003,7 +3989,7 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::adapt_predictor_local_newton_
         std::cout << "ps_incr (integr. plastic strain " << plastic_strain_adapt_pred << "):  "
                   << std::to_string(time_step_settings_.dt_ *
                                     state_quantities_.curr_equiv_plastic_strain_rate_)
-                  << " versus " << min_plastic_strain_incr << std::endl;
+                  << std::endl;
       }
 #endif
 
@@ -4048,8 +4034,7 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::adapt_predictor_local_newton_
     // "under" the yield surface): set \f$ \xi_{\text{curr}} \leftarrow
     // \xi_{\text{curr}} + \xi_{\text{user}} ( 1.0 - \xi_{\text{curr}})
     // \f$
-    if (state_quantities_.curr_equiv_plastic_strain_rate_ * time_step_settings_.dt_ <=
-        min_plastic_strain_incr)
+    if (state_quantities_.curr_equiv_plastic_strain_rate_ * time_step_settings_.dt_ <= 0.0)
     {
       // adapt the upper bound of the parameter xi and recompute the
       // interpolation factor
@@ -4558,7 +4543,7 @@ std::string Mat::InelasticDefgradTransvIsotropElastViscoplast::debug_get_error_i
 void Mat::InelasticDefgradTransvIsotropElastViscoplast::debug_set_last_quantities(const int gp,
     const Core::LinAlg::Matrix<3, 3>& last_plastic_defgrad_inverse,
     const double last_plastic_strain, const Core::LinAlg::Matrix<3, 3>& last_defgrad,
-    const Core::LinAlg::Matrix<3, 3>& last_rightCG)
+    const Core::LinAlg::Matrix<3, 3>& last_rightCG, const double last_xi)
 {
   time_step_quantities_.last_plastic_defgrd_inverse_[gp] = last_plastic_defgrad_inverse;
   time_step_quantities_.last_substep_plastic_defgrd_inverse_[gp] = last_plastic_defgrad_inverse;
@@ -4566,6 +4551,7 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::debug_set_last_quantitie
   time_step_quantities_.last_substep_plastic_strain_[gp] = last_plastic_strain;
   time_step_quantities_.last_defgrad_[gp] = last_defgrad;
   time_step_quantities_.last_rightCG_[gp] = last_rightCG;
+  pred_interp_factors_.last_xi_[gp] = last_xi;
 
   // compute the material stretch and the rotation tensor for the
   // inverse inelastic defgrad

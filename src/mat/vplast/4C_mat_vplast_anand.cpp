@@ -533,12 +533,12 @@ std::string Mat::Viscoplastic::Anand::debug_get_error_info(const int gp)
   std::string extended_error_message;
 
   extended_error_message += "---> VISCOPLASTIC LAW: Anand \n";
-  extended_error_message +=
-      "last_flow_resistance: " + std::to_string(time_step_quantities_.last_flow_resistance_[gp_]) +
-      "\n";
-  extended_error_message +=
-      "last_plastic_strain: " + std::to_string(time_step_quantities_.last_plastic_strain_[gp_]) +
-      "\n";
+  extended_error_message += "last_flow_resistance: \n";
+  extended_error_message += "Double<1,1> \n";
+  extended_error_message += std::to_string(time_step_quantities_.last_flow_resistance_[gp_]) + "\n";
+  extended_error_message += "last_plastic_strain: \n";
+  extended_error_message += "Double<1,1> \n";
+  extended_error_message += std::to_string(time_step_quantities_.last_plastic_strain_[gp_]) + "\n";
 
   return extended_error_message;
 }
