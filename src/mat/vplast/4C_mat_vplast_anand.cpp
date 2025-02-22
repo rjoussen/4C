@@ -529,16 +529,27 @@ Core::LinAlg::Matrix<2, 1> Mat::Viscoplastic::Anand::compute_derivatives_of_flow
 
 std::string Mat::Viscoplastic::Anand::debug_get_error_info(const int gp)
 {
+  // auxiliaries
+  std::ostringstream temp_ostream;
+  // set output format for the numbers -> we can set it here for the
+  // entire error message
+  std::cout << std::fixed << std::setprecision(16) << std::endl;
+  temp_ostream << std::fixed << std::setprecision(16) << std::endl;
+
   // declare error message for output
   std::string extended_error_message;
 
   extended_error_message += "---> VISCOPLASTIC LAW: Anand \n";
   extended_error_message += "last_flow_resistance: \n";
   extended_error_message += "Double<1,1> \n";
-  extended_error_message += std::to_string(time_step_quantities_.last_flow_resistance_[gp_]) + "\n";
+  temp_ostream << time_step_quantities_.last_flow_resistance_[gp_] << std::endl;
+  extended_error_message += temp_ostream.str();
+  temp_ostream.str("");
   extended_error_message += "last_plastic_strain: \n";
   extended_error_message += "Double<1,1> \n";
-  extended_error_message += std::to_string(time_step_quantities_.last_plastic_strain_[gp_]) + "\n";
+  temp_ostream << time_step_quantities_.last_plastic_strain_[gp_] << std::endl;
+  extended_error_message += temp_ostream.str();
+  temp_ostream.str("");
 
   return extended_error_message;
 }
