@@ -11,14 +11,13 @@
 
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_linalg_utils_densematrix_eigen.hpp"
+#include "4C_utils_exceptions.hpp"
 #include "4C_utils_fad.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
 namespace
 {
-  // #define DEBUG_TENSORINTERP  // debugging flag for tensor interpolation
-
   /*!
    * @brief Order the eigenpairs of a given matrix w.r.t. the eigenpairs of a reference
    * matrix to yield minimal rotations between corresponding eigenvectors (eigenvalues assumed
@@ -251,6 +250,77 @@ namespace
   }
 }  // namespace
 
+Core::LinAlg::TensorInterpolation::RotInterpType
+Core::LinAlg::TensorInterpolation::rot_interp_string_to_type(std::string rot_interp_type_string)
+{
+  if (rot_interp_type_string == "RInterp")
+  {
+    return Core::LinAlg::TensorInterpolation::RotInterpType::RInterp;
+  }
+  else if (rot_interp_type_string == "QInterp")
+  {
+    return Core::LinAlg::TensorInterpolation::RotInterpType::QInterp;
+  }
+  else
+  {
+    FOUR_C_THROW("The rotation interpolation type %s is not implemented yet!",
+        rot_interp_type_string.c_str());
+  }
+}
+
+std::string Core::LinAlg::TensorInterpolation::rot_interp_type_to_string(
+    Core::LinAlg::TensorInterpolation::RotInterpType rot_interp_type)
+{
+  switch (rot_interp_type)
+  {
+    case Core::LinAlg::TensorInterpolation::RotInterpType::RInterp:
+      return "RInterp";
+    case Core::LinAlg::TensorInterpolation::RotInterpType::QInterp:
+      return "QInterp";
+    default:
+      FOUR_C_THROW("You should not be here");
+  }
+}
+
+Core::LinAlg::TensorInterpolation::EigenvalInterpType
+Core::LinAlg::TensorInterpolation::eigenval_interp_string_to_type(
+    std::string eigenval_interp_type_string)
+{
+  if (eigenval_interp_type_string == "LOG")
+  {
+    return Core::LinAlg::TensorInterpolation::EigenvalInterpType::LOG;
+  }
+  else if (eigenval_interp_type_string == "MLS")
+  {
+    return Core::LinAlg::TensorInterpolation::EigenvalInterpType::MLS;
+  }
+  else if (eigenval_interp_type_string == "LOGMLS")
+  {
+    return Core::LinAlg::TensorInterpolation::EigenvalInterpType::LOGMLS;
+  }
+  else
+  {
+    FOUR_C_THROW("The eigenvalue interpolation type %s is not implemented yet!",
+        eigenval_interp_type_string.c_str());
+  }
+}
+
+std::string Core::LinAlg::TensorInterpolation::eigenval_interp_type_to_string(
+    Core::LinAlg::TensorInterpolation::EigenvalInterpType eigenval_interp_type)
+{
+  switch (eigenval_interp_type)
+  {
+    case Core::LinAlg::TensorInterpolation::EigenvalInterpType::LOG:
+      return "LOG";
+    case Core::LinAlg::TensorInterpolation::EigenvalInterpType::MLS:
+      return "MLS";
+    case Core::LinAlg::TensorInterpolation::EigenvalInterpType::LOGMLS:
+      return "LOGMLS";
+    default:
+      FOUR_C_THROW("You should not be here");
+  }
+}
+
 
 template <unsigned int loc_dim>
 Core::LinAlg::Matrix<3, 3>
@@ -277,9 +347,11 @@ Core::LinAlg::TensorInterpolation::SecondOrderTensorInterpolator<loc_dim>::get_i
   Core::LinAlg::Matrix<3, 1> temp3x1(true);
   Core::LinAlg::Matrix<loc_dim, 1> diff_locs(true);
 
-  // interpolation setting: exponential decay factor of the weighting function in Satheesh,
-  // 2024, 10.1002/nme.7373, Eq. (21)
-  double c = 10.0;
+  // get interpolation settings: exponential decay factor of the
+  // weighting functions, as in Satheesh,
+  // 2024, 10.1002/nme.7373, Eq. (21). We currently use the same factor
+  // for the rotation and eigenvalue interpolation.
+  double c = interp_param_list_.get<double>("weighting_expdecay_factor");
 
   // index of the base matrix, which is the matrix located nearest to the
   // interpolation location
@@ -383,152 +455,162 @@ Core::LinAlg::TensorInterpolation::SecondOrderTensorInterpolator<loc_dim>::get_i
   // compute relative rotation vector from the relative rotation matrix
   all_rot_vect_Q_rel[base_ind] = calc_rot_vect_from_rot_matrix(all_Q_rel[base_ind]);  // zero vector
 
-  // get \f$ \boldsymbol{Q} \f$, normalized weights and build \f$ \boldsymbol{P} \f$ matrix along
-  // with \f$ \boldsymbol{b}^i
-  // \f$ vectors, as shown in Satheesh, 2024, 10.1002/nme.7373, Eq. (22) and Eq. (37)
+  // declare interpolated rotation matrices to be computed
+  Core::LinAlg::Matrix<3, 3> Q_interp(true);
+  Core::LinAlg::Matrix<3, 3> R_interp(true);
 
-  // \f$ \boldsymbol{p}_j \f$: p vector of monomial values
-  Core::LinAlg::SerialDenseVector p_vec(polynomial_space_.size());
-  polynomial_space_.evaluate(interp_loc, p_vec);
-
-  // length of p vector
-  unsigned int m = p_vec.length();
-  FOUR_C_ASSERT(m <= ref_locs.size(),
-      "The number of reference matrices is too small for the desired interpolation scheme!");
-
-  // interpolation matrix of monomial values \f$ \bm{P} \f$
-  Core::LinAlg::SerialDenseMatrix P(m, m, true);
-
-  // \f$ \bm{b}^i \f$ for Q matrices
-  Core::LinAlg::SerialDenseMatrix b_Q(m, 3, true);
-
-  // \f$ \bm{b}^i \f$ for R matrices
-  Core::LinAlg::SerialDenseMatrix b_R(m, 3, true);
-
-  // \f$ \log{\bm{\lambda}_{\text{x}_p}} \f$
-  Core::LinAlg::Matrix<3, 1> ln_lambda_interp(true);
-
-  // loop once more over all matrices with the updated info
-  for (unsigned int i = 0; i < ref_locs.size(); ++i)
+  if ((rot_interp_type_ == RotInterpType::RInterp) &&
+      (eigenval_interp_type_ == EigenvalInterpType::LOG))
   {
-    if (i != base_ind)
+    // get \f$ \boldsymbol{Q} \f$, normalized weights and build \f$ \boldsymbol{P} \f$ matrix along
+    // with \f$ \boldsymbol{b}^i
+    // \f$ vectors, as shown in Satheesh, 2024, 10.1002/nme.7373, Eq. (22) and Eq. (37)
+
+    // \f$ \boldsymbol{p}_j \f$: p vector of monomial values
+    Core::LinAlg::SerialDenseVector p_vec(polynomial_space_.size());
+    polynomial_space_.evaluate(interp_loc, p_vec);
+
+    // length of p vector
+    unsigned int m = p_vec.length();
+    FOUR_C_ASSERT(m <= ref_locs.size(),
+        "The number of reference matrices is too small for the desired interpolation scheme!");
+
+    // interpolation matrix of monomial values \f$ \bm{P} \f$
+    Core::LinAlg::SerialDenseMatrix P(m, m, true);
+
+    // \f$ \bm{b}^i \f$ for Q matrices
+    Core::LinAlg::SerialDenseMatrix b_Q(m, 3, true);
+
+    // \f$ \bm{b}^i \f$ for R matrices
+    Core::LinAlg::SerialDenseMatrix b_R(m, 3, true);
+
+    // \f$ \log{\bm{\lambda}_{\text{x}_p}} \f$
+    Core::LinAlg::Matrix<3, 1> ln_lambda_interp(true);
+
+    // loop once more over all matrices with the updated info
+    for (unsigned int i = 0; i < ref_locs.size(); ++i)
     {
-      // order eigenpairs to give minimal eigenvector rotation w.r.t. base matrix
-      order_eigenpairs_wrt_reference(all_spectral_pairs[base_ind], all_spectral_pairs[i]);
-
-      // STEP 2 (Satheesh, 2024, 10.1002/nme.7373, Section 2.5): get rotation matrices, relative
-      // rotation matrices and relative rotation vectors rotation tensors
-      for (int r = 0; r < 3; ++r)
+      if (i != base_ind)
       {
-        all_Q[i](r, 0) = all_spectral_pairs[i][r].second(0);
-        all_Q[i](r, 1) = all_spectral_pairs[i][r].second(1);
-        all_Q[i](r, 2) = all_spectral_pairs[i][r].second(2);
-      }
-      // get relative rotation matrices
-      all_Q_rel[i].multiply_tn(1.0, all_Q[base_ind], all_Q[i], 0.0);
+        // order eigenpairs to give minimal eigenvector rotation w.r.t. base matrix
+        order_eigenpairs_wrt_reference(all_spectral_pairs[base_ind], all_spectral_pairs[i]);
 
-      // compute relative rotation vectors from the relative rotation matrices
-      all_rot_vect_Q_rel[i] = calc_rot_vect_from_rot_matrix(all_Q_rel[i]);
+        // STEP 2 (Satheesh, 2024, 10.1002/nme.7373, Section 2.5): get rotation matrices, relative
+        // rotation matrices and relative rotation vectors rotation tensors
+        for (int r = 0; r < 3; ++r)
+        {
+          all_Q[i](r, 0) = all_spectral_pairs[i][r].second(0);
+          all_Q[i](r, 1) = all_spectral_pairs[i][r].second(1);
+          all_Q[i](r, 2) = all_spectral_pairs[i][r].second(2);
+        }
+        // get relative rotation matrices
+        all_Q_rel[i].multiply_tn(1.0, all_Q[base_ind], all_Q[i], 0.0);
+
+        // compute relative rotation vectors from the relative rotation matrices
+        all_rot_vect_Q_rel[i] = calc_rot_vect_from_rot_matrix(all_Q_rel[i]);
+      }
+
+      // compute normalized weights
+      all_norm_weights[i] = all_unnorm_weights[i] / sum_of_unnorm_weights;
+
+      // compute vector and conversion to matrix
+      polynomial_space_.evaluate(ref_locs[i], p_vec);
+
+      // P matrix
+      P.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, all_norm_weights[i], p_vec, p_vec, 1.0);
+
+      // RHS of the rotation interpolation
+      b_Q.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, all_norm_weights[i], p_vec,
+          Core::LinAlg::SerialDenseVector(Teuchos::Copy, all_rot_vect_Q_rel[i].data(), 3), 1.0);
+      b_R.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, all_norm_weights[i], p_vec,
+          Core::LinAlg::SerialDenseVector(Teuchos::Copy, all_rot_vect_R_rel[i].data(), 3), 1.0);
+
+      // compute contribution to the natural logarithm of the interpolated eigenvalues (logarithmic
+      // weighted average approach in Satheesh 2024, Section 2.4.1)
+      ln_lambda_interp(0) += all_norm_weights[i] * std::log(all_spectral_pairs[i][0].first);
+      ln_lambda_interp(1) += all_norm_weights[i] * std::log(all_spectral_pairs[i][1].first);
+      ln_lambda_interp(2) += all_norm_weights[i] * std::log(all_spectral_pairs[i][2].first);
     }
 
-    // compute normalized weights
-    all_norm_weights[i] = all_unnorm_weights[i] / sum_of_unnorm_weights;
+    // declare all monomial coefficients
+    Core::LinAlg::SerialDenseMatrix a_Q(m, 3, true);
+    Core::LinAlg::SerialDenseMatrix a_R(m, 3, true);
 
-    // compute vector and conversion to matrix
-    polynomial_space_.evaluate(ref_locs[i], p_vec);
+    // setup solver
+    Core::LinAlg::SerialDenseMatrix copy_P = Core::LinAlg::SerialDenseMatrix(P);
+    using ordinalType = Core::LinAlg::SerialDenseMatrix::ordinalType;
+    using scalarType = Core::LinAlg::SerialDenseMatrix::scalarType;
+    Teuchos::SerialDenseSolver<ordinalType, scalarType> solver;
 
-    // P matrix
-    P.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, all_norm_weights[i], p_vec, p_vec, 1.0);
+    // solve for the coefficients of Q
+    solver.setMatrix(Teuchos::rcpFromRef(P));
+    solver.setVectors(Teuchos::rcpFromRef(a_Q), Teuchos::rcpFromRef(b_Q));
+    solver.factorWithEquilibration(true);
+    solver.solveToRefinedSolution(true);
+    if (solver.factor() or solver.solve())
+    {
+      err_type_ = TensorInterpErrorType::LinSystFailQMatrix;
+      return Core::LinAlg::Matrix<3, 3>{true};
+    }
 
-    // RHS of the rotation interpolation
-    b_Q.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, all_norm_weights[i], p_vec,
-        Core::LinAlg::SerialDenseVector(Teuchos::Copy, all_rot_vect_Q_rel[i].data(), 3), 1.0);
-    b_R.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, all_norm_weights[i], p_vec,
-        Core::LinAlg::SerialDenseVector(Teuchos::Copy, all_rot_vect_R_rel[i].data(), 3), 1.0);
+    // solve for the coefficients of R
+    solver.setMatrix(Teuchos::rcpFromRef(copy_P));
+    solver.setVectors(Teuchos::rcpFromRef(a_R), Teuchos::rcpFromRef(b_R));
+    solver.factorWithEquilibration(true);
+    solver.solveToRefinedSolution(true);
+    if (solver.factor() or solver.solve())
+    {
+      err_type_ = TensorInterpErrorType::LinSystFailRMatrix;
+      return Core::LinAlg::Matrix<3, 3>{true};
+    }
 
-    // compute contribution to the natural logarithm of the interpolated eigenvalues (logarithmic
-    // weighted average approach in Satheesh 2024, Section 2.4.1)
-    ln_lambda_interp(0) += all_norm_weights[i] * std::log(all_spectral_pairs[i][0].first);
-    ln_lambda_interp(1) += all_norm_weights[i] * std::log(all_spectral_pairs[i][1].first);
-    ln_lambda_interp(2) += all_norm_weights[i] * std::log(all_spectral_pairs[i][2].first);
+    // get relative rotation vectors at interpolation points...
+    Core::LinAlg::SerialDenseVector rot_serial_dense_vec(3, true);
+
+    // evaluate polynomial space of the interpolation location
+    polynomial_space_.evaluate(interp_loc, p_vec);
+
+    // ...for Q
+    rot_serial_dense_vec.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, 1.0, a_Q, p_vec, 0.0);
+    Core::LinAlg::Matrix<3, 1> rot_vect_Q_rel_interp(true);
+    rot_vect_Q_rel_interp(0) = rot_serial_dense_vec(0);
+    rot_vect_Q_rel_interp(1) = rot_serial_dense_vec(1);
+    rot_vect_Q_rel_interp(2) = rot_serial_dense_vec(2);
+
+    // ...for R
+    rot_serial_dense_vec.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, 1.0, a_R, p_vec, 0.0);
+    Core::LinAlg::Matrix<3, 1> rot_vect_R_rel_interp(true);
+    rot_vect_R_rel_interp(0) = rot_serial_dense_vec(0);
+    rot_vect_R_rel_interp(1) = rot_serial_dense_vec(1);
+    rot_vect_R_rel_interp(2) = rot_serial_dense_vec(2);
+
+    // get corresponding relative rotation matrices
+    Core::LinAlg::Matrix<3, 3> Q_rel_interp = calc_rot_matrix_from_rot_vect(rot_vect_Q_rel_interp);
+    Core::LinAlg::Matrix<3, 3> R_rel_interp = calc_rot_matrix_from_rot_vect(rot_vect_R_rel_interp);
+
+    // compute interpolated rotation tensors (absolute)
+    Q_interp.multiply_nn(1.0, all_Q[base_ind], Q_rel_interp, 0.0);
+    R_interp.multiply_nn(1.0, all_R[base_ind], R_rel_interp, 0.0);
+
+    // STEP 4 (Satheesh, 2024, 10.1002/nme.7373, Section 2.5): interpolate eigenvalue tensor
+    // we use the logarithmic weighted average to ensure a positive-definite lambda matrix
+    Core::LinAlg::Matrix<3, 3> lambda_interp(true);
+    lambda_interp(0, 0) = std::exp(ln_lambda_interp(0));
+    lambda_interp(1, 1) = std::exp(ln_lambda_interp(1));
+    lambda_interp(2, 2) = std::exp(ln_lambda_interp(2));
+
+    // Finally: build the output interpolation tensor from its interpolated components
+    output.multiply_nn(1.0, lambda_interp, Q_interp, 0.0);
+    temp3x3.multiply_tn(1.0, Q_interp, output, 0.0);
+    output.multiply_nn(1.0, R_interp, temp3x3, 0.0);
   }
-
-  // declare all monomial coefficients
-  Core::LinAlg::SerialDenseMatrix a_Q(m, 3, true);
-  Core::LinAlg::SerialDenseMatrix a_R(m, 3, true);
-
-  // setup solver
-  Core::LinAlg::SerialDenseMatrix copy_P = Core::LinAlg::SerialDenseMatrix(P);
-  using ordinalType = Core::LinAlg::SerialDenseMatrix::ordinalType;
-  using scalarType = Core::LinAlg::SerialDenseMatrix::scalarType;
-  Teuchos::SerialDenseSolver<ordinalType, scalarType> solver;
-
-  // solve for the coefficients of Q
-  solver.setMatrix(Teuchos::rcpFromRef(P));
-  solver.setVectors(Teuchos::rcpFromRef(a_Q), Teuchos::rcpFromRef(b_Q));
-  solver.factorWithEquilibration(true);
-  solver.solveToRefinedSolution(true);
-  if (solver.factor() or solver.solve())
+  else
   {
-    err_type_ = TensorInterpErrorType::LinSystFailQMatrix;
-    return Core::LinAlg::Matrix<3, 3>{true};
+    FOUR_C_THROW("We do not have an implementation for RotInterpType %s and EigenvalInterpType %s!",
+        rot_interp_type_to_string(rot_interp_type_).c_str(),
+        eigenval_interp_type_to_string(eigenval_interp_type_).c_str());
   }
 
-  // solve for the coefficients of R
-  solver.setMatrix(Teuchos::rcpFromRef(copy_P));
-  solver.setVectors(Teuchos::rcpFromRef(a_R), Teuchos::rcpFromRef(b_R));
-  solver.factorWithEquilibration(true);
-  solver.solveToRefinedSolution(true);
-  if (solver.factor() or solver.solve())
-  {
-    err_type_ = TensorInterpErrorType::LinSystFailRMatrix;
-    return Core::LinAlg::Matrix<3, 3>{true};
-  }
-
-
-
-  // get relative rotation vectors at interpolation points...
-  Core::LinAlg::SerialDenseVector rot_serial_dense_vec(3, true);
-
-  // evaluate polynomial space of the interpolation location
-  polynomial_space_.evaluate(interp_loc, p_vec);
-
-  // ...for Q
-  rot_serial_dense_vec.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, 1.0, a_Q, p_vec, 0.0);
-  Core::LinAlg::Matrix<3, 1> rot_vect_Q_rel_interp(true);
-  rot_vect_Q_rel_interp(0) = rot_serial_dense_vec(0);
-  rot_vect_Q_rel_interp(1) = rot_serial_dense_vec(1);
-  rot_vect_Q_rel_interp(2) = rot_serial_dense_vec(2);
-
-  // ...for R
-  rot_serial_dense_vec.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, 1.0, a_R, p_vec, 0.0);
-  Core::LinAlg::Matrix<3, 1> rot_vect_R_rel_interp(true);
-  rot_vect_R_rel_interp(0) = rot_serial_dense_vec(0);
-  rot_vect_R_rel_interp(1) = rot_serial_dense_vec(1);
-  rot_vect_R_rel_interp(2) = rot_serial_dense_vec(2);
-
-  // get corresponding relative rotation matrices
-  Core::LinAlg::Matrix<3, 3> Q_rel_interp = calc_rot_matrix_from_rot_vect(rot_vect_Q_rel_interp);
-  Core::LinAlg::Matrix<3, 3> R_rel_interp = calc_rot_matrix_from_rot_vect(rot_vect_R_rel_interp);
-
-  // compute interpolated rotation tensors (absolute)
-  Core::LinAlg::Matrix<3, 3> Q_interp(true);
-  Q_interp.multiply_nn(1.0, all_Q[base_ind], Q_rel_interp, 0.0);
-  Core::LinAlg::Matrix<3, 3> R_interp(true);
-  R_interp.multiply_nn(1.0, all_R[base_ind], R_rel_interp, 0.0);
-
-  // STEP 4 (Satheesh, 2024, 10.1002/nme.7373, Section 2.5): interpolate eigenvalue tensor
-  // we use the logarithmic weighted average to ensure a positive-definite lambda matrix
-  Core::LinAlg::Matrix<3, 3> lambda_interp(true);
-  lambda_interp(0, 0) = std::exp(ln_lambda_interp(0));
-  lambda_interp(1, 1) = std::exp(ln_lambda_interp(1));
-  lambda_interp(2, 2) = std::exp(ln_lambda_interp(2));
-
-
-  // Finally: build the output interpolation tensor from its interpolated components
-  output.multiply_nn(1.0, lambda_interp, Q_interp, 0.0);
-  temp3x3.multiply_tn(1.0, Q_interp, output, 0.0);
-  output.multiply_nn(1.0, R_interp, temp3x3, 0.0);
 
 
 #ifdef DEBUG_TENSORINTERP

@@ -1673,7 +1673,7 @@ namespace Mat
     StateQuantityDerivatives state_quantity_derivatives_;
 
     //! tensor interpolator used in the substepping procedure (one-dimensional, of order 1)
-    Core::LinAlg::TensorInterpolation::SecondOrderTensorInterpolator<1> tensor_interpolator_{1};
+    Core::LinAlg::TensorInterpolation::SecondOrderTensorInterpolator<1> tensor_interpolator_;
 
     //! tensor interpolation: reference matrices
     std::vector<Core::LinAlg::Matrix<3, 3>> ref_matrices_;
@@ -2005,6 +2005,24 @@ namespace Mat
     void evaluate_additional_cmat_perturb_based(const Core::LinAlg::Matrix<3, 3>& FredM,
         Core::LinAlg::Matrix<6, 6>& cmatadd, const Core::LinAlg::Matrix<3, 3>& iFin_other,
         const Core::LinAlg::Matrix<6, 9>& dSdiFinj);
+
+    /*!
+     * @brief Initialize the second-order tensor interpolator.
+     * Currently, we consider R-LOG interpolation with a set exponential
+     * decay factor.
+     */
+    Core::LinAlg::TensorInterpolation::SecondOrderTensorInterpolator<1> init_tensor_interpolator()
+    {
+      // initialize interpolation parameter list
+      Teuchos::ParameterList interp_param_list;
+      // add exponential decay factor for weighting
+      interp_param_list.set("weighting_expdecay_factor", 20.0);
+
+      // return corresponding tensor interpolator
+      return Core::LinAlg::TensorInterpolation::SecondOrderTensorInterpolator<1>{1,
+          Core::LinAlg::TensorInterpolation::RotInterpType::RInterp,
+          Core::LinAlg::TensorInterpolation::EigenvalInterpType::LOG, interp_param_list};
+    }
 
     /*!
      * @brief Get an extensive error message to be displayed when the

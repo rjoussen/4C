@@ -344,8 +344,10 @@ namespace
       inelastic_defgrad_isotrop_vplast_refJC_data.add("USE_LINE_SEARCH", true);
       inelastic_defgrad_isotrop_vplast_refJC_data.add("USE_SUBSTEPPING", false);
       inelastic_defgrad_isotrop_vplast_refJC_data.add("MAX_HALVE_NUM_SUBSTEP", 1);
-      inelastic_defgrad_isotrop_vplast_refJC_data.add("MAX_PLASTIC_STRAIN_INCR", 1.0e10);
-      inelastic_defgrad_isotrop_vplast_refJC_data.add("MAX_PLASTIC_STRAIN_DERIV_INCR", 1.0e10);
+      inelastic_defgrad_isotrop_vplast_refJC_data.add(
+          "MAX_PLASTIC_STRAIN_INCR", 10686474581524.4628906250000000);
+      inelastic_defgrad_isotrop_vplast_refJC_data.add(
+          "MAX_PLASTIC_STRAIN_DERIV_INCR", 10686474581524.4628906250000000);
       inelastic_defgrad_isotrop_vplast_refJC_data.add("INTERP_FACT_PRED_ADAPT", 0.1);
       inelastic_defgrad_isotrop_vplast_refJC_data.add("MAX_NUM_PRED_ADAPT", 10);
       inelastic_defgrad_isotrop_vplast_refJC_data.add("ANALYZE_TIMINT", false);
@@ -403,7 +405,7 @@ namespace
       viscoplastic_law_reformulated_Johnson_Cook_data.add("STRAIN_RATE_EXP_FAC", 0.014);
       viscoplastic_law_reformulated_Johnson_Cook_data.add("INIT_YIELD_STRENGTH", 792.0);
       viscoplastic_law_reformulated_Johnson_Cook_data.add("ISOTROP_HARDEN_PREFAC", 510.0);
-      viscoplastic_law_reformulated_Johnson_Cook_data.add("ISOTROP_HARDEN_EXP", 0.26);
+      viscoplastic_law_reformulated_Johnson_Cook_data.add("ISOTROP_HARDEN_EXP", 1.0);
       // add material to problem instance
       problem.materials()->insert(400,
           Mat::make_parameter(400, Core::Materials::MaterialType::mvl_reformulated_Johnson_Cook,
@@ -1793,47 +1795,48 @@ namespace
 
   TEST_F(InelasticDefgradFactorsTest, DummyViscoplastTimIntLinearizTest)
   {
-    auto& iso_mat = isotrop_vplast_Anand_;
+    auto& iso_mat = isotrop_vplast_refJC_;
 
     // define last_values to be set for InelasticDefgradTransvIsotropElastViscoplast
     Core::LinAlg::Matrix<3, 3> last_plastic_defgrd_inverse{true};
-    last_plastic_defgrd_inverse(0, 0) = 0.9998336571918063;
-    last_plastic_defgrd_inverse(0, 1) = 0.0006253598800017;
-    last_plastic_defgrd_inverse(0, 2) = -0.0001272589471959;
-    last_plastic_defgrd_inverse(1, 0) = 0.0006843300293478;
-    last_plastic_defgrd_inverse(1, 1) = 1.1731328488985482;
-    last_plastic_defgrd_inverse(1, 2) = 0.2959346418368146;
-    last_plastic_defgrd_inverse(2, 0) = 0.0000784200546777;
-    last_plastic_defgrd_inverse(2, 1) = 0.3379726047264324;
-    last_plastic_defgrd_inverse(2, 2) = 0.9378175519357805;
+    last_plastic_defgrd_inverse(0, 0) = 1.0000000000000000;
+    last_plastic_defgrd_inverse(0, 1) = 0.0000000000000000;
+    last_plastic_defgrd_inverse(0, 2) = 0.0000000000000000;
+    last_plastic_defgrd_inverse(1, 0) = 0.0000000000000000;
+    last_plastic_defgrd_inverse(1, 1) = 1.0000000000000000;
+    last_plastic_defgrd_inverse(1, 2) = 0.0000000000000000;
+    last_plastic_defgrd_inverse(2, 0) = 0.0000000000000000;
+    last_plastic_defgrd_inverse(2, 1) = 0.0000000000000000;
+    last_plastic_defgrd_inverse(2, 2) = 1.0000000000000000;
 
 
 
-    double last_plastic_strain = 0.4064223336580603;
+    double last_plastic_strain = 0.0;
 
 
     Core::LinAlg::Matrix<3, 3> last_defgrad{true};
-    last_defgrad(0, 0) = 1.0000000000000000;
-    last_defgrad(0, 1) = 0.0000000000000000;
-    last_defgrad(0, 2) = 0.0000000000000000;
-    last_defgrad(1, 0) = -0.0017945128100466;
-    last_defgrad(1, 1) = 0.9967924770535173;
-    last_defgrad(1, 2) = -0.6796347869670532;
-    last_defgrad(2, 0) = -0.0000197519021714;
-    last_defgrad(2, 1) = 0.0039196702732074;
-    last_defgrad(2, 2) = 1.0000916112235323;
+    last_defgrad(0, 0) = 1.0008203265322297;
+    last_defgrad(0, 1) = 0.0079330640021068;
+    last_defgrad(0, 2) = 0.0000000000000002;
+    last_defgrad(1, 0) = -0.0124146521640549;
+    last_defgrad(1, 1) = 0.9983894425214813;
+    last_defgrad(1, 2) = 0.0000000000000001;
+    last_defgrad(2, 0) = 0.0000000000000001;
+    last_defgrad(2, 1) = 0.0000000000000001;
+    last_defgrad(2, 2) = 1.0000000000000000;
+
 
 
     Core::LinAlg::Matrix<3, 3> last_rightCG{true};
-    last_rightCG(0, 0) = 1.0000032206663632;
-    last_rightCG(0, 1) = -0.0017888342899744;
-    last_rightCG(0, 2) = 0.0011998596196983;
-    last_rightCG(1, 0) = -0.0017888342899744;
-    last_rightCG(1, 1) = 0.9936106061255373;
-    last_rightCG(1, 2) = -0.6735348134336315;
-    last_rightCG(2, 0) = 0.0011998596196983;
-    last_rightCG(2, 1) = -0.6735348134336315;
-    last_rightCG(2, 2) = 1.4620866744954326;
+    last_rightCG(0, 0) = 1.0017954495884334;
+    last_rightCG(0, 1) = -0.0044550859481793;
+    last_rightCG(0, 2) = 0.0000000000000003;
+    last_rightCG(1, 0) = -0.0044550859481793;
+    last_rightCG(1, 1) = 0.9968444124428157;
+    last_rightCG(1, 2) = 0.0000000000000001;
+    last_rightCG(2, 0) = 0.0000000000000003;
+    last_rightCG(2, 1) = 0.0000000000000001;
+    last_rightCG(2, 2) = 1.0000000000000000;
 
 
 
@@ -1854,15 +1857,15 @@ namespace
     }
     // set other variables needed for evaluation
     Core::LinAlg::Matrix<3, 3> current_defgrad{true};
-    current_defgrad(0, 0) = 1.0000000000000000;
-    current_defgrad(0, 1) = 0.0000000000000000;
-    current_defgrad(0, 2) = 0.0000000000000000;
-    current_defgrad(1, 0) = -3.1829045639886044;
-    current_defgrad(1, 1) = 2.2239784997827048;
-    current_defgrad(1, 2) = 1.0240689282634230;
-    current_defgrad(2, 0) = 1.9181962722512711;
-    current_defgrad(2, 1) = -0.4476115524702614;
-    current_defgrad(2, 2) = -0.0039349877405348;
+    current_defgrad(0, 0) = 1.0009458411448258;
+    current_defgrad(0, 1) = 0.0094809828629603;
+    current_defgrad(0, 2) = -0.0000000000000001;
+    current_defgrad(1, 0) = -0.0147129665640815;
+    current_defgrad(1, 1) = 0.9981524220238434;
+    current_defgrad(1, 2) = 0.0000000000000007;
+    current_defgrad(2, 0) = 0.0000000000000001;
+    current_defgrad(2, 1) = 0.0000000000000001;
+    current_defgrad(2, 2) = 1.0000000000000000;
 
 
 
@@ -1883,7 +1886,7 @@ namespace
 
     // parameter list for InelasticDefGradTransvIsotropElastViscoplast
     Teuchos::ParameterList param_list{};
-    param_list.set<double>("delta time", 2.5e-4);
+    param_list.set<double>("delta time", 1.0e-4);
     // call pre_evaluate
     iso_mat->pre_evaluate(param_list, 0, 0);
 

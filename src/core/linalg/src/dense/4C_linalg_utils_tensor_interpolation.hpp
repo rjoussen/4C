@@ -15,6 +15,8 @@
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_utils_exceptions.hpp"
 
+#include <Teuchos_ParameterList.hpp>
+
 FOUR_C_NAMESPACE_OPEN
 
 namespace Core::LinAlg
@@ -30,6 +32,38 @@ namespace Core::LinAlg
       LinSystFailRMatrix,  // the solution of the linear system of equations for the rotation matrix
                            // R failed
     };
+
+    /// enum class for the interpolation type of the relative rotation matrices
+    enum class RotInterpType
+    {
+      RInterp,  // interpolation of relative rotation vectors,
+      QInterp,  // interpolation of relative quaternions,
+    };
+
+    /// conversion method from rotation interpolation type string to the
+    /// corresponding enum type
+    RotInterpType rot_interp_string_to_type(std::string rot_interp_type_string);
+
+    /// conversion method from rotation interpolation enum type to the
+    /// corresponding string
+    std::string rot_interp_type_to_string(RotInterpType rot_interp_type);
+
+    /// enum class for the interpolation type of the eigenvalue matrix
+    enum class EigenvalInterpType
+    {
+      LOG,     // logarithmic weighted average,
+      MLS,     // moving least squares,
+      LOGMLS,  // logarithmic moving least squares,
+    };
+
+    /// conversion method from eigenvalue interpolation type string to the
+    /// corresponding enum type
+    EigenvalInterpType eigenval_interp_string_to_type(std::string eigenval_interp_type_string);
+
+    /// conversion method from eigenvalue interpolation enum type to the
+    /// corresponding string
+    std::string eigenval_interp_type_to_string(EigenvalInterpType eigenval_interp_type);
+
 
     /// to_string: error types to error message for the tensor interpolator
     inline std::string to_string(const TensorInterpErrorType err_type)
@@ -77,9 +111,14 @@ namespace Core::LinAlg
        *  @param[in] order polynomial order (1:linear, 2: quadratic, ...) used for interpolating
        * the rotation vectors at the specified location
        */
-      SecondOrderTensorInterpolator(unsigned int order)
+      SecondOrderTensorInterpolator(unsigned int order, const RotInterpType rot_interp_type,
+          const EigenvalInterpType eigenval_interp_type,
+          const Teuchos::ParameterList interp_param_list)
           : polynomial_space_(create_polynomial_space(order)),
-            err_type_(TensorInterpErrorType::NoErrors)
+            err_type_(TensorInterpErrorType::NoErrors),
+            rot_interp_type_(rot_interp_type),
+            eigenval_interp_type_(eigenval_interp_type),
+            interp_param_list_(interp_param_list)
       {
       }
 
@@ -159,12 +198,21 @@ namespace Core::LinAlg
       void reset_err_type() { err_type_ = TensorInterpErrorType::NoErrors; }
 
      private:
-      // polynomial space used for the interpolation of rotation vectors depending
-      // on the desired order (created in constructor call)
+      /// polynomial space used for the interpolation of rotation vectors depending
+      /// on the desired order (created in constructor call)
       Core::FE::PolynomialSpaceComplete<loc_dim, Core::FE::Polynomial> polynomial_space_;
 
-      // error type of the tensor interpolator
+      /// error type of the tensor interpolator
       TensorInterpErrorType err_type_;
+
+      /// rotation interpolation type
+      const RotInterpType rot_interp_type_;
+
+      /// eigenvalue interpolation type
+      const EigenvalInterpType eigenval_interp_type_;
+
+      /// interpolation parameter list
+      const Teuchos::ParameterList interp_param_list_;
     };
 
   }  // namespace TensorInterpolation

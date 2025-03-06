@@ -1703,6 +1703,7 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::InelasticDefgradTransvIsotrop
       potsumel_transviso_(std::move(pot_sum_el_transv_iso)),
       viscoplastic_law_(std::move(viscoplastic_law)),
       fiber_reader_(std::move(fiber_reader)),
+      tensor_interpolator_{init_tensor_interpolator()},
       pred_interp_factors_(
           parameter()->interp_factor_pred_adapt(), parameter()->max_num_pred_adapt())
 {
@@ -1749,6 +1750,7 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::InelasticDefgradTransvIsotrop
 
   // analysis: initialize csv writer
   if (parameter()->bool_analyze_timint()) timint_analysis_utils.init_csv_writer();
+
 
 #if defined(DEBUGVPLAST_TIMINT) || defined(DEBUGVPLAST_INELDEFGRAD) || \
     defined(DEBUGVPLAST_LINEARIZATION)
@@ -2705,6 +2707,12 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_inverse_inelast
     std::cout << std::string(60, '-') << std::endl;
     std::cout << std::string(5, '.') << "evaluate_inverse_inelastic_def_grad" << std::endl;
     std::cout << "ELEGID: " << ele_gid_ << "; GP: " << gp_ << std::endl;
+    std::cout << "CM: " << std::endl;
+    CredM.print(std::cout);
+    std::cout << "last_plastic_defgrd_inverse_: " << std::endl;
+    time_step_quantities_.last_plastic_defgrd_inverse_[gp_].print(std::cout);
+    std::cout << "last_plastic_strain: " << std::endl;
+    std::cout << time_step_quantities_.last_plastic_strain_[gp_] << std::endl;
   }
 #endif
 
@@ -3761,18 +3769,23 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::adapt_predictor_local_newton_
     const Core::LinAlg::Matrix<10, 1>& original_pred, const Core::LinAlg::Matrix<3, 3>& FM,
     const bool check_original_pred)
 {
+  // compute right CG tensor
+  Core::LinAlg::Matrix<3, 3> CM{true};
+  CM.multiply_tn(1.0, FM, FM, 0.0);
+
 #ifdef DEBUGVPLAST_TIMINT
   if (debug_output_ele_gp(debug_ele_gid_vec, debug_gp_vec, ele_gid_, gp_))
   {
     std::cout << std::string(40, '-') << std::endl;
     std::cout << std::string(5, '.') << "adapt_predictor_local_newton_loop" << std::endl;
+    std::cout << std::fixed << std::setprecision(8);
+    std::cout << "CM: " << std::endl;
+    CM.print(std::cout);
+    std::cout << "original_pred: " << std::endl;
+    original_pred.print(std::cout);
   }
 #endif
 
-
-  // compute right CG tensor
-  Core::LinAlg::Matrix<3, 3> CM{true};
-  CM.multiply_tn(1.0, FM, FM, 0.0);
 
   // declare error status and set to no errors
   Mat::ViscoplastErrorType err_status{ViscoplastErrorType::NoErrors};
@@ -3944,10 +3957,22 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::adapt_predictor_local_newton_
 #ifdef DEBUGVPLAST_TIMINT
     if (debug_output_ele_gp(debug_ele_gid_vec, debug_gp_vec, ele_gid_, gp_))
     {
-      std::cout << "stress_ratio (orig. plastic strain " << original_pred(9) << " ):  "
-                << std::to_string(viscoplastic_law_->evaluate_stress_ratio(
-                       state_quantities_.curr_equiv_stress_, original_pred(9)))
-                << std::endl;
+      if (err_status != Mat::ViscoplastErrorType::NoErrors)
+      {
+        std::cout << "There was an error when evaluating the state for orig. plastic strain "
+                  << original_pred(9) << std::endl;
+      }
+      else
+      {
+        std::cout << "stress (orig. plastic strain " << original_pred(9)
+                  << " ):  " << std::to_string(state_quantities_.curr_equiv_stress_) << std::endl;
+
+
+        std::cout << "stress_ratio (orig. plastic strain " << original_pred(9) << " ):  "
+                  << std::to_string(viscoplastic_law_->evaluate_stress_ratio(
+                         state_quantities_.curr_equiv_stress_, original_pred(9)))
+                  << std::endl;
+      }
     }
 #endif
 
