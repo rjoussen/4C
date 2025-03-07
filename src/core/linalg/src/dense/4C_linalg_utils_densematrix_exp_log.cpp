@@ -15,6 +15,7 @@
 #include "4C_linalg_fixedsizematrix_voigt_notation.hpp"
 #include "4C_linalg_four_tensor.hpp"
 #include "4C_linalg_utils_densematrix_eigen.hpp"
+#include "4C_utils_exceptions.hpp"
 
 #include <boost/fusion/view/joint_view/detail/deref_impl.hpp>
 
@@ -22,10 +23,85 @@ FOUR_C_NAMESPACE_OPEN
 
 using vmap = Core::LinAlg::Voigt::IndexMappings;
 
+Core::LinAlg::MatrixExpCalcMethod Core::LinAlg::matrix_exp_calc_string_to_method(
+    std::string matrix_exp_calc_string)
+{
+  if (matrix_exp_calc_string == "default")
+    return Core::LinAlg::MatrixExpCalcMethod::Default;
+  else if (matrix_exp_calc_string == "taylor_series")
+    return Core::LinAlg::MatrixExpCalcMethod::TaylorSeries;
+  else if (matrix_exp_calc_string == "spectral_decomp")
+    return Core::LinAlg::MatrixExpCalcMethod::SpectralDecomp;
+  else
+    FOUR_C_THROW("Calculation method for matrix exponential %s not provided!",
+        matrix_exp_calc_string.c_str());
+}
+
+Core::LinAlg::MatrixLogCalcMethod Core::LinAlg::matrix_log_calc_string_to_method(
+    std::string matrix_log_calc_string)
+{
+  if (matrix_log_calc_string == "default")
+    return Core::LinAlg::MatrixLogCalcMethod::Default;
+  else if (matrix_log_calc_string == "taylor_series")
+    return Core::LinAlg::MatrixLogCalcMethod::TaylorSeries;
+  else if (matrix_log_calc_string == "gregory_series")
+    return Core::LinAlg::MatrixLogCalcMethod::GregorySeries;
+  else if (matrix_log_calc_string == "spectral_decomp")
+    return Core::LinAlg::MatrixLogCalcMethod::SpectralDecomp;
+  else
+    FOUR_C_THROW(
+        "Calculation method for matrix logarithm %s not provided!", matrix_log_calc_string.c_str());
+}
+
+Core::LinAlg::GenMatrixExpFirstDerivCalcMethod
+Core::LinAlg::genmatrix_exp_1st_deriv_calc_string_to_method(
+    std::string genmatrix_exp_1st_deriv_calc_string)
+{
+  if (genmatrix_exp_1st_deriv_calc_string == "default")
+    return Core::LinAlg::GenMatrixExpFirstDerivCalcMethod::Default;
+  else if (genmatrix_exp_1st_deriv_calc_string == "taylor_series")
+    return Core::LinAlg::GenMatrixExpFirstDerivCalcMethod::TaylorSeries;
+  else
+    FOUR_C_THROW(
+        "Calculation method for first derivative of exponential (gen. matrix) %s not provided!",
+        genmatrix_exp_1st_deriv_calc_string.c_str());
+}
+
+Core::LinAlg::GenMatrixLogFirstDerivCalcMethod
+Core::LinAlg::genmatrix_log_1st_deriv_calc_string_to_method(
+    std::string genmatrix_log_1st_deriv_calc_string)
+{
+  if (genmatrix_log_1st_deriv_calc_string == "default")
+    return Core::LinAlg::GenMatrixLogFirstDerivCalcMethod::Default;
+  else if (genmatrix_log_1st_deriv_calc_string == "taylor_series")
+    return Core::LinAlg::GenMatrixLogFirstDerivCalcMethod::TaylorSeries;
+  else if (genmatrix_log_1st_deriv_calc_string == "gregory_series")
+    return Core::LinAlg::GenMatrixLogFirstDerivCalcMethod::GregorySeries;
+  else
+    FOUR_C_THROW(
+        "Calculation method for first derivative of logarithm (gen. matrix) %s not provided!",
+        genmatrix_log_1st_deriv_calc_string.c_str());
+}
+
+Core::LinAlg::SymMatrixExpFirstDerivCalcMethod
+Core::LinAlg::symmatrix_exp_1st_deriv_calc_string_to_method(
+    std::string symmatrix_exp_1st_deriv_calc_string)
+{
+  if (symmatrix_exp_1st_deriv_calc_string == "default")
+    return Core::LinAlg::SymMatrixExpFirstDerivCalcMethod::Default;
+  else if (symmatrix_exp_1st_deriv_calc_string == "taylor_series")
+    return Core::LinAlg::SymMatrixExpFirstDerivCalcMethod::TaylorSeries;
+  else if (symmatrix_exp_1st_deriv_calc_string == "eigenproj_based")
+    return Core::LinAlg::SymMatrixExpFirstDerivCalcMethod::EigenprojBased;
+  else
+    FOUR_C_THROW(
+        "Calculation method for first derivative of exponential (sym. matrix) %s not provided!",
+        symmatrix_exp_1st_deriv_calc_string.c_str());
+}
 
 template <unsigned int dim>
-Core::LinAlg::Matrix<dim, dim> Core::LinAlg::matrix_exp(
-    const Core::LinAlg::Matrix<dim, dim>& input, int& err_status)
+Core::LinAlg::Matrix<dim, dim> Core::LinAlg::matrix_exp(const Core::LinAlg::Matrix<dim, dim>& input,
+    int& err_status, Core::LinAlg::MatrixExpCalcMethod calc_method)
 {
   // declare output matrix
   Core::LinAlg::Matrix<dim, dim> output(true);
@@ -41,9 +117,19 @@ Core::LinAlg::Matrix<dim, dim> Core::LinAlg::matrix_exp(
     return output;
   }
 
+  // determine computation method based on the matrix norm
+  if (calc_method == Core::LinAlg::MatrixExpCalcMethod::Default)
+  {
+    if (mat_norm < 2.0)
+      calc_method = Core::LinAlg::MatrixExpCalcMethod::TaylorSeries;
+    else
+      calc_method = Core::LinAlg::MatrixExpCalcMethod::SpectralDecomp;
+  }
+
+
   // compute matrix exponential via power series for small matrix norms. This is usually
   // faster than by spectral decomposition for matrices which are close to zero.
-  if (mat_norm < 2.0)
+  if (calc_method == Core::LinAlg::MatrixExpCalcMethod::TaylorSeries)
   {
     // set maximum number of terms
     int n_max = 50;
@@ -80,7 +166,7 @@ Core::LinAlg::Matrix<dim, dim> Core::LinAlg::matrix_exp(
     err_status = 0;
     return output;
   }
-  else
+  else if (calc_method == Core::LinAlg::MatrixExpCalcMethod::SpectralDecomp)
   {
     // spectral decomposition for higher matrix norms
     Core::LinAlg::Matrix<dim, dim, std::complex<double>> eigenval_matrix(true);
@@ -115,11 +201,15 @@ Core::LinAlg::Matrix<dim, dim> Core::LinAlg::matrix_exp(
     err_status = 0;
     return output;
   }
+  else
+  {
+    FOUR_C_THROW("The provided computation method for the matrix exponential is not implemented!");
+  }
 }
 
 template <unsigned int dim>
-Core::LinAlg::Matrix<dim, dim> Core::LinAlg::matrix_log(
-    const Core::LinAlg::Matrix<dim, dim>& input, int& err_status)
+Core::LinAlg::Matrix<dim, dim> Core::LinAlg::matrix_log(const Core::LinAlg::Matrix<dim, dim>& input,
+    int& err_status, Core::LinAlg::MatrixLogCalcMethod calc_method)
 {
   // auxiliaries
   Core::LinAlg::Matrix<dim, dim> id(true);
@@ -139,8 +229,43 @@ Core::LinAlg::Matrix<dim, dim> Core::LinAlg::matrix_log(
   Core::LinAlg::Matrix<dim, dim> id_minus_A(true);
   id_minus_A.update(1.0, id, -1.0, input, 0.0);
 
-  // employ Taylor series if matrix norm smaller than 1 for characteristic matrix
-  if (id_minus_A.norm2() < 1.0)
+  // \f$ \boldsymbol{I} + \boldsymbol{A} \f$
+  Core::LinAlg::Matrix<dim, dim> id_plus_A(true);
+  id_plus_A.update(1.0, id, 1.0, input, 0.0);
+
+  // \f$ \left( \boldsymbol{I} + \boldsymbol{A} \right)^{-1} \f$
+  Core::LinAlg::Matrix<dim, dim> inv_id_plus_A(true);
+  inv_id_plus_A.invert(id_plus_A);
+
+  // update matrix: \f$ \left[ \left( \boldsymbol{I} - \boldsymbol{A} \right) \left( \boldsymbol{I}
+  // + \boldsymbol{A}
+  // \right)^{-1} \right] \f$
+  Core::LinAlg::Matrix<dim, dim> update_mat(true);
+  update_mat.multiply(1.0, id_minus_A, inv_id_plus_A, 0.0);
+
+  // determine the computation method based on characteristic matrix norms
+  if (calc_method == Core::LinAlg::MatrixLogCalcMethod::Default)
+  {
+    // employ Taylor series if matrix norm smaller than 1 for characteristic matrix
+    if (id_minus_A.norm2() < 1.0)
+    {
+      calc_method = Core::LinAlg::MatrixLogCalcMethod::TaylorSeries;
+    }
+    // employ the Gregory series, if the norm of the first update matrix is smaller than 1.0
+    else if (update_mat.norm2() < 1.0)
+    {
+      calc_method = Core::LinAlg::MatrixLogCalcMethod::GregorySeries;
+    }
+    // spectral decomposition as the last resort
+    else
+    {
+      calc_method = Core::LinAlg::MatrixLogCalcMethod::SpectralDecomp;
+    }
+  }
+
+
+  // compute the matrix logarithm
+  if (calc_method == Core::LinAlg::MatrixLogCalcMethod::TaylorSeries)
   {
     // set initial exponent \f$ m \f$ and the maximum acceptable number of series terms
     int m = 1;
@@ -181,23 +306,7 @@ Core::LinAlg::Matrix<dim, dim> Core::LinAlg::matrix_log(
     err_status = 0;
     return output;
   }
-
-  // \f$ \boldsymbol{I} + \boldsymbol{A} \f$
-  Core::LinAlg::Matrix<dim, dim> id_plus_A(true);
-  id_plus_A.update(1.0, id, 1.0, input, 0.0);
-
-  // \f$ \left( \boldsymbol{I} + \boldsymbol{A} \right)^{-1} \f$
-  Core::LinAlg::Matrix<dim, dim> inv_id_plus_A(true);
-  inv_id_plus_A.invert(id_plus_A);
-
-  // update matrix: \f$ \left[ \left( \boldsymbol{I} - \boldsymbol{A} \right) \left( \boldsymbol{I}
-  // + \boldsymbol{A}
-  // \right)^{-1} \right] \f$
-  Core::LinAlg::Matrix<dim, dim> update_mat(true);
-  update_mat.multiply(1.0, id_minus_A, inv_id_plus_A, 0.0);
-
-  // employ the Gregory series, if the norm of the first update matrix is smaller than 1.0
-  if (update_mat.norm2() < 1.0)
+  else if (calc_method == Core::LinAlg::MatrixLogCalcMethod::GregorySeries)
   {
     // set initial exponent \f$ m \f$ and the maximum acceptable number of series terms
     int m = 0;
@@ -237,8 +346,7 @@ Core::LinAlg::Matrix<dim, dim> Core::LinAlg::matrix_log(
     err_status = 0;
     return output;
   }
-  // spectral decomposition as the last resort
-  else
+  else if (calc_method == Core::LinAlg::MatrixLogCalcMethod::SpectralDecomp)
   {
     Core::LinAlg::Matrix<dim, dim, std::complex<double>> eigenval_matrix(true);
     Core::LinAlg::Matrix<dim, dim, std::complex<double>> eigenvect_matrix(true);
@@ -282,65 +390,86 @@ Core::LinAlg::Matrix<dim, dim> Core::LinAlg::matrix_log(
     err_status = 0;
     return output;
   }
+  else
+  {
+    FOUR_C_THROW("The provided computation method for the matrix logarithm is not implemented!");
+  }
 }
 
 Core::LinAlg::Matrix<9, 9> Core::LinAlg::matrix_3x3_exp_1st_deriv(
-    const Core::LinAlg::Matrix<3, 3>& input, int& err_status)
+    const Core::LinAlg::Matrix<3, 3>& input, int& err_status,
+    Core::LinAlg::GenMatrixExpFirstDerivCalcMethod calc_method)
 {
   // declare output variable
   Core::LinAlg::Matrix<9, 9> output(true);
 
-  // see Souza-Neto: Computational Methods for plasticity, Box B.2.
-  int nmax = 0;
-  int nIter = 0;
-  int nfac = 1;
-  Core::LinAlg::Matrix<3, 3> tmp1;
-  Core::LinAlg::Matrix<3, 3> tmp2(true);
-  for (int i = 0; i < 3; i++) tmp2(i, i) = 1.;
-
-  // declare vector of all needed powers of X
-  std::vector<Core::LinAlg::Matrix<3, 3>> Xn;
-  Xn.resize(0);
-  Xn.push_back(tmp2);
-
-  // declare vector of all needed factorials
-  std::vector<int> fac;
-  fac.resize(0);
-  fac.push_back(nfac);
-
-  // compute nmax and Xn
-  while (nIter < 50 && tmp2.norm2() / nfac > 1.e-32)
+  // determine the computation method (currently, only Taylor series implemented)
+  if (calc_method == Core::LinAlg::GenMatrixExpFirstDerivCalcMethod::Default)
   {
-    nIter++;
-    nfac *= nIter;
-    fac.push_back(nfac);
-    tmp1.multiply(tmp2, input);
-    Xn.push_back(tmp1);
-    tmp2 = tmp1;
+    calc_method = Core::LinAlg::GenMatrixExpFirstDerivCalcMethod::TaylorSeries;
   }
 
-  if (nIter > 50)
+  if (calc_method == Core::LinAlg::GenMatrixExpFirstDerivCalcMethod::TaylorSeries)
   {
-    std::cout << "Matrix exponential unconverged in " << nIter
-              << " steps for the following matrix: " << std::endl;
-    input.print(std::cout);
-    err_status = 1;
+    // see Souza-Neto: Computational Methods for plasticity, Box B.2.
+    int nmax = 0;
+    int nIter = 0;
+    int nfac = 1;
+    Core::LinAlg::Matrix<3, 3> tmp1;
+    Core::LinAlg::Matrix<3, 3> tmp2(true);
+    for (int i = 0; i < 3; i++) tmp2(i, i) = 1.;
+
+    // declare vector of all needed powers of X
+    std::vector<Core::LinAlg::Matrix<3, 3>> Xn;
+    Xn.resize(0);
+    Xn.push_back(tmp2);
+
+    // declare vector of all needed factorials
+    std::vector<int> fac;
+    fac.resize(0);
+    fac.push_back(nfac);
+
+    // compute nmax and Xn
+    while (nIter < 50 && tmp2.norm2() / nfac > 1.e-32)
+    {
+      nIter++;
+      nfac *= nIter;
+      fac.push_back(nfac);
+      tmp1.multiply(tmp2, input);
+      Xn.push_back(tmp1);
+      tmp2 = tmp1;
+    }
+
+    if (nIter > 50)
+    {
+      std::cout << "Matrix exponential unconverged in " << nIter
+                << " steps for the following matrix: " << std::endl;
+      input.print(std::cout);
+      err_status = 1;
+      return output;
+    }
+    nmax = nIter;
+
+    // compose derivative of matrix exponential (non-symmetric Voigt-notation)
+    for (int n = 1; n <= nmax; n++)
+      for (int m = 1; m <= n; m++)
+        Core::LinAlg::Tensor::add_non_symmetric_product(
+            1. / fac[n], Xn.at(m - 1), Xn.at(n - m), output);
+
+    err_status = 0;
     return output;
   }
-  nmax = nIter;
-
-  // compose derivative of matrix exponential (non-symmetric Voigt-notation)
-  for (int n = 1; n <= nmax; n++)
-    for (int m = 1; m <= n; m++)
-      Core::LinAlg::Tensor::add_non_symmetric_product(
-          1. / fac[n], Xn.at(m - 1), Xn.at(n - m), output);
-
-  err_status = 0;
-  return output;
+  else
+  {
+    FOUR_C_THROW(
+        "The provided computation method for first derivative of the matrix exponential of a "
+        "general matrix is not implemented!");
+  }
 }
 
 Core::LinAlg::Matrix<6, 6> Core::LinAlg::sym_matrix_3x3_exp_1st_deriv(
-    const Core::LinAlg::Matrix<3, 3>& input, int& err_status)
+    const Core::LinAlg::Matrix<3, 3>& input, int& err_status,
+    Core::LinAlg::SymMatrixExpFirstDerivCalcMethod calc_method)
 {
   // get matrix norm
   double norm = input.norm2();
@@ -360,8 +489,17 @@ Core::LinAlg::Matrix<6, 6> Core::LinAlg::sym_matrix_3x3_exp_1st_deriv(
     return id4sharp;
   }
 
+  // determine computation method based on the matrix norm
+  if (calc_method == Core::LinAlg::SymMatrixExpFirstDerivCalcMethod::Default)
+  {
+    if (norm < 0.3)
+      calc_method = Core::LinAlg::SymMatrixExpFirstDerivCalcMethod::TaylorSeries;
+    else
+      calc_method = Core::LinAlg::SymMatrixExpFirstDerivCalcMethod::EigenprojBased;
+  }
+
   // further norm checking to determine appropriate computation procedure
-  if (norm < 0.3)
+  if (calc_method == Core::LinAlg::SymMatrixExpFirstDerivCalcMethod::TaylorSeries)
   {
     // see Souza-Neto: Computational Methods for plasticity, Box B.2.
     int nmax = 0;
@@ -412,7 +550,7 @@ Core::LinAlg::Matrix<6, 6> Core::LinAlg::sym_matrix_3x3_exp_1st_deriv(
             output, Xn.at((n - 1) / 2), Xn.at((n - 1) / 2), .25 / fac[n]);
     }
   }
-  else
+  else if (calc_method == Core::LinAlg::SymMatrixExpFirstDerivCalcMethod::EigenprojBased)
   {
     double EWtolerance = 1.e-12;
 
@@ -560,12 +698,19 @@ Core::LinAlg::Matrix<6, 6> Core::LinAlg::sym_matrix_3x3_exp_1st_deriv(
       return output;
     }
   }
+  else
+  {
+    FOUR_C_THROW(
+        "The provided computation method for first derivative of the matrix exponential of a "
+        "symmetric matrix is not implemented!");
+  }
   err_status = 0;
   return output;
 }
 
 Core::LinAlg::Matrix<9, 9> Core::LinAlg::matrix_3x3_log_1st_deriv(
-    const Core::LinAlg::Matrix<3, 3>& input, int& err_status)
+    const Core::LinAlg::Matrix<3, 3>& input, int& err_status,
+    Core::LinAlg::GenMatrixLogFirstDerivCalcMethod calc_method)
 {
   // auxiliaries
   Core::LinAlg::Matrix<3, 3> id_3x3(true);
@@ -591,8 +736,17 @@ Core::LinAlg::Matrix<9, 9> Core::LinAlg::matrix_3x3_log_1st_deriv(
   Core::LinAlg::Matrix<3, 3> id_minus_A(true);
   id_minus_A.update(1.0, id_3x3, -1.0, input, 0.0);
 
+  // determine the computation method based on matrix characteristics
+  if (calc_method == Core::LinAlg::GenMatrixLogFirstDerivCalcMethod::Default)
+  {
+    if (id_minus_A.norm2() < 1.0)
+      calc_method = Core::LinAlg::GenMatrixLogFirstDerivCalcMethod::TaylorSeries;
+    else
+      calc_method = Core::LinAlg::GenMatrixLogFirstDerivCalcMethod::GregorySeries;
+  }
+
   // employ Taylor series if matrix norm smaller than 1 for characteristic matrix
-  if (id_minus_A.norm2() < 1.0)
+  if (calc_method == Core::LinAlg::GenMatrixLogFirstDerivCalcMethod::TaylorSeries)
   {
     // set initial exponent \f$ m \f$ and the maximum acceptable number of series terms
     int m = 1;
@@ -665,7 +819,7 @@ Core::LinAlg::Matrix<9, 9> Core::LinAlg::matrix_3x3_log_1st_deriv(
     return output;
   }
   // alternatively, employ the Gregory series
-  else
+  else if (calc_method == Core::LinAlg::GenMatrixLogFirstDerivCalcMethod::GregorySeries)
   {
     // set initial exponent \f$ m \f$ and the maximum acceptable number of series terms
     int m = 1;
@@ -785,6 +939,12 @@ Core::LinAlg::Matrix<9, 9> Core::LinAlg::matrix_3x3_log_1st_deriv(
       m += 1;
     }
   }
+  else
+  {
+    FOUR_C_THROW(
+        "The provided computation method for first derivative of the matrix logarithm of a "
+        "general matrix is not implemented!");
+  }
 }
 
 void Core::LinAlg::sym_matrix_3x3_exp_2nd_deriv_voigt(const Core::LinAlg::Matrix<3, 3>& input,
@@ -903,12 +1063,16 @@ void Core::LinAlg::sym_matrix_3x3_exp_2nd_deriv_voigt(const Core::LinAlg::Matrix
 
 // explicit instantiation of template functions
 template Core::LinAlg::Matrix<2, 2> Core::LinAlg::matrix_exp<2>(
-    const Core::LinAlg::Matrix<2, 2>& input, int& err_status);
+    const Core::LinAlg::Matrix<2, 2>& input, int& err_status,
+    Core::LinAlg::MatrixExpCalcMethod calc_method);
 template Core::LinAlg::Matrix<3, 3> Core::LinAlg::matrix_exp<3>(
-    const Core::LinAlg::Matrix<3, 3>& input, int& err_status);
+    const Core::LinAlg::Matrix<3, 3>& input, int& err_status,
+    Core::LinAlg::MatrixExpCalcMethod calc_method);
 template Core::LinAlg::Matrix<2, 2> Core::LinAlg::matrix_log<2>(
-    const Core::LinAlg::Matrix<2, 2>& input, int& err_status);
+    const Core::LinAlg::Matrix<2, 2>& input, int& err_status,
+    Core::LinAlg::MatrixLogCalcMethod calc_method);
 template Core::LinAlg::Matrix<3, 3> Core::LinAlg::matrix_log<3>(
-    const Core::LinAlg::Matrix<3, 3>& input, int& err_status);
+    const Core::LinAlg::Matrix<3, 3>& input, int& err_status,
+    Core::LinAlg::MatrixLogCalcMethod calc_method);
 
 FOUR_C_NAMESPACE_CLOSE

@@ -13,6 +13,7 @@
 #include "4C_comm_pack_buffer.hpp"
 #include "4C_comm_pack_helpers.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
+#include "4C_linalg_utils_densematrix_exp_log.hpp"
 #include "4C_linalg_utils_tensor_interpolation.hpp"
 #include "4C_mat_elast_couptransverselyisotropic.hpp"
 #include "4C_mat_inelastic_defgrad_factors_service.hpp"
@@ -386,7 +387,31 @@ namespace Mat
               "Given anisotropy type %s not defined for InelasticDefgradTransvIsotropViscoplast",
               anisotropy_type.c_str());
         }
-      };
+      }
+
+      //! get computation method for the matrix exponential
+      [[nodiscard]] Core::LinAlg::MatrixExpCalcMethod mat_exp_calc_method() const
+      {
+        return mat_exp_calc_method_;
+      }
+
+      //! get computation method for the first derivative of the matrix exponential
+      [[nodiscard]] Core::LinAlg::GenMatrixExpFirstDerivCalcMethod mat_exp_deriv_calc_method() const
+      {
+        return mat_exp_deriv_calc_method_;
+      }
+
+      //! get computation method for the matrix logarithm
+      [[nodiscard]] Core::LinAlg::MatrixLogCalcMethod mat_log_calc_method() const
+      {
+        return mat_log_calc_method_;
+      }
+
+      //! get computation method for the first derivative of the matrix logarithm
+      [[nodiscard]] Core::LinAlg::GenMatrixLogFirstDerivCalcMethod mat_log_deriv_calc_method() const
+      {
+        return mat_log_deriv_calc_method_;
+      }
 
      private:
       //! ID of the viscoplasticity law
@@ -448,6 +473,18 @@ namespace Mat
       //! maximum number of times the given time step can be halved before reaching the minimum
       //! allowed substep length
       const int max_halve_number_;
+
+      //! utilized computation method for the matrix exponential
+      const Core::LinAlg::MatrixExpCalcMethod mat_exp_calc_method_;
+
+      //! utilized computation method for the first derivative of the matrix exponential
+      const Core::LinAlg::GenMatrixExpFirstDerivCalcMethod mat_exp_deriv_calc_method_;
+
+      //! utilized computation method for the matrix logarithm
+      const Core::LinAlg::MatrixLogCalcMethod mat_log_calc_method_;
+
+      //! utilized computation method for the first derivative of the matrix logarithm
+      const Core::LinAlg::GenMatrixLogFirstDerivCalcMethod mat_log_deriv_calc_method_;
     };
   }  // namespace PAR
 

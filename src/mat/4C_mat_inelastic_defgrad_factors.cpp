@@ -699,7 +699,15 @@ Mat::PAR::InelasticDefgradTransvIsotropElastViscoplast::
       bool_analyze_timint_(matdata.parameters.get<bool>("ANALYZE_TIMINT")),
       interp_factor_pred_adapt_(matdata.parameters.get<double>("INTERP_FACT_PRED_ADAPT")),
       max_num_pred_adapt_(matdata.parameters.get<int>("MAX_NUM_PRED_ADAPT")),
-      max_halve_number_(matdata.parameters.get<int>("MAX_HALVE_NUM_SUBSTEP"))
+      max_halve_number_(matdata.parameters.get<int>("MAX_HALVE_NUM_SUBSTEP")),
+      mat_exp_calc_method_(Core::LinAlg::matrix_exp_calc_string_to_method(
+          matdata.parameters.get<std::string>("MATRIX_EXP_CALC_METHOD"))),
+      mat_exp_deriv_calc_method_(Core::LinAlg::genmatrix_exp_1st_deriv_calc_string_to_method(
+          matdata.parameters.get<std::string>("MATRIX_EXP_DERIV_CALC_METHOD"))),
+      mat_log_calc_method_(Core::LinAlg::matrix_log_calc_string_to_method(
+          matdata.parameters.get<std::string>("MATRIX_LOG_CALC_METHOD"))),
+      mat_log_deriv_calc_method_(Core::LinAlg::genmatrix_log_1st_deriv_calc_string_to_method(
+          matdata.parameters.get<std::string>("MATRIX_LOG_DERIV_CALC_METHOD")))
 {
   if (max_halve_number_ < 0) FOUR_C_THROW("Parameter MAX_HALVE_NUM_SUBSTEP must be >= 0!");
 }
@@ -2028,7 +2036,8 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_state_quantities(
   {
     temp3x3.update(-dt, state_quantities.curr_lpM_, 0.0);
     int exp_err_status = 0;
-    state_quantities.curr_EpM_ = Core::LinAlg::matrix_exp(temp3x3, exp_err_status);
+    state_quantities.curr_EpM_ =
+        Core::LinAlg::matrix_exp(temp3x3, exp_err_status, parameter()->mat_exp_calc_method());
     if (exp_err_status == 1)
     {
       err_status = Mat::ViscoplastErrorType::FailedExpEval;
@@ -2412,8 +2421,8 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_state_quantity_deriv
 
     // ... w.r.t. its argument
     int exp_err_status = 0;
-    Core::LinAlg::Matrix<9, 9> expderivV =
-        Core::LinAlg::matrix_3x3_exp_1st_deriv(min_dt_lpM, exp_err_status);
+    Core::LinAlg::Matrix<9, 9> expderivV = Core::LinAlg::matrix_3x3_exp_1st_deriv(
+        min_dt_lpM, exp_err_status, parameter()->mat_exp_deriv_calc_method());
     if (exp_err_status)
     {
       err_status = Mat::ViscoplastErrorType::FailedExpEval;
@@ -3099,7 +3108,8 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::calculate_local_newton_loop_r
     Core::LinAlg::Matrix<3, 3> T(true);
     T.multiply_nn(1.0, last_FinM, iFinM, 0.0);
     int log_err_status = 0;
-    Core::LinAlg::Matrix<3, 3> logT = Core::LinAlg::matrix_log(T, log_err_status);
+    Core::LinAlg::Matrix<3, 3> logT =
+        Core::LinAlg::matrix_log(T, log_err_status, parameter()->mat_log_calc_method());
     if (log_err_status == 1)
     {
       err_status = Mat::ViscoplastErrorType::FailedLogEval;
@@ -3213,7 +3223,8 @@ Core::LinAlg::Matrix<10, 10> Mat::InelasticDefgradTransvIsotropElastViscoplast::
     Core::LinAlg::Matrix<3, 3> T(true);
     T.multiply_nn(1.0, last_FinM, iFinM, 0.0);
     int log_err_status = 0;
-    Core::LinAlg::Matrix<9, 9> dlogTdT = Core::LinAlg::matrix_3x3_log_1st_deriv(T, log_err_status);
+    Core::LinAlg::Matrix<9, 9> dlogTdT = Core::LinAlg::matrix_3x3_log_1st_deriv(
+        T, log_err_status, parameter()->mat_log_deriv_calc_method());
     if (log_err_status == 1)
     {
       err_status = Mat::ViscoplastErrorType::FailedLogEval;

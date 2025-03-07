@@ -2791,6 +2791,22 @@ std::unordered_map<Core::Materials::MaterialType, Core::IO::InputSpec> Global::v
                         "utilized material linearization: analytic | perturb_based (based on "
                         "perturbations of the current state)",
                     .default_value = "analytic"}),
+                    parameter<std::string>("MATRIX_EXP_CALC_METHOD",
+                        {.description = "chosen computation method for matrix exponential (default | taylor_series "
+                                        "| spectral_decomp )",
+                            .default_value = "default"}),
+                    parameter<std::string>("MATRIX_LOG_CALC_METHOD",
+                        {.description = "chosen computation method for matrix logarithm (default | taylor_series "
+                                        "| gregory_series | spectral_decomp )",
+                            .default_value = "gregory_series"}),
+                    parameter<std::string>("MATRIX_EXP_DERIV_CALC_METHOD",
+                        {.description = "chosen computation method for the first derivative of the matrix "
+                                        "exponential (default | taylor_series)",
+                            .default_value = "default"}),
+                    parameter<std::string>("MATRIX_LOG_DERIV_CALC_METHOD",
+                        {.description = "chosen computation method for the first derivative of the matrix "
+                                        "logarithm (default | taylor_series | gregory_series)",
+                            .default_value = "gregory_series"}),
         },
         {.description = "Versatile transversely isotropic (or isotropic) viscoplasticity model for "
                         "finite deformations with isotropic hardening, using user-defined "
