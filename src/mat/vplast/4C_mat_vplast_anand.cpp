@@ -531,13 +531,14 @@ std::string Mat::Viscoplastic::Anand::debug_get_error_info(const int gp)
 {
   // auxiliaries
   std::ostringstream temp_ostream;
+  temp_ostream.str("");
   // set output format for the numbers -> we can set it here for the
   // entire error message
   std::cout << std::fixed << std::setprecision(16) << std::endl;
   temp_ostream << std::fixed << std::setprecision(16) << std::endl;
 
   // declare error message for output
-  std::string extended_error_message;
+  std::string extended_error_message{""};
 
   extended_error_message += "---> VISCOPLASTIC LAW: Anand \n";
   extended_error_message += "last_flow_resistance: \n";

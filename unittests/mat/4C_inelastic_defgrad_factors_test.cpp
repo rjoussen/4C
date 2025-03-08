@@ -1811,15 +1811,15 @@ namespace
 
     // define last_values to be set for InelasticDefgradTransvIsotropElastViscoplast
     Core::LinAlg::Matrix<3, 3> last_plastic_defgrd_inverse{true};
-    last_plastic_defgrd_inverse(0, 0) = 1.0000000001136868;
+    last_plastic_defgrd_inverse(0, 0) = 1.0000000000000000;
     last_plastic_defgrd_inverse(0, 1) = 0.0000000000000000;
     last_plastic_defgrd_inverse(0, 2) = 0.0000000000000000;
     last_plastic_defgrd_inverse(1, 0) = 0.0000000000000000;
-    last_plastic_defgrd_inverse(1, 1) = 0.9999999994064348;
+    last_plastic_defgrd_inverse(1, 1) = 1.0000000000000000;
     last_plastic_defgrd_inverse(1, 2) = 0.0000000000000000;
     last_plastic_defgrd_inverse(2, 0) = 0.0000000000000000;
     last_plastic_defgrd_inverse(2, 1) = 0.0000000000000000;
-    last_plastic_defgrd_inverse(2, 2) = 1.0000000004798784;
+    last_plastic_defgrd_inverse(2, 2) = 1.0000000000000000;
 
 
 
@@ -1830,25 +1830,25 @@ namespace
     last_defgrad(0, 0) = 1.0000000000000000;
     last_defgrad(0, 1) = 0.0000000000000000;
     last_defgrad(0, 2) = 0.0000000000000000;
-    last_defgrad(1, 0) = 0.0000000048701799;
-    last_defgrad(1, 1) = 1.0000086135728357;
-    last_defgrad(1, 2) = 0.0000065424822838;
-    last_defgrad(2, 0) = -0.0000000737252444;
-    last_defgrad(2, 1) = 0.0000150151845524;
-    last_defgrad(2, 2) = 0.9999988995909062;
+    last_defgrad(1, 0) = 0.0000000001447294;
+    last_defgrad(1, 1) = 0.9999988805358737;
+    last_defgrad(1, 2) = -0.0000000926534960;
+    last_defgrad(2, 0) = 0.0000000001200176;
+    last_defgrad(2, 1) = -0.0000000123758849;
+    last_defgrad(2, 2) = 1.0000006392045999;
 
 
 
     Core::LinAlg::Matrix<3, 3> last_rightCG{true};
-    last_rightCG(0, 0) = 1.0000000000000053;
-    last_rightCG(0, 1) = 0.0000000048691148;
-    last_rightCG(0, 2) = -0.0000000737251314;
-    last_rightCG(1, 0) = 0.0000000048691148;
-    last_rightCG(1, 1) = 1.0000172274453207;
-    last_rightCG(1, 2) = 0.0000215577066675;
-    last_rightCG(2, 0) = -0.0000000737251314;
-    last_rightCG(2, 1) = 0.0000215577066675;
-    last_rightCG(2, 2) = 0.9999977992258273;
+    last_rightCG(0, 0) = 1.0000000000000000;
+    last_rightCG(0, 1) = 0.0000000001447292;
+    last_rightCG(0, 2) = 0.0000000001200177;
+    last_rightCG(1, 0) = 0.0000000001447292;
+    last_rightCG(1, 1) = 0.9999977610730008;
+    last_rightCG(1, 2) = -0.0000001050292851;
+    last_rightCG(2, 0) = 0.0000000001200177;
+    last_rightCG(2, 1) = -0.0000001050292851;
+    last_rightCG(2, 2) = 1.0000012784096171;
 
 
 
@@ -1872,12 +1872,12 @@ namespace
     current_defgrad(0, 0) = 1.0000000000000000;
     current_defgrad(0, 1) = 0.0000000000000000;
     current_defgrad(0, 2) = 0.0000000000000000;
-    current_defgrad(1, 0) = -0.4010014870090063;
-    current_defgrad(1, 1) = 1.3004980010367289;
-    current_defgrad(1, 2) = 0.6604336057258037;
-    current_defgrad(2, 0) = 0.1983748248103977;
-    current_defgrad(2, 1) = 0.0274615174122949;
-    current_defgrad(2, 2) = 0.7100968454045468;
+    current_defgrad(1, 0) = 0.0454667527716631;
+    current_defgrad(1, 1) = 0.5466298128806315;
+    current_defgrad(1, 2) = 1.0196565931626451;
+    current_defgrad(2, 0) = 0.0100019521136981;
+    current_defgrad(2, 1) = 0.4995330539778959;
+    current_defgrad(2, 2) = 1.5627904625432065;
 
 
 

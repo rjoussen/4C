@@ -2794,6 +2794,16 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_inverse_inelast
     Core::LinAlg::Matrix<10, 1> x_adapted{x};
     if (parameter()->bool_pred_adapt())
     {
+      // set the predictor interpolation factor, depending on what the user has chosen
+      if (parameter()->bool_use_last_pred_adapt_fact())
+      {
+        pred_interp_factors_.current_xi_[gp_] = pred_interp_factors_.last_xi_[gp_];
+      }
+      else
+      {
+        pred_interp_factors_.current_xi_[gp_] = pred_interp_factors_.xi_user_;
+      }
+
       x_adapted = adapt_predictor_local_newton_loop(x, FredM);
       ++pred_interp_factors_.num_of_pred_adapt_;
     }
@@ -3285,7 +3295,7 @@ Core::LinAlg::Matrix<10, 1> Mat::InelasticDefgradTransvIsotropElastViscoplast::l
 
   // set convergence tolerance for LNL and declare LNL matrices, vectors
   const double tolNR = 1.0e-8;
-  const unsigned max_iter = 100;
+  const unsigned max_iter = 200;
   // Jacobian matrix
   Core::LinAlg::Matrix<10, 10> jacMat(true);
   // increment of the solution variables
@@ -3542,6 +3552,7 @@ Core::LinAlg::Matrix<10, 1> Mat::InelasticDefgradTransvIsotropElastViscoplast::l
           if (parameter()->bool_analyze_timint()) ++timint_analysis_utils.eval_num_of_alpha_neq_1;
         }
       }  // otherwise it is the default value alpha = 1
+
       if (err_status == Mat::ViscoplastErrorType::NoErrors)
       {
         // update solution vector
@@ -3556,6 +3567,12 @@ Core::LinAlg::Matrix<10, 1> Mat::InelasticDefgradTransvIsotropElastViscoplast::l
           timint_analysis_utils.update_total();
           timint_analysis_utils.write_to_csv();
         }
+
+        // try to manage the evaluation error if possible (important especially for failed line
+        // search parameter computations)
+        err_action = manage_evaluation_error(err_status, substep_params, sol, curr_CM);
+        if (err_action == Mat::ViscoplastErrorActions::ReturnSolWithErrors) return sol;
+        if (err_action == Mat::ViscoplastErrorActions::NextIter) continue;
 
         // output error and then throw (in order to display the error on
         // the right processor)
@@ -3800,16 +3817,6 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::adapt_predictor_local_newton_
 
   // declare error status and set to no errors
   Mat::ViscoplastErrorType err_status{ViscoplastErrorType::NoErrors};
-
-  if (parameter()->bool_use_last_pred_adapt_fact())
-  {
-    pred_interp_factors_.current_xi_[gp_] = pred_interp_factors_.last_xi_[gp_];
-  }
-  else
-  {
-    pred_interp_factors_.current_xi_[gp_] = pred_interp_factors_.xi_user_;
-  }
-
 
   // compute $\boldsymbol{F}_{n+1} \boldsymbol{F}^{\text{p}^{-1}}}_n$
   Core::LinAlg::Matrix<3, 3> Fnp_iFin{true};
@@ -4141,7 +4148,19 @@ double Mat::InelasticDefgradTransvIsotropElastViscoplast::get_line_search_parame
   double alpha_u = 1.0;
 
   // adapt the maximum step size to eventual negative plastic strains
-  if (next_sol(9) < 0.0) alpha_u = curr_sol(9) / std::abs(incr(9));
+  if (next_sol(9) < 0.0)
+  {
+    // check whether the current plastic strain is 0.0 and negative plastic strains are obtained ->
+    // this means, that any line search step size will fail. Hence, we directly return with an
+    // error.
+    if (curr_sol(9) == 0.0)
+    {
+      err_status = Mat::ViscoplastErrorType::FailedDetermLineSearchParam;
+      return -1;
+    }
+
+    alpha_u = curr_sol(9) / std::abs(incr(9));
+  }
 
 #ifdef DEBUGVPLAST_TIMINT
   if (debug_output_ele_gp(debug_ele_gid_vec, debug_gp_vec, ele_gid_, gp_))
