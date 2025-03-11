@@ -13,7 +13,7 @@
 #include "4C_comm_pack_buffer.hpp"
 #include "4C_comm_pack_helpers.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
-#include "4C_linalg_utils_densematrix_exp_log.hpp"
+#include "4C_linalg_utils_densematrix_funct.hpp"
 #include "4C_linalg_utils_tensor_interpolation.hpp"
 #include "4C_mat_elast_couptransverselyisotropic.hpp"
 #include "4C_mat_inelastic_defgrad_factors_service.hpp"

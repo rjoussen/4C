@@ -15,7 +15,7 @@
 #include "4C_linalg_fixedsizematrix_tensor_products.hpp"
 #include "4C_linalg_fixedsizematrix_voigt_notation.hpp"
 #include "4C_linalg_four_tensor_generators.hpp"
-#include "4C_linalg_utils_densematrix_exp_log.hpp"
+#include "4C_linalg_utils_densematrix_funct.hpp"
 #include "4C_linalg_utils_tensor_interpolation.hpp"
 #include "4C_mat_elast_couptransverselyisotropic.hpp"
 #include "4C_mat_elasthyper_service.hpp"
@@ -2035,10 +2035,11 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_state_quantities(
   if (parameter()->timint_type() == Mat::ViscoplastTimIntType::Standard)
   {
     temp3x3.update(-dt, state_quantities.curr_lpM_, 0.0);
-    int exp_err_status = 0;
+    Core::LinAlg::MatrixFunctErrorType exp_err_status =
+        Core::LinAlg::MatrixFunctErrorType::NoErrors;
     state_quantities.curr_EpM_ =
         Core::LinAlg::matrix_exp(temp3x3, exp_err_status, parameter()->mat_exp_calc_method());
-    if (exp_err_status == 1)
+    if (exp_err_status != Core::LinAlg::MatrixFunctErrorType::NoErrors)
     {
       err_status = Mat::ViscoplastErrorType::FailedExpEval;
       return state_quantities;
@@ -2420,10 +2421,11 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_state_quantity_deriv
     // compute derivative of exponential ...
 
     // ... w.r.t. its argument
-    int exp_err_status = 0;
+    Core::LinAlg::MatrixFunctErrorType exp_err_status =
+        Core::LinAlg::MatrixFunctErrorType::NoErrors;
     Core::LinAlg::Matrix<9, 9> expderivV = Core::LinAlg::matrix_3x3_exp_1st_deriv(
         min_dt_lpM, exp_err_status, parameter()->mat_exp_deriv_calc_method());
-    if (exp_err_status)
+    if (exp_err_status != Core::LinAlg::MatrixFunctErrorType::NoErrors)
     {
       err_status = Mat::ViscoplastErrorType::FailedExpEval;
       return state_quantity_derivatives;
@@ -3117,10 +3119,11 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::calculate_local_newton_loop_r
     last_FinM.invert(last_iFinM);
     Core::LinAlg::Matrix<3, 3> T(true);
     T.multiply_nn(1.0, last_FinM, iFinM, 0.0);
-    int log_err_status = 0;
+    Core::LinAlg::MatrixFunctErrorType log_err_status =
+        Core::LinAlg::MatrixFunctErrorType::NoErrors;
     Core::LinAlg::Matrix<3, 3> logT =
         Core::LinAlg::matrix_log(T, log_err_status, parameter()->mat_log_calc_method());
-    if (log_err_status == 1)
+    if (log_err_status != Core::LinAlg::MatrixFunctErrorType::NoErrors)
     {
       err_status = Mat::ViscoplastErrorType::FailedLogEval;
       return Core::LinAlg::Matrix<10, 1>{true};
@@ -3232,10 +3235,11 @@ Core::LinAlg::Matrix<10, 10> Mat::InelasticDefgradTransvIsotropElastViscoplast::
     last_FinM.invert(last_iFinM);
     Core::LinAlg::Matrix<3, 3> T(true);
     T.multiply_nn(1.0, last_FinM, iFinM, 0.0);
-    int log_err_status = 0;
+    Core::LinAlg::MatrixFunctErrorType log_err_status =
+        Core::LinAlg::MatrixFunctErrorType::NoErrors;
     Core::LinAlg::Matrix<9, 9> dlogTdT = Core::LinAlg::matrix_3x3_log_1st_deriv(
         T, log_err_status, parameter()->mat_log_deriv_calc_method());
-    if (log_err_status == 1)
+    if (log_err_status != Core::LinAlg::MatrixFunctErrorType::NoErrors)
     {
       err_status = Mat::ViscoplastErrorType::FailedLogEval;
       return Core::LinAlg::Matrix<10, 10>{true};
@@ -3599,6 +3603,8 @@ Core::LinAlg::Matrix<10, 1> Mat::InelasticDefgradTransvIsotropElastViscoplast::l
   return sol;
 }
 
+/*--------------------------------------------------------------------*
+ *--------------------------------------------------------------------*/
 void Mat::InelasticDefgradTransvIsotropElastViscoplast::ConstMatTensors::set_material_const_tensors(
     const Core::LinAlg::Matrix<3, 1>& m)
 {
@@ -3630,6 +3636,8 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::ConstMatTensors::set_mat
   id_plus_mm_.update(1.0, const_non_mat_tensors.id3x3_, 1.0, mm_, 0.0);
 }
 
+/*--------------------------------------------------------------------*
+ *--------------------------------------------------------------------*/
 bool Mat::InelasticDefgradTransvIsotropElastViscoplast::check_predictor(
     const Core::LinAlg::Matrix<3, 3>& CM, const Core::LinAlg::Matrix<3, 3>& iFinM_pred,
     const double plastic_strain_pred, Mat::ViscoplastErrorType& err_status)
@@ -3643,6 +3651,8 @@ bool Mat::InelasticDefgradTransvIsotropElastViscoplast::check_predictor(
   return (state_quantities_.curr_equiv_plastic_strain_rate_ < 1.0e-15);
 }
 
+/*--------------------------------------------------------------------*
+ *--------------------------------------------------------------------*/
 bool Mat::InelasticDefgradTransvIsotropElastViscoplast::prepare_new_substep(
     SubstepParams& substep_params, Core::LinAlg::Matrix<10, 1>& sol,
     Core::LinAlg::Matrix<3, 3>& curr_CM)
@@ -3694,6 +3704,8 @@ bool Mat::InelasticDefgradTransvIsotropElastViscoplast::prepare_new_substep(
   return true;  // no error
 }
 
+/*--------------------------------------------------------------------*
+ *--------------------------------------------------------------------*/
 void Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_additional_cmat_perturb_based(
     const Core::LinAlg::Matrix<3, 3>& FredM, Core::LinAlg::Matrix<6, 6>& cmatadd,
     const Core::LinAlg::Matrix<3, 3>& iFin_other, const Core::LinAlg::Matrix<6, 9>& dSdiFinj)
@@ -3792,6 +3804,8 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_additional_cmat
   update_hist_var_ = true;
 }
 
+/*--------------------------------------------------------------------*
+ *--------------------------------------------------------------------*/
 Core::LinAlg::Matrix<10, 1>
 Mat::InelasticDefgradTransvIsotropElastViscoplast::adapt_predictor_local_newton_loop(
     const Core::LinAlg::Matrix<10, 1>& original_pred, const Core::LinAlg::Matrix<3, 3>& FM,
@@ -4113,6 +4127,8 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::adapt_predictor_local_newton_
   return pred_interp_factors_.pred_;
 }
 
+/*--------------------------------------------------------------------*
+ *--------------------------------------------------------------------*/
 double Mat::InelasticDefgradTransvIsotropElastViscoplast::get_line_search_parameter(
     const Core::LinAlg::Matrix<10, 1>& curr_sol, const Core::LinAlg::Matrix<3, 3>& CM,
     const Core::LinAlg::Matrix<10, 1>& curr_res, const double tolLNL,
@@ -4322,6 +4338,8 @@ double Mat::InelasticDefgradTransvIsotropElastViscoplast::get_line_search_parame
   }
 }
 
+/*--------------------------------------------------------------------*
+ *--------------------------------------------------------------------*/
 double Mat::InelasticDefgradTransvIsotropElastViscoplast::integrate_plastic_strain(
     const double equiv_stress, const double last_plastic_strain, const double dt,
     Mat::ViscoplastErrorType& err_status)
@@ -4422,6 +4440,8 @@ double Mat::InelasticDefgradTransvIsotropElastViscoplast::integrate_plastic_stra
   }
 }
 
+/*--------------------------------------------------------------------*
+ *--------------------------------------------------------------------*/
 Mat::ViscoplastErrorActions
 Mat::InelasticDefgradTransvIsotropElastViscoplast::manage_evaluation_error(
     const Mat::ViscoplastErrorType& err_status,
@@ -4503,6 +4523,8 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::manage_evaluation_error(
   FOUR_C_THROW("See above");
 }
 
+/*--------------------------------------------------------------------*
+ *--------------------------------------------------------------------*/
 std::string Mat::InelasticDefgradTransvIsotropElastViscoplast::debug_get_error_info(
     const std::string& base_error_string)
 {
@@ -4595,6 +4617,8 @@ std::string Mat::InelasticDefgradTransvIsotropElastViscoplast::debug_get_error_i
   return extended_error_string;
 }
 
+/*--------------------------------------------------------------------*
+ *--------------------------------------------------------------------*/
 void Mat::InelasticDefgradTransvIsotropElastViscoplast::debug_set_last_quantities(const int gp,
     const Core::LinAlg::Matrix<3, 3>& last_plastic_defgrad_inverse,
     const double last_plastic_strain, const Core::LinAlg::Matrix<3, 3>& last_defgrad,
@@ -4619,6 +4643,8 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::debug_set_last_quantitie
       1.0, time_step_quantities_.last_plastic_defgrd_inverse_[gp], inv_mat_stretch, 0.0);
 }
 
+/*--------------------------------------------------------------------*
+ *--------------------------------------------------------------------*/
 void Mat::InelasticDefgradTransvIsotropElastViscoplast::register_output_data_names(
     std::unordered_map<std::string, int>& names_and_size) const
 {
@@ -4630,6 +4656,8 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::register_output_data_nam
   viscoplastic_law_->register_output_data_names(names_and_size);
 }
 
+/*--------------------------------------------------------------------*
+ *--------------------------------------------------------------------*/
 bool Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_output_data(
     const std::string& name, Core::LinAlg::SerialDenseMatrix& data) const
 {
@@ -4699,6 +4727,8 @@ bool Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_output_data(
   return viscoplastic_law_->evaluate_output_data(name, data);
 }
 
+/*--------------------------------------------------------------------*
+ *--------------------------------------------------------------------*/
 void Mat::PAR::InelasticDefgradTransvIsotropElastViscoplast::debug_set_linearization_type(
     const std::string linearization_type)
 {

@@ -521,6 +521,11 @@ namespace Core::FE
     line_8point,          ///< degree of precision: 15 (open)
     line_9point,          ///< degree of precision: 17 (open)
     line_10point,         ///< degree of precision: 19 (open)
+    line_11point,         ///< degree of precision: 21 (open)
+    line_12point,         ///< degree of precision: 23 (open)
+    line_13point,         ///< degree of precision: 25 (open)
+    line_14point,         ///< degree of precision: 27 (open)
+    line_15point,         ///< degree of precision: 29 (open)
     line_16point,         ///< degree of precision: 31 (open)
     line_20point,         ///< degree of precision: 39 (open)
     line_32point,         ///< degree of precision: 63 (open)
@@ -566,6 +571,16 @@ namespace Core::FE
         return GaussRule1D::line_9point;
       case 10:
         return GaussRule1D::line_10point;
+      case 11:
+        return GaussRule1D::line_11point;
+      case 12:
+        return GaussRule1D::line_12point;
+      case 13:
+        return GaussRule1D::line_13point;
+      case 14:
+        return GaussRule1D::line_14point;
+      case 15:
+        return GaussRule1D::line_15point;
       case 16:
         return GaussRule1D::line_16point;
       case 20:
