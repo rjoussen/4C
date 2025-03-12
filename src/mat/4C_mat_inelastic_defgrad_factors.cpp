@@ -3121,8 +3121,26 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::calculate_local_newton_loop_r
     T.multiply_nn(1.0, last_FinM, iFinM, 0.0);
     Core::LinAlg::MatrixFunctErrorType log_err_status =
         Core::LinAlg::MatrixFunctErrorType::NoErrors;
-    Core::LinAlg::Matrix<3, 3> logT =
-        Core::LinAlg::matrix_log(T, log_err_status, parameter()->mat_log_calc_method());
+    Core::LinAlg::Matrix<3, 3> logT{true};
+    if (parameter()->mat_log_calc_method() ==
+        Core::LinAlg::MatrixLogCalcMethod::InvScalSquare)  // evaluation using the inverse scaling
+                                                           // and squaring method?...
+    {
+      // pointer to Pade order
+      unsigned int* pade_order_ptr = (&matrix_exp_log_utils_.pade_order_);
+
+      // when computing the matrix logarithm with the inverse scaling
+      // and squaring, we also save the resulting Pade
+      // order via the dedicated pointer. This will be helpful when we
+      // compute the derivative - we want consistent Pade orders for the
+      // evaluations of functions and their derivatives.
+      logT = Core::LinAlg::matrix_log(
+          T, log_err_status, parameter()->mat_log_calc_method(), pade_order_ptr);
+    }
+    else  // evaluation using other provided methods?...
+    {
+      logT = Core::LinAlg::matrix_log(T, log_err_status, parameter()->mat_log_calc_method());
+    }
     if (log_err_status != Core::LinAlg::MatrixFunctErrorType::NoErrors)
     {
       err_status = Mat::ViscoplastErrorType::FailedLogEval;
@@ -3237,8 +3255,32 @@ Core::LinAlg::Matrix<10, 10> Mat::InelasticDefgradTransvIsotropElastViscoplast::
     T.multiply_nn(1.0, last_FinM, iFinM, 0.0);
     Core::LinAlg::MatrixFunctErrorType log_err_status =
         Core::LinAlg::MatrixFunctErrorType::NoErrors;
-    Core::LinAlg::Matrix<9, 9> dlogTdT = Core::LinAlg::matrix_3x3_log_1st_deriv(
-        T, log_err_status, parameter()->mat_log_deriv_calc_method());
+    Core::LinAlg::Matrix<9, 9> dlogTdT{true};
+    if ((parameter()->mat_log_deriv_calc_method() ==
+            Core::LinAlg::GenMatrixLogFirstDerivCalcMethod::
+                PadePartFract))  // evaluation using the Pade partial fraction expansion?...
+    {
+      // check whether the logarithm was evaluated with the inverse
+      // scaling and squaring method, for which we have also determined
+      // a suitable Pade order -> if not so, then we throw error, since
+      // this is the only implemented case for now!
+      FOUR_C_ASSERT_ALWAYS(
+          parameter()->mat_log_calc_method() == Core::LinAlg::MatrixLogCalcMethod::InvScalSquare,
+          "Combination of logarithm evaluation methods not implemented yet!");
+
+      // pointer to Pade order (we want to use the same Pade order that
+      // we used when we calculated the logarithm in the first place)
+      const unsigned int* pade_order_ptr = &matrix_exp_log_utils_.pade_order_;
+
+      dlogTdT = Core::LinAlg::matrix_3x3_log_1st_deriv(
+          T, log_err_status, parameter()->mat_log_deriv_calc_method(), pade_order_ptr);
+    }
+    else  // evaluation using other provided methods?...
+    {
+      dlogTdT = Core::LinAlg::matrix_3x3_log_1st_deriv(
+          T, log_err_status, parameter()->mat_log_deriv_calc_method());
+    }
+
     if (log_err_status != Core::LinAlg::MatrixFunctErrorType::NoErrors)
     {
       err_status = Mat::ViscoplastErrorType::FailedLogEval;

@@ -21,11 +21,10 @@
 
 #include <boost/fusion/view/joint_view/detail/deref_impl.hpp>
 
-#include <cstddef>
 #include <iterator>
 #include <map>
-#include <optional>
 #include <string>
+
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -436,6 +435,13 @@ Core::LinAlg::Matrix<dim, dim> Core::LinAlg::matrix_log(const Core::LinAlg::Matr
     Core::LinAlg::Matrix<dim, dim> X{true};
     X.update(1.0, input, -1.0, id, 0.0);
 
+    // return directly in the case that \f$ X \f$ has norm 0
+    if (X.norm2() == 0.0)
+    {
+      err_status = MatrixFunctErrorType::NoErrors;
+      return Core::LinAlg::Matrix<dim, dim>{true};
+    }
+
     // initialize m-point Gauss integration points and weights
     FE::IntPointsAndWeights<1> int_pts_wts{
         FE::num_gauss_points_to_gauss_rule<Core::FE::CellType::line2>(*pade_order)};
@@ -574,9 +580,9 @@ Core::LinAlg::Matrix<dim, dim> Core::LinAlg::matrix_log(const Core::LinAlg::Matr
 
     // determine the matrix logarithm of the k-th square root using the Pade approximation of order
     // m
-    unsigned int* m_ptr = &m;
+    *pade_order = m;
     Core::LinAlg::Matrix<dim, dim> k_sqrt_log = matrix_log(
-        A, err_status, calc_method = Core::LinAlg::MatrixLogCalcMethod::PadePartFract, m_ptr);
+        A, err_status, calc_method = Core::LinAlg::MatrixLogCalcMethod::PadePartFract, pade_order);
 
     // return scaled matrix logarithm
     if (err_status == MatrixFunctErrorType::NoErrors)
@@ -1143,6 +1149,15 @@ Core::LinAlg::Matrix<9, 9> Core::LinAlg::matrix_3x3_log_1st_deriv(
     // matrix
     Core::LinAlg::Matrix<3, 3> X{true};
     X.update(1.0, input, -1.0, id_3x3, 0.0);
+
+    // return directly in the case that \f$ X \f$ has norm 0
+    if (X.norm2() < 1.0e-8)
+    {
+      err_status = MatrixFunctErrorType::NoErrors;
+      Core::LinAlg::Matrix<9, 9> id9x9{true};
+      Tensor::add_non_symmetric_product(1.0, id_3x3, id_3x3, id9x9);
+      return id9x9;
+    }
 
     // initialize m-point Gauss integration points and weights
     FE::IntPointsAndWeights<1> int_pts_wts{

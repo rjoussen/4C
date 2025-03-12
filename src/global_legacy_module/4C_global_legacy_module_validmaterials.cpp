@@ -13,6 +13,7 @@
 #include "4C_io_file_reader.hpp"
 #include "4C_io_input_spec_builders.hpp"
 #include "4C_legacy_enum_definitions_materials.hpp"
+#include "4C_linalg_utils_densematrix_funct.hpp"
 #include "4C_mat_electrode.hpp"
 
 #include <cmath>
@@ -2791,22 +2792,25 @@ std::unordered_map<Core::Materials::MaterialType, Core::IO::InputSpec> Global::v
                         "utilized material linearization: analytic | perturb_based (based on "
                         "perturbations of the current state)",
                     .default_value = "analytic"}),
-                    parameter<std::string>("MATRIX_EXP_CALC_METHOD",
-                        {.description = "chosen computation method for matrix exponential (default | taylor_series "
-                                        "| spectral_decomp )",
-                            .default_value = "default"}),
-                    parameter<std::string>("MATRIX_LOG_CALC_METHOD",
-                        {.description = "chosen computation method for matrix logarithm (default | taylor_series "
-                                        "| gregory_series | spectral_decomp )",
-                            .default_value = "gregory_series"}),
-                    parameter<std::string>("MATRIX_EXP_DERIV_CALC_METHOD",
-                        {.description = "chosen computation method for the first derivative of the matrix "
-                                        "exponential (default | taylor_series)",
-                            .default_value = "default"}),
-                    parameter<std::string>("MATRIX_LOG_DERIV_CALC_METHOD",
-                        {.description = "chosen computation method for the first derivative of the matrix "
-                                        "logarithm (default | taylor_series | gregory_series)",
-                            .default_value = "gregory_series"}),
+            parameter<std::string>("MATRIX_EXP_CALC_METHOD",
+                {.description =
+                        "chosen computation method for matrix exponential (default | taylor_series "
+                        "| spectral_decomp )",
+                    .default_value = "default"}),
+            parameter<std::string>("MATRIX_LOG_CALC_METHOD",
+                {.description = "chosen computation method for matrix logarithm (default_series | "
+                                "taylor_series "
+                                "| gregory_series | spectral_decomp | inv_scal_square )",
+                    .default_value = "inv_scal_square"}),
+            parameter<std::string>("MATRIX_EXP_DERIV_CALC_METHOD",
+                {.description = "chosen computation method for the first derivative of the matrix "
+                                "exponential (default | taylor_series)",
+                    .default_value = "default"}),
+            parameter<std::string>("MATRIX_LOG_DERIV_CALC_METHOD",
+                {.description = "chosen computation method for the first derivative of the matrix "
+                                "logarithm (default_series | taylor_series | gregory_series | "
+                                "pade_part_fract)",
+                    .default_value = "pade_part_fract"}),
         },
         {.description = "Versatile transversely isotropic (or isotropic) viscoplasticity model for "
                         "finite deformations with isotropic hardening, using user-defined "

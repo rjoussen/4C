@@ -1636,6 +1636,16 @@ namespace Mat
     //! fiber direction (director vector)
     Core::LinAlg::Matrix<3, 1> m_;
 
+    //! matrix exponential and logarithm utilities
+    struct MatrixExpLogUtils
+    {
+      //! Pade approximation order (to be used consistently: the
+      //! derivative of the matrix functions should use the same Pade
+      //! order as the evaluation of the matrix functions)
+      unsigned int pade_order_ = 0;
+    };
+    MatrixExpLogUtils matrix_exp_log_utils_;
+
     //! boolean to control whether the history variables should be updated during evaluation
     bool update_hist_var_ = true;
 

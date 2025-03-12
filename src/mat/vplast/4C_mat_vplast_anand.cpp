@@ -530,12 +530,11 @@ Core::LinAlg::Matrix<2, 1> Mat::Viscoplastic::Anand::compute_derivatives_of_flow
 std::string Mat::Viscoplastic::Anand::debug_get_error_info(const int gp)
 {
   // auxiliaries
-  std::ostringstream temp_ostream;
-  temp_ostream.str("");
+  std::ostringstream temp_ostream{};
   // set output format for the numbers -> we can set it here for the
   // entire error message
-  std::cout << std::fixed << std::setprecision(16) << std::endl;
-  temp_ostream << std::fixed << std::setprecision(16) << std::endl;
+  std::cout << std::fixed << std::setprecision(16);
+  temp_ostream << std::fixed << std::setprecision(16);
 
   // declare error message for output
   std::string extended_error_message{""};

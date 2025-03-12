@@ -13,6 +13,7 @@
 #include "4C_legacy_enum_definitions_materials.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_linalg_fixedsizematrix_voigt_notation.hpp"
+#include "4C_linalg_utils_densematrix_funct.hpp"
 #include "4C_mat_elast_couptransverselyisotropic.hpp"
 #include "4C_mat_electrode.hpp"
 #include "4C_mat_inelastic_defgrad_factors.hpp"
@@ -30,6 +31,7 @@
 #include <cmath>
 #include <map>
 #include <memory>
+#include <string>
 #include <tuple>
 
 
@@ -324,9 +326,9 @@ namespace
       inelastic_defgrad_transv_isotrop_vplast_refJC_data.add(
           "MATRIX_EXP_DERIV_CALC_METHOD", std::string("default"));
       inelastic_defgrad_transv_isotrop_vplast_refJC_data.add(
-          "MATRIX_LOG_CALC_METHOD", std::string("default"));
+          "MATRIX_LOG_CALC_METHOD", std::string("inv_scal_square"));
       inelastic_defgrad_transv_isotrop_vplast_refJC_data.add(
-          "MATRIX_LOG_DERIV_CALC_METHOD", std::string("default"));
+          "MATRIX_LOG_DERIV_CALC_METHOD", std::string("pade_part_fract"));
 
       // get pointer to parameter class
       params_transv_isotrop_vplast_refJC_ =
@@ -364,9 +366,9 @@ namespace
       inelastic_defgrad_isotrop_vplast_refJC_data.add(
           "MATRIX_EXP_DERIV_CALC_METHOD", std::string("default"));
       inelastic_defgrad_isotrop_vplast_refJC_data.add(
-          "MATRIX_LOG_CALC_METHOD", std::string("gregory_series"));
+          "MATRIX_LOG_CALC_METHOD", std::string("inv_scal_square"));
       inelastic_defgrad_isotrop_vplast_refJC_data.add(
-          "MATRIX_LOG_DERIV_CALC_METHOD", std::string("gregory_series"));
+          "MATRIX_LOG_DERIV_CALC_METHOD", std::string("pade_part_fract"));
 
       params_isotrop_vplast_refJC_ =
           std::dynamic_pointer_cast<Mat::PAR::InelasticDefgradTransvIsotropElastViscoplast>(
