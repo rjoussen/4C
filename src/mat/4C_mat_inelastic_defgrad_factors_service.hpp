@@ -17,7 +17,10 @@
 #include "4C_io_runtime_csv_writer.hpp"
 #include "4C_utils_exceptions.hpp"
 
+#include <magic_enum/magic_enum.hpp>
+
 #include <map>
+#include <ostream>
 #include <string>
 #include <vector>
 
@@ -61,14 +64,28 @@ namespace Mat
       FailedExpEval,  // failed evaluation of the matrix exponential or its derivative
     };
 
+    /// make sure ErrorType is stream-insertable
+    inline std::ostream& operator<<(std::ostream& stream, const ErrorType& error_type)
+    {
+      stream << magic_enum::enum_name(error_type);
+      return stream;
+    }
+
     /// enum class for error management actions in InelasticDefgradTransvIsotropElastViscoplast
-    enum class ErrorActions
+    enum class ErrorAction
     {
       Continue,             // continue without any errors (NoErrors)
       ReturnSolWithErrors,  // return the current solution with errors (if the maximum substepping
                             // settings have been reached)
       NextIter,             // go to next iteration after performing certain reset steps
     };
+
+    /// make sure ErrorAction is stream-insertable
+    inline std::ostream& operator<<(std::ostream& stream, const ErrorAction& error_action)
+    {
+      stream << magic_enum::enum_name(error_action);
+      return stream;
+    }
 
     /// to_string: error types to error messages in InelasticDefgradTransvIsotropElastViscoplast
     inline std::string to_string(ErrorType err_type)
@@ -133,6 +150,12 @@ namespace Mat
       transv_isotrop,  // isotropic material behavior
     };
 
+    /// make sure MatBehavior is stream-insertable
+    inline std::ostream& operator<<(std::ostream& stream, const MatBehavior& mat_behavior)
+    {
+      stream << magic_enum::enum_name(mat_behavior);
+      return stream;
+    }
 
     /// enum class for time integration types (integration of internal
     /// variables in the Local Newton Loop of InelasticDefgradTransvIsotropElastViscoplast)
@@ -143,6 +166,13 @@ namespace Mat
                     // evolution of the plastic deformation gradient
     };
 
+    /// make sure TimIntType is stream-insertable
+    inline std::ostream& operator<<(std::ostream& stream, const TimIntType& timint_type)
+    {
+      stream << magic_enum::enum_name(timint_type);
+      return stream;
+    }
+
     /// enum class for material linearization types (linearization of
     /// InelasticDefgradTransvIsotropElastViscoplast)
     enum class LinearizationType
@@ -150,6 +180,14 @@ namespace Mat
       analytic,  // analytical linearization involving the solution of a linear system of equations,
       perturb_based,  // linearization based on perturbing the current state
     };
+
+    /// make sure LinearizationType is stream-insertable
+    inline std::ostream& operator<<(
+        std::ostream& stream, const LinearizationType& linearization_type)
+    {
+      stream << magic_enum::enum_name(linearization_type);
+      return stream;
+    }
 
     // names of the various error types
     inline std::map<ErrorType, std::string> ErrorNames = {
@@ -412,6 +450,14 @@ namespace Mat
                               // has been evaluated
     };
 
+    /// make sure StateQuantityEvalType is stream-insertable
+    inline std::ostream& operator<<(
+        std::ostream& stream, const StateQuantityEvalType& state_quant_eval_type)
+    {
+      stream << magic_enum::enum_name(state_quant_eval_type);
+      return stream;
+    }
+
     /// enum class for evaluations of the state quantity derivatives in
     /// InelasticDefgradTransvIsotropElastViscoplast: what is the aim of
     /// the evaluation? (full evaluation, or only partial, e.g. only the
@@ -422,6 +468,14 @@ namespace Mat
       PlasticStrainRateDerivsOnly,  // return in evaluate_state_quantity_derivatives once the
                                     // derivatives of the plastic strain rate have been evaluated
     };
+
+    /// make sure StateQuantityDerivEvalType is stream-insertable
+    inline std::ostream& operator<<(
+        std::ostream& stream, const StateQuantityDerivEvalType& state_quant_deriv_eval_type)
+    {
+      stream << magic_enum::enum_name(state_quant_deriv_eval_type);
+      return stream;
+    }
 
     /// defines
     // flag for debug output (viscoplastic material) related to

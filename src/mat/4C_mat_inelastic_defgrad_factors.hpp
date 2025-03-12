@@ -1995,7 +1995,7 @@ namespace Mat
      * updated new substep length)
      * @return action to be performed subsequently in the LNL
      */
-    ErrorActions manage_evaluation_error(const ErrorType& err_status, SubstepParams& substep_params,
+    ErrorAction manage_evaluation_error(const ErrorType& err_status, SubstepParams& substep_params,
         Core::LinAlg::Matrix<10, 1>& sol, Core::LinAlg::Matrix<3, 3>& curr_CM);
 
     /*!

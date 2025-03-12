@@ -3361,7 +3361,7 @@ Core::LinAlg::Matrix<10, 1> Mat::InelasticDefgradTransvIsotropElastViscoplast::l
   double alpha = 1.0;
 
   // initialize error management action
-  ErrorActions err_action{ErrorActions::Continue};
+  ErrorAction err_action{ErrorAction::Continue};
 
   // substepping procedures
   while (substep_params.substep_counter <= substep_params.total_num_of_substeps)
@@ -3425,8 +3425,8 @@ Core::LinAlg::Matrix<10, 1> Mat::InelasticDefgradTransvIsotropElastViscoplast::l
 
       // error management
       err_action = manage_evaluation_error(err_status, substep_params, sol, curr_CM);
-      if (err_action == ErrorActions::ReturnSolWithErrors) return sol;
-      if (err_action == ErrorActions::NextIter) continue;
+      if (err_action == ErrorAction::ReturnSolWithErrors) return sol;
+      if (err_action == ErrorAction::NextIter) continue;
 
       // 2-norm of the residual
       residualNorm2 = residual.norm2();
@@ -3536,8 +3536,8 @@ Core::LinAlg::Matrix<10, 1> Mat::InelasticDefgradTransvIsotropElastViscoplast::l
           err_status);
       // error management
       err_action = manage_evaluation_error(err_status, substep_params, sol, curr_CM);
-      if (err_action == ErrorActions::ReturnSolWithErrors) return sol;
-      if (err_action == ErrorActions::NextIter) continue;
+      if (err_action == ErrorAction::ReturnSolWithErrors) return sol;
+      if (err_action == ErrorAction::NextIter) continue;
 
       // scale residual by -1.0, in order to use it for the solution of the loop equation
       residual.scale(-1.0);
@@ -3559,8 +3559,8 @@ Core::LinAlg::Matrix<10, 1> Mat::InelasticDefgradTransvIsotropElastViscoplast::l
         err_status = ErrorType::FailedSolLinSystLNL;
         // error management
         err_action = manage_evaluation_error(err_status, substep_params, sol, curr_CM);
-        if (err_action == ErrorActions::ReturnSolWithErrors) return sol;
-        if (err_action == ErrorActions::NextIter) continue;
+        if (err_action == ErrorAction::ReturnSolWithErrors) return sol;
+        if (err_action == ErrorAction::NextIter) continue;
       }
 
       // compute line search parameter
@@ -3595,8 +3595,8 @@ Core::LinAlg::Matrix<10, 1> Mat::InelasticDefgradTransvIsotropElastViscoplast::l
         // try to manage the evaluation error if possible (important especially for failed line
         // search parameter computations)
         err_action = manage_evaluation_error(err_status, substep_params, sol, curr_CM);
-        if (err_action == ErrorActions::ReturnSolWithErrors) return sol;
-        if (err_action == ErrorActions::NextIter) continue;
+        if (err_action == ErrorAction::ReturnSolWithErrors) return sol;
+        if (err_action == ErrorAction::NextIter) continue;
 
         // output error and then throw (in order to display the error on
         // the right processor)
@@ -4461,14 +4461,14 @@ double Mat::InelasticDefgradTransvIsotropElastViscoplast::integrate_plastic_stra
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-ErrorActions Mat::InelasticDefgradTransvIsotropElastViscoplast::manage_evaluation_error(
+ErrorAction Mat::InelasticDefgradTransvIsotropElastViscoplast::manage_evaluation_error(
     const ErrorType& err_status,
     Mat::InelasticDefgradTransvIsotropElastViscoplast::SubstepParams& substep_params,
     Core::LinAlg::Matrix<10, 1>& sol, Core::LinAlg::Matrix<3, 3>& curr_CM)
 {
   if (err_status == ErrorType::NoErrors)
   {
-    return ErrorActions::Continue;
+    return ErrorAction::Continue;
   }
 
 #ifdef DEBUGVPLAST_TIMINT
@@ -4494,9 +4494,9 @@ ErrorActions Mat::InelasticDefgradTransvIsotropElastViscoplast::manage_evaluatio
       if (parameter()->bool_analyze_timint())
         timint_analysis_utils.eval_num_of_substeps_ += substep_params.substep_counter;
 
-      return ErrorActions::ReturnSolWithErrors;  // return with error
+      return ErrorAction::ReturnSolWithErrors;  // return with error
     }
-    return ErrorActions::NextIter;
+    return ErrorAction::NextIter;
   }
 
   // ERROR MANAGEMENT STRATEGY 2: reset predictor of the solution
@@ -4526,7 +4526,7 @@ ErrorActions Mat::InelasticDefgradTransvIsotropElastViscoplast::manage_evaluatio
     if (parameter()->bool_analyze_timint()) ++timint_analysis_utils.eval_num_of_repredict_;
 
     // go to next iteration
-    return ErrorActions::NextIter;
+    return ErrorAction::NextIter;
   }
 
   // timint analysis: write to csv

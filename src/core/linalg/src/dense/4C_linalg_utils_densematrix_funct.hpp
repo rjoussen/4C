@@ -23,6 +23,8 @@ exponential and the logarithm, along with specific derivatives in namespace Core
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_linalg_utils_densematrix_eigen.hpp"
 
+#include <magic_enum/magic_enum.hpp>
+
 #include <cstddef>
 #include <optional>
 
@@ -41,6 +43,14 @@ namespace Core::LinAlg
                          // iterations is exceeded)
   };
 
+  /// make sure MatrixFunctErrorType is stream-insertable
+  inline std::ostream& operator<<(
+      std::ostream& stream, const MatrixFunctErrorType& matrix_funct_err_type)
+  {
+    stream << magic_enum::enum_name(matrix_funct_err_type);
+    return stream;
+  }
+
   /// enum class: computation method used for the calculation of the matrix square root
   enum class MatrixSqrtCalcMethod
   {
@@ -48,6 +58,14 @@ namespace Core::LinAlg
                              // in Higham, Functions of Matrices, Chapter 6: Matrix Square Root,
                              // (6.29)
   };
+
+  /// make sure MatrixSqrtCalcMethod is stream-insertable
+  inline std::ostream& operator<<(
+      std::ostream& stream, const MatrixSqrtCalcMethod& matrix_sqrt_calc_method)
+  {
+    stream << magic_enum::enum_name(matrix_sqrt_calc_method);
+    return stream;
+  }
 
   /*!
    * @brief Computes the matrix square root of a given real matrix with a specified computation
@@ -73,6 +91,14 @@ namespace Core::LinAlg
     taylor_series,    // computation using the Taylor series,
     spectral_decomp,  // computation using the spectral decomposition,
   };
+
+  /// make sure MatrixExpCalcMethod is stream-insertable
+  inline std::ostream& operator<<(
+      std::ostream& stream, const MatrixExpCalcMethod& matrix_exp_calc_method)
+  {
+    stream << magic_enum::enum_name(matrix_exp_calc_method);
+    return stream;
+  }
 
   /*!
    * @brief Computes the matrix exponential of a given real matrix, using the Taylor series or a
@@ -104,6 +130,14 @@ namespace Core::LinAlg
     pade_part_fract,  // Pade approximation using a partial fraction expansion, as presented in
                       // Higham: Functions of Matrices, Chapter 11: Matrix Logarithm, Eq. 11.18
   };
+
+  /// make sure MatrixLogCalcMethod is stream-insertable
+  inline std::ostream& operator<<(
+      std::ostream& stream, const MatrixLogCalcMethod& matrix_log_calc_method)
+  {
+    stream << magic_enum::enum_name(matrix_log_calc_method);
+    return stream;
+  }
 
   /*!
    * @brief Computes the (principal) matrix logarithm of a given real matrix, using either the
@@ -140,6 +174,14 @@ namespace Core::LinAlg
     taylor_series,   // computation using the Taylor series,
   };
 
+  /// make sure GenMatrixExpFirstDerivCalcMethod is stream-insertable
+  inline std::ostream& operator<<(std::ostream& stream,
+      const GenMatrixExpFirstDerivCalcMethod& gen_matrix_exp_1st_deriv_calc_method)
+  {
+    stream << magic_enum::enum_name(gen_matrix_exp_1st_deriv_calc_method);
+    return stream;
+  }
+
   /*!
    * @brief Computes the first derivative of the matrix exponential (general, not necessarily
    * symmetric 3x3 matrix) with respect to its argument
@@ -169,6 +211,14 @@ namespace Core::LinAlg
     pade_part_fract,  // Pade approximation using a partial fraction expansion, as presented in
                       // Higham: Functions of Matrices, Chapter 11: Matrix Logarithm, Eq. 11.18
   };
+
+  /// make sure GenMatrixLogFirstDerivCalcMethod is stream-insertable
+  inline std::ostream& operator<<(std::ostream& stream,
+      const GenMatrixLogFirstDerivCalcMethod& gen_matrix_log_1st_deriv_calc_method)
+  {
+    stream << magic_enum::enum_name(gen_matrix_log_1st_deriv_calc_method);
+    return stream;
+  }
 
   /*!
    * @brief Computes the derivative of the matrix logarithm (general, not necessarily symmetric
@@ -203,6 +253,14 @@ namespace Core::LinAlg
                       // Methods for Plasticity: Theory and Applications, Wiley & Sons,
                       // 2008, Section A.5
   };
+
+  /// make sure SymMatrixExpFirstDerivCalcMethod is stream-insertable
+  inline std::ostream& operator<<(std::ostream& stream,
+      const SymMatrixExpFirstDerivCalcMethod& sym_matrix_exp_1st_deriv_calc_method)
+  {
+    stream << magic_enum::enum_name(sym_matrix_exp_1st_deriv_calc_method);
+    return stream;
+  }
 
   /*!
    * @brief Computes the derivative of the matrix exponential (symmetric 3x3 matrix) with respect to
