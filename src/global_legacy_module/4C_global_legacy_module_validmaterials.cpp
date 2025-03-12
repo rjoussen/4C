@@ -15,6 +15,7 @@
 #include "4C_legacy_enum_definitions_materials.hpp"
 #include "4C_linalg_utils_densematrix_funct.hpp"
 #include "4C_mat_electrode.hpp"
+#include "4C_mat_inelastic_defgrad_factors_service.hpp"
 
 #include <cmath>
 #include <filesystem>
@@ -2719,17 +2720,15 @@ std::unordered_map<Core::Materials::MaterialType, Core::IO::InputSpec> Global::v
                                                 "following "
                                                 "the notation in Dafalias 1989, International "
                                                 "Journal of Plasticity, Vol. 5"}),
-            parameter<std::string>("ANISOTROPY",
-                {.description =
-                        "Anisotropy type: transversely isotropic (transvisotrop; "
-                        "transverseisotropic; "
-                        "transverselyisotropic) | isotropic (isotrop; isotropic; Default)"}),
-            parameter<std::string>("TIME_INTEGRATION_HIST_VARS",
+            parameter<Mat::ViscoplastMatBehavior>(
+                "MAT_BEHAVIOR", {.description = "Material behavior / anisotropy type: transversely "
+                                                "isotropic | isotropic (default)"}),
+            parameter<Mat::ViscoplastTimIntType>("TIME_INTEGRATION_HIST_VARS",
                 {.description =
                         "time integration of internal variables: standard | log (logarithmic "
                         "transformation of the "
                         "evolution equation for the plastic deformation gradient)",
-                    .default_value = "log"}),
+                    .default_value = Mat::ViscoplastTimIntType::logarithmic}),
             parameter<bool>("USE_PRED_ADAPT",
                 {.description = "boolean: use predictor adaptation before and in the "
                                 "Local Newton Loop? (true: yes, false: "
@@ -2787,30 +2786,34 @@ std::unordered_map<Core::Materials::MaterialType, Core::IO::InputSpec> Global::v
                                 "number of iterations, number of substeps, ...) to a csv "
                                 "file? If true: yes, false: no",
                     .default_value = false}),
-            parameter<std::string>("LINEARIZATION",
+            parameter<Mat::ViscoplastLinearizationType>("LINEARIZATION",
                 {.description =
                         "utilized material linearization: analytic | perturb_based (based on "
                         "perturbations of the current state)",
-                    .default_value = "analytic"}),
-            parameter<std::string>("MATRIX_EXP_CALC_METHOD",
+                    .default_value = Mat::ViscoplastLinearizationType::analytic}),
+            parameter<Core::LinAlg::MatrixExpCalcMethod>("MATRIX_EXP_CALC_METHOD",
                 {.description =
                         "chosen computation method for matrix exponential (default | taylor_series "
                         "| spectral_decomp )",
-                    .default_value = "default"}),
-            parameter<std::string>("MATRIX_LOG_CALC_METHOD",
+                    .default_value = Core::LinAlg::MatrixExpCalcMethod::default_method}),
+            parameter<Core::LinAlg::MatrixLogCalcMethod>("MATRIX_LOG_CALC_METHOD",
                 {.description = "chosen computation method for matrix logarithm (default_series | "
                                 "taylor_series "
                                 "| gregory_series | spectral_decomp | inv_scal_square )",
-                    .default_value = "inv_scal_square"}),
-            parameter<std::string>("MATRIX_EXP_DERIV_CALC_METHOD",
+                    .default_value = Core::LinAlg::MatrixLogCalcMethod::inv_scal_square}),
+            parameter<Core::LinAlg::GenMatrixExpFirstDerivCalcMethod>(
+                "MATRIX_EXP_DERIV_CALC_METHOD",
                 {.description = "chosen computation method for the first derivative of the matrix "
                                 "exponential (default | taylor_series)",
-                    .default_value = "default"}),
-            parameter<std::string>("MATRIX_LOG_DERIV_CALC_METHOD",
+                    .default_value =
+                        Core::LinAlg::GenMatrixExpFirstDerivCalcMethod::default_method}),
+            parameter<Core::LinAlg::GenMatrixLogFirstDerivCalcMethod>(
+                "MATRIX_LOG_DERIV_CALC_METHOD",
                 {.description = "chosen computation method for the first derivative of the matrix "
                                 "logarithm (default_series | taylor_series | gregory_series | "
                                 "pade_part_fract)",
-                    .default_value = "pade_part_fract"}),
+                    .default_value =
+                        Core::LinAlg::GenMatrixLogFirstDerivCalcMethod::pade_part_fract}),
         },
         {.description = "Versatile transversely isotropic (or isotropic) viscoplasticity model for "
                         "finite deformations with isotropic hardening, using user-defined "

@@ -40,124 +40,6 @@ namespace
 
 }  // namespace
 
-std::string Core::LinAlg::matrix_funct_err_to_string(Core::LinAlg::MatrixFunctErrorType err_type)
-{
-  if (err_type == MatrixFunctErrorType::NoErrors)
-    return "NoErrors";
-  else if (err_type == MatrixFunctErrorType::UnsuitableMethod)
-    return "UnsuitableMethod";
-  else if (err_type == MatrixFunctErrorType::FailedComputation)
-    return "FailedComputation";
-  else
-  {
-    FOUR_C_THROW("You should not be here!");
-  }
-}
-
-
-/*--------------------------------------------------------------------*
- *--------------------------------------------------------------------*/
-Core::LinAlg::MatrixSqrtCalcMethod Core::LinAlg::matrix_sqrt_calc_string_to_method(
-    std::string matrix_sqrt_calc_string)
-{
-  if (matrix_sqrt_calc_string == "db_iter_scaled_product_form")
-    return Core::LinAlg::MatrixSqrtCalcMethod::DBIterScaledProductForm;
-  else
-    FOUR_C_THROW("Calculation method for matrix square root %s not provided!",
-        matrix_sqrt_calc_string.c_str());
-}
-
-/*--------------------------------------------------------------------*
- *--------------------------------------------------------------------*/
-Core::LinAlg::MatrixExpCalcMethod Core::LinAlg::matrix_exp_calc_string_to_method(
-    std::string matrix_exp_calc_string)
-{
-  if (matrix_exp_calc_string == "default")
-    return Core::LinAlg::MatrixExpCalcMethod::Default;
-  else if (matrix_exp_calc_string == "taylor_series")
-    return Core::LinAlg::MatrixExpCalcMethod::TaylorSeries;
-  else if (matrix_exp_calc_string == "spectral_decomp")
-    return Core::LinAlg::MatrixExpCalcMethod::SpectralDecomp;
-  else
-    FOUR_C_THROW("Calculation method for matrix exponential %s not provided!",
-        matrix_exp_calc_string.c_str());
-}
-
-/*--------------------------------------------------------------------*
- *--------------------------------------------------------------------*/
-Core::LinAlg::MatrixLogCalcMethod Core::LinAlg::matrix_log_calc_string_to_method(
-    std::string matrix_log_calc_string)
-{
-  if (matrix_log_calc_string == "default_series")
-    return Core::LinAlg::MatrixLogCalcMethod::DefaultSeries;
-  else if (matrix_log_calc_string == "taylor_series")
-    return Core::LinAlg::MatrixLogCalcMethod::TaylorSeries;
-  else if (matrix_log_calc_string == "gregory_series")
-    return Core::LinAlg::MatrixLogCalcMethod::GregorySeries;
-  else if (matrix_log_calc_string == "spectral_decomp")
-    return Core::LinAlg::MatrixLogCalcMethod::SpectralDecomp;
-  else if (matrix_log_calc_string == "inv_scal_square")
-    return Core::LinAlg::MatrixLogCalcMethod::InvScalSquare;
-  else if (matrix_log_calc_string == "pade_part_fract")
-    return Core::LinAlg::MatrixLogCalcMethod::PadePartFract;
-  else
-    FOUR_C_THROW(
-        "Calculation method for matrix logarithm %s not provided!", matrix_log_calc_string.c_str());
-}
-
-/*--------------------------------------------------------------------*
- *--------------------------------------------------------------------*/
-Core::LinAlg::GenMatrixExpFirstDerivCalcMethod
-Core::LinAlg::genmatrix_exp_1st_deriv_calc_string_to_method(
-    std::string genmatrix_exp_1st_deriv_calc_string)
-{
-  if (genmatrix_exp_1st_deriv_calc_string == "default")
-    return Core::LinAlg::GenMatrixExpFirstDerivCalcMethod::Default;
-  else if (genmatrix_exp_1st_deriv_calc_string == "taylor_series")
-    return Core::LinAlg::GenMatrixExpFirstDerivCalcMethod::TaylorSeries;
-  else
-    FOUR_C_THROW(
-        "Calculation method for first derivative of exponential (gen. matrix) %s not provided!",
-        genmatrix_exp_1st_deriv_calc_string.c_str());
-}
-
-/*--------------------------------------------------------------------*
- *--------------------------------------------------------------------*/
-Core::LinAlg::GenMatrixLogFirstDerivCalcMethod
-Core::LinAlg::genmatrix_log_1st_deriv_calc_string_to_method(
-    std::string genmatrix_log_1st_deriv_calc_string)
-{
-  if (genmatrix_log_1st_deriv_calc_string == "default_series")
-    return Core::LinAlg::GenMatrixLogFirstDerivCalcMethod::DefaultSeries;
-  else if (genmatrix_log_1st_deriv_calc_string == "taylor_series")
-    return Core::LinAlg::GenMatrixLogFirstDerivCalcMethod::TaylorSeries;
-  else if (genmatrix_log_1st_deriv_calc_string == "gregory_series")
-    return Core::LinAlg::GenMatrixLogFirstDerivCalcMethod::GregorySeries;
-  else if (genmatrix_log_1st_deriv_calc_string == "pade_part_fract")
-    return Core::LinAlg::GenMatrixLogFirstDerivCalcMethod::PadePartFract;
-  else
-    FOUR_C_THROW(
-        "Calculation method for first derivative of logarithm (gen. matrix) %s not provided!",
-        genmatrix_log_1st_deriv_calc_string.c_str());
-}
-
-/*--------------------------------------------------------------------*
- *--------------------------------------------------------------------*/
-Core::LinAlg::SymMatrixExpFirstDerivCalcMethod
-Core::LinAlg::symmatrix_exp_1st_deriv_calc_string_to_method(
-    std::string symmatrix_exp_1st_deriv_calc_string)
-{
-  if (symmatrix_exp_1st_deriv_calc_string == "default")
-    return Core::LinAlg::SymMatrixExpFirstDerivCalcMethod::Default;
-  else if (symmatrix_exp_1st_deriv_calc_string == "taylor_series")
-    return Core::LinAlg::SymMatrixExpFirstDerivCalcMethod::TaylorSeries;
-  else if (symmatrix_exp_1st_deriv_calc_string == "eigenproj_based")
-    return Core::LinAlg::SymMatrixExpFirstDerivCalcMethod::EigenprojBased;
-  else
-    FOUR_C_THROW(
-        "Calculation method for first derivative of exponential (sym. matrix) %s not provided!",
-        symmatrix_exp_1st_deriv_calc_string.c_str());
-}
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
@@ -167,17 +49,17 @@ Core::LinAlg::Matrix<dim, dim> Core::LinAlg::matrix_sqrt(
     unsigned int* num_of_iters, Core::LinAlg::MatrixSqrtCalcMethod calc_method)
 {
   // set error status to no errors
-  err_status = Core::LinAlg::MatrixFunctErrorType::NoErrors;
+  err_status = Core::LinAlg::MatrixFunctErrorType::no_errors;
 
   // return 0 if matrix is 0: determined with matrix norm
   if (input.norm2() == 0.0)
   {
-    err_status = Core::LinAlg::MatrixFunctErrorType::NoErrors;
+    err_status = Core::LinAlg::MatrixFunctErrorType::no_errors;
     if (num_of_iters != nullptr) *num_of_iters = 0;
     return input;
   }
 
-  if (calc_method == Core::LinAlg::MatrixSqrtCalcMethod::DBIterScaledProductForm)
+  if (calc_method == Core::LinAlg::MatrixSqrtCalcMethod::db_iter_scaled_product)
   {
     // compute dim-dimensional unit tensor
     Core::LinAlg::Matrix<dim, dim> id{true};
@@ -234,7 +116,7 @@ Core::LinAlg::Matrix<dim, dim> Core::LinAlg::matrix_sqrt(
       // check whether iteration number has exceeded its specified maximum
       if (iter > max_num_iter)
       {
-        err_status = Core::LinAlg::MatrixFunctErrorType::FailedComputation;
+        err_status = Core::LinAlg::MatrixFunctErrorType::failed_computation;
         if (num_of_iters != nullptr) *num_of_iters = 0;
         return Core::LinAlg::Matrix<dim, dim>{};
       }
@@ -259,7 +141,7 @@ Core::LinAlg::Matrix<dim, dim> Core::LinAlg::matrix_sqrt(
       // checking stopping criterion
       if (distance_norm * distance_norm < err_tolerance * X_kp1.norm2() / abs_invX_k)
       {
-        err_status = MatrixFunctErrorType::NoErrors;
+        err_status = MatrixFunctErrorType::no_errors;
         if (num_of_iters != nullptr) *num_of_iters = iter;
         return X_kp1;
       }
@@ -299,28 +181,28 @@ Core::LinAlg::Matrix<dim, dim> Core::LinAlg::matrix_exp(const Core::LinAlg::Matr
   if (mat_norm == 0.)
   {
     for (unsigned int i = 0; i < dim; i++) output(i, i) = 1.;
-    err_status = MatrixFunctErrorType::NoErrors;
+    err_status = MatrixFunctErrorType::no_errors;
     return output;
   }
 
   // determine computation method based on the matrix norm
-  if (calc_method == Core::LinAlg::MatrixExpCalcMethod::Default)
+  if (calc_method == Core::LinAlg::MatrixExpCalcMethod::default_method)
   {
     if (mat_norm < 2.0)
-      calc_method = Core::LinAlg::MatrixExpCalcMethod::TaylorSeries;
+      calc_method = Core::LinAlg::MatrixExpCalcMethod::taylor_series;
     else
-      calc_method = Core::LinAlg::MatrixExpCalcMethod::SpectralDecomp;
+      calc_method = Core::LinAlg::MatrixExpCalcMethod::spectral_decomp;
   }
 
 
   // compute matrix exponential via power series for small matrix norms. This is usually
   // faster than by spectral decomposition for matrices which are close to zero.
-  if (calc_method == Core::LinAlg::MatrixExpCalcMethod::TaylorSeries)
+  if (calc_method == Core::LinAlg::MatrixExpCalcMethod::taylor_series)
   {
     // consistency check
     if (mat_norm >= 2.0)
     {
-      err_status = MatrixFunctErrorType::UnsuitableMethod;
+      err_status = MatrixFunctErrorType::unsuitable_method;
       return Core::LinAlg::Matrix<dim, dim>{true};
     }
 
@@ -352,14 +234,14 @@ Core::LinAlg::Matrix<dim, dim> Core::LinAlg::matrix_exp(const Core::LinAlg::Matr
       std::cout << "Matrix exponential unconverged in " << n
                 << "steps, for the following matrix: " << std::endl;
       input.print(std::cout);
-      err_status = MatrixFunctErrorType::FailedComputation;
+      err_status = MatrixFunctErrorType::failed_computation;
       return output;
     }
 
-    err_status = MatrixFunctErrorType::NoErrors;
+    err_status = MatrixFunctErrorType::no_errors;
     return output;
   }
-  else if (calc_method == Core::LinAlg::MatrixExpCalcMethod::SpectralDecomp)
+  else if (calc_method == Core::LinAlg::MatrixExpCalcMethod::spectral_decomp)
   {
     // spectral decomposition for higher matrix norms
     Core::LinAlg::Matrix<dim, dim, std::complex<double>> eigenval_matrix(true);
@@ -391,7 +273,7 @@ Core::LinAlg::Matrix<dim, dim> Core::LinAlg::matrix_exp(const Core::LinAlg::Matr
       }
     }
 
-    err_status = MatrixFunctErrorType::NoErrors;
+    err_status = MatrixFunctErrorType::no_errors;
     return output;
   }
   else
@@ -416,14 +298,14 @@ Core::LinAlg::Matrix<dim, dim> Core::LinAlg::matrix_log(const Core::LinAlg::Matr
   Core::LinAlg::Matrix<dim, dim> temp(true);
 
   // initialize error status to no errors(0)
-  err_status = MatrixFunctErrorType::NoErrors;
+  err_status = MatrixFunctErrorType::no_errors;
 
   // declare output matrix
   Core::LinAlg::Matrix<dim, dim> output(true);
 
   // ---> determine matrix logarithm
   // Pade approximation of a given order \f$ m \f$, using a partial fraction form
-  if (calc_method == Core::LinAlg::MatrixLogCalcMethod::PadePartFract)
+  if (calc_method == Core::LinAlg::MatrixLogCalcMethod::pade_part_fract)
   {
     // check whether an approximation order \f$ m \f$ was provided
     FOUR_C_ASSERT_ALWAYS(pade_order != nullptr,
@@ -438,7 +320,7 @@ Core::LinAlg::Matrix<dim, dim> Core::LinAlg::matrix_log(const Core::LinAlg::Matr
     // return directly in the case that \f$ X \f$ has norm 0
     if (X.norm2() == 0.0)
     {
-      err_status = MatrixFunctErrorType::NoErrors;
+      err_status = MatrixFunctErrorType::no_errors;
       return Core::LinAlg::Matrix<dim, dim>{true};
     }
 
@@ -478,13 +360,13 @@ Core::LinAlg::Matrix<dim, dim> Core::LinAlg::matrix_log(const Core::LinAlg::Matr
       // exit loop if point index equal to Pade order
       if (pt == (*pade_order))
       {
-        err_status = MatrixFunctErrorType::NoErrors;
+        err_status = MatrixFunctErrorType::no_errors;
         return output;
       }
     }
   }
   // inverse scaling and squaring method
-  else if (calc_method == Core::LinAlg::MatrixLogCalcMethod::InvScalSquare)
+  else if (calc_method == Core::LinAlg::MatrixLogCalcMethod::inv_scal_square)
   {
     // initialize number of square roots \f$ k \f$, number of iterations for DB iteration \f$
     // \text{it} \f$, and number of norm checks \f$ p \f$
@@ -572,7 +454,7 @@ Core::LinAlg::Matrix<dim, dim> Core::LinAlg::matrix_log(const Core::LinAlg::Matr
 
       // take one more square root
       A = matrix_sqrt(
-          A, err_status, it_ptr, Core::LinAlg::MatrixSqrtCalcMethod::DBIterScaledProductForm);
+          A, err_status, it_ptr, Core::LinAlg::MatrixSqrtCalcMethod::db_iter_scaled_product);
 
       // increment square root iterator
       k += 1;
@@ -581,11 +463,11 @@ Core::LinAlg::Matrix<dim, dim> Core::LinAlg::matrix_log(const Core::LinAlg::Matr
     // determine the matrix logarithm of the k-th square root using the Pade approximation of order
     // m
     *pade_order = m;
-    Core::LinAlg::Matrix<dim, dim> k_sqrt_log = matrix_log(
-        A, err_status, calc_method = Core::LinAlg::MatrixLogCalcMethod::PadePartFract, pade_order);
+    Core::LinAlg::Matrix<dim, dim> k_sqrt_log = matrix_log(A, err_status,
+        calc_method = Core::LinAlg::MatrixLogCalcMethod::pade_part_fract, pade_order);
 
     // return scaled matrix logarithm
-    if (err_status == MatrixFunctErrorType::NoErrors)
+    if (err_status == MatrixFunctErrorType::no_errors)
     {
       output.update(std::pow(2.0, k), k_sqrt_log, 0.0);
       return output;
@@ -621,32 +503,32 @@ Core::LinAlg::Matrix<dim, dim> Core::LinAlg::matrix_log(const Core::LinAlg::Matr
     update_mat.multiply(1.0, id_minus_A, inv_id_plus_A, 0.0);
 
     // determine the computation method based on characteristic matrix norms
-    if (calc_method == Core::LinAlg::MatrixLogCalcMethod::DefaultSeries)
+    if (calc_method == Core::LinAlg::MatrixLogCalcMethod::default_series)
     {
       // employ Taylor series if matrix norm smaller than 1 for characteristic matrix
       if (id_minus_A.norm2() < 1.0)
       {
-        calc_method = Core::LinAlg::MatrixLogCalcMethod::TaylorSeries;
+        calc_method = Core::LinAlg::MatrixLogCalcMethod::taylor_series;
       }
       // employ the Gregory series, if the norm of the first update matrix is smaller than 1.0
       else if (update_mat.norm2() < 1.0)
       {
-        calc_method = Core::LinAlg::MatrixLogCalcMethod::GregorySeries;
+        calc_method = Core::LinAlg::MatrixLogCalcMethod::gregory_series;
       }
       // spectral decomposition as the last resort
       else
       {
-        calc_method = Core::LinAlg::MatrixLogCalcMethod::SpectralDecomp;
+        calc_method = Core::LinAlg::MatrixLogCalcMethod::spectral_decomp;
       }
     }
 
     // compute the matrix logarithm
-    if (calc_method == Core::LinAlg::MatrixLogCalcMethod::TaylorSeries)
+    if (calc_method == Core::LinAlg::MatrixLogCalcMethod::taylor_series)
     {
       // consistency check
       if (id_minus_A.norm2() >= 1.0)
       {
-        err_status = MatrixFunctErrorType::UnsuitableMethod;
+        err_status = MatrixFunctErrorType::unsuitable_method;
         return Core::LinAlg::Matrix<dim, dim>{true};
       }
 
@@ -670,7 +552,7 @@ Core::LinAlg::Matrix<dim, dim> Core::LinAlg::matrix_log(const Core::LinAlg::Matr
                        "following matrix: "
                     << std::endl;
           input.print(std::cout);
-          err_status = MatrixFunctErrorType::FailedComputation;
+          err_status = MatrixFunctErrorType::failed_computation;
           return output;
         }
         FOUR_C_ASSERT_ALWAYS(m <= m_max, "");
@@ -686,15 +568,15 @@ Core::LinAlg::Matrix<dim, dim> Core::LinAlg::matrix_log(const Core::LinAlg::Matr
         m += 1;
       }
 
-      err_status = MatrixFunctErrorType::NoErrors;
+      err_status = MatrixFunctErrorType::no_errors;
       return output;
     }
-    else if (calc_method == Core::LinAlg::MatrixLogCalcMethod::GregorySeries)
+    else if (calc_method == Core::LinAlg::MatrixLogCalcMethod::gregory_series)
     {
       // consistency check
       if (update_mat.norm2() >= 1.0)
       {
-        err_status = MatrixFunctErrorType::UnsuitableMethod;
+        err_status = MatrixFunctErrorType::unsuitable_method;
         return Core::LinAlg::Matrix<dim, dim>{true};
       }
 
@@ -718,7 +600,7 @@ Core::LinAlg::Matrix<dim, dim> Core::LinAlg::matrix_log(const Core::LinAlg::Matr
                        "following matrix: "
                     << std::endl;
           input.print(std::cout);
-          err_status = MatrixFunctErrorType::FailedComputation;
+          err_status = MatrixFunctErrorType::failed_computation;
           return output;
         }
 
@@ -733,10 +615,10 @@ Core::LinAlg::Matrix<dim, dim> Core::LinAlg::matrix_log(const Core::LinAlg::Matr
         m += 1;
       }
 
-      err_status = MatrixFunctErrorType::NoErrors;
+      err_status = MatrixFunctErrorType::no_errors;
       return output;
     }
-    else if (calc_method == Core::LinAlg::MatrixLogCalcMethod::SpectralDecomp)
+    else if (calc_method == Core::LinAlg::MatrixLogCalcMethod::spectral_decomp)
     {
       Core::LinAlg::Matrix<dim, dim, std::complex<double>> eigenval_matrix(true);
       Core::LinAlg::Matrix<dim, dim, std::complex<double>> eigenvect_matrix(true);
@@ -754,7 +636,7 @@ Core::LinAlg::Matrix<dim, dim> Core::LinAlg::matrix_log(const Core::LinAlg::Matr
                  "possess positive real parts! This is not given here, real part of eigenval "
                  "number "
               << i << ": " << eigenval_matrix(i, i).real() << std::endl;
-          err_status = MatrixFunctErrorType::FailedComputation;
+          err_status = MatrixFunctErrorType::failed_computation;
           return output;
         }
         eigenval_matrix(i, i) = std::log(eigenval_matrix(i, i));
@@ -778,7 +660,7 @@ Core::LinAlg::Matrix<dim, dim> Core::LinAlg::matrix_log(const Core::LinAlg::Matr
         }
       }
 
-      err_status = MatrixFunctErrorType::NoErrors;
+      err_status = MatrixFunctErrorType::no_errors;
       return output;
     }
     else
@@ -798,12 +680,12 @@ Core::LinAlg::Matrix<9, 9> Core::LinAlg::matrix_3x3_exp_1st_deriv(
   Core::LinAlg::Matrix<9, 9> output(true);
 
   // determine the computation method (currently, only Taylor series implemented)
-  if (calc_method == Core::LinAlg::GenMatrixExpFirstDerivCalcMethod::Default)
+  if (calc_method == Core::LinAlg::GenMatrixExpFirstDerivCalcMethod::default_method)
   {
-    calc_method = Core::LinAlg::GenMatrixExpFirstDerivCalcMethod::TaylorSeries;
+    calc_method = Core::LinAlg::GenMatrixExpFirstDerivCalcMethod::taylor_series;
   }
 
-  if (calc_method == Core::LinAlg::GenMatrixExpFirstDerivCalcMethod::TaylorSeries)
+  if (calc_method == Core::LinAlg::GenMatrixExpFirstDerivCalcMethod::taylor_series)
   {
     // see Souza-Neto: Computational Methods for plasticity, Box B.2.
     int nmax = 0;
@@ -839,7 +721,7 @@ Core::LinAlg::Matrix<9, 9> Core::LinAlg::matrix_3x3_exp_1st_deriv(
       std::cout << "Matrix exponential unconverged in " << nIter
                 << " steps for the following matrix: " << std::endl;
       input.print(std::cout);
-      err_status = MatrixFunctErrorType::FailedComputation;
+      err_status = MatrixFunctErrorType::failed_computation;
       return output;
     }
     nmax = nIter;
@@ -850,7 +732,7 @@ Core::LinAlg::Matrix<9, 9> Core::LinAlg::matrix_3x3_exp_1st_deriv(
         Core::LinAlg::Tensor::add_non_symmetric_product(
             1. / fac[n], Xn.at(m - 1), Xn.at(n - m), output);
 
-    err_status = MatrixFunctErrorType::NoErrors;
+    err_status = MatrixFunctErrorType::no_errors;
     return output;
   }
   else
@@ -881,26 +763,26 @@ Core::LinAlg::Matrix<6, 6> Core::LinAlg::sym_matrix_3x3_exp_1st_deriv(
   // direct calculation for zero-matrix
   if (norm == 0.)
   {
-    err_status = MatrixFunctErrorType::NoErrors;
+    err_status = MatrixFunctErrorType::no_errors;
     return id4sharp;
   }
 
   // determine computation method based on the matrix norm
-  if (calc_method == Core::LinAlg::SymMatrixExpFirstDerivCalcMethod::Default)
+  if (calc_method == Core::LinAlg::SymMatrixExpFirstDerivCalcMethod::default_method)
   {
     if (norm < 0.3)
-      calc_method = Core::LinAlg::SymMatrixExpFirstDerivCalcMethod::TaylorSeries;
+      calc_method = Core::LinAlg::SymMatrixExpFirstDerivCalcMethod::taylor_series;
     else
-      calc_method = Core::LinAlg::SymMatrixExpFirstDerivCalcMethod::EigenprojBased;
+      calc_method = Core::LinAlg::SymMatrixExpFirstDerivCalcMethod::eigenproj_based;
   }
 
   // further norm checking to determine appropriate computation procedure
-  if (calc_method == Core::LinAlg::SymMatrixExpFirstDerivCalcMethod::TaylorSeries)
+  if (calc_method == Core::LinAlg::SymMatrixExpFirstDerivCalcMethod::taylor_series)
   {
     // consistency check
     if (norm >= 0.3)
     {
-      err_status = MatrixFunctErrorType::UnsuitableMethod;
+      err_status = MatrixFunctErrorType::unsuitable_method;
       return Core::LinAlg::Matrix<6, 6>{true};
     }
 
@@ -937,7 +819,7 @@ Core::LinAlg::Matrix<6, 6> Core::LinAlg::sym_matrix_3x3_exp_1st_deriv(
       std::cout << "Matrix exponential unconverged in " << nIter
                 << " steps for the following matrix: " << std::endl;
       input.print(std::cout);
-      err_status = MatrixFunctErrorType::FailedComputation;
+      err_status = MatrixFunctErrorType::failed_computation;
       return output;
     }
     nmax = nIter;
@@ -953,7 +835,7 @@ Core::LinAlg::Matrix<6, 6> Core::LinAlg::sym_matrix_3x3_exp_1st_deriv(
             output, Xn.at((n - 1) / 2), Xn.at((n - 1) / 2), .25 / fac[n]);
     }
   }
-  else if (calc_method == Core::LinAlg::SymMatrixExpFirstDerivCalcMethod::EigenprojBased)
+  else if (calc_method == Core::LinAlg::SymMatrixExpFirstDerivCalcMethod::eigenproj_based)
   {
     double EWtolerance = 1.e-12;
 
@@ -1020,7 +902,7 @@ Core::LinAlg::Matrix<6, 6> Core::LinAlg::sym_matrix_3x3_exp_1st_deriv(
         std::cout << "You should not be here, in the matrix exponential evaluation of: "
                   << std::endl;
         input.print(std::cout);
-        err_status = MatrixFunctErrorType::FailedComputation;
+        err_status = MatrixFunctErrorType::failed_computation;
         return output;
       }
 
@@ -1097,7 +979,7 @@ Core::LinAlg::Matrix<6, 6> Core::LinAlg::sym_matrix_3x3_exp_1st_deriv(
     {
       std::cout << "You should not be here, in the matrix exponential evaluation of: " << std::endl;
       input.print(std::cout);
-      err_status = MatrixFunctErrorType::FailedComputation;
+      err_status = MatrixFunctErrorType::failed_computation;
       return output;
     }
   }
@@ -1107,7 +989,7 @@ Core::LinAlg::Matrix<6, 6> Core::LinAlg::sym_matrix_3x3_exp_1st_deriv(
         "The provided computation method for first derivative of the matrix exponential of a "
         "symmetric matrix is not implemented!");
   }
-  err_status = MatrixFunctErrorType::NoErrors;
+  err_status = MatrixFunctErrorType::no_errors;
   return output;
 }
 
@@ -1138,7 +1020,7 @@ Core::LinAlg::Matrix<9, 9> Core::LinAlg::matrix_3x3_log_1st_deriv(
 
   // computation using the Pade approximation (partial fraction
   // expansion)
-  if (calc_method == Core::LinAlg::GenMatrixLogFirstDerivCalcMethod::PadePartFract)
+  if (calc_method == Core::LinAlg::GenMatrixLogFirstDerivCalcMethod::pade_part_fract)
   {
     // check whether an approximation order \f$ m \f$ was provided
     FOUR_C_ASSERT_ALWAYS(pade_order != nullptr,
@@ -1153,7 +1035,7 @@ Core::LinAlg::Matrix<9, 9> Core::LinAlg::matrix_3x3_log_1st_deriv(
     // return directly in the case that \f$ X \f$ has norm 0
     if (X.norm2() < 1.0e-8)
     {
-      err_status = MatrixFunctErrorType::NoErrors;
+      err_status = MatrixFunctErrorType::no_errors;
       Core::LinAlg::Matrix<9, 9> id9x9{true};
       Tensor::add_non_symmetric_product(1.0, id_3x3, id_3x3, id9x9);
       return id9x9;
@@ -1219,15 +1101,15 @@ Core::LinAlg::Matrix<9, 9> Core::LinAlg::matrix_3x3_log_1st_deriv(
       // exit loop if point index equal to Pade order
       if (pt == (*pade_order))
       {
-        err_status = MatrixFunctErrorType::NoErrors;
+        err_status = MatrixFunctErrorType::no_errors;
         return output;
       }
     }
   }
   // computation using Taylor / Gregory series
-  else if ((calc_method == GenMatrixLogFirstDerivCalcMethod::DefaultSeries) ||
-           (calc_method == GenMatrixLogFirstDerivCalcMethod::TaylorSeries) ||
-           (calc_method == GenMatrixLogFirstDerivCalcMethod::GregorySeries))
+  else if ((calc_method == GenMatrixLogFirstDerivCalcMethod::default_series) ||
+           (calc_method == GenMatrixLogFirstDerivCalcMethod::taylor_series) ||
+           (calc_method == GenMatrixLogFirstDerivCalcMethod::gregory_series))
   {
     // set convergence tolerance
     double conv_tol = 1.0e-10;
@@ -1236,21 +1118,21 @@ Core::LinAlg::Matrix<9, 9> Core::LinAlg::matrix_3x3_log_1st_deriv(
     id_minus_A.update(1.0, id_3x3, -1.0, input, 0.0);
 
     // determine the computation method based on matrix characteristics
-    if (calc_method == Core::LinAlg::GenMatrixLogFirstDerivCalcMethod::DefaultSeries)
+    if (calc_method == Core::LinAlg::GenMatrixLogFirstDerivCalcMethod::default_series)
     {
       if (id_minus_A.norm2() < 1.0)
-        calc_method = Core::LinAlg::GenMatrixLogFirstDerivCalcMethod::TaylorSeries;
+        calc_method = Core::LinAlg::GenMatrixLogFirstDerivCalcMethod::taylor_series;
       else
-        calc_method = Core::LinAlg::GenMatrixLogFirstDerivCalcMethod::GregorySeries;
+        calc_method = Core::LinAlg::GenMatrixLogFirstDerivCalcMethod::gregory_series;
     }
 
     // employ Taylor series if matrix norm smaller than 1 for characteristic matrix
-    if (calc_method == Core::LinAlg::GenMatrixLogFirstDerivCalcMethod::TaylorSeries)
+    if (calc_method == Core::LinAlg::GenMatrixLogFirstDerivCalcMethod::taylor_series)
     {
       // consistency check
       if (id_minus_A.norm2() >= 1.0)
       {
-        err_status = MatrixFunctErrorType::UnsuitableMethod;
+        err_status = MatrixFunctErrorType::unsuitable_method;
         return Core::LinAlg::Matrix<9, 9>{true};
       }
 
@@ -1286,7 +1168,7 @@ Core::LinAlg::Matrix<9, 9> Core::LinAlg::matrix_3x3_log_1st_deriv(
                  "the following matrix: "
               << std::endl;
           input.print(std::cout);
-          err_status = MatrixFunctErrorType::FailedComputation;
+          err_status = MatrixFunctErrorType::failed_computation;
           return output;
         }
 
@@ -1322,11 +1204,11 @@ Core::LinAlg::Matrix<9, 9> Core::LinAlg::matrix_3x3_log_1st_deriv(
         // increment m
         m += 1;
       }
-      err_status = MatrixFunctErrorType::NoErrors;
+      err_status = MatrixFunctErrorType::no_errors;
       return output;
     }
     // alternatively, employ the Gregory series
-    else if (calc_method == Core::LinAlg::GenMatrixLogFirstDerivCalcMethod::GregorySeries)
+    else if (calc_method == Core::LinAlg::GenMatrixLogFirstDerivCalcMethod::gregory_series)
     {
       // set initial exponent \f$ m \f$ and the maximum acceptable number of series terms
       int m = 1;
@@ -1399,7 +1281,7 @@ Core::LinAlg::Matrix<9, 9> Core::LinAlg::matrix_3x3_log_1st_deriv(
                  "the following matrix: "
               << std::endl;
           input.print(std::cout);
-          err_status = MatrixFunctErrorType::FailedComputation;
+          err_status = MatrixFunctErrorType::failed_computation;
           return output;
         }
 
@@ -1438,7 +1320,7 @@ Core::LinAlg::Matrix<9, 9> Core::LinAlg::matrix_3x3_log_1st_deriv(
         // return if converged
         if ((dupdateMat_dA_m.norm2() < conv_tol) && (m > 1))
         {
-          err_status = MatrixFunctErrorType::NoErrors;
+          err_status = MatrixFunctErrorType::no_errors;
           return output;
         }
 
@@ -1454,7 +1336,7 @@ Core::LinAlg::Matrix<9, 9> Core::LinAlg::matrix_3x3_log_1st_deriv(
         "general matrix is not implemented!");
   }
 
-  err_status = MatrixFunctErrorType::UnsuitableMethod;
+  err_status = MatrixFunctErrorType::unsuitable_method;
   return Core::LinAlg::Matrix<9, 9>{true};
 }
 
@@ -1545,7 +1427,7 @@ void Core::LinAlg::sym_matrix_3x3_exp_2nd_deriv_voigt(const Core::LinAlg::Matrix
     std::cout << "Matrix exponential unconverged with " << k
               << " summands for the following matrix: " << std::endl;
     input.print(std::cout);
-    err_status = MatrixFunctErrorType::FailedComputation;
+    err_status = MatrixFunctErrorType::failed_computation;
     return;
   }
 
@@ -1569,7 +1451,7 @@ void Core::LinAlg::sym_matrix_3x3_exp_2nd_deriv_voigt(const Core::LinAlg::Matrix
           ddexp_mat[J](I, vmap::non_symmetric_tensor_to_voigt9_index(k, l)) =
               matrix_exp_2nd_deriv[I][J](k, l);
         }
-  err_status = MatrixFunctErrorType::NoErrors;
+  err_status = MatrixFunctErrorType::no_errors;
   return;
 }
 

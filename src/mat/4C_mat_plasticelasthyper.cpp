@@ -1018,10 +1018,10 @@ void Mat::PlasticElastHyper::evaluate_ncp(const Core::LinAlg::Matrix<3, 3>* mStr
     Core::LinAlg::Matrix<3, 3> tmp(*deltaDp);
     tmp.scale(-1.);
     Core::LinAlg::MatrixFunctErrorType exp_err_status =
-        Core::LinAlg::MatrixFunctErrorType::NoErrors;
+        Core::LinAlg::MatrixFunctErrorType::no_errors;
     Core::LinAlg::Matrix<6, 6> Dexp =
         Core::LinAlg::sym_matrix_3x3_exp_1st_deriv(tmp, exp_err_status);
-    FOUR_C_ASSERT_ALWAYS(exp_err_status == Core::LinAlg::MatrixFunctErrorType::NoErrors,
+    FOUR_C_ASSERT_ALWAYS(exp_err_status == Core::LinAlg::MatrixFunctErrorType::no_errors,
         "Stop computation due to exponential derivative evaluation");
 
     // Derivative of inverse plastic deformation gradient
@@ -1528,9 +1528,9 @@ void Mat::PlasticElastHyper::evaluate_nc_pand_spin(const Core::LinAlg::Matrix<3,
     Core::LinAlg::Matrix<3, 3> tmp(*deltaLp);
     tmp.scale(-1.);
     Core::LinAlg::MatrixFunctErrorType exp_err_status =
-        Core::LinAlg::MatrixFunctErrorType::NoErrors;
+        Core::LinAlg::MatrixFunctErrorType::no_errors;
     Core::LinAlg::Matrix<9, 9> Dexp = Core::LinAlg::matrix_3x3_exp_1st_deriv(tmp, exp_err_status);
-    FOUR_C_ASSERT_ALWAYS(exp_err_status == Core::LinAlg::MatrixFunctErrorType::NoErrors,
+    FOUR_C_ASSERT_ALWAYS(exp_err_status == Core::LinAlg::MatrixFunctErrorType::no_errors,
         "Stop computation due to exponential derivative evaluation");
 
     // Derivative of inverse plastic deformation gradient
@@ -1970,9 +1970,9 @@ void Mat::PlasticElastHyper::update_gp(const int gp, const Core::LinAlg::Matrix<
     Core::LinAlg::Matrix<3, 3> tmp;
     tmp.update(-1., *deltaDp);
     Core::LinAlg::MatrixFunctErrorType exp_err_status =
-        Core::LinAlg::MatrixFunctErrorType::NoErrors;
+        Core::LinAlg::MatrixFunctErrorType::no_errors;
     Core::LinAlg::Matrix<3, 3> exp_tmp = Core::LinAlg::matrix_exp(tmp, exp_err_status);
-    FOUR_C_ASSERT_ALWAYS(exp_err_status == Core::LinAlg::MatrixFunctErrorType::NoErrors,
+    FOUR_C_ASSERT_ALWAYS(exp_err_status == Core::LinAlg::MatrixFunctErrorType::no_errors,
         "Stop computation due to exponential evaluation");
     Core::LinAlg::Matrix<3, 3> fpi_last = last_plastic_defgrd_inverse_[gp];
     last_plastic_defgrd_inverse_[gp].multiply(fpi_last, exp_tmp);
@@ -1998,9 +1998,9 @@ void Mat::PlasticElastHyper::evaluate_kin_quant_elast(const Core::LinAlg::Matrix
   Core::LinAlg::Matrix<3, 3> invpldefgrd;
   Core::LinAlg::Matrix<3, 3>& InvPlasticDefgrdLast = last_plastic_defgrd_inverse_[gp];
   tmp.update(-1., *deltaLp);
-  Core::LinAlg::MatrixFunctErrorType exp_err_status = Core::LinAlg::MatrixFunctErrorType::NoErrors;
+  Core::LinAlg::MatrixFunctErrorType exp_err_status = Core::LinAlg::MatrixFunctErrorType::no_errors;
   Core::LinAlg::Matrix<3, 3> exp_tmp = Core::LinAlg::matrix_exp(tmp, exp_err_status);
-  FOUR_C_ASSERT_ALWAYS(exp_err_status != Core::LinAlg::MatrixFunctErrorType::NoErrors,
+  FOUR_C_ASSERT_ALWAYS(exp_err_status != Core::LinAlg::MatrixFunctErrorType::no_errors,
       "Stop computation due to exponential evaluation");
   invpldefgrd.multiply(InvPlasticDefgrdLast, exp_tmp);
 
@@ -2067,9 +2067,9 @@ int Mat::PlasticElastHyper::evaluate_kin_quant_plast(const Core::LinAlg::Matrix<
   Core::LinAlg::Matrix<3, 3> tmp33;
   Core::LinAlg::Matrix<3, 3>& InvPlasticDefgrdLast = last_plastic_defgrd_inverse_[gp];
   tmp.update(-1., *deltaLp);
-  Core::LinAlg::MatrixFunctErrorType exp_err_status = Core::LinAlg::MatrixFunctErrorType::NoErrors;
+  Core::LinAlg::MatrixFunctErrorType exp_err_status = Core::LinAlg::MatrixFunctErrorType::no_errors;
   Core::LinAlg::Matrix<3, 3> exp_tmp = Core::LinAlg::matrix_exp(tmp, exp_err_status);
-  FOUR_C_ASSERT_ALWAYS(exp_err_status == Core::LinAlg::MatrixFunctErrorType::NoErrors,
+  FOUR_C_ASSERT_ALWAYS(exp_err_status == Core::LinAlg::MatrixFunctErrorType::no_errors,
       "Stop computation due to exponential evaluation");
   invpldefgrd_.multiply(InvPlasticDefgrdLast, exp_tmp);
 

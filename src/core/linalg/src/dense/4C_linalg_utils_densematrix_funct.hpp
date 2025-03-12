@@ -33,28 +33,21 @@ namespace Core::LinAlg
   /// enum class: error types for the calculation of matrix functions
   enum class MatrixFunctErrorType
   {
-    NoErrors,          // evaluation without errors
-    UnsuitableMethod,  // unsuitable computation method (e.g., the matrix norm is too large to use a
-                       // Taylor series description)
-    FailedComputation,  // although the computation method is suitable, the evaluation fails
-                        // nonetheless (e.g., the maximum number of
-                        // iterations is exceeded)
+    no_errors,           // evaluation without errors
+    unsuitable_method,   // unsuitable computation method (e.g., the matrix norm is too large to use
+                         // a Taylor series description)
+    failed_computation,  // although the computation method is suitable, the evaluation fails
+                         // nonetheless (e.g., the maximum number of
+                         // iterations is exceeded)
   };
-
-  /// matrix function error type to string
-  std::string matrix_funct_err_to_string(MatrixFunctErrorType err_type);
-
 
   /// enum class: computation method used for the calculation of the matrix square root
   enum class MatrixSqrtCalcMethod
   {
-    DBIterScaledProductForm,  // Product form of Denman and Beavers iteration (scaled), as described
-                              // in Higham, Functions of Matrices, Chapter 6: Matrix Square Root,
-                              // (6.29)
+    db_iter_scaled_product,  // Product form of Denman and Beavers iteration (scaled), as described
+                             // in Higham, Functions of Matrices, Chapter 6: Matrix Square Root,
+                             // (6.29)
   };
-
-  /// conversion function for matrix square root calculation method: from string to enum class
-  MatrixSqrtCalcMethod matrix_sqrt_calc_string_to_method(std::string matrix_sqrt_calc_string);
 
   /*!
    * @brief Computes the matrix square root of a given real matrix with a specified computation
@@ -70,19 +63,16 @@ namespace Core::LinAlg
   template <unsigned int dim>
   Matrix<dim, dim> matrix_sqrt(const Matrix<dim, dim>& input, MatrixFunctErrorType& err_status,
       unsigned int* num_of_iters = nullptr,
-      const MatrixSqrtCalcMethod calc_method = MatrixSqrtCalcMethod::DBIterScaledProductForm);
+      const MatrixSqrtCalcMethod calc_method = MatrixSqrtCalcMethod::db_iter_scaled_product);
 
   /// enum class: computation method used for the calculation of the matrix exponential
   enum class MatrixExpCalcMethod
   {
-    Default,       // default computation, employing either of the other methods below depending on
-                   // different characteristics, such as the matrix norm
-    TaylorSeries,  // computation using the Taylor series,
-    SpectralDecomp,  // computation using the spectral decomposition,
+    default_method,   // default computation, employing either of the other methods below depending
+                      // on different characteristics, such as the matrix norm
+    taylor_series,    // computation using the Taylor series,
+    spectral_decomp,  // computation using the spectral decomposition,
   };
-
-  /// conversion function for matrix exponential calculation method: from string to enum class
-  MatrixExpCalcMethod matrix_exp_calc_string_to_method(std::string matrix_exp_calc_string);
 
   /*!
    * @brief Computes the matrix exponential of a given real matrix, using the Taylor series or a
@@ -97,25 +87,23 @@ namespace Core::LinAlg
    */
   template <unsigned int dim>
   Matrix<dim, dim> matrix_exp(const Matrix<dim, dim>& input, MatrixFunctErrorType& err_status,
-      const MatrixExpCalcMethod calc_method = MatrixExpCalcMethod::Default);
+      const MatrixExpCalcMethod calc_method = MatrixExpCalcMethod::default_method);
 
   /// enum class: computation method used for the calculation of the matrix logarithm
   enum class MatrixLogCalcMethod
   {
-    DefaultSeries,   // default series computation, employing one of the series descriptions (or the
+    default_series,  // default series computation, employing one of the series descriptions (or the
                      // spectral decomposition) below, depending on different characteristics, such
                      // as the matrix norm
-    TaylorSeries,    // computation using the Taylor series,
-    GregorySeries,   // computation using the Gregory series,
-    SpectralDecomp,  // computation using the spectral decomposition,
-    InvScalSquare,   // computation using the inverse scaling and squaring algorithm presented in
-                     // Higham: Functions of Matrices, Chapter 11: Matrix Logarithm, Algorithm 11.10
-    PadePartFract,   // Pade approximation using a partial fraction expansion, as presented in
-                     // Higham: Functions of Matrices, Chapter 11: Matrix Logarithm, Eq. 11.18
+    taylor_series,   // computation using the Taylor series,
+    gregory_series,  // computation using the Gregory series,
+    spectral_decomp,  // computation using the spectral decomposition,
+    inv_scal_square,  // computation using the inverse scaling and squaring algorithm presented in
+                      // Higham: Functions of Matrices, Chapter 11: Matrix Logarithm,
+                      // Algorithm 11.10
+    pade_part_fract,  // Pade approximation using a partial fraction expansion, as presented in
+                      // Higham: Functions of Matrices, Chapter 11: Matrix Logarithm, Eq. 11.18
   };
-
-  /// conversion function for matrix logarithm calculation method: from string to enum class
-  MatrixLogCalcMethod matrix_log_calc_string_to_method(std::string matrix_log_calc_string);
 
   /*!
    * @brief Computes the (principal) matrix logarithm of a given real matrix, using either the
@@ -140,22 +128,17 @@ namespace Core::LinAlg
    */
   template <unsigned int dim>
   Matrix<dim, dim> matrix_log(const Matrix<dim, dim>& input, MatrixFunctErrorType& err_status,
-      const MatrixLogCalcMethod calc_method = MatrixLogCalcMethod::DefaultSeries,
+      const MatrixLogCalcMethod calc_method = MatrixLogCalcMethod::default_series,
       unsigned int* pade_order = nullptr);
 
   /// enum class: computation method used for the calculation of the first derivative of the matrix
   /// exponential for a general, not necessarily symmetric matrix
   enum class GenMatrixExpFirstDerivCalcMethod
   {
-    Default,       // default computation, employing either of the other methods below depending on
-                   // different characteristics, such as the matrix norm
-    TaylorSeries,  // computation using the Taylor series,
+    default_method,  // default computation, employing either of the other methods below depending
+                     // on different characteristics, such as the matrix norm
+    taylor_series,   // computation using the Taylor series,
   };
-
-  /// conversion function for the calculation method of the first derivative of a general
-  /// matrix' exponential: from string to enum class
-  GenMatrixExpFirstDerivCalcMethod genmatrix_exp_1st_deriv_calc_string_to_method(
-      std::string genmatrix_exp_1st_deriv_calc_string);
 
   /*!
    * @brief Computes the first derivative of the matrix exponential (general, not necessarily
@@ -172,24 +155,20 @@ namespace Core::LinAlg
    * notation
    */
   Matrix<9, 9> matrix_3x3_exp_1st_deriv(const Matrix<3, 3>& input, MatrixFunctErrorType& err_status,
-      GenMatrixExpFirstDerivCalcMethod calc_method = GenMatrixExpFirstDerivCalcMethod::Default);
+      GenMatrixExpFirstDerivCalcMethod calc_method =
+          GenMatrixExpFirstDerivCalcMethod::default_method);
 
   /// enum class: computation method used for the calculation of the first derivative of the matrix
   /// logarithm for a general, not necessarily symmetric matrix
   enum class GenMatrixLogFirstDerivCalcMethod
   {
-    DefaultSeries,  // default series computation, employing either of the series below depending on
-                    // different characteristics, such as the matrix norm
-    TaylorSeries,   // computation using the Taylor series,
-    GregorySeries,  // computation using the Gregory series,
-    PadePartFract,  // Pade approximation using a partial fraction expansion, as presented in
-                    // Higham: Functions of Matrices, Chapter 11: Matrix Logarithm, Eq. 11.18
+    default_series,   // default series computation, employing either of the series below depending
+                      // on different characteristics, such as the matrix norm
+    taylor_series,    // computation using the Taylor series,
+    gregory_series,   // computation using the Gregory series,
+    pade_part_fract,  // Pade approximation using a partial fraction expansion, as presented in
+                      // Higham: Functions of Matrices, Chapter 11: Matrix Logarithm, Eq. 11.18
   };
-
-  /// conversion function for the calculation method of the first derivative of a general
-  /// matrix' logarithm: from string to enum class
-  GenMatrixLogFirstDerivCalcMethod genmatrix_log_1st_deriv_calc_string_to_method(
-      std::string genmatrix_log_1st_deriv_calc_string);
 
   /*!
    * @brief Computes the derivative of the matrix logarithm (general, not necessarily symmetric
@@ -210,25 +189,20 @@ namespace Core::LinAlg
    */
   Matrix<9, 9> matrix_3x3_log_1st_deriv(const Matrix<3, 3>& input, MatrixFunctErrorType& err_status,
       GenMatrixLogFirstDerivCalcMethod calc_method =
-          GenMatrixLogFirstDerivCalcMethod::DefaultSeries,
+          GenMatrixLogFirstDerivCalcMethod::default_series,
       const unsigned int* pade_order = nullptr);
 
   /// enum class: computation method used for the calculation of the first derivative of the matrix
   /// exponential for a symmetric matrix
   enum class SymMatrixExpFirstDerivCalcMethod
   {
-    Default,       // default computation, employing either of the other methods below depending on
-                   // different characteristics, such as the matrix norm
-    TaylorSeries,  // computation using the Taylor series,
-    EigenprojBased,  // computation based on eigenprojections, as shown in deSouza, Computational
-                     // Methods for Plasticity: Theory and Applications, Wiley & Sons,
-                     // 2008, Section A.5
+    default_method,   // default computation, employing either of the other methods below depending
+                      // on different characteristics, such as the matrix norm
+    taylor_series,    // computation using the Taylor series,
+    eigenproj_based,  // computation based on eigenprojections, as shown in deSouza, Computational
+                      // Methods for Plasticity: Theory and Applications, Wiley & Sons,
+                      // 2008, Section A.5
   };
-
-  /// conversion function for the calculation method of the first derivative of a symmetric
-  /// matrix' exponential: from string to enum class
-  SymMatrixExpFirstDerivCalcMethod symmatrix_exp_1st_deriv_calc_string_to_method(
-      std::string symmatrix_exp_1st_deriv_calc_string);
 
   /*!
    * @brief Computes the derivative of the matrix exponential (symmetric 3x3 matrix) with respect to
@@ -246,7 +220,8 @@ namespace Core::LinAlg
    */
   Matrix<6, 6> sym_matrix_3x3_exp_1st_deriv(const Matrix<3, 3>& input,
       MatrixFunctErrorType& err_status,
-      SymMatrixExpFirstDerivCalcMethod calc_method = SymMatrixExpFirstDerivCalcMethod::Default);
+      SymMatrixExpFirstDerivCalcMethod calc_method =
+          SymMatrixExpFirstDerivCalcMethod::default_method);
 
   /*!
    * @brief Computes the exponential of a symmetric matrix along with the first and second

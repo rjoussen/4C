@@ -304,9 +304,9 @@ namespace
       inelastic_defgrad_transv_isotrop_vplast_refJC_data.add("YIELD_COND_B", 2.0);
       inelastic_defgrad_transv_isotrop_vplast_refJC_data.add("YIELD_COND_F", 2.5);
       inelastic_defgrad_transv_isotrop_vplast_refJC_data.add(
-          "ANISOTROPY", std::string("transvisotrop"));
+          "MAT_BEHAVIOR", Mat::ViscoplastMatBehavior::transv_isotrop);
       inelastic_defgrad_transv_isotrop_vplast_refJC_data.add(
-          "TIME_INTEGRATION_HIST_VARS", std::string("log"));
+          "TIME_INTEGRATION_HIST_VARS", Mat::ViscoplastTimIntType::logarithmic);
       inelastic_defgrad_transv_isotrop_vplast_refJC_data.add("USE_PRED_ADAPT", true);
       inelastic_defgrad_transv_isotrop_vplast_refJC_data.add("USE_LAST_PRED_ADAPT_FACT", true);
       inelastic_defgrad_transv_isotrop_vplast_refJC_data.add("USE_LINE_SEARCH", true);
@@ -319,16 +319,16 @@ namespace
       inelastic_defgrad_transv_isotrop_vplast_refJC_data.add("MAX_NUM_PRED_ADAPT", 10);
       inelastic_defgrad_transv_isotrop_vplast_refJC_data.add("ANALYZE_TIMINT", false);
       inelastic_defgrad_transv_isotrop_vplast_refJC_data.add(
-          "LINEARIZATION", std::string("analytic"));
+          "LINEARIZATION", Mat::ViscoplastLinearizationType::analytic);
       inelastic_defgrad_transv_isotrop_vplast_refJC_data.add("USE_LAST_PRED_ADAPT_FACT", true);
       inelastic_defgrad_transv_isotrop_vplast_refJC_data.add(
-          "MATRIX_EXP_CALC_METHOD", std::string("default"));
+          "MATRIX_EXP_CALC_METHOD", Core::LinAlg::MatrixExpCalcMethod::default_method);
+      inelastic_defgrad_transv_isotrop_vplast_refJC_data.add("MATRIX_EXP_DERIV_CALC_METHOD",
+          Core::LinAlg::GenMatrixExpFirstDerivCalcMethod::default_method);
       inelastic_defgrad_transv_isotrop_vplast_refJC_data.add(
-          "MATRIX_EXP_DERIV_CALC_METHOD", std::string("default"));
-      inelastic_defgrad_transv_isotrop_vplast_refJC_data.add(
-          "MATRIX_LOG_CALC_METHOD", std::string("inv_scal_square"));
-      inelastic_defgrad_transv_isotrop_vplast_refJC_data.add(
-          "MATRIX_LOG_DERIV_CALC_METHOD", std::string("pade_part_fract"));
+          "MATRIX_LOG_CALC_METHOD", Core::LinAlg::MatrixLogCalcMethod::inv_scal_square);
+      inelastic_defgrad_transv_isotrop_vplast_refJC_data.add("MATRIX_LOG_DERIV_CALC_METHOD",
+          Core::LinAlg::GenMatrixLogFirstDerivCalcMethod::pade_part_fract);
 
       // get pointer to parameter class
       params_transv_isotrop_vplast_refJC_ =
@@ -344,9 +344,10 @@ namespace
       inelastic_defgrad_isotrop_vplast_refJC_data.add("YIELD_COND_A", 1.0);
       inelastic_defgrad_isotrop_vplast_refJC_data.add("YIELD_COND_B", 2.0);
       inelastic_defgrad_isotrop_vplast_refJC_data.add("YIELD_COND_F", 2.5);
-      inelastic_defgrad_isotrop_vplast_refJC_data.add("ANISOTROPY", std::string("isotrop"));
       inelastic_defgrad_isotrop_vplast_refJC_data.add(
-          "TIME_INTEGRATION_HIST_VARS", std::string("log"));
+          "MAT_BEHAVIOR", Mat::ViscoplastMatBehavior::isotrop);
+      inelastic_defgrad_isotrop_vplast_refJC_data.add(
+          "TIME_INTEGRATION_HIST_VARS", Mat::ViscoplastTimIntType::logarithmic);
       inelastic_defgrad_isotrop_vplast_refJC_data.add("USE_PRED_ADAPT", true);
       inelastic_defgrad_isotrop_vplast_refJC_data.add("USE_LAST_PRED_ADAPT_FACT", true);
       inelastic_defgrad_isotrop_vplast_refJC_data.add("USE_LINE_SEARCH", true);
@@ -359,16 +360,17 @@ namespace
       inelastic_defgrad_isotrop_vplast_refJC_data.add("INTERP_FACT_PRED_ADAPT", 0.1);
       inelastic_defgrad_isotrop_vplast_refJC_data.add("MAX_NUM_PRED_ADAPT", 10);
       inelastic_defgrad_isotrop_vplast_refJC_data.add("ANALYZE_TIMINT", false);
-      inelastic_defgrad_isotrop_vplast_refJC_data.add("LINEARIZATION", std::string("analytic"));
+      inelastic_defgrad_isotrop_vplast_refJC_data.add(
+          "LINEARIZATION", Mat::ViscoplastLinearizationType::analytic);
       inelastic_defgrad_isotrop_vplast_refJC_data.add("USE_LAST_PRED_ADAPT_FACT", true);
       inelastic_defgrad_isotrop_vplast_refJC_data.add(
-          "MATRIX_EXP_CALC_METHOD", std::string("default"));
+          "MATRIX_EXP_CALC_METHOD", Core::LinAlg::MatrixExpCalcMethod::default_method);
+      inelastic_defgrad_isotrop_vplast_refJC_data.add("MATRIX_EXP_DERIV_CALC_METHOD",
+          Core::LinAlg::GenMatrixExpFirstDerivCalcMethod::default_method);
       inelastic_defgrad_isotrop_vplast_refJC_data.add(
-          "MATRIX_EXP_DERIV_CALC_METHOD", std::string("default"));
-      inelastic_defgrad_isotrop_vplast_refJC_data.add(
-          "MATRIX_LOG_CALC_METHOD", std::string("inv_scal_square"));
-      inelastic_defgrad_isotrop_vplast_refJC_data.add(
-          "MATRIX_LOG_DERIV_CALC_METHOD", std::string("pade_part_fract"));
+          "MATRIX_LOG_CALC_METHOD", Core::LinAlg::MatrixLogCalcMethod::inv_scal_square);
+      inelastic_defgrad_isotrop_vplast_refJC_data.add("MATRIX_LOG_DERIV_CALC_METHOD",
+          Core::LinAlg::GenMatrixLogFirstDerivCalcMethod::pade_part_fract);
 
       params_isotrop_vplast_refJC_ =
           std::dynamic_pointer_cast<Mat::PAR::InelasticDefgradTransvIsotropElastViscoplast>(
@@ -2056,7 +2058,8 @@ namespace
         current_defgrad_ptr, iFin_other, iFinM, kin_quantities.iCV, dSdiFinj, cmatadd);
 
     cmatadd.clear();
-    isotrop_vplast_refJC_->parameter()->debug_set_linearization_type("perturb_based");
+    isotrop_vplast_refJC_->parameter()->debug_set_linearization_type(
+        FourC::Mat::ViscoplastLinearizationType::perturb_based);
     isotrop_vplast_refJC_->evaluate_additional_cmat(
         current_defgrad_ptr, iFin_other, iFinM, kin_quantities.iCV, dSdiFinj, cmatadd);
 

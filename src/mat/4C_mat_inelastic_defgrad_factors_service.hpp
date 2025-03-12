@@ -118,13 +118,21 @@ namespace Mat
     }
   }
 
+  /// enum class for material behavior types
+  /// (InelasticDefgradTransvIsotropElastViscoplast)
+  enum class ViscoplastMatBehavior
+  {
+    isotrop,         // isotropic material behavior
+    transv_isotrop,  // isotropic material behavior
+  };
+
 
   /// enum class for time integration types (integration of internal
   /// variables in the Local Newton Loop of InelasticDefgradTransvIsotropElastViscoplast)
   enum class ViscoplastTimIntType
   {
-    Standard,     // standard time integration,
-    Logarithmic,  // time integration with logarithmically transformed residual equation for the
+    standard,     // standard time integration,
+    logarithmic,  // time integration with logarithmically transformed residual equation for the
                   // evolution of the plastic deformation gradient
   };
 
@@ -132,19 +140,9 @@ namespace Mat
   /// InelasticDefgradTransvIsotropElastViscoplast)
   enum class ViscoplastLinearizationType
   {
-    Analytic,  // analytical linearization involving the solution of a linear system of equations,
-    PerturbBased,  // linearization based on perturbing the current state
+    analytic,  // analytical linearization involving the solution of a linear system of equations,
+    perturb_based,  // linearization based on perturbing the current state
   };
-
-
-  /// get the time integration type (Local Newton Loop of
-  /// InelasticDefgradTransvIsotropElastViscoplast) from the
-  /// user-specified string in the input file
-  ViscoplastTimIntType get_time_integration_type(const std::string& timint_string);
-
-  /// get the material linearization type (InelasticDefgradTransvIsotropElastViscoplast) from the
-  /// user-specified string in the input file
-  ViscoplastLinearizationType get_linearization_type(const std::string& linearization_string);
 
   // names of the various error types
   inline std::map<ViscoplastErrorType, std::string> ViscoplastErrorNames = {

@@ -41,10 +41,10 @@ namespace
     sqrt_A_ref(1, 1) = std::sqrt(A(1, 1));
 
     Core::LinAlg::MatrixFunctErrorType sqrt_err_status =
-        Core::LinAlg::MatrixFunctErrorType::NoErrors;
+        Core::LinAlg::MatrixFunctErrorType::no_errors;
     Core::LinAlg::Matrix<2, 2> sqrt_A = Core::LinAlg::matrix_sqrt(
-        A, sqrt_err_status, nullptr, Core::LinAlg::MatrixSqrtCalcMethod::DBIterScaledProductForm);
-    FOUR_C_ASSERT_ALWAYS(sqrt_err_status == Core::LinAlg::MatrixFunctErrorType::NoErrors,
+        A, sqrt_err_status, nullptr, Core::LinAlg::MatrixSqrtCalcMethod::db_iter_scaled_product);
+    FOUR_C_ASSERT_ALWAYS(sqrt_err_status == Core::LinAlg::MatrixFunctErrorType::no_errors,
         "Computation of matrix square root (2x2) failed!");
     FOUR_C_EXPECT_NEAR(sqrt_A, sqrt_A_ref, 1.0e-9);
   }
@@ -65,24 +65,24 @@ namespace
     exp_A_ref(1, 1) = 1.4087656857;
 
     Core::LinAlg::MatrixFunctErrorType exp_err_status =
-        Core::LinAlg::MatrixFunctErrorType::NoErrors;
-    Core::LinAlg::Matrix<2, 2> exp_A =
-        Core::LinAlg::matrix_exp(A, exp_err_status, Core::LinAlg::MatrixExpCalcMethod::Default);
-    FOUR_C_ASSERT_ALWAYS(exp_err_status == Core::LinAlg::MatrixFunctErrorType::NoErrors,
+        Core::LinAlg::MatrixFunctErrorType::no_errors;
+    Core::LinAlg::Matrix<2, 2> exp_A = Core::LinAlg::matrix_exp(
+        A, exp_err_status, Core::LinAlg::MatrixExpCalcMethod::default_method);
+    FOUR_C_ASSERT_ALWAYS(exp_err_status == Core::LinAlg::MatrixFunctErrorType::no_errors,
         "Exponential evaluation failed when using the default computation method!");
     FOUR_C_EXPECT_NEAR(exp_A, exp_A_ref, 1.0e-9);
 
-    exp_err_status = Core::LinAlg::MatrixFunctErrorType::NoErrors;
+    exp_err_status = Core::LinAlg::MatrixFunctErrorType::no_errors;
     exp_A = Core::LinAlg::matrix_exp(
-        A, exp_err_status, Core::LinAlg::MatrixExpCalcMethod::TaylorSeries);
-    FOUR_C_ASSERT_ALWAYS(exp_err_status == Core::LinAlg::MatrixFunctErrorType::NoErrors,
+        A, exp_err_status, Core::LinAlg::MatrixExpCalcMethod::taylor_series);
+    FOUR_C_ASSERT_ALWAYS(exp_err_status == Core::LinAlg::MatrixFunctErrorType::no_errors,
         "Exponential evaluation failed when using the Taylor series!");
     FOUR_C_EXPECT_NEAR(exp_A, exp_A_ref, 1.0e-9);
 
-    exp_err_status = Core::LinAlg::MatrixFunctErrorType::NoErrors;
+    exp_err_status = Core::LinAlg::MatrixFunctErrorType::no_errors;
     exp_A = Core::LinAlg::matrix_exp(
-        A, exp_err_status, Core::LinAlg::MatrixExpCalcMethod::SpectralDecomp);
-    FOUR_C_ASSERT_ALWAYS(exp_err_status == Core::LinAlg::MatrixFunctErrorType::NoErrors,
+        A, exp_err_status, Core::LinAlg::MatrixExpCalcMethod::spectral_decomp);
+    FOUR_C_ASSERT_ALWAYS(exp_err_status == Core::LinAlg::MatrixFunctErrorType::no_errors,
         "Exponential evaluation failed when using the spectral decomposition!");
     FOUR_C_EXPECT_NEAR(exp_A, exp_A_ref, 1.0e-9);
   }
@@ -102,38 +102,38 @@ namespace
     log_A_ref(1, 1) = -0.2949441044;
 
     Core::LinAlg::MatrixFunctErrorType log_err_status =
-        Core::LinAlg::MatrixFunctErrorType::NoErrors;
+        Core::LinAlg::MatrixFunctErrorType::no_errors;
     Core::LinAlg::Matrix<2, 2> log_A = Core::LinAlg::matrix_log(
-        A, log_err_status, Core::LinAlg::MatrixLogCalcMethod::DefaultSeries);
-    FOUR_C_ASSERT_ALWAYS(log_err_status == Core::LinAlg::MatrixFunctErrorType::NoErrors,
+        A, log_err_status, Core::LinAlg::MatrixLogCalcMethod::default_series);
+    FOUR_C_ASSERT_ALWAYS(log_err_status == Core::LinAlg::MatrixFunctErrorType::no_errors,
         "Logarithm evaluation failed when using the default series description!");
     FOUR_C_EXPECT_NEAR(log_A, log_A_ref, 1.0e-9);
 
-    log_err_status = Core::LinAlg::MatrixFunctErrorType::NoErrors;
+    log_err_status = Core::LinAlg::MatrixFunctErrorType::no_errors;
     log_A = Core::LinAlg::matrix_log(
-        A, log_err_status, Core::LinAlg::MatrixLogCalcMethod::TaylorSeries);
-    FOUR_C_ASSERT_ALWAYS(log_err_status == Core::LinAlg::MatrixFunctErrorType::NoErrors,
+        A, log_err_status, Core::LinAlg::MatrixLogCalcMethod::taylor_series);
+    FOUR_C_ASSERT_ALWAYS(log_err_status == Core::LinAlg::MatrixFunctErrorType::no_errors,
         "Logarithm evaluation failed when using the Taylor series description!");
     FOUR_C_EXPECT_NEAR(log_A, log_A_ref, 1.0e-9);
 
-    log_err_status = Core::LinAlg::MatrixFunctErrorType::NoErrors;
+    log_err_status = Core::LinAlg::MatrixFunctErrorType::no_errors;
     log_A = Core::LinAlg::matrix_log(
-        A, log_err_status, Core::LinAlg::MatrixLogCalcMethod::GregorySeries);
-    FOUR_C_ASSERT_ALWAYS(log_err_status == Core::LinAlg::MatrixFunctErrorType::NoErrors,
+        A, log_err_status, Core::LinAlg::MatrixLogCalcMethod::gregory_series);
+    FOUR_C_ASSERT_ALWAYS(log_err_status == Core::LinAlg::MatrixFunctErrorType::no_errors,
         "Logarithm evaluation failed when using the Gregory series description!");
     FOUR_C_EXPECT_NEAR(log_A, log_A_ref, 1.0e-9);
 
-    log_err_status = Core::LinAlg::MatrixFunctErrorType::NoErrors;
+    log_err_status = Core::LinAlg::MatrixFunctErrorType::no_errors;
     log_A = Core::LinAlg::matrix_log(
-        A, log_err_status, Core::LinAlg::MatrixLogCalcMethod::SpectralDecomp);
-    FOUR_C_ASSERT_ALWAYS(log_err_status == Core::LinAlg::MatrixFunctErrorType::NoErrors,
+        A, log_err_status, Core::LinAlg::MatrixLogCalcMethod::spectral_decomp);
+    FOUR_C_ASSERT_ALWAYS(log_err_status == Core::LinAlg::MatrixFunctErrorType::no_errors,
         "Logarithm evaluation failed when using the spectral decomposition!");
     FOUR_C_EXPECT_NEAR(log_A, log_A_ref, 1.0e-9);
 
-    log_err_status = Core::LinAlg::MatrixFunctErrorType::NoErrors;
+    log_err_status = Core::LinAlg::MatrixFunctErrorType::no_errors;
     log_A = Core::LinAlg::matrix_log(
-        A, log_err_status, Core::LinAlg::MatrixLogCalcMethod::InvScalSquare);
-    FOUR_C_ASSERT_ALWAYS(log_err_status == Core::LinAlg::MatrixFunctErrorType::NoErrors,
+        A, log_err_status, Core::LinAlg::MatrixLogCalcMethod::inv_scal_square);
+    FOUR_C_ASSERT_ALWAYS(log_err_status == Core::LinAlg::MatrixFunctErrorType::no_errors,
         "Logarithm evaluation failed when using the inverse scaling and squaring method!");
     FOUR_C_EXPECT_NEAR(log_A, log_A_ref, 1.0e-9);
   }
@@ -163,10 +163,10 @@ namespace
     sqrt_A_ref(2, 2) = std::sqrt(A(2, 2));
 
     Core::LinAlg::MatrixFunctErrorType sqrt_err_status =
-        Core::LinAlg::MatrixFunctErrorType::NoErrors;
+        Core::LinAlg::MatrixFunctErrorType::no_errors;
     Core::LinAlg::Matrix<3, 3> sqrt_A = Core::LinAlg::matrix_sqrt(
-        A, sqrt_err_status, nullptr, Core::LinAlg::MatrixSqrtCalcMethod::DBIterScaledProductForm);
-    FOUR_C_ASSERT_ALWAYS(sqrt_err_status == Core::LinAlg::MatrixFunctErrorType::NoErrors,
+        A, sqrt_err_status, nullptr, Core::LinAlg::MatrixSqrtCalcMethod::db_iter_scaled_product);
+    FOUR_C_ASSERT_ALWAYS(sqrt_err_status == Core::LinAlg::MatrixFunctErrorType::no_errors,
         "Computation of matrix square root (3x3) using the DB iteration (scaled, product form) "
         "failed!");
     FOUR_C_EXPECT_NEAR(sqrt_A, sqrt_A_ref, 1.0e-9);
@@ -197,24 +197,24 @@ namespace
     exp_A_ref(2, 2) = 3.2314443053;
 
     Core::LinAlg::MatrixFunctErrorType exp_err_status =
-        Core::LinAlg::MatrixFunctErrorType::NoErrors;
-    Core::LinAlg::Matrix<3, 3> exp_A =
-        Core::LinAlg::matrix_exp(A, exp_err_status, Core::LinAlg::MatrixExpCalcMethod::Default);
-    FOUR_C_ASSERT_ALWAYS(exp_err_status == Core::LinAlg::MatrixFunctErrorType::NoErrors,
+        Core::LinAlg::MatrixFunctErrorType::no_errors;
+    Core::LinAlg::Matrix<3, 3> exp_A = Core::LinAlg::matrix_exp(
+        A, exp_err_status, Core::LinAlg::MatrixExpCalcMethod::default_method);
+    FOUR_C_ASSERT_ALWAYS(exp_err_status == Core::LinAlg::MatrixFunctErrorType::no_errors,
         "Exponential evaluation failed when using the default computation method!");
     FOUR_C_EXPECT_NEAR(exp_A, exp_A_ref, 1.0e-9);
 
-    exp_err_status = Core::LinAlg::MatrixFunctErrorType::NoErrors;
+    exp_err_status = Core::LinAlg::MatrixFunctErrorType::no_errors;
     exp_A = Core::LinAlg::matrix_exp(
-        A, exp_err_status, Core::LinAlg::MatrixExpCalcMethod::TaylorSeries);
-    FOUR_C_ASSERT_ALWAYS(exp_err_status == Core::LinAlg::MatrixFunctErrorType::NoErrors,
+        A, exp_err_status, Core::LinAlg::MatrixExpCalcMethod::taylor_series);
+    FOUR_C_ASSERT_ALWAYS(exp_err_status == Core::LinAlg::MatrixFunctErrorType::no_errors,
         "Exponential evaluation failed when using the Taylor series!");
     FOUR_C_EXPECT_NEAR(exp_A, exp_A_ref, 1.0e-9);
 
-    exp_err_status = Core::LinAlg::MatrixFunctErrorType::NoErrors;
+    exp_err_status = Core::LinAlg::MatrixFunctErrorType::no_errors;
     exp_A = Core::LinAlg::matrix_exp(
-        A, exp_err_status, Core::LinAlg::MatrixExpCalcMethod::SpectralDecomp);
-    FOUR_C_ASSERT_ALWAYS(exp_err_status == Core::LinAlg::MatrixFunctErrorType::NoErrors,
+        A, exp_err_status, Core::LinAlg::MatrixExpCalcMethod::spectral_decomp);
+    FOUR_C_ASSERT_ALWAYS(exp_err_status == Core::LinAlg::MatrixFunctErrorType::no_errors,
         "Exponential evaluation failed when using the spectral decomposition!");
     FOUR_C_EXPECT_NEAR(exp_A, exp_A_ref, 1.0e-5);
   }
@@ -316,18 +316,18 @@ namespace
     dexp_dA_ref(8, 8) = 1.5237256921;
 
     Core::LinAlg::MatrixFunctErrorType exp_err_status =
-        Core::LinAlg::MatrixFunctErrorType::NoErrors;
+        Core::LinAlg::MatrixFunctErrorType::no_errors;
     Core::LinAlg::Matrix<9, 9> dexp_dA = Core::LinAlg::matrix_3x3_exp_1st_deriv(
-        A, exp_err_status, Core::LinAlg::GenMatrixExpFirstDerivCalcMethod::Default);
-    FOUR_C_ASSERT_ALWAYS(exp_err_status == Core::LinAlg::MatrixFunctErrorType::NoErrors,
+        A, exp_err_status, Core::LinAlg::GenMatrixExpFirstDerivCalcMethod::default_method);
+    FOUR_C_ASSERT_ALWAYS(exp_err_status == Core::LinAlg::MatrixFunctErrorType::no_errors,
         "Evaluation of the first exponential derivative failed when using the default computation "
         "method!");
     FOUR_C_EXPECT_NEAR(dexp_dA, dexp_dA_ref, 1.0e-9);
 
-    exp_err_status = Core::LinAlg::MatrixFunctErrorType::NoErrors;
+    exp_err_status = Core::LinAlg::MatrixFunctErrorType::no_errors;
     dexp_dA = Core::LinAlg::matrix_3x3_exp_1st_deriv(
-        A, exp_err_status, Core::LinAlg::GenMatrixExpFirstDerivCalcMethod::TaylorSeries);
-    FOUR_C_ASSERT_ALWAYS(exp_err_status == Core::LinAlg::MatrixFunctErrorType::NoErrors,
+        A, exp_err_status, Core::LinAlg::GenMatrixExpFirstDerivCalcMethod::taylor_series);
+    FOUR_C_ASSERT_ALWAYS(exp_err_status == Core::LinAlg::MatrixFunctErrorType::no_errors,
         "Evaluation of the first exponential derivative failed when using the Taylor "
         "series!");
     FOUR_C_EXPECT_NEAR(dexp_dA, dexp_dA_ref, 1.0e-9);
@@ -385,27 +385,27 @@ namespace
     dexp_dA_ref(5, 5) = 0.9065591579;
 
     Core::LinAlg::MatrixFunctErrorType exp_err_status =
-        Core::LinAlg::MatrixFunctErrorType::NoErrors;
+        Core::LinAlg::MatrixFunctErrorType::no_errors;
     Core::LinAlg::Matrix<6, 6> dexp_dA = Core::LinAlg::sym_matrix_3x3_exp_1st_deriv(
-        A, exp_err_status, Core::LinAlg::SymMatrixExpFirstDerivCalcMethod::Default);
-    FOUR_C_ASSERT_ALWAYS(exp_err_status == Core::LinAlg::MatrixFunctErrorType::NoErrors,
+        A, exp_err_status, Core::LinAlg::SymMatrixExpFirstDerivCalcMethod::default_method);
+    FOUR_C_ASSERT_ALWAYS(exp_err_status == Core::LinAlg::MatrixFunctErrorType::no_errors,
         "Evaluation of first exponential derivative (symmetric matrix) failed when using the "
         "default computation method!");
     FOUR_C_EXPECT_NEAR(dexp_dA, dexp_dA_ref, 1.0e-9);
 
-    exp_err_status = Core::LinAlg::MatrixFunctErrorType::NoErrors;
+    exp_err_status = Core::LinAlg::MatrixFunctErrorType::no_errors;
     dexp_dA = Core::LinAlg::sym_matrix_3x3_exp_1st_deriv(
-        A, exp_err_status, Core::LinAlg::SymMatrixExpFirstDerivCalcMethod::TaylorSeries);
+        A, exp_err_status, Core::LinAlg::SymMatrixExpFirstDerivCalcMethod::taylor_series);
     EXPECT_EQ(exp_err_status,
-        Core::LinAlg::MatrixFunctErrorType::UnsuitableMethod);  // the evaluation shall not be
-                                                                // possible, since the method is
-                                                                // unsuitable
+        Core::LinAlg::MatrixFunctErrorType::unsuitable_method);  // the evaluation shall not be
+                                                                 // possible, since the method is
+                                                                 // unsuitable
 
 
-    exp_err_status = Core::LinAlg::MatrixFunctErrorType::NoErrors;
+    exp_err_status = Core::LinAlg::MatrixFunctErrorType::no_errors;
     dexp_dA = Core::LinAlg::sym_matrix_3x3_exp_1st_deriv(
-        A, exp_err_status, Core::LinAlg::SymMatrixExpFirstDerivCalcMethod::EigenprojBased);
-    FOUR_C_ASSERT_ALWAYS(exp_err_status == Core::LinAlg::MatrixFunctErrorType::NoErrors,
+        A, exp_err_status, Core::LinAlg::SymMatrixExpFirstDerivCalcMethod::eigenproj_based);
+    FOUR_C_ASSERT_ALWAYS(exp_err_status == Core::LinAlg::MatrixFunctErrorType::no_errors,
         "Evaluation of first exponential derivative (symmetric matrix) failed when using the "
         "eigenprojection-based method!");
     FOUR_C_EXPECT_NEAR(dexp_dA, dexp_dA_ref, 1.0e-9);
@@ -436,38 +436,38 @@ namespace
     log_A_ref(2, 2) = -1.0555537527;
 
     Core::LinAlg::MatrixFunctErrorType log_err_status =
-        Core::LinAlg::MatrixFunctErrorType::NoErrors;
+        Core::LinAlg::MatrixFunctErrorType::no_errors;
     Core::LinAlg::Matrix<3, 3> log_A = Core::LinAlg::matrix_log(
-        A, log_err_status, Core::LinAlg::MatrixLogCalcMethod::DefaultSeries);
-    FOUR_C_ASSERT_ALWAYS(log_err_status == Core::LinAlg::MatrixFunctErrorType::NoErrors,
+        A, log_err_status, Core::LinAlg::MatrixLogCalcMethod::default_series);
+    FOUR_C_ASSERT_ALWAYS(log_err_status == Core::LinAlg::MatrixFunctErrorType::no_errors,
         "Logarithm evaluation failed when using the default series description!");
     FOUR_C_EXPECT_NEAR(log_A, log_A_ref, 1.0e-9);
 
-    log_err_status = Core::LinAlg::MatrixFunctErrorType::NoErrors;
+    log_err_status = Core::LinAlg::MatrixFunctErrorType::no_errors;
     log_A = Core::LinAlg::matrix_log(
-        A, log_err_status, Core::LinAlg::MatrixLogCalcMethod::TaylorSeries);
+        A, log_err_status, Core::LinAlg::MatrixLogCalcMethod::taylor_series);
     EXPECT_EQ(log_err_status,
-        Core::LinAlg::MatrixFunctErrorType::UnsuitableMethod);  // this should fail due to the
-                                                                // matrix norm being too large
+        Core::LinAlg::MatrixFunctErrorType::unsuitable_method);  // this should fail due to the
+                                                                 // matrix norm being too large
 
-    log_err_status = Core::LinAlg::MatrixFunctErrorType::NoErrors;
+    log_err_status = Core::LinAlg::MatrixFunctErrorType::no_errors;
     log_A = Core::LinAlg::matrix_log(
-        A, log_err_status, Core::LinAlg::MatrixLogCalcMethod::GregorySeries);
+        A, log_err_status, Core::LinAlg::MatrixLogCalcMethod::gregory_series);
     EXPECT_EQ(log_err_status,
-        Core::LinAlg::MatrixFunctErrorType::UnsuitableMethod);  // this should fail due to the
-                                                                // matrix norm being too large
+        Core::LinAlg::MatrixFunctErrorType::unsuitable_method);  // this should fail due to the
+                                                                 // matrix norm being too large
 
-    log_err_status = Core::LinAlg::MatrixFunctErrorType::NoErrors;
+    log_err_status = Core::LinAlg::MatrixFunctErrorType::no_errors;
     log_A = Core::LinAlg::matrix_log(
-        A, log_err_status, Core::LinAlg::MatrixLogCalcMethod::SpectralDecomp);
-    FOUR_C_ASSERT_ALWAYS(log_err_status == Core::LinAlg::MatrixFunctErrorType::NoErrors,
+        A, log_err_status, Core::LinAlg::MatrixLogCalcMethod::spectral_decomp);
+    FOUR_C_ASSERT_ALWAYS(log_err_status == Core::LinAlg::MatrixFunctErrorType::no_errors,
         "Logarithm evaluation failed when using the spectral decomposition!");
     FOUR_C_EXPECT_NEAR(log_A, log_A_ref, 1.0e-9);
 
-    log_err_status = Core::LinAlg::MatrixFunctErrorType::NoErrors;
+    log_err_status = Core::LinAlg::MatrixFunctErrorType::no_errors;
     log_A = Core::LinAlg::matrix_log(
-        A, log_err_status, Core::LinAlg::MatrixLogCalcMethod::InvScalSquare);
-    FOUR_C_ASSERT_ALWAYS(log_err_status == Core::LinAlg::MatrixFunctErrorType::NoErrors,
+        A, log_err_status, Core::LinAlg::MatrixLogCalcMethod::inv_scal_square);
+    FOUR_C_ASSERT_ALWAYS(log_err_status == Core::LinAlg::MatrixFunctErrorType::no_errors,
         "Logarithm evaluation failed when using the inverse scaling and squaring method!");
     FOUR_C_EXPECT_NEAR(log_A, log_A_ref, 1.0e-9);
   }
@@ -568,33 +568,33 @@ namespace
     dlog_dA_ref(8, 8) = 1.3969978711;
 
     Core::LinAlg::MatrixFunctErrorType log_err_status =
-        Core::LinAlg::MatrixFunctErrorType::NoErrors;
+        Core::LinAlg::MatrixFunctErrorType::no_errors;
     Core::LinAlg::Matrix<9, 9> dlog_dA = Core::LinAlg::matrix_3x3_log_1st_deriv(
-        A, log_err_status, Core::LinAlg::GenMatrixLogFirstDerivCalcMethod::DefaultSeries, nullptr);
-    FOUR_C_ASSERT_ALWAYS(log_err_status == Core::LinAlg::MatrixFunctErrorType::NoErrors,
+        A, log_err_status, Core::LinAlg::GenMatrixLogFirstDerivCalcMethod::default_series, nullptr);
+    FOUR_C_ASSERT_ALWAYS(log_err_status == Core::LinAlg::MatrixFunctErrorType::no_errors,
         "Evaluation of logarithm derivative failed when using the default series!");
     FOUR_C_EXPECT_NEAR(dlog_dA, dlog_dA_ref, 1.0e-9);
 
-    log_err_status = Core::LinAlg::MatrixFunctErrorType::NoErrors;
+    log_err_status = Core::LinAlg::MatrixFunctErrorType::no_errors;
     dlog_dA = Core::LinAlg::matrix_3x3_log_1st_deriv(
-        A, log_err_status, Core::LinAlg::GenMatrixLogFirstDerivCalcMethod::TaylorSeries, nullptr);
+        A, log_err_status, Core::LinAlg::GenMatrixLogFirstDerivCalcMethod::taylor_series, nullptr);
     EXPECT_EQ(log_err_status,
-        Core::LinAlg::MatrixFunctErrorType::UnsuitableMethod);  // evaluation shall fail due to
-                                                                // unsuitable computation method
+        Core::LinAlg::MatrixFunctErrorType::unsuitable_method);  // evaluation shall fail due to
+                                                                 // unsuitable computation method
 
-    log_err_status = Core::LinAlg::MatrixFunctErrorType::NoErrors;
+    log_err_status = Core::LinAlg::MatrixFunctErrorType::no_errors;
     dlog_dA = Core::LinAlg::matrix_3x3_log_1st_deriv(
-        A, log_err_status, Core::LinAlg::GenMatrixLogFirstDerivCalcMethod::GregorySeries, nullptr);
-    FOUR_C_ASSERT_ALWAYS(log_err_status == Core::LinAlg::MatrixFunctErrorType::NoErrors,
+        A, log_err_status, Core::LinAlg::GenMatrixLogFirstDerivCalcMethod::gregory_series, nullptr);
+    FOUR_C_ASSERT_ALWAYS(log_err_status == Core::LinAlg::MatrixFunctErrorType::no_errors,
         "Evaluation of logarithm derivative failed when using the Taylor series!");
     FOUR_C_EXPECT_NEAR(dlog_dA, dlog_dA_ref, 1.0e-9);
 
-    log_err_status = Core::LinAlg::MatrixFunctErrorType::NoErrors;
+    log_err_status = Core::LinAlg::MatrixFunctErrorType::no_errors;
     unsigned int pade_order = 16;
     unsigned int* pade_order_ptr = &pade_order;
     dlog_dA = Core::LinAlg::matrix_3x3_log_1st_deriv(A, log_err_status,
-        Core::LinAlg::GenMatrixLogFirstDerivCalcMethod::PadePartFract, pade_order_ptr);
-    FOUR_C_ASSERT_ALWAYS(log_err_status == Core::LinAlg::MatrixFunctErrorType::NoErrors,
+        Core::LinAlg::GenMatrixLogFirstDerivCalcMethod::pade_part_fract, pade_order_ptr);
+    FOUR_C_ASSERT_ALWAYS(log_err_status == Core::LinAlg::MatrixFunctErrorType::no_errors,
         "Evaluation of logarithm derivative failed when using the Pade approximation (partial "
         "fraction expansion)!");
     FOUR_C_EXPECT_NEAR(dlog_dA, dlog_dA_ref, 1.0e-9);

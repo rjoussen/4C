@@ -315,8 +315,8 @@ namespace Mat
       [[nodiscard]] double yield_cond_b() const { return yield_cond_b_; };
       //! get yield condition parameter \f[ F \f]
       [[nodiscard]] double yield_cond_f() const { return yield_cond_f_; };
-      //! get boolean: transversely isotropic material? (true: yes, false: isotropic)
-      [[nodiscard]] bool bool_transv_isotropy() const { return bool_transv_isotropy_; };
+      //! get material behavior
+      [[nodiscard]] ViscoplastMatBehavior mat_behavior() const { return mat_behavior_; };
       //! get boolean: use predictor adaptation before and in the Local
       //! Newton Loop? (true: yes, false: no)
       [[nodiscard]] bool bool_pred_adapt() const { return bool_pred_adapt_; };
@@ -348,7 +348,7 @@ namespace Mat
         return linearization_type_;
       };
       //! DEBUG: set linearization type
-      void debug_set_linearization_type(const std::string linearization_type);
+      void debug_set_linearization_type(const Mat::ViscoplastLinearizationType linearization_type);
       //! get maximum, numerically evaluable plastic strain increment
       [[nodiscard]] double max_plastic_strain_incr() const { return max_plastic_strain_incr_; };
       //! get maximum, numerically evaluable value for the increment of
@@ -361,33 +361,6 @@ namespace Mat
       [[nodiscard]] double interp_factor_pred_adapt() const { return interp_factor_pred_adapt_; }
       //! get user-specified interpolation factor for the predictor adaptation
       [[nodiscard]] int max_num_pred_adapt() const { return max_num_pred_adapt_; }
-
-      //! read anisotropy type (true: transversely-isotropic, false: isotropic)
-      bool read_anisotropy_type(std::string anisotropy_type)
-      {
-        // define naming types
-        const std::array<std::string, 3> transv_isotropy_names{
-            "transvisotrop", "transverseisotropic", "transverselyisotropic"};
-        const std::array<std::string, 2> isotropy_names{"isotrop", "isotropic"};
-
-
-        if (std::find(transv_isotropy_names.begin(), transv_isotropy_names.end(),
-                anisotropy_type) != transv_isotropy_names.end())
-        {
-          return true;
-        }
-        else if (std::find(isotropy_names.begin(), isotropy_names.end(), anisotropy_type) !=
-                 isotropy_names.end())
-        {
-          return false;
-        }
-        else
-        {
-          FOUR_C_THROW(
-              "Given anisotropy type %s not defined for InelasticDefgradTransvIsotropViscoplast",
-              anisotropy_type.c_str());
-        }
-      }
 
       //! get computation method for the matrix exponential
       [[nodiscard]] Core::LinAlg::MatrixExpCalcMethod mat_exp_calc_method() const
@@ -427,8 +400,8 @@ namespace Mat
       //! yield condition parameter \f[ F \f]
       const double yield_cond_f_;
 
-      //! boolean: transversely isotropic? (true: yes, false: isotropic)
-      const bool bool_transv_isotropy_;
+      //! material behavior (transversely isotropic or isotropic)
+      const ViscoplastMatBehavior mat_behavior_;
 
       //! computation method for the time integration of the
       //! history variables
