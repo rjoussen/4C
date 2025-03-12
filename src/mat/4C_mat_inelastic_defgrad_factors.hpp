@@ -40,6 +40,8 @@ namespace Discret::Utils
 
 namespace Mat
 {
+  using namespace InelasticDefgradTransvIsotropElastViscoplastUtils;
+
   namespace PAR
   {
     enum class InelasticSource;
@@ -316,7 +318,7 @@ namespace Mat
       //! get yield condition parameter \f[ F \f]
       [[nodiscard]] double yield_cond_f() const { return yield_cond_f_; };
       //! get material behavior
-      [[nodiscard]] ViscoplastMatBehavior mat_behavior() const { return mat_behavior_; };
+      [[nodiscard]] MatBehavior mat_behavior() const { return mat_behavior_; };
       //! get boolean: use predictor adaptation before and in the Local
       //! Newton Loop? (true: yes, false: no)
       [[nodiscard]] bool bool_pred_adapt() const { return bool_pred_adapt_; };
@@ -341,14 +343,11 @@ namespace Mat
       }
       //! get the type of time integration for the evolution equations
       //! of history variables
-      [[nodiscard]] Mat::ViscoplastTimIntType timint_type() const { return timint_type_; };
+      [[nodiscard]] TimIntType timint_type() const { return timint_type_; };
       //! get the type of material linearization used
-      [[nodiscard]] Mat::ViscoplastLinearizationType linearization_type() const
-      {
-        return linearization_type_;
-      };
+      [[nodiscard]] LinearizationType linearization_type() const { return linearization_type_; };
       //! DEBUG: set linearization type
-      void debug_set_linearization_type(const Mat::ViscoplastLinearizationType linearization_type);
+      void debug_set_linearization_type(const LinearizationType linearization_type);
       //! get maximum, numerically evaluable plastic strain increment
       [[nodiscard]] double max_plastic_strain_incr() const { return max_plastic_strain_incr_; };
       //! get maximum, numerically evaluable value for the increment of
@@ -401,14 +400,14 @@ namespace Mat
       const double yield_cond_f_;
 
       //! material behavior (transversely isotropic or isotropic)
-      const ViscoplastMatBehavior mat_behavior_;
+      const MatBehavior mat_behavior_;
 
       //! computation method for the time integration of the
       //! history variables
-      const Mat::ViscoplastTimIntType timint_type_;
+      const TimIntType timint_type_;
 
       //! linearization method
-      Mat::ViscoplastLinearizationType linearization_type_;
+      LinearizationType linearization_type_;
 
       //! maximum, numerically evaluable plastic strain increment
       const double max_plastic_strain_incr_;
@@ -1497,9 +1496,8 @@ namespace Mat
      * been evaluated
      */
     StateQuantities evaluate_state_quantities(const Core::LinAlg::Matrix<3, 3>& CM,
-        const Core::LinAlg::Matrix<3, 3>& iFinM, const double plastic_strain,
-        Mat::ViscoplastErrorType& err_status, const double dt,
-        const Mat::ViscoplastStateQuantityEvalType& eval_type);
+        const Core::LinAlg::Matrix<3, 3>& iFinM, const double plastic_strain, ErrorType& err_status,
+        const double dt, const StateQuantityEvalType& eval_type);
 
     /*! @brief Evaluate the current state variable derivatives with respect to the right
      * Cauchy-Green deformation tensor, the inverse plastic deformation gradient and the equivalent
@@ -1521,8 +1519,8 @@ namespace Mat
      */
     StateQuantityDerivatives evaluate_state_quantity_derivatives(
         const Core::LinAlg::Matrix<3, 3>& CM, const Core::LinAlg::Matrix<3, 3>& iFinM,
-        const double plastic_strain, Mat::ViscoplastErrorType& err_status, const double dt,
-        const Mat::ViscoplastStateQuantityDerivEvalType& eval_type, const bool eval_state = false);
+        const double plastic_strain, ErrorType& err_status, const double dt,
+        const StateQuantityDerivEvalType& eval_type, const bool eval_state = false);
 
     //! return the fiber direction of transverse isotropy for the considered element
     Core::LinAlg::Matrix<3, 1> get_fiber_direction() { return m_; }
@@ -1832,7 +1830,7 @@ namespace Mat
      */
     bool check_predictor(const Core::LinAlg::Matrix<3, 3>& CM,
         const Core::LinAlg::Matrix<3, 3>& iFinM_pred, const double plastic_strain_pred,
-        Mat::ViscoplastErrorType& err_status);
+        ErrorType& err_status);
 
     /*!
      * @brief Calculate the residual for the Local Newton Loop (LNL)
@@ -1851,7 +1849,7 @@ namespace Mat
     Core::LinAlg::Matrix<10, 1> calculate_local_newton_loop_residual(
         const Core::LinAlg::Matrix<3, 3>& CM, const Core::LinAlg::Matrix<10, 1>& x,
         const Core::LinAlg::Matrix<3, 3>& last_iFinM, const double last_plastic_strain,
-        const double dt, Mat::ViscoplastErrorType& err_status);
+        const double dt, ErrorType& err_status);
 
 
     /*!
@@ -1873,7 +1871,7 @@ namespace Mat
      */
     Core::LinAlg::Matrix<10, 10> calculate_jacobian(const Core::LinAlg::Matrix<3, 3>& CM,
         const Core::LinAlg::Matrix<10, 1>& x, const Core::LinAlg::Matrix<3, 3>& last_iFinM,
-        const double last_plastic_strain, const double dt, Mat::ViscoplastErrorType& err_status);
+        const double last_plastic_strain, const double dt, ErrorType& err_status);
 
     /*!
      * @brief Adapt the predictor of the Local Newton Loop to yield
@@ -1905,7 +1903,7 @@ namespace Mat
      * @return solution vector of the Local Newton Loop, structured analogously to the predictor x
      */
     Core::LinAlg::Matrix<10, 1> local_newton_loop(const Core::LinAlg::Matrix<3, 3>& defgrad,
-        const Core::LinAlg::Matrix<10, 1>& x, Mat::ViscoplastErrorType& err_status);
+        const Core::LinAlg::Matrix<10, 1>& x, ErrorType& err_status);
 
     /*!
      * @brief Compute the plastic strain \f$
@@ -1929,7 +1927,7 @@ namespace Mat
      * @return plastic strain \f$ \varepsilon^{\text{p}}_{n+1} \f$
      */
     double integrate_plastic_strain(const double equiv_stress, const double last_plastic_strain,
-        const double dt, Mat::ViscoplastErrorType& err_status);
+        const double dt, ErrorType& err_status);
 
     /*!
      * @brief Get the line search parameter for the current iteration of
@@ -1963,8 +1961,7 @@ namespace Mat
      */
     double get_line_search_parameter(const Core::LinAlg::Matrix<10, 1>& curr_sol,
         const Core::LinAlg::Matrix<3, 3>& CM, const Core::LinAlg::Matrix<10, 1>& curr_res,
-        const double tolLNL, const Core::LinAlg::Matrix<10, 1>& incr,
-        Mat::ViscoplastErrorType& err_status);
+        const double tolLNL, const Core::LinAlg::Matrix<10, 1>& incr, ErrorType& err_status);
 
 
     /*!
@@ -1998,9 +1995,8 @@ namespace Mat
      * updated new substep length)
      * @return action to be performed subsequently in the LNL
      */
-    Mat::ViscoplastErrorActions manage_evaluation_error(const Mat::ViscoplastErrorType& err_status,
-        SubstepParams& substep_params, Core::LinAlg::Matrix<10, 1>& sol,
-        Core::LinAlg::Matrix<3, 3>& curr_CM);
+    ErrorActions manage_evaluation_error(const ErrorType& err_status, SubstepParams& substep_params,
+        Core::LinAlg::Matrix<10, 1>& sol, Core::LinAlg::Matrix<3, 3>& curr_CM);
 
     /*!
      * @brief Evaluate the additional cmat stiffness tensor using a perturbation-based approach, if

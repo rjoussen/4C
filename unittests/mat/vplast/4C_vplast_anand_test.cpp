@@ -9,6 +9,7 @@
 
 #include "4C_global_data.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
+#include "4C_mat_inelastic_defgrad_factors.hpp"
 #include "4C_mat_material_factory.hpp"
 #include "4C_mat_vplast_anand.hpp"
 #include "4C_mat_vplast_law.hpp"
@@ -94,13 +95,14 @@ namespace
     plastic_strain_rate_Anand_solution_ = 3.069292557971517e-06;
 
     // declare error status and overflow check boolean
-    Mat::ViscoplastErrorType err_status = Mat::ViscoplastErrorType::NoErrors;
+    Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::ErrorType err_status =
+        Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::ErrorType::NoErrors;
 
     // compute solution from the viscoplasticity law
     double plastic_strain_rate_Anand = vplast_law_Anand_->evaluate_plastic_strain_rate(
         equiv_stress_, equiv_plastic_strain_, 1.0, 1.0e30, err_status, true);
 
-    if (err_status != Mat::ViscoplastErrorType::NoErrors)
+    if (err_status != Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::ErrorType::NoErrors)
       FOUR_C_THROW("Error encountered during testing of TestEvaluatePlasticStrainRate");
 
 
@@ -115,13 +117,14 @@ namespace
     deriv_plastic_strain_rate_Anand_solution_(1, 0) = -3.33954141454838e-06;
 
     // declare error status and overflow check boolean
-    Mat::ViscoplastErrorType err_status = Mat::ViscoplastErrorType::NoErrors;
+    Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::ErrorType err_status =
+        Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::ErrorType::NoErrors;
 
     // call method for plastic strain rate evaluation in order to update the history variables, and
     // make the material ready for the derivative evaluation
     vplast_law_Anand_->evaluate_plastic_strain_rate(
         equiv_stress_, equiv_plastic_strain_, 1.0, 1.0e30, err_status, true);
-    if (err_status != Mat::ViscoplastErrorType::NoErrors)
+    if (err_status != Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::ErrorType::NoErrors)
       FOUR_C_THROW("Error encountered during testing of TestEvaluatePlasticStrainRate");
 
 
@@ -131,7 +134,7 @@ namespace
         vplast_law_Anand_->evaluate_derivatives_of_plastic_strain_rate(
             equiv_stress_, equiv_plastic_strain_, 1.0, 1.0e30, err_status, false);
 
-    if (err_status != Mat::ViscoplastErrorType::NoErrors)
+    if (err_status != Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::ErrorType::NoErrors)
       FOUR_C_THROW("Error encountered during testing of TestEvaluatePlasticStrainRateDerivatives");
 
     // compare solutions

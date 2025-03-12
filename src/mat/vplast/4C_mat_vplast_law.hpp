@@ -121,7 +121,8 @@ namespace Mat
        */
       virtual double evaluate_plastic_strain_rate(const double equiv_stress,
           const double equiv_plastic_strain, const double dt, const double max_plastic_strain_incr,
-          Mat::ViscoplastErrorType& err_status, const bool update_hist_var = true) = 0;
+          Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::ErrorType& err_status,
+          const bool update_hist_var = true) = 0;
 
       /*!
        * @brief Evaluate the derivatives of the equivalent plastic strain rate \f$
@@ -144,7 +145,8 @@ namespace Mat
        */
       virtual Core::LinAlg::Matrix<2, 1> evaluate_derivatives_of_plastic_strain_rate(
           const double equiv_stress, const double equiv_plastic_strain, const double dt,
-          const double max_plastic_strain_deriv_incr, Mat::ViscoplastErrorType& err_status,
+          const double max_plastic_strain_deriv_incr,
+          Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::ErrorType& err_status,
           const bool update_hist_var = true) = 0;
 
       /// Return material parameters

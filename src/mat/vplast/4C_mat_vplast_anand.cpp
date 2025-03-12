@@ -28,6 +28,7 @@ namespace
 
 }  // namespace
 
+using namespace Mat::InelasticDefgradTransvIsotropElastViscoplastUtils;
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
@@ -161,12 +162,12 @@ double Mat::Viscoplastic::Anand::evaluate_stress_ratio(
     const double equiv_stress, const double equiv_plastic_strain)
 {
   // declare error status (set to NoErrors initially)
-  Mat::ViscoplastErrorType err_status = Mat::ViscoplastErrorType::NoErrors;
+  ErrorType err_status = ErrorType::NoErrors;
 
   // compute flow resistance
   const double flow_resistance =
       compute_flow_resistance(equiv_stress, equiv_plastic_strain, err_status);
-  if (err_status != Mat::ViscoplastErrorType::NoErrors)
+  if (err_status != ErrorType::NoErrors)
     FOUR_C_THROW(
         "This method should not be used and it also failed while computing the flow resistance!");
 
@@ -177,16 +178,16 @@ double Mat::Viscoplastic::Anand::evaluate_stress_ratio(
  *--------------------------------------------------------------------*/
 double Mat::Viscoplastic::Anand::evaluate_plastic_strain_rate(const double equiv_stress,
     const double equiv_plastic_strain, const double dt, const double max_plastic_strain_incr,
-    Mat::ViscoplastErrorType& err_status, const bool update_hist_var)
+    ErrorType& err_status, const bool update_hist_var)
 {
   // first set error status to "no errors"
-  err_status = Mat::ViscoplastErrorType::NoErrors;
+  err_status = ErrorType::NoErrors;
 
   // Check if plastic strain is negative and throw error (handled by the parent material,
   // substepping)
   if (equiv_plastic_strain < 0.0)
   {
-    err_status = Mat::ViscoplastErrorType::NegativePlasticStrain;
+    err_status = ErrorType::NegativePlasticStrain;
     return -1;
   }
 
@@ -206,7 +207,7 @@ double Mat::Viscoplastic::Anand::evaluate_plastic_strain_rate(const double equiv
   if (equiv_stress > 0.0)
   {
     flow_resistance = compute_flow_resistance(equiv_stress, equiv_plastic_strain, err_status);
-    if (err_status != Mat::ViscoplastErrorType::NoErrors) return -1.0;
+    if (err_status != ErrorType::NoErrors) return -1.0;
 
 
     // save the currently computed flow resistance
@@ -224,7 +225,7 @@ double Mat::Viscoplastic::Anand::evaluate_plastic_strain_rate(const double equiv
     // error if so
     if (std::log(dt) + log_temp > std::log(max_plastic_strain_incr))
     {
-      err_status = Mat::ViscoplastErrorType::OverflowError;
+      err_status = ErrorType::OverflowError;
       return -1;
     }
 
@@ -239,17 +240,16 @@ double Mat::Viscoplastic::Anand::evaluate_plastic_strain_rate(const double equiv
  *--------------------------------------------------------------------*/
 Core::LinAlg::Matrix<2, 1> Mat::Viscoplastic::Anand::evaluate_derivatives_of_plastic_strain_rate(
     const double equiv_stress, const double equiv_plastic_strain, const double dt,
-    const double max_plastic_strain_deriv, Mat::ViscoplastErrorType& err_status,
-    const bool update_hist_var)
+    const double max_plastic_strain_deriv, ErrorType& err_status, const bool update_hist_var)
 {
   // first set error status to "no errors"
-  err_status = Mat::ViscoplastErrorType::NoErrors;
+  err_status = ErrorType::NoErrors;
 
   // Check if plastic strain is negative and throw error (handled by the parent material,
   // substepping)
   if (equiv_plastic_strain < 0.0)
   {
-    err_status = Mat::ViscoplastErrorType::NegativePlasticStrain;
+    err_status = ErrorType::NegativePlasticStrain;
     return Core::LinAlg::Matrix<2, 1>{true};
   }
 
@@ -278,9 +278,9 @@ Core::LinAlg::Matrix<2, 1> Mat::Viscoplastic::Anand::evaluate_derivatives_of_pla
     Core::LinAlg::Matrix<2, 1> derivs_of_flow_resistance = compute_derivatives_of_flow_resistance(
         equiv_stress, time_step_quantities_.current_flow_resistance_[gp_],
         delta_equiv_plastic_strain, err_status);
-    if (err_status != Mat::ViscoplastErrorType::NoErrors)
+    if (err_status != ErrorType::NoErrors)
     {
-      err_status = Mat::ViscoplastErrorType::FailedComputationFlowResistanceDerivs;
+      err_status = ErrorType::FailedComputationFlowResistanceDerivs;
       return Core::LinAlg::Matrix<2, 1>{true};
     }
 
@@ -322,7 +322,7 @@ Core::LinAlg::Matrix<2, 1> Mat::Viscoplastic::Anand::evaluate_derivatives_of_pla
     if ((log_dt + log_deriv_sigma > log_max_plastic_strain_deriv) ||
         (log_dt + log_deriv_eps > log_max_plastic_strain_deriv))
     {
-      err_status = Mat::ViscoplastErrorType::OverflowError;
+      err_status = ErrorType::OverflowError;
       return Core::LinAlg::Matrix<2, 1>{true};
     }
 
@@ -337,11 +337,11 @@ Core::LinAlg::Matrix<2, 1> Mat::Viscoplastic::Anand::evaluate_derivatives_of_pla
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-double Mat::Viscoplastic::Anand::compute_flow_resistance(const double equiv_stress,
-    const double equiv_plastic_strain, Mat::ViscoplastErrorType& err_status)
+double Mat::Viscoplastic::Anand::compute_flow_resistance(
+    const double equiv_stress, const double equiv_plastic_strain, ErrorType& err_status)
 {
   // make sure the error status is on NoErrors
-  err_status = Mat::ViscoplastErrorType::NoErrors;
+  err_status = ErrorType::NoErrors;
 
   // integration performed using the Newton-Raphson method
 
@@ -379,13 +379,13 @@ double Mat::Viscoplastic::Anand::compute_flow_resistance(const double equiv_stre
     // check for negative flow resistance values
     if (flow_resistance < 0.0)
     {
-      err_status = Mat::ViscoplastErrorType::FailedComputationFlowResistance;
+      err_status = ErrorType::FailedComputationFlowResistance;
       return -1;
     }
 
     // compute hardening tangent
     harden_tang = compute_hardening_tangent(equiv_stress, flow_resistance, err_status);
-    if (err_status != Mat::ViscoplastErrorType::NoErrors) return -1.0;
+    if (err_status != ErrorType::NoErrors) return -1.0;
 
     // compute residual
     res_S = inv_equiv_stress *
@@ -398,14 +398,14 @@ double Mat::Viscoplastic::Anand::compute_flow_resistance(const double equiv_stre
     // check whether the maximum number of iterations has been exceeded
     if (iter > max_iter)
     {
-      err_status = Mat::ViscoplastErrorType::FailedComputationFlowResistance;
+      err_status = ErrorType::FailedComputationFlowResistance;
       return -1.0;
     }
 
     // compute derivatives of the hardening tangent
     derivs_harden_tang =
         compute_derivatives_of_hardening_tangent(equiv_stress, flow_resistance, err_status);
-    if (err_status != Mat::ViscoplastErrorType::NoErrors) return -1.0;
+    if (err_status != ErrorType::NoErrors) return -1.0;
 
 
     temp = (1.0 - derivs_harden_tang(1) * delta_plastic_strain);
@@ -413,7 +413,7 @@ double Mat::Viscoplastic::Anand::compute_flow_resistance(const double equiv_stre
     inv_J = equiv_stress / temp;
     if (std::abs(inv_J) > 1.0e10)
     {
-      err_status = Mat::ViscoplastErrorType::FailedComputationFlowResistance;
+      err_status = ErrorType::FailedComputationFlowResistance;
       return -1.0;
     }
 
@@ -426,10 +426,10 @@ double Mat::Viscoplastic::Anand::compute_flow_resistance(const double equiv_stre
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
 double Mat::Viscoplastic::Anand::compute_hardening_tangent(
-    const double equiv_stress, const double flow_resistance, Mat::ViscoplastErrorType& err_status)
+    const double equiv_stress, const double flow_resistance, ErrorType& err_status)
 {
   // ensure the error status is clean
-  err_status = Mat::ViscoplastErrorType::NoErrors;
+  err_status = ErrorType::NoErrors;
 
   // compute inverse stress ratio
   const double inv_stress_ratio = flow_resistance / equiv_stress;
@@ -449,7 +449,7 @@ double Mat::Viscoplastic::Anand::compute_hardening_tangent(
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
 Core::LinAlg::Matrix<2, 1> Mat::Viscoplastic::Anand::compute_derivatives_of_hardening_tangent(
-    const double equiv_stress, const double flow_resistance, Mat::ViscoplastErrorType& err_status)
+    const double equiv_stress, const double flow_resistance, ErrorType& err_status)
 {
   // declare output variable
   Core::LinAlg::Matrix<2, 1> derivs_of_harden_tang{true};
@@ -492,24 +492,24 @@ Core::LinAlg::Matrix<2, 1> Mat::Viscoplastic::Anand::compute_derivatives_of_hard
 
 Core::LinAlg::Matrix<2, 1> Mat::Viscoplastic::Anand::compute_derivatives_of_flow_resistance(
     const double equiv_stress, const double flow_resistance, const double delta_plastic_strain,
-    Mat::ViscoplastErrorType& err_status)
+    ErrorType& err_status)
 {
   // declare the output derivatives
   Core::LinAlg::Matrix<2, 1> derivs_of_flow_resistance{true};
 
   // ensure the error status is on NoErrors
-  err_status = Mat::ViscoplastErrorType::NoErrors;
+  err_status = ErrorType::NoErrors;
 
   // compute the hardening tangent
   const double harden_tang = compute_hardening_tangent(equiv_stress, flow_resistance, err_status);
-  if (err_status != Mat::ViscoplastErrorType::NoErrors) return Core::LinAlg::Matrix<2, 1>{true};
+  if (err_status != ErrorType::NoErrors) return Core::LinAlg::Matrix<2, 1>{true};
 
 
   // compute the derivatives of the hardening tangent w.r.t. equivalent stress and the flow
   // resistance
   Core::LinAlg::Matrix<2, 1> derivs_of_harden_tang =
       compute_derivatives_of_hardening_tangent(equiv_stress, flow_resistance, err_status);
-  if (err_status != Mat::ViscoplastErrorType::NoErrors) return Core::LinAlg::Matrix<2, 1>{true};
+  if (err_status != ErrorType::NoErrors) return Core::LinAlg::Matrix<2, 1>{true};
   double d_harden_tang_d_equiv_stress = derivs_of_harden_tang(0);
   double d_harden_tang_d_flow_res = derivs_of_harden_tang(1);
 

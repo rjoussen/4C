@@ -2720,15 +2720,17 @@ std::unordered_map<Core::Materials::MaterialType, Core::IO::InputSpec> Global::v
                                                 "following "
                                                 "the notation in Dafalias 1989, International "
                                                 "Journal of Plasticity, Vol. 5"}),
-            parameter<Mat::ViscoplastMatBehavior>(
+            parameter<Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::MatBehavior>(
                 "MAT_BEHAVIOR", {.description = "Material behavior / anisotropy type: transversely "
                                                 "isotropic | isotropic (default)"}),
-            parameter<Mat::ViscoplastTimIntType>("TIME_INTEGRATION_HIST_VARS",
+            parameter<Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::TimIntType>(
+                "TIME_INTEGRATION_HIST_VARS",
                 {.description =
                         "time integration of internal variables: standard | log (logarithmic "
                         "transformation of the "
                         "evolution equation for the plastic deformation gradient)",
-                    .default_value = Mat::ViscoplastTimIntType::logarithmic}),
+                    .default_value = Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::
+                        TimIntType::logarithmic}),
             parameter<bool>("USE_PRED_ADAPT",
                 {.description = "boolean: use predictor adaptation before and in the "
                                 "Local Newton Loop? (true: yes, false: "
@@ -2786,11 +2788,13 @@ std::unordered_map<Core::Materials::MaterialType, Core::IO::InputSpec> Global::v
                                 "number of iterations, number of substeps, ...) to a csv "
                                 "file? If true: yes, false: no",
                     .default_value = false}),
-            parameter<Mat::ViscoplastLinearizationType>("LINEARIZATION",
+            parameter<Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::LinearizationType>(
+                "LINEARIZATION",
                 {.description =
                         "utilized material linearization: analytic | perturb_based (based on "
                         "perturbations of the current state)",
-                    .default_value = Mat::ViscoplastLinearizationType::analytic}),
+                    .default_value = Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::
+                        LinearizationType::analytic}),
             parameter<Core::LinAlg::MatrixExpCalcMethod>("MATRIX_EXP_CALC_METHOD",
                 {.description =
                         "chosen computation method for matrix exponential (default | taylor_series "

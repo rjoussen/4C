@@ -114,11 +114,13 @@ namespace Mat
 
       double evaluate_plastic_strain_rate(const double equiv_stress,
           const double equiv_plastic_strain, const double dt, const double max_plastic_strain_incr,
-          Mat::ViscoplastErrorType& err_status, const bool update_hist_var) override;
+          Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::ErrorType& err_status,
+          const bool update_hist_var) override;
 
       Core::LinAlg::Matrix<2, 1> evaluate_derivatives_of_plastic_strain_rate(
           const double equiv_stress, const double equiv_plastic_strain, const double dt,
-          const double max_plastic_strain_deriv, Mat::ViscoplastErrorType& err_status,
+          const double max_plastic_strain_deriv,
+          Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::ErrorType& err_status,
           const bool update_hist_var) override;
 
       void setup(const int numgp, const Core::IO::InputParameterContainer& container) override;
@@ -229,7 +231,7 @@ namespace Mat
        * return flow resistance at the new time instant
        */
       double compute_flow_resistance(const double equiv_stress, const double equiv_plastic_strain,
-          Mat::ViscoplastErrorType& err_status);
+          Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::ErrorType& err_status);
 
       /*! @brief Calculate the partial derivatives of the flow resistance \f$ S \f$ with respect to
        * the equivalent stress \f$ \overline{\sigma}  \f$ and the plastic strain \f$
@@ -249,7 +251,7 @@ namespace Mat
        */
       Core::LinAlg::Matrix<2, 1> compute_derivatives_of_flow_resistance(const double equiv_stress,
           const double flow_resistance, const double delta_plastic_strain,
-          Mat::ViscoplastErrorType& err_status);
+          Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::ErrorType& err_status);
 
       /*! @brief Calculate the hardening tangent \f$ \frac{\text{d} S}{ \text{d}
        * \varepsilon^{\text{p}}}\f$, derived from the hardening rate equation
@@ -260,7 +262,7 @@ namespace Mat
        * @return hardening tangent value
        */
       double compute_hardening_tangent(const double equiv_stress, const double flow_resistance,
-          Mat::ViscoplastErrorType& err_status);
+          Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::ErrorType& err_status);
 
       /*! @brief Calculate the partial derivatives of the hardening tangent \f$ \frac{\text{d} S}{
        * \text{d} \varepsilon^{\text{p}}}\f$ with respect to the equivalent stress \f$
@@ -273,7 +275,8 @@ namespace Mat
        * component 1: w.r.t. flow resistance)
        */
       Core::LinAlg::Matrix<2, 1> compute_derivatives_of_hardening_tangent(const double equiv_stress,
-          const double flow_resistance, Mat::ViscoplastErrorType& err_status);
+          const double flow_resistance,
+          Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::ErrorType& err_status);
 
 
       //! struct containing quantities at the last and current time points (i.e., at \f[ t_n \f] and

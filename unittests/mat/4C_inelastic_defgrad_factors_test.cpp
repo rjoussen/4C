@@ -303,10 +303,10 @@ namespace
       inelastic_defgrad_transv_isotrop_vplast_refJC_data.add("YIELD_COND_A", 1.0);
       inelastic_defgrad_transv_isotrop_vplast_refJC_data.add("YIELD_COND_B", 2.0);
       inelastic_defgrad_transv_isotrop_vplast_refJC_data.add("YIELD_COND_F", 2.5);
-      inelastic_defgrad_transv_isotrop_vplast_refJC_data.add(
-          "MAT_BEHAVIOR", Mat::ViscoplastMatBehavior::transv_isotrop);
-      inelastic_defgrad_transv_isotrop_vplast_refJC_data.add(
-          "TIME_INTEGRATION_HIST_VARS", Mat::ViscoplastTimIntType::logarithmic);
+      inelastic_defgrad_transv_isotrop_vplast_refJC_data.add("MAT_BEHAVIOR",
+          Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::MatBehavior::transv_isotrop);
+      inelastic_defgrad_transv_isotrop_vplast_refJC_data.add("TIME_INTEGRATION_HIST_VARS",
+          Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::TimIntType::logarithmic);
       inelastic_defgrad_transv_isotrop_vplast_refJC_data.add("USE_PRED_ADAPT", true);
       inelastic_defgrad_transv_isotrop_vplast_refJC_data.add("USE_LAST_PRED_ADAPT_FACT", true);
       inelastic_defgrad_transv_isotrop_vplast_refJC_data.add("USE_LINE_SEARCH", true);
@@ -318,8 +318,8 @@ namespace
       inelastic_defgrad_transv_isotrop_vplast_refJC_data.add("INTERP_FACT_PRED_ADAPT", 0.5);
       inelastic_defgrad_transv_isotrop_vplast_refJC_data.add("MAX_NUM_PRED_ADAPT", 10);
       inelastic_defgrad_transv_isotrop_vplast_refJC_data.add("ANALYZE_TIMINT", false);
-      inelastic_defgrad_transv_isotrop_vplast_refJC_data.add(
-          "LINEARIZATION", Mat::ViscoplastLinearizationType::analytic);
+      inelastic_defgrad_transv_isotrop_vplast_refJC_data.add("LINEARIZATION",
+          Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::LinearizationType::analytic);
       inelastic_defgrad_transv_isotrop_vplast_refJC_data.add("USE_LAST_PRED_ADAPT_FACT", true);
       inelastic_defgrad_transv_isotrop_vplast_refJC_data.add(
           "MATRIX_EXP_CALC_METHOD", Core::LinAlg::MatrixExpCalcMethod::default_method);
@@ -344,10 +344,10 @@ namespace
       inelastic_defgrad_isotrop_vplast_refJC_data.add("YIELD_COND_A", 1.0);
       inelastic_defgrad_isotrop_vplast_refJC_data.add("YIELD_COND_B", 2.0);
       inelastic_defgrad_isotrop_vplast_refJC_data.add("YIELD_COND_F", 2.5);
-      inelastic_defgrad_isotrop_vplast_refJC_data.add(
-          "MAT_BEHAVIOR", Mat::ViscoplastMatBehavior::isotrop);
-      inelastic_defgrad_isotrop_vplast_refJC_data.add(
-          "TIME_INTEGRATION_HIST_VARS", Mat::ViscoplastTimIntType::logarithmic);
+      inelastic_defgrad_isotrop_vplast_refJC_data.add("MAT_BEHAVIOR",
+          Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::MatBehavior::isotrop);
+      inelastic_defgrad_isotrop_vplast_refJC_data.add("TIME_INTEGRATION_HIST_VARS",
+          Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::TimIntType::logarithmic);
       inelastic_defgrad_isotrop_vplast_refJC_data.add("USE_PRED_ADAPT", true);
       inelastic_defgrad_isotrop_vplast_refJC_data.add("USE_LAST_PRED_ADAPT_FACT", true);
       inelastic_defgrad_isotrop_vplast_refJC_data.add("USE_LINE_SEARCH", true);
@@ -360,8 +360,8 @@ namespace
       inelastic_defgrad_isotrop_vplast_refJC_data.add("INTERP_FACT_PRED_ADAPT", 0.1);
       inelastic_defgrad_isotrop_vplast_refJC_data.add("MAX_NUM_PRED_ADAPT", 10);
       inelastic_defgrad_isotrop_vplast_refJC_data.add("ANALYZE_TIMINT", false);
-      inelastic_defgrad_isotrop_vplast_refJC_data.add(
-          "LINEARIZATION", Mat::ViscoplastLinearizationType::analytic);
+      inelastic_defgrad_isotrop_vplast_refJC_data.add("LINEARIZATION",
+          Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::LinearizationType::analytic);
       inelastic_defgrad_isotrop_vplast_refJC_data.add("USE_LAST_PRED_ADAPT_FACT", true);
       inelastic_defgrad_isotrop_vplast_refJC_data.add(
           "MATRIX_EXP_CALC_METHOD", Core::LinAlg::MatrixExpCalcMethod::default_method);
@@ -1659,7 +1659,8 @@ namespace
     CM.multiply_tn(1.0, FM_, FM_, 0.0);
 
     // declare error status
-    Mat::ViscoplastErrorType err_status = Mat::ViscoplastErrorType::NoErrors;
+    Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::ErrorType err_status =
+        Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::ErrorType::NoErrors;
 
     // compute StateQuantities objects
     Mat::InelasticDefgradTransvIsotropElastViscoplast::StateQuantities
@@ -1667,13 +1668,15 @@ namespace
             transv_isotrop_vplast_refJC_->evaluate_state_quantities(CM,
                 iFin_transv_isotrop_vplast_refJC_solution_,
                 plastic_strain_transv_isotrop_vplast_refJC_solution_, err_status, 1.0,
-                Mat::ViscoplastStateQuantityEvalType::FullEval);
+                Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::StateQuantityEvalType::
+                    FullEval);
     Mat::InelasticDefgradTransvIsotropElastViscoplast::StateQuantities
         computed_state_quantities_isotrop = isotrop_vplast_refJC_->evaluate_state_quantities(CM,
             iFin_transv_isotrop_vplast_refJC_solution_,
             plastic_strain_transv_isotrop_vplast_refJC_solution_, err_status, 1.0,
-            Mat::ViscoplastStateQuantityEvalType::FullEval);
-    if (err_status != Mat::ViscoplastErrorType::NoErrors)
+            Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::StateQuantityEvalType::
+                FullEval);
+    if (err_status != Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::ErrorType::NoErrors)
     {
       FOUR_C_THROW("Error encountered during testing of TestEvaluateStateQuantities");
     }
@@ -1725,7 +1728,8 @@ namespace
     Core::LinAlg::Matrix<3, 3> CM(true);
     CM.multiply_tn(1.0, FM_, FM_, 0.0);
 
-    Mat::ViscoplastErrorType err_status = Mat::ViscoplastErrorType::NoErrors;
+    Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::ErrorType err_status =
+        Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::ErrorType::NoErrors;
 
     // compute StateQuantityDerivatives objects
     Mat::InelasticDefgradTransvIsotropElastViscoplast::StateQuantityDerivatives
@@ -1733,16 +1737,20 @@ namespace
             transv_isotrop_vplast_refJC_->evaluate_state_quantity_derivatives(CM,
                 iFin_transv_isotrop_vplast_refJC_solution_,
                 plastic_strain_transv_isotrop_vplast_refJC_solution_, err_status, 1.0,
-                Mat::ViscoplastStateQuantityDerivEvalType::FullEval, true);
+                Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::StateQuantityDerivEvalType::
+                    FullEval,
+                true);
 
     Mat::InelasticDefgradTransvIsotropElastViscoplast::StateQuantityDerivatives
         computed_state_quantity_derivatives_isotrop =
             isotrop_vplast_refJC_->evaluate_state_quantity_derivatives(CM,
                 iFin_transv_isotrop_vplast_refJC_solution_,
                 plastic_strain_transv_isotrop_vplast_refJC_solution_, err_status, 1.0,
-                Mat::ViscoplastStateQuantityDerivEvalType::FullEval, true);
+                Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::StateQuantityDerivEvalType::
+                    FullEval,
+                true);
 
-    if (err_status != Mat::ViscoplastErrorType::NoErrors)
+    if (err_status != Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::ErrorType::NoErrors)
     {
       FOUR_C_THROW("Error encountered during testing of TestEvaluateStateQuantityDerivatives");
     }
@@ -2058,8 +2066,8 @@ namespace
         current_defgrad_ptr, iFin_other, iFinM, kin_quantities.iCV, dSdiFinj, cmatadd);
 
     cmatadd.clear();
-    isotrop_vplast_refJC_->parameter()->debug_set_linearization_type(
-        FourC::Mat::ViscoplastLinearizationType::perturb_based);
+    isotrop_vplast_refJC_->parameter()->debug_set_linearization_type(FourC::Mat::
+            InelasticDefgradTransvIsotropElastViscoplastUtils::LinearizationType::perturb_based);
     isotrop_vplast_refJC_->evaluate_additional_cmat(
         current_defgrad_ptr, iFin_other, iFinM, kin_quantities.iCV, dSdiFinj, cmatadd);
 
