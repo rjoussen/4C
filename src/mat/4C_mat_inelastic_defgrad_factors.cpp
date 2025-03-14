@@ -469,9 +469,11 @@ namespace
   // DEBUG utils (InelasticDefgradTransvIsotropElastViscoplast)
   // define ele_gid to be debugged
   // const std::vector<int> debug_ele_gid_vec{606, 607, 622, 623, 638, 639};
-  const std::vector<int> debug_ele_gid_vec{0};
+  // const std::vector<int> debug_ele_gid_vec{21304};
+  const std::vector<int> debug_ele_gid_vec{21310};
   // const std::vector<int> debug_gp_vec{-1};
-  const std::vector<int> debug_gp_vec{0};
+  // const std::vector<int> debug_gp_vec{25};
+  const std::vector<int> debug_gp_vec{11};
   bool debug_output_ele_gp(const std::vector<int>& ele_gid_vec, const std::vector<int>& gp_vec,
       const int ele_gid, const int gp)
 
@@ -1924,6 +1926,15 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_state_quantities(
     state_quantities.curr_equiv_stress_ = std::sqrt(3.0 / 2.0 * Me_dev_sym_contract_Me_dev_sym);
   }
 
+  // check if either stress or plastic strain are NaN -> in this case,
+  // return with overflow error
+  if (std::isnan(state_quantities.curr_equiv_stress_) || std::isnan(plastic_strain))
+  {
+    // return with error
+    err_status = ErrorType::OverflowError;
+    return StateQuantities{};
+  }
+
   // calculate equivalent plastic strain rate using the viscoplastic law
   state_quantities.curr_equiv_plastic_strain_rate_ =
       viscoplastic_law_->evaluate_plastic_strain_rate(state_quantities.curr_equiv_stress_,
@@ -2727,8 +2738,12 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_inverse_inelast
     {
       std::cout << "elastic predictor: stress: " << state_quantities_.curr_equiv_stress_
                 << std::endl;
-      double stress_ratio = viscoplastic_law_->evaluate_stress_ratio(
-          state_quantities_.curr_equiv_stress_, time_step_quantities_.last_plastic_strain_[gp_]);
+      double stress_ratio = 0.0;
+      if (state_quantities_.curr_equiv_stress_ > 0.0)
+      {
+        stress_ratio = viscoplastic_law_->evaluate_stress_ratio(
+            state_quantities_.curr_equiv_stress_, time_step_quantities_.last_plastic_strain_[gp_]);
+      }
       if (stress_ratio > 0.0)
       {
         std::cout << "elastic predictor: yield strength (flow resistance): "
@@ -4380,7 +4395,7 @@ double Mat::InelasticDefgradTransvIsotropElastViscoplast::integrate_plastic_stra
   // set loop settings
   unsigned int iter = 0;
   const unsigned int max_iter = 50;
-  const double tol = 1.0e-10;
+  const double tol = 1.0e-8;
   double plastic_strain_rate = 1.0e10;
   double deriv_plastic_strain_rate = 1.0e10;
   double residual = 1.0e10;

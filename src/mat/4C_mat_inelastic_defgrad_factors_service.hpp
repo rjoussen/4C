@@ -45,6 +45,8 @@ namespace Mat
                       // (and \f$ \mathsymbol{E}^{\text{p}}  = \exp(- \Delta t
                       // \dot{\varepsilon}^{\text{p}} \mathsymbol{N}^{\text{p}}) \f$) checked in the
                       // standard substepping procedure
+      NoFlowResistance,  // the material has no flow resistance anymore, such that the evaluations
+                         // model non-physical phenomena
       NoPlasticIncompressibility,  // no plastic incompressibility, meaning that our determinant
                                    // of the inelastic defgrad is far from
                                    // 1

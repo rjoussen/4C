@@ -204,7 +204,7 @@ double Mat::Viscoplastic::Anand::evaluate_plastic_strain_rate(const double equiv
     time_step_quantities_.current_plastic_strain_[gp_] = equiv_plastic_strain;
   }
 
-  if (equiv_stress > 0.0)
+  if (equiv_stress > 1.0e-16)
   {
     flow_resistance = compute_flow_resistance(equiv_stress, equiv_plastic_strain, err_status);
     if (err_status != ErrorType::NoErrors) return -1.0;
@@ -213,9 +213,17 @@ double Mat::Viscoplastic::Anand::evaluate_plastic_strain_rate(const double equiv
     // save the currently computed flow resistance
     if (update_hist_var) time_step_quantities_.current_flow_resistance_[gp_] = flow_resistance;
 
+
+    // make sure that the flow resistance is
+    // larger than 0, so that we can evaluate the logarithms
+    if (flow_resistance < 1.0e-16)
+    {
+      err_status = ErrorType::NoFlowResistance;
+      return 0.0;
+    }
+
     // compute stress ratio
     const double log_stress_ratio = std::log(equiv_stress) - std::log(flow_resistance);
-
 
     // compute logarithm \f$ \log (P \exp(E \left[\frac{\overline{\sigma}}{S}}
     // - 1.0]) ) \f$
@@ -228,7 +236,6 @@ double Mat::Viscoplastic::Anand::evaluate_plastic_strain_rate(const double equiv
       err_status = ErrorType::OverflowError;
       return -1;
     }
-
 
     equiv_plastic_strain_rate = std::exp(log_temp);
   }
@@ -351,7 +358,7 @@ double Mat::Viscoplastic::Anand::compute_flow_resistance(
   // config of Newton-Raphson loop
   int iter = 0;
   int max_iter = 50;
-  double conv_tol = 1.0e-10;
+  double conv_tol = 1.0e-8;
   double res_S = 0;  // residual of the nonlinear equation
   double inv_J = 0;  // inverse Jacobian of the nonlinear equation
 
