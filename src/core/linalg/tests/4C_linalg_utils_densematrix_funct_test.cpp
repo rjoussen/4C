@@ -29,16 +29,16 @@ namespace
   TEST(LinalgDenseMatrixSquareTest, 2x2MatrixSqrt)
   {
     Core::LinAlg::Matrix<2, 2> A(true);
-    A(0, 0) = 0.1320698936;
-    A(0, 1) = 0.0;
-    A(1, 0) = 0.0;
-    A(1, 1) = 0.0134355791;
+    A(0, 0) = 0.37702591;
+    A(0, 1) = 0.12158694;
+    A(1, 0) = 0.85176491;
+    A(1, 1) = 0.85294269;
 
     Core::LinAlg::Matrix<2, 2> sqrt_A_ref(true);
-    sqrt_A_ref(0, 0) = std::sqrt(A(0, 0));
-    sqrt_A_ref(0, 1) = 0.0;
-    sqrt_A_ref(1, 0) = 0.0;
-    sqrt_A_ref(1, 1) = std::sqrt(A(1, 1));
+    sqrt_A_ref(0, 0) = 0.57372853;
+    sqrt_A_ref(0, 1) = 0.08265644;
+    sqrt_A_ref(1, 0) = 0.57904128;
+    sqrt_A_ref(1, 1) = 0.89726317;
 
     Core::LinAlg::MatrixFunctErrorType sqrt_err_status =
         Core::LinAlg::MatrixFunctErrorType::no_errors;
@@ -46,7 +46,7 @@ namespace
         A, sqrt_err_status, nullptr, Core::LinAlg::MatrixSqrtCalcMethod::db_iter_scaled_product);
     FOUR_C_ASSERT_ALWAYS(sqrt_err_status == Core::LinAlg::MatrixFunctErrorType::no_errors,
         "Computation of matrix square root (2x2) failed!");
-    FOUR_C_EXPECT_NEAR(sqrt_A, sqrt_A_ref, 1.0e-9);
+    FOUR_C_EXPECT_NEAR(sqrt_A, sqrt_A_ref, 1.0e-6);
   }
 
 
@@ -141,26 +141,26 @@ namespace
   TEST(LinalgDenseMatrixSqrtTest, 3x3MatrixSqrt)
   {
     Core::LinAlg::Matrix<3, 3> A(true);
-    A(0, 0) = 0.4908570193;
-    A(0, 1) = 0.0;
-    A(0, 2) = 0.0;
-    A(1, 0) = 0.0;
-    A(1, 1) = 0.8620162322;
-    A(1, 2) = 0.0;
-    A(2, 0) = 0.0;
-    A(2, 1) = 0.0;
-    A(2, 2) = 0.9434957224;
+    A(0, 0) = 0.9352497;
+    A(0, 1) = 0.8203507;
+    A(0, 2) = 0.09761925;
+    A(1, 0) = 0.08588106;
+    A(1, 1) = 0.92256664;
+    A(1, 2) = 0.65193256;
+    A(2, 0) = 0.45387867;
+    A(2, 1) = 0.15967818;
+    A(2, 2) = 0.16867136;
 
     Core::LinAlg::Matrix<3, 3> sqrt_A_ref(true);
-    sqrt_A_ref(0, 0) = std::sqrt(A(0, 0));
-    sqrt_A_ref(0, 1) = 0.0;
-    sqrt_A_ref(0, 2) = 0.0;
-    sqrt_A_ref(1, 0) = 0.0;
-    sqrt_A_ref(1, 1) = std::sqrt(A(1, 1));
-    sqrt_A_ref(1, 2) = 0.0;
-    sqrt_A_ref(2, 0) = 0.0;
-    sqrt_A_ref(2, 1) = 0.0;
-    sqrt_A_ref(2, 2) = std::sqrt(A(2, 2));
+    sqrt_A_ref(0, 0) = 0.98574008;
+    sqrt_A_ref(0, 1) = 0.42148171;
+    sqrt_A_ref(0, 2) = -0.07014606;
+    sqrt_A_ref(1, 0) = -0.0329402;
+    sqrt_A_ref(1, 1) = 0.96350189;
+    sqrt_A_ref(1, 2) = 0.46687965;
+    sqrt_A_ref(2, 0) = 0.32147358;
+    sqrt_A_ref(2, 1) = 0.01738015;
+    sqrt_A_ref(2, 2) = 0.42791007;
 
     Core::LinAlg::MatrixFunctErrorType sqrt_err_status =
         Core::LinAlg::MatrixFunctErrorType::no_errors;
@@ -169,7 +169,7 @@ namespace
     FOUR_C_ASSERT_ALWAYS(sqrt_err_status == Core::LinAlg::MatrixFunctErrorType::no_errors,
         "Computation of matrix square root (3x3) using the DB iteration (scaled, product form) "
         "failed!");
-    FOUR_C_EXPECT_NEAR(sqrt_A, sqrt_A_ref, 1.0e-9);
+    FOUR_C_EXPECT_NEAR(sqrt_A, sqrt_A_ref, 1.0e-6);
   }
 
   TEST(LinalgDenseMatrixExpLogTest, 3x3MatrixExp)

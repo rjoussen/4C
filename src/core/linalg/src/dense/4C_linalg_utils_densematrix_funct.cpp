@@ -462,7 +462,16 @@ Core::LinAlg::Matrix<dim, dim> Core::LinAlg::matrix_log(const Core::LinAlg::Matr
 
     // determine the matrix logarithm of the k-th square root using the Pade approximation of order
     // m
-    *pade_order = m;
+    if (pade_order == nullptr)
+    {
+      pade_order = &m;  // bind the Pade order pointer to the local variable, which will go out of
+                        // scope afterwards
+    }
+    else
+    {
+      *pade_order = m;  // save the correct order with the Pade order pointer
+    }
+
     Core::LinAlg::Matrix<dim, dim> k_sqrt_log = matrix_log(A, err_status,
         calc_method = Core::LinAlg::MatrixLogCalcMethod::pade_part_fract, pade_order);
 
