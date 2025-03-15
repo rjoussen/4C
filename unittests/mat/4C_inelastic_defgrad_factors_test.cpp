@@ -1197,6 +1197,147 @@ namespace
       iso.curr_dlpdepsp_(2, 0) = iso.curr_ddpdepsp_(2, 0);
     }
 
+    void set_up_dummy_viscoplast_material()
+    {
+      // get problem information
+      const int problemid(0);
+      Global::Problem& problem = (*Global::Problem::instance());
+      problem.materials()->set_read_from_problem(problemid);
+
+      // create InelasticDefgradTransvIsotropElastViscoplast object initialize container for
+      // material parameters
+      Core::IO::InputParameterContainer inelastic_defgrad_debug_vplast_data;
+      inelastic_defgrad_debug_vplast_data.add("VISCOPLAST_LAW_ID", 4);
+      inelastic_defgrad_debug_vplast_data.add("FIBER_READER_ID", 5);
+      inelastic_defgrad_debug_vplast_data.add("YIELD_COND_A", 0.879);
+      inelastic_defgrad_debug_vplast_data.add("YIELD_COND_B", 0.121);
+      inelastic_defgrad_debug_vplast_data.add("YIELD_COND_F", 1.5);
+      inelastic_defgrad_debug_vplast_data.add("MAT_BEHAVIOR",
+          Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::MatBehavior::transv_isotrop);
+      inelastic_defgrad_debug_vplast_data.add("TIME_INTEGRATION_HIST_VARS",
+          Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::TimIntType::logarithmic);
+      inelastic_defgrad_debug_vplast_data.add("USE_PRED_ADAPT", true);
+      inelastic_defgrad_debug_vplast_data.add("USE_LAST_PRED_ADAPT_FACT", true);
+      inelastic_defgrad_debug_vplast_data.add("USE_LINE_SEARCH", true);
+      inelastic_defgrad_debug_vplast_data.add("USE_SUBSTEPPING", false);
+      inelastic_defgrad_debug_vplast_data.add("MAX_HALVE_NUM_SUBSTEP", 1);
+      inelastic_defgrad_debug_vplast_data.add("MAX_PLASTIC_STRAIN_INCR", std::exp(30.0));
+      inelastic_defgrad_debug_vplast_data.add("MAX_PLASTIC_STRAIN_DERIV_INCR", std::exp(30.0));
+      inelastic_defgrad_debug_vplast_data.add("INTERP_FACT_PRED_ADAPT", 0.5);
+      inelastic_defgrad_debug_vplast_data.add("MAX_NUM_PRED_ADAPT", 10);
+      inelastic_defgrad_debug_vplast_data.add("ANALYZE_TIMINT", false);
+      inelastic_defgrad_debug_vplast_data.add("LINEARIZATION",
+          Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::LinearizationType::analytic);
+      inelastic_defgrad_debug_vplast_data.add("USE_LAST_PRED_ADAPT_FACT", true);
+      inelastic_defgrad_debug_vplast_data.add(
+          "MATRIX_EXP_CALC_METHOD", Core::LinAlg::MatrixExpCalcMethod::default_method);
+      inelastic_defgrad_debug_vplast_data.add("MATRIX_EXP_DERIV_CALC_METHOD",
+          Core::LinAlg::GenMatrixExpFirstDerivCalcMethod::default_method);
+      inelastic_defgrad_debug_vplast_data.add(
+          "MATRIX_LOG_CALC_METHOD", Core::LinAlg::MatrixLogCalcMethod::inv_scal_square);
+      inelastic_defgrad_debug_vplast_data.add("MATRIX_LOG_DERIV_CALC_METHOD",
+          Core::LinAlg::GenMatrixLogFirstDerivCalcMethod::pade_part_fract);
+
+      // get pointer to parameter class
+      params_debug_vplast_ =
+          std::dynamic_pointer_cast<Mat::PAR::InelasticDefgradTransvIsotropElastViscoplast>(
+              std::shared_ptr(Mat::make_parameter(10000000,
+                  Core::Materials::MaterialType::mfi_transv_isotrop_elast_viscoplast,
+                  inelastic_defgrad_debug_vplast_data)));
+
+
+      // manually create vector of elastic potentials
+      std::vector<std::shared_ptr<Mat::Elastic::Summand>> pot_sum_el;
+      std::vector<std::shared_ptr<Mat::Elastic::CoupTransverselyIsotropic>>
+          pot_sum_el_transv_iso;  // keep empty
+      // we only look at a single CoupNeoHooke component
+      Core::IO::InputParameterContainer elast_pot_coup_neo_hooke_data;
+      elast_pot_coup_neo_hooke_data.add("YOUNG", 7.81e3);
+      elast_pot_coup_neo_hooke_data.add("NUE", 0.38);
+      problem.materials()->insert(
+          20000000, Mat::make_parameter(20000000, Core::Materials::MaterialType::mes_coupneohooke,
+                        elast_pot_coup_neo_hooke_data));
+      auto elastic_summand = Mat::Elastic::Summand::factory(20000000);
+      pot_sum_el.emplace_back(elastic_summand);
+
+      // manually create viscoplastic law (Anand / Reformulated Johnson-Cook)
+      Core::IO::InputParameterContainer viscoplastic_law_data;
+      // ---> Anand params
+      viscoplastic_law_data.add("STRAIN_RATE_PREFAC", 0.01389);
+      viscoplastic_law_data.add("STRAIN_RATE_SENS", 0.15);
+      viscoplastic_law_data.add("INIT_FLOW_RES", 0.95);
+      viscoplastic_law_data.add("HARDEN_RATE_PREFAC", 10.0);
+      viscoplastic_law_data.add("HARDEN_RATE_SENS", 2.0);
+      viscoplastic_law_data.add("FLOW_RES_SAT_FAC", 2.0);
+      viscoplastic_law_data.add("FLOW_RES_SAT_EXP", 0.05);
+      // ---> Ref. JC params
+      /*
+      viscoplastic_law_data.add("STRAIN_RATE_PREFAC", 1.0);
+      viscoplastic_law_data.add("STRAIN_RATE_EXP_FAC", 0.014);
+      viscoplastic_law_data.add("INIT_YIELD_STRENGTH", 792.0);
+      viscoplastic_law_data.add("ISOTROP_HARDEN_PREFAC", 510.0);
+      viscoplastic_law_data.add("ISOTROP_HARDEN_EXP", 1.0); */
+      // add material to problem instance
+      problem.materials()->insert(
+          40000000, Mat::make_parameter(
+                        40000000, Core::Materials::MaterialType::mvl_Anand, viscoplastic_law_data));
+      std::shared_ptr<Mat::Viscoplastic::Anand> viscoplastic_law =
+          std::make_shared<Mat::Viscoplastic::Anand>(
+              problem.materials()->parameter_by_id(40000000));
+
+      // create the parameter container for the fiber reader
+      Core::IO::InputParameterContainer fiber_reader_data;
+      fiber_reader_data.add("ALPHA", 1.0);
+      fiber_reader_data.add("BETA", 1.0);
+      fiber_reader_data.add("GAMMA", 1.0);
+      fiber_reader_data.add("ANGLE", 0.0);
+      fiber_reader_data.add("STR_TENS_ID", 100);
+      fiber_reader_data.add<std::string>("STRATEGY", "Standard");
+      fiber_reader_data.add<std::string>("DISTR", "none");
+      fiber_reader_data.add("C1", 1.0);
+      fiber_reader_data.add("C2", 0.0);
+      fiber_reader_data.add("C3", 0.0);
+      fiber_reader_data.add("C4", 1e16);
+      fiber_reader_data.add("FIBER", 1);
+      fiber_reader_data.add("INIT", 1);
+
+      // add material to problem instance
+      problem.materials()->insert(10000000,
+          Mat::make_parameter(10000000, Core::Materials::MaterialType::mes_structuraltensorstratgy,
+              fiber_reader_data));
+      // create params and then the fiber reader
+      std::shared_ptr<Mat::Elastic::PAR::CoupTransverselyIsotropic> params_fiber_reader_ =
+          std::dynamic_pointer_cast<Mat::Elastic::PAR::CoupTransverselyIsotropic>(std::shared_ptr(
+              Mat::make_parameter(1, Core::Materials::MaterialType::mes_couptransverselyisotropic,
+                  fiber_reader_data)));  // the fiber reader is only required for the setup of
+                                         // InelasticDefgradTransvIsotropElastViscoplast, that's
+                                         // why: we don't need to worry about it losing its params
+                                         // class after the SetUp method ends
+      Mat::Elastic::CoupTransverselyIsotropic fiber_reader_{params_fiber_reader_.get()};
+
+      // finally construct the InelasticDefgradTransvIsotropElastViscoplast objects
+      debug_vplast_ = std::make_shared<Mat::InelasticDefgradTransvIsotropElastViscoplast>(
+          params_debug_vplast_.get(), viscoplastic_law, fiber_reader_, pot_sum_el,
+          pot_sum_el_transv_iso);
+
+      // define setup parameter for InelasticDefGradTransvIsotropElastViscoplast
+      Core::IO::InputParameterContainer setup_debug_vplast;
+      setup_debug_vplast.add<std::optional<std::vector<double>>>(
+          "FIBER1", std::vector<double>{0.0, 0.0, 1.0});
+      setup_debug_vplast.add<std::optional<std::vector<double>>>("RAD", std::nullopt);
+      setup_debug_vplast.add<std::optional<std::vector<double>>>("AXI", std::nullopt);
+      setup_debug_vplast.add<std::optional<std::vector<double>>>("CIR", std::nullopt);
+
+      // call setup method for InelasticDefGradTransvIsotropElastViscoplast
+      debug_vplast_->setup(8, setup_debug_vplast);
+
+      // parameter list for InelasticDefGradTransvIsotropElastViscoplast
+      Teuchos::ParameterList param_list_debug_vplast{};
+      param_list_debug_vplast.set<double>("delta time", 1.0e-6);
+      // call pre_evaluate
+      debug_vplast_->pre_evaluate(param_list_debug_vplast, 0, 0);
+    }
+
     // deformation gradient
     Core::LinAlg::Matrix<3, 3> FM_;
     // derivative of second Piola-Kirchhoff stress tensor w.r.t. inverse inelastic deformation
@@ -1258,6 +1399,9 @@ namespace
     // pointer to InelasticDefgradTransvIsotropElastViscoplast (isotropic, logarithmic substepping,
     // Anand viscoplasticity)
     std::shared_ptr<Mat::InelasticDefgradTransvIsotropElastViscoplast> isotrop_vplast_Anand_;
+    // pointer to InelasticDefgradTransvIsotropElastViscoplast (dummy
+    // material used for the debugging dummy test below)
+    std::shared_ptr<Mat::InelasticDefgradTransvIsotropElastViscoplast> debug_vplast_;
     // pointer to parameters of InelasticDefgradTransvIsotropElastViscoplast (transversely
     // isotropic, logarithmic substepping, Reformulated Johnson-Cook viscoplasticity)
     std::shared_ptr<Mat::PAR::InelasticDefgradTransvIsotropElastViscoplast>
@@ -1266,6 +1410,10 @@ namespace
     // substepping, Reformulated Johnson-Cook viscoplasticity)
     std::shared_ptr<Mat::PAR::InelasticDefgradTransvIsotropElastViscoplast>
         params_isotrop_vplast_refJC_;
+    // pointer to parameters of
+    // InelasticDefgradTransvIsotropElastViscoplast (dummy material used
+    // for the debugging dummy test below)
+    std::shared_ptr<Mat::PAR::InelasticDefgradTransvIsotropElastViscoplast> params_debug_vplast_;
     // reference StateQuantities struct of InelasticDefgradTransvIsotropElastViscoplast
     // (transversely isotropic, logarithmic substepping, Reformulated Johnson-Cook viscoplasticity)
     Mat::InelasticDefgradTransvIsotropElastViscoplast::StateQuantities
@@ -1822,48 +1970,49 @@ namespace
 
   TEST_F(InelasticDefgradFactorsTest, DummyViscoplastTimIntLinearizTest)
   {
-    auto& iso_mat = isotrop_vplast_Anand_;
+    set_up_dummy_viscoplast_material();
+    auto& iso_mat = debug_vplast_;
 
     // define last_values to be set for InelasticDefgradTransvIsotropElastViscoplast
     Core::LinAlg::Matrix<3, 3> last_plastic_defgrd_inverse{true};
-    last_plastic_defgrd_inverse(0, 0) = 0.9999999794120603;
-    last_plastic_defgrd_inverse(0, 1) = -0.0000000000306132;
-    last_plastic_defgrd_inverse(0, 2) = -0.0000000000830117;
-    last_plastic_defgrd_inverse(1, 0) = -0.0000000000306132;
-    last_plastic_defgrd_inverse(1, 1) = 0.9999997744161306;
-    last_plastic_defgrd_inverse(1, 2) = -0.0000003112664958;
-    last_plastic_defgrd_inverse(2, 0) = -0.0000000000830117;
-    last_plastic_defgrd_inverse(2, 1) = -0.0000003112664958;
-    last_plastic_defgrd_inverse(2, 2) = 1.0000002461718089;
+    last_plastic_defgrd_inverse(0, 0) = 0.9989616738134176;
+    last_plastic_defgrd_inverse(0, 1) = -0.0000000000311347;
+    last_plastic_defgrd_inverse(0, 2) = 0.0000000000000000;
+    last_plastic_defgrd_inverse(1, 0) = -0.0000000000312683;
+    last_plastic_defgrd_inverse(1, 1) = 1.0213865174171020;
+    last_plastic_defgrd_inverse(1, 2) = 0.0000000000000000;
+    last_plastic_defgrd_inverse(2, 0) = -0.0000000000268725;
+    last_plastic_defgrd_inverse(2, 1) = 0.2132604374883603;
+    last_plastic_defgrd_inverse(2, 2) = 0.9800789303151316;
 
 
 
-    double last_plastic_strain = 0.0000004514319317;
+    double last_plastic_strain = 0.1253329901475459;
 
 
     Core::LinAlg::Matrix<3, 3> last_defgrad{true};
     last_defgrad(0, 0) = 1.0000000000000000;
     last_defgrad(0, 1) = 0.0000000000000000;
     last_defgrad(0, 2) = 0.0000000000000000;
-    last_defgrad(1, 0) = 0.0000000079732130;
-    last_defgrad(1, 1) = 1.0000266985342388;
-    last_defgrad(1, 2) = 0.0000143217282598;
-    last_defgrad(2, 0) = 0.0000000216254730;
-    last_defgrad(2, 1) = 0.0000667662197593;
-    last_defgrad(2, 2) = 0.9999652534114390;
+    last_defgrad(1, 0) = 0.0000000000564496;
+    last_defgrad(1, 1) = 1.0009080025520170;
+    last_defgrad(1, 2) = -0.2171856537231220;
+    last_defgrad(2, 0) = 0.0000000000334449;
+    last_defgrad(2, 1) = -0.0000089973318863;
+    last_defgrad(2, 2) = 0.9958762554978624;
 
 
 
     Core::LinAlg::Matrix<3, 3> last_rightCG{true};
-    last_rightCG(0, 0) = 1.0000000000000004;
-    last_rightCG(0, 1) = 0.0000000079748698;
-    last_rightCG(0, 2) = 0.0000000216248358;
-    last_rightCG(1, 0) = 0.0000000079748698;
-    last_rightCG(1, 1) = 1.0000534022390175;
-    last_rightCG(1, 2) = 0.0000810860104899;
-    last_rightCG(2, 0) = 0.0000000216248358;
-    last_rightCG(2, 1) = 0.0000810860104899;
-    last_rightCG(2, 2) = 0.9999305082353155;
+    last_rightCG(0, 0) = 1.0000000000000000;
+    last_rightCG(0, 1) = 0.0000000000565005;
+    last_rightCG(0, 2) = 0.0000000000210469;
+    last_rightCG(1, 0) = 0.0000000000565005;
+    last_rightCG(1, 1) = 1.0018168296536203;
+    last_rightCG(1, 2) = -0.2173918190801525;
+    last_rightCG(2, 0) = 0.0000000000210469;
+    last_rightCG(2, 1) = -0.2173918190801525;
+    last_rightCG(2, 2) = 1.0389391244475836;
 
 
 
@@ -1877,8 +2026,9 @@ namespace
     // define last_values to be set for the viscoplastic law (Anand)
     if (iso_mat->debug_get_viscoplastic_law()->material_type() == FourC::Core::Materials::mvl_Anand)
     {
-      double last_flow_resistance = 0.9500007582572609;
-      double last_plastic_strain_vp = 0.0000004514319317;
+      double last_flow_resistance = 1.2932747012770247;
+
+      double last_plastic_strain_vp = 0.1253329901475459;
       // set the values at the 0-th GP
       std::dynamic_pointer_cast<Mat::Viscoplastic::Anand>(iso_mat->debug_get_viscoplastic_law())
           ->debug_set_last_values(0, last_flow_resistance, last_plastic_strain_vp);
@@ -1888,12 +2038,12 @@ namespace
     current_defgrad(0, 0) = 1.0000000000000000;
     current_defgrad(0, 1) = 0.0000000000000000;
     current_defgrad(0, 2) = 0.0000000000000000;
-    current_defgrad(1, 0) = 0.0027570521256591;
-    current_defgrad(1, 1) = 1.0003037848635448;
-    current_defgrad(1, 2) = -0.0245173308873771;
-    current_defgrad(2, 0) = -0.0020840955047394;
-    current_defgrad(2, 1) = -0.0000366428095458;
-    current_defgrad(2, 2) = 0.9996126714062095;
+    current_defgrad(1, 0) = -0.0000000000342241;
+    current_defgrad(1, 1) = 1.0009993797328745;
+    current_defgrad(1, 2) = -0.2608920043549020;
+    current_defgrad(2, 0) = 0.0000000000422665;
+    current_defgrad(2, 1) = -0.0000093961394624;
+    current_defgrad(2, 2) = 0.9956721007147425;
 
 
 
@@ -1914,7 +2064,7 @@ namespace
 
     // parameter list for InelasticDefGradTransvIsotropElastViscoplast
     Teuchos::ParameterList param_list{};
-    param_list.set<double>("delta time", 0.0025000000000000);
+    param_list.set<double>("delta time", 0.025000000000000);
     // call pre_evaluate
     iso_mat->pre_evaluate(param_list, 0, 0);
 

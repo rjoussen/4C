@@ -470,10 +470,10 @@ namespace
   // define ele_gid to be debugged
   // const std::vector<int> debug_ele_gid_vec{606, 607, 622, 623, 638, 639};
   // const std::vector<int> debug_ele_gid_vec{21304};
-  const std::vector<int> debug_ele_gid_vec{21310};
+  const std::vector<int> debug_ele_gid_vec{0};
   // const std::vector<int> debug_gp_vec{-1};
   // const std::vector<int> debug_gp_vec{25};
-  const std::vector<int> debug_gp_vec{11};
+  const std::vector<int> debug_gp_vec{0};
   bool debug_output_ele_gp(const std::vector<int>& ele_gid_vec, const std::vector<int>& gp_vec,
       const int ele_gid, const int gp)
 
@@ -3976,7 +3976,11 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::adapt_predictor_local_newton_
           time_step_settings_.dt_, StateQuantityEvalType::PlasticStrainRateOnly);
 
       // if the original predictor can be evaluated: return it
-      if (err_status == ErrorType::NoErrors) return original_pred;
+      if (err_status == ErrorType::NoErrors)
+      {
+        pred_interp_factors_.pred_ = original_pred;
+        return pred_interp_factors_.pred_;
+      }
 
 #ifdef DEBUGVPLAST_TIMINT
       if (debug_output_ele_gp(debug_ele_gid_vec, debug_gp_vec, ele_gid_, gp_))
@@ -4027,7 +4031,8 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::adapt_predictor_local_newton_
       if (err_status != ErrorType::NoErrors)
       {
         std::cout << "There was an error when evaluating the state for orig. plastic strain "
-                  << original_pred(9) << std::endl;
+                  << original_pred(9) << ": the (possibly) evaluated stress is: "
+                  << state_quantities_.curr_equiv_stress_ << std::endl;
       }
       else
       {
