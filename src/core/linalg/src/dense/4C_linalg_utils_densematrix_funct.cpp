@@ -20,6 +20,12 @@
 #include "4C_utils_exceptions.hpp"
 
 #include <boost/fusion/view/joint_view/detail/deref_impl.hpp>
+#include <Intrepid_Cubature.hpp>
+#include <Intrepid_DefaultCubatureFactory.hpp>
+#include <Intrepid_FieldContainer.hpp>
+#include <Shards_BasicTopologies.hpp>
+#include <Shards_CellTopology.hpp>
+#include <Shards_CellTopologyTraits.hpp>
 
 #include <iterator>
 #include <map>
@@ -324,9 +330,20 @@ Core::LinAlg::Matrix<dim, dim> Core::LinAlg::matrix_log(const Core::LinAlg::Matr
       return Core::LinAlg::Matrix<dim, dim>{true};
     }
 
-    // initialize m-point Gauss integration points and weights
-    FE::IntPointsAndWeights<1> int_pts_wts{
-        FE::num_gauss_points_to_gauss_rule<Core::FE::CellType::line2>(*pade_order)};
+    // initialize m-point Gauss quadrature
+    shards::CellTopology cellType = shards::getCellTopologyData<shards::Line<2>>();
+    // create cubature factory
+    Intrepid::DefaultCubatureFactory<double> cubFactory;
+    // create default cubature
+    Teuchos::RCP<Intrepid::Cubature<double>> myCub =
+        cubFactory.create(cellType, 2 * (*pade_order) - 1);
+    // retrieve number of cubature points
+    int numCubPoints = myCub->getNumPoints();
+    Intrepid::FieldContainer<double> cub_points;
+    Intrepid::FieldContainer<double> cub_weights;
+    cub_points.resize(numCubPoints, 1);
+    cub_weights.resize(numCubPoints);
+    myCub->getCubature(cub_points, cub_weights);
 
     // declare \f$ \boldsymbol{I} + \beta_j^{(m)} x  \f$ and its inverse
     Core::LinAlg::Matrix<dim, dim> id_pl_beta_x{true};
@@ -343,8 +360,8 @@ Core::LinAlg::Matrix<dim, dim> Core::LinAlg::matrix_log(const Core::LinAlg::Matr
     {
       // transform Gauss points and weights from [-1, 1] onto the considered interval
       // [0, 1]
-      trafo_point = 1.0 / 2.0 * (*int_pts_wts.point(pt) + 1.0);
-      trafo_weight = 1.0 / 2.0 * int_pts_wts.weight(pt);
+      trafo_point = 1.0 / 2.0 * (cub_points(pt, 0) + 1.0);
+      trafo_weight = 1.0 / 2.0 * cub_weights(pt);
 
       // compute \f$ \boldsymbol{I} + \beta_j^{(m)} x  \f$ and its
       // inverse
@@ -455,6 +472,12 @@ Core::LinAlg::Matrix<dim, dim> Core::LinAlg::matrix_log(const Core::LinAlg::Matr
       // take one more square root
       A = matrix_sqrt(
           A, err_status, it_ptr, Core::LinAlg::MatrixSqrtCalcMethod::db_iter_scaled_product);
+
+      // return with error if computation of the matrix sqrt fails
+      if (err_status != MatrixFunctErrorType::no_errors)
+      {
+        return Core::LinAlg::Matrix<dim, dim>{true};
+      }
 
       // increment square root iterator
       k += 1;
