@@ -1848,6 +1848,12 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_state_quantities(
   // compose isotropic elastic coefficients (Holzapfel, Nonlinear Solid Mechanics, 2000)
   calculate_gamma_delta(
       state_quantities.curr_CeM_, state_quantities.curr_gamma_, state_quantities.curr_delta_);
+
+  // RASMUS: TODO: here you will again have to scale the gammas and
+  // deltas with the damage variable (take the last_ one because we
+  // compute this with Explicit Euler)
+
+
   state_quantities.curr_SeM_.clear();
   state_quantities.curr_dSedCe_.clear();
   // compute additional 2nd elastic PK stress and elastic stiffness for the transversely isotropic
@@ -2915,6 +2921,11 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::update()
       ++timint_analysis_utils.num_update_calls_;
     }
   }
+
+  // RASMUS: TODO: after we have successfully completed the time step,
+  // we need to integrate our damage variables with Explicit Euler, and
+  // update the last_ <- current_ values. This has to be done for each
+  // Gauss point.
 }
 
 

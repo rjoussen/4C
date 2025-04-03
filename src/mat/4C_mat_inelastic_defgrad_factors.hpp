@@ -457,6 +457,10 @@ namespace Mat
 
       //! utilized computation method for the first derivative of the matrix logarithm
       const Core::LinAlg::GenMatrixLogFirstDerivCalcMethod mat_log_deriv_calc_method_;
+
+      // RASMUS: TODO: here you can define the additional damage
+      // parameters. As done above, you should provide getter methods
+      // for them so that you can call them in the material class via parameters().
     };
   }  // namespace PAR
 
@@ -1681,6 +1685,13 @@ namespace Mat
       std::vector<Core::LinAlg::Matrix<3, 3>> last_substep_plastic_defgrd_inverse_;
       //! plastic strain at the last computed time instant (after the last converged substep)
       std::vector<double> last_substep_plastic_strain_;
+
+      // RASMUS: TODO: here you should define the last_ and current_
+      // values of the damage variable at all Gauss points. This is also
+      // what should then be queried by
+      // Mat::MultiplicativeSplitDefgradElastHyper::evaluate. Beware:
+      // you also have to adapt the pack and unpack methods to contain
+      // the damage variables.
     };
     TimeStepQuantities time_step_quantities_;
 
@@ -1793,11 +1804,12 @@ namespace Mat
       //! number of times the problem time step \f$ \Delta t \f$ has been halved
       unsigned int time_step_halving_counter;
       //!  current total number of substeps to be evaluated within the time step \f$ \Delta t
-      //! \f$; this is not always given by time_step_halving_counter, since the
-      //! halving does not have to be uniform (e.g. we could halve the time step twice and still
-      //! have 3 substeps to evaluate instead of 4, i.e. if the first substep was evaluable
-      //! numerically, but the second substep not, leading to another halving of the substep length)
-      unsigned int total_num_of_substeps;
+      //! \f$; this is not always given by
+      //! time_step_haInelasticDefgradTransvIsotropElastViscoplastlving_counter, since the halving
+      //! does not have to be uniform (e.g. we could halve the time step twice and still have 3
+      //! substeps to evaluate instead of 4, i.e. if the first substep was evaluable numerically,
+      //! but the second substep not, leading to another halving of the substep length)
+      unsigned int total_num_of_substeps_;
       //! iteration counter of the Local Newton Loop used to evaluate each substep
       unsigned int iter;
     };

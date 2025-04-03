@@ -228,6 +228,14 @@ void Mat::MultiplicativeSplitDefgradElastHyper::evaluate(
   Mat::calculate_gamma_delta(stress_factors.gamma, stress_factors.delta, kinematic_quantities.prinv,
       kinematic_quantities.dPIe, kinematic_quantities.ddPIIe);
 
+  // RASMUS: TODO: scale stress_factors.gamma and stress_factors.delta
+  // with damage information
+  // Here you will have to implement a damage variable query function,
+  // e.g. get_damage_variable() for the InelasticDefgradHandler which
+  // you propagate down to InelasticDefgradFactors and only specialize
+  // for InelasticDefgradTransvIsotropElastViscoplast
+
+
   // derivative of 2nd Piola Kirchhoff stresses w.r.t. the inverse inelastic deformation
   // gradient
   Core::LinAlg::Matrix<6, 9> dSdiFin = evaluated_sdi_fin(kinematic_quantities, stress_factors);
