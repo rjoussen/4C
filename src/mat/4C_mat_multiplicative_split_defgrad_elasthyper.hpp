@@ -152,6 +152,8 @@ namespace Mat
      */
     bool evaluate_output_data(const std::string& name, Core::LinAlg::SerialDenseMatrix& data) const;
 
+    std::vector<double> get_current_damage_variable();
+
    private:
     /// vector that holds pairs of inelastic contribution and respective source
     std::vector<std::pair<PAR::InelasticSource, std::shared_ptr<Mat::InelasticDefgradFactors>>>

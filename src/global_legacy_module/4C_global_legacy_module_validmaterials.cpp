@@ -2818,6 +2818,12 @@ std::unordered_map<Core::Materials::MaterialType, Core::IO::InputSpec> Global::v
                                 "pade_part_fract)",
                     .default_value =
                         Core::LinAlg::GenMatrixLogFirstDerivCalcMethod::pade_part_fract}),
+            parameter<double>("DAMAGE_DENOMINATOR",
+                {.description = "Damage Denominator G"}),
+            parameter<double>("DAMAGE_EXPONENT",
+                {.description = "hsnds"}),
+            parameter<double>("DAMAGE_EPSILON_P_THRESHOLD",
+                {.description = "asj ewk"})
         },
         {.description = "Versatile transversely isotropic (or isotropic) viscoplasticity model for "
                         "finite deformations with isotropic hardening, using user-defined "

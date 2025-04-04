@@ -687,7 +687,10 @@ Mat::PAR::InelasticDefgradTransvIsotropElastViscoplast::
           matdata.parameters.get<Core::LinAlg::MatrixLogCalcMethod>("MATRIX_LOG_CALC_METHOD")),
       mat_log_deriv_calc_method_(
           matdata.parameters.get<Core::LinAlg::GenMatrixLogFirstDerivCalcMethod>(
-              "MATRIX_LOG_DERIV_CALC_METHOD"))
+              "MATRIX_LOG_DERIV_CALC_METHOD")),
+      damage_denominator_(matdata.parameters.get<double>("DAMAGE_DENOMINATOR")),
+      damage_exponent_(matdata.parameters.get<double>("DAMAGE_EXPONENT")),
+      epsilon_pf_(matdata.parameters.get<double>("DAMAGE_EPSILON_P_THRESHOLD"))
 {
   if (max_halve_number_ < 0) FOUR_C_THROW("Parameter MAX_HALVE_NUM_SUBSTEP must be >= 0!");
 }
@@ -1721,6 +1724,10 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::InelasticDefgradTransvIsotrop
   time_step_quantities_.current_plastic_strain_.resize(1, 0.0);  // value irrelevant at this point
   time_step_quantities_.last_substep_plastic_strain_.resize(1, 0.0);
 
+  // update last_ and current_ values of the damage variable
+  // time_step_quantities_.last_damage_variable_.resize(1, 0.0);
+  time_step_quantities_.current_damage_variable_.resize(1, 0.0);
+
   // update current_ value of the equivalent stress
   time_step_quantities_.current_stress_.resize(1.0, 0.0);  // value irrelevant at this point
 
@@ -1853,6 +1860,10 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_state_quantities(
   // deltas with the damage variable (take the last_ one because we
   // compute this with Explicit Euler)
 
+  // no Gauss Point info available
+  double D_at_gp = time_step_quantities_.current_damage_variable_[gp_];
+  state_quantities.curr_gamma_.scale(1-D_at_gp);
+  state_quantities.curr_delta_.scale(1-D_at_gp);
 
   state_quantities.curr_SeM_.clear();
   state_quantities.curr_dSedCe_.clear();
@@ -2926,6 +2937,15 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::update()
   // we need to integrate our damage variables with Explicit Euler, and
   // update the last_ <- current_ values. This has to be done for each
   // Gauss point.
+
+  // update the damage variable at every Gauss Point.  
+  for (size_t i = 0; i < time_step_quantities_.current_damage_variable_.size(); ++i) {
+    if (time_step_quantities_.current_plastic_strain_[i] > parameter()->epsilon_pf()){
+      time_step_quantities_.current_damage_variable_[i] += time_step_settings_.dt_ * std::pow((time_step_quantities_.current_plastic_strain_[i]/parameter()->epsilon_pf() - 1)/parameter()->damage_denominator(), parameter()->damage_exponent()) * (1 - time_step_quantities_.current_damage_variable_[i]);
+    }
+    std::cout << "G = " << parameter()->damage_denominator() << " | z = " << parameter()->damage_exponent() << " | dt = " << time_step_settings_.dt_ << " | epsilon_p = " << time_step_quantities_.current_plastic_strain_[i] << " | D = " << time_step_quantities_.current_damage_variable_[i] << std::endl;
+  }
+  
 }
 
 
@@ -2957,6 +2977,12 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::setup(
       numgp, time_step_quantities_.last_plastic_strain_[0]);  // value irrelevant at this point
   time_step_quantities_.last_substep_plastic_strain_.resize(
       numgp, time_step_quantities_.last_substep_plastic_strain_[0]);
+
+  // Default Values for Damage Variable
+  // time_step_quantities_.last_damage_variable_.resize(
+  //   numgp, time_step_quantities_.last_damage_variable_[0]);
+  time_step_quantities_.current_damage_variable_.resize(
+    numgp, time_step_quantities_.current_damage_variable_[0]);
 
   // default values of the equivalent stress for ALL Gauss Points
   time_step_quantities_.current_stress_.resize(
@@ -3021,6 +3047,7 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::pack_inelastic(
     add_to_pack(data, time_step_quantities_.last_substep_plastic_defgrd_inverse_);
     add_to_pack(data, time_step_quantities_.last_substep_plastic_strain_);
     add_to_pack(data, time_step_quantities_.last_defgrad_);
+    add_to_pack(data, time_step_quantities_.current_damage_variable_);
   }
 }
 
@@ -3053,6 +3080,7 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::unpack_inelastic(
     extract_from_pack(buffer, time_step_quantities_.last_substep_plastic_defgrd_inverse_);
     extract_from_pack(buffer, time_step_quantities_.last_substep_plastic_strain_);
     extract_from_pack(buffer, time_step_quantities_.last_defgrad_);
+    extract_from_pack(buffer, time_step_quantities_.current_damage_variable_);
   }
 
   // fill current_ values with the last_ values
@@ -3066,6 +3094,9 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::unpack_inelastic(
       time_step_quantities_.last_plastic_strain_[0]);  // value irrelevant
   time_step_quantities_.current_stress_.resize(time_step_quantities_.last_plastic_strain_.size(),
       0.0);  // value irrelevant
+  time_step_quantities_.current_damage_variable_.resize(
+    time_step_quantities_.current_damage_variable_.size(),
+    time_step_quantities_.current_damage_variable_[0]);
 
 
 
@@ -4783,5 +4814,11 @@ void Mat::PAR::InelasticDefgradTransvIsotropElastViscoplast::debug_set_lineariza
 {
   linearization_type_ = linearization_type;
 }
+
+std::vector<double> Mat::InelasticDefgradTransvIsotropElastViscoplast::get_current_damage_variable()
+{
+  return time_step_quantities_.current_damage_variable_;
+}
+
 
 FOUR_C_NAMESPACE_CLOSE
