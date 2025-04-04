@@ -389,6 +389,7 @@ namespace Mat
       [[nodiscard]] double damage_denominator() const { return damage_denominator_; };
       [[nodiscard]] double damage_exponent() const { return damage_exponent_; };
       [[nodiscard]] double epsilon_pf() const { return epsilon_pf_; };
+      [[nodiscard]] bool use_damage_model() const { return bool_use_damage_model_; };
 
      private:
       //! ID of the viscoplasticity law
@@ -475,6 +476,8 @@ namespace Mat
       const double damage_exponent_;
       // damage threshhold epsilon_pf from which damage occurs.
       const double epsilon_pf_;
+      // whether or not to use the damage model
+      const bool bool_use_damage_model_;
 
     };
   }  // namespace PAR
@@ -731,6 +734,8 @@ namespace Mat
     virtual std::vector<double> get_current_damage_variable() {
       return std::vector<double>();
     };
+    // return false for use damage model. Only overwrite with actual value for InelasticDefgradTransvIsotropElastViscoplast
+    virtual bool use_damage_model(){return false;}
 
 
    private:
@@ -2094,6 +2099,7 @@ namespace Mat
 
     // override get_current_damage_variable. This actually returns the damage variable
     std::vector<double> get_current_damage_variable() override;
+    bool use_damage_model() override;
   };
 }  // namespace Mat
 

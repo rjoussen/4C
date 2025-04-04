@@ -690,7 +690,8 @@ Mat::PAR::InelasticDefgradTransvIsotropElastViscoplast::
               "MATRIX_LOG_DERIV_CALC_METHOD")),
       damage_denominator_(matdata.parameters.get<double>("DAMAGE_DENOMINATOR")),
       damage_exponent_(matdata.parameters.get<double>("DAMAGE_EXPONENT")),
-      epsilon_pf_(matdata.parameters.get<double>("DAMAGE_EPSILON_P_THRESHOLD"))
+      epsilon_pf_(matdata.parameters.get<double>("DAMAGE_EPSILON_P_THRESHOLD")),
+      bool_use_damage_model_(matdata.parameters.get<bool>("USE_DAMAGE_MODEL"))
 {
   if (max_halve_number_ < 0) FOUR_C_THROW("Parameter MAX_HALVE_NUM_SUBSTEP must be >= 0!");
 }
@@ -1860,11 +1861,15 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_state_quantities(
   // deltas with the damage variable (take the last_ one because we
   // compute this with Explicit Euler)
 
-  // no Gauss Point info available
-  double D_at_gp = time_step_quantities_.current_damage_variable_[gp_];
-  state_quantities.curr_gamma_.scale(1-D_at_gp);
-  state_quantities.curr_delta_.scale(1-D_at_gp);
-
+  // calculate tr(C_e)
+  double trC_e = state_quantities.curr_CeM_(0,0) + state_quantities.curr_CeM_(1,1) + state_quantities.curr_CeM_(2,2);
+  if (parameter()->use_damage_model()){
+    if (trC_e >= 3){
+      double D_at_gp = time_step_quantities_.current_damage_variable_[gp_];
+      state_quantities.curr_gamma_.scale(1-D_at_gp);
+      state_quantities.curr_delta_.scale(1-D_at_gp);
+    }
+  }
   state_quantities.curr_SeM_.clear();
   state_quantities.curr_dSedCe_.clear();
   // compute additional 2nd elastic PK stress and elastic stiffness for the transversely isotropic
@@ -4815,9 +4820,14 @@ void Mat::PAR::InelasticDefgradTransvIsotropElastViscoplast::debug_set_lineariza
   linearization_type_ = linearization_type;
 }
 
+// implement functioniality
 std::vector<double> Mat::InelasticDefgradTransvIsotropElastViscoplast::get_current_damage_variable()
 {
   return time_step_quantities_.current_damage_variable_;
+}
+bool Mat::InelasticDefgradTransvIsotropElastViscoplast::use_damage_model()
+{
+  return parameter()->use_damage_model();
 }
 
 

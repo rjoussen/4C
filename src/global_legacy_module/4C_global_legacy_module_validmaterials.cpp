@@ -2821,9 +2821,11 @@ std::unordered_map<Core::Materials::MaterialType, Core::IO::InputSpec> Global::v
             parameter<double>("DAMAGE_DENOMINATOR",
                 {.description = "Damage Denominator G"}),
             parameter<double>("DAMAGE_EXPONENT",
-                {.description = "hsnds"}),
+                {.description = "Damage Exponent z"}),
             parameter<double>("DAMAGE_EPSILON_P_THRESHOLD",
-                {.description = "asj ewk"})
+                {.description = "epsilon_pf (D_1 in RJC if all other D_i are 0)"}),
+            parameter<bool>("USE_DAMAGE_MODEL",
+                {.description = "whether or not to use the damage model"}),
         },
         {.description = "Versatile transversely isotropic (or isotropic) viscoplasticity model for "
                         "finite deformations with isotropic hardening, using user-defined "

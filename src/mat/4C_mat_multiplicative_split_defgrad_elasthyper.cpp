@@ -237,10 +237,14 @@ void Mat::MultiplicativeSplitDefgradElastHyper::evaluate(
   // you propagate down to InelasticDefgradFactors and only specialize
   // for InelasticDefgradTransvIsotropElastViscoplast
 
-  // check kinematics!!
-  double D_at_gp = inelastic_->fac_def_grad_in()[0].second->get_current_damage_variable()[gp];
-  stress_factors.gamma.scale(1-D_at_gp);
-  stress_factors.delta.scale(1-D_at_gp);
+  if (inelastic_->fac_def_grad_in()[0].second->use_damage_model()){
+    // check whether tr(E_e) >= 0. This is equivalen to tr(C_e) >= 3
+    if (kinematic_quantities.prinv(0,0) >= 3){
+      double D_at_gp = inelastic_->fac_def_grad_in()[0].second->get_current_damage_variable()[gp];
+      stress_factors.gamma.scale(1-D_at_gp);
+      stress_factors.delta.scale(1-D_at_gp);
+    }
+  }
 
   // derivative of 2nd Piola Kirchhoff stresses w.r.t. the inverse inelastic deformation
   // gradient
