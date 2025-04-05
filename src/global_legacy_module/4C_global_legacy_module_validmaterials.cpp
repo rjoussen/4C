@@ -2818,6 +2818,8 @@ std::unordered_map<Core::Materials::MaterialType, Core::IO::InputSpec> Global::v
                                 "pade_part_fract)",
                     .default_value =
                         Core::LinAlg::GenMatrixLogFirstDerivCalcMethod::pade_part_fract}),
+            
+            // ----------------DAMAGE----------------
             parameter<double>("DAMAGE_DENOMINATOR",
                 {.description = "Damage Denominator G"}),
             parameter<double>("DAMAGE_EXPONENT",
@@ -2826,6 +2828,8 @@ std::unordered_map<Core::Materials::MaterialType, Core::IO::InputSpec> Global::v
                 {.description = "epsilon_pf (D_1 in RJC if all other D_i are 0)"}),
             parameter<bool>("USE_DAMAGE_MODEL",
                 {.description = "whether or not to use the damage model"}),
+            // ----------------DAMAGE----------------
+            
         },
         {.description = "Versatile transversely isotropic (or isotropic) viscoplasticity model for "
                         "finite deformations with isotropic hardening, using user-defined "

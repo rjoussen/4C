@@ -384,12 +384,14 @@ namespace Mat
       {
         return mat_log_deriv_calc_method_;
       }
-
+      
+      // ----------------DAMAGE----------------
       // return damage material parameters
       [[nodiscard]] double damage_denominator() const { return damage_denominator_; };
       [[nodiscard]] double damage_exponent() const { return damage_exponent_; };
       [[nodiscard]] double epsilon_pf() const { return epsilon_pf_; };
       [[nodiscard]] bool use_damage_model() const { return bool_use_damage_model_; };
+      // ----------------DAMAGE----------------
 
      private:
       //! ID of the viscoplasticity law
@@ -468,8 +470,7 @@ namespace Mat
       // parameters. As done above, you should provide getter methods
       // for them so that you can call them in the material class via parameters().
 
-
-      // Damage according to Mareau 2022
+      // ----------------DAMAGE----------------
       // Denominator G in the damage rule
       const double damage_denominator_;
       // exponent z in the damage rule
@@ -478,6 +479,7 @@ namespace Mat
       const double epsilon_pf_;
       // whether or not to use the damage model
       const bool bool_use_damage_model_;
+      // ----------------DAMAGE----------------
 
     };
   }  // namespace PAR
@@ -730,13 +732,14 @@ namespace Mat
       return false;
     }
 
-    // returns an empty vector for the damage variable, gets overwritten by TransvIso anyway.
+    // ----------------DAMAGE----------------
+    // returns an empty vector for the damage variable, gets overwritten by InelasticDefgradTransvIsotropElastViscoplast anyway.
     virtual std::vector<double> get_current_damage_variable() {
       return std::vector<double>();
     };
-    // return false for use damage model. Only overwrite with actual value for InelasticDefgradTransvIsotropElastViscoplast
+    // return false for use_damage_model. Only overwrite with actual value for InelasticDefgradTransvIsotropElastViscoplast
     virtual bool use_damage_model(){return false;}
-
+    // ----------------DAMAGE----------------
 
    private:
     /// material parameters
@@ -1711,18 +1714,10 @@ namespace Mat
       //! plastic strain at the last computed time instant (after the last converged substep)
       std::vector<double> last_substep_plastic_strain_;
 
-      // RASMUS: TODO: here you should define the last_ and current_
-      // values of the damage variable at all Gauss points. This is also
-      // what should then be queried by
-      // Mat::MultiplicativeSplitDefgradElastHyper::evaluate. Beware:
-      // you also have to adapt the pack and unpack methods to contain
-      // the damage variables.
-      
-      // current damage variable D
+      // ----------------DAMAGE----------------
+      // current damage variable D. D is overwritten at the end of each time-step, hence no last value necessary.
       std::vector<double> current_damage_variable_;
-
-      // last damage variable D
-      // std::vector<double> last_damage_variable_;
+      // ----------------DAMAGE----------------
 
     };
     TimeStepQuantities time_step_quantities_;
@@ -2097,9 +2092,12 @@ namespace Mat
      */
     std::string debug_get_error_info(const std::string& base_error_string);
 
-    // override get_current_damage_variable. This actually returns the damage variable
+    // ----------------DAMAGE----------------
+    // override get_current_damage_variable. This actually returns the damage variable.
     std::vector<double> get_current_damage_variable() override;
+    // override whether or not to use the damage model. This returns the actual value.
     bool use_damage_model() override;
+    // ----------------DAMAGE----------------
   };
 }  // namespace Mat
 

@@ -152,9 +152,11 @@ namespace Mat
      */
     bool evaluate_output_data(const std::string& name, Core::LinAlg::SerialDenseMatrix& data) const;
 
+    // ----------------DAMAGE----------------
     // provide funcitonality in InelasticFactorsHandler which are then propagated down to InelasticDefgradFactors but only specified for InelasticDefgradTransvIsotropElastViscoplast
     std::vector<double> get_current_damage_variable();
     bool use_damage_model();
+    // ----------------DAMAGE----------------
 
    private:
     /// vector that holds pairs of inelastic contribution and respective source
