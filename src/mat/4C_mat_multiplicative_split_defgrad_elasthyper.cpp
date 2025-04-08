@@ -237,14 +237,16 @@ void Mat::MultiplicativeSplitDefgradElastHyper::evaluate(
   if (inelastic_->fac_def_grad_in()[0].second->use_damage_model()){
     double D_at_gp = inelastic_->fac_def_grad_in()[0].second->get_current_damage_variable()[gp];
     if (D_at_gp > 0){
-      if (trC_e >= 3){
-        stress_factors.gamma.scale(1-D_at_gp);
-        stress_factors.delta.scale(1-D_at_gp);
-        std::cout << "Gauss Point " << gp << " is under hydrostatic tension. Stiffness scaled by " << 1-D_at_gp << "." << std::endl;
-      }
-      else {
-        std::cout << "Gauss Point " << gp << " is under hydrostatic pressure. Damage has no effect." << std::endl;
-      }
+      stress_factors.gamma.scale(1-D_at_gp);
+      stress_factors.delta.scale(1-D_at_gp);
+    //   if (trC_e >= 3){
+    //     stress_factors.gamma.scale(1-D_at_gp);
+    //     stress_factors.delta.scale(1-D_at_gp);
+    //     std::cout << "Gauss Point " << gp << " is under hydrostatic tension. Stiffness scaled by " << 1-D_at_gp << "." << std::endl;
+    //   }
+    //   else {
+    //     std::cout << "Gauss Point " << gp << " is under hydrostatic pressure. Damage has no effect." << std::endl;
+    //   }
     }
   }
   // ----------------DAMAGE----------------

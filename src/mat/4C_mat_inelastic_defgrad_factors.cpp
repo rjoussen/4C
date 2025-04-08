@@ -31,7 +31,9 @@
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_Time.hpp>
 
+#include <algorithm>
 #include <cmath>
+#include <cstddef>
 #include <cstdlib>
 #include <iomanip>
 #include <ios>
@@ -1867,15 +1869,17 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_state_quantities(
   if (parameter()->use_damage_model()){
     double D_at_gp = time_step_quantities_.current_damage_variable_[gp_];
     if (D_at_gp > 0){
-      if (trC_e >= 3){
+      state_quantities.curr_gamma_.scale(1-D_at_gp);
+      state_quantities.curr_delta_.scale(1-D_at_gp);
+      // if (trC_e >= 3){
         
-        state_quantities.curr_gamma_.scale(1-D_at_gp);
-        state_quantities.curr_delta_.scale(1-D_at_gp);
-        std::cout << "Gauss Point " << gp_ << " is under hydrostatic tension. Stiffness scaled by " << 1-D_at_gp << "." << std::endl;
-      }
-      else {
-        std::cout << "Gauss Point " << gp_ << " is under hydrostatic pressure. Damage has no effect." << std::endl;
-      }
+      //   state_quantities.curr_gamma_.scale(1-D_at_gp);
+      //   state_quantities.curr_delta_.scale(1-D_at_gp);
+      //   std::cout << "Gauss Point " << gp_ << " is under hydrostatic tension. Stiffness scaled by " << 1-D_at_gp << "." << std::endl;
+      // }
+      // else {
+      //   std::cout << "Gauss Point " << gp_ << " is under hydrostatic pressure. Damage has no effect." << std::endl;
+      // }
     }
   }
   // ----------------DAMAGE----------------
@@ -2951,13 +2955,13 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::update()
   // ----------------DAMAGE----------------
   // update the damage variable at every Gauss Point.  
   double last_damage_variable;
-  for (int i = 0; i < time_step_quantities_.current_damage_variable_.size(); ++i) {
+  for (size_t i = 0; i < time_step_quantities_.current_damage_variable_.size(); ++i) {
     if (time_step_quantities_.current_plastic_strain_[i] > parameter()->epsilon_pf()){
       last_damage_variable = time_step_quantities_.current_damage_variable_[i];
       // D_n+1 = D_n + dt * ( (epsilon_p/epsilon_pf - 1)/G )^z * (1 - D_n)    only if epsilon_p/epsilon_pf > 1
-      time_step_quantities_.current_damage_variable_[i] +=
-        time_step_settings_.dt_ * std::pow((time_step_quantities_.current_plastic_strain_[i]/parameter()->epsilon_pf() - 1)/parameter()->damage_denominator(), parameter()->damage_exponent()) * (1 - time_step_quantities_.current_damage_variable_[i]);
-
+      time_step_quantities_.current_damage_variable_[i] = std::min(0.8,
+        time_step_quantities_.current_damage_variable_[i] + time_step_settings_.dt_ * std::pow((time_step_quantities_.current_plastic_strain_[i]/parameter()->epsilon_pf() - 1)/parameter()->damage_denominator(), parameter()->damage_exponent()) * (1 - time_step_quantities_.current_damage_variable_[i])
+        );
       // some debug funtionality.
       std::cout << "Damage occurs at Gauss point " << i << " | D_last = " << last_damage_variable << " | dt = " << time_step_settings_.dt_ << " | epsilon_p = " << time_step_quantities_.current_plastic_strain_[i] << " | D_new = " << time_step_quantities_.current_damage_variable_[i] << std::endl;
     }
@@ -3426,7 +3430,7 @@ Core::LinAlg::Matrix<10, 1> Mat::InelasticDefgradTransvIsotropElastViscoplast::l
           .dt_,  // curr_dt = time_step_settings_.dt_ (first substep length = full time step)
       .time_step_halving_counter =
           0,  // time_step_halving_counter = 0 (full time step, therefore no substep halving yet)
-      .total_num_of_substeps =
+      .total_num_of_substeps_ =
           1,      // total_num_of_substeps = 1 (1 substep to evaluate: full time step)
       .iter = 0,  // iter = 0 (0 LNL iterations for the current substep)
   };
@@ -3445,7 +3449,7 @@ Core::LinAlg::Matrix<10, 1> Mat::InelasticDefgradTransvIsotropElastViscoplast::l
   ErrorAction err_action{ErrorAction::Continue};
 
   // substepping procedures
-  while (substep_params.substep_counter <= substep_params.total_num_of_substeps)
+  while (substep_params.substep_counter <= substep_params.total_num_of_substeps_)
   {
     // reset iteration counter
     substep_params.iter = 0;
@@ -3543,7 +3547,7 @@ Core::LinAlg::Matrix<10, 1> Mat::InelasticDefgradTransvIsotropElastViscoplast::l
 
         // update the values of history variables at the last converged state (if we have not
         // reached the last step yet)
-        if (substep_params.substep_counter <= substep_params.total_num_of_substeps)
+        if (substep_params.substep_counter <= substep_params.total_num_of_substeps_)
         {
           time_step_quantities_.last_substep_plastic_defgrd_inverse_[gp_] =
               extract_inverse_inelastic_defgrad(sol);
@@ -3763,7 +3767,7 @@ bool Mat::InelasticDefgradTransvIsotropElastViscoplast::prepare_new_substep(
   const unsigned int& substep_counter = substep_params.substep_counter;
   double& curr_dt = substep_params.curr_dt;
   unsigned int& time_step_halving_counter = substep_params.time_step_halving_counter;
-  unsigned int& total_num_of_substeps = substep_params.total_num_of_substeps;
+  unsigned int& total_num_of_substeps = substep_params.total_num_of_substeps_;
   unsigned int& iter = substep_params.iter;
 
   // the current iteration vector has reached a numerically inevaluable state -> we halve
