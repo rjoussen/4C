@@ -696,7 +696,7 @@ Mat::PAR::InelasticDefgradTransvIsotropElastViscoplast::
       damage_exponent_(matdata.parameters.get<double>("DAMAGE_EXPONENT")),
       epsilon_pf_(matdata.parameters.get<double>("DAMAGE_EPSILON_P_THRESHOLD")),
       bool_use_damage_model_(matdata.parameters.get<bool>("USE_DAMAGE_MODEL"))
-      // ----------------DAMAGE----------------
+// ----------------DAMAGE----------------
 {
   if (max_halve_number_ < 0) FOUR_C_THROW("Parameter MAX_HALVE_NUM_SUBSTEP must be >= 0!");
 }
@@ -1865,21 +1865,31 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_state_quantities(
 
   // ----------------DAMAGE----------------
   // calculate tr(C_e)
-  double trC_e = state_quantities.curr_CeM_(0,0) + state_quantities.curr_CeM_(1,1) + state_quantities.curr_CeM_(2,2);
-  if (parameter()->use_damage_model()){
+  double trC_e = state_quantities.curr_CeM_(0, 0) + state_quantities.curr_CeM_(1, 1) +
+                 state_quantities.curr_CeM_(2, 2);
+  if (parameter()->use_damage_model())
+  {
     double D_at_gp = time_step_quantities_.current_damage_variable_[gp_];
-    if (D_at_gp > 0){
-      state_quantities.curr_gamma_.scale(1-D_at_gp);
-      state_quantities.curr_delta_.scale(1-D_at_gp);
+    if (D_at_gp > 0)
+    {
+      state_quantities.curr_gamma_.scale(1 - D_at_gp);
+      state_quantities.curr_delta_.scale(1 - D_at_gp);
       // if (trC_e >= 3){
-        
+
       //   state_quantities.curr_gamma_.scale(1-D_at_gp);
       //   state_quantities.curr_delta_.scale(1-D_at_gp);
-      //   std::cout << "Gauss Point " << gp_ << " is under hydrostatic tension. Stiffness scaled by " << 1-D_at_gp << "." << std::endl;
+      //   std::cout << "Gauss Point " << gp_ << " is under hydrostatic tension. Stiffness scaled by
+      //   " << 1-D_at_gp << "." << std::endl;
       // }
       // else {
-      //   std::cout << "Gauss Point " << gp_ << " is under hydrostatic pressure. Damage has no effect." << std::endl;
+      //   std::cout << "Gauss Point " << gp_ << " is under hydrostatic pressure. Damage has no
+      //   effect." << std::endl;
       // }
+
+      if (ele_gid_ == 2000 && gp_ == 0)
+      {
+        std::cout << "STOP" << std::endl;
+      }
     }
   }
   // ----------------DAMAGE----------------
@@ -2953,21 +2963,32 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::update()
   }
 
   // ----------------DAMAGE----------------
-  // update the damage variable at every Gauss Point.  
+  // update the damage variable at every Gauss Point.
   double last_damage_variable;
-  for (size_t i = 0; i < time_step_quantities_.current_damage_variable_.size(); ++i) {
-    if (time_step_quantities_.current_plastic_strain_[i] > parameter()->epsilon_pf()){
+  for (size_t i = 0; i < time_step_quantities_.current_damage_variable_.size(); ++i)
+  {
+    if (time_step_quantities_.current_plastic_strain_[i] > parameter()->epsilon_pf())
+    {
       last_damage_variable = time_step_quantities_.current_damage_variable_[i];
-      // D_n+1 = D_n + dt * ( (epsilon_p/epsilon_pf - 1)/G )^z * (1 - D_n)    only if epsilon_p/epsilon_pf > 1
-      time_step_quantities_.current_damage_variable_[i] = std::min(0.8,
-        time_step_quantities_.current_damage_variable_[i] + time_step_settings_.dt_ * std::pow((time_step_quantities_.current_plastic_strain_[i]/parameter()->epsilon_pf() - 1)/parameter()->damage_denominator(), parameter()->damage_exponent()) * (1 - time_step_quantities_.current_damage_variable_[i])
-        );
+      // D_n+1 = D_n + dt * ( (epsilon_p/epsilon_pf - 1)/G )^z * (1 - D_n)    only if
+      // epsilon_p/epsilon_pf > 1
+      time_step_quantities_.current_damage_variable_[i] =
+          std::min(0.8, time_step_quantities_.current_damage_variable_[i] +
+                            time_step_settings_.dt_ *
+                                std::pow((time_step_quantities_.current_plastic_strain_[i] /
+                                                 parameter()->epsilon_pf() -
+                                             1) /
+                                             parameter()->damage_denominator(),
+                                    parameter()->damage_exponent()) *
+                                (1 - time_step_quantities_.current_damage_variable_[i]));
       // some debug funtionality.
-      std::cout << "Damage occurs at Gauss point " << i << " | D_last = " << last_damage_variable << " | dt = " << time_step_settings_.dt_ << " | epsilon_p = " << time_step_quantities_.current_plastic_strain_[i] << " | D_new = " << time_step_quantities_.current_damage_variable_[i] << std::endl;
+      std::cout << "Damage occurs at Gauss point " << i << " | D_last = " << last_damage_variable
+                << " | dt = " << time_step_settings_.dt_
+                << " | epsilon_p = " << time_step_quantities_.current_plastic_strain_[i]
+                << " | D_new = " << time_step_quantities_.current_damage_variable_[i] << std::endl;
     }
   }
   // ----------------DAMAGE----------------
-  
 }
 
 
@@ -3003,7 +3024,7 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::setup(
   // ----------------DAMAGE----------------
   // Default Values for Damage Variable
   time_step_quantities_.current_damage_variable_.resize(
-    numgp, time_step_quantities_.current_damage_variable_[0]);
+      numgp, time_step_quantities_.current_damage_variable_[0]);
   // ----------------DAMAGE----------------
 
   // default values of the equivalent stress for ALL Gauss Points
@@ -3122,8 +3143,8 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::unpack_inelastic(
       0.0);  // value irrelevant
   // ----------------DAMAGE----------------
   time_step_quantities_.current_damage_variable_.resize(
-    time_step_quantities_.current_damage_variable_.size(),
-    time_step_quantities_.current_damage_variable_[0]);
+      time_step_quantities_.current_damage_variable_.size(),
+      time_step_quantities_.current_damage_variable_[0]);
   // ----------------DAMAGE----------------
 
 
