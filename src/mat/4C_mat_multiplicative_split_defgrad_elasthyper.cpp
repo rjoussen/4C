@@ -237,8 +237,6 @@ void Mat::MultiplicativeSplitDefgradElastHyper::evaluate(
   if (inelastic_->fac_def_grad_in()[0].second->use_damage_model()){
     double D_at_gp = inelastic_->fac_def_grad_in()[0].second->get_current_damage_variable()[gp];
     if (D_at_gp > 0){
-      stress_factors.gamma.scale(1-D_at_gp);
-      stress_factors.delta.scale(1-D_at_gp);
       
       if (trC_e < 3 and inelastic_->fac_def_grad_in()[0].second->model_closure_effects()) {
         stress_factors.gamma(0,0) += D_at_gp*1/3*stress_factors.gamma(1,0)*trC_e;
