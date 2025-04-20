@@ -390,6 +390,8 @@ namespace Mat
       [[nodiscard]] double damage_denominator() const { return damage_denominator_; };
       [[nodiscard]] double damage_exponent() const { return damage_exponent_; };
       [[nodiscard]] double epsilon_pf() const { return epsilon_pf_; };
+      [[nodiscard]] double max_damage_increment() const { return max_damage_increment_; };
+      [[nodiscard]] bool model_closure_effects() const { return bool_model_closure_effects_; };
       [[nodiscard]] bool use_damage_model() const { return bool_use_damage_model_; };
       // ----------------DAMAGE----------------
 
@@ -477,6 +479,10 @@ namespace Mat
       const double damage_exponent_;
       // damage threshhold epsilon_pf from which damage occurs.
       const double epsilon_pf_;
+      // maximum increment the damage variable is allowed to change within one timestep
+      const double max_damage_increment_;
+      // whether or not to model closure effects
+      const bool bool_model_closure_effects_;
       // whether or not to use the damage model
       const bool bool_use_damage_model_;
       // ----------------DAMAGE----------------
@@ -739,6 +745,8 @@ namespace Mat
     };
     // return false for use_damage_model. Only overwrite with actual value for InelasticDefgradTransvIsotropElastViscoplast
     virtual bool use_damage_model(){return false;}
+    // same for model_closure_effects
+    virtual bool model_closure_effects(){return false;}
     // ----------------DAMAGE----------------
 
    private:
@@ -2097,6 +2105,7 @@ namespace Mat
     std::vector<double> get_current_damage_variable() override;
     // override whether or not to use the damage model. This returns the actual value.
     bool use_damage_model() override;
+    bool model_closure_effects() override;
     // ----------------DAMAGE----------------
   };
 }  // namespace Mat

@@ -156,6 +156,7 @@ namespace Mat
     // provide funcitonality in InelasticFactorsHandler which are then propagated down to InelasticDefgradFactors but only specified for InelasticDefgradTransvIsotropElastViscoplast
     std::vector<double> get_current_damage_variable();
     bool use_damage_model();
+    bool model_closure_effects();
     // ----------------DAMAGE----------------
 
    private:

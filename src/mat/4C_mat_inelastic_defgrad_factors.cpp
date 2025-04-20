@@ -476,19 +476,19 @@ namespace
   // const std::vector<int> debug_gp_vec{-1};
   // const std::vector<int> debug_gp_vec{25};
   const std::vector<int> debug_gp_vec{0};
-  bool debug_output_ele_gp(const std::vector<int>& ele_gid_vec, const std::vector<int>& gp_vec,
-      const int ele_gid, const int gp)
+  // bool debug_output_ele_gp(const std::vector<int>& ele_gid_vec, const std::vector<int>& gp_vec,
+  //     const int ele_gid, const int gp)
 
-  {
-    bool check_ele_gid{
-        (std::find(ele_gid_vec.begin(), ele_gid_vec.end(), ele_gid) != ele_gid_vec.end()) ||
-        std::find(ele_gid_vec.begin(), ele_gid_vec.end(), -1) != ele_gid_vec.end()};
+  // {
+  //   bool check_ele_gid{
+  //       (std::find(ele_gid_vec.begin(), ele_gid_vec.end(), ele_gid) != ele_gid_vec.end()) ||
+  //       std::find(ele_gid_vec.begin(), ele_gid_vec.end(), -1) != ele_gid_vec.end()};
 
-    bool check_gp{(std::find(gp_vec.begin(), gp_vec.end(), gp) != gp_vec.end()) ||
-                  (std::find(gp_vec.begin(), gp_vec.end(), -1) != gp_vec.end())};
+  //   bool check_gp{(std::find(gp_vec.begin(), gp_vec.end(), gp) != gp_vec.end()) ||
+  //                 (std::find(gp_vec.begin(), gp_vec.end(), -1) != gp_vec.end())};
 
-    return (check_ele_gid && check_gp);
-  }
+  //   return (check_ele_gid && check_gp);
+  // }
 }  // namespace
 
 
@@ -695,8 +695,10 @@ Mat::PAR::InelasticDefgradTransvIsotropElastViscoplast::
       damage_denominator_(matdata.parameters.get<double>("DAMAGE_DENOMINATOR")),
       damage_exponent_(matdata.parameters.get<double>("DAMAGE_EXPONENT")),
       epsilon_pf_(matdata.parameters.get<double>("DAMAGE_EPSILON_P_THRESHOLD")),
+      max_damage_increment_(matdata.parameters.get<double>("MAX_DAMAGE_INCREMENT")),
+      bool_model_closure_effects_(matdata.parameters.get<bool>("MODEL_CLOSURE_EFFECTS")),
       bool_use_damage_model_(matdata.parameters.get<bool>("USE_DAMAGE_MODEL"))
-// ----------------DAMAGE----------------
+      // ----------------DAMAGE----------------
 {
   if (max_halve_number_ < 0) FOUR_C_THROW("Parameter MAX_HALVE_NUM_SUBSTEP must be >= 0!");
 }
@@ -1872,23 +1874,20 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_state_quantities(
     double D_at_gp = time_step_quantities_.current_damage_variable_[gp_];
     if (D_at_gp > 0)
     {
-      state_quantities.curr_gamma_.scale(1 - D_at_gp);
-      state_quantities.curr_delta_.scale(1 - D_at_gp);
-      // if (trC_e >= 3){
+      if (trC_e < 3 and parameter()->model_closure_effects()){
+        state_quantities.curr_gamma_(0,0) += D_at_gp*1/3*state_quantities.curr_gamma_(1,0)*trC_e;
+        state_quantities.curr_gamma_(1,0) *= (1-D_at_gp);
 
-      //   state_quantities.curr_gamma_.scale(1-D_at_gp);
-      //   state_quantities.curr_delta_.scale(1-D_at_gp);
-      //   std::cout << "Gauss Point " << gp_ << " is under hydrostatic tension. Stiffness scaled by
-      //   " << 1-D_at_gp << "." << std::endl;
-      // }
-      // else {
-      //   std::cout << "Gauss Point " << gp_ << " is under hydrostatic pressure. Damage has no
-      //   effect." << std::endl;
-      // }
+        state_quantities.curr_delta_(0,0) += D_at_gp*1/3*state_quantities.curr_delta_(7,0);
+        state_quantities.curr_delta_(7,0) *= (1-D_at_gp);
 
-      if (ele_gid_ == 2000 && gp_ == 0)
-      {
-        std::cout << "STOP" << std::endl;
+        std::cout << "Gauss Point " << gp_ << " is under hydrostatic pressure. trC_e =  " << trC_e << ". Stiffness scaled by " << 1-D_at_gp << "." << std::endl;
+
+      }
+      else {
+        state_quantities.curr_gamma_.scale(1-D_at_gp);
+        state_quantities.curr_delta_.scale(1-D_at_gp);
+        std::cout << "Gauss Point " << gp_ << " is under hydrostatic tension. trC_e =  " << trC_e << ". Stiffness scaled by " << 1-D_at_gp << "." << std::endl;
       }
     }
   }
@@ -2965,6 +2964,7 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::update()
   // ----------------DAMAGE----------------
   // update the damage variable at every Gauss Point.
   double last_damage_variable;
+  double new_damage_variable;
   for (size_t i = 0; i < time_step_quantities_.current_damage_variable_.size(); ++i)
   {
     if (time_step_quantities_.current_plastic_strain_[i] > parameter()->epsilon_pf())
@@ -2972,8 +2972,8 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::update()
       last_damage_variable = time_step_quantities_.current_damage_variable_[i];
       // D_n+1 = D_n + dt * ( (epsilon_p/epsilon_pf - 1)/G )^z * (1 - D_n)    only if
       // epsilon_p/epsilon_pf > 1
-      time_step_quantities_.current_damage_variable_[i] =
-          std::min(0.8, time_step_quantities_.current_damage_variable_[i] +
+      new_damage_variable =
+          std::min(1.0, time_step_quantities_.current_damage_variable_[i] +
                             time_step_settings_.dt_ *
                                 std::pow((time_step_quantities_.current_plastic_strain_[i] /
                                                  parameter()->epsilon_pf() -
@@ -2981,11 +2981,22 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::update()
                                              parameter()->damage_denominator(),
                                     parameter()->damage_exponent()) *
                                 (1 - time_step_quantities_.current_damage_variable_[i]));
-      // some debug funtionality.
-      std::cout << "Damage occurs at Gauss point " << i << " | D_last = " << last_damage_variable
+      
+      if(new_damage_variable-last_damage_variable > parameter()->max_damage_increment()){
+        std::cout << "Damage changes too quickly in Element ID " << ele_gid_ << " and Gauss Point " << i << " | D_last = " << last_damage_variable
                 << " | dt = " << time_step_settings_.dt_
                 << " | epsilon_p = " << time_step_quantities_.current_plastic_strain_[i]
-                << " | D_new = " << time_step_quantities_.current_damage_variable_[i] << std::endl;
+                << " | D_new = " << new_damage_variable << std::endl;
+        FOUR_C_THROW("I tried to increase the damage variable too much. Aborting...");
+      }
+      
+      time_step_quantities_.current_damage_variable_[i] = new_damage_variable;
+      
+      // some debug funtionality.
+      // std::cout << "Damage occurs in Element ID" << ele_gid_ << " and Gauss Point " << i << " | D_last = " << last_damage_variable
+      //           << " | dt = " << time_step_settings_.dt_
+      //           << " | epsilon_p = " << time_step_quantities_.current_plastic_strain_[i]
+      //           << " | D_new = " << time_step_quantities_.current_damage_variable_[i] << std::endl;
     }
   }
   // ----------------DAMAGE----------------
@@ -4782,6 +4793,9 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::register_output_data_nam
   names_and_size["equiv_stress"] = 1;
   names_and_size["defgrad"] = 9;
   names_and_size["rightCG"] = 9;
+  // ----------------DAMAGE----------------
+  names_and_size["damage_variable"] = 1;
+  // ----------------DAMAGE----------------
   viscoplastic_law_->register_output_data_names(names_and_size);
 }
 
@@ -4852,6 +4866,16 @@ bool Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_output_data(
     }
     return true;
   }
+  // ----------------DAMAGE----------------
+  else if (name == "damage_variable")
+  {
+    for (int gp = 0; gp < static_cast<int>(time_step_quantities_.current_damage_variable_.size()); ++gp)
+    {
+      data(gp, 0) = time_step_quantities_.current_damage_variable_[gp];
+    }
+    return true;
+  }
+  // ----------------DAMAGE----------------
 
   return viscoplastic_law_->evaluate_output_data(name, data);
 }
@@ -4873,6 +4897,10 @@ std::vector<double> Mat::InelasticDefgradTransvIsotropElastViscoplast::get_curre
 bool Mat::InelasticDefgradTransvIsotropElastViscoplast::use_damage_model()
 {
   return parameter()->use_damage_model();
+}
+bool Mat::InelasticDefgradTransvIsotropElastViscoplast::model_closure_effects()
+{
+  return parameter()->model_closure_effects();
 }
 // ----------------DAMAGE----------------
 

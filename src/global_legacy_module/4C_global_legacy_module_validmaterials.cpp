@@ -2826,6 +2826,10 @@ std::unordered_map<Core::Materials::MaterialType, Core::IO::InputSpec> Global::v
                 {.description = "Damage Exponent z"}),
             parameter<double>("DAMAGE_EPSILON_P_THRESHOLD",
                 {.description = "epsilon_pf (D_1 in RJC if all other D_i are 0)"}),
+            parameter<double>("MAX_DAMAGE_INCREMENT",
+                {.description = "maximum increment the damage variable is allowed to change within one timestep. Should be small (e.g.0.02)"}),
+            parameter<bool>("MODEL_CLOSURE_EFFECTS",
+                {.description = "whether or not to model closure effects"}),
             parameter<bool>("USE_DAMAGE_MODEL",
                 {.description = "whether or not to use the damage model"}),
             // ----------------DAMAGE----------------
