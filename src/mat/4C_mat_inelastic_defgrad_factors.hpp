@@ -740,7 +740,7 @@ namespace Mat
 
     // ----------------DAMAGE----------------
     // returns an empty vector for the damage variable, gets overwritten by InelasticDefgradTransvIsotropElastViscoplast anyway.
-    virtual std::vector<double> get_current_damage_variable() {
+    virtual std::vector<double> get_last_damage_variable() {
       return std::vector<double>();
     };
     // return false for use_damage_model. Only overwrite with actual value for InelasticDefgradTransvIsotropElastViscoplast
@@ -1511,6 +1511,8 @@ namespace Mat
 
     void update() override;
 
+    void integrate_damage();
+
     void pack_inelastic(Core::Communication::PackBuffer& data) const override;
 
     void unpack_inelastic(Core::Communication::UnpackBuffer& buffer) override;
@@ -1723,8 +1725,9 @@ namespace Mat
       std::vector<double> last_substep_plastic_strain_;
 
       // ----------------DAMAGE----------------
-      // current damage variable D. D is overwritten at the end of each time-step, hence no last value necessary.
+      // current and last damage variable D
       std::vector<double> current_damage_variable_;
+      std::vector<double> last_damage_variable_;
       // ----------------DAMAGE----------------
 
     };
@@ -2101,8 +2104,8 @@ namespace Mat
     std::string debug_get_error_info(const std::string& base_error_string);
 
     // ----------------DAMAGE----------------
-    // override get_current_damage_variable. This actually returns the damage variable.
-    std::vector<double> get_current_damage_variable() override;
+    // override get_last_damage_variable. This actually returns the damage variable.
+    std::vector<double> get_last_damage_variable() override;
     // override whether or not to use the damage model. This returns the actual value.
     bool use_damage_model() override;
     bool model_closure_effects() override;

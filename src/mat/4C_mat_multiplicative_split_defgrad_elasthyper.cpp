@@ -233,11 +233,11 @@ void Mat::MultiplicativeSplitDefgradElastHyper::evaluate(
   // ----------------DAMAGE----------------
   // here is where we calculate damaged quantities. This happens also in Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_state_quantities and is commented there.
 
-  // inelastic_ stores all inelastic factors, take the first and only one. .second is a pointer to an instance of the InelasticFactorsHandler class. Hence methods for use_damage_model and get_current_damage_variable and model_closure_effects must be provided. 
+  // inelastic_ stores all inelastic factors, take the first and only one. .second is a pointer to an instance of the InelasticFactorsHandler class. Hence methods for use_damage_model and get_last_damage_variable and model_closure_effects must be provided. 
   
   double trC_e = kinematic_quantities.prinv(0,0);
   if (inelastic_->fac_def_grad_in()[0].second->use_damage_model()){
-    double D_at_gp = inelastic_->fac_def_grad_in()[0].second->get_current_damage_variable()[gp];
+    double D_at_gp = inelastic_->fac_def_grad_in()[0].second->get_last_damage_variable()[gp];
     if (D_at_gp > 0){
       
       if (trC_e < 3 and inelastic_->fac_def_grad_in()[0].second->model_closure_effects()) {

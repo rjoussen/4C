@@ -1734,7 +1734,8 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::InelasticDefgradTransvIsotrop
 
   // ----------------DAMAGE----------------
   // update the current damage variable
-  time_step_quantities_.current_damage_variable_.resize(1, 0.0);
+  time_step_quantities_.last_damage_variable_.resize(1, -1.0); // Since there is an Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_inverse_inelastic_def_grad call before the zeroth timestep, and the results of that is written as a result without calling Mat::InelasticDefgradTransvIsotropElastViscoplast::update(), the results written for the zeroth timestep are wrong. To circumvent that, set this to -1. This serves as a marker to not do the time integration in the very first evaluate call. In almost every normal scenario, the time integration of the damage variable wont be used anyway in this call, since the plastic strain is 0 still.
+  time_step_quantities_.current_damage_variable_.resize(1, 0.0); // value irrelevant at this point
   // ----------------DAMAGE----------------
 
   // update current_ value of the equivalent stress
@@ -1874,8 +1875,8 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_state_quantities(
 
   if (parameter()->use_damage_model())
   {
-    // get current damage variable at gauss point
-    double D_at_gp = time_step_quantities_.current_damage_variable_[gp_];
+    // get last damage variable at gauss point
+    double D_at_gp = time_step_quantities_.last_damage_variable_[gp_];
     // no effect if D = 0 still
     if (D_at_gp > 0)
     {
@@ -1997,11 +1998,6 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_state_quantities(
   state_quantities.curr_equiv_plastic_strain_rate_ =
       viscoplastic_law_->evaluate_plastic_strain_rate(state_quantities.curr_equiv_stress_,
           plastic_strain, dt, parameter()->max_plastic_strain_incr(), err_status, update_hist_var_);
-
-  if (eval_type == StateQuantityEvalType::PlasticStrainRateOnly)
-  {
-    return state_quantities;
-  }
 
   if (eval_type == StateQuantityEvalType::PlasticStrainRateOnly)
   {
@@ -2918,8 +2914,51 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_inverse_inelast
     // FOUR_C_THROW(debug_get_error_info("Error thrown by me after inverse_inelastic_defgrad"));
   }
 #endif
+
+  // integrate damage variables explicitly using current plastic strain etc. and the last damage variable. Store in current damage variable. This gets overwritten multiple times during the global Newton Loop. However, every time we use damage, we use the last damage variable anyway. Only the last time integrate_damage() is called, the new damage variable is used (in the next timestep).
+  integrate_damage();
 }
 
+// ----------------DAMAGE----------------
+void Mat::InelasticDefgradTransvIsotropElastViscoplast::integrate_damage()
+{
+  // store use_damage_model and the current plastic strain in variables. This enables verification.
+  bool bool_use_damage_model = use_damage_model();
+  double current_plastic_strain_at_GP = time_step_quantities_.current_plastic_strain_[gp_];
+
+  // FOR VERIFICATION PURPOSES ONLY:
+  // 1. verify time integration of the damage variable: Set USE_DAMAGE_MODEL false in the inputfile, but force time integration with:
+  // bool_use_damage_model = true;
+  // using a fixed plastic strain:
+  // current_plastic_strain_at_GP = 0.0016;
+  // 2. Verify the correct scaling of the stiffness: Set USE_DAMAGE_MODEL true in the inputfile, but disable time integration with:
+  // bool_use_damage_model = false;
+  // and use a fixed damage variable:
+  // time_step_quantities_.last_damage_variable_[gp_] = 0.4;
+  // time_step_quantities_.current_damage_variable_[gp_] = 0.4;
+  // END OF VERIFICATION BLOCK
+
+  // Should the damage model be used and does the plastic strain exceed the critical plastic strain?
+  if (bool_use_damage_model and current_plastic_strain_at_GP > parameter()->epsilon_pf())
+  {
+    if(time_step_quantities_.last_damage_variable_[gp_] >= 0){
+      // We do not want time integration of the damage variable before the zeroth timestep. A negative value serves as a marker to prevent this from happening. This is needed since there is a Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_inverse_inelastic_def_grad call before the zeroth timestep.
+      
+      // update:
+      // D_n+1 = D_n + dt * \hat{G} * (epsilon_p/epsilon_pf - 1)^z * (1 - D_n)    only if epsilon_p/epsilon_pf > 1, D_max=1
+      time_step_quantities_.current_damage_variable_[gp_] =
+          std::min(1.0, time_step_quantities_.last_damage_variable_[gp_] +
+                            time_step_settings_.dt_ * parameter()->damage_growth_rate() *
+                                std::pow((current_plastic_strain_at_GP/parameter()->epsilon_pf() - 1), parameter()->damage_exponent()) *
+                                (1 - time_step_quantities_.last_damage_variable_[gp_]));
+    }
+    else{
+      time_step_quantities_.current_damage_variable_[gp_] = 0.0;
+      time_step_quantities_.last_damage_variable_[gp_] = 0.0;
+    }
+  }
+}
+// ----------------DAMAGE----------------
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
@@ -2975,53 +3014,28 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::update()
   }
 
   // ----------------DAMAGE----------------
-  // update the damage variable at every Gauss Point.
-  // loop over all gauss points
-  for (size_t i = 0; i < time_step_quantities_.current_damage_variable_.size(); ++i)
+  // update the damage variable at each Gauss point by writing their current values in the last values. The last values will be used in the next time step.
+  // loop over Gauss points
+  for (size_t gp = 0; gp < time_step_quantities_.current_damage_variable_.size(); ++gp)
   {
-    // obtain the current plastic strain
-    double current_plastic_strain = time_step_quantities_.current_plastic_strain_[i];
-
-    // Use damage model? Stored temporarily for verification purposes. 
-    bool bool_use_damage_model_ = use_damage_model();
-
-    // For verification only, comment out otherwise: Set fixed \varepsilon_p and force time integration of the damage variable. D is only used here and doesnt affect the actual computation if use_damage_model is turned off (recommended).
-    // current_plastic_strain = 0.00016;
-    // bool_use_damage_model_ = true;
-
-    // Shoudl the damage model be used and does the plastic strain exceed the critical plastic strain?
-    if (bool_use_damage_model_ and current_plastic_strain > parameter()->epsilon_pf())
-    {
-      double last_damage_variable = time_step_quantities_.current_damage_variable_[i];
-      
-      // update:
-      // D_n+1 = D_n + dt * \hat{G} * (epsilon_p/epsilon_pf - 1)^z * (1 - D_n)    only if epsilon_p/epsilon_pf > 1, D_max=1
-      double new_damage_variable =
-          std::min(1.0, last_damage_variable +
-                            time_step_settings_.dt_ * parameter()->damage_growth_rate() *
-                                std::pow((current_plastic_strain/parameter()->epsilon_pf() - 1), parameter()->damage_exponent()) *
-                                (1 - last_damage_variable));
-      
-      // The damage variable should not change to quickly (since it is explicit)
-      if(new_damage_variable-last_damage_variable > parameter()->max_damage_increment()){
-        std::cout << "Damage changes too quickly in Element ID " << ele_gid_ << " and Gauss Point " << i << " | D_last = " << last_damage_variable
-                << " | dt = " << time_step_settings_.dt_
-                << " | epsilon_p = " << current_plastic_strain
-                << " | D_new = " << new_damage_variable << std::endl;
-        FOUR_C_THROW("I tried to increase the damage variable too much. Aborting...");
-      }
-      
-      // save the new damage variable
-      time_step_quantities_.current_damage_variable_[i] = new_damage_variable;
-      
-      // output the start of damage evolution to the screen.
-      if(last_damage_variable == 0 and new_damage_variable > 0){
-      std::cout << "Damage starts in Element " << ele_gid_ << " and Gauss Point " << i << std::endl;
-      }
+    // output the start of damage evolution to the screen.
+    if(time_step_quantities_.last_damage_variable_[gp] == 0 and time_step_quantities_.current_damage_variable_[gp] > 0){
+      std::cout << "Damage starts in Element " << ele_gid_ << " and Gauss Point " << gp << " | D = " << time_step_quantities_.current_damage_variable_[gp] << std::endl;
     }
 
-    // For verification only, comment out otherwise: Set fixed D. This only works for after the first timestep. 
-    // time_step_quantities_.current_damage_variable_[i] = 0.4;
+    // The damage variable should not change to quickly (since it is explicit)
+    if(time_step_quantities_.current_damage_variable_[gp]-time_step_quantities_.last_damage_variable_[gp] > parameter()->max_damage_increment()){
+      std::cout << "Damage changes too quickly in Element ID " << ele_gid_ << " and Gauss Point " << gp
+              << " | D_last = " << time_step_quantities_.last_damage_variable_[gp]
+              << " | dt = " << time_step_settings_.dt_
+              << " | epsilon_p = " << time_step_quantities_.current_plastic_strain_[gp]
+              << " | D_new = " << time_step_quantities_.current_damage_variable_[gp] << std::endl;
+      FOUR_C_THROW("I tried to increase the damage variable too much. Aborting...");
+    }
+    
+    // actual update
+    time_step_quantities_.last_damage_variable_ [gp] = time_step_quantities_.current_damage_variable_[gp];
+    
   }
   // ----------------DAMAGE----------------
 }
@@ -3060,6 +3074,8 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::setup(
   // Default Values for Damage Variable
   time_step_quantities_.current_damage_variable_.resize(
       numgp, time_step_quantities_.current_damage_variable_[0]);
+  time_step_quantities_.last_damage_variable_.resize(
+      numgp, time_step_quantities_.last_damage_variable_[0]);
   // ----------------DAMAGE----------------
 
   // default values of the equivalent stress for ALL Gauss Points
@@ -3126,7 +3142,7 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::pack_inelastic(
     add_to_pack(data, time_step_quantities_.last_substep_plastic_strain_);
     add_to_pack(data, time_step_quantities_.last_defgrad_);
     // ----------------DAMAGE----------------
-    add_to_pack(data, time_step_quantities_.current_damage_variable_);
+    add_to_pack(data, time_step_quantities_.last_damage_variable_);
     // ----------------DAMAGE----------------
   }
 }
@@ -3161,7 +3177,7 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::unpack_inelastic(
     extract_from_pack(buffer, time_step_quantities_.last_substep_plastic_strain_);
     extract_from_pack(buffer, time_step_quantities_.last_defgrad_);
     // ----------------DAMAGE----------------
-    extract_from_pack(buffer, time_step_quantities_.current_damage_variable_);
+    extract_from_pack(buffer, time_step_quantities_.last_damage_variable_);
     // ----------------DAMAGE----------------
   }
 
@@ -3178,8 +3194,8 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::unpack_inelastic(
       0.0);  // value irrelevant
   // ----------------DAMAGE----------------
   time_step_quantities_.current_damage_variable_.resize(
-      time_step_quantities_.current_damage_variable_.size(),
-      time_step_quantities_.current_damage_variable_[0]);
+      time_step_quantities_.last_damage_variable_.size(),
+      time_step_quantities_.last_damage_variable_[0]);
   // ----------------DAMAGE----------------
 
 
@@ -4914,9 +4930,9 @@ void Mat::PAR::InelasticDefgradTransvIsotropElastViscoplast::debug_set_lineariza
 
 // ----------------DAMAGE----------------
 // implement functionality to query damage variable from the InelasticFactorsHandler
-std::vector<double> Mat::InelasticDefgradTransvIsotropElastViscoplast::get_current_damage_variable()
+std::vector<double> Mat::InelasticDefgradTransvIsotropElastViscoplast::get_last_damage_variable()
 {
-  return time_step_quantities_.current_damage_variable_;
+  return time_step_quantities_.last_damage_variable_;
 }
 bool Mat::InelasticDefgradTransvIsotropElastViscoplast::use_damage_model()
 {
