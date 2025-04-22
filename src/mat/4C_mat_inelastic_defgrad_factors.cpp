@@ -692,7 +692,7 @@ Mat::PAR::InelasticDefgradTransvIsotropElastViscoplast::
               "MATRIX_LOG_DERIV_CALC_METHOD")),
       // ----------------DAMAGE----------------
       // unpack damage material parameters
-      damage_denominator_(matdata.parameters.get<double>("DAMAGE_DENOMINATOR")),
+      damage_growth_rate_(matdata.parameters.get<double>("DAMAGE_GROWTH_RATE")),
       damage_exponent_(matdata.parameters.get<double>("DAMAGE_EXPONENT")),
       epsilon_pf_(matdata.parameters.get<double>("DAMAGE_EPSILON_P_THRESHOLD")),
       max_damage_increment_(matdata.parameters.get<double>("MAX_DAMAGE_INCREMENT")),
@@ -1733,7 +1733,7 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::InelasticDefgradTransvIsotrop
   time_step_quantities_.last_substep_plastic_strain_.resize(1, 0.0);
 
   // ----------------DAMAGE----------------
-  // update last_ and current_ values of the damage variable
+  // update the current damage variable
   time_step_quantities_.current_damage_variable_.resize(1, 0.0);
   // ----------------DAMAGE----------------
 
@@ -1866,28 +1866,41 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_state_quantities(
       state_quantities.curr_CeM_, state_quantities.curr_gamma_, state_quantities.curr_delta_);
 
   // ----------------DAMAGE----------------
+  // here is where we calculate damaged quantities. This happens also in Mat::MultiplicativeSplitDefgradElastHyper::evaluate
+
   // calculate tr(C_e)
   double trC_e = state_quantities.curr_CeM_(0, 0) + state_quantities.curr_CeM_(1, 1) +
                  state_quantities.curr_CeM_(2, 2);
+
   if (parameter()->use_damage_model())
   {
+    // get current damage variable at gauss point
     double D_at_gp = time_step_quantities_.current_damage_variable_[gp_];
+    // no effect if D = 0 still
     if (D_at_gp > 0)
     {
+      // if closure effects should be modelled, distinction between compression (trC_e<3) and tension (trC_e>=3)  
       if (trC_e < 3 and parameter()->model_closure_effects()){
+        // compression
+
+        // This is only true for SVK materials!
         state_quantities.curr_gamma_(0,0) += D_at_gp*1/3*state_quantities.curr_gamma_(1,0)*trC_e;
         state_quantities.curr_gamma_(1,0) *= (1-D_at_gp);
 
         state_quantities.curr_delta_(0,0) += D_at_gp*1/3*state_quantities.curr_delta_(7,0);
         state_quantities.curr_delta_(7,0) *= (1-D_at_gp);
 
-        std::cout << "Gauss Point " << gp_ << " is under hydrostatic pressure. trC_e =  " << trC_e << ". Stiffness scaled by " << 1-D_at_gp << "." << std::endl;
+        // debug functionality
+        // std::cout << "Gauss Point " << gp_ << " is under hydrostatic pressure. trC_e =  " << trC_e << ". Stiffness scaled by " << 1-D_at_gp << "." << std::endl;
 
       }
       else {
+        // tension or if closure effects are not considered. This leads to a simple scaling, valid for all materials.
         state_quantities.curr_gamma_.scale(1-D_at_gp);
         state_quantities.curr_delta_.scale(1-D_at_gp);
-        std::cout << "Gauss Point " << gp_ << " is under hydrostatic tension. trC_e =  " << trC_e << ". Stiffness scaled by " << 1-D_at_gp << "." << std::endl;
+        
+        // debug functionality
+        // std::cout << "Gauss Point " << gp_ << " is under hydrostatic tension. trC_e =  " << trC_e << ". Stiffness scaled by " << 1-D_at_gp << "." << std::endl;
       }
     }
   }
@@ -2963,41 +2976,52 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::update()
 
   // ----------------DAMAGE----------------
   // update the damage variable at every Gauss Point.
-  double last_damage_variable;
-  double new_damage_variable;
+  // loop over all gauss points
   for (size_t i = 0; i < time_step_quantities_.current_damage_variable_.size(); ++i)
   {
-    if (time_step_quantities_.current_plastic_strain_[i] > parameter()->epsilon_pf())
+    // obtain the current plastic strain
+    double current_plastic_strain = time_step_quantities_.current_plastic_strain_[i];
+
+    // Use damage model? Stored temporarily for verification purposes. 
+    bool bool_use_damage_model_ = use_damage_model();
+
+    // For verification only, comment out otherwise: Set fixed \varepsilon_p and force time integration of the damage variable. D is only used here and doesnt affect the actual computation if use_damage_model is turned off (recommended).
+    // current_plastic_strain = 0.00016;
+    // bool_use_damage_model_ = true;
+
+    // Shoudl the damage model be used and does the plastic strain exceed the critical plastic strain?
+    if (bool_use_damage_model_ and current_plastic_strain > parameter()->epsilon_pf())
     {
-      last_damage_variable = time_step_quantities_.current_damage_variable_[i];
-      // D_n+1 = D_n + dt * ( (epsilon_p/epsilon_pf - 1)/G )^z * (1 - D_n)    only if
-      // epsilon_p/epsilon_pf > 1
-      new_damage_variable =
-          std::min(1.0, time_step_quantities_.current_damage_variable_[i] +
-                            time_step_settings_.dt_ *
-                                std::pow((time_step_quantities_.current_plastic_strain_[i] /
-                                                 parameter()->epsilon_pf() -
-                                             1) /
-                                             parameter()->damage_denominator(),
-                                    parameter()->damage_exponent()) *
-                                (1 - time_step_quantities_.current_damage_variable_[i]));
+      double last_damage_variable = time_step_quantities_.current_damage_variable_[i];
       
+      // update:
+      // D_n+1 = D_n + dt * \hat{G} * (epsilon_p/epsilon_pf - 1)^z * (1 - D_n)    only if epsilon_p/epsilon_pf > 1, D_max=1
+      double new_damage_variable =
+          std::min(1.0, last_damage_variable +
+                            time_step_settings_.dt_ * parameter()->damage_growth_rate() *
+                                std::pow((current_plastic_strain/parameter()->epsilon_pf() - 1), parameter()->damage_exponent()) *
+                                (1 - last_damage_variable));
+      
+      // The damage variable should not change to quickly (since it is explicit)
       if(new_damage_variable-last_damage_variable > parameter()->max_damage_increment()){
         std::cout << "Damage changes too quickly in Element ID " << ele_gid_ << " and Gauss Point " << i << " | D_last = " << last_damage_variable
                 << " | dt = " << time_step_settings_.dt_
-                << " | epsilon_p = " << time_step_quantities_.current_plastic_strain_[i]
+                << " | epsilon_p = " << current_plastic_strain
                 << " | D_new = " << new_damage_variable << std::endl;
         FOUR_C_THROW("I tried to increase the damage variable too much. Aborting...");
       }
       
+      // save the new damage variable
       time_step_quantities_.current_damage_variable_[i] = new_damage_variable;
       
-      // some debug funtionality.
-      // std::cout << "Damage occurs in Element ID" << ele_gid_ << " and Gauss Point " << i << " | D_last = " << last_damage_variable
-      //           << " | dt = " << time_step_settings_.dt_
-      //           << " | epsilon_p = " << time_step_quantities_.current_plastic_strain_[i]
-      //           << " | D_new = " << time_step_quantities_.current_damage_variable_[i] << std::endl;
+      // output the start of damage evolution to the screen.
+      if(last_damage_variable == 0 and new_damage_variable > 0){
+      std::cout << "Damage starts in Element " << ele_gid_ << " and Gauss Point " << i << std::endl;
+      }
     }
+
+    // For verification only, comment out otherwise: Set fixed D. This only works for after the first timestep. 
+    // time_step_quantities_.current_damage_variable_[i] = 0.4;
   }
   // ----------------DAMAGE----------------
 }

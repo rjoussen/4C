@@ -231,6 +231,8 @@ void Mat::MultiplicativeSplitDefgradElastHyper::evaluate(
       kinematic_quantities.dPIe, kinematic_quantities.ddPIIe);
 
   // ----------------DAMAGE----------------
+  // here is where we calculate damaged quantities. This happens also in Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_state_quantities and is commented there.
+
   // inelastic_ stores all inelastic factors, take the first and only one. .second is a pointer to an instance of the InelasticFactorsHandler class. Hence methods for use_damage_model and get_current_damage_variable and model_closure_effects must be provided. 
   
   double trC_e = kinematic_quantities.prinv(0,0);
@@ -245,14 +247,17 @@ void Mat::MultiplicativeSplitDefgradElastHyper::evaluate(
         stress_factors.delta(0,0) += D_at_gp*1/3*stress_factors.delta(7,0);
         stress_factors.delta(7,0) *= (1-D_at_gp);
 
-        std::cout << "Gauss Point " << gp << " is under hydrostatic pressure. trC_e =  " << trC_e << ". Stiffness scaled by " << 1-D_at_gp << "." << std::endl;
+        // debug functionality
+        // std::cout << "Gauss Point " << gp << " is under hydrostatic pressure. trC_e =  " << trC_e << ". Stiffness scaled by " << 1-D_at_gp << "." << std::endl;
 
       }
       else
       {
         stress_factors.gamma.scale(1-D_at_gp);
         stress_factors.delta.scale(1-D_at_gp);
-        std::cout << "Gauss Point " << gp << " is under hydrostatic tension. trC_e =  " << trC_e << ". Stiffness scaled by " << 1-D_at_gp << "." << std::endl;
+
+        // debug functionality
+        // std::cout << "Gauss Point " << gp << " is under hydrostatic tension. trC_e =  " << trC_e << ". Stiffness scaled by " << 1-D_at_gp << "." << std::endl;
       }
     }
   }
