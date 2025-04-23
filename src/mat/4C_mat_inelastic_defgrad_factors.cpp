@@ -693,6 +693,7 @@ Mat::PAR::InelasticDefgradTransvIsotropElastViscoplast::
       // ----------------DAMAGE----------------
       // unpack damage material parameters
       damage_growth_rate_(matdata.parameters.get<double>("DAMAGE_GROWTH_RATE")),
+      damage_denominator_(matdata.parameters.get<double>("DAMAGE_DENOMINATOR")),
       damage_exponent_(matdata.parameters.get<double>("DAMAGE_EXPONENT")),
       epsilon_pf_(matdata.parameters.get<double>("DAMAGE_EPSILON_P_THRESHOLD")),
       max_damage_increment_(matdata.parameters.get<double>("MAX_DAMAGE_INCREMENT")),
@@ -701,6 +702,10 @@ Mat::PAR::InelasticDefgradTransvIsotropElastViscoplast::
       // ----------------DAMAGE----------------
 {
   if (max_halve_number_ < 0) FOUR_C_THROW("Parameter MAX_HALVE_NUM_SUBSTEP must be >= 0!");
+  if ((damage_growth_rate_ == -1) == (damage_denominator_ == -1)){
+    // this means that either damage_growth rate and damage_denominator or none of them have been provided. Provide exactly one.
+    FOUR_C_THROW("Provide exactly one of: DAMAGE_GROWTH_RATE or DAMAGE_DENOMINATOR.");
+  }
 }
 
 
@@ -2944,13 +2949,23 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::integrate_damage()
     if(time_step_quantities_.last_damage_variable_[gp_] >= 0){
       // We do not want time integration of the damage variable before the zeroth timestep. A negative value serves as a marker to prevent this from happening. This is needed since there is a Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_inverse_inelastic_def_grad call before the zeroth timestep.
       
-      // update:
-      // D_n+1 = D_n + dt * \hat{G} * (epsilon_p/epsilon_pf - 1)^z * (1 - D_n)    only if epsilon_p/epsilon_pf > 1, D_max=1
+      if(parameter()->damage_denominator() == -1){
+        // update:
+        // D_n+1 = D_n + dt * \hat{G} * (epsilon_p/epsilon_pf - 1)^z * (1 - D_n)    only if epsilon_p/epsilon_pf > 1, D_max=1
+        time_step_quantities_.current_damage_variable_[gp_] =
+            std::min(1.0, time_step_quantities_.last_damage_variable_[gp_] +
+                              time_step_settings_.dt_ * parameter()->damage_growth_rate() *
+                                  std::pow((current_plastic_strain_at_GP/parameter()->epsilon_pf() - 1), parameter()->damage_exponent()) *
+                                  (1 - time_step_quantities_.last_damage_variable_[gp_]));
+      }
+      else {
+        // version for large damage exponents z. Is called when damage denomiator is provided instead of damage_growth_rate. 
       time_step_quantities_.current_damage_variable_[gp_] =
           std::min(1.0, time_step_quantities_.last_damage_variable_[gp_] +
-                            time_step_settings_.dt_ * parameter()->damage_growth_rate() *
-                                std::pow((current_plastic_strain_at_GP/parameter()->epsilon_pf() - 1), parameter()->damage_exponent()) *
+                            time_step_settings_.dt_ *
+                                std::pow((current_plastic_strain_at_GP/parameter()->epsilon_pf() - 1)/parameter()->damage_denominator(), parameter()->damage_exponent()) *
                                 (1 - time_step_quantities_.last_damage_variable_[gp_]));
+      }
     }
     else{
       time_step_quantities_.current_damage_variable_[gp_] = 0.0;

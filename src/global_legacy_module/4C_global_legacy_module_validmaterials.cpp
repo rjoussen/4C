@@ -2820,8 +2820,13 @@ std::unordered_map<Core::Materials::MaterialType, Core::IO::InputSpec> Global::v
                         Core::LinAlg::GenMatrixLogFirstDerivCalcMethod::pade_part_fract}),
             
             // ----------------DAMAGE----------------
+            // provide only damage growth rate or damage denominator
             parameter<double>("DAMAGE_GROWTH_RATE",
-                {.description = "Damage Growth Rate G_hat"}),
+                {.description = "Damage Growth Rate G_hat",
+                 .default_value = -1.0}),
+            parameter<double>("DAMAGE_DENOMINATOR",
+                {.description = "Damage Denominator G",
+                 .default_value = -1.0}),
             parameter<double>("DAMAGE_EXPONENT",
                 {.description = "Damage Exponent z"}),
             parameter<double>("DAMAGE_EPSILON_P_THRESHOLD",

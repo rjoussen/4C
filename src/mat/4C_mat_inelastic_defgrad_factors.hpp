@@ -388,6 +388,7 @@ namespace Mat
       // ----------------DAMAGE----------------
       // return damage material parameters
       [[nodiscard]] double damage_growth_rate() const { return damage_growth_rate_; };
+      [[nodiscard]] double damage_denominator() const { return damage_denominator_; };
       [[nodiscard]] double damage_exponent() const { return damage_exponent_; };
       [[nodiscard]] double epsilon_pf() const { return epsilon_pf_; };
       [[nodiscard]] double max_damage_increment() const { return max_damage_increment_; };
@@ -475,6 +476,8 @@ namespace Mat
       // ----------------DAMAGE----------------
       // Growth rate G_hat in the damage rule
       const double damage_growth_rate_;
+      // Damage denominator G in the damage rule
+      const double damage_denominator_;
       // exponent z in the damage rule
       const double damage_exponent_;
       // damage threshhold epsilon_pf from which damage occurs.
