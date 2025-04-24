@@ -2939,8 +2939,8 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::integrate_damage()
   // 2. Verify the correct scaling of the stiffness: Set USE_DAMAGE_MODEL true in the inputfile, but disable time integration with:
   // bool_use_damage_model = false;
   // and use a fixed damage variable:
-  // time_step_quantities_.last_damage_variable_[gp_] = 0.4;
-  // time_step_quantities_.current_damage_variable_[gp_] = 0.4;
+  // time_step_quantities_.last_damage_variable_[gp_] = 0.7;
+  // time_step_quantities_.current_damage_variable_[gp_] = 0.7;
   // END OF VERIFICATION BLOCK
 
   // Should the damage model be used and does the plastic strain exceed the critical plastic strain?
