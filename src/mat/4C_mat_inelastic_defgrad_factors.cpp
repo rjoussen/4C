@@ -2951,12 +2951,12 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::integrate_damage()
       
       if(parameter()->damage_denominator() == -1){
         // update:
-        // D_n+1 = D_n + dt * \hat{G} * (epsilon_p/epsilon_pf - 1)^z * (1 - D_n)    only if epsilon_p/epsilon_pf > 1, D_max=1
+        // D_n+1 = D_n + dt * \hat{G} * (epsilon_p - epsilon_pf)^z * (1 - D_n)    only if epsilon_p > epsilon_pf, D_max=1
         time_step_quantities_.current_damage_variable_[gp_] =
             std::min(1.0, time_step_quantities_.last_damage_variable_[gp_] +
                               time_step_settings_.dt_ * parameter()->damage_growth_rate() *
-                                  std::pow((current_plastic_strain_at_GP/parameter()->epsilon_pf() - 1), parameter()->damage_exponent()) *
-                                  (1 - time_step_quantities_.last_damage_variable_[gp_]));
+                                  std::pow((current_plastic_strain_at_GP - parameter()->epsilon_pf()), parameter()->damage_exponent()) *
+                                  (1.0 - time_step_quantities_.last_damage_variable_[gp_]));
       }
       else {
         // version for large damage exponents z. Is called when damage denomiator is provided instead of damage_growth_rate. 
