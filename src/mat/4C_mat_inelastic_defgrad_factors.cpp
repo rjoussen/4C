@@ -2954,19 +2954,20 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::integrate_damage()
   // time_step_quantities_.current_damage_variable_[gp_] = 0.7;
   // END OF VERIFICATION BLOCK
 
-  // Should the damage model be used and does the plastic strain exceed the critical plastic strain?
-  if (bool_use_damage_model and current_plastic_strain_at_GP > parameter()->epsilon_pf())
+  if(time_step_quantities_.last_damage_variable_[gp_] >= 0)
   {
-    if(time_step_quantities_.last_damage_variable_[gp_] >= 0){
-      // We do not want time integration of the damage variable before the zeroth timestep. A negative value serves as a marker to prevent this from happening. This is needed since there is a Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_inverse_inelastic_def_grad call before the zeroth timestep.
-      
+    // We do not want time integration of the damage variable before the zeroth timestep. A negative value serves as a marker to prevent this from happening. This is needed since there is a Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_inverse_inelastic_def_grad call before the zeroth timestep.
+
+    // Should the damage model be used and does the plastic strain exceed the critical plastic strain?
+    if (bool_use_damage_model and current_plastic_strain_at_GP > parameter()->epsilon_pf())
+    {
       if(parameter()->damage_denominator() == -1){
         // update:
-        // D_n+1 = D_n + dt * \hat{G} * (epsilon_p - epsilon_pf)^z * (1 - D_n)    only if epsilon_p > epsilon_pf, D_max=1
+        // D_n+1 = D_n + dt * \hat{G} * (epsilon_p/epsilon_pf - 1)^z * (1 - D_n)    only if epsilon_p > epsilon_pf, D_max=1
         time_step_quantities_.current_damage_variable_[gp_] =
             std::min(1.0, time_step_quantities_.last_damage_variable_[gp_] +
                               time_step_settings_.dt_ * parameter()->damage_growth_rate() *
-                                  std::pow((current_plastic_strain_at_GP - parameter()->epsilon_pf()), parameter()->damage_exponent()) *
+                                  std::pow((current_plastic_strain_at_GP/parameter()->epsilon_pf() - 1.0), parameter()->damage_exponent()) *
                                   (1.0 - time_step_quantities_.last_damage_variable_[gp_]));
       }
       else {
@@ -2975,13 +2976,20 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::integrate_damage()
           std::min(1.0, time_step_quantities_.last_damage_variable_[gp_] +
                             time_step_settings_.dt_ *
                                 std::pow((current_plastic_strain_at_GP/parameter()->epsilon_pf() - 1)/parameter()->damage_denominator(), parameter()->damage_exponent()) *
-                                (1 - time_step_quantities_.last_damage_variable_[gp_]));
+                                (1.0 - time_step_quantities_.last_damage_variable_[gp_]));
       }
     }
-    else{
-      time_step_quantities_.current_damage_variable_[gp_] = 0.0;
-      time_step_quantities_.last_damage_variable_[gp_] = 0.0;
+    else
+    {
+      // if the plastic strain is below the threshold, no change in the damage variable. This is to avoid to take the value of an earlier iteration at which the damage threshold was exceeded.
+      time_step_quantities_.current_damage_variable_[gp_] = time_step_quantities_.last_damage_variable_[gp_];
     }
+  }
+  else
+  {
+    // This means we are in the zeroth timestep. Now, initialize the damage variable to 0.
+    time_step_quantities_.current_damage_variable_[gp_] = 0.0;
+    time_step_quantities_.last_damage_variable_[gp_] = 0.0;
   }
 }
 // ----------------DAMAGE----------------
