@@ -1885,28 +1885,39 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_state_quantities(
     // no effect if D = 0 still
     if (D_at_gp > 0)
     {
-      // if closure effects should be modelled, distinction between compression (trC_e<3) and tension (trC_e>=3)  
-      if (trC_e < 3 and parameter()->model_closure_effects()){
+
+      // scale gamma and delta values uniformly.
+      state_quantities.curr_gamma_.scale(1-D_at_gp);
+      state_quantities.curr_delta_.scale(1-D_at_gp);
+
+      // recover hydrostatic contribution if needed:  
+      if (trC_e < 3 and parameter()->model_closure_effects())
+      {
         // compression
+        // assemble hydrostatic CeM_hyd:
+        Core::LinAlg::Matrix<3, 3> CeM_hyd(true);
+        CeM_hyd(0, 0) = 1.0/3.0*trC_e;
+        CeM_hyd(1, 1) = 1.0/3.0*trC_e;
+        CeM_hyd(2, 2) = 1.0/3.0*trC_e;
 
-        // This is only true for SVK materials!
-        state_quantities.curr_gamma_(0,0) += D_at_gp*1/3*state_quantities.curr_gamma_(1,0)*trC_e;
-        state_quantities.curr_gamma_(1,0) *= (1-D_at_gp);
+        // calculate hydrostatic gamma and deltas, i.e. gamma(CeM_hyd) and delta(CeM_hyd):
+        Core::LinAlg::Matrix<3, 1> gamma_hyd(true);
+        Core::LinAlg::Matrix<8, 1> delta_hyd(true);
+        calculate_gamma_delta(CeM_hyd, gamma_hyd, delta_hyd);
 
-        state_quantities.curr_delta_(0,0) += D_at_gp*1/3*state_quantities.curr_delta_(7,0);
-        state_quantities.curr_delta_(7,0) *= (1-D_at_gp);
+        // update gamma_1. All other gammas are not affected
+        state_quantities.curr_gamma_(0, 0) += D_at_gp*(
+          gamma_hyd(0,0) + 1.0/3.0*trC_e*gamma_hyd(1,0) + 3.0/trC_e*gamma_hyd(2,0));
+
+        // update delta_1. All other deltas are not affected
+        state_quantities.curr_delta_(0,0) += D_at_gp*(
+          delta_hyd(0,0) + 2.0/3.0*trC_e*delta_hyd(1,0) + 6.0/trC_e*delta_hyd(2,0)
+          + 1.0/9.0*std::pow(trC_e, 2)*delta_hyd(3,0) + 2.0*delta_hyd(4,0)
+          + 9.0/std::pow(trC_e, 2)*delta_hyd(5,0) + 3.0/std::pow(trC_e, 2)*delta_hyd(6,0) + 1.0/3.0*delta_hyd(7,0));
 
         // debug functionality
-        // std::cout << "Gauss Point " << gp_ << " is under hydrostatic pressure. trC_e =  " << trC_e << ". Stiffness scaled by " << 1-D_at_gp << "." << std::endl;
+        // std::cout << "trCe = " << trC_e << " | delta_1 = " << state_quantities.curr_delta_(0,0) << std::endl;
 
-      }
-      else {
-        // tension or if closure effects are not considered. This leads to a simple scaling, valid for all materials.
-        state_quantities.curr_gamma_.scale(1-D_at_gp);
-        state_quantities.curr_delta_.scale(1-D_at_gp);
-        
-        // debug functionality
-        // std::cout << "Gauss Point " << gp_ << " is under hydrostatic tension. trC_e =  " << trC_e << ". Stiffness scaled by " << 1-D_at_gp << "." << std::endl;
       }
     }
   }

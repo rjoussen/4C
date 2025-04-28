@@ -233,31 +233,60 @@ void Mat::MultiplicativeSplitDefgradElastHyper::evaluate(
   // ----------------DAMAGE----------------
   // here is where we calculate damaged quantities. This happens also in Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_state_quantities and is commented there.
 
-  // inelastic_ stores all inelastic factors, take the first and only one. .second is a pointer to an instance of the InelasticFactorsHandler class. Hence methods for use_damage_model and get_last_damage_variable and model_closure_effects must be provided. 
+  // inelastic_ stores all inelastic factors, take the first and only one. .second is a pointer to an instance of the InelasticFactorsHandler class. Hence methods for use_damage_model and get_last_damage_variable and model_closure_effects must be provided. in InelasticFactorsHandler.
   
+  // obtain tr(C_e)
   double trC_e = kinematic_quantities.prinv(0,0);
-  if (inelastic_->fac_def_grad_in()[0].second->use_damage_model()){
+
+  if (inelastic_->fac_def_grad_in()[0].second->use_damage_model())
+  {
+    // get last damage variable at gauss point
     double D_at_gp = inelastic_->fac_def_grad_in()[0].second->get_last_damage_variable()[gp];
+    // no effect if D = 0 still
     if (D_at_gp > 0){
+
+      // scale gamma and delta values uniformly.
+      stress_factors.gamma.scale(1-D_at_gp);
+      stress_factors.delta.scale(1-D_at_gp);
       
-      if (trC_e < 3 and inelastic_->fac_def_grad_in()[0].second->model_closure_effects()) {
-        stress_factors.gamma(0,0) += D_at_gp*1/3*stress_factors.gamma(1,0)*trC_e;
-        stress_factors.gamma(1,0) *= (1-D_at_gp);
-
-        stress_factors.delta(0,0) += D_at_gp*1/3*stress_factors.delta(7,0);
-        stress_factors.delta(7,0) *= (1-D_at_gp);
-
-        // debug functionality
-        // std::cout << "Gauss Point " << gp << " is under hydrostatic pressure. trC_e =  " << trC_e << ". Stiffness scaled by " << 1-D_at_gp << "." << std::endl;
-
-      }
-      else
+      // recover hydrostatic contribution if needed:  
+      if (trC_e < 3 and inelastic_->fac_def_grad_in()[0].second->model_closure_effects())
       {
-        stress_factors.gamma.scale(1-D_at_gp);
-        stress_factors.delta.scale(1-D_at_gp);
+        // compression
+        // assemble hydrostatic CeM_hyd:
+        Core::LinAlg::Matrix<3, 3> CeM_hyd(true);
+        CeM_hyd(0, 0) = 1.0/3.0*trC_e;
+        CeM_hyd(1, 1) = 1.0/3.0*trC_e;
+        CeM_hyd(2, 2) = 1.0/3.0*trC_e;
 
+        // obtain the invariants of CeM_hyd. 
+        Core::LinAlg::Matrix<6, 1> CeV_hyd(true);
+        Core::LinAlg::Voigt::Strains::matrix_to_vector(CeM_hyd, CeV_hyd);
+        Core::LinAlg::Matrix<3, 1> prinv_hyd(true);
+        Core::LinAlg::Voigt::Strains::invariants_principal(prinv_hyd, CeV_hyd);
+
+        // Calculate hydrostatic gamma and deltas, i.e. gamma(CeM_hyd) and delta(CeM_hyd).
+        // Here, we need to calculate the derivatives of the free energy wrt. the invariants first, evaluated at the invariants of CeM_hyd, i.e. at prinv_hyd.
+        Core::LinAlg::Matrix<3, 1> gamma_hyd(true);
+        Core::LinAlg::Matrix<8, 1> delta_hyd(true);
+        Core::LinAlg::Matrix<3, 1> dPI_hyd(true);
+        Core::LinAlg::Matrix<6, 1> ddPII_hyd(true);
+        evaluate_invariant_derivatives(prinv_hyd, gp, eleGID, dPI_hyd, ddPII_hyd);
+        // then we calculate gamma_hyd and delta_hyd.
+        Mat::calculate_gamma_delta(gamma_hyd, delta_hyd, prinv_hyd, dPI_hyd, ddPII_hyd);
+
+        // update gamma_1. All other gammas are not affected
+        stress_factors.gamma(0, 0) += D_at_gp*(
+          gamma_hyd(0,0) + 1.0/3.0*trC_e*gamma_hyd(1,0) + 3.0/trC_e*gamma_hyd(2,0));
+
+        // update delta_1. All other deltas are not affected
+        stress_factors.delta(0,0) += D_at_gp*(
+          delta_hyd(0,0) + 2.0/3.0*trC_e*delta_hyd(1,0) + 6.0/trC_e*delta_hyd(2,0)
+          + 1.0/9.0*std::pow(trC_e, 2)*delta_hyd(3,0) + 2.0*delta_hyd(4,0)
+          + 9.0/std::pow(trC_e, 2)*delta_hyd(5,0) + 3.0/std::pow(trC_e, 2)*delta_hyd(6,0) + 1.0/3.0*delta_hyd(7,0));
+      
         // debug functionality
-        // std::cout << "Gauss Point " << gp << " is under hydrostatic tension. trC_e =  " << trC_e << ". Stiffness scaled by " << 1-D_at_gp << "." << std::endl;
+        // std::cout << "trCe = " << trC_e << " | Alt. delta_1 = " << stress_factors.delta(0,0) << std::endl;
       }
     }
   }
