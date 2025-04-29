@@ -1739,8 +1739,9 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::InelasticDefgradTransvIsotrop
 
   // ----------------DAMAGE----------------
   // update the current damage variable
-  time_step_quantities_.last_damage_variable_.resize(1, -1.0); // Since there is an Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_inverse_inelastic_def_grad call before the zeroth timestep, and the results of that is written as a result without calling Mat::InelasticDefgradTransvIsotropElastViscoplast::update(), the results written for the zeroth timestep are wrong. To circumvent that, set this to -1. This serves as a marker to not do the time integration in the very first evaluate call. In almost every normal scenario, the time integration of the damage variable wont be used anyway in this call, since the plastic strain is 0 still.
-  time_step_quantities_.current_damage_variable_.resize(1, 0.0); // value irrelevant at this point
+  time_step_quantities_.last_damage_variable_.resize(1, 0.0);
+  // time_step_quantities_.last_damage_variable_.resize(1, -1.0); // for verification only to prevent time integration befor the zeroth timestep. Comment out the line before this.
+  time_step_quantities_.current_damage_variable_.resize(1, 0.0);
   // ----------------DAMAGE----------------
 
   // update current_ value of the equivalent stress
@@ -2946,17 +2947,18 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::integrate_damage()
   // 1. verify time integration of the damage variable: Set USE_DAMAGE_MODEL false in the inputfile, but force time integration with:
   // bool_use_damage_model = true;
   // using a fixed plastic strain:
-  // current_plastic_strain_at_GP = 0.0016;
+        // if (time_step_quantities_.last_damage_variable_[gp_] < 0.0){ // we also need to change the initialization to -1 in the Constructor.
+        //   current_plastic_strain_at_GP = 0.0; // this is to prevent damage time integration at the very first evaluate call.
+        //   time_step_quantities_.last_damage_variable_[gp_] = 0.0; // after this, we want time integration. 
+        // } else {
+        //   current_plastic_strain_at_GP = 1.81;
+        // }
   // 2. Verify the correct scaling of the stiffness: Set USE_DAMAGE_MODEL true in the inputfile, but disable time integration with:
   // bool_use_damage_model = false;
   // and use a fixed damage variable:
   // time_step_quantities_.last_damage_variable_[gp_] = 0.7;
   // time_step_quantities_.current_damage_variable_[gp_] = 0.7;
   // END OF VERIFICATION BLOCK
-
-  if(time_step_quantities_.last_damage_variable_[gp_] >= 0)
-  {
-    // We do not want time integration of the damage variable before the zeroth timestep. A negative value serves as a marker to prevent this from happening. This is needed since there is a Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_inverse_inelastic_def_grad call before the zeroth timestep.
 
     // Should the damage model be used and does the plastic strain exceed the critical plastic strain?
     if (bool_use_damage_model and current_plastic_strain_at_GP > parameter()->epsilon_pf())
@@ -2983,13 +2985,6 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::integrate_damage()
     {
       // if the plastic strain is below the threshold, no change in the damage variable. This is to avoid to take the value of an earlier iteration at which the damage threshold was exceeded.
       time_step_quantities_.current_damage_variable_[gp_] = time_step_quantities_.last_damage_variable_[gp_];
-    }
-  }
-  else
-  {
-    // This means we are in the zeroth timestep. Now, initialize the damage variable to 0.
-    time_step_quantities_.current_damage_variable_[gp_] = 0.0;
-    time_step_quantities_.last_damage_variable_[gp_] = 0.0;
   }
 }
 // ----------------DAMAGE----------------
