@@ -2945,8 +2945,8 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::integrate_damage()
 
   // FOR VERIFICATION PURPOSES ONLY:
   // 1. verify time integration of the damage variable: Set USE_DAMAGE_MODEL false in the inputfile, but force time integration with:
-  // bool_use_damage_model = true;
-  // using a fixed plastic strain:
+        // bool_use_damage_model = true;
+        // using a fixed plastic strain:
         // if (time_step_quantities_.last_damage_variable_[gp_] < 0.0){ // we also need to change the initialization to -1 in the Constructor.
         //   current_plastic_strain_at_GP = 0.0; // this is to prevent damage time integration at the very first evaluate call.
         //   time_step_quantities_.last_damage_variable_[gp_] = 0.0; // after this, we want time integration. 
@@ -2954,37 +2954,37 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::integrate_damage()
         //   current_plastic_strain_at_GP = 1.81;
         // }
   // 2. Verify the correct scaling of the stiffness: Set USE_DAMAGE_MODEL true in the inputfile, but disable time integration with:
-  // bool_use_damage_model = false;
-  // and use a fixed damage variable:
-  // time_step_quantities_.last_damage_variable_[gp_] = 0.7;
-  // time_step_quantities_.current_damage_variable_[gp_] = 0.7;
+        // bool_use_damage_model = false;
+        // and use a fixed damage variable:
+        // time_step_quantities_.last_damage_variable_[gp_] = 0.7;
+        // time_step_quantities_.current_damage_variable_[gp_] = 0.7;
   // END OF VERIFICATION BLOCK
 
-    // Should the damage model be used and does the plastic strain exceed the critical plastic strain?
-    if (bool_use_damage_model and current_plastic_strain_at_GP > parameter()->epsilon_pf())
-    {
-      if(parameter()->damage_denominator() == -1){
-        // update:
-        // D_n+1 = D_n + dt * \hat{G} * (epsilon_p/epsilon_pf - 1)^z * (1 - D_n)    only if epsilon_p > epsilon_pf, D_max=1
-        time_step_quantities_.current_damage_variable_[gp_] =
-            std::min(1.0, time_step_quantities_.last_damage_variable_[gp_] +
-                              time_step_settings_.dt_ * parameter()->damage_growth_rate() *
-                                  std::pow((current_plastic_strain_at_GP/parameter()->epsilon_pf() - 1.0), parameter()->damage_exponent()) *
-                                  (1.0 - time_step_quantities_.last_damage_variable_[gp_]));
-      }
-      else {
-        // version for large damage exponents z. Is called when damage denomiator is provided instead of damage_growth_rate. 
+  // Should the damage model be used and does the plastic strain exceed the critical plastic strain?
+  if (bool_use_damage_model and current_plastic_strain_at_GP > parameter()->epsilon_pf())
+  {
+    if(parameter()->damage_denominator() == -1){
+      // update:
+      // D_n+1 = D_n + dt * \hat{G} * (epsilon_p/epsilon_pf - 1)^z * (1 - D_n)    only if epsilon_p > epsilon_pf, D_max=1
       time_step_quantities_.current_damage_variable_[gp_] =
           std::min(1.0, time_step_quantities_.last_damage_variable_[gp_] +
-                            time_step_settings_.dt_ *
-                                std::pow((current_plastic_strain_at_GP/parameter()->epsilon_pf() - 1)/parameter()->damage_denominator(), parameter()->damage_exponent()) *
+                            time_step_settings_.dt_ * parameter()->damage_growth_rate() *
+                                std::pow((current_plastic_strain_at_GP/parameter()->epsilon_pf() - 1.0), parameter()->damage_exponent()) *
                                 (1.0 - time_step_quantities_.last_damage_variable_[gp_]));
-      }
     }
-    else
-    {
-      // if the plastic strain is below the threshold, no change in the damage variable. This is to avoid to take the value of an earlier iteration at which the damage threshold was exceeded.
-      time_step_quantities_.current_damage_variable_[gp_] = time_step_quantities_.last_damage_variable_[gp_];
+    else {
+      // version for large damage exponents z. Is called when damage denomiator is provided instead of damage_growth_rate. 
+    time_step_quantities_.current_damage_variable_[gp_] =
+        std::min(1.0, time_step_quantities_.last_damage_variable_[gp_] +
+                          time_step_settings_.dt_ *
+                              std::pow((current_plastic_strain_at_GP/parameter()->epsilon_pf() - 1)/parameter()->damage_denominator(), parameter()->damage_exponent()) *
+                              (1.0 - time_step_quantities_.last_damage_variable_[gp_]));
+    }
+  }
+  else
+  {
+    // if the plastic strain is below the threshold, no change in the damage variable. This is to avoid to take the value of an earlier iteration at which the damage threshold was exceeded.
+    time_step_quantities_.current_damage_variable_[gp_] = time_step_quantities_.last_damage_variable_[gp_];
   }
 }
 // ----------------DAMAGE----------------
@@ -3102,7 +3102,7 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::setup(
   // ----------------DAMAGE----------------
   // Default Values for Damage Variable
   time_step_quantities_.current_damage_variable_.resize(
-      numgp, time_step_quantities_.current_damage_variable_[0]);
+      numgp, time_step_quantities_.last_damage_variable_[0]);
   time_step_quantities_.last_damage_variable_.resize(
       numgp, time_step_quantities_.last_damage_variable_[0]);
   // ----------------DAMAGE----------------
