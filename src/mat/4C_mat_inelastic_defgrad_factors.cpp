@@ -702,7 +702,7 @@ Mat::PAR::InelasticDefgradTransvIsotropElastViscoplast::
       // ----------------DAMAGE----------------
 {
   if (max_halve_number_ < 0) FOUR_C_THROW("Parameter MAX_HALVE_NUM_SUBSTEP must be >= 0!");
-  if ((damage_growth_rate_ == -1) == (damage_denominator_ == -1)){
+  if (((damage_growth_rate_ == -1) == (damage_denominator_ == -1)) and bool_use_damage_model_){
     // this means that either damage_growth rate and damage_denominator or none of them have been provided. Provide exactly one.
     FOUR_C_THROW("Provide exactly one of: DAMAGE_GROWTH_RATE or DAMAGE_DENOMINATOR.");
   }
