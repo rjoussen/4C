@@ -58,6 +58,7 @@ namespace Mat
         [[nodiscard]] double isotrop_harden_prefac() const { return isotrop_harden_prefac_; };
         //! get exponent of the isotropic hardening stress \f$ n \f$
         [[nodiscard]] double isotrop_harden_exp() const { return isotrop_harden_exp_; };
+        [[nodiscard]] double isotrop_weaken_prefac() const { return isotrop_weaken_prefac_; };
 
        private:
         //! strain rate prefactor \f$ \dot{P}_0 \f$
@@ -75,6 +76,9 @@ namespace Mat
 
         //! exponent of the isotropic hardening stress \f$ n \f$
         const double isotrop_harden_exp_;
+
+        // isotropic weakening prefactor
+        double isotrop_weaken_prefac_;
       };
     }  // namespace PAR
 
@@ -159,10 +163,13 @@ namespace Mat
         /// initial yield strength
         double sigma_Y0;
 
+        // weakening prefactor;
+        double isotrop_weaken_prefac;
+
 
         /// constructor
         ConstPars(const double prefac, const double expon, const double harden_prefac,
-            const double harden_expon, const double initial_yield_strength)
+            const double harden_expon, const double initial_yield_strength, const double isotrop_weaken_prefac)
             : p(prefac),
               log_p(std::log(p)),
               e(expon),
@@ -170,7 +177,8 @@ namespace Mat
               B(harden_prefac),
               N(harden_expon),
               log_B_N(std::log(harden_prefac * harden_expon)),
-              sigma_Y0(initial_yield_strength)
+              sigma_Y0(initial_yield_strength),
+              isotrop_weaken_prefac(isotrop_weaken_prefac)
         {
         }
       };

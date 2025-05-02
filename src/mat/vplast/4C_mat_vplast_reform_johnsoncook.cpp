@@ -14,6 +14,8 @@
 #include "4C_mat_par_bundle.hpp"
 #include "4C_mat_vplast_law.hpp"
 
+#include <iostream>
+
 #include <cmath>
 #include <string>
 #include <utility>
@@ -32,7 +34,8 @@ Mat::Viscoplastic::PAR::ReformulatedJohnsonCook::ReformulatedJohnsonCook(
       strain_rate_exp_fac_(matdata.parameters.get<double>("STRAIN_RATE_EXP_FAC")),
       init_yield_strength_(matdata.parameters.get<double>("INIT_YIELD_STRENGTH")),
       isotrop_harden_prefac_(matdata.parameters.get<double>("ISOTROP_HARDEN_PREFAC")),
-      isotrop_harden_exp_(matdata.parameters.get<double>("ISOTROP_HARDEN_EXP"))
+      isotrop_harden_exp_(matdata.parameters.get<double>("ISOTROP_HARDEN_EXP")),
+      isotrop_weaken_prefac_(matdata.parameters.get<double>("ISOTROP_WEAKEN_PREFAC"))
 {
 }
 
@@ -43,7 +46,7 @@ Mat::Viscoplastic::ReformulatedJohnsonCook::ReformulatedJohnsonCook(
     : Mat::Viscoplastic::Law(params),
       const_pars_(parameter()->strain_rate_pre_fac(), 1.0 / parameter()->strain_rate_exp_fac(),
           parameter()->isotrop_harden_prefac(), parameter()->isotrop_harden_exp(),
-          parameter()->init_yield_strength())
+          parameter()->init_yield_strength(), parameter()->isotrop_weaken_prefac())
 {
 }
 
@@ -54,9 +57,9 @@ double Mat::Viscoplastic::ReformulatedJohnsonCook::evaluate_stress_ratio(
 {
   // extract yield strength from the plastic strain and the material parameters
   const double yield_strength =
-      (parameter()->init_yield_strength() +
+      ((parameter()->init_yield_strength() +
           parameter()->isotrop_harden_prefac() *
-              std::pow(equiv_plastic_strain, parameter()->isotrop_harden_exp()));
+              std::pow(equiv_plastic_strain, parameter()->isotrop_harden_exp()))) * (1 - parameter()->isotrop_weaken_prefac()*equiv_plastic_strain);
 
   return equiv_stress / yield_strength;
 }
@@ -146,8 +149,10 @@ Mat::Viscoplastic::ReformulatedJohnsonCook::evaluate_derivatives_of_plastic_stra
   }
 
   // extraction of the yield strength from the plastic strain and the material parameters
-  const double yield_strength =
+  double yield_strength =
       const_pars_.sigma_Y0 + const_pars_.B * std::pow(used_equiv_plastic_strain, const_pars_.N);
+  // std::cout << "weakening prefactor = " << const_pars_.isotrop_weaken_prefac << " | ep = " << used_equiv_plastic_strain << std::endl;
+  yield_strength *= (1.0 - const_pars_.isotrop_weaken_prefac * used_equiv_plastic_strain);
   const double log_yield_strength = std::log(yield_strength);
   const double inv_yield_strength = 1.0 / yield_strength;
 
@@ -173,10 +178,19 @@ Mat::Viscoplastic::ReformulatedJohnsonCook::evaluate_derivatives_of_plastic_stra
                            log_equiv_stress - 2.0 * log_yield_strength + const_pars_.log_B_N +
                            (const_pars_.N - 1.0) * log_equiv_plastic_strain;
 
+    double log_deriv_eps_weaken_1 = const_pars_.log_p_e + std::log(const_pars_.isotrop_weaken_prefac) + log_equiv_stress - 2.0*log_yield_strength + const_pars_.e*(equiv_stress*inv_yield_strength - 1.0) + std::log(const_pars_.sigma_Y0);
+    double log_deriv_eps_weaken_2 = const_pars_.log_p_e + std::log(const_pars_.isotrop_weaken_prefac) + log_equiv_stress - 2.0*log_yield_strength + const_pars_.e*(equiv_stress*inv_yield_strength - 1.0) + std::log(const_pars_.N+1.0) + std::log(const_pars_.B) + const_pars_.N*log_equiv_plastic_strain;
+
+    // double log_deriv_eps = const_pars_.log_p_e +
+    //                        const_pars_.e * (equiv_stress * inv_yield_strength - 1.0) +
+    //                        log_equiv_stress - 2.0 * log_yield_strength + std::log(const_pars_.B*const_pars_.N*std::pow(used_equiv_plastic_strain, const_pars_- 1.0) - const_pars_.isotrop_weaken_prefac*(const_pars_.sigma_Y0 + (const_pars_.N + 1.0)*const_pars_.B*std::pow(used_equiv_plastic_strain, const_pars_.N)));
+
     // check overflow error using these logarithms
     double log_max_plastic_strain_deriv_value = std::log(max_plastic_strain_deriv_incr);
     if ((log_dt + log_deriv_sigma > log_max_plastic_strain_deriv_value) &&
-        (log_dt + log_deriv_eps > log_max_plastic_strain_deriv_value))
+        (log_dt + log_deriv_eps > log_max_plastic_strain_deriv_value) &&
+        (log_dt + log_deriv_eps_weaken_1 > log_max_plastic_strain_deriv_value) && 
+        (log_dt + log_deriv_eps_weaken_2 > log_max_plastic_strain_deriv_value))
     {
       err_status = ErrorType::OverflowError;
       return Core::LinAlg::Matrix<2, 1>{true};
@@ -185,6 +199,10 @@ Mat::Viscoplastic::ReformulatedJohnsonCook::evaluate_derivatives_of_plastic_stra
     // compute the exact derivatives using these logarithms
     equiv_plastic_strain_rate_ders(0, 0) = std::exp(log_deriv_sigma);
     equiv_plastic_strain_rate_ders(1, 0) = -std::exp(log_deriv_eps);
+    // std::cout << "Before correction: " << equiv_plastic_strain_rate_ders(1,0) << " | ep = " << used_equiv_plastic_strain << " | yield strength = " << yield_strength << " | equiv stress = " << equiv_stress << std::endl;
+    equiv_plastic_strain_rate_ders(1, 0) += std::exp(log_deriv_eps_weaken_1) + std::exp(log_deriv_eps_weaken_2);
+        // const_pars_.isotrop_weaken_prefac*const_pars_.p*const_pars_.e*equiv_stress/std::pow(yield_strength, 2)*std::exp(const_pars_.e*(equiv_stress*inv_yield_strength-1.0))*(const_pars_.sigma_Y0 + (const_pars_.N+1.0)*const_pars_.B*std::pow(used_equiv_plastic_strain, const_pars_.N));
+    // std::cout << "After correction: " << equiv_plastic_strain_rate_ders(1,0) << std::endl;
   }
 
   return equiv_plastic_strain_rate_ders;
