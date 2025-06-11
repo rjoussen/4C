@@ -833,7 +833,7 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_meshtying()
                       : Core::LinAlg::matrix_row_transform(*islavematrix_, *islavemap_);
               std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> blockslavematrix(
                   Core::LinAlg::split_matrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
-                      *islavematrix, *scatratimint_->block_maps(), *blockmaps_slave_));
+                      *islavematrix, *scatratimint_->dof_block_maps(), *blockmaps_slave_));
               blockslavematrix->complete();
               const std::shared_ptr<const Core::LinAlg::SparseMatrix> imastermatrix =
                   not imortarredistribution_
@@ -841,7 +841,7 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_meshtying()
                       : Core::LinAlg::matrix_row_transform(*imastermatrix_, *imastermap_);
               std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> blockmastermatrix(
                   Core::LinAlg::split_matrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
-                      *imastermatrix, *scatratimint_->block_maps(), *blockmaps_master_));
+                      *imastermatrix, *scatratimint_->dof_block_maps(), *blockmaps_master_));
               blockmastermatrix->complete();
 
               // assemble interface block matrices into global block system matrix
@@ -880,7 +880,6 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_meshtying()
     default:
     {
       FOUR_C_THROW("Not yet implemented!");
-      break;
     }
   }
   // extract boundary conditions for scatra-scatra interface layer growth
@@ -1253,7 +1252,7 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_meshtying()
                 // split auxiliary system matrix and assemble into global matrix block
                 const std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> blockmastermatrix =
                     Core::LinAlg::split_matrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
-                        mastermatrix, *blockmapgrowth_, *scatratimint_->block_maps());
+                        mastermatrix, *blockmapgrowth_, *scatratimint_->dof_block_maps());
                 blockmastermatrix->complete();
                 scatragrowthblock_->add(*blockmastermatrix, false, 1., 1.);
 
@@ -1317,7 +1316,7 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_meshtying()
                 // split temporary matrix and assemble into global matrix block
                 const std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> blockkgm(
                     Core::LinAlg::split_matrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
-                        kgm, *scatratimint_->block_maps(), *blockmapgrowth_));
+                        kgm, *scatratimint_->dof_block_maps(), *blockmapgrowth_));
                 blockkgm->complete();
                 growthscatrablock_->add(*blockkgm, false, 1., 1.);
 
@@ -2853,11 +2852,11 @@ void ScaTra::MeshtyingStrategyS2I::setup_meshtying()
               blockmapgrowth_->check_for_valid_map_extractor();
 
               // initialize extended map extractor associated with blocks of global system matrix
-              const unsigned nblockmaps = scatratimint_->block_maps()->num_maps();
+              const unsigned nblockmaps = scatratimint_->dof_block_maps()->num_maps();
               std::vector<std::shared_ptr<const Core::LinAlg::Map>> extendedblockmaps(
                   nblockmaps + 1, nullptr);
               for (int iblockmap = 0; iblockmap < static_cast<int>(nblockmaps); ++iblockmap)
-                extendedblockmaps[iblockmap] = scatratimint_->block_maps()->map(iblockmap);
+                extendedblockmaps[iblockmap] = scatratimint_->dof_block_maps()->map(iblockmap);
               extendedblockmaps[nblockmaps] = dofrowmap_growth;
               extendedblockmaps_ = std::make_shared<Core::LinAlg::MultiMapExtractor>(
                   *extendedmaps_->full_map(), extendedblockmaps);
@@ -2865,12 +2864,10 @@ void ScaTra::MeshtyingStrategyS2I::setup_meshtying()
 
               scatragrowthblock_ = std::make_shared<
                   Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
-
-                  *blockmapgrowth_, *scatratimint_->block_maps(), 81, false, true);
+                  *blockmapgrowth_, *scatratimint_->dof_block_maps(), 81, false, true);
               growthscatrablock_ = std::make_shared<
                   Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
-
-                  *scatratimint_->block_maps(), *blockmapgrowth_, 81, false, true);
+                  *scatratimint_->dof_block_maps(), *blockmapgrowth_, 81, false, true);
 
               break;
             }
@@ -2880,7 +2877,6 @@ void ScaTra::MeshtyingStrategyS2I::setup_meshtying()
               FOUR_C_THROW(
                   "Type of global system matrix for scatra-scatra interface coupling involving "
                   "interface layer growth not recognized!");
-              break;
             }
           }
 
@@ -3639,13 +3635,13 @@ void ScaTra::MeshtyingStrategyS2I::build_block_map_extractors()
       matrixtype_ == Core::LinAlg::MatrixType::block_condition_dof)
   {
     // initialize reduced interface map extractors associated with blocks of global system matrix
-    const int nblocks = scatratimint_->block_maps()->num_maps();
+    const int nblocks = scatratimint_->dof_block_maps()->num_maps();
     std::vector<std::shared_ptr<const Core::LinAlg::Map>> blockmaps_slave(nblocks);
     std::vector<std::shared_ptr<const Core::LinAlg::Map>> blockmaps_master(nblocks);
     for (int iblock = 0; iblock < nblocks; ++iblock)
     {
       std::vector<std::shared_ptr<const Core::LinAlg::Map>> maps(2);
-      maps[0] = scatratimint_->block_maps()->map(iblock);
+      maps[0] = scatratimint_->dof_block_maps()->map(iblock);
       maps[1] = not imortarredistribution_
                     ? interfacemaps_->map(1)
                     : std::dynamic_pointer_cast<const Core::LinAlg::Map>(islavemap_);
@@ -3672,7 +3668,7 @@ void ScaTra::MeshtyingStrategyS2I::equip_extended_solver_with_null_space_info() 
   if (intlayergrowth_evaluation_ == Inpar::S2I::growth_evaluation_monolithic)
   {
     // loop over blocks of scalar transport system matrix
-    for (int iblock = 0; iblock < scatratimint_->block_maps()->num_maps(); ++iblock)
+    for (int iblock = 0; iblock < scatratimint_->dof_block_maps()->num_maps(); ++iblock)
     {
       // store number of current block as string, starting from 1
       std::ostringstream iblockstr;
@@ -3684,7 +3680,7 @@ void ScaTra::MeshtyingStrategyS2I::equip_extended_solver_with_null_space_info() 
     }
     // store number of matrix block associated with scatra-scatra interface layer growth as string
     std::stringstream iblockstr;
-    iblockstr << scatratimint_->block_maps()->num_maps() + 1;
+    iblockstr << scatratimint_->dof_block_maps()->num_maps() + 1;
 
     // equip smoother for extra matrix block with null space associated with all degrees of freedom
     // for scatra-scatra interface layer growth
@@ -3730,7 +3726,8 @@ void ScaTra::MeshtyingStrategyS2I::solve(const std::shared_ptr<Core::LinAlg::Sol
         case Inpar::S2I::coupling_nts_standard:
         {
           // equilibrate global system of equations if necessary
-          equilibration_->equilibrate_system(systemmatrix, residual, scatratimint_->block_maps());
+          equilibration_->equilibrate_system(
+              systemmatrix, residual, scatratimint_->dof_block_maps());
 
           // solve global system of equations
           solver_params.refactor = true;
@@ -3806,7 +3803,6 @@ void ScaTra::MeshtyingStrategyS2I::solve(const std::shared_ptr<Core::LinAlg::Sol
         default:
         {
           FOUR_C_THROW("Type of scatra-scatra interface coupling not recognized!");
-          break;
         }
       }
 
@@ -3853,7 +3849,7 @@ void ScaTra::MeshtyingStrategyS2I::solve(const std::shared_ptr<Core::LinAlg::Sol
 
               // extract number of matrix row or column blocks associated with scalar transport
               // field
-              const int nblockmaps = static_cast<int>(scatratimint_->block_maps()->num_maps());
+              const int nblockmaps = static_cast<int>(scatratimint_->dof_block_maps()->num_maps());
 
               // construct extended system matrix by assigning matrix blocks
               for (int iblock = 0; iblock < nblockmaps; ++iblock)
@@ -3881,7 +3877,6 @@ void ScaTra::MeshtyingStrategyS2I::solve(const std::shared_ptr<Core::LinAlg::Sol
               FOUR_C_THROW(
                   "Type of global system matrix for scatra-scatra interface coupling involving "
                   "interface layer growth not recognized!");
-              break;
             }
           }
 
