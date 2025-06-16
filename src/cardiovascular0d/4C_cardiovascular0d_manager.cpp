@@ -1076,7 +1076,8 @@ int Utils::Cardiovascular0DManager::solve(Core::LinAlg::SparseMatrix& mat_struct
       Global::Problem::instance()->solver_params(linsolvernumber),
       Global::Problem::instance()->solver_params_callback(),
       Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
-          Global::Problem::instance()->io_params(), "VERBOSITY"));
+          Global::Problem::instance()->io_params(), "VERBOSITY"),
+      actdisc_->get_comm());
   switch (algochoice_)
   {
     case Inpar::Cardiovascular0D::cardvasc0dsolve_direct:
@@ -1087,14 +1088,16 @@ int Utils::Cardiovascular0DManager::solve(Core::LinAlg::SparseMatrix& mat_struct
           Global::Problem::instance()->solver_params(linsolvernumber),
           Global::Problem::instance()->solver_params_callback(),
           Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
-              Global::Problem::instance()->io_params(), "VERBOSITY"));
+              Global::Problem::instance()->io_params(), "VERBOSITY"),
+          actdisc_->get_comm());
       actdisc_->compute_null_space_if_necessary(solver_->params().sublist("Inverse1"), true);
 
       solver_->put_solver_params_to_sub_params("Inverse2",
           Global::Problem::instance()->solver_params(linsolvernumber),
           Global::Problem::instance()->solver_params_callback(),
           Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
-              Global::Problem::instance()->io_params(), "VERBOSITY"));
+              Global::Problem::instance()->io_params(), "VERBOSITY"),
+          actdisc_->get_comm());
       actdisc_->compute_null_space_if_necessary(solver_->params().sublist("Inverse2"), true);
       break;
     }

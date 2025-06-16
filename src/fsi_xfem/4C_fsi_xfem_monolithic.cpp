@@ -2128,11 +2128,13 @@ void FSI::MonolithicXFEM::create_linear_solver()
       solver_->put_solver_params_to_sub_params("Inverse1", ssolverparams,
           Global::Problem::instance()->solver_params_callback(),
           Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
-              Global::Problem::instance()->io_params(), "VERBOSITY"));
+              Global::Problem::instance()->io_params(), "VERBOSITY"),
+          get_comm());
       solver_->put_solver_params_to_sub_params("Inverse2", fsolverparams,
           Global::Problem::instance()->solver_params_callback(),
           Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
-              Global::Problem::instance()->io_params(), "VERBOSITY"));
+              Global::Problem::instance()->io_params(), "VERBOSITY"),
+          get_comm());
 
       // ... 4C calculates the null space vectors. These are then stored in the sublists
       //     Inverse1 and Inverse2 from where they...
@@ -2189,14 +2191,16 @@ void FSI::MonolithicXFEM::create_linear_solver()
       solver_->put_solver_params_to_sub_params("Inverse1", ssolverparams,
           Global::Problem::instance()->solver_params_callback(),
           Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
-              Global::Problem::instance()->io_params(), "VERBOSITY"));
+              Global::Problem::instance()->io_params(), "VERBOSITY"),
+          get_comm());
       Core::LinearSolver::Parameters::compute_solver_parameters(
           *structure_poro()->discretization(), solver_->params().sublist("Inverse1"));
 
       solver_->put_solver_params_to_sub_params("Inverse2", fsolverparams,
           Global::Problem::instance()->solver_params_callback(),
           Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
-              Global::Problem::instance()->io_params(), "VERBOSITY"));
+              Global::Problem::instance()->io_params(), "VERBOSITY"),
+          get_comm());
       Core::LinearSolver::Parameters::compute_solver_parameters(
           *fluid_field()->discretization(), solver_->params().sublist("Inverse2"));
 
@@ -2205,7 +2209,8 @@ void FSI::MonolithicXFEM::create_linear_solver()
         solver_->put_solver_params_to_sub_params("Inverse3", fsolverparams,
             Global::Problem::instance()->solver_params_callback(),
             Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
-                Global::Problem::instance()->io_params(), "VERBOSITY"));
+                Global::Problem::instance()->io_params(), "VERBOSITY"),
+            get_comm());
         Core::LinearSolver::Parameters::compute_solver_parameters(
             *structure_poro()->fluid_field()->discretization(),
             solver_->params().sublist("Inverse3"));
@@ -2219,7 +2224,8 @@ void FSI::MonolithicXFEM::create_linear_solver()
           solver_->put_solver_params_to_sub_params("Inverse3", asolverparams,
               Global::Problem::instance()->solver_params_callback(),
               Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
-                  Global::Problem::instance()->io_params(), "VERBOSITY"));
+                  Global::Problem::instance()->io_params(), "VERBOSITY"),
+              get_comm());
           Core::LinearSolver::Parameters::compute_solver_parameters(
               *ale_field()->write_access_discretization(), solver_->params().sublist("Inverse3"));
         }
@@ -2228,7 +2234,8 @@ void FSI::MonolithicXFEM::create_linear_solver()
           solver_->put_solver_params_to_sub_params("Inverse4", asolverparams,
               Global::Problem::instance()->solver_params_callback(),
               Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
-                  Global::Problem::instance()->io_params(), "VERBOSITY"));
+                  Global::Problem::instance()->io_params(), "VERBOSITY"),
+              get_comm());
           Core::LinearSolver::Parameters::compute_solver_parameters(
               *ale_field()->write_access_discretization(), solver_->params().sublist("Inverse4"));
         }

@@ -180,13 +180,14 @@ namespace Core::LinAlg
     \param get_solver_params (in): function to get solver parameters based on ID used inside
                                    inparams
     \param verbosity (in): verbosity level for output
+    \param comm (in):      MPI communicator
     \return             : internal parameter list ready to be associated
                           with #params_
     */
     static Teuchos::ParameterList translate_solver_parameters(
         const Teuchos::ParameterList& inparams,
         const std::function<const Teuchos::ParameterList&(int)>& get_solver_params,
-        Core::IO::Verbositylevel verbosity);
+        Core::IO::Verbositylevel verbosity, const MPI_Comm& comm);
 
     /*!
     \brief Add a validated input parameter list as sublist to internal
@@ -199,15 +200,16 @@ namespace Core::LinAlg
     \param get_solver_params (in): function to get solver parameters based on ID used inside
                                    inparams
     \param verbosity (in): verbosity level for output
+    \param comm (in):      MPI communicator
 
     */
     void put_solver_params_to_sub_params(const std::string name,
         const Teuchos::ParameterList& inparams,
         const std::function<const Teuchos::ParameterList&(int)>& get_solver_params,
-        Core::IO::Verbositylevel verbosity)
+        Core::IO::Verbositylevel verbosity, const MPI_Comm& comm) const
     {
       (*params_).sublist(name) =
-          translate_solver_parameters(inparams, get_solver_params, verbosity);
+          translate_solver_parameters(inparams, get_solver_params, verbosity, comm);
     }
     //@}
 

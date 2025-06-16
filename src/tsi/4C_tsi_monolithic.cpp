@@ -281,14 +281,16 @@ void TSI::Monolithic::create_linear_solver()
       solver_->put_solver_params_to_sub_params("Inverse1", tsisolverparams,
           Global::Problem::instance()->solver_params_callback(),
           Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
-              Global::Problem::instance()->io_params(), "VERBOSITY"));
+              Global::Problem::instance()->io_params(), "VERBOSITY"),
+          get_comm());
       structure_field()->discretization()->compute_null_space_if_necessary(
           solver_->params().sublist("Inverse1"));
 
       solver_->put_solver_params_to_sub_params("Inverse2", tsisolverparams,
           Global::Problem::instance()->solver_params_callback(),
           Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
-              Global::Problem::instance()->io_params(), "VERBOSITY"));
+              Global::Problem::instance()->io_params(), "VERBOSITY"),
+          get_comm());
       thermo_field()->discretization()->compute_null_space_if_necessary(
           solver_->params().sublist("Inverse2"));
 

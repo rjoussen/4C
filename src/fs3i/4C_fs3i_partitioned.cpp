@@ -610,12 +610,14 @@ void FS3I::PartFS3I::setup_system()
       Global::Problem::instance()->solver_params(linsolver1number),
       Global::Problem::instance()->solver_params_callback(),
       Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
-          Global::Problem::instance()->io_params(), "VERBOSITY"));
+          Global::Problem::instance()->io_params(), "VERBOSITY"),
+      get_comm());
   scatrasolver_->put_solver_params_to_sub_params("Inverse2",
       Global::Problem::instance()->solver_params(linsolver2number),
       Global::Problem::instance()->solver_params_callback(),
       Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
-          Global::Problem::instance()->io_params(), "VERBOSITY"));
+          Global::Problem::instance()->io_params(), "VERBOSITY"),
+      get_comm());
 
   if (azprectype == Core::LinearSolver::PreconditionerType::block_teko)
   {

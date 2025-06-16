@@ -1187,7 +1187,8 @@ std::shared_ptr<::NOX::Epetra::LinearSystem> FSI::BlockMonolithic::create_linear
       solver->put_solver_params_to_sub_params("Inverse1", fsisolverparams,
           Global::Problem::instance()->solver_params_callback(),
           Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
-              Global::Problem::instance()->io_params(), "VERBOSITY"));
+              Global::Problem::instance()->io_params(), "VERBOSITY"),
+          get_comm());
       structure_field()->discretization()->compute_null_space_if_necessary(
           solver->params().sublist("Inverse1"));
       Core::LinearSolver::Parameters::fix_null_space("Structure",
@@ -1198,7 +1199,8 @@ std::shared_ptr<::NOX::Epetra::LinearSystem> FSI::BlockMonolithic::create_linear
       solver->put_solver_params_to_sub_params("Inverse2", fsisolverparams,
           Global::Problem::instance()->solver_params_callback(),
           Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
-              Global::Problem::instance()->io_params(), "VERBOSITY"));
+              Global::Problem::instance()->io_params(), "VERBOSITY"),
+          get_comm());
       fluid_field()->discretization()->compute_null_space_if_necessary(
           solver->params().sublist("Inverse2"));
       Core::LinearSolver::Parameters::fix_null_space("Fluid",
@@ -1209,7 +1211,8 @@ std::shared_ptr<::NOX::Epetra::LinearSystem> FSI::BlockMonolithic::create_linear
       solver->put_solver_params_to_sub_params("Inverse3", fsisolverparams,
           Global::Problem::instance()->solver_params_callback(),
           Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
-              Global::Problem::instance()->io_params(), "VERBOSITY"));
+              Global::Problem::instance()->io_params(), "VERBOSITY"),
+          get_comm());
       const_cast<Core::FE::Discretization&>(*(ale_field()->discretization()))
           .compute_null_space_if_necessary(solver->params().sublist("Inverse3"));
       Core::LinearSolver::Parameters::fix_null_space("Ale",
