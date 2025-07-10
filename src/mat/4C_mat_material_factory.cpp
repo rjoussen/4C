@@ -311,19 +311,19 @@ std::unique_ptr<Core::Mat::PAR::Parameter> Mat::make_parameter(
     {
       return make_parameter_impl<Mat::PAR::ScatraReactionMat>(id, type, input_data);
     }
-    case Core::Materials::m_scatra_multiporo_fluid:
+    case Core::Materials::m_scatra_in_fluid_porofluid_pressure_based:
     {
       return make_parameter_impl<Mat::PAR::ScatraMatMultiPoroFluid>(id, type, input_data);
     }
-    case Core::Materials::m_scatra_multiporo_volfrac:
+    case Core::Materials::m_scatra_in_volfrac_porofluid_pressure_based:
     {
       return make_parameter_impl<Mat::PAR::ScatraMatMultiPoroVolFrac>(id, type, input_data);
     }
-    case Core::Materials::m_scatra_multiporo_solid:
+    case Core::Materials::m_scatra_in_solid_porofluid_pressure_based:
     {
       return make_parameter_impl<Mat::PAR::ScatraMatMultiPoroSolid>(id, type, input_data);
     }
-    case Core::Materials::m_scatra_multiporo_temperature:
+    case Core::Materials::m_scatra_as_temperature_porofluid_pressure_based:
     {
       return make_parameter_impl<Mat::PAR::ScatraMatMultiPoroTemperature>(id, type, input_data);
     }

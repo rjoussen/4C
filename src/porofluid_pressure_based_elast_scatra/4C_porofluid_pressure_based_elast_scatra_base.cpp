@@ -399,13 +399,17 @@ void PoroPressureBased::PorofluidElastScatraBaseAlgorithm::
         {
           int mat_id = scatra_mat.mat_id(idof);
           std::shared_ptr<Core::Mat::Material> single_material = scatra_mat.material_by_id(mat_id);
-          if (single_material->material_type() == Core::Materials::m_scatra_multiporo_fluid ||
-              single_material->material_type() == Core::Materials::m_scatra_multiporo_solid ||
-              single_material->material_type() == Core::Materials::m_scatra_multiporo_temperature)
+          if (single_material->material_type() ==
+                  Core::Materials::m_scatra_in_fluid_porofluid_pressure_based ||
+              single_material->material_type() ==
+                  Core::Materials::m_scatra_in_solid_porofluid_pressure_based ||
+              single_material->material_type() ==
+                  Core::Materials::m_scatra_as_temperature_porofluid_pressure_based)
           {
             // do nothing
           }
-          else if (single_material->material_type() == Core::Materials::m_scatra_multiporo_volfrac)
+          else if (single_material->material_type() ==
+                   Core::Materials::m_scatra_in_volfrac_porofluid_pressure_based)
           {
             const std::shared_ptr<const Mat::ScatraMatMultiPoroVolFrac>& scatra_volfrac_material =
                 std::dynamic_pointer_cast<const Mat::ScatraMatMultiPoroVolFrac>(single_material);

@@ -146,23 +146,23 @@ namespace Core::Materials
     m_poro_law_density_dependent,    ///< porosity law for density dependence
     m_poro_densitylaw_constant,  ///< density law for constant density in porous multiphase medium
     m_poro_densitylaw_exp,       ///< density law for pressure dependent exponential function
-    m_iterative_prestress,     ///< A general material wrapper adding iterative prestressing to any
-                               ///< material
-    m_scatra,                  ///< scalar transport material
-    m_scatra_multiporo_fluid,  ///< scalar transport material for multiphase porous flow (species
-                               ///< in fluid)
-    m_scatra_multiporo_volfrac,      ///< scalar transport material for multiphase porous flow
-                                     ///< (species in volume fraction)
-    m_scatra_multiporo_solid,        ///< scalar transport material for multiphase porous flow
-                                     ///< (species in solid)
-    m_scatra_multiporo_temperature,  ///< scalar transport material for multiphase porous flow
-                                     ///< (temperature)
-    m_scatra_multiscale,             ///< scalar transport material for multi-scale approach
-    m_scatra_reaction_poroECM,       ///< reaction definition and parameters for reaction model in
-                                     ///< porous ECM
-    m_scatra_reaction,               ///< reaction definition and parameters
-    m_scatra_chemotaxis,             ///< chemotaxis definition parameters
-    m_scl,     ///< material for modeling space charge layers in solid electrolytes
+    m_iterative_prestress,  ///< A general material wrapper adding iterative prestressing to any
+                            ///< material
+    m_scatra,               ///< scalar transport material
+    m_scatra_in_fluid_porofluid_pressure_based,    ///< scalar transport material for pressure-based
+                                                   ///< porous flow (species in fluid)
+    m_scatra_in_volfrac_porofluid_pressure_based,  ///< scalar transport material for pressure-based
+                                                   ///< porous flow (species in volume fraction)
+    m_scatra_in_solid_porofluid_pressure_based,    ///< scalar transport material for pressure-based
+                                                   ///< porous flow (species in solid)
+    m_scatra_as_temperature_porofluid_pressure_based,  ///< scalar transport material for
+                                                       ///< pressure-based porous flow (temperature)
+    m_scatra_multiscale,        ///< scalar transport material for multi-scale approach
+    m_scatra_reaction_poroECM,  ///< reaction definition and parameters for reaction model in
+                                ///< porous ECM
+    m_scatra_reaction,          ///< reaction definition and parameters
+    m_scatra_chemotaxis,        ///< chemotaxis definition parameters
+    m_scl,                      ///< material for modeling space charge layers in solid electrolytes
     m_soret,   ///< material for heat transport due to Fourier-type thermal conduction and the
                ///< Soret effect
     m_spring,  ///< elastic spring (translational or rotational)

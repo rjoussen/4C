@@ -255,39 +255,64 @@ std::unordered_map<Core::Materials::MaterialType, Core::IO::InputSpec> Global::v
   /*----------------------------------------------------------------------*/
   // scalar transport reaction material (species in fluid)
   {
-    known_materials[Core::Materials::m_scatra_multiporo_fluid] = group("MAT_scatra_multiporo_fluid",
+    known_materials[Core::Materials::m_scatra_in_fluid_porofluid_pressure_based] =
+        group("MAT_scatra_multiporo_fluid",
+            {
+                parameter<double>("DIFFUSIVITY", {.description = "kinematic diffusivity"}),
+                parameter<int>(
+                    "PHASEID", {.description = "ID of fluid phase the "
+                                               "scalar is associated with. Starting with zero."}),
+                parameter<double>(
+                    "REACOEFF", {.description = "reaction coefficient", .default_value = 0.0}),
+                parameter<double>("SCNUM", {.description = "schmidt number", .default_value = 0.0}),
+                parameter<double>("DENSIFICATION",
+                    {.description = "densification coefficient", .default_value = 0.0}),
+                parameter<double>("DELTA", {.description = "delta", .default_value = 0.0}),
+                parameter<double>("MIN_SAT",
+                    {.description = "minimum saturation under which also corresponding mass "
+                                    "fraction is equal to zero",
+                        .default_value = 1.0e-9}),
+                parameter<bool>("REACTS_TO_EXTERNAL_FORCE",
+                    {.description = "reacts to external force", .default_value = false}),
+                parameter<int>("RELATIVE_MOBILITY_FUNCTION_ID",
+                    {.description = "relative mobility function ID", .default_value = 0}),
+            },
+            {.description =
+                    "advanced reaction material for multiphase porous flow (species in fluid)"});
+  }
+
+  /*----------------------------------------------------------------------*/
+  // scalar transport reaction material (species in volume fraction)
+  {
+    known_materials[Core::Materials::m_scatra_in_volfrac_porofluid_pressure_based] = group(
+        "MAT_scatra_multiporo_volfrac",
         {
             parameter<double>("DIFFUSIVITY", {.description = "kinematic diffusivity"}),
-            parameter<int>(
-                "PHASEID", {.description = "ID of fluid phase the scalar is associated with"}),
+            parameter<int>("PHASEID",
+                {.description =
+                        "ID of fluid phase the scalar is associated with. Starting with zero."}),
             parameter<double>(
                 "REACOEFF", {.description = "reaction coefficient", .default_value = 0.0}),
             parameter<double>("SCNUM", {.description = "schmidt number", .default_value = 0.0}),
             parameter<double>("DENSIFICATION",
                 {.description = "densification coefficient", .default_value = 0.0}),
             parameter<double>("DELTA", {.description = "delta", .default_value = 0.0}),
-            parameter<double>(
-                "MIN_SAT", {.description = "minimum saturation under which also corresponding mass "
-                                           "fraction is equal to zero",
-                               .default_value = 1.0e-9}),
             parameter<bool>("REACTS_TO_EXTERNAL_FORCE",
                 {.description = "reacts to external force", .default_value = false}),
             parameter<int>("RELATIVE_MOBILITY_FUNCTION_ID",
                 {.description = "relative mobility function ID", .default_value = 0}),
         },
         {.description =
-                "advanced reaction material for multiphase porous flow (species in fluid)"});
+                "advanced reaction material for multiphase porous flow (species in volfrac)"});
   }
 
   /*----------------------------------------------------------------------*/
-  // scalar transport reaction material (species in volume fraction)
+  // scalar transport reaction material (species in solid)
   {
-    known_materials[Core::Materials::m_scatra_multiporo_volfrac] =
-        group("MAT_scatra_multiporo_volfrac",
+    known_materials[Core::Materials::m_scatra_in_solid_porofluid_pressure_based] =
+        group("MAT_scatra_multiporo_solid",
             {
                 parameter<double>("DIFFUSIVITY", {.description = "kinematic diffusivity"}),
-                parameter<int>(
-                    "PHASEID", {.description = "ID of fluid phase the scalar is associated with"}),
                 parameter<double>(
                     "REACOEFF", {.description = "reaction coefficient", .default_value = 0.0}),
                 parameter<double>("SCNUM", {.description = "schmidt number", .default_value = 0.0}),
@@ -296,36 +321,15 @@ std::unordered_map<Core::Materials::MaterialType, Core::IO::InputSpec> Global::v
                 parameter<double>("DELTA", {.description = "delta", .default_value = 0.0}),
                 parameter<bool>("REACTS_TO_EXTERNAL_FORCE",
                     {.description = "reacts to external force", .default_value = false}),
-                parameter<int>("RELATIVE_MOBILITY_FUNCTION_ID",
-                    {.description = "relative mobility function ID", .default_value = 0}),
             },
             {.description =
-                    "advanced reaction material for multiphase porous flow (species in volfrac)"});
-  }
-
-  /*----------------------------------------------------------------------*/
-  // scalar transport reaction material (species in solid)
-  {
-    known_materials[Core::Materials::m_scatra_multiporo_solid] = group("MAT_scatra_multiporo_solid",
-        {
-            parameter<double>("DIFFUSIVITY", {.description = "kinematic diffusivity"}),
-            parameter<double>(
-                "REACOEFF", {.description = "reaction coefficient", .default_value = 0.0}),
-            parameter<double>("SCNUM", {.description = "schmidt number", .default_value = 0.0}),
-            parameter<double>("DENSIFICATION",
-                {.description = "densification coefficient", .default_value = 0.0}),
-            parameter<double>("DELTA", {.description = "delta", .default_value = 0.0}),
-            parameter<bool>("REACTS_TO_EXTERNAL_FORCE",
-                {.description = "reacts to external force", .default_value = false}),
-        },
-        {.description =
-                "advanced reaction material for multiphase porous flow (species in solid)"});
+                    "advanced reaction material for multiphase porous flow (species in solid)"});
   }
 
   /*----------------------------------------------------------------------*/
   // scalar transport reaction material (temperature)
   {
-    known_materials[Core::Materials::m_scatra_multiporo_temperature] =
+    known_materials[Core::Materials::m_scatra_as_temperature_porofluid_pressure_based] =
         group("MAT_scatra_multiporo_temperature",
             {
                 parameter<int>("NUMFLUIDPHASES_IN_MULTIPHASEPORESPACE",

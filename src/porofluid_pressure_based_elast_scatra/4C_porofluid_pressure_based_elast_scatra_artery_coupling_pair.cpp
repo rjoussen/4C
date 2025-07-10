@@ -396,8 +396,9 @@ void PoroPressureBased::PorofluidElastScatraArteryCouplingPair<dis_type_artery,
 
         // safety check
         if (single_scatra_material->material_type() !=
-                Core::Materials::m_scatra_multiporo_volfrac &&
-            single_scatra_material->material_type() != Core::Materials::m_scatra_multiporo_fluid)
+                Core::Materials::m_scatra_in_volfrac_porofluid_pressure_based &&
+            single_scatra_material->material_type() !=
+                Core::Materials::m_scatra_in_fluid_porofluid_pressure_based)
         {
           FOUR_C_THROW(
               "You can only couple Mat::ScatraMatMultiPoroVolFrac or Mat::ScatraMatMultiPoroFluid. "
@@ -405,7 +406,8 @@ void PoroPressureBased::PorofluidElastScatraArteryCouplingPair<dis_type_artery,
               single_scatra_material->material_type());
         }
 
-        if (single_scatra_material->material_type() == Core::Materials::m_scatra_multiporo_volfrac)
+        if (single_scatra_material->material_type() ==
+            Core::Materials::m_scatra_in_volfrac_porofluid_pressure_based)
         {
           const std::shared_ptr<const Mat::ScatraMatMultiPoroVolFrac>& scatra_volfrac_material =
               std::dynamic_pointer_cast<const Mat::ScatraMatMultiPoroVolFrac>(
@@ -2285,14 +2287,15 @@ void PoroPressureBased::PorofluidElastScatraArteryCouplingPair<dis_type_artery,
         std::shared_ptr<Core::Mat::Material> single_phase_material =
             scatra_material_homogenized.material_by_id(material_id);
         int phase_id = -1;
-        if (single_phase_material->material_type() == Core::Materials::m_scatra_multiporo_fluid)
+        if (single_phase_material->material_type() ==
+            Core::Materials::m_scatra_in_fluid_porofluid_pressure_based)
         {
           const std::shared_ptr<const Mat::ScatraMatMultiPoroFluid>& poromat =
               std::dynamic_pointer_cast<const Mat::ScatraMatMultiPoroFluid>(single_phase_material);
           phase_id = poromat->phase_id();
         }
         else if (single_phase_material->material_type() ==
-                 Core::Materials::m_scatra_multiporo_volfrac)
+                 Core::Materials::m_scatra_in_volfrac_porofluid_pressure_based)
         {
           const std::shared_ptr<const Mat::ScatraMatMultiPoroVolFrac>& poromat =
               std::dynamic_pointer_cast<const Mat::ScatraMatMultiPoroVolFrac>(

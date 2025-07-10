@@ -243,7 +243,7 @@ namespace Mat
     /// material type
     Core::Materials::MaterialType material_type() const override
     {
-      return Core::Materials::m_scatra_multiporo_fluid;
+      return Core::Materials::m_scatra_in_fluid_porofluid_pressure_based;
     }
 
     /// return copy of this material object
@@ -330,7 +330,7 @@ namespace Mat
     /// material type
     Core::Materials::MaterialType material_type() const override
     {
-      return Core::Materials::m_scatra_multiporo_volfrac;
+      return Core::Materials::m_scatra_in_volfrac_porofluid_pressure_based;
     }
 
     /// return copy of this material object
@@ -414,7 +414,7 @@ namespace Mat
     /// material type
     Core::Materials::MaterialType material_type() const override
     {
-      return Core::Materials::m_scatra_multiporo_solid;
+      return Core::Materials::m_scatra_in_solid_porofluid_pressure_based;
     }
 
     /// return copy of this material object
@@ -489,7 +489,7 @@ namespace Mat
     /// material type
     Core::Materials::MaterialType material_type() const override
     {
-      return Core::Materials::m_scatra_multiporo_temperature;
+      return Core::Materials::m_scatra_as_temperature_porofluid_pressure_based;
     }
 
     /// return copy of this material object
