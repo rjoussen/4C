@@ -2296,8 +2296,7 @@ void Solid::TimInt::determine_stress_strain()
 
     std::shared_ptr<Core::LinAlg::SparseOperator> system_matrix = nullptr;
     std::shared_ptr<Core::LinAlg::Vector<double>> system_vector = nullptr;
-    Core::FE::Utils::evaluate(
-        *discret_, p, system_matrix, system_vector, discret_->element_row_map());
+    Core::FE::evaluate(*discret_, p, system_matrix, system_vector, discret_->element_row_map());
     discret_->clear_state();
   }
 }

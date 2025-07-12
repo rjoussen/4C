@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::FE::Utils::evaluate_dirichlet(const Core::FE::Discretization& discret,
+void Core::FE::evaluate_dirichlet(const Core::FE::Discretization& discret,
     const Teuchos::ParameterList& params,
     const std::shared_ptr<Core::LinAlg::Vector<double>>& systemvector,
     const std::shared_ptr<Core::LinAlg::Vector<double>>& systemvectord,
@@ -29,30 +29,30 @@ void Core::FE::Utils::evaluate_dirichlet(const Core::FE::Discretization& discret
     const std::shared_ptr<Core::LinAlg::MapExtractor>& dbcmapextractor)
 {
   // create const version
-  const std::shared_ptr<const Core::FE::Utils::Dbc> dbc = build_dbc(&discret);
+  const std::shared_ptr<const Core::FE::Dbc> dbc = build_dbc(&discret);
   (*dbc)(discret, params, systemvector, systemvectord, systemvectordd, toggle, dbcmapextractor);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-std::shared_ptr<const Core::FE::Utils::Dbc> Core::FE::Utils::build_dbc(
+std::shared_ptr<const Core::FE::Dbc> Core::FE::build_dbc(
     const Core::FE::Discretization* discret_ptr)
 {
   // HDG discretization
   if (dynamic_cast<const Core::FE::DiscretizationHDG*>(discret_ptr) != nullptr)
-    return std::make_shared<const Core::FE::Utils::DbcHDG>();
+    return std::make_shared<const Core::FE::DbcHDG>();
 
   // Nurbs discretization
   if (dynamic_cast<const Core::FE::Nurbs::NurbsDiscretization*>(discret_ptr) != nullptr)
-    return std::make_shared<const Core::FE::Utils::DbcNurbs>();
+    return std::make_shared<const Core::FE::DbcNurbs>();
 
   // default case
-  return std::make_shared<const Core::FE::Utils::Dbc>();
+  return std::make_shared<const Core::FE::Dbc>();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::FE::Utils::Dbc::operator()(const Core::FE::Discretization& discret,
+void Core::FE::Dbc::operator()(const Core::FE::Discretization& discret,
     const Teuchos::ParameterList& params,
     const std::shared_ptr<Core::LinAlg::Vector<double>>& systemvector,
     const std::shared_ptr<Core::LinAlg::Vector<double>>& systemvectord,
@@ -105,7 +105,7 @@ void Core::FE::Utils::Dbc::operator()(const Core::FE::Discretization& discret,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-std::shared_ptr<Core::LinAlg::Vector<int>> Core::FE::Utils::Dbc::create_toggle_vector(
+std::shared_ptr<Core::LinAlg::Vector<int>> Core::FE::Dbc::create_toggle_vector(
     const std::shared_ptr<Core::LinAlg::Vector<int>> toggle_input,
     const std::shared_ptr<Core::LinAlg::Vector<double>>* systemvectors) const
 {
@@ -141,7 +141,7 @@ std::shared_ptr<Core::LinAlg::Vector<int>> Core::FE::Utils::Dbc::create_toggle_v
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::FE::Utils::Dbc::evaluate(const Teuchos::ParameterList& params,
+void Core::FE::Dbc::evaluate(const Teuchos::ParameterList& params,
     const Core::FE::Discretization& discret, double time,
     const std::shared_ptr<Core::LinAlg::Vector<double>>* systemvectors, DbcInfo& info,
     std::shared_ptr<std::set<int>>* dbcgids) const
@@ -161,7 +161,7 @@ void Core::FE::Utils::Dbc::evaluate(const Teuchos::ParameterList& params,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::FE::Utils::Dbc::read_dirichlet_condition(const Teuchos::ParameterList& params,
+void Core::FE::Dbc::read_dirichlet_condition(const Teuchos::ParameterList& params,
     const Core::FE::Discretization& discret, std::span<const Conditions::Condition*> conds,
     double time, DbcInfo& info, const std::shared_ptr<std::set<int>>* dbcgids) const
 {
@@ -182,7 +182,7 @@ void Core::FE::Utils::Dbc::read_dirichlet_condition(const Teuchos::ParameterList
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::FE::Utils::Dbc::read_dirichlet_condition(const Teuchos::ParameterList& params,
+void Core::FE::Dbc::read_dirichlet_condition(const Teuchos::ParameterList& params,
     const Core::FE::Discretization& discret, std::span<const Conditions::Condition*> conds,
     double time, DbcInfo& info, const std::shared_ptr<std::set<int>>* dbcgids,
     const enum Core::Conditions::ConditionType& type) const
@@ -219,7 +219,7 @@ void Core::FE::Utils::Dbc::read_dirichlet_condition(const Teuchos::ParameterList
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::FE::Utils::Dbc::read_dirichlet_condition(const Teuchos::ParameterList& params,
+void Core::FE::Dbc::read_dirichlet_condition(const Teuchos::ParameterList& params,
     const Core::FE::Discretization& discret, const Core::Conditions::Condition& cond, double time,
     DbcInfo& info, const std::shared_ptr<std::set<int>>* dbcgids, int hierarchical_order) const
 {
@@ -417,7 +417,7 @@ void Core::FE::Utils::Dbc::read_dirichlet_condition(const Teuchos::ParameterList
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::FE::Utils::Dbc::do_dirichlet_condition(const Teuchos::ParameterList& params,
+void Core::FE::Dbc::do_dirichlet_condition(const Teuchos::ParameterList& params,
     const Core::FE::Discretization& discret, std::span<const Conditions::Condition*> conds,
     double time, const std::shared_ptr<Core::LinAlg::Vector<double>>* systemvectors,
     const Core::LinAlg::Vector<int>& toggle, const std::shared_ptr<std::set<int>>* dbcgids) const
@@ -434,7 +434,7 @@ void Core::FE::Utils::Dbc::do_dirichlet_condition(const Teuchos::ParameterList& 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::FE::Utils::Dbc::do_dirichlet_condition(const Teuchos::ParameterList& params,
+void Core::FE::Dbc::do_dirichlet_condition(const Teuchos::ParameterList& params,
     const Core::FE::Discretization& discret, std::span<const Core::Conditions::Condition*> conds,
     double time, const std::shared_ptr<Core::LinAlg::Vector<double>>* systemvectors,
     const Core::LinAlg::Vector<int>& toggle, const std::shared_ptr<std::set<int>>* dbcgids,
@@ -451,7 +451,7 @@ void Core::FE::Utils::Dbc::do_dirichlet_condition(const Teuchos::ParameterList& 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::FE::Utils::Dbc::do_dirichlet_condition(const Teuchos::ParameterList& params,
+void Core::FE::Dbc::do_dirichlet_condition(const Teuchos::ParameterList& params,
     const Core::FE::Discretization& discret, const Core::Conditions::Condition& cond, double time,
     const std::shared_ptr<Core::LinAlg::Vector<double>>* systemvectors,
     const Core::LinAlg::Vector<int>& toggle, const std::shared_ptr<std::set<int>>* dbcgids) const
@@ -559,14 +559,14 @@ void Core::FE::Utils::Dbc::do_dirichlet_condition(const Teuchos::ParameterList& 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::FE::Utils::Dbc::build_dbc_map_extractor(const Core::FE::Discretization& discret,
+void Core::FE::Dbc::build_dbc_map_extractor(const Core::FE::Discretization& discret,
     const std::shared_ptr<const std::set<int>>& dbcrowgids,
     const std::shared_ptr<Core::LinAlg::MapExtractor>& dbcmapextractor) const
 {
   if (!dbcmapextractor) return;
 
   FOUR_C_ASSERT(dbcrowgids,
-      "The variable `dbcrowgids` in `Core::FE::Utils::Dbc::build_dbc_map_extractor` is a null "
+      "The variable `dbcrowgids` in `Core::FE::Dbc::build_dbc_map_extractor` is a null "
       "pointer. This violates the implicit assumption that it must be non-null when "
       "`dbcmapextractor` is non-null.");
 

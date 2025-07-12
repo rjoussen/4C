@@ -95,13 +95,13 @@ Core::FE::Nurbs::NurbsDiscretization::get_knot_vector() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::FE::Utils::DbcNurbs::evaluate(const Teuchos::ParameterList& params,
+void Core::FE::DbcNurbs::evaluate(const Teuchos::ParameterList& params,
     const Core::FE::Discretization& discret, double time,
     const std::shared_ptr<Core::LinAlg::Vector<double>>* systemvectors,
-    Core::FE::Utils::Dbc::DbcInfo& info, std::shared_ptr<std::set<int>>* dbcgids) const
+    Core::FE::Dbc::DbcInfo& info, std::shared_ptr<std::set<int>>* dbcgids) const
 {
   // --------------------------- Step 1 ---------------------------------------
-  Core::FE::Utils::Dbc::evaluate(params, discret, time, systemvectors, info, dbcgids);
+  Core::FE::Dbc::evaluate(params, discret, time, systemvectors, info, dbcgids);
 
   // --------------------------- Step 2 ---------------------------------------
   std::vector<std::string> dbc_cond_names(2, "");
@@ -119,7 +119,7 @@ void Core::FE::Utils::DbcNurbs::evaluate(const Teuchos::ParameterList& params,
     std::copy(curr_conds.begin(), curr_conds.end(), std::back_inserter(conds));
   }
 
-  Core::FE::Utils::Dbc::DbcInfo info2(info.toggle.get_map());
+  Core::FE::Dbc::DbcInfo info2(info.toggle.get_map());
   read_dirichlet_condition(params, discret, conds, time, info2, dbcgids);
 
   // --------------------------- Step 3 ---------------------------------------
@@ -136,7 +136,7 @@ void Core::FE::Utils::DbcNurbs::evaluate(const Teuchos::ParameterList& params,
   if (not discret_nurbs) FOUR_C_THROW("Dynamic cast failed!");
 
   // build dummy column toggle vector and auxiliary vectors
-  Core::FE::Utils::Dbc::DbcInfo info_col(*discret_nurbs->dof_col_map());
+  Core::FE::Dbc::DbcInfo info_col(*discret_nurbs->dof_col_map());
   read_dirichlet_condition(params, discret, conds, time, info_col, dbcgids_nurbs);
 
   // --------------------------- Step 4 ---------------------------------------
@@ -146,7 +146,7 @@ void Core::FE::Utils::DbcNurbs::evaluate(const Teuchos::ParameterList& params,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::FE::Utils::DbcNurbs::do_dirichlet_condition(const Teuchos::ParameterList& params,
+void Core::FE::DbcNurbs::do_dirichlet_condition(const Teuchos::ParameterList& params,
     const Core::FE::Discretization& discret, const Core::Conditions::Condition& cond, double time,
     const std::shared_ptr<Core::LinAlg::Vector<double>>* systemvectors,
     const Core::LinAlg::Vector<int>& toggle, const std::shared_ptr<std::set<int>>* dbcgids) const
@@ -154,7 +154,7 @@ void Core::FE::Utils::DbcNurbs::do_dirichlet_condition(const Teuchos::ParameterL
   // default call
   if (dbcgids[set_col] == nullptr)
   {
-    Core::FE::Utils::Dbc::do_dirichlet_condition(
+    Core::FE::Dbc::do_dirichlet_condition(
         params, discret, cond, time, systemvectors, toggle, dbcgids);
     return;
   }
@@ -513,7 +513,7 @@ void Core::FE::Utils::DbcNurbs::do_dirichlet_condition(const Teuchos::ParameterL
  |  evaluate Dirichlet conditions (public)                   vuong 08/14|
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Core::FE::Utils::DbcNurbs::fill_matrix_and_rhs_for_ls_dirichlet_boundary(
+void Core::FE::DbcNurbs::fill_matrix_and_rhs_for_ls_dirichlet_boundary(
     Core::Elements::Element& actele, const std::vector<Core::LinAlg::SerialDenseVector>* knots,
     const std::vector<int>& lm, const std::vector<std::optional<int>>& funct,
     const std::vector<double>& val, const unsigned deg, const double time,
@@ -654,7 +654,7 @@ void Core::FE::Utils::DbcNurbs::fill_matrix_and_rhs_for_ls_dirichlet_boundary(
  |  evaluate Dirichlet conditions (public)                   vuong 08/14|
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Core::FE::Utils::DbcNurbs::fill_matrix_and_rhs_for_ls_dirichlet_domain(
+void Core::FE::DbcNurbs::fill_matrix_and_rhs_for_ls_dirichlet_domain(
     Core::Elements::Element& actele, const std::vector<Core::LinAlg::SerialDenseVector>* knots,
     const std::vector<int>& lm, const std::vector<std::optional<int>>& funct,
     const std::vector<double>& val, const unsigned deg, const double time,

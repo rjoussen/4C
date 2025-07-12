@@ -30,7 +30,7 @@ namespace FLD
     /** \brief Specialized Dbc evaluation class for HDG discretizations
      *
      *  */
-    class DbcHdgFluid : public Core::FE::Utils::Dbc
+    class DbcHdgFluid : public Core::FE::Dbc
     {
      public:
       /// constructor
