@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::FE::Utils::evaluate_initial_field(const Core::Utils::FunctionManager& function_manager,
+void Core::FE::evaluate_initial_field(const Core::Utils::FunctionManager& function_manager,
     const Core::FE::Discretization& discret, const std::string& fieldstring,
     Core::LinAlg::Vector<double>& fieldvector, const std::vector<int>& locids)
 {
@@ -57,7 +57,7 @@ void Core::FE::Utils::evaluate_initial_field(const Core::Utils::FunctionManager&
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::FE::Utils::do_initial_field(const Core::Utils::FunctionManager& function_manager,
+void Core::FE::do_initial_field(const Core::Utils::FunctionManager& function_manager,
     const Core::FE::Discretization& discret, const Core::Conditions::Condition& cond,
     Core::LinAlg::Vector<double>& fieldvector, const std::vector<int>& locids)
 {

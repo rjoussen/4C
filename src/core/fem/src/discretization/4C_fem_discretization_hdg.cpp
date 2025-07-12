@@ -286,9 +286,9 @@ std::ostream& operator<<(std::ostream& os, const Core::FE::DiscretizationHDG& di
 }
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::FE::Utils::DbcHDG::read_dirichlet_condition(const Teuchos::ParameterList& params,
+void Core::FE::DbcHDG::read_dirichlet_condition(const Teuchos::ParameterList& params,
     const Core::FE::Discretization& discret, const Core::Conditions::Condition& cond, double time,
-    Core::FE::Utils::Dbc::DbcInfo& info, const std::shared_ptr<std::set<int>>* dbcgids,
+    Core::FE::Dbc::DbcInfo& info, const std::shared_ptr<std::set<int>>* dbcgids,
     int hierarchical_order) const
 {
   // no need to check the cast, because it has been done during
@@ -301,14 +301,14 @@ void Core::FE::Utils::DbcHDG::read_dirichlet_condition(const Teuchos::ParameterL
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::FE::Utils::DbcHDG::read_dirichlet_condition(const Teuchos::ParameterList& params,
+void Core::FE::DbcHDG::read_dirichlet_condition(const Teuchos::ParameterList& params,
     const Core::FE::DiscretizationFaces& discret, const Core::Conditions::Condition& cond,
-    double time, Core::FE::Utils::Dbc::DbcInfo& info, const std::shared_ptr<std::set<int>>* dbcgids,
+    double time, Core::FE::Dbc::DbcInfo& info, const std::shared_ptr<std::set<int>>* dbcgids,
     int hierarchical_order) const
 
 {
   // call to corresponding method in base class; safety checks inside
-  Core::FE::Utils::Dbc::read_dirichlet_condition(
+  Core::FE::Dbc::read_dirichlet_condition(
       params, discret, cond, time, info, dbcgids, hierarchical_order);
 
   // say good bye if there are no face elements
@@ -406,7 +406,7 @@ void Core::FE::Utils::DbcHDG::read_dirichlet_condition(const Teuchos::ParameterL
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::FE::Utils::DbcHDG::do_dirichlet_condition(const Teuchos::ParameterList& params,
+void Core::FE::DbcHDG::do_dirichlet_condition(const Teuchos::ParameterList& params,
     const Core::FE::Discretization& discret, const Core::Conditions::Condition& cond, double time,
 
     const std::shared_ptr<Core::LinAlg::Vector<double>>* systemvectors,
@@ -422,13 +422,13 @@ void Core::FE::Utils::DbcHDG::do_dirichlet_condition(const Teuchos::ParameterLis
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::FE::Utils::DbcHDG::do_dirichlet_condition(const Teuchos::ParameterList& params,
+void Core::FE::DbcHDG::do_dirichlet_condition(const Teuchos::ParameterList& params,
     const Core::FE::DiscretizationFaces& discret, const Core::Conditions::Condition& cond,
     double time, const std::shared_ptr<Core::LinAlg::Vector<double>>* systemvectors,
     const Core::LinAlg::Vector<int>& toggle) const
 {
   // call corresponding method from base class; safety checks inside
-  Core::FE::Utils::Dbc::do_dirichlet_condition(
+  Core::FE::Dbc::do_dirichlet_condition(
       params, discret, cond, time, systemvectors, toggle, nullptr);
 
   // say good bye if there are no face elements

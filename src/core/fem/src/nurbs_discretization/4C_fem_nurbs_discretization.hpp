@@ -142,75 +142,72 @@ namespace Core::FE
     };  // class NurbsDiscretization
   }  // namespace Nurbs
 
-  namespace Utils
+  class DbcNurbs : public Core::FE::Dbc
   {
-    class DbcNurbs : public Core::FE::Utils::Dbc
-    {
-      using Dbc::do_dirichlet_condition;
+    using Dbc::do_dirichlet_condition;
 
-     public:
-      /// constructor
-      DbcNurbs() = default;
+   public:
+    /// constructor
+    DbcNurbs() = default;
 
 
-     protected:
-      void evaluate(const Teuchos::ParameterList& params, const Core::FE::Discretization& discret,
-          double time, const std::shared_ptr<Core::LinAlg::Vector<double>>* systemvectors,
-          DbcInfo& info, std::shared_ptr<std::set<int>>* dbcgids) const override;
+   protected:
+    void evaluate(const Teuchos::ParameterList& params, const Core::FE::Discretization& discret,
+        double time, const std::shared_ptr<Core::LinAlg::Vector<double>>* systemvectors,
+        DbcInfo& info, std::shared_ptr<std::set<int>>* dbcgids) const override;
 
-      void do_dirichlet_condition(const Teuchos::ParameterList& params,
-          const Core::FE::Discretization& discret, const Core::Conditions::Condition& cond,
-          double time, const std::shared_ptr<Core::LinAlg::Vector<double>>* systemvectors,
-          const Core::LinAlg::Vector<int>& toggle,
-          const std::shared_ptr<std::set<int>>* dbcgids) const override;
+    void do_dirichlet_condition(const Teuchos::ParameterList& params,
+        const Core::FE::Discretization& discret, const Core::Conditions::Condition& cond,
+        double time, const std::shared_ptr<Core::LinAlg::Vector<double>>* systemvectors,
+        const Core::LinAlg::Vector<int>& toggle,
+        const std::shared_ptr<std::set<int>>* dbcgids) const override;
 
-     private:
-      /*!
-      \brief Fill mass matrix and rhs vector for evaluation of least squares dirichlet on a boundary
+   private:
+    /*!
+    \brief Fill mass matrix and rhs vector for evaluation of least squares dirichlet on a boundary
 
-      \param ele          The element that is to be evaluated
+    \param ele          The element that is to be evaluated
+    \param knots        element knot vector
+    \param lm           reduced location vector of element (DBC DOFs only)
+    \param funct        function information (read from the condition)
+    \param val          value information (read from the condition)
+    \param deg          degree of time derivative needed
+    \param time         current time
+    \param elemass      element matrix to be filled
+    \param elerhs       element right hand side to be filled
+
+    */
+    template <Core::FE::CellType distype>
+    void fill_matrix_and_rhs_for_ls_dirichlet_boundary(Core::Elements::Element& ele,
+        const std::vector<Core::LinAlg::SerialDenseVector>* knots, const std::vector<int>& lm,
+        const std::vector<std::optional<int>>& funct, const std::vector<double>& val,
+        const unsigned deg, const double time, Core::LinAlg::SerialDenseMatrix& elemass,
+        std::vector<Core::LinAlg::SerialDenseVector>& elerhs,
+        const Core::Utils::FunctionManager& function_manager) const;
+
+    /*!
+    \brief Fill mass matrix and rhs vector for evaluation of least squares dirichlet on a domain
+
+    \param ele          The element that is to be evaluated
       \param knots        element knot vector
-      \param lm           reduced location vector of element (DBC DOFs only)
-      \param funct        function information (read from the condition)
-      \param val          value information (read from the condition)
-      \param deg          degree of time derivative needed
-      \param time         current time
-      \param elemass      element matrix to be filled
-      \param elerhs       element right hand side to be filled
+    \param lm           reduced location vector of element (DBC DOFs only)
+    \param funct        function information (read from the condition)
+    \param val          value information (read from the condition)
+    \param deg          degree of time derivative needed
+    \param time         current time
+    \param elemass      element matrix to be filled
+    \param elerhs       element right hand side to be filled
 
-      */
-      template <Core::FE::CellType distype>
-      void fill_matrix_and_rhs_for_ls_dirichlet_boundary(Core::Elements::Element& ele,
-          const std::vector<Core::LinAlg::SerialDenseVector>* knots, const std::vector<int>& lm,
-          const std::vector<std::optional<int>>& funct, const std::vector<double>& val,
-          const unsigned deg, const double time, Core::LinAlg::SerialDenseMatrix& elemass,
-          std::vector<Core::LinAlg::SerialDenseVector>& elerhs,
-          const Core::Utils::FunctionManager& function_manager) const;
+    */
+    template <Core::FE::CellType distype>
+    void fill_matrix_and_rhs_for_ls_dirichlet_domain(Core::Elements::Element& ele,
+        const std::vector<Core::LinAlg::SerialDenseVector>* knots, const std::vector<int>& lm,
+        const std::vector<std::optional<int>>& funct, const std::vector<double>& val,
+        const unsigned deg, const double time, Core::LinAlg::SerialDenseMatrix& elemass,
+        std::vector<Core::LinAlg::SerialDenseVector>& elerhs,
+        const Core::Utils::FunctionManager& function_manager) const;
 
-      /*!
-      \brief Fill mass matrix and rhs vector for evaluation of least squares dirichlet on a domain
-
-      \param ele          The element that is to be evaluated
-        \param knots        element knot vector
-      \param lm           reduced location vector of element (DBC DOFs only)
-      \param funct        function information (read from the condition)
-      \param val          value information (read from the condition)
-      \param deg          degree of time derivative needed
-      \param time         current time
-      \param elemass      element matrix to be filled
-      \param elerhs       element right hand side to be filled
-
-      */
-      template <Core::FE::CellType distype>
-      void fill_matrix_and_rhs_for_ls_dirichlet_domain(Core::Elements::Element& ele,
-          const std::vector<Core::LinAlg::SerialDenseVector>* knots, const std::vector<int>& lm,
-          const std::vector<std::optional<int>>& funct, const std::vector<double>& val,
-          const unsigned deg, const double time, Core::LinAlg::SerialDenseMatrix& elemass,
-          std::vector<Core::LinAlg::SerialDenseVector>& elerhs,
-          const Core::Utils::FunctionManager& function_manager) const;
-
-    };  // class DbcNurbs
-  }  // namespace Utils
+  };  // class DbcNurbs
 }  // namespace Core::FE
 
 FOUR_C_NAMESPACE_CLOSE

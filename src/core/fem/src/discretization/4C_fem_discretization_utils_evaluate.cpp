@@ -51,13 +51,13 @@ namespace
         actele = discret.l_col_element(i);
 
       {
-        TEUCHOS_FUNC_TIME_MONITOR("Core::FE::Utils::Evaluate LocationVector");
+        TEUCHOS_FUNC_TIME_MONITOR("Core::FE::Evaluate LocationVector");
         // get element location vector, dirichlet flags and ownerships
         actele->location_vector(discret, la);
       }
 
       {
-        TEUCHOS_FUNC_TIME_MONITOR("Core::FE::Utils::Evaluate Resize");
+        TEUCHOS_FUNC_TIME_MONITOR("Core::FE::Evaluate Resize");
 
         // get dimension of element matrices and vectors
         // Reshape element matrices and vectors and init to zero
@@ -65,7 +65,7 @@ namespace
       }
 
       {
-        TEUCHOS_FUNC_TIME_MONITOR("Core::FE::Utils::Evaluate elements");
+        TEUCHOS_FUNC_TIME_MONITOR("Core::FE::Evaluate elements");
         // call the element evaluate method
         int err =
             actele->evaluate(eparams, discret, la, strategy.elematrix1(), strategy.elematrix2(),
@@ -76,7 +76,7 @@ namespace
       }
 
       {
-        TEUCHOS_FUNC_TIME_MONITOR("Core::FE::Utils::Evaluate assemble");
+        TEUCHOS_FUNC_TIME_MONITOR("Core::FE::Evaluate assemble");
         int eid = actele->id();
         strategy.assemble_matrix1(eid, la[row].lm_, la[col].lm_, la[row].lmowner_, la[col].stride_);
         strategy.assemble_matrix2(eid, la[row].lm_, la[col].lm_, la[row].lmowner_, la[col].stride_);
@@ -91,12 +91,12 @@ namespace
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::FE::Utils::evaluate(Core::FE::Discretization& discret, Teuchos::ParameterList& eparams,
+void Core::FE::evaluate(Core::FE::Discretization& discret, Teuchos::ParameterList& eparams,
     const std::shared_ptr<Core::LinAlg::SparseOperator>& systemmatrix,
     const std::shared_ptr<Core::LinAlg::Vector<double>>& systemvector,
     const Core::LinAlg::Map* col_ele_map)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("Core::FE::Utils::Evaluate");
+  TEUCHOS_FUNC_TIME_MONITOR("Core::FE::Evaluate");
   Core::FE::AssembleStrategy strategy(0, 0, systemmatrix, nullptr, systemvector, nullptr, nullptr);
   evaluate_internal(discret, eparams, strategy, col_ele_map);
 }

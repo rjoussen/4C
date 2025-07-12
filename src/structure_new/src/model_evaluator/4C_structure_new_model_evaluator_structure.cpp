@@ -1344,7 +1344,7 @@ void Solid::ModelEvaluator::Structure::evaluate_internal_specified_elements(
   // this is about to go, once the old time integration is deleted
   params_interface2_parameter_list(eval_data_ptr(), p);
 
-  Core::FE::Utils::evaluate(*discret_ptr(), p, *eval_mat, *eval_vec, ele_map_to_be_evaluated);
+  Core::FE::evaluate(*discret_ptr(), p, *eval_mat, *eval_vec, ele_map_to_be_evaluated);
 
   discret().clear_state();
 }

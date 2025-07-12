@@ -344,7 +344,7 @@ void Core::FE::Discretization::evaluate_dirichlet(Teuchos::ParameterList& params
     std::shared_ptr<Core::LinAlg::Vector<int>> toggle,
     std::shared_ptr<Core::LinAlg::MapExtractor> dbcmapextractor) const
 {
-  Core::FE::Utils::evaluate_dirichlet(
+  Core::FE::evaluate_dirichlet(
       *this, params, systemvector, systemvectord, systemvectordd, toggle, dbcmapextractor);
 }
 
@@ -661,8 +661,7 @@ void Core::FE::Discretization::evaluate_initial_field(
     const Core::Utils::FunctionManager& function_manager, const std::string& fieldstring,
     Core::LinAlg::Vector<double>& fieldvector, const std::vector<int>& locids) const
 {
-  Core::FE::Utils::evaluate_initial_field(
-      function_manager, *this, fieldstring, fieldvector, locids);
+  Core::FE::evaluate_initial_field(function_manager, *this, fieldstring, fieldvector, locids);
 }  // Core::FE::Discretization::EvaluateInitialField
 
 FOUR_C_NAMESPACE_CLOSE
