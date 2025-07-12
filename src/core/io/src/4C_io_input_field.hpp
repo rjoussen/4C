@@ -102,7 +102,8 @@ namespace Core::IO
   {
    public:
     using IndexType = int;
-    using StorageType = std::variant<std::monostate, T, std::unordered_map<IndexType, T>>;
+    using MapType = std::unordered_map<IndexType, T>;
+    using StorageType = std::variant<std::monostate, T, MapType>;
 
     /**
      * Default constructor. This InputField will not hold any data and will throw an error if
@@ -122,7 +123,11 @@ namespace Core::IO
      * to be one-based and are converted to zero-based indices, which is what the Discretization
      * expects internally.
      */
-    explicit InputField(std::unordered_map<IndexType, T> data) : data_(data) {}
+    explicit InputField(std::unordered_map<IndexType, T> data)
+    {
+      make_index_zero_based(data);
+      data_ = std::move(data);
+    }
 
     /**
      * Construct an InputField that refers to a centrally registered field. The necessary @p ref
@@ -194,6 +199,18 @@ namespace Core::IO
               "InputField is not set up and distributed across ranks. Call set_up() first.");
       }
       std23::unreachable();
+    }
+
+    void make_index_zero_based(MapType& map)
+    {
+      MapType new_map;
+      for (auto&& [index, value] : map)
+      {
+        if (index < 1)
+          FOUR_C_THROW("InputField index {} is less than 1. All indices must be >= 1.", index);
+        new_map[index - 1] = std::move(value);
+      }
+      map = std::move(new_map);
     }
 
     StorageType data_;
@@ -276,6 +293,8 @@ namespace Core::IO
       const std::filesystem::path source_file = data.source_file;
       IO::read_value_from_yaml(source_file, data.key_in_source_file, map);
     }
+
+    make_index_zero_based(map);
 
     // The source map has all indices on rank 0, all other ranks are empty.
     std::vector<int> local_indices;

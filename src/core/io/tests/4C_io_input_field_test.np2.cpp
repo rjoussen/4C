@@ -63,7 +63,7 @@ namespace
           auto& init_function = data.init_functions.begin()->second;
 
           ASSERT_EQ(Core::Communication::num_mpi_ranks(MPI_COMM_WORLD), 2);
-          Core::LinAlg::Map target_map(4, 2, 1, MPI_COMM_WORLD);
+          Core::LinAlg::Map target_map(4, 2, 0, MPI_COMM_WORLD);
           init_function(target_map);
         }
       }
@@ -76,14 +76,14 @@ namespace
 
       if (Core::Communication::my_mpi_rank(MPI_COMM_WORLD) == 0)
       {
-        EXPECT_EQ(input_field_conductivity.at(1), expected_conductivity[0]);
-        EXPECT_EQ(input_field_conductivity.at(2), expected_conductivity[1]);
+        EXPECT_EQ(input_field_conductivity.at(0), expected_conductivity[0]);
+        EXPECT_EQ(input_field_conductivity.at(1), expected_conductivity[1]);
         EXPECT_ANY_THROW([[maybe_unused]] auto v = input_field_conductivity.at(3));
       }
       else
       {
-        EXPECT_EQ(input_field_conductivity.at(3), expected_conductivity[2]);
-        EXPECT_EQ(input_field_conductivity.at(4), expected_conductivity[3]);
+        EXPECT_EQ(input_field_conductivity.at(2), expected_conductivity[2]);
+        EXPECT_EQ(input_field_conductivity.at(3), expected_conductivity[3]);
         EXPECT_ANY_THROW([[maybe_unused]] auto v = input_field_conductivity.at(1));
       }
     }

@@ -69,10 +69,10 @@ namespace
       InputParameterContainer container;
       spec.match(node, container);
       InputField<double> input_field_stiffness = container.get<InputField<double>>("stiffness");
-      EXPECT_EQ(input_field_stiffness.at(1), 2.0);
-      EXPECT_EQ(input_field_stiffness.at(2), 3.5);
-      EXPECT_EQ(input_field_stiffness.at(3), 4.0);
-      EXPECT_EQ(input_field_stiffness.at(4), 5.5);
+      EXPECT_EQ(input_field_stiffness.at(0), 2.0);
+      EXPECT_EQ(input_field_stiffness.at(1), 3.5);
+      EXPECT_EQ(input_field_stiffness.at(2), 4.0);
+      EXPECT_EQ(input_field_stiffness.at(3), 5.5);
     }
   }
 
@@ -106,7 +106,7 @@ namespace
       spec.match(node, container);
       auto input_field_conductivity = container.get<InputField<std::vector<double>>>("CONDUCT");
       std::vector<double> expected_conductivity{1.0, 2.0, 3.0};
-      EXPECT_EQ(input_field_conductivity.at(1), expected_conductivity);
+      EXPECT_EQ(input_field_conductivity.at(0), expected_conductivity);
     }
 
     {
@@ -120,10 +120,10 @@ namespace
       auto input_field_conductivity = container.get<InputField<std::vector<double>>>("CONDUCT");
       std::vector<std::vector<double>> expected_conductivity{
           {1.0, 2.0, 3.0}, {3.0, 2.0, 1.0}, {1.0, 2.0, 3.0}, {3.0, 2.0, 1.0}};
-      EXPECT_EQ(input_field_conductivity.at(1), expected_conductivity[0]);
-      EXPECT_EQ(input_field_conductivity.at(2), expected_conductivity[1]);
-      EXPECT_EQ(input_field_conductivity.at(3), expected_conductivity[2]);
-      EXPECT_EQ(input_field_conductivity.at(4), expected_conductivity[3]);
+      EXPECT_EQ(input_field_conductivity.at(0), expected_conductivity[0]);
+      EXPECT_EQ(input_field_conductivity.at(1), expected_conductivity[1]);
+      EXPECT_EQ(input_field_conductivity.at(2), expected_conductivity[2]);
+      EXPECT_EQ(input_field_conductivity.at(3), expected_conductivity[3]);
     }
   }
 
@@ -152,7 +152,7 @@ namespace
       InputParameterContainer container;
       spec.match(node, container);
       const auto& data = container.get<Data>("data");
-      EXPECT_EQ(data.stiffness.at(1), 1.0);
+      EXPECT_EQ(data.stiffness.at(0), 1.0);
     }
 
     {
@@ -168,61 +168,10 @@ namespace
       InputParameterContainer container;
       spec.match(node, container);
       const auto& data = container.get<Data>("data");
-      EXPECT_EQ(data.stiffness.at(1), 2.0);
-      EXPECT_EQ(data.stiffness.at(2), 3.5);
-      EXPECT_EQ(data.stiffness.at(3), 4.0);
-      EXPECT_EQ(data.stiffness.at(4), 5.5);
-    }
-  }
-
-  TEST(InputField, ReadFieldRegistry)
-  {
-    Core::Utils::SingletonOwnerRegistry::ScopeGuard guard;
-    const std::string input_field_file =
-        TESTING::get_support_file_path("test_files/input_field/conductivity_input_field.json");
-    auto spec =
-        input_field<std::vector<double>>("CONDUCT", {.description = "A conductivity field"});
-
-    {
-      SCOPED_TRACE("Vector input field from file");
-      ryml::Tree tree = init_yaml_tree_with_exceptions();
-      ryml::NodeRef root = tree.rootref();
-      ryml::parse_in_arena("CONDUCT:\n    field: conduct_ref_name", root);
-
-      ConstYamlNodeRef node(root, "");
-      InputParameterContainer container;
-      spec.match(node, container);
-
-      // After reading we need to post-process what is in the registry.
-      auto& registry = global_input_field_registry();
-      EXPECT_TRUE(registry.fields.contains("conduct_ref_name"));
-      for (auto& [ref_name, data] : registry.fields)
-      {
-        if (ref_name == "conduct_ref_name")
-        {
-          EXPECT_FALSE(data.init_functions.empty());
-
-          // This needs to be done by some global input post-processing step.
-          // The information can come from a section that defines all the fields.
-          data.key_in_source_file = "CONDUCT";
-          data.source_file = input_field_file;
-
-          auto& init_function = data.init_functions.begin()->second;
-
-          Core::LinAlg::Map target_map(4, 1, MPI_COMM_WORLD);
-          init_function(target_map);
-        }
-      }
-
-      // Now the InputField can be retrieved.
-      const InputField<std::vector<double>>& input_field_conductivity =
-          container.get<InputField<std::vector<double>>>("CONDUCT");
-      std::vector<std::vector<double>> expected_conductivity{
-          {1.0, 2.0, 3.0}, {3.0, 2.0, 1.0}, {1.0, 2.0, 3.0}, {3.0, 2.0, 1.0}};
-      EXPECT_EQ(input_field_conductivity.at(1), expected_conductivity[0]);
-      EXPECT_EQ(input_field_conductivity.at(2), expected_conductivity[1]);
-      EXPECT_EQ(input_field_conductivity.at(3), expected_conductivity[2]);
-      EXPECT_EQ(input_field_conductivity.at(4), expected_conductivity[3]);
+      EXPECT_EQ(data.stiffness.at(0), 2.0);
+      EXPECT_EQ(data.stiffness.at(1), 3.5);
+      EXPECT_EQ(data.stiffness.at(2), 4.0);
+      EXPECT_EQ(data.stiffness.at(3), 5.5);
     }
   }
 }  // namespace

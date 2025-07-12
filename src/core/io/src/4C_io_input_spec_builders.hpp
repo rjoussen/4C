@@ -569,7 +569,7 @@ namespace Core::IO
     {
       constant,
       from_file,
-      field,
+      field_reference,
     };
 
     template <typename T>
@@ -598,9 +598,9 @@ namespace Core::IO
                 return store(out, std::move(field));
                 break;
               }
-              case InputFieldType::field:
+              case InputFieldType::field_reference:
               {
-                std::string field_name = in.get<std::string>("field");
+                std::string field_name = in.get<std::string>("field_reference");
                 InputFieldReference ref =
                     global_input_field_registry().register_field_reference(field_name);
                 auto field = IO::InputField<T>(ref);
@@ -2516,11 +2516,11 @@ Core::IO::InputSpec Core::IO::InputSpecBuilders::input_field(
   auto store = data.store ? data.store : in_container<InputField<T>>(name);
   auto spec = selection<Internal::InputFieldType>(name,
       {
+          parameter<T>("constant", {.description = "Constant value for the field."}),
           parameter<std::filesystem::path>(
               "from_file", {.description = "Path to a file containing the input field data."}),
-          parameter<T>("constant", {.description = "Constant value for the field."}),
           parameter<std::string>(
-              "field", {.description = "Refer to a globally defined field by a name."}),
+              "field_reference", {.description = "Refer to a globally defined field by a name."}),
       },
       {
           .description = data.description,
