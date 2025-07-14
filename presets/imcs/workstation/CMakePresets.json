@@ -19,7 +19,8 @@
         "FOUR_C_BUILD_DOXYGEN": "ON",
         "FOUR_C_WITH_GOOGLETEST": "ON",
         "FOUR_C_WITH_ARBORX": "ON",
-        "FOUR_C_WITH_MIRCO": "ON"
+        "FOUR_C_WITH_MIRCO": "ON",
+        "FOUR_C_BUILD_SHARED_LIBS": "OFF"
       }
     },
     {
@@ -36,7 +37,10 @@
         ".imcs_workstation_base"
       ],
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "DEBUG"
+        "CMAKE_BUILD_TYPE": "DEBUG",
+        "FOUR_C_ENABLE_ADDRESS_SANITIZER": "ON",
+        "FOUR_C_ENABLE_ASSERTIONS": "ON",
+        "FOUR_C_ENABLE_WARNINGS_AS_ERRORS": "ON"
       }
     },
     {
