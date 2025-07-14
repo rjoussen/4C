@@ -86,7 +86,7 @@ def compare_data_sets(data1, data2, name, **kwargs):
         if name is not None and name.startswith("uid_"):
             # We do not compare the unique ID arrays, as they won't match in
             # general.
-            return
+            continue
         array1 = data1.GetArray(name)
         array2 = data2.GetArray(name)
         try:
