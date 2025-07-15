@@ -186,7 +186,7 @@ std::shared_ptr<const Core::LinAlg::Graph> Core::Rebalance::build_graph(
     }
     Core::Communication::broadcast(&size, 1, proc, dis.get_comm());
     if (proc != myrank) recvnodes.resize(size);
-    Core::Communication::broadcast(&recvnodes[0], size, proc, dis.get_comm());
+    Core::Communication::broadcast(recvnodes.data(), size, proc, dis.get_comm());
     if (proc != myrank)
     {
       for (int i = 0; i < size; ++i)
@@ -210,7 +210,7 @@ std::shared_ptr<const Core::LinAlg::Graph> Core::Rebalance::build_graph(
     mynodes.clear();
     // create a non-overlapping row map
     rownodes =
-        std::make_shared<Core::LinAlg::Map>(-1, (int)nodes.size(), &nodes[0], 0, dis.get_comm());
+        std::make_shared<Core::LinAlg::Map>(-1, (int)nodes.size(), nodes.data(), 0, dis.get_comm());
   }
 
   // start building the graph object
@@ -270,7 +270,7 @@ std::shared_ptr<const Core::LinAlg::Graph> Core::Rebalance::build_graph(
       std::vector<int> cols;
       std::set<int>::iterator setfool = fool->second.begin();
       for (; setfool != fool->second.end(); ++setfool) cols.push_back(*setfool);
-      int err = graph->insert_global_indices(grid, (int)cols.size(), &cols[0]);
+      int err = graph->insert_global_indices(grid, (int)cols.size(), cols.data());
       if (err < 0)
         FOUR_C_THROW(
             "Core::LinAlg::Graph::InsertGlobalIndices returned {} for global row {}", err, grid);
@@ -301,7 +301,7 @@ std::shared_ptr<const Core::LinAlg::Graph> Core::Rebalance::build_graph(
     }
     Core::Communication::broadcast(&size, 1, proc, dis.get_comm());
     if (proc != myrank) recvnodes.resize(size);
-    Core::Communication::broadcast(&recvnodes[0], size, proc, dis.get_comm());
+    Core::Communication::broadcast(recvnodes.data(), size, proc, dis.get_comm());
     if (proc != myrank && size)
     {
       int* ptr = &recvnodes[0];
