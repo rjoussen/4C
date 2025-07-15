@@ -551,11 +551,10 @@ void BeamInteraction::BeamToSolidMortarManager::evaluate_and_assemble_global_cou
   kappa_lin_solid_->complete(*solid_dof_rowmap_, *lambda_dof_rowmap_);
 
   // Complete the global scaling vector.
-  if (0 != kappa_->global_assemble()) FOUR_C_THROW("Failed to perform FE assembly of kappa_.");
-  if (0 != lambda_active_->global_assemble())
+  if (0 != kappa_->complete()) FOUR_C_THROW("Failed to perform FE assembly of kappa_.");
+  if (0 != lambda_active_->complete())
     FOUR_C_THROW("Failed to perform FE assembly of lambda_active_.");
-  if (0 != constraint_->global_assemble())
-    FOUR_C_THROW("Failed to perform FE assembly of constraint_.");
+  if (0 != constraint_->complete()) FOUR_C_THROW("Failed to perform FE assembly of constraint_.");
 }
 
 /**

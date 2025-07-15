@@ -89,7 +89,7 @@ Thermo::TimIntImpl::TimIntImpl(const Teuchos::ParameterList& ioparams,
       overlapping_element_material_vector.replace_global_value(ele.id(), col, conductivity[col]);
   };
   discret_->evaluate(get_element_material_vector);
-  overlapping_element_material_vector.global_assemble();
+  overlapping_element_material_vector.complete();
 
   conductivity_ = std::make_shared<Core::LinAlg::MultiVector<double>>(
       Core::LinAlg::MultiVector<double>(*discret_->node_row_map(), columns, true));

@@ -643,7 +643,7 @@ bool Solid::ModelEvaluator::BeamInteraction::evaluate_force()
     (*some_iter)->evaluate_force();
 
   // do communication
-  if (ia_state_ptr_->get_force_np()->global_assemble() != 0) FOUR_C_THROW("GlobalAssemble failed");
+  if (ia_state_ptr_->get_force_np()->complete() != 0) FOUR_C_THROW("GlobalAssemble failed");
   // add to non fe vector
   if (ia_force_beaminteraction_->update(1., *ia_state_ptr_->get_force_np(), 1.))
     FOUR_C_THROW("update went wrong");
@@ -688,7 +688,7 @@ bool Solid::ModelEvaluator::BeamInteraction::evaluate_force_stiff()
     (*some_iter)->evaluate_force_stiff();
 
   // do communication
-  if (ia_state_ptr_->get_force_np()->global_assemble() != 0) FOUR_C_THROW("GlobalAssemble failed");
+  if (ia_state_ptr_->get_force_np()->complete() != 0) FOUR_C_THROW("GlobalAssemble failed");
 
   // add to non fe vector
   if (ia_force_beaminteraction_->update(1., *ia_state_ptr_->get_force_np(), 1.))

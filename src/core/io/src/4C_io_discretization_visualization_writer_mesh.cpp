@@ -518,7 +518,7 @@ namespace Core::IO
         my_ghost_elements.size(), my_ghost_elements.data(), values.data(), my_proc);
 
     // Assemble over all processors.
-    ghosting_information.global_assemble();
+    ghosting_information.complete();
 
     // Output the ghosting data of the elements owned by this proc.
     std::vector<double> ghosted_elements;

@@ -485,8 +485,8 @@ void BeamInteraction::BeamToFluidMortarManager::evaluate_global_dm(
   global_m_->complete(*fluid_dof_rowmap_, *lambda_dof_rowmap_);
 
   // Complete the global scaling vector.
-  if (global_kappa_->global_assemble()) FOUR_C_THROW("Error in GlobalAssemble!");
-  if (global_active_lambda_->global_assemble()) FOUR_C_THROW("Error in GlobalAssemble!");
+  if (global_kappa_->complete()) FOUR_C_THROW("Error in GlobalAssemble!");
+  if (global_active_lambda_->complete()) FOUR_C_THROW("Error in GlobalAssemble!");
 }
 
 /**

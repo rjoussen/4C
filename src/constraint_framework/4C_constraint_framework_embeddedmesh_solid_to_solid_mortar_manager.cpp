@@ -372,9 +372,9 @@ void Constraints::EmbeddedMesh::SolidToSolidMortarManager::evaluate_global_coupl
   global_fbg_l_->complete(*lambda_dof_rowmap_, *background_dof_rowmap_);
 
   // Complete the global scaling vector.
-  if (0 != global_kappa_->global_assemble()) FOUR_C_THROW("Error in GlobalAssemble!");
-  if (0 != global_active_lambda_->global_assemble()) FOUR_C_THROW("Error in GlobalAssemble!");
-  if (0 != global_constraint_->global_assemble()) FOUR_C_THROW("Error in GlobalAssemble!");
+  if (0 != global_kappa_->complete()) FOUR_C_THROW("Error in GlobalAssemble!");
+  if (0 != global_active_lambda_->complete()) FOUR_C_THROW("Error in GlobalAssemble!");
+  if (0 != global_constraint_->complete()) FOUR_C_THROW("Error in GlobalAssemble!");
 }
 
 void Constraints::EmbeddedMesh::SolidToSolidMortarManager::

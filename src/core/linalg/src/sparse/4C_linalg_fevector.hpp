@@ -244,7 +244,7 @@ namespace Core::LinAlg
       return vector_->SumIntoGlobalValue(GlobalRow, FEVectorIndex, ScalarValue);
     }
 
-    int global_assemble(Epetra_CombineMode mode = Add, bool reuse_map_and_exporter = false)
+    int complete(Epetra_CombineMode mode = Add, bool reuse_map_and_exporter = false)
     {
       return vector_->GlobalAssemble(mode, reuse_map_and_exporter);
     };
@@ -279,11 +279,6 @@ namespace Core::LinAlg
     }
 
 
-    int sum_into_local_value(
-        int MyBlockRow, int BlockRowOffset, int FEVectorIndex, double ScalarValue)
-    {
-      return vector_->SumIntoMyValue(MyBlockRow, BlockRowOffset, FEVectorIndex, ScalarValue);
-    }
     /**
      * View a given Epetra_FEVector object under our own FEVector wrapper.
      */

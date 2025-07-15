@@ -537,7 +537,7 @@ std::shared_ptr<Core::LinAlg::MultiVector<double>> Core::FE::compute_superconver
   }  // end loop over all nodes
 
   // call global assemble
-  const int err = nodevec.global_assemble(Insert, false);
+  const int err = nodevec.complete(Insert, false);
   if (err < 0) FOUR_C_THROW("global assemble into nodevec failed");
 
   // if no pbc are involved leave here

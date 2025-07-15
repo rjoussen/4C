@@ -100,9 +100,9 @@ void BeamInteraction::SubmodelEvaluator::PartitionedBeamInteractionAssemblyManag
           ff, cbb, cff, cbf, cfb);
     }
   }
-  int err = fb->global_assemble();
+  int err = fb->complete();
   if (err) printf("Global assembly failed with error %i", err);
-  err = ff->global_assemble();
+  err = ff->complete();
   if (err) printf("Global assembly failed with error %i", err);
 }
 

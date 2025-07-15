@@ -1725,7 +1725,7 @@ void CONTACT::LagrangeStrategy::add_master_contributions(Core::LinAlg::SparseOpe
   }
 
   // force
-  if (fc->global_assemble() != 0) FOUR_C_THROW("GlobalAssemble failed");
+  if (fc->complete() != 0) FOUR_C_THROW("GlobalAssemble failed");
 
   // store fLTL values for time integration
   fLTL_ = std::make_shared<Core::LinAlg::Vector<double>>(fc->get_map());
@@ -1781,7 +1781,7 @@ void CONTACT::LagrangeStrategy::add_line_to_lin_contributions(Core::LinAlg::Spar
   fconservation_->update(1.0, *fc, 0.0);
 
   // force
-  if (fc->global_assemble() != 0) FOUR_C_THROW("GlobalAssemble failed");
+  if (fc->complete() != 0) FOUR_C_THROW("GlobalAssemble failed");
 
   // store fLTL values for time integration
   fLTL_ = std::make_shared<Core::LinAlg::Vector<double>>(fc->get_map());
@@ -1853,7 +1853,7 @@ void CONTACT::LagrangeStrategy::add_line_to_lin_contributions_friction(
   if (fLTLt_->update(-1.0, *fLTLn_, 1.0)) FOUR_C_THROW("Update went wrong");
 
   // force
-  if (fc->global_assemble() != 0) FOUR_C_THROW("GlobalAssemble failed");
+  if (fc->complete() != 0) FOUR_C_THROW("GlobalAssemble failed");
 
   // store fLTL values for time integration
   fLTL_ = std::make_shared<Core::LinAlg::Vector<double>>(fc->get_map());

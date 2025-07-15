@@ -660,7 +660,7 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_meshtying()
           lmside_ == Inpar::S2I::side_master or couplingtype_ == Inpar::S2I::coupling_nts_standard)
       {
         imastermatrix_->complete(*interfacemaps_->full_map(), *interfacemaps_->map(2));
-        if (imasterresidual_->global_assemble(Add, true))
+        if (imasterresidual_->complete(Add, true))
           FOUR_C_THROW(
               "Assembly of auxiliary residual vector for master residuals not successful!");
       }
