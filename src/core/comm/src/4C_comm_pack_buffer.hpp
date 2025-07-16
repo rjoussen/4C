@@ -73,7 +73,7 @@ namespace Core::Communication
 #endif
 
       buf_.resize(buf_.size() + stuff_size);
-      std::memcpy(buf_.data() + buf_.size() - stuff_size, stuff, stuff_size);
+      if (stuff_size > 0) std::memcpy(buf_.data() + buf_.size() - stuff_size, stuff, stuff_size);
     }
 
    private:
@@ -111,7 +111,7 @@ namespace Core::Communication
 #ifdef FOUR_C_ENABLE_ASSERTIONS
       // Check that the type matches the type that was packed.
       std::size_t hash;
-      std::memcpy(&hash, &data_[position_], sizeof(hash));
+      std::memcpy(&hash, data_.data() + position_, sizeof(hash));
       position_ += sizeof(hash);
       FOUR_C_ASSERT(hash == typeid(T).hash_code(),
           "Type mismatch during unpacking. Tried to extract type {}", typeid(T).name());
@@ -119,7 +119,7 @@ namespace Core::Communication
 
       // We know that stuff is trivially copyable, so we can safely use memcpy. We cast to void* to
       // circumvent a GCC warning
-      std::memcpy(static_cast<void*>(&stuff), &data_[position_], sizeof(T));
+      std::memcpy(static_cast<void*>(&stuff), data_.data() + position_, sizeof(T));
       position_ += sizeof(T);
     }
 
@@ -137,16 +137,18 @@ namespace Core::Communication
 #ifdef FOUR_C_ENABLE_ASSERTIONS
       // Check that the type matches the type that was packed.
       std::size_t hash;
-      std::memcpy(&hash, &data_[position_], sizeof(hash));
+      std::memcpy(&hash, data_.data() + position_, sizeof(hash));
       position_ += sizeof(hash);
       FOUR_C_ASSERT(hash == typeid(T).hash_code(),
           "Type mismatch during unpacking. Tried to extract type {}", typeid(T).name());
 #endif
 
-
+      FOUR_C_ASSERT(position_ + stuff_size <= data_.size(),
+          "UnpackBuffer: Trying to extract more data than available in the buffer.");
       // We know that stuff is trivially copyable, so we can safely use memcpy. We cast to void* to
       // circumvent a GCC warning
-      std::memcpy(static_cast<void*>(stuff), &data_[position_], stuff_size);
+      if (stuff_size > 0)
+        std::memcpy(static_cast<void*>(stuff), data_.data() + position_, stuff_size);
       position_ += stuff_size;
     }
 
@@ -162,12 +164,13 @@ namespace Core::Communication
 #ifdef FOUR_C_ENABLE_ASSERTIONS
       // Check that the type matches the type that was packed.
       std::size_t hash;
-      std::memcpy(&hash, &data_[position_], sizeof(hash));
+      std::memcpy(&hash, data_.data() + position_, sizeof(hash));
       position += sizeof(hash);
       FOUR_C_ASSERT(hash == typeid(T).hash_code(), "Type mismatch during unpacking.");
 #endif
-
-      memcpy(&stuff, &data_[position], sizeof(T));
+      FOUR_C_ASSERT(position < data_.size(),
+          "UnpackBuffer: Trying to extract more data than available in the buffer.");
+      std::memcpy(&stuff, data_.data() + position, sizeof(T));
     }
 
     /**

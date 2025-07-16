@@ -164,7 +164,7 @@ void Core::FE::Discretization::assign_global_ids(MPI_Comm comm,
       index += 1;
       std::vector<int> element;
       element.reserve(esize);
-      std::copy(&recv[index], &recv[index + esize], std::back_inserter(element));
+      std::copy(recv.begin() + index, recv.begin() + index + esize, std::back_inserter(element));
       index += esize;
       elements.insert(element);
     }
@@ -201,7 +201,7 @@ void Core::FE::Discretization::assign_global_ids(MPI_Comm comm,
     index += 1;
     std::vector<int> element;
     element.reserve(esize);
-    std::copy(&send[index], &send[index + esize], std::back_inserter(element));
+    std::copy(send.begin() + index, send.begin() + index + esize, std::back_inserter(element));
     index += esize;
 
     // set gid to my elements

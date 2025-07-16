@@ -451,14 +451,14 @@ void Constraints::EmbeddedMesh::assemble_local_mortar_contributions(
           -local_M(i_lambda, i_background), background_row[i_background], lambda_row[i_lambda]);
     }
   }
-  global_kappa.SumIntoGlobalValues(Mortar::n_dof_, &lambda_row[0], local_kappa.data());
-  global_constraint.SumIntoGlobalValues(Mortar::n_dof_, &lambda_row[0], local_constraint.data());
+  global_kappa.SumIntoGlobalValues(Mortar::n_dof_, lambda_row.data(), local_kappa.data());
+  global_constraint.SumIntoGlobalValues(Mortar::n_dof_, lambda_row.data(), local_constraint.data());
 
   // Set all entries in the local kappa vector to 1 and add them to the active vector
   Core::LinAlg::Matrix<Mortar::n_dof_, 1, double> local_kappa_active;
   local_kappa_active.put_scalar(1.0);
   global_lambda_active.SumIntoGlobalValues(
-      Mortar::n_dof_, &lambda_row[0], local_kappa_active.data());
+      Mortar::n_dof_, lambda_row.data(), local_kappa_active.data());
 }
 
 
