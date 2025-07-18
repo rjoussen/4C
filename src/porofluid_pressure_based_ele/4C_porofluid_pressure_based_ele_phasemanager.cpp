@@ -1063,14 +1063,15 @@ void Discret::Elements::PoroFluidManager::PhaseManagerReaction::setup(
     {
       int matid = scatramat->mat_id(k);
       std::shared_ptr<Core::Mat::Material> singlemat = scatramat->material_by_id(matid);
-      if (singlemat->material_type() == Core::Materials::m_scatra_multiporo_fluid)
+      if (singlemat->material_type() == Core::Materials::m_scatra_in_fluid_porofluid_pressure_based)
       {
         const std::shared_ptr<const Mat::ScatraMatMultiPoroFluid>& poromat =
             std::dynamic_pointer_cast<const Mat::ScatraMatMultiPoroFluid>(singlemat);
         scalartophasemap_[k].phaseID = poromat->phase_id();
         scalartophasemap_[k].species_type = Mat::ScaTraMatMultiPoro::SpeciesType::species_in_fluid;
       }
-      else if (singlemat->material_type() == Core::Materials::m_scatra_multiporo_volfrac)
+      else if (singlemat->material_type() ==
+               Core::Materials::m_scatra_in_volfrac_porofluid_pressure_based)
       {
         const std::shared_ptr<const Mat::ScatraMatMultiPoroVolFrac>& poromat =
             std::dynamic_pointer_cast<const Mat::ScatraMatMultiPoroVolFrac>(singlemat);
@@ -1078,13 +1079,15 @@ void Discret::Elements::PoroFluidManager::PhaseManagerReaction::setup(
         scalartophasemap_[k].species_type =
             Mat::ScaTraMatMultiPoro::SpeciesType::species_in_volfrac;
       }
-      else if (singlemat->material_type() == Core::Materials::m_scatra_multiporo_solid)
+      else if (singlemat->material_type() ==
+               Core::Materials::m_scatra_in_solid_porofluid_pressure_based)
       {
         // dummy value because species in solid do not have a phaseID
         scalartophasemap_[k].phaseID = -1000;
         scalartophasemap_[k].species_type = Mat::ScaTraMatMultiPoro::SpeciesType::species_in_solid;
       }
-      else if (singlemat->material_type() == Core::Materials::m_scatra_multiporo_temperature)
+      else if (singlemat->material_type() ==
+               Core::Materials::m_scatra_as_temperature_porofluid_pressure_based)
       {
         // dummy value because temperature does not have a phaseID
         scalartophasemap_[k].phaseID = -1000;
@@ -1095,27 +1098,31 @@ void Discret::Elements::PoroFluidManager::PhaseManagerReaction::setup(
         FOUR_C_THROW("only MAT_scatra_multiporo_(fluid,volfrac,solid,temperature) valid here");
     }
   }
-  else if (scatramat->material_type() == Core::Materials::m_scatra_multiporo_fluid)
+  else if (scatramat->material_type() ==
+           Core::Materials::m_scatra_in_fluid_porofluid_pressure_based)
   {
     const std::shared_ptr<const Mat::ScatraMatMultiPoroFluid>& poromat =
         std::dynamic_pointer_cast<const Mat::ScatraMatMultiPoroFluid>(scatramat);
     scalartophasemap_[0].phaseID = poromat->phase_id();
     scalartophasemap_[0].species_type = Mat::ScaTraMatMultiPoro::SpeciesType::species_in_fluid;
   }
-  else if (scatramat->material_type() == Core::Materials::m_scatra_multiporo_volfrac)
+  else if (scatramat->material_type() ==
+           Core::Materials::m_scatra_in_volfrac_porofluid_pressure_based)
   {
     const std::shared_ptr<const Mat::ScatraMatMultiPoroVolFrac>& poromat =
         std::dynamic_pointer_cast<const Mat::ScatraMatMultiPoroVolFrac>(scatramat);
     scalartophasemap_[0].phaseID = poromat->phase_id();
     scalartophasemap_[0].species_type = Mat::ScaTraMatMultiPoro::SpeciesType::species_in_volfrac;
   }
-  else if (scatramat->material_type() == Core::Materials::m_scatra_multiporo_solid)
+  else if (scatramat->material_type() ==
+           Core::Materials::m_scatra_in_solid_porofluid_pressure_based)
   {
     // dummy value because species in solid do not have a phaseID
     scalartophasemap_[0].phaseID = -1000;
     scalartophasemap_[0].species_type = Mat::ScaTraMatMultiPoro::SpeciesType::species_in_solid;
   }
-  else if (scatramat->material_type() == Core::Materials::m_scatra_multiporo_temperature)
+  else if (scatramat->material_type() ==
+           Core::Materials::m_scatra_as_temperature_porofluid_pressure_based)
   {
     // dummy value because temperature does not have a phaseID
     scalartophasemap_[0].phaseID = -1000;

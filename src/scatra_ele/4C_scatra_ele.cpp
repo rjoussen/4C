@@ -308,10 +308,10 @@ void Discret::Elements::Transport::set_material(
       mat->material_type() == Core::Materials::m_thermo_fourier or
       mat->material_type() == Core::Materials::m_thermostvenant or
       mat->material_type() == Core::Materials::m_soret or
-      mat->material_type() == Core::Materials::m_scatra_multiporo_fluid or
-      mat->material_type() == Core::Materials::m_scatra_multiporo_volfrac or
-      mat->material_type() == Core::Materials::m_scatra_multiporo_solid or
-      mat->material_type() == Core::Materials::m_scatra_multiporo_temperature or
+      mat->material_type() == Core::Materials::m_scatra_in_fluid_porofluid_pressure_based or
+      mat->material_type() == Core::Materials::m_scatra_in_volfrac_porofluid_pressure_based or
+      mat->material_type() == Core::Materials::m_scatra_in_solid_porofluid_pressure_based or
+      mat->material_type() == Core::Materials::m_scatra_as_temperature_porofluid_pressure_based or
       (mat->material_type() == Core::Materials::m_electrode and
           impltype_ == Inpar::ScaTra::impltype_std))
     numdofpernode_ = 1;  // we only have a single scalar
@@ -351,13 +351,13 @@ void Discret::Elements::Transport::set_material(
       if (actmat->material_by_id(actmat->mat_id(ii))->material_type() !=
               Core::Materials::m_scatra and
           actmat->material_by_id(actmat->mat_id(ii))->material_type() !=
-              Core::Materials::m_scatra_multiporo_fluid and
+              Core::Materials::m_scatra_in_fluid_porofluid_pressure_based and
           actmat->material_by_id(actmat->mat_id(ii))->material_type() !=
-              Core::Materials::m_scatra_multiporo_volfrac and
+              Core::Materials::m_scatra_in_volfrac_porofluid_pressure_based and
           actmat->material_by_id(actmat->mat_id(ii))->material_type() !=
-              Core::Materials::m_scatra_multiporo_temperature and
+              Core::Materials::m_scatra_as_temperature_porofluid_pressure_based and
           actmat->material_by_id(actmat->mat_id(ii))->material_type() !=
-              Core::Materials::m_scatra_multiporo_solid)
+              Core::Materials::m_scatra_in_solid_porofluid_pressure_based)
         FOUR_C_THROW(
             "The material Mat_matlist_reaction only supports MAT_scatra and MAT_scatra_multiporo "
             "as valid main Material");

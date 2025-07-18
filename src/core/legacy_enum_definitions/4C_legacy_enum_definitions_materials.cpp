@@ -43,13 +43,13 @@ std::string_view Core::Materials::to_string(Core::Materials::MaterialType materi
       return "MAT_scatra_reaction_poro";
     case m_scatra_reaction:
       return "MAT_scatra_reaction";
-    case m_scatra_multiporo_fluid:
+    case m_scatra_in_fluid_porofluid_pressure_based:
       return "MAT_scatra_multiporo_fluid";
-    case m_scatra_multiporo_volfrac:
+    case m_scatra_in_volfrac_porofluid_pressure_based:
       return "MAT_scatra_multiporo_volfrac";
-    case m_scatra_multiporo_solid:
+    case m_scatra_in_solid_porofluid_pressure_based:
       return "MAT_scatra_multiporo_solid";
-    case m_scatra_multiporo_temperature:
+    case m_scatra_as_temperature_porofluid_pressure_based:
       return "MAT_scatra_multiporo_temperature";
     case m_scatra_chemotaxis:
       return "MAT_scatra_chemotaxis";

@@ -26,11 +26,11 @@
 #include "4C_scatra_ele_calc_loma.hpp"
 #include "4C_scatra_ele_calc_ls.hpp"
 #include "4C_scatra_ele_calc_lsreinit.hpp"
-#include "4C_scatra_ele_calc_multiporo_reac.hpp"
 #include "4C_scatra_ele_calc_no_physics.hpp"
 #include "4C_scatra_ele_calc_poro.hpp"
 #include "4C_scatra_ele_calc_poro_reac.hpp"
 #include "4C_scatra_ele_calc_poro_reac_ECM.hpp"
+#include "4C_scatra_ele_calc_porofluid_pressure_based.hpp"
 #include "4C_scatra_ele_calc_std.hpp"
 #include "4C_scatra_ele_calc_sti_diffcond.hpp"
 #include "4C_scatra_ele_calc_sti_electrode.hpp"
@@ -398,7 +398,7 @@ Discret::Elements::ScaTraEleInterface* Discret::Elements::ScaTraFactory::define_
     }
     case Inpar::ScaTra::impltype_multipororeac:
     {
-      return Discret::Elements::ScaTraEleCalcMultiPoroReac<distype>::instance(
+      return Discret::Elements::ScaTraEleCalcPorofluidPressureBased<distype>::instance(
           numdofpernode, numscal, disname);
     }
     case Inpar::ScaTra::impltype_pororeac:

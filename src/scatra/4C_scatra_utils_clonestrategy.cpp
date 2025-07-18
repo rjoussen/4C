@@ -52,10 +52,10 @@ void ScaTra::ScatraFluidCloneStrategy::check_material_type(const int matid)
       (mtype != Core::Materials::m_ion) && (mtype != Core::Materials::m_thermo_fourier) &&
       (mtype != Core::Materials::m_thermostvenant) && (mtype != Core::Materials::m_matlist) &&
       (mtype != Core::Materials::m_matlist_reactions) && (mtype != Core::Materials::m_myocard) &&
-      (mtype != Core::Materials::m_scatra_multiporo_fluid) &&
-      (mtype != Core::Materials::m_scatra_multiporo_volfrac) &&
-      (mtype != Core::Materials::m_scatra_multiporo_solid) &&
-      (mtype != Core::Materials::m_scatra_multiporo_temperature))
+      (mtype != Core::Materials::m_scatra_in_fluid_porofluid_pressure_based) &&
+      (mtype != Core::Materials::m_scatra_in_volfrac_porofluid_pressure_based) &&
+      (mtype != Core::Materials::m_scatra_in_solid_porofluid_pressure_based) &&
+      (mtype != Core::Materials::m_scatra_as_temperature_porofluid_pressure_based))
     FOUR_C_THROW("Material with ID {} is not admissible for scalar transport elements", matid);
 }
 
