@@ -84,9 +84,9 @@ void Mixture::MapMixtureRule::evaluate(const Core::LinAlg::Tensor<double, 3, 3>&
   Core::LinAlg::SymmetricTensor<double, 3, 3> cstress;
   Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3> ccmat;
 
-  // evaluate the mass fractions at the given element id (one based entries in the csv file)
-  auto massfracs = get_validate_mass_fractions(
-      params_->mass_fractions_field_, eleGID + 1, constituents().size());
+  // evaluate the mass fractions at the given element id
+  auto massfracs =
+      get_validate_mass_fractions(params_->mass_fractions_field_, eleGID, constituents().size());
 
   // Iterate over all constituents and add all stress/cmat contributions
   for (std::size_t i = 0; i < constituents().size(); ++i)
