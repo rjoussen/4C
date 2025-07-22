@@ -765,7 +765,15 @@ namespace Core::LinAlg
     requires(is_scalar<Scalar> && is_symmetric_tensor<Tensor>)
   constexpr auto scale(const Tensor& tensor, const Scalar& b)
   {
-    return assume_symmetry(scale(get_full(tensor), b));
+    using result_value_type =
+        FADUtils::ScalarOperationResultType<Scalar, typename Tensor::value_type, std::multiplies<>>;
+
+    OwningTensorType<Tensor, result_value_type> tens_out;
+
+    std::transform(tensor.data(), tensor.data() + Tensor::compressed_size, tens_out.data(),
+        [&b](const auto& value) { return value * b; });
+
+    return tens_out;
   }
 
   template <typename TensorLeft, typename TensorRight>
@@ -773,7 +781,15 @@ namespace Core::LinAlg
              is_symmetric_tensor<TensorLeft> && is_symmetric_tensor<TensorRight>)
   constexpr auto add(const TensorLeft& A, const TensorRight& B)
   {
-    return assume_symmetry(add(get_full(A), get_full(B)));
+    using result_value_type = FADUtils::ScalarOperationResultType<typename TensorLeft::value_type,
+        typename TensorRight::value_type, std::plus<>>;
+
+    OwningTensorType<TensorLeft, result_value_type> tens_out;
+
+    DenseFunctions::update<result_value_type, TensorLeft::compressed_size, 1>(
+        tens_out.data(), A.data(), B.data());
+
+    return tens_out;
   }
 
   template <typename TensorLeft, typename TensorRight>
@@ -781,7 +797,15 @@ namespace Core::LinAlg
              is_symmetric_tensor<TensorLeft> && is_symmetric_tensor<TensorRight>)
   constexpr auto subtract(const TensorLeft& A, const TensorRight& B)
   {
-    return assume_symmetry(subtract(get_full(A), get_full(B)));
+    using result_value_type = FADUtils::ScalarOperationResultType<typename TensorLeft::value_type,
+        typename TensorRight::value_type, std::minus<>>;
+
+    OwningTensorType<TensorLeft, result_value_type> tens_out;
+
+    DenseFunctions::update<result_value_type, TensorLeft::compressed_size, 1>(
+        tens_out.data(), 1.0, A.data(), -1.0, B.data());
+
+    return tens_out;
   }
 
   template <typename TensorLeft, typename TensorRight>
