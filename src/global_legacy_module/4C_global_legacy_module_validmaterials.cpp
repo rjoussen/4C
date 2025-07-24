@@ -462,29 +462,6 @@ std::unordered_map<Core::Materials::MaterialType, Core::IO::InputSpec> Global::v
   /*----------------------------------------------------------------------*/
   // Combo muscle material
   {
-    using actMapType = std::unordered_map<int, std::vector<std::pair<double, double>>>;
-
-    auto on_parse = [](Core::IO::InputParameterContainer& container)
-    {
-      const auto& map_file = container.get<std::filesystem::path>("MAPFILE");
-      std::ifstream file_stream(map_file);
-
-      if (file_stream.fail()) FOUR_C_THROW("Invalid file {}!", map_file.string());
-
-      auto map_reduction_operation = [](actMapType acc, const actMapType& next)
-      {
-        for (const auto& [key, value] : next)
-        {
-          acc[key] = value;
-        }
-        return acc;
-      };
-
-      container.add(
-          "MAPFILE_CONTENT", Core::IO::InputField(Core::IO::convert_lines<actMapType, actMapType>(
-                                 file_stream, map_reduction_operation)));
-    };
-
     known_materials[Core::Materials::m_muscle_combo] = group("MAT_Muscle_Combo",
         {
             parameter<double>("ALPHA", {.description = "experimentally fitted material parameter"}),
@@ -499,19 +476,14 @@ std::unordered_map<Core::Materials::MaterialType, Core::IO::InputSpec> Global::v
             parameter<double>("LAMBDAOPT",
                 {.description =
                         "optimal active fiber stretch related to active nominal stress maximum"}),
-            deprecated_selection<Mat::PAR::MuscleCombo::ActivationType>("ACTEVALTYPE",
-                {{"function", Mat::PAR::MuscleCombo::ActivationType::function_of_space_time},
-                    {"map", Mat::PAR::MuscleCombo::ActivationType::map}},
-                {.description = "type of activation evaluation"}),
             one_of({
-                parameter<int>("FUNCTID",
+                parameter<int>("ACTIVATION_FUNCTION_ID",
                     {.description =
                             "function id for time- and space-dependency of muscle activation"}),
-                parameter<std::filesystem::path>("MAPFILE",
-                    {.description =
-                            "pattern file containing a map of elementwise-defined discrete values "
-                            "for time- and space-dependency of muscle activation",
-                        .on_parse_callback = on_parse}),
+                input_field<std::vector<std::pair<double, double>>>("ACTIVATION_VALUES",
+                    {.description = "json input file containing a map of "
+                                    "elementwise-defined discrete values "
+                                    "for time- and space-dependency of muscle activation"}),
             }),
             parameter<double>("DENS", {.description = "density"}),
         },

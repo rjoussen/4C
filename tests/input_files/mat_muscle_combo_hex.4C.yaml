@@ -122,8 +122,7 @@ MATERIALS:
       POPT: 0
       LAMBDAMIN: 0.682
       LAMBDAOPT: 1.192
-      ACTEVALTYPE: "function"
-      FUNCTID: 2
+      ACTIVATION_FUNCTION_ID: 2
       DENS: 1
   - MAT: 2
     MAT_Muscle_Combo:
@@ -135,8 +134,7 @@ MATERIALS:
       POPT: 73.52
       LAMBDAMIN: 0.682
       LAMBDAOPT: 1.192
-      ACTEVALTYPE: "function"
-      FUNCTID: 2
+      ACTIVATION_FUNCTION_ID: 2
       DENS: 1
 FUNCT1:
   - COMPONENT: 0
