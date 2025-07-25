@@ -140,16 +140,6 @@ namespace Core::LinAlg
   // Implementation of tensor operations
   namespace Internal
   {
-    template <typename T, typename S1>
-    struct SameShapeTensorResult;
-
-    template <typename T, std::size_t... s>
-    struct SameShapeTensorResult<T, std::integer_sequence<std::size_t, s...>>
-    {
-      using type = TensorInternal<T, TensorStorageType::owning, NoCompression<s...>, s...>;
-    };
-
-
     template <typename T, typename S1, typename S2>
     struct DyadicProductTensorResult;
 
@@ -733,8 +723,7 @@ namespace Core::LinAlg
   {
     using result_value_type = FADUtils::ScalarOperationResultType<typename TensorLeft::value_type,
         typename TensorRight::value_type, std::plus<>>;
-    typename Internal::SameShapeTensorResult<result_value_type,
-        typename TensorLeft::shape_type>::type tens_out{};
+    OwningTensorType<TensorLeft, result_value_type> tens_out{};
     DenseFunctions::update<result_value_type, TensorLeft::size(), 1>(
         tens_out.data(), A.data(), B.data());
 
@@ -750,8 +739,7 @@ namespace Core::LinAlg
     using result_value_type = FADUtils::ScalarOperationResultType<typename TensorLeft::value_type,
         typename TensorRight::value_type, std::minus<>>;
 
-    typename Internal::SameShapeTensorResult<result_value_type,
-        typename TensorLeft::shape_type>::type tens_out{};
+    OwningTensorType<TensorLeft, result_value_type> tens_out{};
     DenseFunctions::update<result_value_type, TensorLeft::size(), 1>(
         tens_out.data(), 1.0, A.data(), -1.0, B.data());
 
@@ -765,8 +753,7 @@ namespace Core::LinAlg
     using result_value_type =
         FADUtils::ScalarOperationResultType<Scalar, typename Tensor::value_type, std::multiplies<>>;
 
-    typename Internal::SameShapeTensorResult<result_value_type, typename Tensor::shape_type>::type
-        tens_out;
+    OwningTensorType<Tensor, result_value_type> tens_out;
 
     std::transform(tensor.data(), tensor.data() + Tensor::size(), tens_out.data(),
         [&b](const auto& value) { return value * b; });

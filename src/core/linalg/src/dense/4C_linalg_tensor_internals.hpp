@@ -336,7 +336,32 @@ namespace Core::LinAlg
   using TensorCompressionType =
       typename Internal::CompressionTypeHelper<std::remove_cvref_t<Tensor>>::type;
 
-  // actual implementations
+  namespace Internal
+  {
+    template <typename Tensor, typename ValueType, typename ShapeIntegerSequence>
+    struct OwningTensorTypeHelper;
+
+    template <typename Tensor, typename ValueType, std::size_t... s>
+    struct OwningTensorTypeHelper<Tensor, ValueType, std::integer_sequence<std::size_t, s...>>
+    {
+      using type =
+          TensorInternal<ValueType, TensorStorageType::owning, TensorCompressionType<Tensor>, s...>;
+    };
+  }  // namespace Internal
+
+  /*!
+   * @brief Type of an owning tensor with the same compression and size as @p Tensor.
+   *
+   * @tparam Tensor
+   * @tparam Tensor::value_type Value type of the tensor, defaults to @p Tensor::value_type
+   */
+  template <typename Tensor,
+      typename ValueType = typename std::remove_cvref_t<typename Tensor::value_type>>
+  using OwningTensorType = typename Internal::OwningTensorTypeHelper<Tensor, ValueType,
+      typename Tensor::shape_type>::type;
+
+
+  //  actual implementations
 
   template <typename Number, TensorStorageType storage_type, typename Compression, std::size_t... n>
   constexpr TensorInternal<Number, storage_type, Compression, n...>::TensorInternal(
