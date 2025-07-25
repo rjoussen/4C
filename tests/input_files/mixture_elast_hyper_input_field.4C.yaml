@@ -1,20 +1,16 @@
 TITLE:
   - "Testcase for testing Mixture toolbox"
-  - "The setup of the test-case are 3 cubes with different elements (HEX8, HEX8FBAR and TET10)."
-  - "The cube fixed on the bottom surface (z=0). On the top surface (z=1), a surface force is applied"
-  - "in x-, y- and z-direction subsequently."
+  - "The setup of the test-case are 2 cubes."
+  - "The cubes are fixed on the bottom surface (z=0). On the top surface (z=1), a surface force is applied"
+  - "in x-, y- and z-direction subsequently. A similar problem was used in the ElastHyper toolbox."
   - "Tests:"
-  - "- Reference are the results of using an SVK material with a Youngs modulus of 600 without the mixture
-    approach."
-  - "- For a dynamic approach the density is chosen to 1.5."
-  - "- Mixture toolbox with simplest mixture rule and 1 solid material (SVK with Youngs modulus 400=600/DENS=600/1.5)."
-  - "- In case the density is 1.5 using an SVK material with a Youngs modulus of 400 gives the same result
-    a simple SVK material (w/o the mixture approach) with Youngs modulus 600."
-  - "- Reason: mixture framework uses mass-based strain energy functions."
+  - "- Mixture toolbox with function mixture rule and 2 hyperelastic materials (both isotropic with different
+    Youngs moduli)"
+  - "- Mass fractions are defined element-wise as discrete values through the json file mixture_elast_hyper_map.pattern"
+  - "- for cube 1 the mass fractions vary between elements"
+  - "- for cube 2 the mass fractions are uniformly 0.5 for each element and each constituent"
   - "Elements:"
   - "- HEX8"
-  - "- HEX8FBAR"
-  - "- TET10"
 PROBLEM TYPE:
   PROBLEMTYPE: "Structure"
 IO:
@@ -26,11 +22,12 @@ IO/RUNTIME VTK OUTPUT/STRUCTURE:
   OUTPUT_STRUCTURE: true
   DISPLACEMENT: true
   ELEMENT_OWNER: true
+  ELEMENT_GID: true
   NODE_GID: true
   STRESS_STRAIN: true
 STRUCTURAL DYNAMIC:
   INT_STRATEGY: "Standard"
-  DYNAMICTYPE: "OneStepTheta"
+  DYNAMICTYPE: "Statics"
   TIMESTEP: 0.1
   NUMSTEP: 30
   MAXTIME: 3
@@ -56,20 +53,30 @@ MATERIALS:
   - MAT: 1
     MAT_Mixture:
       MATIDMIXTURERULE: 10
-      MATIDSCONST: [11]
+      MATIDSCONST: [11, 12]
   - MAT: 10
     MIX_Rule_Simple:
-      DENS: 1.5
+      DENS: 0.1
       MASSFRAC:
-        constant: [1]
+        from_file: "mixture_elast_hyper_input_field.json"
   - MAT: 11
-    MIX_Constituent_SolidMaterial:
-      MATID: 101
+    MIX_Constituent_ElastHyper:
+      NUMMAT: 1
+      MATIDS: [101]
+  - MAT: 12
+    MIX_Constituent_ElastHyper:
+      NUMMAT: 1
+      MATIDS: [102]
   - MAT: 101
-    MAT_Struct_StVenantKirchhoff:
-      YOUNG: 400
-      NUE: 0
-      DENS: 1
+    ELAST_CoupLogNeoHooke:
+      MODE: "YN"
+      C1: 12500
+      C2: 0.27
+  - MAT: 102
+    ELAST_CoupLogNeoHooke:
+      MODE: "YN"
+      C1: 50000
+      C2: 0.27
 FUNCT1:
   - COMPONENT: 0
     SYMBOLIC_FUNCTION_OF_SPACE_TIME: "a"
@@ -101,104 +108,74 @@ RESULT DESCRIPTION:
   - STRUCTURE:
       DIS: "structure"
       NODE: 17
+      QUANTITY: "dispx"
+      VALUE: 0.028365622905888583
+      TOLERANCE: 1e-09
+  - STRUCTURE:
+      DIS: "structure"
+      NODE: 17
       QUANTITY: "dispy"
-      VALUE: 0.08190267555686076
-      TOLERANCE: 1e-07
+      VALUE: 0.027493442716906097
+      TOLERANCE: 1e-09
   - STRUCTURE:
       DIS: "structure"
       NODE: 17
       QUANTITY: "dispz"
-      VALUE: 0.08540617162651412
-      TOLERANCE: 1e-07
+      VALUE: 0.02930326814079101
+      TOLERANCE: 1e-09
   - STRUCTURE:
       DIS: "structure"
       NODE: 44
       QUANTITY: "dispx"
-      VALUE: 0.0863852832070356
-      TOLERANCE: 1e-07
+      VALUE: 0.018678710265129555
+      TOLERANCE: 1e-09
   - STRUCTURE:
       DIS: "structure"
       NODE: 44
       QUANTITY: "dispy"
-      VALUE: 0.0862664308254352
-      TOLERANCE: 1e-07
+      VALUE: 0.01867871026512954
+      TOLERANCE: 1e-09
   - STRUCTURE:
       DIS: "structure"
       NODE: 44
       QUANTITY: "dispz"
-      VALUE: 0.09152794512586111
-      TOLERANCE: 1e-07
-  - STRUCTURE:
-      DIS: "structure"
-      NODE: 59
-      QUANTITY: "dispx"
-      VALUE: 0.08656385670333665
-      TOLERANCE: 1e-07
-  - STRUCTURE:
-      DIS: "structure"
-      NODE: 59
-      QUANTITY: "dispy"
-      VALUE: 0.08625227175001521
-      TOLERANCE: 1e-07
-  - STRUCTURE:
-      DIS: "structure"
-      NODE: 59
-      QUANTITY: "dispz"
-      VALUE: 0.09492910786412584
-      TOLERANCE: 1e-07
+      VALUE: 0.0185776088312025
+      TOLERANCE: 1e-09
   - STRUCTURE:
       DIS: "structure"
       NODE: 17
       QUANTITY: "stress_xx"
-      VALUE: 0.11809312918867759
+      VALUE: 8.150452109567825
       TOLERANCE: 1e-07
   - STRUCTURE:
       DIS: "structure"
       NODE: 17
       QUANTITY: "stress_yy"
-      VALUE: 0.11092154876209906
+      VALUE: 7.67276101094843
       TOLERANCE: 1e-07
   - STRUCTURE:
       DIS: "structure"
       NODE: 17
       QUANTITY: "stress_zz"
-      VALUE: 34.75196531693792
+      VALUE: 38.103743586068006
       TOLERANCE: 1e-07
   - STRUCTURE:
       DIS: "structure"
       NODE: 44
       QUANTITY: "stress_xx"
-      VALUE: -3.5803494221276293
+      VALUE: 5.878856257824911
       TOLERANCE: 1e-07
   - STRUCTURE:
       DIS: "structure"
       NODE: 44
       QUANTITY: "stress_yy"
-      VALUE: -3.562541625940062
+      VALUE: 5.878856257825334
       TOLERANCE: 1e-07
   - STRUCTURE:
       DIS: "structure"
       NODE: 44
       QUANTITY: "stress_zz"
-      VALUE: 32.495260645829525
-      TOLERANCE: 1e-07
-  - STRUCTURE:
-      DIS: "structure"
-      NODE: 59
-      QUANTITY: "stress_xx"
-      VALUE: -0.17942037277163314
-      TOLERANCE: 1e-07
-  - STRUCTURE:
-      DIS: "structure"
-      NODE: 59
-      QUANTITY: "stress_yy"
-      VALUE: -0.2917773745766508
-      TOLERANCE: 1e-07
-  - STRUCTURE:
-      DIS: "structure"
-      NODE: 59
-      QUANTITY: "stress_zz"
-      VALUE: 28.115823279970538
+      VALUE: 38.7793271959872
       TOLERANCE: 1e-07
 PROBLEM SIZE:
   ELEMENTS: 21
@@ -359,16 +336,11 @@ STRUCTURE ELEMENTS:
   - "6 SOLID HEX8 6 11 12 8 18 23 24 20 MAT 1 KINEM nonlinear"
   - "7 SOLID HEX8 8 12 22 16 20 24 27 26 MAT 1 KINEM nonlinear"
   - "8 SOLID HEX8 7 8 16 15 19 20 26 25 MAT 1 KINEM nonlinear"
-  - "9 SOLID HEX8 28 29 32 30 31 33 35 34 MAT 1 KINEM nonlinear TECH fbar"
-  - "10 SOLID HEX8 29 36 37 32 33 38 39 35 MAT 1 KINEM nonlinear TECH fbar"
-  - "11 SOLID HEX8 32 37 48 41 35 39 49 43 MAT 1 KINEM nonlinear TECH fbar"
-  - "12 SOLID HEX8 30 32 41 40 34 35 43 42 MAT 1 KINEM nonlinear TECH fbar"
-  - "13 SOLID HEX8 31 33 35 34 44 45 47 46 MAT 1 KINEM nonlinear TECH fbar"
-  - "14 SOLID HEX8 33 38 39 35 45 50 51 47 MAT 1 KINEM nonlinear TECH fbar"
-  - "15 SOLID HEX8 35 39 49 43 47 51 54 53 MAT 1 KINEM nonlinear TECH fbar"
-  - "16 SOLID HEX8 34 35 43 42 46 47 53 52 MAT 1 KINEM nonlinear TECH fbar"
-  - "17 SOLID TET10 55 56 57 60 62 63 64 65 66 67 MAT 1 KINEM nonlinear"
-  - "18 SOLID TET10 57 58 55 61 68 69 64 70 71 72 MAT 1 KINEM nonlinear"
-  - "19 SOLID TET10 55 60 61 59 65 73 72 74 75 76 MAT 1 KINEM nonlinear"
-  - "20 SOLID TET10 57 61 60 77 70 73 67 78 79 80 MAT 1 KINEM nonlinear"
-  - "21 SOLID TET10 55 57 61 60 64 70 72 65 67 73 MAT 1 KINEM nonlinear"
+  - "9 SOLID HEX8 28 29 32 30 31 33 35 34 MAT 1 KINEM nonlinear"
+  - "10 SOLID HEX8 29 36 37 32 33 38 39 35 MAT 1 KINEM nonlinear"
+  - "11 SOLID HEX8 32 37 48 41 35 39 49 43 MAT 1 KINEM nonlinear"
+  - "12 SOLID HEX8 30 32 41 40 34 35 43 42 MAT 1 KINEM nonlinear"
+  - "13 SOLID HEX8 31 33 35 34 44 45 47 46 MAT 1 KINEM nonlinear"
+  - "14 SOLID HEX8 33 38 39 35 45 50 51 47 MAT 1 KINEM nonlinear"
+  - "15 SOLID HEX8 35 39 49 43 47 51 54 53 MAT 1 KINEM nonlinear"
+  - "16 SOLID HEX8 34 35 43 42 46 47 53 52 MAT 1 KINEM nonlinear"

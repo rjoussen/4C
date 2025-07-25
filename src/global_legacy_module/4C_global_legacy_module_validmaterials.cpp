@@ -4138,7 +4138,7 @@ std::unordered_map<Core::Materials::MaterialType, Core::IO::InputSpec> Global::v
     known_materials[Core::Materials::mix_rule_simple] = group("MIX_Rule_Simple",
         {
             parameter<double>("DENS", {.description = ""}),
-            parameter<std::vector<double>>(
+            input_field<std::vector<double>>(
                 "MASSFRAC", {.description = "list of mass fractions of the mixture constituents"}),
         },
         {.description = "Simple mixture rule"});

@@ -126,7 +126,8 @@ MATERIALS:
   - MAT: 10
     MIX_Rule_Simple:
       DENS: 1
-      MASSFRAC: [0.5, 0.5]
+      MASSFRAC:
+        constant: [0.5, 0.5]
   - MAT: 11
     MIX_Constituent_SolidMaterial:
       MATID: 101
@@ -190,7 +191,8 @@ MATERIALS:
   - MAT: 20
     MIX_Rule_Simple:
       DENS: 1
-      MASSFRAC: [0.5, 0.5]
+      MASSFRAC:
+        constant: [0.5, 0.5]
   - MAT: 21
     MIX_Constituent_SolidMaterial:
       MATID: 201
