@@ -10,7 +10,6 @@
 
 #include "4C_config.hpp"
 
-#include "4C_inpar_poro.hpp"
 #include "4C_inpar_scatra.hpp"
 
 #include <optional>
