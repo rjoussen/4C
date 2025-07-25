@@ -8,8 +8,8 @@
 #include "4C_inpar_beam_to_solid.hpp"
 
 #include "4C_fem_condition_definition.hpp"
+#include "4C_geometry_pair_input.hpp"
 #include "4C_inpar_beaminteraction.hpp"
-#include "4C_inpar_geometry_pair.hpp"
 #include "4C_io_input_spec_builders.hpp"
 #include "4C_utils_exceptions.hpp"
 FOUR_C_NAMESPACE_OPEN
@@ -102,7 +102,7 @@ void Inpar::BeamToSolid::set_valid_parameters(std::map<std::string, Core::IO::In
               .default_value = 0.0}),
   };
   // Add the geometry pair input parameters.
-  Inpar::GeometryPair::set_valid_parameters_line_to3_d(beam_to_solid_volume_mestying);
+  GeometryPair::set_valid_parameters_line_to3_d(beam_to_solid_volume_mestying);
 
   list["BEAM INTERACTION/BEAM TO SOLID VOLUME MESHTYING"] =
       group("BEAM INTERACTION/BEAM TO SOLID VOLUME MESHTYING", beam_to_solid_volume_mestying,
@@ -197,10 +197,10 @@ void Inpar::BeamToSolid::set_valid_parameters(std::map<std::string, Core::IO::In
               .default_value = BeamToSolidSurfaceRotationCoupling::none}),
   };
   // Add the geometry pair input parameters.
-  Inpar::GeometryPair::set_valid_parameters_line_to3_d(beam_to_solid_surface_meshtying);
+  GeometryPair::set_valid_parameters_line_to3_d(beam_to_solid_surface_meshtying);
 
   // Add the surface options.
-  Inpar::GeometryPair::set_valid_parameters_line_to_surface(beam_to_solid_surface_meshtying);
+  GeometryPair::set_valid_parameters_line_to_surface(beam_to_solid_surface_meshtying);
   list["BEAM INTERACTION/BEAM TO SOLID SURFACE MESHTYING"] =
       group("BEAM INTERACTION/BEAM TO SOLID SURFACE MESHTYING", beam_to_solid_surface_meshtying,
           {.required = false});
@@ -245,10 +245,10 @@ void Inpar::BeamToSolid::set_valid_parameters(std::map<std::string, Core::IO::In
               .default_value = BeamToSolidMortarShapefunctions::none}),
   };
   // Add the geometry pair input parameters.
-  Inpar::GeometryPair::set_valid_parameters_line_to3_d(beam_to_solid_surface_contact);
+  GeometryPair::set_valid_parameters_line_to3_d(beam_to_solid_surface_contact);
 
   // Add the surface options.
-  Inpar::GeometryPair::set_valid_parameters_line_to_surface(beam_to_solid_surface_contact);
+  GeometryPair::set_valid_parameters_line_to_surface(beam_to_solid_surface_contact);
 
   list["BEAM INTERACTION/BEAM TO SOLID SURFACE CONTACT"] =
       group("BEAM INTERACTION/BEAM TO SOLID SURFACE CONTACT", beam_to_solid_surface_contact,

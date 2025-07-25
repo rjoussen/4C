@@ -13,8 +13,8 @@
 
 #include "4C_fem_general_utils_integration.hpp"
 #include "4C_geometry_pair_evaluation_data_base.hpp"
+#include "4C_geometry_pair_input.hpp"
 #include "4C_geometry_pair_utility_classes.hpp"
-#include "4C_inpar_geometry_pair.hpp"
 
 #include <set>
 
@@ -48,7 +48,7 @@ namespace GeometryPair
      * \brief Get the segmentation strategy.
      * @return flag for segmentation strategy.
      */
-    inline Inpar::GeometryPair::LineTo3DStrategy get_strategy() const { return strategy_; }
+    inline GeometryPair::LineTo3DStrategy get_strategy() const { return strategy_; }
 
     /**
      * \brief Get the number of search points for segmentation search.
@@ -59,7 +59,7 @@ namespace GeometryPair
     /**
      * \brief Get the flaf on what to do if not all Gauss points of a segment project valid.
      */
-    inline Inpar::GeometryPair::NotAllGaussPointsProjectValidAction
+    inline GeometryPair::NotAllGaussPointsProjectValidAction
     get_not_all_gauss_points_project_valid_action() const
     {
       return not_all_gauss_points_project_valid_action_;
@@ -116,7 +116,7 @@ namespace GeometryPair
 
    private:
     //! Strategy to be used for contact search.
-    Inpar::GeometryPair::LineTo3DStrategy strategy_;
+    GeometryPair::LineTo3DStrategy strategy_;
 
     //! Gauss rule for Gauss point projection method.
     Core::FE::GaussRule1D gauss_rule_;
@@ -131,8 +131,7 @@ namespace GeometryPair
     unsigned int n_search_points_;
 
     //! What to do if not all Gauss points of a segment project valid
-    Inpar::GeometryPair::NotAllGaussPointsProjectValidAction
-        not_all_gauss_points_project_valid_action_;
+    GeometryPair::NotAllGaussPointsProjectValidAction not_all_gauss_points_project_valid_action_;
 
     //! Segment tracking vector for segmentation. We use double in this case, because otherwise the
     //! class would have to be templated on the type of this tracker.

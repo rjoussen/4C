@@ -30,8 +30,8 @@ void BeamInteraction::BeamToSolidVolumeMeshtyingPair2D3DBase<ScalarType, Beam,
 
   // Explicitly create the cross section projection geometry pair here and check that the correct
   // parameter is set in the input file.
-  Inpar::GeometryPair::LineTo3DStrategy strategy = line_to_3d_evaluation_data->get_strategy();
-  if (strategy != Inpar::GeometryPair::LineTo3DStrategy::gauss_point_projection_cross_section)
+  GeometryPair::LineTo3DStrategy strategy = line_to_3d_evaluation_data->get_strategy();
+  if (strategy != GeometryPair::LineTo3DStrategy::gauss_point_projection_cross_section)
     FOUR_C_THROW(
         "The 2D-3D beam-to-volume mesh tying pair only works with the cross section projection "
         "geometry pair. This has to be specified in the input file.");

@@ -125,11 +125,11 @@ void GeometryPair::LineTo3DBase<PairType>::project_gauss_points_on_segment_to_ot
   const bool all_projected = n_projections == static_cast<unsigned int>(gauss_points.nquad);
   const bool is_warning = all_projected and (!all_valid) and
                           evaluation_data.get_not_all_gauss_points_project_valid_action() ==
-                              Inpar::GeometryPair::NotAllGaussPointsProjectValidAction::warning;
+                              GeometryPair::NotAllGaussPointsProjectValidAction::warning;
   const bool is_error =
       !all_projected or
       (!all_valid and evaluation_data.get_not_all_gauss_points_project_valid_action() !=
-                          Inpar::GeometryPair::NotAllGaussPointsProjectValidAction::warning);
+                          GeometryPair::NotAllGaussPointsProjectValidAction::warning);
   if (is_warning or is_error)
   {
     // Add detailed output that allows for a reconstruction of the failed projection
@@ -260,10 +260,9 @@ void GeometryPair::LineTo3DGaussPointProjection<PairType>::evaluate(const PairTy
   // We only check for boundary segmentation if it is needed.
   switch (pair->get_evaluation_data()->get_strategy())
   {
-    case Inpar::GeometryPair::LineTo3DStrategy::
-        gauss_point_projection_without_boundary_segmentation:
+    case GeometryPair::LineTo3DStrategy::gauss_point_projection_without_boundary_segmentation:
       return;
-    case Inpar::GeometryPair::LineTo3DStrategy::gauss_point_projection_boundary_segmentation:
+    case GeometryPair::LineTo3DStrategy::gauss_point_projection_boundary_segmentation:
       break;
     default:
       FOUR_C_THROW("Wrong LineTo3DStrategy in Evaluate of Gauss point projection pairs.");

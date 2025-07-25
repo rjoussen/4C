@@ -69,7 +69,7 @@ namespace GeometryPair
     /**
      * \brief Return the strategy to be used for the surface normals.
      */
-    Inpar::GeometryPair::SurfaceNormals get_surface_normal_strategy() const
+    GeometryPair::SurfaceNormals get_surface_normal_strategy() const
     {
       return surface_normal_strategy_;
     }
@@ -79,7 +79,7 @@ namespace GeometryPair
     std::unordered_map<int, std::shared_ptr<GeometryPair::FaceElement>> face_elements_;
 
     //! Strategy to be used for surface normals.
-    Inpar::GeometryPair::SurfaceNormals surface_normal_strategy_;
+    GeometryPair::SurfaceNormals surface_normal_strategy_;
   };
 }  // namespace GeometryPair
 

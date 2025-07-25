@@ -31,18 +31,17 @@ std::shared_ptr<GeometryPair::GeometryPairBase> GeometryPair::geometry_pair_line
       std::dynamic_pointer_cast<LineTo3DEvaluationData>(geometry_evaluation_data);
 
   // Get the strategy for line to volume interaction.
-  Inpar::GeometryPair::LineTo3DStrategy strategy = line_to_3d_evaluation_data->get_strategy();
+  GeometryPair::LineTo3DStrategy strategy = line_to_3d_evaluation_data->get_strategy();
 
   // Create the class depending on the strategy.
   switch (strategy)
   {
-    case Inpar::GeometryPair::LineTo3DStrategy::
-        gauss_point_projection_without_boundary_segmentation:
-    case Inpar::GeometryPair::LineTo3DStrategy::gauss_point_projection_boundary_segmentation:
+    case GeometryPair::LineTo3DStrategy::gauss_point_projection_without_boundary_segmentation:
+    case GeometryPair::LineTo3DStrategy::gauss_point_projection_boundary_segmentation:
       return std::make_shared<
           GeometryPairLineToVolumeGaussPointProjection<ScalarType, Line, Volume>>(
           element1, element2, line_to_3d_evaluation_data);
-    case Inpar::GeometryPair::LineTo3DStrategy::segmentation:
+    case GeometryPair::LineTo3DStrategy::segmentation:
       return std::make_shared<GeometryPairLineToVolumeSegmentation<ScalarType, Line, Volume>>(
           element1, element2, line_to_3d_evaluation_data);
     default:
@@ -103,18 +102,17 @@ std::shared_ptr<GeometryPair::GeometryPairBase> GeometryPair::geometry_pair_line
       std::dynamic_pointer_cast<LineToSurfaceEvaluationData>(geometry_evaluation_data);
 
   // Get the strategy for line to volume interaction.
-  Inpar::GeometryPair::LineTo3DStrategy strategy = line_to_surface_evaluation_data->get_strategy();
+  GeometryPair::LineTo3DStrategy strategy = line_to_surface_evaluation_data->get_strategy();
 
   // Create the class depending on the strategy.
   switch (strategy)
   {
-    case Inpar::GeometryPair::LineTo3DStrategy::
-        gauss_point_projection_without_boundary_segmentation:
-    case Inpar::GeometryPair::LineTo3DStrategy::gauss_point_projection_boundary_segmentation:
+    case GeometryPair::LineTo3DStrategy::gauss_point_projection_without_boundary_segmentation:
+    case GeometryPair::LineTo3DStrategy::gauss_point_projection_boundary_segmentation:
       return std::make_shared<
           GeometryPairLineToSurfaceGaussPointProjection<ScalarType, Line, Surface>>(
           element1, element2, line_to_surface_evaluation_data);
-    case Inpar::GeometryPair::LineTo3DStrategy::segmentation:
+    case GeometryPair::LineTo3DStrategy::segmentation:
       return std::make_shared<GeometryPairLineToSurfaceSegmentation<ScalarType, Line, Surface>>(
           element1, element2, line_to_surface_evaluation_data);
     default:

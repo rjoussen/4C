@@ -11,8 +11,8 @@
 #include "4C_fem_general_extract_values.hpp"
 #include "4C_fem_general_utils_local_connectivity_matrices.hpp"
 #include "4C_geometry_pair_element_evaluation_functions.hpp"
+#include "4C_geometry_pair_input.hpp"
 #include "4C_geometry_pair_scalar_types.hpp"
-#include "4C_inpar_geometry_pair.hpp"
 #include "4C_utils_fad.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -659,7 +659,7 @@ void GeometryPair::FaceElementTemplateExtendedVolume<Surface, ScalarType,
  */
 std::shared_ptr<GeometryPair::FaceElement> GeometryPair::face_element_factory(
     const std::shared_ptr<const Core::Elements::Element>& core_element, const int fad_order,
-    const Inpar::GeometryPair::SurfaceNormals surface_normal_strategy)
+    const GeometryPair::SurfaceNormals surface_normal_strategy)
 {
   const bool is_fad = fad_order > 0;
   if (not is_fad)
@@ -702,7 +702,7 @@ std::shared_ptr<GeometryPair::FaceElement> GeometryPair::face_element_factory(
   }
   else
   {
-    if (surface_normal_strategy == Inpar::GeometryPair::SurfaceNormals::standard)
+    if (surface_normal_strategy == GeometryPair::SurfaceNormals::standard)
     {
       switch (fad_order)
       {
@@ -782,7 +782,7 @@ std::shared_ptr<GeometryPair::FaceElement> GeometryPair::face_element_factory(
           FOUR_C_THROW("Got unexpected fad order.");
       }
     }
-    else if (surface_normal_strategy == Inpar::GeometryPair::SurfaceNormals::extended_volume)
+    else if (surface_normal_strategy == GeometryPair::SurfaceNormals::extended_volume)
     {
       switch (core_element->shape())
       {

@@ -637,7 +637,7 @@ BeamInteraction::BeamToSolidConditionSurface::create_contact_pair_internal(
           case Inpar::BeamToSolid::BeamToSolidSurfaceCoupling::displacement_fad:
           case Inpar::BeamToSolid::BeamToSolidSurfaceCoupling::consistent_fad:
           {
-            if (surface_normal_strategy == Inpar::GeometryPair::SurfaceNormals::standard)
+            if (surface_normal_strategy == GeometryPair::SurfaceNormals::standard)
             {
               switch (shape)
               {
@@ -664,8 +664,7 @@ BeamInteraction::BeamToSolidConditionSurface::create_contact_pair_internal(
                   FOUR_C_THROW("Wrong element type for surface element.");
               }
             }
-            else if (surface_normal_strategy ==
-                     Inpar::GeometryPair::SurfaceNormals::extended_volume)
+            else if (surface_normal_strategy == GeometryPair::SurfaceNormals::extended_volume)
             {
               switch (shape)
               {
