@@ -4137,48 +4137,6 @@ std::unordered_map<Core::Materials::MaterialType, Core::IO::InputSpec> Global::v
   }
 
   /*----------------------------------------------------------------------*/
-  // Map mixture rule for solid mixtures
-  {
-    // definition of operation and print string for post processed component "MASSFRACMAPFILE"
-    using MapType = std::unordered_map<int, std::vector<double>>;
-
-    auto on_parse = [](Core::IO::InputParameterContainer& container)
-    {
-      const auto& map_file = container.get<std::filesystem::path>("MASSFRACMAPFILE");
-      std::ifstream file_stream(map_file);
-
-      if (file_stream.fail()) FOUR_C_THROW("Invalid file {}!", map_file.string());
-
-      auto map_reduction_operation = [](MapType acc, const MapType& next)
-      {
-        for (const auto& [key, value] : next)
-        {
-          acc[key] = value;
-        }
-        return acc;
-      };
-
-      container.add("MASSFRACMAPFILE_CONTENT",
-          Core::IO::InputField(
-              Core::IO::convert_lines<MapType, MapType>(file_stream, map_reduction_operation)));
-    };
-
-    known_materials[Core::Materials::mix_rule_map] = group("MIX_Rule_Map",
-        {
-            parameter<double>("DENS", {.description = ""}),
-            parameter<int>("NUMCONST", {.description = "number of mixture constituents"}),
-            parameter<std::filesystem::path>("MASSFRACMAPFILE",
-                {
-                    .description =
-                        "file path of pattern file defining the massfractions as discrete values",
-                    .on_parse_callback = on_parse,
-                }),
-        },
-        {.description = "A mixture rule where the mass fractions are defined elementwise as "
-                        "discrete values"});
-  }
-
-  /*----------------------------------------------------------------------*/
   // Base mixture rule for solid mixtures
   {
     known_materials[Core::Materials::mix_rule_simple] = group("MIX_Rule_Simple",
