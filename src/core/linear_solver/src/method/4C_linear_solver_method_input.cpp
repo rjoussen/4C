@@ -5,7 +5,7 @@
 //
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
-#include "4C_inpar_solver.hpp"
+#include "4C_linear_solver_method_input.hpp"
 
 #include "4C_io_input_spec_builders.hpp"
 #include "4C_linear_solver_method.hpp"
@@ -14,7 +14,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Inpar::SOLVER
+namespace Core::LinearSolver
 {
   Core::IO::InputSpec make_valid_solver_parameters()
   {
@@ -153,6 +153,6 @@ namespace Inpar::SOLVER
     }
   }
 
-}  // namespace Inpar::SOLVER
+}  // namespace Core::LinearSolver
 
 FOUR_C_NAMESPACE_CLOSE

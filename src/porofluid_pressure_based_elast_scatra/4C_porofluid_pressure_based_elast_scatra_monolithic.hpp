@@ -10,7 +10,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_inpar_solver.hpp"
+#include "4C_linear_solver_method_input.hpp"
 #include "4C_porofluid_pressure_based_elast_scatra_base.hpp"
 #include "4C_porofluid_pressure_based_elast_scatra_utils.hpp"
 
