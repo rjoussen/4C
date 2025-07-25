@@ -3801,11 +3801,9 @@ std::unordered_map<Core::Materials::MaterialType, Core::IO::InputSpec> Global::v
   {
     known_materials[Core::Materials::m_mixture] = group("MAT_Mixture",
         {
-            parameter<int>("NUMCONST", {.description = "number of mixture constituents"}),
             parameter<int>("MATIDMIXTURERULE", {.description = "material id of the mixturerule"}),
             parameter<std::vector<int>>(
-                "MATIDSCONST", {.description = "list material IDs of the mixture constituents",
-                                   .size = from_parameter<int>("NUMCONST")}),
+                "MATIDSCONST", {.description = "list of material IDs of the mixture constituents"}),
         },
         {.description = "General mixture model"});
   }
@@ -4126,11 +4124,9 @@ std::unordered_map<Core::Materials::MaterialType, Core::IO::InputSpec> Global::v
     known_materials[Core::Materials::mix_rule_function] = group("MIX_Rule_Function",
         {
             parameter<double>("DENS", {.description = ""}),
-            parameter<int>("NUMCONST", {.description = "number of mixture constituents"}),
             parameter<std::vector<int>>(
                 "MASSFRACFUNCT", {.description = "list of functions (their ids) defining the mass "
-                                                 "fractions of the mixture constituents",
-                                     .size = from_parameter<int>("NUMCONST")}),
+                                                 "fractions of the mixture constituents"}),
         },
         {.description = "A mixture rule where the mass fractions are scaled by functions of space "
                         "and time"});
@@ -4142,10 +4138,8 @@ std::unordered_map<Core::Materials::MaterialType, Core::IO::InputSpec> Global::v
     known_materials[Core::Materials::mix_rule_simple] = group("MIX_Rule_Simple",
         {
             parameter<double>("DENS", {.description = ""}),
-            parameter<int>("NUMCONST", {.description = "number of mixture constituents"}),
             parameter<std::vector<double>>(
-                "MASSFRAC", {.description = "list mass fractions of the mixture constituents",
-                                .size = from_parameter<int>("NUMCONST")}),
+                "MASSFRAC", {.description = "list of mass fractions of the mixture constituents"}),
         },
         {.description = "Simple mixture rule"});
   }
@@ -4158,10 +4152,8 @@ std::unordered_map<Core::Materials::MaterialType, Core::IO::InputSpec> Global::v
             parameter<int>(
                 "GROWTH_STRATEGY", {.description = "Material id of the growth strategy"}),
             parameter<double>("DENS", {.description = ""}),
-            parameter<int>("NUMCONST", {.description = "number of mixture constituents"}),
             parameter<std::vector<double>>(
-                "MASSFRAC", {.description = "list mass fractions of the mixture constituents",
-                                .size = from_parameter<int>("NUMCONST")}),
+                "MASSFRAC", {.description = "list mass fractions of the mixture constituents"}),
         },
         {.description = "Mixture rule for growth/remodel homogenized constrained mixture models"});
   }
