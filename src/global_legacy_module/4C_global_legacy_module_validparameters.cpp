@@ -44,7 +44,6 @@
 #include "4C_inpar_poroelast.hpp"
 #include "4C_inpar_poroscatra.hpp"
 #include "4C_inpar_problemtype.hpp"
-#include "4C_inpar_rebalance.hpp"
 #include "4C_inpar_s2i.hpp"
 #include "4C_inpar_scatra.hpp"
 #include "4C_inpar_searchtree.hpp"
@@ -64,6 +63,7 @@
 #include "4C_porofluid_pressure_based_elast_input.hpp"
 #include "4C_porofluid_pressure_based_elast_scatra_input.hpp"
 #include "4C_porofluid_pressure_based_input.hpp"
+#include "4C_rebalance_input.hpp"
 #include "4C_red_airways_input.hpp"
 #include "4C_solver_nonlin_nox_input.hpp"
 #include "4C_structure_new_monitor_dbc_input.hpp"
@@ -266,7 +266,7 @@ std::map<std::string, Core::IO::InputSpec> Global::valid_parameters()
   Core::GeometricSearch::set_valid_parameters(specs);
   Inpar::PaSI::set_valid_parameters(specs);
 
-  Inpar::Rebalance::set_valid_parameters(specs);
+  Core::Rebalance::set_valid_parameters(specs);
   Inpar::SOLVER::set_valid_parameters(specs);
   NOX::set_valid_parameters(specs);
 
