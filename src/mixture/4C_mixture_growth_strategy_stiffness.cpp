@@ -65,18 +65,18 @@ void Mixture::StiffnessGrowthStrategy::evaluate_growth_stress_cmat(
 
   const double gamma2 = 2.0 * I3 * dPi;
   const double dgamma2DGrowthScalar = 4.0 * I3 * ddPiDGrowthScalar;
-  const double delta5 = 4. * (I3 * dPi + I3 * I3 * ddPi);
-  const double delta6 = -4.0 * I3 * dPi;
+  const double delta6 = 4. * (I3 * dPi + I3 * I3 * ddPi);
+  const double delta7 = -4.0 * I3 * dPi;
 
 
   S_stress = gamma2 * iC;
 
   // contribution: Cinv \otimes Cinv
-  cmat = delta5 * Core::LinAlg::dyadic(iC, iC);
+  cmat = delta6 * Core::LinAlg::dyadic(iC, iC);
   // contribution: Cinv \odot Cinv
   Core::LinAlg::Matrix<6, 6> cmat_voigt = Core::LinAlg::make_stress_like_voigt_view(cmat);
   Core::LinAlg::FourTensorOperations::add_holzapfel_product(
-      cmat_voigt, Core::LinAlg::make_stress_like_voigt_view(iC), delta6);
+      cmat_voigt, Core::LinAlg::make_stress_like_voigt_view(iC), delta7);
 
   cmat += dgamma2DGrowthScalar * Core::LinAlg::dyadic(iC, dCurrentReferenceGrowthScalarDC);
 }
