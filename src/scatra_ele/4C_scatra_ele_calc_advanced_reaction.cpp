@@ -117,8 +117,6 @@ void Discret::Elements::ScaTraEleCalcAdvReac<distype, probdim>::get_material_par
   {
     materials(material, 0, densn[0], densnp[0], densam[0], visc, iquad);
   }
-
-  return;
 }  // ScaTraEleCalc::get_material_params
 
 /*----------------------------------------------------------------------*
@@ -144,7 +142,6 @@ void Discret::Elements::ScaTraEleCalcAdvReac<distype, probdim>::materials(
       FOUR_C_THROW("Material type {} is not supported", material->material_type());
       break;
   }
-  return;
 }
 
 
@@ -160,8 +157,6 @@ void Discret::Elements::ScaTraEleCalcAdvReac<distype, probdim>::get_rhs_int(
 {
   //... + all advanced reaction terms
   rhsint = my::bodyforce_[k].dot(my::funct_) + densnp * rea_manager()->get_rea_body_force(k);
-
-  return;
 }
 
 /*--------------------------------------------------------------------------- *
@@ -311,7 +306,6 @@ void Discret::Elements::ScaTraEleCalcAdvReac<distype, probdim>::calc_mat_react(
       }
     }
   }  // end for
-  return;
 }
 
 
@@ -370,8 +364,6 @@ void Discret::Elements::ScaTraEleCalcAdvReac<distype,
       gpcoord_[i] += my::xyze_(i, k) * my::funct_(k);
     }
   }
-
-  return;
 }
 
 

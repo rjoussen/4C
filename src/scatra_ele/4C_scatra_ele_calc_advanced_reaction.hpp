@@ -146,7 +146,6 @@ namespace Discret
             numaddvariables_(0),
             reabodyforcederivaddvariables_(numscal, std::vector<double>(numaddvariables_, 0.0))
       {
-        return;
       }
 
       //! @name set routines
@@ -164,7 +163,6 @@ namespace Discret
         reabodyforce_.resize(numscal, 0.0);
         reabodyforcederiv_.resize(numscal, std::vector<double>(numscal, 0.0));
         reabodyforcederivaddvariables_.resize(numscal, std::vector<double>(numaddvariables_, 0.0));
-        return;
       }
 
       //! Add to the body force due to reaction
@@ -172,8 +170,6 @@ namespace Discret
       {
         reabodyforce_[k] += reabodyforce;
         if (reabodyforce != 0.0) include_me_ = true;
-
-        return;
       }
 
       //! Return one line of the jacobian of the reaction vector
@@ -233,10 +229,10 @@ namespace Discret
      private:
       //! @name protected variables
 
-      //! scalar reaction coefficient
+      //! scalar reaction coefficients
       std::vector<double> reabodyforce_;
 
-      //! scalar reaction coefficient
+      //! jacobian of the scalar reaction coefficients w.r.t. scalar variables
       std::vector<std::vector<double>> reabodyforcederiv_;
 
       //! number of additional variables
