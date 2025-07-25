@@ -5,7 +5,7 @@
 //
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
-#include "4C_inpar_solver_nonlin.hpp"
+#include "4C_solver_nonlin_nox_input.hpp"
 
 #include "4C_io_input_spec_builders.hpp"
 #include "4C_solver_nonlin_nox_enum_lists.hpp"
@@ -13,7 +13,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Inpar::NlnSol::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
+void NOX::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
 {
   using namespace Core::IO::InputSpecBuilders;
 
