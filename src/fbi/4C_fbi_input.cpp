@@ -8,7 +8,7 @@
 #include "4C_fbi_input.hpp"
 
 #include "4C_fem_condition_definition.hpp"
-#include "4C_inpar_geometry_pair.hpp"
+#include "4C_geometry_pair_input.hpp"
 #include "4C_io_input_spec_builders.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -69,7 +69,7 @@ void FBI::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
               .default_value = FBI::BeamToFluidMeshtingMortarShapefunctions::none}),
   };
   // Add the geometry pair input parameters.
-  Inpar::GeometryPair::set_valid_parameters_line_to3_d(beam_to_fluid_meshtying);
+  GeometryPair::set_valid_parameters_line_to3_d(beam_to_fluid_meshtying);
 
   list["FLUID BEAM INTERACTION/BEAM TO FLUID MESHTYING"] =
       group("FLUID BEAM INTERACTION/BEAM TO FLUID MESHTYING", beam_to_fluid_meshtying,

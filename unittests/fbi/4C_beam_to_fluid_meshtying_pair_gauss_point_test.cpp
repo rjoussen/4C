@@ -29,10 +29,10 @@ namespace
 
   void set_up_default_parameters_line_to_3d(Teuchos::ParameterList& list)
   {
-    list.set("GEOMETRY_PAIR_STRATEGY", Inpar::GeometryPair::LineTo3DStrategy::segmentation);
+    list.set("GEOMETRY_PAIR_STRATEGY", GeometryPair::LineTo3DStrategy::segmentation);
     list.set("GEOMETRY_PAIR_SEGMENTATION_SEARCH_POINTS", 6);
     list.set("GEOMETRY_PAIR_SEGMENTATION_NOT_ALL_GAUSS_POINTS_PROJECT_VALID_ACTION",
-        Inpar::GeometryPair::NotAllGaussPointsProjectValidAction::fail);
+        GeometryPair::NotAllGaussPointsProjectValidAction::fail);
     list.set("GAUSS_POINTS", 6);
     list.set("INTEGRATION_POINTS_CIRCUMFERENCE", 6);
   }

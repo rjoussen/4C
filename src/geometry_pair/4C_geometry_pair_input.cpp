@@ -5,17 +5,14 @@
 //
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
-#include "4C_inpar_geometry_pair.hpp"
+#include "4C_geometry_pair_input.hpp"
 
 #include "4C_io_input_spec_builders.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
 
-/**
- *
- */
-void Inpar::GeometryPair::set_valid_parameters_line_to3_d(std::vector<Core::IO::InputSpec>& list)
+void GeometryPair::set_valid_parameters_line_to3_d(std::vector<Core::IO::InputSpec>& list)
 {
   using namespace Core::IO::InputSpecBuilders;
 
@@ -49,11 +46,7 @@ void Inpar::GeometryPair::set_valid_parameters_line_to3_d(std::vector<Core::IO::
           .default_value = 6}));
 }
 
-/**
- *
- */
-void Inpar::GeometryPair::set_valid_parameters_line_to_surface(
-    std::vector<Core::IO::InputSpec>& list)
+void GeometryPair::set_valid_parameters_line_to_surface(std::vector<Core::IO::InputSpec>& list)
 {
   // Add the input parameters for line to surface coupling.
 
@@ -64,10 +57,7 @@ void Inpar::GeometryPair::set_valid_parameters_line_to_surface(
           .default_value = GeometryPair::SurfaceNormals::standard}));
 }
 
-/**
- *
- */
-Core::FE::GaussRule1D Inpar::GeometryPair::int_to_gauss_rule1_d(const int n_gauss_points)
+Core::FE::GaussRule1D GeometryPair::int_to_gauss_rule1_d(const int n_gauss_points)
 {
   switch (n_gauss_points)
   {

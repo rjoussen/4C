@@ -27,13 +27,6 @@ namespace Inpar
 {
   namespace ElectroPhysiology
   {
-    /// possible types of evaluation of reaction term
-    enum EvalType
-    {
-      ep_implicit,
-      ep_semi_implicit,
-    };
-
     /// set the elch parameters
     void set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list);
 

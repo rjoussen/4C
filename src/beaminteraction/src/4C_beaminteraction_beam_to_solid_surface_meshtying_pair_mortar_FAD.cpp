@@ -18,9 +18,9 @@
 #include "4C_geometry_pair_element.hpp"
 #include "4C_geometry_pair_element_evaluation_functions.hpp"
 #include "4C_geometry_pair_element_faces.hpp"
+#include "4C_geometry_pair_input.hpp"
 #include "4C_geometry_pair_line_to_surface.hpp"
 #include "4C_inpar_beam_to_solid.hpp"
-#include "4C_inpar_geometry_pair.hpp"
 #include "4C_linalg_fevector.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -1104,12 +1104,11 @@ std::shared_ptr<BeamInteraction::BeamContactPair>
 BeamInteraction::beam_to_solid_surface_meshtying_pair_mortar_fad_factory(
     const Core::FE::CellType surface_shape,
     const Inpar::BeamToSolid::BeamToSolidMortarShapefunctions mortar_shapefunction,
-    const bool rotational_coupling,
-    const Inpar::GeometryPair::SurfaceNormals surface_normal_strategy)
+    const bool rotational_coupling, const GeometryPair::SurfaceNormals surface_normal_strategy)
 {
   using namespace GeometryPair;
 
-  if (surface_normal_strategy == Inpar::GeometryPair::SurfaceNormals::standard)
+  if (surface_normal_strategy == GeometryPair::SurfaceNormals::standard)
   {
     switch (mortar_shapefunction)
     {
@@ -1132,7 +1131,7 @@ BeamInteraction::beam_to_solid_surface_meshtying_pair_mortar_fad_factory(
         FOUR_C_THROW("Wrong mortar shape function.");
     }
   }
-  else if (surface_normal_strategy == Inpar::GeometryPair::SurfaceNormals::extended_volume)
+  else if (surface_normal_strategy == GeometryPair::SurfaceNormals::extended_volume)
   {
     switch (mortar_shapefunction)
     {

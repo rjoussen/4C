@@ -8,8 +8,8 @@
 #include "4C_beaminteraction_beam_to_solid_volume_meshtying_params.hpp"
 
 #include "4C_beaminteraction_beam_to_solid_volume_meshtying_visualization_output_params.hpp"
+#include "4C_geometry_pair_input.hpp"
 #include "4C_global_data.hpp"
-#include "4C_inpar_geometry_pair.hpp"
 #include "4C_utils_exceptions.hpp"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>

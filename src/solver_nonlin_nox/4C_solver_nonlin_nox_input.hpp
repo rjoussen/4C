@@ -5,8 +5,8 @@
 //
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
-#ifndef FOUR_C_INPAR_REBALANCE_HPP
-#define FOUR_C_INPAR_REBALANCE_HPP
+#ifndef FOUR_C_SOLVER_NONLIN_NOX_INPUT_HPP
+#define FOUR_C_SOLVER_NONLIN_NOX_INPUT_HPP
 
 #include "4C_config.hpp"
 
@@ -16,11 +16,14 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Inpar::Rebalance
+namespace NOX
 {
-  //! set the parameters for the geometric search strategy
+  /// set the nonlinear solver parameters
   void set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list);
-}  // namespace Inpar::Rebalance
+
+}  // namespace NOX
+
+
 
 FOUR_C_NAMESPACE_CLOSE
 

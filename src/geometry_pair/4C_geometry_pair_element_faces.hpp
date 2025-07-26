@@ -28,13 +28,12 @@ namespace GeometryPair
 {
   struct ConnectedFace;
 }  // namespace GeometryPair
-namespace Inpar
+
+namespace GeometryPair
 {
-  namespace GeometryPair
-  {
-    enum class SurfaceNormals;
-  }
-}  // namespace Inpar
+  enum class SurfaceNormals;
+}
+
 
 
 namespace GeometryPair
@@ -505,7 +504,7 @@ namespace GeometryPair
    */
   std::shared_ptr<FaceElement> face_element_factory(
       const std::shared_ptr<const Core::Elements::Element>& core_element, const int fad_order,
-      const Inpar::GeometryPair::SurfaceNormals surface_normal_strategy);
+      const GeometryPair::SurfaceNormals surface_normal_strategy);
 
 }  // namespace GeometryPair
 

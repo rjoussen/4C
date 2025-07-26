@@ -5,8 +5,8 @@
 //
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
-#ifndef FOUR_C_INPAR_SOLVER_HPP
-#define FOUR_C_INPAR_SOLVER_HPP
+#ifndef FOUR_C_REBALANCE_INPUT_HPP
+#define FOUR_C_REBALANCE_INPUT_HPP
 
 #include "4C_config.hpp"
 
@@ -16,12 +16,11 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Inpar::SOLVER
+namespace Core::Rebalance
 {
-  //! set the parameters for the linear solver
+  //! set the parameters for the geometric search strategy
   void set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list);
-
-}  // namespace Inpar::SOLVER
+}  // namespace Core::Rebalance
 
 FOUR_C_NAMESPACE_CLOSE
 

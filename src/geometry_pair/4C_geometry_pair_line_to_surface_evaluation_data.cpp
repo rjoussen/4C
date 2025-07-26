@@ -20,9 +20,9 @@ GeometryPair::LineToSurfaceEvaluationData::LineToSurfaceEvaluationData(
     const Teuchos::ParameterList& input_parameter_list)
     : LineTo3DEvaluationData(input_parameter_list),
       face_elements_(),
-      surface_normal_strategy_(Inpar::GeometryPair::SurfaceNormals::standard)
+      surface_normal_strategy_(GeometryPair::SurfaceNormals::standard)
 {
-  surface_normal_strategy_ = Teuchos::getIntegralValue<Inpar::GeometryPair::SurfaceNormals>(
+  surface_normal_strategy_ = Teuchos::getIntegralValue<GeometryPair::SurfaceNormals>(
       input_parameter_list, "GEOMETRY_PAIR_SURFACE_NORMALS");
 }
 

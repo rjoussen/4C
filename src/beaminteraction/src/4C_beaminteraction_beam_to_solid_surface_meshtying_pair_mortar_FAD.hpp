@@ -27,11 +27,11 @@ namespace Inpar
     enum class BeamToSolidMortarShapefunctions;
     enum class BeamToSolidSurfaceRotationCoupling;
   }  // namespace BeamToSolid
-  namespace GeometryPair
-  {
-    enum class SurfaceNormals;
-  }
 }  // namespace Inpar
+namespace GeometryPair
+{
+  enum class SurfaceNormals;
+}  // namespace GeometryPair
 namespace Core::LargeRotations
 {
   template <unsigned int numnodes, typename T>
@@ -197,8 +197,7 @@ namespace BeamInteraction
   std::shared_ptr<BeamInteraction::BeamContactPair>
   beam_to_solid_surface_meshtying_pair_mortar_fad_factory(const Core::FE::CellType surface_shape,
       const Inpar::BeamToSolid::BeamToSolidMortarShapefunctions mortar_shapefunction,
-      const bool rotational_coupling,
-      const Inpar::GeometryPair::SurfaceNormals surface_normal_strategy);
+      const bool rotational_coupling, const GeometryPair::SurfaceNormals surface_normal_strategy);
 }  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE
