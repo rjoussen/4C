@@ -37,7 +37,6 @@ Discret::Elements::ScaTraEleCalcPoroReacECM<distype>::ScaTraEleCalcPoroReacECM(
       Discret::Elements::ScaTraEleCalcPoroReac<distype>::ScaTraEleCalcPoroReac(
           numdofpernode, numscal, disname)
 {
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -82,7 +81,6 @@ void Discret::Elements::ScaTraEleCalcPoroReacECM<distype>::materials(
       FOUR_C_THROW("Material type {} is not supported", material->material_type());
       break;
   }
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -132,8 +130,6 @@ void Discret::Elements::ScaTraEleCalcPoroReacECM<distype>::get_material_params(
 
   // call base class
   advreac::get_material_params(ele, densn, densnp, densam, visc, iquad);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
