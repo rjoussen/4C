@@ -473,7 +473,5 @@ def validator_from_dict(validator_dict):
     match validator_type:
         case "range":
             validator_class = RangeValidator
-        case _:
-            raise ValueError(f"Unknown validator {validator_dict}.")
 
     return validator_class(**validator_settings)
