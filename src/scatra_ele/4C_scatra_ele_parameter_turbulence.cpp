@@ -47,8 +47,8 @@ Discret::Elements::ScaTraEleParameterTurbulence::ScaTraEleParameterTurbulence(
       alpha_(0.0),
       calc_n_(false),
       n_vel_(0.0),
-      refvel_(Inpar::FLUID::strainrate),
-      reflength_(Inpar::FLUID::cube_edge),
+      refvel_(FLUID::strainrate),
+      reflength_(FLUID::cube_edge),
       c_nu_(0.0),
       nwl_(false),
       nwl_scatra_(false),
@@ -157,23 +157,23 @@ void Discret::Elements::ScaTraEleParameterTurbulence::set_parameters(
       calc_n_ = mfslist.get<bool>("CALC_N");
       n_vel_ = mfslist.get<double>("N");
       if (mfslist.get<std::string>("REF_VELOCITY") == "strainrate")
-        refvel_ = Inpar::FLUID::strainrate;
+        refvel_ = FLUID::strainrate;
       else if (mfslist.get<std::string>("REF_VELOCITY") == "resolved")
-        refvel_ = Inpar::FLUID::resolved;
+        refvel_ = FLUID::resolved;
       else if (mfslist.get<std::string>("REF_VELOCITY") == "fine_scale")
-        refvel_ = Inpar::FLUID::fine_scale;
+        refvel_ = FLUID::fine_scale;
       else
         FOUR_C_THROW("Unknown velocity!");
       if (mfslist.get<std::string>("REF_LENGTH") == "cube_edge")
-        reflength_ = Inpar::FLUID::cube_edge;
+        reflength_ = FLUID::cube_edge;
       else if (mfslist.get<std::string>("REF_LENGTH") == "sphere_diameter")
-        reflength_ = Inpar::FLUID::sphere_diameter;
+        reflength_ = FLUID::sphere_diameter;
       else if (mfslist.get<std::string>("REF_LENGTH") == "streamlength")
-        reflength_ = Inpar::FLUID::streamlength;
+        reflength_ = FLUID::streamlength;
       else if (mfslist.get<std::string>("REF_LENGTH") == "gradient_based")
-        reflength_ = Inpar::FLUID::gradient_based;
+        reflength_ = FLUID::gradient_based;
       else if (mfslist.get<std::string>("REF_LENGTH") == "metric_tensor")
-        reflength_ = Inpar::FLUID::metric_tensor;
+        reflength_ = FLUID::metric_tensor;
       else
         FOUR_C_THROW("Unknown length!");
       c_nu_ = mfslist.get<double>("C_NU");

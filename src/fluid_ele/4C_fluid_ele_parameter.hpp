@@ -11,8 +11,8 @@
 #include "4C_config.hpp"
 
 #include "4C_fluid_ele_parameter_timint.hpp"
+#include "4C_fluid_turbulence_input.hpp"
 #include "4C_inpar_fluid.hpp"
-#include "4C_inpar_turbulence.hpp"
 #include "4C_utils_exceptions.hpp"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
@@ -158,8 +158,8 @@ namespace Discret
       double alpha() const { return alpha_; };
       bool calc_n() const { return CalcN_; };
       double n() const { return N_; };
-      enum Inpar::FLUID::RefVelocity ref_vel() const { return refvel_; };
-      enum Inpar::FLUID::RefLength ref_length() const { return reflength_; };
+      FLUID::RefVelocity ref_vel() const { return refvel_; };
+      FLUID::RefLength ref_length() const { return reflength_; };
       double c_nu() const { return c_nu_; };
       double c_diff() const { return c_diff_; };
       bool near_wall_limit() const { return near_wall_limit_; };
@@ -294,8 +294,8 @@ namespace Discret
       double alpha_;
       bool CalcN_;
       double N_;
-      enum Inpar::FLUID::RefVelocity refvel_;
-      enum Inpar::FLUID::RefLength reflength_;
+      FLUID::RefVelocity refvel_;
+      FLUID::RefLength reflength_;
       double c_nu_;
       double c_diff_;
       bool near_wall_limit_;

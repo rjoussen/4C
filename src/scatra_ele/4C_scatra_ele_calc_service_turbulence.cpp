@@ -927,17 +927,17 @@ void Discret::Elements::ScaTraEleCalc<distype, probdim>::calc_b_and_d_for_multif
     // therefore, we need the density of the fluid here
     switch (turbparams_->ref_vel())
     {
-      case Inpar::FLUID::resolved:
+      case FLUID::resolved:
       {
         Re_ele = vel_norm * hk * densnp / visc;
         break;
       }
-      case Inpar::FLUID::fine_scale:
+      case FLUID::fine_scale:
       {
         Re_ele = fsvel_norm * hk * densnp / visc;
         break;
       }
-      case Inpar::FLUID::strainrate:
+      case FLUID::strainrate:
       {
         strainnorm = get_strain_rate(econvelnp_);
         strainnorm /= sqrt(2.0);  // cf. Burton & Dahm 2008
@@ -977,7 +977,7 @@ void Discret::Elements::ScaTraEleCalc<distype, probdim>::calc_b_and_d_for_multif
   if (turbparams_->nwl())
   {
     // not yet calculated, estimate norm of strain rate
-    if ((not turbparams_->calc_n()) or (turbparams_->ref_vel() != Inpar::FLUID::strainrate))
+    if ((not turbparams_->calc_n()) or (turbparams_->ref_vel() != FLUID::strainrate))
     {
       strainnorm = get_strain_rate(econvelnp_);
       strainnorm /= sqrt(2.0);  // cf. Burton & Dahm 2008
@@ -1176,7 +1176,7 @@ double Discret::Elements::ScaTraEleCalc<distype, probdim>::calc_ref_length(
   // cf. stabilization parameters
   switch (turbparams_->ref_length())
   {
-    case Inpar::FLUID::streamlength:
+    case FLUID::streamlength:
     {
       // a) streamlength due to Tezduyar et al. (1992)
       // get norm of velocity
@@ -1197,21 +1197,21 @@ double Discret::Elements::ScaTraEleCalc<distype, probdim>::calc_ref_length(
 
       break;
     }
-    case Inpar::FLUID::sphere_diameter:
+    case FLUID::sphere_diameter:
     {
       // b) volume-equivalent diameter
       hk = std::pow((6. * vol / M_PI), (1.0 / 3.0)) / sqrt(3.0);
 
       break;
     }
-    case Inpar::FLUID::cube_edge:
+    case FLUID::cube_edge:
     {
       // c) cubic element length
       hk = std::pow(vol, (1.0 / static_cast<double>(nsd_)));
 
       break;
     }
-    case Inpar::FLUID::metric_tensor:
+    case FLUID::metric_tensor:
     {
       if (nsd_ != 3) FOUR_C_THROW("Turbulence is 3d!");
       /*          +-           -+   +-           -+   +-           -+
@@ -1255,7 +1255,7 @@ double Discret::Elements::ScaTraEleCalc<distype, probdim>::calc_ref_length(
 
       break;
     }
-    case Inpar::FLUID::gradient_based:
+    case FLUID::gradient_based:
     {
       Core::LinAlg::Matrix<nsd_, nsd_> convderxy;
       convderxy.multiply_nt(econvelnp_, derxy_);

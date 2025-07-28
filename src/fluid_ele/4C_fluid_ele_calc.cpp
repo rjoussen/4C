@@ -14070,7 +14070,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::prepare_multifractal_sub
     // cf. stabilization parameters
     switch (fldpara_->ref_length())
     {
-      case Inpar::FLUID::streamlength:
+      case FLUID::streamlength:
       {
         // a) streamlength due to Tezduyar et al. (1992)
         // normed velocity vector
@@ -14100,20 +14100,20 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::prepare_multifractal_sub
 
         break;
       }
-      case Inpar::FLUID::sphere_diameter:
+      case FLUID::sphere_diameter:
       {
         // b) volume-equivalent diameter
         hk = std::pow((6. * vol / M_PI), (1.0 / 3.0)) / sqrt(3.0);
 
         break;
       }
-      case Inpar::FLUID::cube_edge:
+      case FLUID::cube_edge:
       {
         // c) cubic element length
         hk = std::pow(vol, (1.0 / (double(nsd_))));
         break;
       }
-      case Inpar::FLUID::metric_tensor:
+      case FLUID::metric_tensor:
       {
         if (nsd_ != 3) FOUR_C_THROW("Turbulence is 3d!");
         /*          +-           -+   +-           -+   +-           -+
@@ -14157,7 +14157,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::prepare_multifractal_sub
 
         break;
       }
-      case Inpar::FLUID::gradient_based:
+      case FLUID::gradient_based:
       {
         if (nsd_ != 3) FOUR_C_THROW("Turbulence is 3d!");
         Core::LinAlg::Matrix<nsd_, 1> normed_velgrad;
@@ -14302,17 +14302,17 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::prepare_multifractal_sub
 
     switch (fldpara_->ref_vel())
     {
-      case Inpar::FLUID::resolved:
+      case FLUID::resolved:
       {
         Re_ele = vel_norm * hk * densaf_ / visc_;
         break;
       }
-      case Inpar::FLUID::fine_scale:
+      case FLUID::fine_scale:
       {
         Re_ele = fsvel_norm * hk * densaf_ / visc_;
         break;
       }
-      case Inpar::FLUID::strainrate:
+      case FLUID::strainrate:
       {
         strainnorm = get_strain_rate(evelaf);
         strainnorm /= sqrt(2.0);  // cf. Burton & Dahm 2005
@@ -14352,7 +14352,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::prepare_multifractal_sub
   if (fldpara_->near_wall_limit())
   {
     // if not yet calculated, estimate norm of strain rate
-    if ((not fldpara_->calc_n()) or (fldpara_->ref_vel() != Inpar::FLUID::strainrate))
+    if ((not fldpara_->calc_n()) or (fldpara_->ref_vel() != FLUID::strainrate))
     {
       // strainnorm = GetNormStrain(evelaf,derxy_,vderxy_);
       strainnorm = get_strain_rate(evelaf);
