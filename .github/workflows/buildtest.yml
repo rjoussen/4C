@@ -33,10 +33,12 @@ jobs:
           build-targets: full
           build-directory: ${{ github.workspace }}/build
           use-ccache: "true"
-      - uses: ./.github/actions/upload_4C_build
+      - uses: ./.github/actions/upload_directory
+        name: Upload 4C build
         with:
-          build-directory: ${{ github.workspace }}/build
+          directory: ${{ github.workspace }}/build
           retention-days: 1
+          name: gcc13_assertions_build
       - uses: ./.github/actions/chunk_test_suite
         id: set-matrix
         with:
@@ -67,9 +69,9 @@ jobs:
         run: |
           cd $GITHUB_WORKSPACE
           git config --global --add safe.directory $GITHUB_WORKSPACE
-      - uses: ./.github/actions/download_4C_build
+      - uses: ./.github/actions/download_directory
         with:
-          build-job: gcc13_assertions_build
+          name: gcc13_assertions_build
           destination: ${{ github.workspace }}/build
       - name: Test
         run: |
@@ -109,6 +111,8 @@ jobs:
         shell: bash
     outputs:
       cache-key: ${{ steps.build-4C.outputs.cache-key }}
+    env:
+      CCACHE_DIR: ${{ github.workspace }}/.ccache
     steps:
       # Due to a bug in runner action the variables $GITHUB_WORKSPACE and ${{ github.workspace }} are different inside a container. https://github.com/actions/runner/issues/2058
       # The repo gets cloned to `/__w/4C/4C` ($GITHUB_WORKSPACE) while ${{ github.workspace }} points to `/home/runner/work/4C/4C`.`
@@ -123,10 +127,18 @@ jobs:
           build-targets: full
           build-directory: ${{ github.workspace }}/build
           use-ccache: "true"
-      - uses: ./.github/actions/upload_4C_build
+      - uses: ./.github/actions/upload_directory
+        name: Upload 4C build
         with:
-          build-directory: ${{ github.workspace }}/build
+          directory: ${{ github.workspace }}/build
           retention-days: 1
+          name: clang18_build
+      - name: Upload ccache dir as artifact
+        uses: ./.github/actions/upload_directory
+        with:
+          directory: ${{ env.CCACHE_DIR }}
+          retention-days: 1
+          name: clang18_build_ccache
       - name: Upload 4C schema
         uses: actions/upload-artifact@v4
         with:
@@ -159,9 +171,9 @@ jobs:
         run: |
           cd $GITHUB_WORKSPACE
           git config --global --add safe.directory $GITHUB_WORKSPACE
-      - uses: ./.github/actions/download_4C_build
+      - uses: ./.github/actions/download_directory
         with:
-          build-job: clang18_build
+          name: clang18_build
           destination: ${{ github.workspace }}/build
       - name: Test
         run: |
@@ -177,6 +189,8 @@ jobs:
     defaults:
       run:
         shell: bash
+    env:
+      CCACHE_DIR: ${{ github.workspace }}/.ccache
     steps:
       - uses: actions/checkout@v4
       - name: Check docker hash
@@ -185,12 +199,21 @@ jobs:
         run: |
           cd $GITHUB_WORKSPACE
           git config --global --add safe.directory $GITHUB_WORKSPACE
+      - uses: ./.github/actions/download_directory
+        with:
+          name: clang18_build_ccache
+          destination: ${{ env.CCACHE_DIR }}
+      - name: Install ccache
+        run: |
+          apt update
+          apt install -y ccache
       - uses: ./.github/actions/build_4C
         with:
           cmake-preset: docker_clang
           build-targets: install
           build-directory: ${{ github.workspace }}/build
           use-ccache: "true"
+          restore-ccache: "false" # do not restore the ccache from the Github cache
           cache-key: ${{needs.clang18_build.outputs.cache-key}}
       - name: Test the installation
         run: |
@@ -239,10 +262,12 @@ jobs:
           build-targets: full
           build-directory: ${{ github.workspace }}/build
           use-ccache: "true"
-      - uses: ./.github/actions/upload_4C_build
+      - uses: ./.github/actions/upload_directory
+        name: Upload 4C build
         with:
-          build-directory: ${{ github.workspace }}/build
+          directory: ${{ github.workspace }}/build
           retention-days: 1
+          name: gcc13_no_optional_dependencies_build
 
   gcc13_no_optional_dependencies_test:
     needs: gcc13_no_optional_dependencies_build
@@ -261,9 +286,9 @@ jobs:
         run: |
           cd $GITHUB_WORKSPACE
           git config --global --add safe.directory $GITHUB_WORKSPACE
-      - uses: ./.github/actions/download_4C_build
+      - uses: ./.github/actions/download_directory
         with:
-          build-job: gcc13_no_optional_dependencies_build
+          name: gcc13_no_optional_dependencies_build
           destination: ${{ github.workspace }}/build
       - name: Test
         run: |

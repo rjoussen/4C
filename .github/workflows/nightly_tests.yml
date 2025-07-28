@@ -25,10 +25,12 @@ jobs:
           build-targets: full
           build-directory: ${{ github.workspace }}/build
           use-ccache: "true"
-      - uses: ./.github/actions/upload_4C_build
+      - uses: ./.github/actions/upload_directory
+        name: Upload 4C build
         with:
-          build-directory: ${{ github.workspace }}/build
+          directory: ${{ github.workspace }}/build
           retention-days: 1
+          name: gcc13_assertions_build
       - uses: ./.github/actions/chunk_test_suite
         id: set-matrix
         with:
@@ -58,9 +60,9 @@ jobs:
         run: |
           cd $GITHUB_WORKSPACE
           git config --global --add safe.directory $GITHUB_WORKSPACE
-      - uses: ./.github/actions/download_4C_build
+      - uses: ./.github/actions/download_directory
         with:
-          build-job: gcc13_assertions_build
+          name: gcc13_assertions_build
           destination: ${{ github.workspace }}/build
       - name: Test
         run: |
@@ -111,10 +113,12 @@ jobs:
           build-directory: ${{ github.workspace }}/build
           use-ccache: "false"
           additional-cmake-flags: "-DFOUR_C_CXX_FLAGS=-ftime-trace"
-      - uses: ./.github/actions/upload_4C_build
+      - uses: ./.github/actions/upload_directory
+        name: Upload 4C build
         with:
-          build-directory: ${{ github.workspace }}/build
+          directory: ${{ github.workspace }}/build
           retention-days: 1
+          name: clang18_build
       - name: Upload 4C schema
         uses: actions/upload-artifact@v4
         with:
@@ -160,9 +164,9 @@ jobs:
           cd $GITHUB_WORKSPACE/ClangBuildAnalyzer
           cmake -B build -S . -DCMAKE_BUILD_TYPE=Release
           cmake --build build
-      - uses: ./.github/actions/download_4C_build
+      - uses: ./.github/actions/download_directory
         with:
-          build-job: clang18_build
+          name: clang18_build
           destination: ${{ github.workspace }}/build
       - name: Analyze compile time
         run: |
@@ -208,9 +212,9 @@ jobs:
         run: |
           cd $GITHUB_WORKSPACE
           git config --global --add safe.directory $GITHUB_WORKSPACE
-      - uses: ./.github/actions/download_4C_build
+      - uses: ./.github/actions/download_directory
         with:
-          build-job: clang18_build
+          name: clang18_build
           destination: ${{ github.workspace }}/build
       - name: Test
         run: |
@@ -260,10 +264,12 @@ jobs:
           build-targets: full
           build-directory: ${{ github.workspace }}/build
           use-ccache: "false"
-      - uses: ./.github/actions/upload_4C_build
+      - uses: ./.github/actions/upload_directory
+        name: Upload 4C build
         with:
-          build-directory: ${{ github.workspace }}/build
+          directory: ${{ github.workspace }}/build
           retention-days: 1
+          name: clang18_build_oldest_supported_dependencies
       - uses: ./.github/actions/chunk_test_suite
         id: set-matrix
         with:
@@ -293,9 +299,9 @@ jobs:
         run: |
           cd $GITHUB_WORKSPACE
           git config --global --add safe.directory $GITHUB_WORKSPACE
-      - uses: ./.github/actions/download_4C_build
+      - uses: ./.github/actions/download_directory
         with:
-          build-job: clang18_build_oldest_supported_dependencies
+          name: clang18_build_oldest_supported_dependencies
           destination: ${{ github.workspace }}/build
       - name: Test
         run: |
@@ -332,10 +338,12 @@ jobs:
           build-targets: full
           build-directory: ${{ github.workspace }}/build
           use-ccache: "false"
-      - uses: ./.github/actions/upload_4C_build
+      - uses: ./.github/actions/upload_directory
+        name: Upload 4C build
         with:
-          build-directory: ${{ github.workspace }}/build
+          directory: ${{ github.workspace }}/build
           retention-days: 1
+          name: gcc13_no_optional_dependencies_build
       - uses: ./.github/actions/chunk_test_suite
         id: set-matrix
         with:
@@ -365,9 +373,9 @@ jobs:
         run: |
           cd $GITHUB_WORKSPACE
           git config --global --add safe.directory $GITHUB_WORKSPACE
-      - uses: ./.github/actions/download_4C_build
+      - uses: ./.github/actions/download_directory
         with:
-          build-job: gcc13_no_optional_dependencies_build
+          name: gcc13_no_optional_dependencies_build
           destination: ${{ github.workspace }}/build
       - name: Test
         run: |
@@ -417,10 +425,12 @@ jobs:
           build-targets: full
           build-directory: ${{ github.workspace }}/build
           use-ccache: "false" # no ccache since asan is only tested once per day
-      - uses: ./.github/actions/upload_4C_build
+      - uses: ./.github/actions/
+        name: Upload 4C build
         with:
-          build-directory: ${{ github.workspace }}/build
+          directory: ${{ github.workspace }}/build
           retention-days: 1
+          name: gcc13_asan_build
       - uses: ./.github/actions/chunk_test_suite
         id: set-matrix
         with:
@@ -450,9 +460,9 @@ jobs:
         run: |
           cd $GITHUB_WORKSPACE
           git config --global --add safe.directory $GITHUB_WORKSPACE
-      - uses: ./.github/actions/download_4C_build
+      - uses: ./.github/actions/download_directory
         with:
-          build-job: gcc13_asan_build
+          name: gcc13_asan_build
           destination: ${{ github.workspace }}/build
       - name: Test
         run: |

@@ -67,10 +67,11 @@ jobs:
           build-targets: full
           build-directory: ${{ github.workspace }}/build
           use-ccache: "false"
-      - uses: ./.github/actions/upload_4C_build
+      - uses: ./.github/actions/upload_directory
         with:
-          build-directory: ${{ github.workspace }}/build
+          directory: ${{ github.workspace }}/build
           retention-days: 1
+          name: trilinos_develop_build
       - uses: ./.github/actions/chunk_test_suite
         id: set-matrix
         with:
@@ -98,9 +99,9 @@ jobs:
         run: |
           cd $GITHUB_WORKSPACE
           git config --global --add safe.directory $GITHUB_WORKSPACE
-      - uses: ./.github/actions/download_4C_build
+      - uses: ./.github/actions/download_directory
         with:
-          build-job: build
+          name: trilinos_develop_build
           destination: ${{ github.workspace }}/build
       - name: Test
         run: |

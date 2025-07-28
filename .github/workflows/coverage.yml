@@ -5,7 +5,7 @@ on:
     - cron: '0 1 * * *'
 
 jobs:
-  gcc13_coverage_build:
+  clang18_coverage_build:
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/4c-multiphysics/4c-dependencies-ubuntu24.04:8115e93e
@@ -25,10 +25,12 @@ jobs:
           build-targets: full
           build-directory: ${{ github.workspace }}/build
           use-ccache: "false"
-      - uses: ./.github/actions/upload_4C_build
+      - uses: ./.github/actions/upload_directory
+        name: Upload 4C build
         with:
-          build-directory: ${{ github.workspace }}/build
+          directory: ${{ github.workspace }}/build
           retention-days: 1
+          name: clang18_coverage_build
       - uses: ./.github/actions/chunk_test_suite
         id: set-matrix
         # Note: We will not use previous runtimes for chunking to avoid running out of storage
@@ -37,15 +39,15 @@ jobs:
           source-directory: ${{ github.workspace }}
           number-of-chunks: 90 # we need fine grained test chunks to avoid running out of storage
 
-  gcc13_coverage_test:
-    needs: gcc13_coverage_build
+  clang18_coverage_test:
+    needs: clang18_coverage_build
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/4c-multiphysics/4c-dependencies-ubuntu24.04:8115e93e
       options: --user root --env OMPI_ALLOW_RUN_AS_ROOT=1 --env OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
     strategy:
       matrix:
-        test-chunk: ${{fromJson(needs.gcc13_coverage_build.outputs.test-chunks)}}
+        test-chunk: ${{fromJson(needs.clang18_coverage_build.outputs.test-chunks)}}
     defaults:
       run:
         shell: bash
@@ -58,15 +60,15 @@ jobs:
       - uses: actions/checkout@v4
       - name: Check docker hash
         uses: ./.github/actions/compute-and-check-dependencies-hash
-      - uses: ./.github/actions/download_4C_build
+      - uses: ./.github/actions/download_directory
         with:
-          build-job: gcc13_coverage_build
+          name: clang18_coverage_build
           destination: ${{ github.workspace }}/build
       - name: Run all tests and collect raw coverage data
         run: | # Note: Collect raw coverage data in a file distict for each process
           cd $GITHUB_WORKSPACE/build
           export LLVM_PROFILE_FILE="$GITHUB_WORKSPACE/4C-coverage-%m-%p.profraw"
-          time ctest -I $TEST_CHUNK -j `nproc` --output-on-failure  --output-junit $GITHUB_WORKSPACE/gcc13_coverage_test_report-$TEST_CHUNK.xml
+          time ctest -I $TEST_CHUNK -j `nproc` --output-on-failure  --output-junit $GITHUB_WORKSPACE/clang18_coverage_test_report-$TEST_CHUNK.xml
         env:
           TEST_CHUNK: ${{ matrix.test-chunk }}
       - name: Collect coverage data
@@ -86,13 +88,13 @@ jobs:
         uses: actions/upload-artifact@v4
         if: success() || failure()
         with:
-          name: gcc13_coverage_test_report-${{ matrix.test-chunk }}.xml
+          name: clang18_coverage_test_report-${{ matrix.test-chunk }}.xml
           path: |
-            ${{ github.workspace }}/gcc13_coverage_test_report-${{ matrix.test-chunk }}.xml
+            ${{ github.workspace }}/clang18_coverage_test_report-${{ matrix.test-chunk }}.xml
           retention-days: 1
 
-  gcc13_coverage_test_report:
-    needs: gcc13_coverage_test
+  clang18_coverage_test_report:
+    needs: clang18_coverage_test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -100,11 +102,11 @@ jobs:
           sparse-checkout: .github
       - uses: ./.github/actions/merge_junit_report_artifacts
         with:
-          junit-report-base-name: gcc13_coverage_test_report
+          junit-report-base-name: clang18_coverage_test_report
           retention-days: 2
 
   report:
-    needs: [gcc13_coverage_test, gcc13_coverage_build]
+    needs: [clang18_coverage_test, clang18_coverage_build]
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/4c-multiphysics/4c-dependencies-ubuntu24.04:8115e93e
@@ -119,7 +121,7 @@ jobs:
           git config --global --add safe.directory $GITHUB_WORKSPACE
       - uses: ./.github/actions/download_4C_build
         with:
-          build-job: gcc13_coverage_build
+          build-job: clang18coverage_build
           destination: ${{ github.workspace }}/build
       - name: Setup developer environment for testing
         run: |
@@ -131,7 +133,7 @@ jobs:
         with:
           path: ${{ github.workspace }}
           merge-multiple: true
-          pattern: gcc13_coverage_test-4C-coverage-data-*.profdata
+          pattern: clang18_coverage_test-4C-coverage-data-*.profdata
       - name: Install dependencies
         run: |
           apt-get update

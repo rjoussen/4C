@@ -15,6 +15,10 @@ inputs:
     description: Use ccache to speed up the build
     required: false
     default: "true"
+  restore-ccache:
+    description: Restore ccache from GitHub Actions cache
+    required: false
+    default: "true"
   cache-key:
     description: Key to restore the cache for ccache (default <job-name>-<preset-name>)
     required: false
@@ -40,10 +44,11 @@ runs:
         CACHE_KEY=${{ inputs.cache-key == '' && format('{0}-{1}', github.job, inputs.cmake-preset) || inputs.cache-key }}
         echo "cache_key=$CACHE_KEY" >> $GITHUB_OUTPUT
     - name: Setup ccache
-      if: ${{ inputs.use-ccache == 'true' }}
+      if: ${{ inputs.use-ccache == 'true' && inputs.restore-ccache == 'true' }}
       uses: hendrikmuhs/ccache-action@v1.2
       with:
         key: ${{ steps.prepare-cache-key.outputs.cache_key }}
+        verbose: 2
     - uses: ./.github/actions/configure_4C
       with:
         cmake-preset: ${{ inputs.cmake-preset }}

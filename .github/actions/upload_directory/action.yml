@@ -1,0 +1,29 @@
+name: Upload Directory
+description: Uploads a directory as a tarball as artifact
+inputs:
+  directory:
+    description: Path to the directory
+    required: true
+  retention-days:
+    description: Number of days to retain the artifact
+    required: false
+    default: "1"
+  name:
+    description: Name of the artifact
+runs:
+  using: composite
+  steps:
+    - name: Package directory
+      shell: bash
+      run: |
+        cd $DIRECTORY
+        tar -cf $GITHUB_WORKSPACE/${{ inputs.name }}.tar .
+      env:
+        DIRECTORY: ${{ inputs.directory }}
+    - name: Upload directory
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.name }}
+        path: |
+          ${{ github.workspace }}/${{ inputs.name }}.tar
+        retention-days: ${{ inputs.retention-days }}
