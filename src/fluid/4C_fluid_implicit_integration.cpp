@@ -755,8 +755,8 @@ void FLD::FluidImplicitTimeInt::prepare_time_step()
   // -------------------------------------------------------------------
   //           preparation of AVM3-based scale separation
   // -------------------------------------------------------------------
-  if (step_ == 1 and (fssgv_ != Inpar::FLUID::no_fssgv or
-                         scale_sep_ == Inpar::FLUID::algebraic_multigrid_operator))
+  if (step_ == 1 and
+      (fssgv_ != Inpar::FLUID::no_fssgv or scale_sep_ == FLUID::algebraic_multigrid_operator))
     avm3_preparation();
 }
 
@@ -3769,8 +3769,7 @@ void FLD::FluidImplicitTimeInt::read_restart(int step)
 
   statisticsmanager_->read_restart(reader, step);
 
-  if ((fssgv_ != Inpar::FLUID::no_fssgv) or
-      (scale_sep_ == Inpar::FLUID::algebraic_multigrid_operator))
+  if ((fssgv_ != Inpar::FLUID::no_fssgv) or (scale_sep_ == FLUID::algebraic_multigrid_operator))
   {
     avm3_preparation();
   }
@@ -3880,8 +3879,7 @@ void FLD::FluidImplicitTimeInt::set_restart(const int step, const double time,
   accnp_->update(1.0, *readaccnp, 0.0);
   accn_->update(1.0, *readaccn, 0.0);
 
-  if ((fssgv_ != Inpar::FLUID::no_fssgv) or
-      (scale_sep_ == Inpar::FLUID::algebraic_multigrid_operator))
+  if ((fssgv_ != Inpar::FLUID::no_fssgv) or (scale_sep_ == FLUID::algebraic_multigrid_operator))
   {
     set_element_time_parameter();
     avm3_preparation();
@@ -5534,7 +5532,7 @@ void FLD::FluidImplicitTimeInt::set_general_turbulence_parameters()
   special_flow_ = params_->sublist("TURBULENCE MODEL").get<std::string>("CANONICAL_FLOW", "no");
 
   // scale-separation
-  scale_sep_ = Inpar::FLUID::no_scale_sep;
+  scale_sep_ = FLUID::no_scale_sep;
 
   // fine-scale subgrid viscosity?
   fssgv_ = params_->sublist("TURBULENCE MODEL").get<Inpar::FLUID::FineSubgridVisc>("FSSUGRVISC");
@@ -5575,7 +5573,7 @@ void FLD::FluidImplicitTimeInt::set_general_turbulence_parameters()
       const std::string scale_sep = modelparams->get<std::string>("SCALE_SEPARATION");
       if (scale_sep == "box_filter")
       {
-        scale_sep_ = Inpar::FLUID::box_filter;
+        scale_sep_ = FLUID::box_filter;
 
         // get one instance of the Boxfilter class
         Boxf_ = std::make_shared<FLD::Boxfilter>(discret_, *params_);
@@ -5585,7 +5583,7 @@ void FLD::FluidImplicitTimeInt::set_general_turbulence_parameters()
       }
       else if (scale_sep == "algebraic_multigrid_operator")
       {
-        scale_sep_ = Inpar::FLUID::algebraic_multigrid_operator;
+        scale_sep_ = FLUID::algebraic_multigrid_operator;
       }
       else
       {
@@ -5939,7 +5937,7 @@ void FLD::FluidImplicitTimeInt::apply_scale_separation_for_les()
   {
     switch (scale_sep_)
     {
-      case Inpar::FLUID::box_filter:
+      case FLUID::box_filter:
       {
         // perform filtering
         const std::shared_ptr<const Core::LinAlg::Vector<double>> dirichtoggle = dirichlet();
@@ -5951,7 +5949,7 @@ void FLD::FluidImplicitTimeInt::apply_scale_separation_for_les()
 
         break;
       }
-      case Inpar::FLUID::algebraic_multigrid_operator:
+      case FLUID::algebraic_multigrid_operator:
       {
         // get fine-scale part of velocity at time n+alpha_F or n+1
         Sep_->multiply(false, *evaluation_vel(), *fsvelaf_);

@@ -10,9 +10,9 @@
 
 #include "4C_config.hpp"
 
+#include "4C_fluid_turbulence_input.hpp"
 #include "4C_inpar_fluid.hpp"
 #include "4C_inpar_scatra.hpp"
-#include "4C_inpar_turbulence.hpp"
 #include "4C_scatra_ele_parameter_base.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -52,8 +52,8 @@ namespace Discret
       double alpha() { return alpha_; }
       bool calc_n() { return calc_n_; };
       double n_vel() { return n_vel_; };
-      Inpar::FLUID::RefVelocity ref_vel() { return refvel_; };
-      Inpar::FLUID::RefLength ref_length() { return reflength_; };
+      FLUID::RefVelocity ref_vel() { return refvel_; };
+      FLUID::RefLength ref_length() { return reflength_; };
       double c_nu() { return c_nu_; };
       bool nwl() { return nwl_; };
       bool nwl_scatra() { return nwl_scatra_; };
@@ -108,8 +108,8 @@ namespace Discret
       double alpha_;
       bool calc_n_;
       double n_vel_;
-      Inpar::FLUID::RefVelocity refvel_;
-      Inpar::FLUID::RefLength reflength_;
+      FLUID::RefVelocity refvel_;
+      FLUID::RefLength reflength_;
       double c_nu_;
       bool nwl_;
       bool nwl_scatra_;

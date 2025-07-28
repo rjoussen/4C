@@ -175,7 +175,7 @@ void FLD::TimIntBDF2::outputof_filtered_vel(std::shared_ptr<Core::LinAlg::Vector
   row_finescaleveltmp = std::make_shared<Core::LinAlg::Vector<double>>(*dofrowmap, true);
 
   // get fine scale velocity
-  if (scale_sep_ == Inpar::FLUID::algebraic_multigrid_operator)
+  if (scale_sep_ == FLUID::algebraic_multigrid_operator)
     Sep_->multiply(false, *velnp_, *row_finescaleveltmp);
   else
     FOUR_C_THROW("Unknown separation type!");

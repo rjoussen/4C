@@ -13,8 +13,8 @@
 
 #include "4C_fem_discretization.hpp"
 #include "4C_fluid_timint.hpp"
+#include "4C_fluid_turbulence_input.hpp"
 #include "4C_inpar_fluid.hpp"
-#include "4C_inpar_turbulence.hpp"
 #include "4C_linalg_blocksparsematrix.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
@@ -1281,7 +1281,7 @@ namespace FLD
     std::shared_ptr<Core::LinAlg::Vector<double>> fsvelaf_;
 
     /// only necessary for LES models including filtered quantities: filter type
-    enum Inpar::FLUID::ScaleSeparation scale_sep_;
+    FLUID::ScaleSeparation scale_sep_;
 
     /// fine-scale scalar: only necessary for multifractal subgrid-scale modeling in loma
     std::shared_ptr<Core::LinAlg::Vector<double>> fsscaaf_;

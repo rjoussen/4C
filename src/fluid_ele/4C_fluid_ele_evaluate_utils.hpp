@@ -19,7 +19,7 @@
 #include "4C_fluid_ele.hpp"
 #include "4C_fluid_ele_action.hpp"
 #include "4C_fluid_ele_parameter_std.hpp"
-#include "4C_inpar_turbulence.hpp"
+#include "4C_fluid_turbulence_input.hpp"
 #include "4C_mat_newtonianfluid.hpp"
 #include "4C_mat_sutherland.hpp"
 
@@ -2168,22 +2168,22 @@ namespace FLD
 
       // calculate characteristic element length
       // cf. stabilization parameters
-      Inpar::FLUID::RefLength reflength = Inpar::FLUID::cube_edge;
+      FLUID::RefLength reflength = FLUID::cube_edge;
       if (turbmodelparamsmfs->get<std::string>("REF_LENGTH") == "cube_edge")
-        reflength = Inpar::FLUID::cube_edge;
+        reflength = FLUID::cube_edge;
       else if (turbmodelparamsmfs->get<std::string>("REF_LENGTH") == "sphere_diameter")
-        reflength = Inpar::FLUID::sphere_diameter;
+        reflength = FLUID::sphere_diameter;
       else if (turbmodelparamsmfs->get<std::string>("REF_LENGTH") == "streamlength")
-        reflength = Inpar::FLUID::streamlength;
+        reflength = FLUID::streamlength;
       else if (turbmodelparamsmfs->get<std::string>("REF_LENGTH") == "gradient_based")
-        reflength = Inpar::FLUID::gradient_based;
+        reflength = FLUID::gradient_based;
       else if (turbmodelparamsmfs->get<std::string>("REF_LENGTH") == "metric_tensor")
-        reflength = Inpar::FLUID::metric_tensor;
+        reflength = FLUID::metric_tensor;
       else
         FOUR_C_THROW("Unknown length!");
       switch (reflength)
       {
-        case Inpar::FLUID::streamlength:
+        case FLUID::streamlength:
         {
           // a) streamlength due to Tezduyar et al. (1992)
           // normed velocity vector
@@ -2202,20 +2202,20 @@ namespace FLD
 
           break;
         }
-        case Inpar::FLUID::sphere_diameter:
+        case FLUID::sphere_diameter:
         {
           // b) volume-equivalent diameter
           hk = std::pow((6. * vol / M_PI), (1.0 / 3.0)) / sqrt(3.0);
 
           break;
         }
-        case Inpar::FLUID::cube_edge:
+        case FLUID::cube_edge:
         {
           // c) cubic element length
           hk = std::pow(vol, (1.0 / (double(nsd))));
           break;
         }
-        case Inpar::FLUID::metric_tensor:
+        case FLUID::metric_tensor:
         {
           /*          +-           -+   +-           -+   +-           -+
                       |             |   |             |   |             |
@@ -2258,7 +2258,7 @@ namespace FLD
 
           break;
         }
-        case Inpar::FLUID::gradient_based:
+        case FLUID::gradient_based:
         {
           velintderxy.multiply_nt(evel, derxy);
           Core::LinAlg::Matrix<3, 1> normed_velgrad;
@@ -2389,29 +2389,29 @@ namespace FLD
       if (hk == 1.0e+10) FOUR_C_THROW("Something went wrong!");
 
       // get reference velocity
-      Inpar::FLUID::RefVelocity refvel = Inpar::FLUID::strainrate;
+      FLUID::RefVelocity refvel = FLUID::strainrate;
       if (turbmodelparamsmfs->get<std::string>("REF_VELOCITY") == "strainrate")
-        refvel = Inpar::FLUID::strainrate;
+        refvel = FLUID::strainrate;
       else if (turbmodelparamsmfs->get<std::string>("REF_VELOCITY") == "resolved")
-        refvel = Inpar::FLUID::resolved;
+        refvel = FLUID::resolved;
       else if (turbmodelparamsmfs->get<std::string>("REF_VELOCITY") == "fine_scale")
-        refvel = Inpar::FLUID::fine_scale;
+        refvel = FLUID::fine_scale;
       else
         FOUR_C_THROW("Unknown velocity!");
 
       switch (refvel)
       {
-        case Inpar::FLUID::resolved:
+        case FLUID::resolved:
         {
           Re_ele = vel_norm * hk * dens / dynvisc;
           break;
         }
-        case Inpar::FLUID::fine_scale:
+        case FLUID::fine_scale:
         {
           Re_ele = fsvel_norm * hk * dens / dynvisc;
           break;
         }
-        case Inpar::FLUID::strainrate:
+        case FLUID::strainrate:
         {
           Re_ele = strainnorm * hk * hk * dens / dynvisc;
           break;
@@ -2880,7 +2880,7 @@ namespace FLD
         double hk = 1.0e+10;
         switch (fldpara->ref_length())
         {
-          case Inpar::FLUID::streamlength:
+          case FLUID::streamlength:
           {
             // a) streamlength due to Tezduyar et al. (1992)
             // get norm of velocity
@@ -2901,20 +2901,20 @@ namespace FLD
 
             break;
           }
-          case Inpar::FLUID::sphere_diameter:
+          case FLUID::sphere_diameter:
           {
             // b) volume-equivalent diameter
             hk = std::pow((6. * vol / M_PI), (1.0 / 3.0)) / sqrt(3.0);
 
             break;
           }
-          case Inpar::FLUID::cube_edge:
+          case FLUID::cube_edge:
           {
             // c) cubic element length
             hk = std::pow(vol, (1.0 / (double(nsd))));
             break;
           }
-          case Inpar::FLUID::metric_tensor:
+          case FLUID::metric_tensor:
           {
             /*          +-           -+   +-           -+   +-           -+
                         |             |   |             |   |             |
@@ -2957,7 +2957,7 @@ namespace FLD
 
             break;
           }
-          case Inpar::FLUID::gradient_based:
+          case FLUID::gradient_based:
           {
             velintderxy.multiply_nt(evel, derxy);
             Core::LinAlg::Matrix<3, 1> normed_velgrad;
