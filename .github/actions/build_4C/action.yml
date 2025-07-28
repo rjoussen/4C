@@ -44,7 +44,6 @@ runs:
       uses: hendrikmuhs/ccache-action@v1.2
       with:
         key: ${{ steps.prepare-cache-key.outputs.cache_key }}
-        append-timestamp: false
     - uses: ./.github/actions/configure_4C
       with:
         cmake-preset: ${{ inputs.cmake-preset }}
