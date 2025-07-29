@@ -216,6 +216,10 @@ void Thermo::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& li
             parameter<bool>(
                 "TEMPERATURE", {.description = "write temperature output", .default_value = false}),
 
+            // whether to write conductivity state
+            parameter<bool>("CONDUCTIVITY",
+                {.description = "write conductivity output", .default_value = false}),
+
             // whether to write heatflux state
             parameter<bool>(
                 "HEATFLUX", {.description = "write heatflux output", .default_value = false}),

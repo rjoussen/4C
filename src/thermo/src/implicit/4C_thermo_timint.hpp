@@ -380,8 +380,11 @@ namespace Thermo
 
     struct OptionsThermoVTKRuntimeOutput
     {
-      /// whether to write pressure output
+      /// whether to write temperature output
       bool output_temperature_state = false;
+
+      /// whether to write conductivity output
+      bool output_conductivity_state = false;
 
       /// whether to write heatflux output
       bool output_heatflux_state = false;
