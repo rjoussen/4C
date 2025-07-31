@@ -130,7 +130,7 @@ namespace Core::Utils::SymbolicExpressionDetails
             pos_--;
           }
           tok_ = Lexer::tok_name;
-          integer_ = &(funct_[pos_]) - str_;  // length of operator name, e.g. 'sin' has '3'
+          integer_ = funct_.data() + pos_ - str_;  // length of operator name, e.g. 'sin' has '3'
           return;
         }
         else if (t == '+')
