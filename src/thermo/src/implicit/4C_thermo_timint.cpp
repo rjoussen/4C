@@ -140,9 +140,13 @@ Thermo::TimInt::TimInt(const Teuchos::ParameterList& ioparams,
       bool output_element_gid = thermo_vtk_runtime_output_list.get<bool>("ELEMENT_GID");
       bool output_node_gid = thermo_vtk_runtime_output_list.get<bool>("NODE_GID");
 
-      runtime_vtk_params_ = {output_temperature_state, output_conductivity_state,
-          output_heatflux_state, output_tempgrad_state, output_element_owner, output_element_gid,
-          output_node_gid};
+      runtime_vtk_params_ = {.output_temperature_state = output_temperature_state,
+          .output_conductivity_state = output_conductivity_state,
+          .output_heatflux_state = output_heatflux_state,
+          .output_tempgrad_state = output_tempgrad_state,
+          .output_element_owner = output_element_owner,
+          .output_element_gid = output_element_gid,
+          .output_node_gid = output_node_gid};
 
       runtime_vtk_writer_ = Core::IO::DiscretizationVisualizationWriterMesh(
           discret_, Core::IO::visualization_parameters_factory(
