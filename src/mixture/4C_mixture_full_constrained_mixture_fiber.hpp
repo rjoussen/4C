@@ -281,7 +281,7 @@ namespace Mixture
     /// The deposition time of the initially present mass
     double reference_time_ = 0.0;
 
-    /// A current time shit that is reset after each timestep
+    /// A current time shift that is reset after each timestep
     double current_time_shift_ = 0.0;
 
     HistoryAdaptionStrategy adaptive_history_strategy_ = HistoryAdaptionStrategy::none;
