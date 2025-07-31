@@ -11,6 +11,10 @@ STRUCTURAL DYNAMIC:
   NUMSTEP: 1
   MAXTIME: 0.04
   LINEAR_SOLVER: 1
+STRUCT NOX/Direction/Newton:
+  Forcing Term Method: "Type 2"
+STRUCT NOX/Printing:
+  Details: true
 SOLVER 1:
   SOLVER: "Belos"
   AZPREC: "Teko"
@@ -70,12 +74,12 @@ RESULT DESCRIPTION:
   - STRUCTURE:
       SPECIAL: true
       QUANTITY: "num_iter_step_1"
-      VALUE: 5
+      VALUE: 6
       TOLERANCE: 1e-08
   - STRUCTURE:
       SPECIAL: true
       QUANTITY: "lin_iter_step_1"
-      VALUE: 5
+      VALUE: 1
       TOLERANCE: 1e-08
 DESIGN SURF DIRICH CONDITIONS:
   - E: 1
