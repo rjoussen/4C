@@ -209,7 +209,6 @@ class Beam3ContactOctTree
             (int)stdvector[i].size(), vector.NumVectors());
       for (int j = 0; j < (int)stdvector[i].size(); j++) vector(j)[i] = (TYPE)stdvector[i][j];
     }
-    return;
   }
   //! \brief translate Core::LinAlg::MultiVector<double> to std::vec<std::vec<type> > >
   template <class TYPE>
@@ -231,7 +230,6 @@ class Beam3ContactOctTree
         stdvector[j][i] = vector(i)[j];
       }
     }
-    return;
   }
 
   //!\brief flag indicating the use of periodic boundary conditions

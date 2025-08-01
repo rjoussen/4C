@@ -87,7 +87,7 @@ STI::Partitioned::Partitioned(MPI_Comm comm,  //! communicator
 
     default:
     {
-      FOUR_C_THROW("What the hell?!");
+      FOUR_C_THROW("Invalid coupling type. You should not end up here!");
     }
   }
 
@@ -185,12 +185,10 @@ void STI::Partitioned::solve()
 
     default:
     {
-      FOUR_C_THROW("Dude... what's wrong with you?!");
+      FOUR_C_THROW("Invalid coupling type. You should not end up here!");
       break;
     }
   }
-
-  return;
 }  // STI::Partitioned::Solve()
 
 
@@ -237,7 +235,7 @@ void STI::Partitioned::solve_one_way() const
 
     default:
     {
-      FOUR_C_THROW("No, no, noooooooo...!");
+      FOUR_C_THROW("Invalid coupling type. You should not end up here!");
       break;
     }
   }
@@ -478,12 +476,10 @@ void STI::Partitioned::solve_two_way()
 
     default:
     {
-      FOUR_C_THROW("Please stop coding a bunch of crap...");
+      FOUR_C_THROW("Invalid coupling type. You should not end up here!");
       break;
     }
   }
-
-  return;
 }  // STI::Partitioned::solve_two_way()
 
 FOUR_C_NAMESPACE_CLOSE
