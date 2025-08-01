@@ -9,6 +9,8 @@
 
 #include "4C_io_input_spec_validators.hpp"
 
+#include <vector>
+
 
 namespace
 {
@@ -61,6 +63,17 @@ namespace
     std::stringstream ss;
     ss << validator;
     EXPECT_EQ(ss.str(), "in_set{A,B}");
+  }
+
+  TEST(InputSpecValidators, AllElements)
+  {
+    const auto validator = all_elements(in_range(1, 4));
+    EXPECT_TRUE(validator(std::vector<int>{1, 2, 3}));
+    EXPECT_FALSE(validator(std::vector<int>{1, -2, 3}));
+
+    std::stringstream ss;
+    ss << validator;
+    EXPECT_EQ(ss.str(), "all_elements{in_range[1,4]}");
   }
 
 }  // namespace

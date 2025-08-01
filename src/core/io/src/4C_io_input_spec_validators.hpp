@@ -220,6 +220,20 @@ namespace Core::IO::InputSpecBuilders::Validators
    */
   template <Internal::Numeric T>
   [[nodiscard]] auto positive();
+
+
+  /**
+   * A validator that checks if all elements in a vector satisfy the given @p validator, e.g.,
+   *
+   * @code
+   * // check that all vector elements are positive
+   * all_elements(positive<int>()):
+   * @endcode
+   *
+   */
+  template <typename T>
+  [[nodiscard]] auto all_elements(Validator<T> validator);
+
 }  // namespace Core::IO::InputSpecBuilders::Validators
 
 // --- template definitions --- //
@@ -319,6 +333,32 @@ template <typename T>
   return in_set(std::set<T>(set.begin(), set.end()));
 }
 
+template <typename T>
+[[nodiscard]] auto Core::IO::InputSpecBuilders::Validators::all_elements(Validator<T> validator)
+{
+  return (Validator<std::vector<T>>(
+      [validator](const std::vector<T>& vec)
+      {
+        for (const auto& v : vec)
+        {
+          if (!validator(v)) return false;
+        }
+        return true;
+      },
+      [validator](std::ostream& os)
+      {
+        os << "all_elements{";
+        validator.describe(os);
+        os << "}";
+      },
+      [validator](YamlNodeRef yaml)
+      {
+        auto& node = yaml.node;
+        node |= ryml::MAP;
+        auto all_node = node["all_elements"];
+        validator.emit_metadata(yaml.wrap(all_node.append_child()));
+      }));
+}
 
 FOUR_C_NAMESPACE_CLOSE
 
