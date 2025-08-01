@@ -119,9 +119,9 @@ jobs:
         run: |
           cd $GITHUB_WORKSPACE
           git config --global --add safe.directory $GITHUB_WORKSPACE
-      - uses: ./.github/actions/download_4C_build
+      - uses: ./.github/actions/download_directory
         with:
-          build-job: clang18coverage_build
+          name: clang18_coverage_build
           destination: ${{ github.workspace }}/build
       - name: Setup developer environment for testing
         run: |

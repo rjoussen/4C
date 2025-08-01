@@ -425,7 +425,7 @@ jobs:
           build-targets: full
           build-directory: ${{ github.workspace }}/build
           use-ccache: "false" # no ccache since asan is only tested once per day
-      - uses: ./.github/actions/
+      - uses: ./.github/actions/upload_directory
         name: Upload 4C build
         with:
           directory: ${{ github.workspace }}/build
