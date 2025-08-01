@@ -49,6 +49,16 @@ std::shared_ptr<Solid::Nln::SOLVER::Generic> Solid::Nln::SOLVER::Factory::build_
       Teuchos::ParameterList& pdir = nox_params.sublist("Direction");
       pdir.set("Method", "Newton");
 
+      // Newton
+      Teuchos::ParameterList& pnewton = pdir.sublist("Newton");
+
+      // Adapt forcing term
+      std::string forcing_term_method = sdyn->get_nox_params()
+                                            .sublist("Direction")
+                                            .sublist("Newton")
+                                            .get<std::string>("Forcing Term Method");
+      pnewton.set("Forcing Term Method", forcing_term_method);
+
       // Line Search
       Teuchos::ParameterList& plinesearch = nox_params.sublist("Line Search");
       plinesearch.set("Method", "Full Step");

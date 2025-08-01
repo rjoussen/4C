@@ -326,6 +326,15 @@ bool NOX::Nln::LinearSystem::applyJacobianInverse(Teuchos::ParameterList& linear
     if (iter == -10)
       throw_error("applyJacobianInverse", "\"Number of Nonlinear Iterations\" was not specified");
 
+    // get the linear solver tolerance, which might have been adapted by the non-linear solver due
+    // to a non-constant forcing term
+    if (currSolver->params().isSublist("Belos Parameters") and
+        linearSolverParams.isParameter("Tolerance"))
+    {
+      const double tolerance = linearSolverParams.get<double>("Tolerance");
+      solver_params.tolerance = tolerance;
+    }
+
     solver_params.refactor = true;
     solver_params.reset = iter == 0;
 

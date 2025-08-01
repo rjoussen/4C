@@ -21,10 +21,8 @@ STRUCTURAL DYNAMIC:
   PREDICT: "TangDis"
   LINEAR_SOLVER: 1
 SOLVER 1:
-  SOLVER: "Belos"
-  IFPACK_XML_FILE: "xml/preconditioner/ifpack.xml"
-  SOLVER_XML_FILE: "xml/linear_solver/iterative_gmres_template.xml"
   NAME: "Struct_Solver"
+  SOLVER: "UMFPACK"
 XFEM GENERAL:
   GMSH_DEBUG_OUT: true
   GMSH_CUT_OUT: true
