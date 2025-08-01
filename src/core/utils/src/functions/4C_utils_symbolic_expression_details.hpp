@@ -280,7 +280,7 @@ namespace Core::Utils::SymbolicExpressionDetails
    public:
     //! The variables that can be used in the expression. If empty, any variable can be used.
     static constexpr std::array<std::string_view, sizeof...(variables)> variable_names = {
-        variables.value...};
+        variables...};
 
     //! Parse and compile the expression.
     Impl(std::string expression) : expression_(std::move(expression)) { init(); }
