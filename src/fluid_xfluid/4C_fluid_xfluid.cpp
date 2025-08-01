@@ -4121,6 +4121,7 @@ void FLD::XFluid::x_timint_reconstruct_ghost_values(
   solverlist.set("Solver Type", "GMRES");
   solverlist.set<double>("Convergence Tolerance", 1.0e-12);
   solverlist.set<int>("reuse", 0);
+  solverlist.set<int>("max linear iterations for stall", 50);
   solverparams.sublist("IFPACK Parameters");
 
   Core::LinAlg::Solver solver_gp(solverparams, discret_->get_comm(),
