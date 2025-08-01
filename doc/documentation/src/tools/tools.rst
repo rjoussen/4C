@@ -5,6 +5,7 @@ Tools
 =====
 
 A number of tools are available to work with |FOURC|.
+If you also have a tool for |FOURC| or a project that works with |FOURC| please open a PR to add it to this list.
 
 4C-Webviewer
 ~~~~~~~~~~~~
@@ -36,10 +37,11 @@ beamme
 `beamme <https://beamme-py.github.io/beamme/>`_ is a general purpose 3D beam finite element input generator written in Python.
 It contains advanced geometry creation and manipulation functions to create complex beam geometries, including a consistent handling of finite rotations.
 
+pipapo
+~~~~~~
+`pipapo <https://github.com/particles-pipapo/pipapo>`_ is a post-processing tool for particle simulations, e.g. to calculate the porosity or coordination number.
+
 QUEENS
 ~~~~~~
 
 `QUEENS <https://github.com/queens-py/queens>`_ (Quantification of Uncertain Effects in Engineering Systems) is a Python framework for solver-independent multi-query analyses of large-scale computational models.
-
-
-

@@ -60,6 +60,7 @@ See our [documentation](https://4c-multiphysics.github.io/4C/documentation/insta
 how to build 4C from source on your machine.
 Consult our [Tutorials](https://4c-multiphysics.github.io/4C/documentation/tutorials/tutorials.html) to get an overview of the
 general workflow in 4C.
+Also have a look at related [projects/tools](https://4c-multiphysics.github.io/4C/documentation/tools/tools.html) that work with 4C, e.g., tools that help with input generatation or visualization.
 
 ## Contributing
 
