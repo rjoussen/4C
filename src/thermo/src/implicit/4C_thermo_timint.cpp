@@ -133,14 +133,20 @@ Thermo::TimInt::TimInt(const Teuchos::ParameterList& ioparams,
     if (vtk_output_thermo)
     {
       bool output_temperature_state = thermo_vtk_runtime_output_list.get<bool>("TEMPERATURE");
+      bool output_conductivity_state = thermo_vtk_runtime_output_list.get<bool>("CONDUCTIVITY");
       bool output_heatflux_state = thermo_vtk_runtime_output_list.get<bool>("HEATFLUX");
       bool output_tempgrad_state = thermo_vtk_runtime_output_list.get<bool>("TEMPGRAD");
       bool output_element_owner = thermo_vtk_runtime_output_list.get<bool>("ELEMENT_OWNER");
       bool output_element_gid = thermo_vtk_runtime_output_list.get<bool>("ELEMENT_GID");
       bool output_node_gid = thermo_vtk_runtime_output_list.get<bool>("NODE_GID");
 
-      runtime_vtk_params_ = {output_temperature_state, output_heatflux_state, output_tempgrad_state,
-          output_element_owner, output_element_gid, output_node_gid};
+      runtime_vtk_params_ = {.output_temperature_state = output_temperature_state,
+          .output_conductivity_state = output_conductivity_state,
+          .output_heatflux_state = output_heatflux_state,
+          .output_tempgrad_state = output_tempgrad_state,
+          .output_element_owner = output_element_owner,
+          .output_element_gid = output_element_gid,
+          .output_node_gid = output_node_gid};
 
       runtime_vtk_writer_ = Core::IO::DiscretizationVisualizationWriterMesh(
           discret_, Core::IO::visualization_parameters_factory(
@@ -383,6 +389,13 @@ void Thermo::TimInt::write_runtime_output()
     {
       runtime_vtk_writer_->append_result_data_vector_with_context(
           *tempn_, Core::IO::OutputEntity::node, {"temperature"});
+    }
+
+    if (runtime_vtk_params_.output_conductivity_state)
+    {
+      std::vector<std::optional<std::string>> context(conductivity_->NumVectors(), "conductivity");
+      runtime_vtk_writer_->append_result_data_vector_with_context(
+          *conductivity_, Core::IO::OutputEntity::node, context);
     }
 
     if (runtime_vtk_params_.output_heatflux_state)
