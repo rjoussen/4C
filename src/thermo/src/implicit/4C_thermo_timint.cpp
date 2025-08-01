@@ -254,10 +254,6 @@ void Thermo::TimInt::determine_capa_consist_temp_rate()
   // is not finished yet in case of constraints and possibly other side
   // effects (basically managers).
   tang_->reset();
-
-  // leave this hell
-  return;
-
 }  // determine_capa_consist_temp_rate()
 
 

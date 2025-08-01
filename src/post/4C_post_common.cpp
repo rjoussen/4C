@@ -215,7 +215,7 @@ void PostProblem::setup_filter(std::string control_file_name, std::string output
 
   comm_ = MPI_COMM_WORLD;
 
-  /* The warning system is not set up. It's rather stupid anyway. */
+  /* The warning system is not set up.*/
 
   basename_ = control_file_name.substr(0, control_file_name.length() - 8);
   outname_ = output_name;
