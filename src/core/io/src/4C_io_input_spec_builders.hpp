@@ -2550,7 +2550,7 @@ Core::IO::InputSpec Core::IO::InputSpecBuilders::symbolic_expression(
           // Make a string from all variables.
           std::stringstream message;
           message << "could not be parsed as symbolic expression with variables: ";
-          ((message << std::quoted(variables.value) << " "), ...);
+          ((message << std::quoted(std::string_view(variables)) << " "), ...);
 
           return StoreStatus::fail(message.str());
         }
