@@ -43,7 +43,9 @@ namespace CONTACT
         bool selfcontact, const int contactconstitutivelawid);
 
     /**
-     * \brief Assemble gap-computed lagrange multipliers and nodal linlambda derivatives into nodal
+     * \brief Evaluate regularized normal forces at slave nodes
+     *
+     * Assemble gap-computed lagrange multipliers and nodal linlambda derivatives into nodal
      * quantities using the Macauley bracket
      *
      * When dealing with penalty methods, the lagrange multipliers are not independent variables
@@ -70,17 +72,11 @@ namespace CONTACT
     void assemble_reg_normal_forces(bool& localisincontact, bool& localactivesetchange) override;
 
     /**
-     * \brief Throws an error since frictional contact is not yet tested
+     * \brief Evaluate regularized normal forces at slave nodes
+     *
+     * Throws an error since frictional contact is not implemented, yet.
      */
     void assemble_reg_tangent_forces_penalty() override;
-
-    /** \brief return the multi-scale constitutive law used for the contact containing information
-     i.e. on the micro roughness
-     */
-    std::shared_ptr<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw> get_constitutive_contact_law()
-    {
-      return coconstlaw_;
-    }
 
    private:
     /** \brief multi-scale constitutive law used for the contact containing information
