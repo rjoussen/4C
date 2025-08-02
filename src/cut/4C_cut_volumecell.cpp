@@ -228,8 +228,7 @@ void Cut::VolumeCell::create_tet4_integration_cells(Mesh& mesh,
     std::vector<Point*> p(3);
     for (std::size_t i = 0; i < length; ++i)  // loop the list of triangles
     {
-      std::copy(&points[3 * i], &points[3 * (i + 1)], &p[0]);
-      // Tri3BoundaryCell::CreateCell( mesh, this, f, p );
+      std::copy_n(points.data() + 3 * i, 3, p.data());
       new_tri3_cell(mesh, f, p);  // create tri3 cell
     }
   }
