@@ -61,7 +61,7 @@ namespace SSI
     void assemble_rhs(std::shared_ptr<Core::LinAlg::Vector<double>> rhs,
         std::shared_ptr<const Core::LinAlg::Vector<double>> rhs_scatra,
         std::shared_ptr<const Core::LinAlg::Vector<double>> rhs_structure,
-        const Core::LinAlg::Vector<double>& rhs_manifold);
+        const Core::LinAlg::Vector<double>* rhs_manifold);
 
     //! assemble ScaTra-ScaTra-Block into system matrix
     virtual void assemble_scatra_scatra(std::shared_ptr<Core::LinAlg::SparseOperator> systemmatrix,
