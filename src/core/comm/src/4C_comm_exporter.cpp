@@ -196,8 +196,7 @@ void Core::Communication::Exporter::construct_exporter()
     std::vector<int> recvbuff(recvsize);
     if (proc == my_pid()) std::copy(sendbuff.begin(), sendbuff.end(), recvbuff.data());
     Core::Communication::broadcast(recvbuff.data(), recvsize, proc, get_comm());
-    // const int* have = recvbuff.data();            // this is what proc has
-    const int* want = &recvbuff[recvsizes[0]];  // this is what proc needs
+    const int* want = recvbuff.data() + recvsizes[0];  // this is what proc needs
 
     // Loop what proc wants and what I have (send_plan)
     if (proc != my_pid())
