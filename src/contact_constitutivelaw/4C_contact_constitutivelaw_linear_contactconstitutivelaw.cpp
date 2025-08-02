@@ -33,8 +33,8 @@ CONTACT::CONSTITUTIVELAW::LinearConstitutiveLaw::LinearConstitutiveLaw(
     : params_(std::move(params))
 {
 }
+
 /*----------------------------------------------------------------------*
- |  Evaluate the contact constitutive law|
  *----------------------------------------------------------------------*/
 double CONTACT::CONSTITUTIVELAW::LinearConstitutiveLaw::evaluate(double gap, CONTACT::Node* cnode)
 {
@@ -43,9 +43,9 @@ double CONTACT::CONSTITUTIVELAW::LinearConstitutiveLaw::evaluate(double gap, CON
     FOUR_C_THROW("You should not be here. The Evaluate function is only tested for active nodes. ");
   }
   return params_.getdata() * (gap + params_.get_offset()) + params_.get_b();
-}  // end of linear_coconstlaw evaluate
+}
+
 /*----------------------------------------------------------------------*
- |  Calculate the derivative of the contact constitutive law|
  *----------------------------------------------------------------------*/
 double CONTACT::CONSTITUTIVELAW::LinearConstitutiveLaw::evaluate_deriv(
     double gap, CONTACT::Node* cnode)

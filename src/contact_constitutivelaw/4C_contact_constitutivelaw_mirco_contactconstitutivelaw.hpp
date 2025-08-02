@@ -101,10 +101,10 @@ namespace CONTACT
 
       //! @name Evaluation methods
       //@{
-      /** \brief evaluate the constitutive law
+      /** \brief Evaluate the constitutive law
        *
        * The pressure response for a gap is calucated using MIRCO, which uses BEM for solving
-       * contact between a rigid rough surface and a linear elastic half plane.
+       * contact between a rigid rough surface and a linear elastic half space.
        *
        * \param gap contact gap at the mortar node
        * \return The pressure response from MIRCO
