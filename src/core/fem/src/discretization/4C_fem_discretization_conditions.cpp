@@ -144,8 +144,8 @@ void Core::FE::Discretization::assign_global_ids(MPI_Comm comm,
   int mypos = Core::LinAlg::find_my_pos(sendblock.size(), comm);
 
   std::vector<int> send(size);
-  std::fill(send.begin(), send.end(), 0);
-  std::copy(sendblock.begin(), sendblock.end(), &send[mypos]);
+  std::ranges::fill(send, 0);
+  std::ranges::copy(sendblock, send.data() + mypos);
   sendblock.clear();
   std::vector<int> recv(size);
   Core::Communication::sum_all(send.data(), recv.data(), size, comm);
