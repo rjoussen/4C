@@ -337,7 +337,7 @@ void XFEM::ConditionManager::setup()
 void XFEM::ConditionManager::create()
 {
   numglobal_coupling_sides_ = 0;
-  mesh_coupl_start_gid_.reserve(mesh_coupl_.size());
+  mesh_coupl_start_gid_.resize(mesh_coupl_.size());
   levelset_gid_ = -1;
 
   // set global side Ids for all Mesh coupling discretizations and level-set sides

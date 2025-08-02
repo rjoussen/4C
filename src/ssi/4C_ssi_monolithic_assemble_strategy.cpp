@@ -482,15 +482,17 @@ void SSI::AssembleStrategySparse::assemble_scatramanifold_structure(
 void SSI::AssembleStrategyBase::assemble_rhs(std::shared_ptr<Core::LinAlg::Vector<double>> rhs,
     std::shared_ptr<const Core::LinAlg::Vector<double>> rhs_scatra,
     std::shared_ptr<const Core::LinAlg::Vector<double>> rhs_structure,
-    const Core::LinAlg::Vector<double>& rhs_manifold)
+    const Core::LinAlg::Vector<double>* rhs_manifold)
 {
   ssi_maps()->maps_sub_problems()->insert_vector(
       *rhs_scatra, Utils::SSIMaps::get_problem_position(SSI::Subproblem::scalar_transport), *rhs);
 
   if (is_scatra_manifold())
   {
+    FOUR_C_ASSERT(
+        rhs_manifold, "Internal error: rhs_manifold must not be null if ScaTra manifold is used");
     ssi_maps()->maps_sub_problems()->insert_vector(
-        rhs_manifold, Utils::SSIMaps::get_problem_position(SSI::Subproblem::manifold), *rhs);
+        *rhs_manifold, Utils::SSIMaps::get_problem_position(SSI::Subproblem::manifold), *rhs);
   }
 
   ssi_maps()->maps_sub_problems()->add_vector(

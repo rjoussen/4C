@@ -248,8 +248,7 @@ void SSI::SsiMono::assemble_mat_and_rhs() const
 
   // assemble monolithic RHS
   strategy_assemble_->assemble_rhs(ssi_vectors_->residual(), ssi_vectors_->scatra_residual(),
-      ssi_vectors_->structure_residual(),
-      *(is_scatra_manifold() ? ssi_vectors_->manifold_residual() : nullptr));
+      ssi_vectors_->structure_residual(), ssi_vectors_->manifold_residual().get());
 }
 
 /*--------------------------------------------------------------------------*
