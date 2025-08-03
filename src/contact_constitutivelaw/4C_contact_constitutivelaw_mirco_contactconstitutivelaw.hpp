@@ -89,15 +89,12 @@ namespace CONTACT
       explicit MircoConstitutiveLaw(CONTACT::CONSTITUTIVELAW::MircoConstitutiveLawParams params);
 
       //! @name Access methods
-
-      /// contact constitutive law type
-      CONTACT::CONSTITUTIVELAW::ConstitutiveLawType get_constitutive_law_type() const override
-      {
-        return CONTACT::CONSTITUTIVELAW::ConstitutiveLawType::colaw_mirco;
-      }
+      //@{
 
       /// Return quick accessible contact constitutive law parameter data
       const CONTACT::CONSTITUTIVELAW::Parameter* parameter() const override { return &params_; }
+
+      //@}
 
       //! @name Evaluation methods
       //@{

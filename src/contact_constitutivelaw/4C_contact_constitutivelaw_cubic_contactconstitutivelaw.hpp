@@ -62,12 +62,7 @@ namespace CONTACT
       explicit CubicConstitutiveLaw(CONTACT::CONSTITUTIVELAW::CubicConstitutiveLawParams params);
 
       //! @name Access methods
-
-      /// contact constitutive law type
-      CONTACT::CONSTITUTIVELAW::ConstitutiveLawType get_constitutive_law_type() const override
-      {
-        return CONTACT::CONSTITUTIVELAW::ConstitutiveLawType::colaw_cubic;
-      }
+      //@{
 
       double getdata() { return params_.getdata(); }
       double get_b() { return params_.get_b(); }
@@ -80,6 +75,7 @@ namespace CONTACT
       //@}
 
       //! @name Evaluation methods
+      //!{
 
       /// Evaluate contact constitutive law
       double evaluate(double gap, CONTACT::Node* cnode) override;
