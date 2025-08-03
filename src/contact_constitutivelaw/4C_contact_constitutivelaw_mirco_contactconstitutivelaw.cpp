@@ -61,7 +61,9 @@ void CONTACT::CONSTITUTIVELAW::MircoConstitutiveLawParams::set_parameters()
 
   // for the sake of safety
   if (Global::Problem::instance(probinst)->materials() == nullptr)
-    FOUR_C_THROW("List of materials cannot be accessed in the global problem instance.");
+    FOUR_C_THROW(
+        "An attempt to access the list of materials in the instance of the global problem returned "
+        "a null pointer.");
   // yet another safety check
   if (Global::Problem::instance(probinst)->materials()->num() == 0)
     FOUR_C_THROW("List of materials in the global problem instance is empty.");
@@ -114,6 +116,7 @@ void CONTACT::CONSTITUTIVELAW::MircoConstitutiveLawParams::set_parameters()
   meshgrid_ = Teuchos::Ptr(new std::vector<double>(iter));
   MIRCO::CreateMeshgrid(*meshgrid_, iter, grid_size_);
 }
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 double CONTACT::CONSTITUTIVELAW::MircoConstitutiveLaw::evaluate(double gap, CONTACT::Node* cnode)
@@ -138,7 +141,8 @@ double CONTACT::CONSTITUTIVELAW::MircoConstitutiveLaw::evaluate(double gap, CONT
       *params_.get_mesh_grid(), params_.get_pressure_green_fun_flag());
 
   return (-1 * pressure);
-}  // end of mirco_coconstlaw evaluate
+}
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 double CONTACT::CONSTITUTIVELAW::MircoConstitutiveLaw::evaluate_deriv(

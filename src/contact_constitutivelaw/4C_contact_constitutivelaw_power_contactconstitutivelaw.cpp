@@ -35,8 +35,8 @@ CONTACT::CONSTITUTIVELAW::PowerConstitutiveLaw::PowerConstitutiveLaw(
     : params_(std::move(params))
 {
 }
+
 /*----------------------------------------------------------------------*
- |  Evaluate the contact constitutive law|
  *----------------------------------------------------------------------*/
 double CONTACT::CONSTITUTIVELAW::PowerConstitutiveLaw::evaluate(double gap, CONTACT::Node* cnode)
 {
@@ -53,9 +53,9 @@ double CONTACT::CONSTITUTIVELAW::PowerConstitutiveLaw::evaluate(double gap, CONT
         "The constitutive function you are using seems to be positive, even though the gap is "
         "negative. Please check your coefficients!");
   return result;
-}  // end of Power_coconstlaw evaluate
+}
+
 /*----------------------------------------------------------------------*
- |  Calculate the derivative of the contact constitutive law|
  *----------------------------------------------------------------------*/
 double CONTACT::CONSTITUTIVELAW::PowerConstitutiveLaw::evaluate_deriv(
     double gap, CONTACT::Node* cnode)

@@ -9,18 +9,13 @@
 
 #include "4C_contact_constitutivelaw_contactconstitutivelaw.hpp"
 #include "4C_contact_constitutivelaw_contactconstitutivelaw_parameter.hpp"
-#include "4C_contact_defines.hpp"
-#include "4C_contact_element.hpp"
 #include "4C_contact_input.hpp"
 #include "4C_fem_discretization.hpp"
-#include "4C_fem_general_node.hpp"
-#include "4C_inpar_mortar.hpp"
 #include "4C_utils_exceptions.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
- |  ctor (public)                                                       |
  *----------------------------------------------------------------------*/
 CONTACT::ConstitutivelawInterface::ConstitutivelawInterface(
     const std::shared_ptr<Mortar::InterfaceDataContainer>& interfaceData, const int id,
@@ -31,10 +26,8 @@ CONTACT::ConstitutivelawInterface::ConstitutivelawInterface(
   std::shared_ptr<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw> coconstlaw =
       CONTACT::CONSTITUTIVELAW::ConstitutiveLaw::factory(contactconstitutivelawid);
   coconstlaw_ = coconstlaw;
-  return;
 }
 /*----------------------------------------------------------------------*
- |  Evaluate regularized normal forces (nodes)                          |
  *----------------------------------------------------------------------*/
 void CONTACT::ConstitutivelawInterface::assemble_reg_normal_forces(
     bool& localisincontact, bool& localactivesetchange)
@@ -42,15 +35,15 @@ void CONTACT::ConstitutivelawInterface::assemble_reg_normal_forces(
   // loop over all slave row nodes on the current interface
   for (int i = 0; i < slave_row_nodes()->num_my_elements(); ++i)
   {
-    int gid = slave_row_nodes()->gid(i);
+    const int gid = slave_row_nodes()->gid(i);
     Core::Nodes::Node* node = discret().g_node(gid);
-    if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
+    if (!node) FOUR_C_THROW("Cannot find node with gid %.", gid);
     Node* cnode = dynamic_cast<Node*>(node);
 
-    int dim = cnode->num_dof();
-    double gap = cnode->data().getg();
+    const int dim = cnode->num_dof();
+    const double gap = cnode->data().getg();
 
-    double kappa = cnode->data().kappa();
+    const double kappa = cnode->data().kappa();
 
     double lmuzawan = 0.0;
     for (int k = 0; k < dim; ++k)
@@ -90,9 +83,9 @@ void CONTACT::ConstitutivelawInterface::assemble_reg_normal_forces(
     if (cnode->active() == true)
     {
       // Evaluate pressure
-      double pressure = coconstlaw_->evaluate(kappa * gap, cnode);
+      const double pressure = coconstlaw_->evaluate(kappa * gap, cnode);
       // Evaluate pressure derivative
-      double pressurederiv = coconstlaw_->evaluate_deriv(kappa * gap, cnode);
+      const double pressurederiv = coconstlaw_->evaluate_deriv(kappa * gap, cnode);
 
       localisincontact = true;
 
@@ -134,16 +127,13 @@ void CONTACT::ConstitutivelawInterface::assemble_reg_normal_forces(
 
     }  // Macauley-Bracket
   }  // loop over slave nodes
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
- |  Evaluate regularized tangential forces                              |
  *----------------------------------------------------------------------*/
 void CONTACT::ConstitutivelawInterface::assemble_reg_tangent_forces_penalty()
 {
-  FOUR_C_THROW("Frictional contact not yet implemented for rough surfaces\n");
+  FOUR_C_THROW("Frictional contact not yet implemented for rough surfaces.");
 }
 
 FOUR_C_NAMESPACE_CLOSE

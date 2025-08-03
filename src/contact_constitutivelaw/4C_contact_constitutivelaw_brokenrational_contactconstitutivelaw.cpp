@@ -34,8 +34,8 @@ CONTACT::CONSTITUTIVELAW::BrokenRationalConstitutiveLaw::BrokenRationalConstitut
     : params_(std::move(params))
 {
 }
+
 /*----------------------------------------------------------------------*
- |  Evaluate the contact constitutive law|
  *----------------------------------------------------------------------*/
 double CONTACT::CONSTITUTIVELAW::BrokenRationalConstitutiveLaw::evaluate(
     double gap, CONTACT::Node* cnode)
@@ -54,8 +54,8 @@ double CONTACT::CONSTITUTIVELAW::BrokenRationalConstitutiveLaw::evaluate(
         "negative. Please check your coefficients!");
   return result;
 }
+
 /*----------------------------------------------------------------------*
- |  Calculate the derivative of the contact constitutive law|
  *----------------------------------------------------------------------*/
 double CONTACT::CONSTITUTIVELAW::BrokenRationalConstitutiveLaw::evaluate_deriv(
     double gap, CONTACT::Node* cnode)
