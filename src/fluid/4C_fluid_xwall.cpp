@@ -884,6 +884,7 @@ void FLD::XWall::update_tau_w(int step, std::shared_ptr<Core::LinAlg::Vector<dou
     // fix nodal forces on dirichlet inflow surfaces if desired
     wss = mystressmanager_->get_pre_calc_wall_shear_stresses(*fix_dirichlet_inflow(*trueresidual));
   }
+
   switch (tauwtype_)
   {
     case Inpar::FLUID::constant:  // works
@@ -898,7 +899,7 @@ void FLD::XWall::update_tau_w(int step, std::shared_ptr<Core::LinAlg::Vector<dou
       inctauw_->put_scalar(0.0);
 
       if (itnum == 0)  // in between steps
-        calc_tau_w(step, *velnp, *wss);
+        calc_tau_w(step, *velnp, wss.get());
       else
         return;
     }
@@ -963,7 +964,7 @@ void FLD::XWall::update_tau_w(int step, std::shared_ptr<Core::LinAlg::Vector<dou
  |  Routines to calculate Tauw                                 bk 07/14 |
  *----------------------------------------------------------------------*/
 void FLD::XWall::calc_tau_w(
-    int step, Core::LinAlg::Vector<double>& velnp, Core::LinAlg::Vector<double>& wss)
+    int step, Core::LinAlg::Vector<double>& velnp, Core::LinAlg::Vector<double>* wss)
 {
   Core::LinAlg::Vector<double> newtauw(*xwallrownodemap_, true);
   Core::LinAlg::Vector<double> newtauw2(*xwallrownodemap_, true);
@@ -976,6 +977,7 @@ void FLD::XWall::calc_tau_w(
   if (tauwcalctype_ == Inpar::FLUID::residual ||
       (tauwcalctype_ == Inpar::FLUID::gradient_to_residual && step >= switch_step_))
   {
+    FOUR_C_ASSERT_ALWAYS(wss, "No wall shear stress given.");
     for (int lnodeid = 0; lnodeid < dircolnodemap_->num_my_elements(); lnodeid++)
     {
       int gid = dircolnodemap_->gid(lnodeid);
@@ -986,12 +988,12 @@ void FLD::XWall::calc_tau_w(
         if (!node) FOUR_C_THROW("ERROR: Cannot find off wall node with gid %", gid);
 
         int firstglobaldofid = discret_->dof(0, node, 0);
-        int firstlocaldofid = wss.get_map().lid(firstglobaldofid);
+        int firstlocaldofid = wss->get_map().lid(firstglobaldofid);
 
         if (firstlocaldofid < 0) FOUR_C_THROW("localdofid not found in map for given globaldofid");
-        double forcex = (wss)[firstlocaldofid];
-        double forcey = (wss)[firstlocaldofid + 1];
-        double forcez = (wss)[firstlocaldofid + 2];
+        double forcex = (*wss)[firstlocaldofid];
+        double forcey = (*wss)[firstlocaldofid + 1];
+        double forcez = (*wss)[firstlocaldofid + 2];
 
         double tauw = sqrt(forcex * forcex + forcey * forcey + forcez * forcez);
 
