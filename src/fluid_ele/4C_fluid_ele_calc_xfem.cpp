@@ -1938,7 +1938,7 @@ namespace Discret
             std::vector<double> dummy2;
 
             get_interface_jump_vectors(coupcond, coupling, ivelint_jump, itraction_jump,
-                proj_tangential, LB_proj_matrix, x_gp_lin, normal, *si, rst, kappa_m, kappa_s,
+                proj_tangential, LB_proj_matrix, x_gp_lin, normal, si.get(), rst, kappa_m, kappa_s,
                 visc_m, dummy1, dummy2);
 
             if (cond_type == Inpar::XFEM::CouplingCond_LEVELSET_NEUMANN or
@@ -3747,7 +3747,7 @@ namespace Discret
             lb_proj_matrix_.clear();
 
             get_interface_jump_vectors(coupcond, coupling, ivelint_jump_, itraction_jump_,
-                proj_tangential_, lb_proj_matrix_, x_gp_lin_, normal_, *si, rst_, kappa_m,
+                proj_tangential_, lb_proj_matrix_, x_gp_lin_, normal_, si.get(), rst_, kappa_m,
                 viscaf_master_, viscaf_slave_, rst_slave, eledisp, coupl_ele);
 
             double fulltraction = 0.0;
@@ -3983,7 +3983,7 @@ namespace Discret
             LB_proj_matrix,  ///< prescribed projection matrix for laplace-beltrami problems
         const Core::LinAlg::Matrix<nsd_, 1>& x,       ///< global coordinates of Gaussian point
         const Core::LinAlg::Matrix<nsd_, 1>& normal,  ///< normal vector at Gaussian point
-        Discret::Elements::XFLUID::SlaveElementInterface<distype>&
+        Discret::Elements::XFLUID::SlaveElementInterface<distype>*
             si,                                 ///< side implementation for cutter element
         Core::LinAlg::Matrix<3, 1>& rst,        ///< local coordinates of GP for bg element
         double& kappa_m,                        ///< fluid sided weighting
@@ -4017,7 +4017,7 @@ namespace Discret
           else
           {
             // evaluate function at nodes at current time
-            si.get_interface_jump_velnp(ivelint_jump);
+            si->get_interface_jump_velnp(ivelint_jump);
           }
 
           break;
@@ -4057,7 +4057,7 @@ namespace Discret
         case Inpar::XFEM::CouplingCond_SURF_FSI_PART:
         {
           // evaluate function at nodes at current time
-          si.get_interface_jump_velnp(ivelint_jump);
+          si->get_interface_jump_velnp(ivelint_jump);
           break;
         }
         case Inpar::XFEM::CouplingCond_SURF_FLUIDFLUID:
@@ -4090,7 +4090,7 @@ namespace Discret
 
           if (!eval_dirich_at_gp)
           {
-            si.get_interface_jump_velnp(ivelint_jump);
+            si->get_interface_jump_velnp(ivelint_jump);
           }
 
           break;
@@ -4104,13 +4104,6 @@ namespace Discret
               ->evaluate_coupling_conditions<distype>(ivelint_jump, itraction_jump, x, cond,
                   proj_tangential, my::eid_, my::funct_, my::derxy_, normal, eval_dirich_at_gp,
                   kappa_m, visc_m, visc_s);
-
-          //    if(!eval_dirich_at_gp)
-          //    {
-          //
-          //      si->get_interface_jump_velnp(ivelint_jump);
-          //
-          //    }
 
           break;
         }

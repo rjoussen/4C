@@ -357,16 +357,18 @@ int Discret::Elements::Fluid::evaluate(Teuchos::ParameterList& params,
           {
             FLD::f3_calc_smag_const_lij_mij_and_mij_mij<8>(this, fldpara, *col_filtered_vel,
                 *col_filtered_reynoldsstress, *col_filtered_modeled_subgrid_stress,
-                *col_filtered_dens_vel, *col_filtered_dens, *col_filtered_dens_strainrate, LijMij,
-                MijMij, CI_numerator, CI_denominator, xcenter, ycenter, zcenter);
+                col_filtered_dens_vel.get(), col_filtered_dens.get(),
+                col_filtered_dens_strainrate.get(), LijMij, MijMij, CI_numerator, CI_denominator,
+                xcenter, ycenter, zcenter);
             break;
           }
           case Core::FE::CellType::tet4:
           {
             FLD::f3_calc_smag_const_lij_mij_and_mij_mij<4>(this, fldpara, *col_filtered_vel,
                 *col_filtered_reynoldsstress, *col_filtered_modeled_subgrid_stress,
-                *col_filtered_dens_vel, *col_filtered_dens, *col_filtered_dens_strainrate, LijMij,
-                MijMij, CI_numerator, CI_denominator, xcenter, ycenter, zcenter);
+                col_filtered_dens_vel.get(), col_filtered_dens.get(),
+                col_filtered_dens_strainrate.get(), LijMij, MijMij, CI_numerator, CI_denominator,
+                xcenter, ycenter, zcenter);
             break;
           }
           default:

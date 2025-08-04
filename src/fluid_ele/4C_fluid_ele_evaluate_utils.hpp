@@ -1328,9 +1328,9 @@ namespace FLD
       Core::LinAlg::MultiVector<double>& col_filtered_vel,
       Core::LinAlg::MultiVector<double>& col_filtered_reynoldsstress,
       Core::LinAlg::MultiVector<double>& col_filtered_modeled_subgrid_stress,
-      Core::LinAlg::MultiVector<double>& col_filtered_dens_vel,
-      Core::LinAlg::Vector<double>& col_filtered_dens,
-      Core::LinAlg::Vector<double>& col_filtered_dens_strainrate, double& LijMij, double& MijMij,
+      Core::LinAlg::MultiVector<double>* col_filtered_dens_vel,
+      Core::LinAlg::Vector<double>* col_filtered_dens,
+      Core::LinAlg::Vector<double>* col_filtered_dens_strainrate, double& LijMij, double& MijMij,
       double& CI_numerator, double& CI_denominator, double& xcenter, double& ycenter,
       double& zcenter)
   {
@@ -1368,12 +1368,12 @@ namespace FLD
       {
         int lid = (ele->nodes()[nn])->lid();
 
-        edens_hat(0, nn) = (col_filtered_dens)[lid];
-        edensstrainrate_hat(0, nn) = (col_filtered_dens_strainrate)[lid];
+        edens_hat(0, nn) = (*col_filtered_dens)[lid];
+        edensstrainrate_hat(0, nn) = (*col_filtered_dens_strainrate)[lid];
 
         for (int dimi = 0; dimi < 3; ++dimi)
         {
-          edensvel_hat(dimi, nn) = (((col_filtered_dens_vel)(dimi)))[lid];
+          edensvel_hat(dimi, nn) = (((*col_filtered_dens_vel)(dimi)))[lid];
         }
       }
     }
