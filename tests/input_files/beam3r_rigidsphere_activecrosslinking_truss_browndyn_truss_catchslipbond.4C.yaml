@@ -49,6 +49,10 @@ BROWNIAN DYNAMICS:
   BROWNDYNPROB: true
   VISCOSITY: 0.001
   TIMESTEP: 0.01
+  # Setting a very small KT ensures that random forces are sampled.
+  # This became necessary when an internal change would have lead to non-convergence due
+  # to the way we draw random numbers. Do not interpret this value as physically meaningful.
+  KT: 1e-14
 BEAM INTERACTION/SPHERE BEAM LINK:
   SPHEREBEAMLINKING: true
   CONTRACTIONRATE: 0.5
@@ -219,35 +223,35 @@ RESULT DESCRIPTION:
       DIS: "structure"
       NODE: 12
       QUANTITY: "dispx"
-      VALUE: 0.04738697619406944
+      VALUE: 4.73872681225444223e-02
       TOLERANCE: 1e-10
   - STRUCTURE:
       DIS: "structure"
       NODE: 12
       QUANTITY: "dispy"
-      VALUE: -0.2831096706393011
+      VALUE: -2.83110071720808043e-01
       TOLERANCE: 1e-10
   - STRUCTURE:
       DIS: "structure"
       NODE: 12
       QUANTITY: "dispz"
-      VALUE: 0
+      VALUE: -1.21617658103077351e-05
       TOLERANCE: 1e-10
   - STRUCTURE:
       DIS: "structure"
       NODE: 16
       QUANTITY: "dispx"
-      VALUE: 0.15512722515936203
+      VALUE: 1.55126107535701219e-01
       TOLERANCE: 1e-10
   - STRUCTURE:
       DIS: "structure"
       NODE: 16
       QUANTITY: "dispy"
-      VALUE: -0.08822146768776758
+      VALUE: -8.82213325017293937e-02
       TOLERANCE: 1e-10
   - STRUCTURE:
       DIS: "structure"
       NODE: 16
       QUANTITY: "dispz"
-      VALUE: 0
+      VALUE: -1.18657800658584848e-06
       TOLERANCE: 1e-10
