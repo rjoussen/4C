@@ -29,7 +29,7 @@ runs:
     - name: Download junit test reports
       id: download-junit-reports
       continue-on-error: true
-      uses: dawidd6/action-download-artifact@v6
+      uses: dawidd6/action-download-artifact@v11
       if: ${{ inputs.junit-report-artifact-name != '' }}
       with:
         workflow: ${{ inputs.base-workflow }}
