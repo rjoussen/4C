@@ -1872,17 +1872,18 @@ void BeamInteraction::SubmodelEvaluator::Crosslinking::diffuse_unbound_crosslink
                                      crosslinker->get_material()->linking_length()) *
                                  crosslinking_params_ptr_->delta_time());
   double meanvalue = 0.0;
-  // Set mean value and standard deviation of normal distribution
-  // FixMe standard deviation = sqrt(variance) check this for potential error !!!
-  Global::Problem::instance()->random()->set_mean_variance(meanvalue, standarddev);
 
   // diffuse crosslinker according to brownian dynamics
   Core::LinAlg::Matrix<3, 1> newclpos(Core::LinAlg::Initialization::zero);
-  std::vector<double> randvec;
   int count = 3;
+  std::vector<double> randvec(count);
   // maximal diffusion given by cutoff radius (sqrt(3) = 1.73..)
   double const maxmov = bin_strategy().bin_size_lower_bound() / 1.74;
-  Global::Problem::instance()->random()->normal(randvec, count);
+  if (standarddev > 0.0)
+  {
+    Global::Problem::instance()->random()->set_mean_stddev(meanvalue, standarddev);
+    Global::Problem::instance()->random()->normal(randvec, count);
+  }
   for (int dim = 0; dim < 3; ++dim)
   {
     if (abs(randvec[dim]) > maxmov)
