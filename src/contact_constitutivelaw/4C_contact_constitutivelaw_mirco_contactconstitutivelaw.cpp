@@ -119,7 +119,8 @@ void CONTACT::CONSTITUTIVELAW::MircoConstitutiveLawParams::set_parameters()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double CONTACT::CONSTITUTIVELAW::MircoConstitutiveLaw::evaluate(double gap, CONTACT::Node* cnode)
+double CONTACT::CONSTITUTIVELAW::MircoConstitutiveLaw::evaluate(
+    const double gap, CONTACT::Node* cnode)
 {
   if (gap + params_.get_offset() > 0.0)
   {
@@ -145,8 +146,8 @@ double CONTACT::CONSTITUTIVELAW::MircoConstitutiveLaw::evaluate(double gap, CONT
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double CONTACT::CONSTITUTIVELAW::MircoConstitutiveLaw::evaluate_deriv(
-    double gap, CONTACT::Node* cnode)
+double CONTACT::CONSTITUTIVELAW::MircoConstitutiveLaw::evaluate_derivative(
+    const double gap, CONTACT::Node* cnode)
 {
   if (gap + params_.get_offset() > 0.0)
   {

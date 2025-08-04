@@ -50,7 +50,7 @@ namespace
   //! test member function EvaluateDeriv
   TEST_F(BrokenrationalConstitutiveLawTest, TestEvaluateDeriv)
   {
-    EXPECT_NEAR(coconstlaw_->evaluate_deriv(-2.5, cnode.get()), 0.5, 1.e-15);
-    EXPECT_ANY_THROW(coconstlaw_->evaluate_deriv(-0.25, cnode.get()));
+    EXPECT_NEAR(coconstlaw_->evaluate_derivative(-2.5, cnode.get()), 0.5, 1.e-15);
+    EXPECT_ANY_THROW(coconstlaw_->evaluate_derivative(-0.25, cnode.get()));
   }
 }  // namespace

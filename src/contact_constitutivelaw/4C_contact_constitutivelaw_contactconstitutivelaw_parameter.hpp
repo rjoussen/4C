@@ -8,29 +8,16 @@
 #ifndef FOUR_C_CONTACT_CONSTITUTIVELAW_CONTACTCONSTITUTIVELAW_PARAMETER_HPP
 #define FOUR_C_CONTACT_CONSTITUTIVELAW_CONTACTCONSTITUTIVELAW_PARAMETER_HPP
 
-
-/*----------------------------------------------------------------------*/
-/* headers */
 #include "4C_config.hpp"
 
 #include "4C_io_input_parameter_container.hpp"
-#include "4C_linalg_vector.hpp"
-
-#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
-
-/*----------------------------------------------------------------------*/
-/* forward declarations */
 
 namespace CONTACT::CONSTITUTIVELAW
 {
   class ConstitutiveLaw;
 }  // namespace CONTACT::CONSTITUTIVELAW
-
-/*----------------------------------------------------------------------*/
-/* declarations */
-
 
 namespace CONTACT::CONSTITUTIVELAW
 {

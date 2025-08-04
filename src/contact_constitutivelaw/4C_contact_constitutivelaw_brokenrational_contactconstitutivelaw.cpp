@@ -11,8 +11,6 @@
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 
-#include <vector>
-
 FOUR_C_NAMESPACE_OPEN
 
 
@@ -38,16 +36,14 @@ CONTACT::CONSTITUTIVELAW::BrokenRationalConstitutiveLaw::BrokenRationalConstitut
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 double CONTACT::CONSTITUTIVELAW::BrokenRationalConstitutiveLaw::evaluate(
-    double gap, CONTACT::Node* cnode)
+    const double gap, CONTACT::Node* cnode)
 {
   if (gap + params_.get_offset() > 0)
   {
     FOUR_C_THROW("You should not be here. The Evaluate function is only tested for active nodes. ");
   }
-  double result = -1.0;
-  gap = -gap;
-  result *=
-      (params_.getdata() * 1. / (gap - params_.get_offset() - params_.get_b()) + params_.get_c());
+  const double result =
+      -(params_.getdata() * 1. / (-gap - params_.get_offset() - params_.get_b()) + params_.get_c());
   if (result > 0)
     FOUR_C_THROW(
         "The constitutive function you are using seems to be positive, even though the gap is "
@@ -57,17 +53,17 @@ double CONTACT::CONSTITUTIVELAW::BrokenRationalConstitutiveLaw::evaluate(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double CONTACT::CONSTITUTIVELAW::BrokenRationalConstitutiveLaw::evaluate_deriv(
-    double gap, CONTACT::Node* cnode)
+double CONTACT::CONSTITUTIVELAW::BrokenRationalConstitutiveLaw::evaluate_derivative(
+    const double gap, CONTACT::Node* cnode)
 {
   if (gap + params_.get_offset() > 0)
   {
     FOUR_C_THROW("You should not be here. The Evaluate function is only tested for active nodes. ");
   }
-  gap = -gap;
+
   return (-params_.getdata() * 1. /
-          ((gap - params_.get_offset() - params_.get_b()) *
-              (gap - params_.get_offset() - params_.get_b())));
+          ((-gap - params_.get_offset() - params_.get_b()) *
+              (-gap - params_.get_offset() - params_.get_b())));
 }
 
 FOUR_C_NAMESPACE_CLOSE

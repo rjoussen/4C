@@ -51,7 +51,7 @@ namespace
   //! test member function EvaluateDeriv
   TEST_F(CubicConstitutiveLawTest, TestEvaluateDeriv)
   {
-    EXPECT_NEAR(coconstlaw_->evaluate_deriv(-0.75, cnode.get()), 4.28125, 1.e-15);
-    EXPECT_ANY_THROW(coconstlaw_->evaluate_deriv(-0.25, cnode.get()));
+    EXPECT_NEAR(coconstlaw_->evaluate_derivative(-0.75, cnode.get()), 4.28125, 1.e-15);
+    EXPECT_ANY_THROW(coconstlaw_->evaluate_derivative(-0.25, cnode.get()));
   }
 }  // namespace

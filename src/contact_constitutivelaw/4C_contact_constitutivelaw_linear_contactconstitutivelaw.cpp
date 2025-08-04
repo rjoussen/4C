@@ -11,8 +11,6 @@
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 
-#include <vector>
-
 FOUR_C_NAMESPACE_OPEN
 
 
@@ -36,7 +34,8 @@ CONTACT::CONSTITUTIVELAW::LinearConstitutiveLaw::LinearConstitutiveLaw(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double CONTACT::CONSTITUTIVELAW::LinearConstitutiveLaw::evaluate(double gap, CONTACT::Node* cnode)
+double CONTACT::CONSTITUTIVELAW::LinearConstitutiveLaw::evaluate(
+    const double gap, CONTACT::Node* cnode)
 {
   if (gap + params_.get_offset() > 0)
   {
@@ -47,8 +46,8 @@ double CONTACT::CONSTITUTIVELAW::LinearConstitutiveLaw::evaluate(double gap, CON
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double CONTACT::CONSTITUTIVELAW::LinearConstitutiveLaw::evaluate_deriv(
-    double gap, CONTACT::Node* cnode)
+double CONTACT::CONSTITUTIVELAW::LinearConstitutiveLaw::evaluate_derivative(
+    const double gap, CONTACT::Node* cnode)
 {
   if (gap + params_.get_offset() > 0)
   {

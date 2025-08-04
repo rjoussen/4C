@@ -85,7 +85,7 @@ void CONTACT::ConstitutivelawInterface::assemble_reg_normal_forces(
       // Evaluate pressure
       const double pressure = coconstlaw_->evaluate(kappa * gap, cnode);
       // Evaluate pressure derivative
-      const double pressurederiv = coconstlaw_->evaluate_deriv(kappa * gap, cnode);
+      const double pressurederiv = coconstlaw_->evaluate_derivative(kappa * gap, cnode);
 
       localisincontact = true;
 

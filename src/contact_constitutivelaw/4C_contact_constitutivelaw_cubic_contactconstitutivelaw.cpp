@@ -11,8 +11,6 @@
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 
-#include <vector>
-
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
@@ -37,38 +35,43 @@ CONTACT::CONSTITUTIVELAW::CubicConstitutiveLaw::CubicConstitutiveLaw(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double CONTACT::CONSTITUTIVELAW::CubicConstitutiveLaw::evaluate(double gap, CONTACT::Node* cnode)
+double CONTACT::CONSTITUTIVELAW::CubicConstitutiveLaw::evaluate(
+    const double gap, CONTACT::Node* cnode)
 {
   if (gap + params_.get_offset() > 0)
   {
     FOUR_C_THROW("You should not be here. The Evaluate function is only tested for active nodes. ");
   }
-  double result = 1.0;
-  gap = -gap;
-  result = -1.0;
-  result *= params_.getdata() * (gap - params_.get_offset()) * (gap - params_.get_offset()) *
-                (gap - params_.get_offset()) +
-            params_.get_b() * (gap - params_.get_offset()) * (gap - params_.get_offset()) +
-            params_.get_c() * (gap - params_.get_offset()) + params_.get_d();
+
+  const double negative_gap = -gap;
+
+  const double result = -params_.getdata() * (negative_gap - params_.get_offset()) *
+                            (negative_gap - params_.get_offset()) *
+                            (negative_gap - params_.get_offset()) -
+                        params_.get_b() * (negative_gap - params_.get_offset()) *
+                            (negative_gap - params_.get_offset()) -
+                        params_.get_c() * (negative_gap - params_.get_offset()) - params_.get_d();
+
   if (result > 0)
     FOUR_C_THROW(
         "The constitutive function you are using seems to be positive, even though the gap is "
         "negative. Please check your coefficients!");
+
   return result;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double CONTACT::CONSTITUTIVELAW::CubicConstitutiveLaw::evaluate_deriv(
-    double gap, CONTACT::Node* cnode)
+double CONTACT::CONSTITUTIVELAW::CubicConstitutiveLaw::evaluate_derivative(
+    const double gap, CONTACT::Node* cnode)
 {
   if (gap + params_.get_offset() > 0)
   {
     FOUR_C_THROW("You should not be here. The Evaluate function is only tested for active nodes. ");
   }
-  gap = -gap;
-  return 3 * params_.getdata() * (gap - params_.get_offset()) * (gap - params_.get_offset()) +
-         2 * params_.get_b() * (gap - params_.get_offset()) + params_.get_c();
+
+  return 3 * params_.getdata() * (-gap - params_.get_offset()) * (-gap - params_.get_offset()) +
+         2 * params_.get_b() * (-gap - params_.get_offset()) + params_.get_c();
 }
 
 FOUR_C_NAMESPACE_CLOSE

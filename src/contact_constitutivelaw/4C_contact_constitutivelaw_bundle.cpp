@@ -11,6 +11,8 @@
 #include "4C_contact_constitutivelaw_contactconstitutivelaw_parameter.hpp"
 #include "4C_utils_exceptions.hpp"
 
+#include <map>
+
 FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 CONTACT::CONSTITUTIVELAW::Bundle::Bundle() : readfromproblem_(0) {}
@@ -39,6 +41,9 @@ void CONTACT::CONSTITUTIVELAW::Bundle::make_parameters()
     [[maybe_unused]] auto _ = CONTACT::CONSTITUTIVELAW::ConstitutiveLaw::factory(id);
   }
 }
+
+/*----------------------------------------------------------------------*/
+int CONTACT::CONSTITUTIVELAW::Bundle::num() const { return map_.size(); }
 
 /*----------------------------------------------------------------------*/
 Core::IO::InputParameterContainer& CONTACT::CONSTITUTIVELAW::Bundle::by_id(const int id)

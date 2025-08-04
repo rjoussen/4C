@@ -14,10 +14,6 @@
 
 #include "4C_io_input_parameter_container.hpp"
 
-#include <map>
-#include <memory>
-#include <vector>
-
 FOUR_C_NAMESPACE_OPEN
 
 namespace CONTACT
@@ -55,7 +51,7 @@ namespace CONTACT
       void make_parameters();
 
       /// return number of defined materials
-      int num() const { return map_.size(); }
+      int num() const;
 
       /** return contact constitutive law by ID
        *
