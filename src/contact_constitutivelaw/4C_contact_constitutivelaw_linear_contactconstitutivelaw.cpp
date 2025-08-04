@@ -36,7 +36,8 @@ CONTACT::CONSTITUTIVELAW::LinearConstitutiveLaw::LinearConstitutiveLaw(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double CONTACT::CONSTITUTIVELAW::LinearConstitutiveLaw::evaluate(double gap, CONTACT::Node* cnode)
+double CONTACT::CONSTITUTIVELAW::LinearConstitutiveLaw::evaluate(
+    const double gap, CONTACT::Node* cnode)
 {
   if (gap + params_.get_offset() > 0)
   {
@@ -48,7 +49,7 @@ double CONTACT::CONSTITUTIVELAW::LinearConstitutiveLaw::evaluate(double gap, CON
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 double CONTACT::CONSTITUTIVELAW::LinearConstitutiveLaw::evaluate_derivative(
-    double gap, CONTACT::Node* cnode)
+    const double gap, CONTACT::Node* cnode)
 {
   if (gap + params_.get_offset() > 0)
   {

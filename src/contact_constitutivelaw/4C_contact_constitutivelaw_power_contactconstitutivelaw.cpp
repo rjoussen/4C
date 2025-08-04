@@ -38,34 +38,36 @@ CONTACT::CONSTITUTIVELAW::PowerConstitutiveLaw::PowerConstitutiveLaw(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double CONTACT::CONSTITUTIVELAW::PowerConstitutiveLaw::evaluate(double gap, CONTACT::Node* cnode)
+double CONTACT::CONSTITUTIVELAW::PowerConstitutiveLaw::evaluate(
+    const double gap, CONTACT::Node* cnode)
 {
   if (gap + params_.get_offset() > 0)
   {
     FOUR_C_THROW("You should not be here. The Evaluate function is only tested for active nodes. ");
   }
-  double result = 1;
-  gap *= -1;
-  result = -1;
-  result *= (params_.getdata() * pow(gap - params_.get_offset(), params_.get_b()));
+
+  const double result = -(params_.getdata() * pow(-gap - params_.get_offset(), params_.get_b()));
+
   if (result > 0)
     FOUR_C_THROW(
         "The constitutive function you are using seems to be positive, even though the gap is "
         "negative. Please check your coefficients!");
+
   return result;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 double CONTACT::CONSTITUTIVELAW::PowerConstitutiveLaw::evaluate_derivative(
-    double gap, CONTACT::Node* cnode)
+    const double gap, CONTACT::Node* cnode)
 {
   if (gap + params_.get_offset() > 0.0)
   {
     FOUR_C_THROW("You should not be here. The Evaluate function is only tested for active nodes. ");
   }
-  gap = -gap;
-  return params_.getdata() * params_.get_b() * pow(gap - params_.get_offset(), params_.get_b() - 1);
+
+  return params_.getdata() * params_.get_b() *
+         pow(-gap - params_.get_offset(), params_.get_b() - 1);
 }
 
 FOUR_C_NAMESPACE_CLOSE

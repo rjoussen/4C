@@ -35,8 +35,8 @@ namespace CONTACT
       /// Return quick accessible Contact Constitutive Law parameter data
       virtual const CONTACT::CONSTITUTIVELAW::Parameter* parameter() const = 0;
 
-      virtual double evaluate(double gap, CONTACT::Node* cnode) = 0;
-      virtual double evaluate_derivative(double gap, CONTACT::Node* cnode) = 0;
+      virtual double evaluate(const double gap, CONTACT::Node* cnode) = 0;
+      virtual double evaluate_derivative(const double gap, CONTACT::Node* cnode) = 0;
 
       /* \brief create Contact ConstitutiveLaw object given the id of the constitutive law in the
        * input file
