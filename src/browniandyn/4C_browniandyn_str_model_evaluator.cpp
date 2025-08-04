@@ -666,8 +666,6 @@ void Solid::ModelEvaluator::BrownianDyn::generate_gaussian_random_numbers()
   double standarddeviation =
       pow(2.0 * eval_browniandyn_ptr_->kt() / brown_dyn_state_data_.browndyn_dt, 0.5);
 
-  // Set mean value and standard deviation of normal distribution
-  Global::Problem::instance()->random()->set_mean_stddev(meanvalue, standarddeviation);
   Global::Problem::instance()->random()->set_rand_range(0.0, 1.0);
 
   // multivector for stochastic forces evaluated by each element based on row map
@@ -677,8 +675,15 @@ void Solid::ModelEvaluator::BrownianDyn::generate_gaussian_random_numbers()
   int numele = randomnumbersrow->MyLength();
   int numperele = randomnumbersrow->NumVectors();
   int count = numele * numperele;
+
+  // Start out with zeros
   std::vector<double> randvec(count);
-  Global::Problem::instance()->random()->normal(randvec, count);
+  // Only generate random numbers if the distribution is not a point distribution
+  if (standarddeviation > 0.0)
+  {
+    Global::Problem::instance()->random()->set_mean_stddev(meanvalue, standarddeviation);
+    Global::Problem::instance()->random()->normal(randvec, count);
+  }
 
   // MAXRANDFORCE is a multiple of the standard deviation
   double maxrandforcefac = eval_browniandyn_ptr_->max_rand_force();
