@@ -526,7 +526,7 @@ void PoroPressureBased::PorofluidElastScatraArteryCouplingPair<dis_type_artery,
 
   // set time fac for right-hand side evaluation of coupling
   set_time_fac_rhs(
-      artery_density, *homogenized_scatra_material, timefacrhs_artery, timefacrhs_homogenized);
+      artery_density, homogenized_scatra_material.get(), timefacrhs_artery, timefacrhs_homogenized);
 }
 
 /*----------------------------------------------------------------------*
@@ -2245,7 +2245,7 @@ void PoroPressureBased::PorofluidElastScatraArteryCouplingPair<dis_type_artery,
 template <Core::FE::CellType dis_type_artery, Core::FE::CellType dis_type_homogenized, int dim>
 void PoroPressureBased::PorofluidElastScatraArteryCouplingPair<dis_type_artery,
     dis_type_homogenized, dim>::set_time_fac_rhs(const double& artery_density,
-    const Mat::MatList& scatra_material_homogenized, const double& timefacrhs_artery,
+    const Mat::MatList* scatra_material_homogenized, const double& timefacrhs_artery,
     const double& timefacrhs_homogenized)
 {
   timefacrhs_artery_ = timefacrhs_artery;
@@ -2283,9 +2283,9 @@ void PoroPressureBased::PorofluidElastScatraArteryCouplingPair<dis_type_artery,
       // homogenized
       for (int i_dof = 0; i_dof < num_dof_homogenized_; i_dof++)
       {
-        const int material_id = scatra_material_homogenized.mat_id(i_dof);
+        const int material_id = scatra_material_homogenized->mat_id(i_dof);
         std::shared_ptr<Core::Mat::Material> single_phase_material =
-            scatra_material_homogenized.material_by_id(material_id);
+            scatra_material_homogenized->material_by_id(material_id);
         int phase_id = -1;
         if (single_phase_material->material_type() ==
             Core::Materials::m_scatra_in_fluid_porofluid_pressure_based)

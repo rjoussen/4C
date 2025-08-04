@@ -123,7 +123,7 @@ namespace FLD
 
     // calculate wall shear stress
     void calc_tau_w(
-        int step, Core::LinAlg::Vector<double>& velnp, Core::LinAlg::Vector<double>& wss);
+        int step, Core::LinAlg::Vector<double>& velnp, Core::LinAlg::Vector<double>* wss);
 
     // l2 project vectors
     void l2_project_vector(Core::LinAlg::Vector<double>& veln,

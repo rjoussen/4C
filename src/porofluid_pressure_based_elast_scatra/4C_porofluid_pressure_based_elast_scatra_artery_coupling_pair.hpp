@@ -279,7 +279,7 @@ namespace PoroPressureBased
 
     //! set time factor needed for evaluation of right-hand side (function coupling) terms
     void set_time_fac_rhs(const double& artery_density,
-        const Mat::MatList& scatra_material_homogenized, const double& timefacrhs_artery,
+        const Mat::MatList* scatra_material_homogenized, const double& timefacrhs_artery,
         const double& timefacrhs_homogenized);
 
     //! pre-evaluate for lateral surface coupling

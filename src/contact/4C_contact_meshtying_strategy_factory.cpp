@@ -576,10 +576,9 @@ std::shared_ptr<CONTACT::MtAbstractStrategy> Mortar::STRATEGY::FactoryMT::build_
     const int& dof_offset, std::vector<std::shared_ptr<Mortar::Interface>>& interfaces) const
 {
   const auto stype = Teuchos::getIntegralValue<CONTACT::SolvingStrategy>(params, "STRATEGY");
-  std::shared_ptr<CONTACT::AbstractStrategyDataContainer> data_ptr = nullptr;
 
   return build_strategy(stype, params, poroslave, poromaster, dof_offset, interfaces,
-      discret().dof_row_map(), discret().node_row_map(), n_dim(), get_comm(), *data_ptr);
+      discret().dof_row_map(), discret().node_row_map(), n_dim(), get_comm());
 }
 
 /*----------------------------------------------------------------------------*
@@ -589,7 +588,7 @@ std::shared_ptr<CONTACT::MtAbstractStrategy> Mortar::STRATEGY::FactoryMT::build_
     const bool& poroslave, const bool& poromaster, const int& dof_offset,
     std::vector<std::shared_ptr<Mortar::Interface>>& interfaces,
     const Core::LinAlg::Map* dof_row_map, const Core::LinAlg::Map* node_row_map, const int dim,
-    const MPI_Comm& comm_ptr, Mortar::StrategyDataContainer& data_ptr)
+    const MPI_Comm& comm_ptr)
 {
   std::shared_ptr<CONTACT::MtAbstractStrategy> strategy_ptr = nullptr;
 

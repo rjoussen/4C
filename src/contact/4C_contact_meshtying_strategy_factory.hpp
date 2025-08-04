@@ -97,7 +97,6 @@ namespace Mortar
        * \param[in] node_row_map Node row map
        * \param[in] dim Spatial dimension
        * \param[in] comm_ptr Communicator
-       * \param data_ptr Strategy data container
        *
        * \todo ToDo Get rid of poroslave and poromaster parameters.
        *
@@ -106,11 +105,11 @@ namespace Mortar
        *
        * */
       static std::shared_ptr<CONTACT::MtAbstractStrategy> build_strategy(
-          const CONTACT::SolvingStrategy stype, const Teuchos::ParameterList& params,
+          CONTACT::SolvingStrategy stype, const Teuchos::ParameterList& params,
           const bool& poroslave, const bool& poromaster, const int& dof_offset,
           std::vector<std::shared_ptr<Mortar::Interface>>& interfaces,
-          const Core::LinAlg::Map* dof_row_map, const Core::LinAlg::Map* node_row_map,
-          const int dim, const MPI_Comm& comm_ptr, Mortar::StrategyDataContainer& data_ptr);
+          const Core::LinAlg::Map* dof_row_map, const Core::LinAlg::Map* node_row_map, int dim,
+          const MPI_Comm& comm_ptr);
 
      protected:
      private:
