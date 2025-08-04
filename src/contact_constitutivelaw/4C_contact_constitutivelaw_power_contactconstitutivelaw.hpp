@@ -64,12 +64,7 @@ namespace CONTACT
       explicit PowerConstitutiveLaw(CONTACT::CONSTITUTIVELAW::PowerConstitutiveLawParams params);
 
       //! @name Access methods
-
-      /// contact constitutive law type
-      CONTACT::CONSTITUTIVELAW::ConstitutiveLawType get_constitutive_law_type() const override
-      {
-        return CONTACT::CONSTITUTIVELAW::ConstitutiveLawType::colaw_power;
-      }
+      //@{
 
       /// Get scaling factor of power law
       double getdata() { return params_.getdata(); }
@@ -78,6 +73,7 @@ namespace CONTACT
 
       /// Return quick accessible contact constitutive law parameter data
       const CONTACT::CONSTITUTIVELAW::Parameter* parameter() const override { return &params_; }
+      //@}
 
       //! @name Evaluation methods
       //@{

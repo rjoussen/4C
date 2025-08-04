@@ -64,12 +64,7 @@ namespace CONTACT
       explicit LinearConstitutiveLaw(CONTACT::CONSTITUTIVELAW::LinearConstitutiveLawParams params);
 
       //! @name Access methods
-
-      /// contact constitutive law type
-      CONTACT::CONSTITUTIVELAW::ConstitutiveLawType get_constitutive_law_type() const override
-      {
-        return CONTACT::CONSTITUTIVELAW::ConstitutiveLawType::colaw_linear;
-      }
+      //@{
 
       /// Get slope of linear polynomial
       double getdata() { return params_.getdata(); }
@@ -78,6 +73,8 @@ namespace CONTACT
 
       /// Return quick accessible contact constitutive law parameter data
       const CONTACT::CONSTITUTIVELAW::Parameter* parameter() const override { return &params_; }
+
+      //@}
 
       //! @name Evaluation methods
       //@{

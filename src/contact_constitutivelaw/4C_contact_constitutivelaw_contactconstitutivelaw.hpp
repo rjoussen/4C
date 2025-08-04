@@ -32,9 +32,6 @@ namespace CONTACT
     class ConstitutiveLaw
     {
      public:
-      /// return type of this constitutive law
-      virtual CONTACT::CONSTITUTIVELAW::ConstitutiveLawType get_constitutive_law_type() const = 0;
-
       /// Return quick accessible Contact Constitutive Law parameter data
       virtual const CONTACT::CONSTITUTIVELAW::Parameter* parameter() const = 0;
 

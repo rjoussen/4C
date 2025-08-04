@@ -65,12 +65,7 @@ namespace CONTACT
           CONTACT::CONSTITUTIVELAW::BrokenRationalConstitutiveLawParams params);
 
       //! @name Access methods
-
-      /// return contact constitutive law type
-      CONTACT::CONSTITUTIVELAW::ConstitutiveLawType get_constitutive_law_type() const override
-      {
-        return CONTACT::CONSTITUTIVELAW::ConstitutiveLawType::colaw_brokenrational;
-      }
+      //@{
 
       /// Get scaling factor of the broken rational function
       double getdata() { return params_.getdata(); }
@@ -85,6 +80,7 @@ namespace CONTACT
       //@}
 
       //! @name Evaluation methods
+      //@{
 
       /// evaluate the constitutive law
       double evaluate(double gap, CONTACT::Node* cnode) override;
