@@ -1,9 +1,9 @@
-/*---------------------------------------------------------------------*/
-/*!
-\brief 4C git revision information
-\level 0
-*/
-/*---------------------------------------------------------------------*/
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
 #ifndef FOUR_C_CONFIG_REVISION_HPP
 #define FOUR_C_CONFIG_REVISION_HPP
@@ -12,6 +12,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
+//! Information on 4C's git revision
 namespace VersionControl
 {
   constexpr const char* git_hash = "@FOUR_C_GIT_HASH@";
