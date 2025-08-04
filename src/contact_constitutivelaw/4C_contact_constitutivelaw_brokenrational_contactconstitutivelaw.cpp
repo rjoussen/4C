@@ -57,7 +57,7 @@ double CONTACT::CONSTITUTIVELAW::BrokenRationalConstitutiveLaw::evaluate(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double CONTACT::CONSTITUTIVELAW::BrokenRationalConstitutiveLaw::evaluate_deriv(
+double CONTACT::CONSTITUTIVELAW::BrokenRationalConstitutiveLaw::evaluate_derivative(
     double gap, CONTACT::Node* cnode)
 {
   if (gap + params_.get_offset() > 0)

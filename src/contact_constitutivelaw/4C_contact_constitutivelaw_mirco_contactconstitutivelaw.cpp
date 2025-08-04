@@ -145,7 +145,7 @@ double CONTACT::CONSTITUTIVELAW::MircoConstitutiveLaw::evaluate(double gap, CONT
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double CONTACT::CONSTITUTIVELAW::MircoConstitutiveLaw::evaluate_deriv(
+double CONTACT::CONSTITUTIVELAW::MircoConstitutiveLaw::evaluate_derivative(
     double gap, CONTACT::Node* cnode)
 {
   if (gap + params_.get_offset() > 0.0)

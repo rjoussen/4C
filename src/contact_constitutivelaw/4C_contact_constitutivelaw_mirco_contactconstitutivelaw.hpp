@@ -117,7 +117,7 @@ namespace CONTACT
        * \param gap contact gap at the mortar node
        * \return Derivative of the pressure responses from MIRCO
        */
-      double evaluate_deriv(double gap, CONTACT::Node* cnode) override;
+      double evaluate_derivative(double gap, CONTACT::Node* cnode) override;
       //@}
 
      private:

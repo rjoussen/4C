@@ -82,7 +82,7 @@ namespace CONTACT
       double evaluate(double gap, CONTACT::Node* cnode) override;
 
       /// Evaluate derivative of the constitutive law
-      double evaluate_deriv(double gap, CONTACT::Node* cnode) override;
+      double evaluate_derivative(double gap, CONTACT::Node* cnode) override;
       //@}
 
      private:

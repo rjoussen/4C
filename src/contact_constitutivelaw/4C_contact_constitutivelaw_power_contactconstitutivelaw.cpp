@@ -57,7 +57,7 @@ double CONTACT::CONSTITUTIVELAW::PowerConstitutiveLaw::evaluate(double gap, CONT
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double CONTACT::CONSTITUTIVELAW::PowerConstitutiveLaw::evaluate_deriv(
+double CONTACT::CONSTITUTIVELAW::PowerConstitutiveLaw::evaluate_derivative(
     double gap, CONTACT::Node* cnode)
 {
   if (gap + params_.get_offset() > 0.0)
