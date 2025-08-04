@@ -123,14 +123,13 @@ void BeamInteraction::SubmodelEvaluator::BeamPotential::setup()
   check_init();
 
   // init and setup beam to beam contact data container
-  beam_potential_params_ptr_ =
-      std::make_shared<BeamInteraction::Potential::BeamPotentialParameters>();
+  beam_potential_parameters_ = BeamInteraction::Potential::BeamPotentialParameters();
   BeamInteraction::Potential::initialize_validate_beam_potential_params(
-      beam_potential_params(), g_state().get_time_n());
+      beam_potential_parameters(), g_state().get_time_n());
   print_console_welcome_message(std::cout);
 
   // build runtime visualization writer if desired
-  if (beam_potential_params().runtime_output_params.output_interval.has_value())
+  if (beam_potential_parameters().runtime_output_params.output_interval.has_value())
     init_output_runtime_beam_potential();
 
   // set flag
@@ -143,7 +142,7 @@ void BeamInteraction::SubmodelEvaluator::BeamPotential::post_setup()
 {
   check_init_setup();
 
-  if (beam_potential_params().potential_reduction_length.has_value())
+  if (beam_potential_parameters().potential_reduction_length.has_value())
     setup_potential_reduction_strategy();
 
   nearby_elements_map_.clear();
@@ -247,15 +246,15 @@ bool BeamInteraction::SubmodelEvaluator::BeamPotential::evaluate_force()
           currconds.push_back(j);
 
           // be careful here, as npotlaw =1 corresponds to first entry of ki_/mi_, therefore index 0
-          if (npotlaw1 > (int)beam_potential_params().potential_law_prefactors.size())
+          if (npotlaw1 > (int)beam_potential_parameters().potential_law_prefactors.size())
             FOUR_C_THROW(
                 "number of potential law specified in line charge condition exceeds"
                 " number of defined potential laws!");
 
           pair_is_active = elepairptr->evaluate(&(eleforce_centerlineDOFs[0]),
               &(eleforce_centerlineDOFs[1]), nullptr, nullptr, nullptr, nullptr, currconds,
-              beam_potential_params().potential_law_prefactors.at(npotlaw1 - 1),
-              beam_potential_params().potential_law_exponents.at(npotlaw1 - 1));
+              beam_potential_parameters().potential_law_prefactors.at(npotlaw1 - 1),
+              beam_potential_parameters().potential_law_exponents.at(npotlaw1 - 1));
 
           // Todo make this more efficient by summing all contributions from one element pair
           //      before assembly and communication
@@ -336,7 +335,7 @@ bool BeamInteraction::SubmodelEvaluator::BeamPotential::evaluate_stiff()
           currconds.push_back(conditions_element2[j]);
 
           // be careful here, as npotlaw =1 corresponds to first entry of ki_/mi_, therefore index 0
-          if (npotlaw1 > (int)beam_potential_params().potential_law_prefactors.size())
+          if (npotlaw1 > (int)beam_potential_parameters().potential_law_prefactors.size())
             FOUR_C_THROW(
                 "number of potential law specified in line charge condition exceeds"
                 " number of defined potential laws!");
@@ -345,8 +344,8 @@ bool BeamInteraction::SubmodelEvaluator::BeamPotential::evaluate_stiff()
           pair_is_active = elepairptr->evaluate(nullptr, nullptr, &(elestiff_centerlineDOFs[0][0]),
               &(elestiff_centerlineDOFs[0][1]), &(elestiff_centerlineDOFs[1][0]),
               &(elestiff_centerlineDOFs[1][1]), currconds,
-              beam_potential_params().potential_law_prefactors.at(npotlaw1 - 1),
-              beam_potential_params().potential_law_exponents.at(npotlaw1 - 1));
+              beam_potential_parameters().potential_law_prefactors.at(npotlaw1 - 1),
+              beam_potential_parameters().potential_law_exponents.at(npotlaw1 - 1));
 
           // Todo make this more efficient by summing all contributions from one element pair
           //      before assembly and communication
@@ -436,7 +435,7 @@ bool BeamInteraction::SubmodelEvaluator::BeamPotential::evaluate_force_stiff()
           currconds.push_back(conditions_element2[j]);
 
           // be careful here, as npotlaw =1 corresponds to first entry of ki_/mi_, therefore index 0
-          if (npotlaw1 > (int)beam_potential_params().potential_law_prefactors.size())
+          if (npotlaw1 > (int)beam_potential_parameters().potential_law_prefactors.size())
             FOUR_C_THROW(
                 "number of potential law specified in line charge condition exceeds"
                 " number of defined potential laws!");
@@ -446,8 +445,8 @@ bool BeamInteraction::SubmodelEvaluator::BeamPotential::evaluate_force_stiff()
               elepairptr->evaluate(&(eleforce_centerlineDOFs[0]), &(eleforce_centerlineDOFs[1]),
                   &(elestiff_centerlineDOFs[0][0]), &(elestiff_centerlineDOFs[0][1]),
                   &(elestiff_centerlineDOFs[1][0]), &(elestiff_centerlineDOFs[1][1]), currconds,
-                  beam_potential_params().potential_law_prefactors.at(npotlaw1 - 1),
-                  beam_potential_params().potential_law_exponents.at(npotlaw1 - 1));
+                  beam_potential_parameters().potential_law_prefactors.at(npotlaw1 - 1),
+                  beam_potential_parameters().potential_law_exponents.at(npotlaw1 - 1));
 
           // Todo make this more efficient by summing all contributions from one element pair
           //      before assembly and communication
@@ -498,7 +497,7 @@ bool BeamInteraction::SubmodelEvaluator::BeamPotential::pre_update_step_element(
    * from previous time step */
   if (visualization_manager_ != nullptr and
       g_state().get_step_n() %
-              beam_potential_params().runtime_output_params.output_interval.value() ==
+              beam_potential_parameters().runtime_output_params.output_interval.value() ==
           0)
   {
     write_time_step_output_runtime_beam_potential();
@@ -596,7 +595,7 @@ void BeamInteraction::SubmodelEvaluator::BeamPotential::post_read_restart()
 {
   check_init_setup();
 
-  if (beam_potential_params().potential_reduction_length.has_value())
+  if (beam_potential_parameters().potential_reduction_length.has_value())
     setup_potential_reduction_strategy();
 
   nearby_elements_map_.clear();
@@ -612,7 +611,7 @@ void BeamInteraction::SubmodelEvaluator::BeamPotential::run_post_iterate(
   check_init_setup();
 
   if (visualization_manager_ != nullptr and
-      beam_potential_params().runtime_output_params.write_every_iteration)
+      beam_potential_parameters().runtime_output_params.write_every_iteration)
   {
     write_iteration_output_runtime_beam_potential(solver.getNumIterations());
   }
@@ -643,9 +642,9 @@ void BeamInteraction::SubmodelEvaluator::BeamPotential::get_half_interaction_dis
 {
   check_init_setup();
 
-  if (beam_potential_params().cutoff_radius.has_value())
+  if (beam_potential_parameters().cutoff_radius.has_value())
   {
-    half_interaction_distance = 0.5 * beam_potential_params().cutoff_radius.value();
+    half_interaction_distance = 0.5 * beam_potential_parameters().cutoff_radius.value();
 
     if (g_state().get_my_rank() == 0)
       Core::IO::cout(Core::IO::verbose) << " beam potential half interaction distance "
@@ -838,7 +837,7 @@ void BeamInteraction::SubmodelEvaluator::BeamPotential::setup_potential_reductio
   // determine length to edge for each element and add to map
   for (const auto& [ele_gid, _] : data_maps.ele_gid_length_map)
   {
-    beam_potential_params().ele_gid_prior_length_map.insert(std::make_pair(
+    beam_potential_parameters().ele_gid_prior_length_map.insert(std::make_pair(
         ele_gid, std::make_pair(LengthToEdgeImplementation::determine_length_to_edge(data_maps,
                                     ele_gid, data_maps.ele_gid_left_node_gid_map.at(ele_gid)),
                      LengthToEdgeImplementation::determine_length_to_edge(
@@ -869,9 +868,9 @@ void BeamInteraction::SubmodelEvaluator::BeamPotential::create_beam_potential_el
       ele_ptrs[1] = *secondeleiter;
 
       std::shared_ptr<BeamInteraction::BeamPotentialPair> newbeaminteractionpair =
-          BeamInteraction::BeamPotentialPair::create(ele_ptrs, beam_potential_params());
+          BeamInteraction::BeamPotentialPair::create(ele_ptrs, beam_potential_parameters());
 
-      newbeaminteractionpair->init(beam_potential_params_ptr(), ele_ptrs[0], ele_ptrs[1]);
+      newbeaminteractionpair->init(&beam_potential_parameters(), ele_ptrs[0], ele_ptrs[1]);
 
       newbeaminteractionpair->setup();
 
@@ -945,7 +944,7 @@ void BeamInteraction::SubmodelEvaluator::BeamPotential::print_console_welcome_me
   {
     std::cout << "=============== Beam Potential-Based Interaction ===============" << std::endl;
 
-    switch (beam_potential_params().type)
+    switch (beam_potential_parameters().type)
     {
       case FourC::BeamInteraction::Potential::Type::surface:
       {
@@ -963,12 +962,12 @@ void BeamInteraction::SubmodelEvaluator::BeamPotential::print_console_welcome_me
 
     std::cout << "Potential Law:       Phi(r) = ";
     for (unsigned int isummand = 0;
-        isummand < beam_potential_params().potential_law_prefactors.size(); ++isummand)
+        isummand < beam_potential_parameters().potential_law_prefactors.size(); ++isummand)
     {
       if (isummand > 0) std::cout << " + ";
 
-      std::cout << "(" << beam_potential_params().potential_law_prefactors.at(isummand)
-                << ") * r^(-" << beam_potential_params().potential_law_exponents.at(isummand)
+      std::cout << "(" << beam_potential_parameters().potential_law_prefactors.at(isummand)
+                << ") * r^(-" << beam_potential_parameters().potential_law_exponents.at(isummand)
                 << ")";
     }
     std::cout << std::endl;
@@ -984,8 +983,8 @@ void BeamInteraction::SubmodelEvaluator::BeamPotential::init_output_runtime_beam
   check_init();
 
   visualization_manager_ = std::make_shared<Core::IO::VisualizationManager>(
-      beam_potential_params().runtime_output_params.visualization_parameters, discret().get_comm(),
-      "beam-potential");
+      beam_potential_parameters().runtime_output_params.visualization_parameters,
+      discret().get_comm(), "beam-potential");
 }
 
 /*-----------------------------------------------------------------------------------------------*
@@ -996,7 +995,7 @@ void BeamInteraction::SubmodelEvaluator::BeamPotential::
   check_init_setup();
 
   auto [output_time, output_step] = Core::IO::get_time_and_time_step_index_for_output(
-      beam_potential_params().runtime_output_params.visualization_parameters,
+      beam_potential_parameters().runtime_output_params.visualization_parameters,
       g_state().get_time_n(), g_state().get_step_n());
   write_output_runtime_beam_potential(output_step, output_time);
 }
@@ -1009,7 +1008,7 @@ void BeamInteraction::SubmodelEvaluator::BeamPotential::
   check_init_setup();
 
   auto [output_time, output_step] = Core::IO::get_time_and_time_step_index_for_output(
-      beam_potential_params().runtime_output_params.visualization_parameters,
+      beam_potential_parameters().runtime_output_params.visualization_parameters,
       g_state().get_time_n(), g_state().get_step_n(), iteration_number);
   write_output_runtime_beam_potential(output_step, output_time);
 }
@@ -1026,11 +1025,11 @@ void BeamInteraction::SubmodelEvaluator::BeamPotential::write_output_runtime_bea
   // estimate for number of interacting Gauss points = number of row points for writer object
   unsigned int num_row_points = 0;
 
-  if (beam_potential_params().runtime_output_params.write_forces_moments_per_pair)
+  if (beam_potential_parameters().runtime_output_params.write_forces_moments_per_pair)
   {
     num_row_points = 2 * beam_potential_element_pairs_.size() *
-                     beam_potential_params().n_integration_segments *
-                     beam_potential_params().n_gauss_points;
+                     beam_potential_parameters().n_integration_segments *
+                     beam_potential_parameters().n_gauss_points;
   }
   else
   {
@@ -1039,8 +1038,8 @@ void BeamInteraction::SubmodelEvaluator::BeamPotential::write_output_runtime_bea
     //      FOUR_C_THROW("visualization of resulting forces not implemented in parallel yet!");
 
     num_row_points = discret().num_global_elements() *
-                     beam_potential_params().n_integration_segments *
-                     beam_potential_params().n_gauss_points;
+                     beam_potential_parameters().n_integration_segments *
+                     beam_potential_parameters().n_gauss_points;
   }
 
   /* Note: - each UID set is not unique due to the fact that each GP produces two force
@@ -1129,7 +1128,7 @@ void BeamInteraction::SubmodelEvaluator::BeamPotential::write_output_runtime_bea
 
 
       // this is easier, since data is computed and stored in this 'element-pairwise' format
-      if (beam_potential_params().runtime_output_params.write_forces_moments_per_pair)
+      if (beam_potential_parameters().runtime_output_params.write_forces_moments_per_pair)
       {
         uid_0_beam_1_gid.push_back((*pair_iter)->element1()->id());
         uid_1_beam_2_gid.push_back((*pair_iter)->element2()->id());
@@ -1277,19 +1276,19 @@ void BeamInteraction::SubmodelEvaluator::BeamPotential::write_output_runtime_bea
 
   // append all desired output data to the writer object's storage
 
-  if (beam_potential_params().runtime_output_params.write_forces)
+  if (beam_potential_parameters().runtime_output_params.write_forces)
   {
     visualization_manager_->get_visualization_data().set_point_data_vector(
         "force", potential_force_vector, num_spatial_dimensions);
   }
 
-  if (beam_potential_params().runtime_output_params.write_moments)
+  if (beam_potential_parameters().runtime_output_params.write_moments)
   {
     visualization_manager_->get_visualization_data().set_point_data_vector(
         "moment", potential_moment_vector, num_spatial_dimensions);
   }
 
-  if (beam_potential_params().runtime_output_params.write_uids)
+  if (beam_potential_parameters().runtime_output_params.write_uids)
   {
     visualization_manager_->get_visualization_data().set_point_data_vector(
         "uid_0_beam_1_gid", uid_0_beam_1_gid, 1);

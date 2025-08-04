@@ -24,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
 BeamInteraction::BeamPotentialPair::BeamPotentialPair()
     : isinit_(false),
       issetup_(false),
-      beam_potential_params_(),
+      beam_potential_parameters_(nullptr),
       element1_(nullptr),
       element2_(nullptr)
 {
@@ -34,12 +34,12 @@ BeamInteraction::BeamPotentialPair::BeamPotentialPair()
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 void BeamInteraction::BeamPotentialPair::init(
-    const std::shared_ptr<BeamInteraction::Potential::BeamPotentialParameters> params_ptr,
+    const BeamInteraction::Potential::BeamPotentialParameters* params_ptr,
     const Core::Elements::Element* element1, const Core::Elements::Element* element2)
 {
   issetup_ = false;
 
-  beam_potential_params_ = params_ptr;
+  beam_potential_parameters_ = params_ptr;
 
   element1_ = element1;
   element2_ = element2;

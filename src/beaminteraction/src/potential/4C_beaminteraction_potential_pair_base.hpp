@@ -59,7 +59,7 @@ namespace BeamInteraction
     */
     virtual ~BeamPotentialPair() = default;
     //! Initialization
-    void init(const std::shared_ptr<BeamInteraction::Potential::BeamPotentialParameters> params_ptr,
+    void init(const BeamInteraction::Potential::BeamPotentialParameters* params_ptr,
         Core::Elements::Element const* element1, Core::Elements::Element const* element2);
 
     //! Setup
@@ -96,9 +96,9 @@ namespace BeamInteraction
 
     //! @name Access methods
 
-    inline std::shared_ptr<BeamInteraction::Potential::BeamPotentialParameters> params() const
+    inline BeamInteraction::Potential::BeamPotentialParameters const* params() const
     {
-      return beam_potential_params_;
+      return beam_potential_parameters_;
     }
 
     /*!
@@ -192,7 +192,7 @@ namespace BeamInteraction
 
    private:
     //! beam potential parameter data container
-    std::shared_ptr<BeamInteraction::Potential::BeamPotentialParameters> beam_potential_params_;
+    const BeamInteraction::Potential::BeamPotentialParameters* beam_potential_parameters_;
 
     //! first element of interacting pair
     Core::Elements::Element const* element1_;

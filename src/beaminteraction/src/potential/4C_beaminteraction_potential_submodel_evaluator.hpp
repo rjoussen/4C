@@ -131,24 +131,17 @@ namespace BeamInteraction
       //! @}
 
      private:
-      inline BeamInteraction::Potential::BeamPotentialParameters const& beam_potential_params()
+      inline BeamInteraction::Potential::BeamPotentialParameters const& beam_potential_parameters()
           const
       {
         check_init();
-        return *beam_potential_params_ptr_;
+        return beam_potential_parameters_;
       }
 
-      inline BeamInteraction::Potential::BeamPotentialParameters& beam_potential_params()
+      inline BeamInteraction::Potential::BeamPotentialParameters& beam_potential_parameters()
       {
         check_init();
-        return *beam_potential_params_ptr_;
-      }
-
-      inline std::shared_ptr<BeamInteraction::Potential::BeamPotentialParameters>
-      beam_potential_params_ptr() const
-      {
-        check_init();
-        return beam_potential_params_ptr_;
+        return beam_potential_parameters_;
       }
 
       //!@name routines that are not derived and handle beam potential-based interactions
@@ -200,8 +193,7 @@ namespace BeamInteraction
 
      private:
       //! data container holding all beam contact related parameters
-      std::shared_ptr<BeamInteraction::Potential::BeamPotentialParameters>
-          beam_potential_params_ptr_;
+      BeamInteraction::Potential::BeamPotentialParameters beam_potential_parameters_;
 
       //! type of eles in bins  // Todo kept line for future improvement
       //    Core::Binstrategy::Utils::BinContentType bin_beamcontent_;
