@@ -1093,15 +1093,15 @@ namespace Discret::Elements
     for (int j = 0; j < Internal::num_dim<celltype>; j++)
     {
       const double C_inv_0_j = inverse_right_cauchy_green(0, j);
-      const double C_inv_1_j = inverse_right_cauchy_green(0, j);
-      const double C_inv_2_j = inverse_right_cauchy_green(0, j);
+      const double C_inv_1_j = inverse_right_cauchy_green(1, j);
+      const double C_inv_2_j = inverse_right_cauchy_green(2, j);
 
       for (int i = 0; i < Internal::num_nodes<celltype>; i++)
       {
         const int k = Internal::num_dim<celltype> * i + j;
         const double N_XYZ_Finv_0_i = N_XYZ_Finv(0, i);
-        const double N_XYZ_Finv_1_i = N_XYZ_Finv(0, i);
-        const double N_XYZ_Finv_2_i = N_XYZ_Finv(0, i);
+        const double N_XYZ_Finv_1_i = N_XYZ_Finv(1, i);
+        const double N_XYZ_Finv_2_i = N_XYZ_Finv(2, i);
 
         dfstressb_dv(0, k) = 2 * N_XYZ_Finv_0_i * C_inv_0_j;
         dfstressb_dv(1, k) = 2 * N_XYZ_Finv_1_i * C_inv_1_j;
