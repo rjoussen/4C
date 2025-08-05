@@ -102,23 +102,12 @@ namespace Constraints
 
 
     //! Evaluate constraint conditions and assemble the results
-    void evaluate_constraint(
-        Teuchos::ParameterList&
-            params,  ///< parameter list to communicate between elements and discretization
-        std::shared_ptr<Core::LinAlg::SparseOperator>
-            systemmatrix1,  ///< sparse matrix that may be filled by assembly of element
-                            ///< contributions
-        Core::LinAlg::SparseOperator&
-            systemmatrix2,  ///< sparse (rectangular) matrix that may be filled by assembly of
-                            ///< element contributions
-        std::shared_ptr<Core::LinAlg::Vector<double>>
-            systemvector1,                            ///< distributed vector that may be filled by
-                                                      ///< aasembly of element contributions
-        Core::LinAlg::Vector<double>& systemvector2,  ///< distributed vector that may be filled by
-                                                      ///< aasembly of element contributions
-        Core::LinAlg::Vector<double>& systemvector3   ///< distributed vector that may be filled
-                                                      ///< by aasembly of element contributions
-    );
+    void evaluate_constraint(Teuchos::ParameterList& params,
+        ///< parameter list to communicate between elements and discretization
+        std::shared_ptr<Core::LinAlg::SparseOperator> systemmatrix1,
+        ///< sparse (rectangular) matrix that may be filled by assembly of
+        ///< element contributions
+        std::shared_ptr<Core::LinAlg::Vector<double>> systemvector1);
 
     //! Compute and assemble initial constraint values (depending on user specific activation times)
     void evaluate_error(

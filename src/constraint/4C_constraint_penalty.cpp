@@ -157,18 +157,14 @@ void Constraints::ConstraintPenalty::evaluate(Teuchos::ParameterList& params,
     default:
       FOUR_C_THROW("Wrong constraint type to evaluate systemvector!");
   }
-  evaluate_constraint(
-      params, systemmatrix1, *systemmatrix2, systemvector1, *systemvector2, *systemvector3);
-  return;
+  evaluate_constraint(params, systemmatrix1, systemvector1);
 }
 
 /*-----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void Constraints::ConstraintPenalty::evaluate_constraint(Teuchos::ParameterList& params,
     std::shared_ptr<Core::LinAlg::SparseOperator> systemmatrix1,
-    Core::LinAlg::SparseOperator& systemmatrix2,
-    std::shared_ptr<Core::LinAlg::Vector<double>> systemvector1,
-    Core::LinAlg::Vector<double>& systemvector2, Core::LinAlg::Vector<double>& systemvector3)
+    std::shared_ptr<Core::LinAlg::Vector<double>> systemvector1)
 {
   if (!(actdisc_->filled())) FOUR_C_THROW("fill_complete() was not called");
   if (!actdisc_->have_dofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
