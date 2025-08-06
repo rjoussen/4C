@@ -751,14 +751,15 @@ namespace Discret::Elements
           dsolidpressure_ddisp)
   {
     // get volume fraction primary variables
-    std::vector<double> volfracphi(&fluidmultiphase_phiAtGP[numfluidphases],
-        &fluidmultiphase_phiAtGP[numfluidphases + numvolfrac]);
+    std::vector<double> volfracphi(fluidmultiphase_phiAtGP.data() + numfluidphases,
+        fluidmultiphase_phiAtGP.data() + numfluidphases + numvolfrac);
     double sumaddvolfrac = 0.0;
     for (int ivolfrac = 0; ivolfrac < numvolfrac; ivolfrac++) sumaddvolfrac += volfracphi[ivolfrac];
 
     // get volume fraction pressure at [numfluidphases+numvolfrac...nummultifluiddofpernode-1]
-    std::vector<double> volfracpressure(&fluidmultiphase_phiAtGP[numfluidphases + numvolfrac],
-        &fluidmultiphase_phiAtGP[nummultifluiddofpernode]);
+    std::vector<double> volfracpressure(
+        fluidmultiphase_phiAtGP.data() + numfluidphases + numvolfrac,
+        fluidmultiphase_phiAtGP.data() + nummultifluiddofpernode);
 
     // p_s = (porosity - sumaddvolfrac)/porosity * fluidpress
     //       + 1.0 / porosity sum_i=1^numvolfrac (volfrac_i*pressure_i)
@@ -790,8 +791,8 @@ namespace Discret::Elements
       const std::vector<double>& fluidmultiphase_phiAtGP)
   {
     // get volume fraction primary variables at [numfluidphases-1...numfluidphase-1+numvolfrac]
-    std::vector<double> volfracphi(&fluidmultiphase_phiAtGP[numfluidphases],
-        &fluidmultiphase_phiAtGP[numfluidphases + numvolfrac]);
+    std::vector<double> volfracphi(fluidmultiphase_phiAtGP.data() + numfluidphases,
+        fluidmultiphase_phiAtGP.data() + numfluidphases + numvolfrac);
     double sumaddvolfrac = 0.0;
     for (int ivolfrac = 0; ivolfrac < numvolfrac; ivolfrac++) sumaddvolfrac += volfracphi[ivolfrac];
 
@@ -801,8 +802,9 @@ namespace Discret::Elements
     press *= (porosity - sumaddvolfrac) / porosity;
 
     // get volfrac pressures at [numfluidphases+numvolfrac...nummultifluiddofpernode-1]
-    std::vector<double> volfracpressure(&fluidmultiphase_phiAtGP[numfluidphases + numvolfrac],
-        &fluidmultiphase_phiAtGP[nummultifluiddofpernode]);
+    std::vector<double> volfracpressure(
+        fluidmultiphase_phiAtGP.data() + numfluidphases + numvolfrac,
+        fluidmultiphase_phiAtGP.data() + nummultifluiddofpernode);
 
     // second part
     for (int ivolfrac = 0; ivolfrac < numvolfrac; ivolfrac++)
@@ -1902,7 +1904,7 @@ namespace Discret::Elements
     Core::LinAlg::SerialDenseMatrix satderiv(numfluidphases, numfluidphases, true);
     Core::LinAlg::SerialDenseMatrix pressderiv(numfluidphases, numfluidphases, true);
     std::vector<double> fluidphi(
-        &fluidmultiphase_phiAtGP[0], &fluidmultiphase_phiAtGP[numfluidphases]);
+        fluidmultiphase_phiAtGP.data(), fluidmultiphase_phiAtGP.data() + numfluidphases);
 
     // evaluate the pressures
     porofluidmat.evaluate_gen_pressure(genpress, fluidphi);
@@ -1965,7 +1967,7 @@ namespace Discret::Elements
     std::vector<double> sat(numfluidphases, 0.0);
     std::vector<double> press(numfluidphases, 0.0);
     std::vector<double> fluidphi(
-        &fluidmultiphase_phiAtGP[0], &fluidmultiphase_phiAtGP[numfluidphases]);
+        fluidmultiphase_phiAtGP.data(), fluidmultiphase_phiAtGP.data() + numfluidphases);
 
     // evaluate the pressures
     porofluidmat.evaluate_gen_pressure(genpress, fluidphi);
@@ -2000,8 +2002,8 @@ namespace Discret::Elements
       const double solidpressure, const double porosity, std::vector<double>& solidpressurederiv)
   {
     // get volume fraction primary variables
-    std::vector<double> volfracphi(&fluidmultiphase_phiAtGP[numfluidphases],
-        &fluidmultiphase_phiAtGP[numfluidphases + numvolfrac]);
+    std::vector<double> volfracphi(fluidmultiphase_phiAtGP.data() + numfluidphases,
+        fluidmultiphase_phiAtGP.data() + numfluidphases + numvolfrac);
     double sumaddvolfrac = 0.0;
     for (int ivolfrac = 0; ivolfrac < numvolfrac; ivolfrac++) sumaddvolfrac += volfracphi[ivolfrac];
 
@@ -2013,8 +2015,9 @@ namespace Discret::Elements
     for (int iphase = 0; iphase < numfluidphases; iphase++) solidpressurederiv[iphase] *= scale;
 
     // get volfrac pressures at [numfluidphases+numvolfrac...nummultifluiddofpernode-1]
-    std::vector<double> volfracpressure(&fluidmultiphase_phiAtGP[numfluidphases + numvolfrac],
-        &fluidmultiphase_phiAtGP[nummultifluiddofpernode]);
+    std::vector<double> volfracpressure(
+        fluidmultiphase_phiAtGP.data() + numfluidphases + numvolfrac,
+        fluidmultiphase_phiAtGP.data() + nummultifluiddofpernode);
 
     for (int ivolfrac = 0; ivolfrac < numvolfrac; ivolfrac++)
     {
