@@ -7,6 +7,7 @@
 
 #include "4C_structure_new_nln_solver_factory.hpp"
 
+#include "4C_linear_solver_method_linalg.hpp"
 #include "4C_structure_new_nln_solver_nox.hpp"
 #include "4C_structure_new_nln_solver_utils.hpp"
 #include "4C_structure_new_timint_base.hpp"
@@ -58,6 +59,16 @@ std::shared_ptr<Solid::Nln::SOLVER::Generic> Solid::Nln::SOLVER::Factory::build_
                                             .sublist("Newton")
                                             .get<std::string>("Forcing Term Method");
       pnewton.set("Forcing Term Method", forcing_term_method);
+
+      if (sdyn->get_lin_solvers()[Inpar::Solid::model_structure]->params().isSublist(
+              "Belos Parameters"))
+      {
+        const double tolerance = sdyn->get_lin_solvers()[Inpar::Solid::model_structure]
+                                     ->params()
+                                     .sublist("Belos Parameters")
+                                     .get<double>("Convergence Tolerance");
+        pnewton.sublist("Linear Solver").set("Tolerance", tolerance);
+      }
 
       // Line Search
       Teuchos::ParameterList& plinesearch = nox_params.sublist("Line Search");
