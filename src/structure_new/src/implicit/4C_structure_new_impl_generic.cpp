@@ -151,8 +151,6 @@ bool Solid::IMPLICIT::Generic::apply_correction_system(const enum NOX::Nln::Corr
 
   reset_eval_params();
 
-  eval_data().set_correction_type(type);
-
   bool ok = false;
   switch (type)
   {
@@ -265,11 +263,6 @@ void NOX::Nln::PrePostOp::IMPLICIT::Generic::run_post_apply_jacobian_inverse(
       copy_to_our_vector(rhs), result_view, copy_to_our_vector(xold), grp);
 
   impl_.print_jacobian_in_matlab_format(grp);
-
-  // reset any possible set correction type at this point
-  const Solid::ModelEvaluator::Data& eval_data = impl_.eval_data();
-  const_cast<Solid::ModelEvaluator::Data&>(eval_data).set_correction_type(
-      NOX::Nln::CorrectionType::vague);
 }
 
 

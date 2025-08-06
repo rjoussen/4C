@@ -25,7 +25,6 @@ NOX::Nln::Group::Group(Teuchos::ParameterList& printParams, Teuchos::ParameterLi
     const Teuchos::RCP<::NOX::Epetra::LinearSystem>& linSys)
     : GroupBase(printParams, i, x, linSys),
       skipUpdateX_(false),
-      corr_type_(NOX::Nln::CorrectionType::vague),
       prePostOperatorPtr_(Teuchos::make_rcp<NOX::Nln::GROUP::PrePostOperator>(grpOptionParams))
 {
   // empty constructor
@@ -34,18 +33,13 @@ NOX::Nln::Group::Group(Teuchos::ParameterList& printParams, Teuchos::ParameterLi
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 NOX::Nln::Group::Group(const NOX::Nln::Group& source, ::NOX::CopyType type)
-    : GroupBase(source, type),
-      skipUpdateX_(false),
-      corr_type_(NOX::Nln::CorrectionType::vague),
-      prePostOperatorPtr_(source.prePostOperatorPtr_)
+    : GroupBase(source, type), skipUpdateX_(false), prePostOperatorPtr_(source.prePostOperatorPtr_)
 {
   switch (type)
   {
     case ::NOX::DeepCopy:
     {
       skipUpdateX_ = source.skipUpdateX_;
-      corr_type_ = source.corr_type_;
-      ev_ = source.ev_;
       break;
     }
     default:
@@ -76,20 +70,13 @@ Teuchos::RCP<::NOX::Abstract::Group> NOX::Nln::Group::clone(::NOX::CopyType type
   const NOX::Nln::Group& nln_src = dynamic_cast<const NOX::Nln::Group&>(source);
 
   this->skipUpdateX_ = nln_src.skipUpdateX_;
-  this->corr_type_ = nln_src.corr_type_;
-  this->ev_ = nln_src.ev_;
 
   return *this;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::Nln::Group::resetIsValid()
-{
-  ::NOX::Epetra::Group::resetIsValid();
-  ev_.isvalid_ = false;
-  corr_type_ = NOX::Nln::CorrectionType::vague;
-}
+void NOX::Nln::Group::resetIsValid() { ::NOX::Epetra::Group::resetIsValid(); }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -517,30 +504,6 @@ void NOX::Nln::Group::throw_error(
   msg << "ERROR - NOX::Nln::Group::" << functionName << " - " << errorMsg << std::endl;
 
   FOUR_C_THROW("{}", msg.str());
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-NOX::Nln::Group::Eigenvalues& NOX::Nln::Group::Eigenvalues::operator=(const Eigenvalues& src)
-{
-  if (not src.isvalid_)
-  {
-    this->isvalid_ = false;
-    return *this;
-  }
-
-  this->realpart_.resize(src.realpart_.length());
-  this->realpart_ = src.realpart_;
-
-  this->imaginarypart_.resize(src.imaginarypart_.length());
-  this->imaginarypart_ = src.imaginarypart_;
-
-  this->real_max_ = src.real_max_;
-  this->real_min_ = src.real_min_;
-
-  this->isvalid_ = src.isvalid_;
-
-  return *this;
 }
 
 FOUR_C_NAMESPACE_CLOSE
