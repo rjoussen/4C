@@ -25,8 +25,8 @@ void Adapter::FBIConstraintBridgePenalty::setup(const Core::LinAlg::Map* beam_ma
 {
   // Initialize all necessary vectors and matrices
   FBIConstraintBridge::setup(beam_map, fluid_map, fluidmatrix, fluidmeshtying);
-  fs_ = std::make_shared<Core::LinAlg::FEVector<double>>(beam_map->get_epetra_block_map());
-  ff_ = std::make_shared<Core::LinAlg::FEVector<double>>(fluid_map->get_epetra_block_map());
+  fs_ = std::make_shared<Core::LinAlg::FEVector<double>>(*beam_map);
+  ff_ = std::make_shared<Core::LinAlg::FEVector<double>>(*fluid_map);
   cff_ = fluidmatrix;
 }
 /*----------------------------------------------------------------------*/

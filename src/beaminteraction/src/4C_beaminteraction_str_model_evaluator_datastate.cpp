@@ -71,10 +71,8 @@ void Solid::ModelEvaluator::BeamInteractionDataState::setup(
   discolnp_ = std::make_shared<Core::LinAlg::Vector<double>>(*ia_discret->dof_col_map());
 
   // force
-  forcen_ = std::make_shared<Core::LinAlg::FEVector<double>>(
-      ia_discret->dof_row_map()->get_epetra_block_map());
-  forcenp_ = std::make_shared<Core::LinAlg::FEVector<double>>(
-      ia_discret->dof_row_map()->get_epetra_block_map());
+  forcen_ = std::make_shared<Core::LinAlg::FEVector<double>>(*ia_discret->dof_row_map());
+  forcenp_ = std::make_shared<Core::LinAlg::FEVector<double>>(*ia_discret->dof_row_map());
 
   stiff_ = std::make_shared<Core::LinAlg::SparseMatrix>(
       *ia_discret->dof_row_map(), 81, true, true, Core::LinAlg::SparseMatrix::FE_MATRIX);

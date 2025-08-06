@@ -233,6 +233,12 @@ namespace Core::LinAlg
       return vector_->Export(A, Importer.get_epetra_import(), CombineMode, Indexor);
     }
 
+    int export_to(const Epetra_SrcDistObject& A, const Core::LinAlg::Export& Exporter,
+        Epetra_CombineMode CombineMode, const Epetra_OffsetIndex* Indexor = nullptr)
+    {
+      return vector_->Export(A, Exporter.get_epetra_export(), CombineMode, Indexor);
+    }
+
     int export_to(const Epetra_SrcDistObject& A, const Epetra_Export& Exporter,
         Epetra_CombineMode CombineMode, const Epetra_OffsetIndex* Indexor = nullptr)
     {

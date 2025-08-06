@@ -34,7 +34,7 @@ void CONTACT::NitscheStrategy::apply_force_stiff_cmt(
 
   // just a Nitsche-version
   std::shared_ptr<Core::LinAlg::FEVector<double>> fc =
-      std::make_shared<Core::LinAlg::FEVector<double>>(f->get_map().get_epetra_block_map());
+      std::make_shared<Core::LinAlg::FEVector<double>>(f->get_map());
   std::shared_ptr<Core::LinAlg::SparseMatrix> kc = std::make_shared<Core::LinAlg::SparseMatrix>(
       Core::LinAlg::Map(dynamic_cast<Core::LinAlg::SparseMatrix*>(&(*kt))->row_map()), 100, true,
       false, Core::LinAlg::SparseMatrix::FE_MATRIX);
@@ -250,7 +250,7 @@ std::shared_ptr<Core::LinAlg::FEVector<double>> CONTACT::NitscheStrategy::setup_
   {
     case CONTACT::VecBlockType::displ:
       return std::make_shared<Core::LinAlg::FEVector<double>>(
-          Global::Problem::instance()->get_dis("structure")->dof_row_map()->get_epetra_block_map());
+          *Global::Problem::instance()->get_dis("structure")->dof_row_map());
     default:
       FOUR_C_THROW("you should not be here");
       break;
