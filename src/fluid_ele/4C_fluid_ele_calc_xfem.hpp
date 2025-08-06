@@ -235,7 +235,7 @@ namespace Discret
               LB_proj_matrix,  ///< prescribed projection matrix for laplace-beltrami problems
           const Core::LinAlg::Matrix<nsd_, 1>& x,       ///< global coordinates of Gaussian point
           const Core::LinAlg::Matrix<nsd_, 1>& normal,  ///< normal vector at Gaussian point
-          Discret::Elements::XFLUID::SlaveElementInterface<distype>&
+          Discret::Elements::XFLUID::SlaveElementInterface<distype>*
               si,                                       ///< side implementation for cutter element
           Core::LinAlg::Matrix<3, 1>& rst,              ///< local coordinates of GP for bg element
           double& kappa_m,                              ///< fluid sided weighting

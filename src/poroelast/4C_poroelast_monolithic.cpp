@@ -575,7 +575,7 @@ void PoroElast::Monolithic::setup_rhs(bool firstcall)
   setup_vector(*rhs_, structure_field()->rhs(), fluid_field()->rhs());
 
   // add rhs terms due to no penetration condition
-  nopen_handle_->apply_cond_rhs(*iterinc_, *rhs_);
+  if (iterinc_) nopen_handle_->apply_cond_rhs(*iterinc_, *rhs_);
 }
 
 void PoroElast::Monolithic::prepare_time_step() { PoroBase::prepare_time_step(); }
