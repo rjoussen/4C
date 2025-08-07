@@ -9,6 +9,7 @@
 # Switch off cmake-format so that each test specification can be one a single line.
 
 # four_c_test: regular .4C.yaml file based tests
+four_c_test(TEST_FILE beam3r_herm2line3_static_contact_penalty_with_positional_coupling.yaml NP 1)
 four_c_test(TEST_FILE ale2d_laplace_material.4C.yaml NP 2 RESTART_STEP 1)
 four_c_test(TEST_FILE ale2d_laplace_spatial.4C.yaml NP 2)
 four_c_test(TEST_FILE ale2d_solid.4C.yaml NP 2 RESTART_STEP 1)

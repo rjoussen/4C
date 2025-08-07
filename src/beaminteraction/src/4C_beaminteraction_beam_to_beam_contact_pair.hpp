@@ -140,6 +140,13 @@ namespace BeamInteraction
     */
     double get_energy() const override;
 
+    /**
+     * \brief Returns the type of this beam contact element pair.
+     */
+    ContactPairType get_type() const override final
+    {
+      return ContactPairType::beam_to_beam_contact;
+    }
     //@}
 
    private:

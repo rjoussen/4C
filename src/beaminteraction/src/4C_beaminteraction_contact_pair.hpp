@@ -51,6 +51,15 @@ namespace BeamInteraction
   class BeamInteractionConditions;
   class BeamToSolidMortarManager;
 
+  enum class ContactPairType
+  {
+    unspecified_base,
+    beam_to_beam_contact,
+    beam_to_beam_point_coupling,
+    beam_to_solid_base,
+    beam_to_sphere_contact,
+  };
+
   /*!
    \brief
    */
@@ -386,6 +395,12 @@ namespace BeamInteraction
     {
       FOUR_C_THROW("This method has to be implemented in the derived class.");
     }
+
+    /**
+     * \brief Returns the type of this beam contact pair.
+     */
+    virtual ContactPairType get_type() const { return ContactPairType::unspecified_base; }
+
 
    protected:
     //! returns init state

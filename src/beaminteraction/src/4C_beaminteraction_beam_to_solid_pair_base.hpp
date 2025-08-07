@@ -159,6 +159,11 @@ namespace BeamInteraction
       return 0.0;
     }
 
+    /**
+     * \brief Returns the type of this beam contact element pair.
+     */
+    ContactPairType get_type() const override final { return ContactPairType::beam_to_solid_base; }
+
    protected:
     /**
      * \brief This function evaluates the beam position at an integration point for the pairs.

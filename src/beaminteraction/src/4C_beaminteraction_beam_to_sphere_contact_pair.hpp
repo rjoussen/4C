@@ -95,6 +95,13 @@ namespace BeamInteraction
      */
     void print(std::ostream& out) const override;
 
+    /**
+     * \brief Returns the type of this beam to sphere contact pair.
+     */
+    ContactPairType get_type() const override final
+    {
+      return ContactPairType::beam_to_sphere_contact;
+    }
 
     /** \brief print this beam contact element pair to screen
      *

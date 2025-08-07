@@ -514,7 +514,10 @@ void BeamInteraction::SubmodelEvaluator::BeamContact::write_output_runtime_beam_
   std::vector<std::shared_ptr<BeamInteraction::BeamContactPair>>::const_iterator pair_iter;
   for (pair_iter = contact_elepairs_.begin(); pair_iter != contact_elepairs_.end(); ++pair_iter)
   {
-    num_row_points += 2 * (*pair_iter)->get_num_all_active_contact_point_pairs();
+    if ((*pair_iter)->get_type() == ContactPairType::beam_to_beam_contact)
+    {
+      num_row_points += 2 * (*pair_iter)->get_num_all_active_contact_point_pairs();
+    }
   }
 
   // get and prepare storage for point coordinate values
@@ -541,7 +544,9 @@ void BeamInteraction::SubmodelEvaluator::BeamContact::write_output_runtime_beam_
   // loop over contact pairs and retrieve all active contact point coordinates
   for (pair_iter = contact_elepairs_.begin(); pair_iter != contact_elepairs_.end(); ++pair_iter)
   {
-    if ((*pair_iter)->get_contact_flag() == true)
+    // ensure that
+    if ((*pair_iter)->get_contact_flag() == true &&
+        (*pair_iter)->get_type() == ContactPairType::beam_to_beam_contact)
     {
       // active contact points of element 1 and element 2
       (*pair_iter)->get_all_active_contact_point_coords_element1(coordinates_ele1_this_pair);

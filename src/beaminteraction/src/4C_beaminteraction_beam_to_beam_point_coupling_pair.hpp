@@ -165,6 +165,14 @@ namespace BeamInteraction
      */
     void print_summary_one_line_per_active_segment_pair(std::ostream& out) const override;
 
+    /**
+     * \brief Returns the type of this beam point couplint pair.
+     */
+    ContactPairType get_type() const override final
+    {
+      return ContactPairType::beam_to_beam_point_coupling;
+    }
+
    private:
     /**
      * \brief Evaluate the positional coupling terms and directly assemble them into the global
