@@ -111,6 +111,8 @@ class Vector(Primitive):
         # If dict create object
         if isinstance(self.value_type, dict):
             self.value_type = _metadata_object_from_dict(self.value_type)
+        if self.validator is not None and not isinstance(self.validator, Validator):
+            self.validator = validator_from_dict(self.validator)
 
 
 @dataclass
@@ -462,6 +464,11 @@ class RangeValidator(Validator):
     maximum_exclusive: bool
 
 
+@dataclass
+class AllElementsValidator(Validator):
+    inner_validator: object
+
+
 def validator_from_dict(validator_dict):
     if len(validator_dict) > 1:
         raise ValueError(
@@ -472,6 +479,8 @@ def validator_from_dict(validator_dict):
 
     match validator_type:
         case "range":
-            validator_class = RangeValidator
-
-    return validator_class(**validator_settings)
+            return RangeValidator(**validator_settings)
+        case "all_elements":
+            return AllElementsValidator(validator_from_dict(validator_settings))
+        case _:
+            raise ValueError("Validator '{}' not known.".format(validator_type))
