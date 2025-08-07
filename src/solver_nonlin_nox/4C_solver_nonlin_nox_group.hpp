@@ -208,37 +208,8 @@ namespace NOX
        *  need a multiplicative update of some beam elements' rotation (pseudo-)vector DOFs) */
       bool skipUpdateX_;
 
-      /// correction system type
-      NOX::Nln::CorrectionType corr_type_;
-
       //! pointer to an user defined wrapped NOX::Nln::Abstract::PrePostOperator object.
       Teuchos::RCP<NOX::Nln::GROUP::PrePostOperator> prePostOperatorPtr_;
-
-     private:
-      /// container for eigenvalue info
-      struct Eigenvalues
-      {
-        /// assign operator
-        Eigenvalues& operator=(const Eigenvalues& src);
-
-        /// real part of the eigenvalues
-        Core::LinAlg::SerialDenseVector realpart_;
-
-        /// imaginary part of the eigenvalues
-        Core::LinAlg::SerialDenseVector imaginarypart_;
-
-        /// maximal real part
-        double real_max_ = 0.0;
-
-        /// minimal real part
-        double real_min_ = 0.0;
-
-        /// Are the eigenvalues valid?
-        bool isvalid_ = false;
-      };
-
-      /// instance of the Eigenvalue container
-      Eigenvalues ev_;
     };  // class Group
   }  // namespace Nln
 }  // namespace NOX

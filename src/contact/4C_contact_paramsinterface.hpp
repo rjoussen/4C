@@ -66,9 +66,6 @@ namespace CONTACT
     //! get the is_default_step indicator
     virtual bool is_default_step() const = 0;
 
-    //! get correction type
-    virtual NOX::Nln::CorrectionType get_correction_type() const = 0;
-
     //! get the current time step [derived]
     virtual double get_delta_time() const = 0;
 

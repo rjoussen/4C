@@ -171,7 +171,6 @@ Solid::ModelEvaluator::Data::Data()
       delta_time_(-1.0),
       step_length_(-1.0),
       is_default_step_(true),
-      corr_type_(NOX::Nln::CorrectionType::vague),
       timintfactor_disp_(-1.0),
       timintfactor_vel_(-1.0),
       stressdata_ptr_(nullptr),

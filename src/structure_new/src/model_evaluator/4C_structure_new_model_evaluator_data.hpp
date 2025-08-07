@@ -263,13 +263,6 @@ namespace Solid
         return *model_ptr_;
       }
 
-      /// get the current non-linear solver correction type
-      NOX::Nln::CorrectionType get_correction_type() const
-      {
-        check_init_setup();
-        return corr_type_;
-      }
-
       //!@name set routines which can be called inside of the element [derived]
       //! @{
 
@@ -469,12 +462,6 @@ namespace Solid
       inline void set_is_default_step(const bool& is_default_step)
       {
         is_default_step_ = is_default_step;
-      }
-
-      /// set the current system correction type of the non-linear solver
-      inline void set_correction_type(const NOX::Nln::CorrectionType corr_type)
-      {
-        corr_type_ = corr_type;
       }
 
       //! set the total time for the evaluation call
@@ -878,10 +865,6 @@ namespace Solid
        *  Only important for the internal elementwise update. */
       bool is_default_step_;
 
-      /// system correction type (e.g. in case of a SOC step, see the
-      /// NOX::Nln::Inner::StatusTest::Filter method)
-      NOX::Nln::CorrectionType corr_type_;
-
       //!@}
 
       //! @name time integration parameters
@@ -1137,13 +1120,6 @@ namespace Solid
         check_init();
         return str_data_ptr_->is_predictor();
       };
-
-      /// derived
-      NOX::Nln::CorrectionType get_correction_type() const override
-      {
-        check_init();
-        return str_data_ptr_->get_correction_type();
-      }
 
       /*! \brief Get the current active predictor type
        *
