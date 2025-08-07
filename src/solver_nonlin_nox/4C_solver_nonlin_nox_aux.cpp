@@ -571,6 +571,33 @@ std::string NOX::Nln::Aux::get_direction_method_list_name(const Teuchos::Paramet
   }
 }
 
+template <typename T>
+T NOX::Nln::Aux::calc_vector_norm(const Core::LinAlg::Vector<T>& vector,
+    const ::NOX::Abstract::Vector::NormType type, const bool is_scaled)
+{
+  T value;
+
+  switch (type)
+  {
+    case ::NOX::Abstract::Vector::OneNorm:
+      vector.norm_1(&value);
+      break;
+    case ::NOX::Abstract::Vector::TwoNorm:
+      vector.norm_2(&value);
+      break;
+    case ::NOX::Abstract::Vector::MaxNorm:
+      vector.norm_inf(&value);
+      break;
+    default:
+      FOUR_C_THROW("The norm type is not supported");
+  }
+
+  // do the scaling if desired
+  if (is_scaled) value /= static_cast<T>(vector.global_length());
+
+  return value;
+}
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template bool NOX::Nln::Aux::is_quantity<NOX::Nln::StatusTest::NormF>(
@@ -594,5 +621,7 @@ template int NOX::Nln::Aux::get_outer_status<NOX::Nln::StatusTest::NormWRMS>(
     const ::NOX::StatusTest::Generic& test);
 template int NOX::Nln::Aux::get_outer_status<NOX::Nln::StatusTest::ActiveSet>(
     const ::NOX::StatusTest::Generic& test);
+template double NOX::Nln::Aux::calc_vector_norm<double>(const Core::LinAlg::Vector<double>& vector,
+    const ::NOX::Abstract::Vector::NormType type, const bool is_scaled);
 
 FOUR_C_NAMESPACE_CLOSE

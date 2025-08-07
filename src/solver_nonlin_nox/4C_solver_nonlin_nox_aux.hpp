@@ -137,6 +137,10 @@ namespace NOX
       /// return the name of the parameter list corresponding to the set direction method
       std::string get_direction_method_list_name(const Teuchos::ParameterList& p);
 
+      /// Wrapper to compute vector norms
+      template <typename T>
+      T calc_vector_norm(const Core::LinAlg::Vector<T>& vector,
+          const ::NOX::Abstract::Vector::NormType type, const bool is_scaled = false);
     }  // namespace Aux
   }  // namespace Nln
 }  // namespace NOX
