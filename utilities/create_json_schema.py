@@ -296,7 +296,10 @@ def schema_from_vector(vector):
     if isinstance(vector.description, NotSet):
         # ignore this entry
         vector.description = None
-    items = get_schema(vector.value_type)
+    inner_type = vector.value_type
+    if vector.validator is not None:
+        inner_type.validator = vector.validator.inner_validator
+    items = get_schema(inner_type)
     return array_schema(vector, items)
 
 
