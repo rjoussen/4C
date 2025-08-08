@@ -1690,6 +1690,14 @@ int Core::LinAlg::SparseMatrix::replace_my_values(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
+int Core::LinAlg::SparseMatrix::replace_global_values(
+    int global_row, int num_entries, const double* values, const int* indices) const
+{
+  return sysmat_->ReplaceGlobalValues(global_row, num_entries, values, indices);
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 int Core::LinAlg::SparseMatrix::insert_global_values(
     int global_row, int num_entries, const double* values, const int* indices) const
 {

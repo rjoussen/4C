@@ -218,8 +218,8 @@ void Core::LinAlg::matrix_put(const Core::LinAlg::SparseMatrix& A, const double 
     if (err) FOUR_C_THROW("ExtractGlobalRowCopy returned err={}", err);
     if (scalarA != 1.0)
       for (int j = 0; j < NumEntries; ++j) Values[j] *= scalarA;
-    err = B.epetra_matrix()->ReplaceGlobalValues(Row, NumEntries, Values.data(), Indices.data());
-    if (err) FOUR_C_THROW("ReplaceGlobalValues returned err={}", err);
+    err = B.replace_global_values(Row, NumEntries, Values.data(), Indices.data());
+    if (err) FOUR_C_THROW("replace_global_values() failed with error code {}", err);
   }
 }
 

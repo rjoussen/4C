@@ -578,6 +578,10 @@ namespace Core::LinAlg
     int replace_my_values(
         int my_row, int num_entries, const double* values, const int* indices) const;
 
+    /// Replaces values in a global row.
+    int replace_global_values(
+        int global_row, int num_entries, const double* values, const int* indices) const;
+
     /// Inserts values into a global row.
     int insert_global_values(
         int global_row, int num_entries, const double* values, const int* indices) const;
