@@ -489,6 +489,10 @@ namespace Core::LinAlg
       return sysmat_->NumAllocatedGlobalEntries(global_row);
     }
 
+    /// Returns the number of global nonzero diagonal entries, based on global row/column index
+    /// comparisons.
+    int num_global_diagonals() const { return sysmat_->NumGlobalDiagonals(); };
+
     /// Returns the global row index for give local row index, returns IndexBase-1 if we don't have
     /// this local row.
     int global_row_index(int local_row_index) const { return sysmat_->GRID(local_row_index); }

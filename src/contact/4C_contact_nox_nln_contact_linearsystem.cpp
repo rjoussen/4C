@@ -311,8 +311,7 @@ void NOX::Nln::CONTACT::LinearSystem::LinearSubProblem::extract_active_blocks(
         isempty[r][c] = true;
     }
 
-    if (block_mat(r, r).epetra_matrix()->NumGlobalDiagonals() ==
-            block_mat(r, r).num_global_nonzeros() &&
+    if (block_mat(r, r).num_global_diagonals() == block_mat(r, r).num_global_nonzeros() &&
         !isempty[r][r])
       isdiagonal[r] = true;
   }
@@ -418,7 +417,7 @@ void NOX::Nln::CONTACT::LinearSystem::LinearSubProblem::extract_active_blocks(
 void NOX::Nln::CONTACT::LinearSystem::apply_diagonal_inverse(Core::LinAlg::SparseMatrix& mat,
     Core::LinAlg::Vector<double>& lhs, const Core::LinAlg::Vector<double>& rhs) const
 {
-  if (mat.epetra_matrix()->NumGlobalDiagonals() != mat.num_global_nonzeros())
+  if (mat.num_global_diagonals() != mat.num_global_nonzeros())
     FOUR_C_THROW("The given matrix seems to be no diagonal matrix!");
 
   Core::LinAlg::Vector<double> lhs_block(mat.domain_map(), true);
