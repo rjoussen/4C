@@ -429,10 +429,10 @@ void NOX::Nln::CONTACT::LinearSystem::apply_diagonal_inverse(Core::LinAlg::Spars
 
   Core::LinAlg::Vector<double> diag_mat(mat.range_map(), true);
   int err = mat.extract_diagonal_copy(diag_mat);
-  if (err) FOUR_C_THROW("ExtractDiagonalCopy failed! (err={})", err);
+  if (err) FOUR_C_THROW("extract_diagonal_copy failed with error code {}", err);
 
   err = lhs_block.reciprocal_multiply(1.0, diag_mat, rhs_block, 0.0);
-  if (err) FOUR_C_THROW("ReciprocalMultiply failed! (err={})", err);
+  if (err) FOUR_C_THROW("reciprocal_multiply failed with error code {}", err);
 
   Core::LinAlg::assemble_my_vector(0.0, lhs, 1.0, lhs_block);
 }
