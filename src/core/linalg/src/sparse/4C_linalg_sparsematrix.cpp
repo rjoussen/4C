@@ -1300,11 +1300,11 @@ void Core::LinAlg::SparseMatrix::apply_dirichlet_with_trafo(const Core::LinAlg::
         {
           // extract values of trafo at the inclined dbc dof
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-          int err = trafo.epetra_matrix()->ExtractGlobalRowCopy(
+          int err = trafo.extract_global_row_copy(
               row, trafomaxnumentries, trafonumentries, trafovalues.data(), trafoindices.data());
           if (err < 0) FOUR_C_THROW("Epetra_CrsMatrix::ExtractGlobalRowCopy returned err={}", err);
 #else
-          trafo.epetra_matrix()->ExtractGlobalRowCopy(
+          trafo.extract_global_row_copy(
               row, trafomaxnumentries, trafonumentries, trafovalues.data(), trafoindices.data());
 #endif
         }
