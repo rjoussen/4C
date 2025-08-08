@@ -379,7 +379,7 @@ void Core::LinAlg::KrylovProjector::create_projector(std::shared_ptr<Core::LinAl
     const int grid = P->global_row_index(rr);
 
     // add identity matrix by adding 1 on diagonal entries
-    int err = P->epetra_matrix()->InsertGlobalValues(grid, 1, &one, &grid);
+    int err = P->insert_global_values(grid, 1, &one, &grid);
     if (err < 0)
     {
       err = P->epetra_matrix()->SumIntoGlobalValues(grid, 1, &one, &grid);
@@ -573,8 +573,7 @@ Core::LinAlg::KrylovProjector::multiply_multi_vector_multi_vector(
     }
 
     // insert values in mat
-    int err = mat->epetra_matrix()->InsertGlobalValues(
-        grid, indices.size(), rowvals.data(), indices.data());
+    int err = mat->insert_global_values(grid, indices.size(), rowvals.data(), indices.data());
     if (err < 0)
     {
       FOUR_C_THROW(
