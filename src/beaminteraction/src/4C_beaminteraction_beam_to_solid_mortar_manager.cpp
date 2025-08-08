@@ -264,6 +264,15 @@ void BeamInteraction::BeamToSolidMortarManager::set_global_maps()
       discret_->dof(node, solid_dofs);
   }
 
+  auto make_unique_sorted = [](std::vector<int>& vector)
+  {
+    std::sort(vector.begin(), vector.end());
+    vector.erase(std::unique(vector.begin(), vector.end()), vector.end());
+  };
+
+  make_unique_sorted(beam_dofs);
+  make_unique_sorted(solid_dofs);
+
   // Create the beam and solid maps.
   beam_dof_rowmap_ = std::make_shared<Core::LinAlg::Map>(
       -1, beam_dofs.size(), beam_dofs.data(), 0, discret_->get_comm());
