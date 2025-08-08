@@ -382,7 +382,7 @@ void Core::LinAlg::KrylovProjector::create_projector(std::shared_ptr<Core::LinAl
     int err = P->insert_global_values(grid, 1, &one, &grid);
     if (err < 0)
     {
-      err = P->epetra_matrix()->SumIntoGlobalValues(grid, 1, &one, &grid);
+      err = P->sum_into_global_values(grid, 1, &one, &grid);
       if (err < 0)
       {
         FOUR_C_THROW("insertion error when trying to computekrylov projection matrix.");
