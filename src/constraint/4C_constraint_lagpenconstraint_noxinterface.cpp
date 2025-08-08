@@ -94,16 +94,7 @@ double LAGPENCONSTRAINT::NoxInterface::get_constraint_rhs_norms(
   // no constraint contributions present
   if (!constrRhs) return 0.0;
 
-  const ::NOX::Epetra::Vector constrRhs_nox(
-      Teuchos::rcpFromRef(constrRhs->get_ref_of_epetra_vector()),
-      ::NOX::Epetra::Vector::CreateView);
-
-
-  double constrNorm = -1.0;
-  constrNorm = constrRhs_nox.norm(type);
-  if (isScaled) constrNorm /= static_cast<double>(constrRhs_nox.length());
-
-  return constrNorm;
+  return NOX::Nln::Aux::calc_vector_norm(*constrRhs, type, isScaled);
 }
 
 /*----------------------------------------------------------------------------*
@@ -126,9 +117,6 @@ double LAGPENCONSTRAINT::NoxInterface::get_lagrange_multiplier_update_rms(
       gstate_ptr_->extract_model_entries(Inpar::Solid::model_lag_pen_constraint, xNew_copy);
 
   lagincr_ptr->update(1.0, *lagnew_ptr, -1.0);
-  const ::NOX::Epetra::Vector lagincr_nox_ptr(
-      Teuchos::rcpFromRef(lagincr_ptr->get_ref_of_epetra_vector()),
-      ::NOX::Epetra::Vector::CreateView);
 
   rms = NOX::Nln::Aux::root_mean_square_norm(
       aTol, rTol, *lagnew_ptr, *lagincr_ptr, disable_implicit_weighting);
@@ -155,17 +143,8 @@ double LAGPENCONSTRAINT::NoxInterface::get_lagrange_multiplier_update_norms(
       gstate_ptr_->extract_model_entries(Inpar::Solid::model_lag_pen_constraint, xNew_copy);
 
   lagincr_ptr->update(1.0, *lagnew_ptr, -1.0);
-  const ::NOX::Epetra::Vector lagincr_nox_ptr(
-      Teuchos::rcpFromRef(lagincr_ptr->get_ref_of_epetra_vector()),
-      ::NOX::Epetra::Vector::CreateView);
 
-  double updatenorm = -1.0;
-
-  updatenorm = lagincr_nox_ptr.norm(type);
-  // do scaling if desired
-  if (isScaled) updatenorm /= static_cast<double>(lagincr_nox_ptr.length());
-
-  return updatenorm;
+  return NOX::Nln::Aux::calc_vector_norm(*lagincr_ptr, type, isScaled);
 }
 
 /*----------------------------------------------------------------------------*
@@ -182,17 +161,7 @@ double LAGPENCONSTRAINT::NoxInterface::get_previous_lagrange_multiplier_norms(
   std::shared_ptr<Core::LinAlg::Vector<double>> lagold_ptr =
       gstate_ptr_->extract_model_entries(Inpar::Solid::model_lag_pen_constraint, xOld_copy);
 
-  const ::NOX::Epetra::Vector lagold_nox_ptr(
-      Teuchos::rcpFromRef(lagold_ptr->get_ref_of_epetra_vector()),
-      ::NOX::Epetra::Vector::CreateView);
-
-  double lagoldnorm = -1.0;
-
-  lagoldnorm = lagold_nox_ptr.norm(type);
-  // do scaling if desired
-  if (isScaled) lagoldnorm /= static_cast<double>(lagold_nox_ptr.length());
-
-  return lagoldnorm;
+  return NOX::Nln::Aux::calc_vector_norm(*lagold_ptr, type, isScaled);
 }
 
 

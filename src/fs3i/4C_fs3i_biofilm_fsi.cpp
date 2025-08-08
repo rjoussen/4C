@@ -591,17 +591,17 @@ void FS3I::BiofilmFSI::inner_timeloop()
 
       if (avgrowth)
       {
-        (*((normtempinflux_.get_ref_of_epetra_vector())(0)))[lnodeid] += tempflux;
-        (*((normtemptraction_.get_ref_of_epetra_vector())(0)))[lnodeid] += abs(tempnormtrac);
-        (*((tangtemptractionone_.get_ref_of_epetra_vector())(0)))[lnodeid] += abs(temptangtracone);
-        (*((tangtemptractiontwo_.get_ref_of_epetra_vector())(0)))[lnodeid] += abs(temptangtractwo);
+        normtempinflux_[lnodeid] += tempflux;
+        normtemptraction_[lnodeid] += abs(tempnormtrac);
+        tangtemptractionone_[lnodeid] += abs(temptangtracone);
+        tangtemptractiontwo_[lnodeid] += abs(temptangtractwo);
       }
       else
       {
-        (*((norminflux_->get_ref_of_epetra_vector())(0)))[lnodeid] = tempflux;
-        (*((normtraction_->get_ref_of_epetra_vector())(0)))[lnodeid] = abs(tempnormtrac);
-        (*((tangtractionone_->get_ref_of_epetra_vector())(0)))[lnodeid] = abs(temptangtracone);
-        (*((tangtractiontwo_->get_ref_of_epetra_vector())(0)))[lnodeid] = abs(temptangtractwo);
+        (*norminflux_)[lnodeid] = tempflux;
+        (*normtraction_)[lnodeid] = abs(tempnormtrac);
+        (*tangtractionone_)[lnodeid] = abs(temptangtracone);
+        (*tangtractiontwo_)[lnodeid] = abs(temptangtractwo);
       }
     }
   }
@@ -621,15 +621,10 @@ void FS3I::BiofilmFSI::inner_timeloop()
       int gnodeid = condnodemap->gid(i);
       int lnodeid = strudis->node_row_map()->lid(gnodeid);
 
-      // Fix this.
-      (*((norminflux_->get_ref_of_epetra_vector())(0)))[lnodeid] =
-          (*((normtempinflux_.get_ref_of_epetra_vector())(0)))[lnodeid] / step_fsi_;
-      (*((normtraction_->get_ref_of_epetra_vector())(0)))[lnodeid] =
-          (*((normtemptraction_.get_ref_of_epetra_vector())(0)))[lnodeid] / step_fsi_;
-      (*((tangtractionone_->get_ref_of_epetra_vector())(0)))[lnodeid] =
-          (*((tangtemptractionone_.get_ref_of_epetra_vector())(0)))[lnodeid] / step_fsi_;
-      (*((tangtractiontwo_->get_ref_of_epetra_vector())(0)))[lnodeid] =
-          (*((tangtemptractiontwo_.get_ref_of_epetra_vector())(0)))[lnodeid] / step_fsi_;
+      (*norminflux_)[lnodeid] = normtempinflux_[lnodeid] / step_fsi_;
+      (*normtraction_)[lnodeid] = normtemptraction_[lnodeid] / step_fsi_;
+      (*tangtractionone_)[lnodeid] = tangtemptractionone_[lnodeid] / step_fsi_;
+      (*tangtractiontwo_)[lnodeid] = tangtemptractiontwo_[lnodeid] / step_fsi_;
     }
   }
 
