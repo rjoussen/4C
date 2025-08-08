@@ -463,6 +463,7 @@ namespace Core::LinAlg
     /// Returns the number of rows locally owned.
     int num_my_rows() const { return sysmat_->NumMyRows(); }
 
+    /// Returns the current number of nonzero entries in specified local row on this processor.
     int num_my_entries(int my_row) const { return sysmat_->NumMyEntries(my_row); }
 
     /// Returns the number of global rows.
@@ -471,7 +472,7 @@ namespace Core::LinAlg
     /// Returns the number of global rows.
     int num_global_cols() const { return sysmat_->NumGlobalCols(); }
 
-    // Returns the number of nonzero entries in a global row.
+    /// Returns the number of nonzero entries in a global row.
     int num_global_entries(int global_row) const { return sysmat_->NumGlobalEntries(global_row); }
 
     /// Returns the maximum number of nonzero entries across all rows on this processor.
