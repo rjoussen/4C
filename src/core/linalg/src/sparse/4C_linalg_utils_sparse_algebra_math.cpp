@@ -403,7 +403,7 @@ std::shared_ptr<Core::LinAlg::SparseMatrix> Core::LinAlg::matrix_sparse_inverse(
     if (err != 0) FOUR_C_THROW("Error in serial QR solve.");
 
     // 6. set calculated row into Ainv
-    A_inverse->epetra_matrix()->ReplaceMyValues(k, localX.length(), localX.values(), Ik);
+    A_inverse->replace_my_values(k, localX.length(), localX.values(), Ik);
   }
   A_inverse->complete();
 
