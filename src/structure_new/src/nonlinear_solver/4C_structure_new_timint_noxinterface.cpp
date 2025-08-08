@@ -203,7 +203,7 @@ double Solid::TimeInt::NoxInterface::get_primary_rhs_norms(const Epetra_Vector& 
 
       int_ptr_->remove_condensed_contributions_from_rhs(*rhs_ptr);
 
-      rhsnorm = calculate_norm(rhs_ptr->get_ref_of_epetra_vector(), type, isscaled);
+      rhsnorm = NOX::Nln::Aux::calc_vector_norm(*rhs_ptr, type, isscaled);
 
       break;
     }
@@ -212,7 +212,7 @@ double Solid::TimeInt::NoxInterface::get_primary_rhs_norms(const Epetra_Vector& 
       // export the model specific solution if necessary
       auto rhs_ptr = gstate_ptr_->extract_model_entries(mt, Core::LinAlg::Vector<double>(F));
 
-      rhsnorm = calculate_norm(rhs_ptr->get_ref_of_epetra_vector(), type, isscaled);
+      rhsnorm = NOX::Nln::Aux::calc_vector_norm(*rhs_ptr, type, isscaled);
 
       break;
     }
@@ -311,7 +311,7 @@ double Solid::TimeInt::NoxInterface::get_primary_solution_update_norms(const Epe
           gstate_ptr_->extract_model_entries(mt, Core::LinAlg::Vector<double>(xnew));
 
       model_incr_ptr->update(1.0, *model_xnew_ptr, -1.0);
-      updatenorm = calculate_norm(model_incr_ptr->get_ref_of_epetra_vector(), type, isscaled);
+      updatenorm = NOX::Nln::Aux::calc_vector_norm(*model_incr_ptr, type, isscaled);
 
       break;
     }
@@ -324,7 +324,7 @@ double Solid::TimeInt::NoxInterface::get_primary_solution_update_norms(const Epe
           gstate_ptr_->extract_model_entries(mt, Core::LinAlg::Vector<double>(xnew));
 
       model_incr_ptr->update(1.0, *model_xnew_ptr, -1.0);
-      updatenorm = calculate_norm(model_incr_ptr->get_ref_of_epetra_vector(), type, isscaled);
+      updatenorm = NOX::Nln::Aux::calc_vector_norm(*model_incr_ptr, type, isscaled);
 
       break;
     }
@@ -372,7 +372,7 @@ double Solid::TimeInt::NoxInterface::get_previous_primary_solution_norms(const E
       auto model_xold_ptr =
           gstate_ptr_->extract_model_entries(mt, Core::LinAlg::Vector<double>(xold));
 
-      xoldnorm = calculate_norm(model_xold_ptr->get_ref_of_epetra_vector(), type, isscaled);
+      xoldnorm = NOX::Nln::Aux::calc_vector_norm(*model_xold_ptr, type, isscaled);
 
       break;
     }
@@ -382,7 +382,7 @@ double Solid::TimeInt::NoxInterface::get_previous_primary_solution_norms(const E
       auto model_xold_ptr =
           gstate_ptr_->extract_model_entries(mt, Core::LinAlg::Vector<double>(xold));
 
-      xoldnorm = calculate_norm(model_xold_ptr->get_ref_of_epetra_vector(), type, isscaled);
+      xoldnorm = NOX::Nln::Aux::calc_vector_norm(*model_xold_ptr, type, isscaled);
 
       break;
     }
@@ -407,20 +407,6 @@ double Solid::TimeInt::NoxInterface::get_previous_primary_solution_norms(const E
   return xoldnorm;
 }
 
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-double Solid::TimeInt::NoxInterface::calculate_norm(Epetra_Vector& quantity,
-    const ::NOX::Abstract::Vector::NormType type, const bool isscaled) const
-{
-  const ::NOX::Epetra::Vector quantity_nox(
-      Teuchos::rcpFromRef(quantity), ::NOX::Epetra::Vector::CreateView);
-
-  double norm = quantity_nox.norm(type);
-  // do the scaling if desired
-  if (isscaled) norm /= static_cast<double>(quantity_nox.length());
-
-  return norm;
-}
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

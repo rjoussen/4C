@@ -92,10 +92,7 @@ double CONTACT::NoxInterface::get_constraint_rhs_norms(const Core::LinAlg::Vecto
       std::shared_ptr<Core::LinAlg::Vector<double>> nConstrRhs =
           Core::LinAlg::extract_my_vector(*constrRhs_red, strategy().slave_n_dof_row_map(true));
 
-
-      constrRhs_nox = Teuchos::make_rcp<::NOX::Epetra::Vector>(
-          Teuchos::rcpFromRef(nConstrRhs->get_ref_of_epetra_vector()),
-          ::NOX::Epetra::Vector::CreateCopy);
+      constrNorm = NOX::Nln::Aux::calc_vector_norm(*nConstrRhs, type, isScaled);
       break;
     }
     case NOX::Nln::StatusTest::quantity_contact_friction:
@@ -104,9 +101,7 @@ double CONTACT::NoxInterface::get_constraint_rhs_norms(const Core::LinAlg::Vecto
       std::shared_ptr<Core::LinAlg::Vector<double>> tConstrRhs =
           Core::LinAlg::extract_my_vector(*constrRhs_red, strategy().slave_t_dof_row_map(true));
 
-      constrRhs_nox = Teuchos::make_rcp<::NOX::Epetra::Vector>(
-          Teuchos::rcpFromRef(tConstrRhs->get_ref_of_epetra_vector()),
-          ::NOX::Epetra::Vector::CreateCopy);
+      constrNorm = NOX::Nln::Aux::calc_vector_norm(*tConstrRhs, type, isScaled);
       break;
     }
     default:
@@ -115,8 +110,6 @@ double CONTACT::NoxInterface::get_constraint_rhs_norms(const Core::LinAlg::Vecto
       break;
     }
   }
-  constrNorm = constrRhs_nox->norm(type);
-  if (isScaled) constrNorm /= static_cast<double>(constrRhs_nox->length());
 
   return constrNorm;
 }
@@ -183,7 +176,6 @@ double CONTACT::NoxInterface::get_lagrange_multiplier_update_norms(
 
   if (strategy().lagrange_multiplier_np(true) == nullptr) return 0.;
 
-  double updatenorm = -1.0;
   std::shared_ptr<Core::LinAlg::Vector<double>> zincr_ptr = nullptr;
   switch (checkQuantity)
   {
@@ -209,15 +201,7 @@ double CONTACT::NoxInterface::get_lagrange_multiplier_update_norms(
     }
   }
 
-  const ::NOX::Epetra::Vector zincr_nox_ptr(
-      Teuchos::rcpFromRef(zincr_ptr->get_ref_of_epetra_vector()),
-      ::NOX::Epetra::Vector::CreateView);
-
-  updatenorm = zincr_nox_ptr.norm(type);
-  // do scaling if desired
-  if (isScaled) updatenorm /= static_cast<double>(zincr_nox_ptr.length());
-
-  return updatenorm;
+  return NOX::Nln::Aux::calc_vector_norm(*zincr_ptr, type, isScaled);
 }
 
 /*----------------------------------------------------------------------------*
@@ -247,9 +231,7 @@ double CONTACT::NoxInterface::get_previous_lagrange_multiplier_norms(
       std::shared_ptr<Core::LinAlg::Vector<double>> znold_ptr =
           Core::LinAlg::extract_my_vector(*zold_ptr, strategy().slave_n_dof_row_map(true));
 
-      zold_nox_ptr = std::make_shared<::NOX::Epetra::Vector>(
-          Teuchos::rcpFromRef(znold_ptr->get_ref_of_epetra_vector()),
-          ::NOX::Epetra::Vector::CreateCopy);
+      zoldnorm = NOX::Nln::Aux::calc_vector_norm(*znold_ptr, type, isScaled);
       break;
     }
     case NOX::Nln::StatusTest::quantity_contact_friction:
@@ -257,9 +239,7 @@ double CONTACT::NoxInterface::get_previous_lagrange_multiplier_norms(
       std::shared_ptr<Core::LinAlg::Vector<double>> ztold_ptr =
           Core::LinAlg::extract_my_vector(*zold_ptr, strategy().slave_t_dof_row_map(true));
 
-      zold_nox_ptr = std::make_shared<::NOX::Epetra::Vector>(
-          Teuchos::rcpFromRef(ztold_ptr->get_ref_of_epetra_vector()),
-          ::NOX::Epetra::Vector::CreateCopy);
+      zoldnorm = NOX::Nln::Aux::calc_vector_norm(*ztold_ptr, type, isScaled);
       break;
     }
     default:
@@ -268,10 +248,6 @@ double CONTACT::NoxInterface::get_previous_lagrange_multiplier_norms(
       break;
     }
   }
-
-  zoldnorm = zold_nox_ptr->norm(type);
-  // do scaling if desired
-  if (isScaled) zoldnorm /= static_cast<double>(zold_nox_ptr->length());
 
   // avoid very small norm values for the pure inactive case
   if (not strategy().is_in_contact()) zoldnorm = std::max(zoldnorm, 1.0);
