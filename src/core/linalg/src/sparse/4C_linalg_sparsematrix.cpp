@@ -1369,11 +1369,11 @@ void Core::LinAlg::SparseMatrix::apply_dirichlet_with_trafo(const Core::LinAlg::
         if (diagonalblock)
         {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-          err = trafo.epetra_matrix()->ExtractMyRowCopy(
+          err = trafo.extract_my_row_copy(
               i, trafomaxnumentries, trafonumentries, trafovalues.data(), trafoindices.data());
           if (err < 0) FOUR_C_THROW("Epetra_CrsMatrix::ExtractGlobalRowCopy returned err={}", err);
 #else
-          trafo.epetra_matrix()->ExtractMyRowCopy(
+          trafo.extract_my_row_copy(
               i, trafomaxnumentries, trafonumentries, trafovalues.data(), trafoindices.data());
 #endif
 
