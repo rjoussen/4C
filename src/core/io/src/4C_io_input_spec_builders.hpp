@@ -671,21 +671,44 @@ namespace Core::IO
     using SelectionCallback = std::function<void(const DefaultStorage&, Storage&)>;
 
     /**
-     * A tag type to indicate that a parameter cannot take default values.
+     * A tag type to indicate that a field in the parameter data cannot take a value.
      */
-    struct NoDefault
+    struct RejectField
     {
+      RejectField() = default;
+
+      template <typename T>
+      RejectField(const T&)
+      {
+        static_assert(false,
+            "You try to assign a value to a field that does not take a value for this parameter "
+            "type.");
+      }
     };
 
     /**
      * The type used for the default value of a parameter. If the parameter is optional, the user
-     * cannot specify a default value, so this type becomes NoDefault. Otherwise, the default value
-     * can be either not set, resulting in the std::monostate, or set to a value of the parameter
-     * type.
+     * cannot specify a default value, so this type becomes RejectField. Otherwise, the default
+     * value can be either not set, resulting in the std::monostate, or set to a value of the
+     * parameter type.
      */
     template <typename T>
     using DefaultType =
-        std::conditional_t<OptionalType<T>, NoDefault, std::variant<std::monostate, T>>;
+        std::conditional_t<OptionalType<T>, RejectField, std::variant<std::monostate, T>>;
+
+    /**
+     * Function type for a function that describes enum values.
+     */
+    template <typename T>
+    using EnumValueDescriptionFunction = std::function<std::string(T)>;
+
+    /**
+     * The type used for the enum value description. If T is not an enum type, this is
+     * equal to RejectField.
+     */
+    template <typename T>
+    using EnumValueDescription =
+        std::conditional_t<std::is_enum_v<T>, EnumValueDescriptionFunction<T>, RejectField>;
 
     //! Additional parameters for a parameter().
     template <typename T>
@@ -696,6 +719,11 @@ namespace Core::IO
        * An optional description of the value.
        */
       std::string description{};
+
+      /**
+       * An optional description of the enum values. This is only possible for enum types.
+       */
+      EnumValueDescription<T> enum_value_description{};
 
       /**
        * The default value of the parameter. If this field is set, the parameter does not need to be
@@ -875,6 +903,8 @@ namespace Core::IO
       using StoredType = T;
 
       std::string description{};
+
+      InputSpecBuilders::EnumValueDescriptionFunction<T> enum_value_description{};
 
       std::variant<std::monostate, StoredType> default_value{};
 
@@ -1869,6 +1899,11 @@ void Core::IO::Internal::ParameterSpec<T>::emit_metadata(YamlNodeRef node) const
         auto choice_node = choices_node.append_child();
         choice_node |= ryml::MAP;
         emit_value_as_yaml(node.wrap(choice_node["name"]), choice);
+        if (data.enum_value_description)
+        {
+          emit_value_as_yaml(
+              node.wrap(choice_node["description"]), data.enum_value_description(choice));
+        }
       }
     }
   }
@@ -2385,6 +2420,9 @@ Core::IO::InputSpec Core::IO::InputSpecBuilders::parameter(
   internal_data.on_parse_callback = data.on_parse_callback;
   internal_data.validator = data.validator;
   internal_data.store = data.store ? data.store : in_container<T>(name);
+
+  if constexpr (std::is_enum_v<T>)
+    internal_data.enum_value_description = data.enum_value_description;
 
   if (internal_data.default_value.index() == 1 &&
       !Internal::validate_helper(std::get<1>(internal_data.default_value), data.validator))

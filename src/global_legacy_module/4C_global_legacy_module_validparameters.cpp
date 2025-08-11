@@ -154,9 +154,12 @@ std::map<std::string, Core::IO::InputSpec> Global::valid_parameters()
                 "FILE", {.description = "Path to the exodus geometry file. Either absolute or "
                                         "relative to the input file."}),
             parameter<Core::IO::Exodus::VerbosityLevel>("SHOW_INFO",
-                {.description =
-                        "Print element, node and set info for the exodus file after reading.",
-                    .default_value = Core::IO::Exodus::VerbosityLevel::none}),
+                {
+                    .description = "Choose verbosity of reporting element, node and set info for "
+                                   "the exodus file after reading.",
+                    .enum_value_description = Core::IO::Exodus::describe,
+                    .default_value = Core::IO::Exodus::VerbosityLevel::none,
+                }),
 
             // Once we support more formats, we should add a "TYPE" parameter for the file format.
             list("ELEMENT_BLOCKS",
