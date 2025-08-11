@@ -49,7 +49,7 @@ endfunction()
 ### Set up a virtual Python environment for building and testing 4C
 
 message(STATUS "Setting up virtual Python environment for building and testing 4C")
-find_package(Python REQUIRED COMPONENTS Interpreter)
+find_package(Python REQUIRED COMPONENTS Interpreter Development)
 if(Python_FOUND)
   message(STATUS "Using python executable: ${Python_EXECUTABLE} (V${Python_VERSION})")
 endif()
