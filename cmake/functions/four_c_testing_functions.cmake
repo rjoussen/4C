@@ -58,6 +58,16 @@ function(set_timeout name_of_test)
   endif()
 endfunction()
 
+# Mark a test as skipped. This registers a dummy test printing an informational message.
+# Running ctest will display that test as skipped, to make it clear that this test exists
+# but is not executed. The reason may be explained in the message.
+function(skip_test name_of_test message)
+  # The dummy test needs to report a arbitrary error code that ctest interprets as "skipped".
+  set(dummy_command "echo \"${message}\"; exit 42")
+  add_test(NAME ${name_of_test} COMMAND bash -c "${dummy_command}")
+  set_tests_properties(${name_of_test} PROPERTIES SKIP_RETURN_CODE 42)
+endfunction()
+
 # add test with options
 function(_add_test_with_options)
 
@@ -392,19 +402,25 @@ function(four_c_test)
       _parsed_CSV_COMPARISON_TOL_A
       )
       set(name_of_csv_comparison_test "${name_of_test}-csv_comparison-${result_file}")
-      set(csv_comparison_command
-          "${FOUR_C_PYTHON_VENV_BUILD}/bin/python3 ${PROJECT_SOURCE_DIR}/utilities/diff_with_tolerance.py ${test_directory}/${result_file} ${PROJECT_SOURCE_DIR}/tests/input_files/${reference_file} ${tol_r} ${tol_a}"
+      if(FOUR_C_WITH_PYTHON)
+        set(csv_comparison_command
+            "${FOUR_C_PYTHON_VENV_BUILD}/bin/python ${PROJECT_SOURCE_DIR}/utilities/diff_with_tolerance.py ${test_directory}/${result_file} ${PROJECT_SOURCE_DIR}/tests/input_files/${reference_file} ${tol_r} ${tol_a}"
+            )
+        _add_test_with_options(
+          NAME_OF_TEST
+          ${name_of_csv_comparison_test}
+          TEST_COMMAND
+          ${csv_comparison_command}
+          ADDITIONAL_FIXTURE
+          ${additional_fixture}
+          LABELS
+          "${_parsed_LABELS}"
           )
-      _add_test_with_options(
-        NAME_OF_TEST
-        ${name_of_csv_comparison_test}
-        TEST_COMMAND
-        ${csv_comparison_command}
-        ADDITIONAL_FIXTURE
-        ${additional_fixture}
-        LABELS
-        "${_parsed_LABELS}"
-        )
+      else()
+        skip_test(
+          ${name_of_csv_comparison_test} "Skipping because FOUR_C_WITH_PYTHON is not enabled."
+          )
+      endif()
     endforeach()
   endif()
 
@@ -591,12 +607,19 @@ function(
   get_filename_component(name_of_reference_file ${name_of_input_file} NAME_WE)
 
   # specify test case
-  add_test(
-    NAME "${name_of_test}"
-    COMMAND
-      sh -c
-      " ${RUNPOSTFILTER_PAR} && ${RUNPOSTFILTER_SER} && ${FOUR_C_PVPYTHON} ${PROJECT_SOURCE_DIR}/tests/post_processing_test/comparison.py ${test_directory}/xxx${IDENTIFIER}_PAR_${name_of_input_file}${FIELD}*.case ${test_directory}/xxx${IDENTIFIER}_SER_${name_of_input_file}${FIELD}*.case ${PROJECT_SOURCE_DIR}/tests/input_files/${name_of_reference_file}${IDENTIFIER}${FIELD}.csv ${test_directory}"
-    )
+  if(FOUR_C_WITH_PYTHON)
+    add_test(
+      NAME "${name_of_test}"
+      COMMAND
+        sh -c
+        " ${RUNPOSTFILTER_PAR} && ${RUNPOSTFILTER_SER} && ${FOUR_C_PVPYTHON} ${PROJECT_SOURCE_DIR}/tests/post_processing_test/comparison.py ${test_directory}/xxx${IDENTIFIER}_PAR_${name_of_input_file}${FIELD}*.case ${test_directory}/xxx${IDENTIFIER}_SER_${name_of_input_file}${FIELD}*.case ${PROJECT_SOURCE_DIR}/tests/input_files/${name_of_reference_file}${IDENTIFIER}${FIELD}.csv ${test_directory}"
+      )
+  else()
+    skip_test(
+      ${name_of_test}
+      "Skipping because FOUR_C_WITH_PYTHON is not enabled. Postprocessing tests require Python."
+      )
+  endif()
 
   require_fixture("${name_of_test}" "${name_of_input_file}-p${num_proc_base_run};test_cleanup")
   set_environment(${name_of_test})
@@ -642,15 +665,22 @@ function(
     list(GET extra_macro_args 0 optional_arg)
   endif()
 
-  # add test to testing framework
-  add_test(
-    NAME "${name_of_test}-p${num_proc_base_run}"
-    COMMAND
-      ${FOUR_C_PYTHON_VENV_BUILD}/bin/python3
-      ${PROJECT_SOURCE_DIR}/tests/output_test/vtk_compare.py ${test_directory}
-      ${PROJECT_SOURCE_DIR}/tests/input_files/${pvd_referencefilename} ${tolerance}
-      ${num_extra_args} ${extra_macro_args}
-    )
+  if(FOUR_C_WITH_PYTHON)
+    # add test to testing framework
+    add_test(
+      NAME "${name_of_test}-p${num_proc_base_run}"
+      COMMAND
+        ${FOUR_C_PYTHON_VENV_BUILD}/bin/python
+        ${PROJECT_SOURCE_DIR}/tests/output_test/vtk_compare.py ${test_directory}
+        ${PROJECT_SOURCE_DIR}/tests/input_files/${pvd_referencefilename} ${tolerance}
+        ${num_extra_args} ${extra_macro_args}
+      )
+  else()
+    skip_test(
+      "${name_of_test}-p${num_proc_base_run}"
+      "Skipping because FOUR_C_WITH_PYTHON is not enabled. Postprocessing tests require Python."
+      )
+  endif()
 
   require_fixture(
     ${name_of_test}-p${num_proc_base_run}
