@@ -11,6 +11,10 @@
 four_c_process_global_option(FOUR_C_BUILD_DOCUMENTATION "Build the documentation" OFF)
 if(FOUR_C_BUILD_DOCUMENTATION)
 
+  if(NOT FOUR_C_WITH_PYTHON)
+    message(FATAL_ERROR "FOUR_C_BUILD_DOCUMENTATION requires FOUR_C_WITH_PYTHON to be enabled.")
+  endif()
+
   # add doc-specific cmake modules
   list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 

@@ -130,6 +130,7 @@ four_c_configure_dependency(Backtrace DEFAULT OFF)
 four_c_configure_dependency(ryml REQUIRED)
 four_c_configure_dependency(magic_enum REQUIRED)
 four_c_configure_dependency(ZLIB REQUIRED)
+four_c_configure_dependency(Python DEFAULT ON) # not required but useful for most developers
 
 ### end of configuration and feature detection
 
@@ -182,9 +183,6 @@ if(NOT FOUR_C_BUILD_SHARED_LIBS)
     FILE_SET HEADERS
     )
 endif()
-
-# Set up Python build/test venv
-include(cmake/python/set_up_python.cmake)
 
 # Read in the source directory which defines all modules
 add_subdirectory(src)

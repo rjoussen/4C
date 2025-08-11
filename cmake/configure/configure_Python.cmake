@@ -49,20 +49,28 @@ endfunction()
 ### Set up a virtual Python environment for building and testing 4C
 
 message(STATUS "Setting up virtual Python environment for building and testing 4C")
-find_package(Python3 REQUIRED COMPONENTS Interpreter)
-if(Python3_FOUND)
-  message(STATUS "Using python executable: ${Python3_EXECUTABLE} (V${Python3_VERSION})")
+find_package(Python REQUIRED COMPONENTS Interpreter)
+if(Python_FOUND)
+  message(STATUS "Using python executable: ${Python_EXECUTABLE} (V${Python_VERSION})")
 endif()
 
-if(Python3_VERSION VERSION_LESS "3.8")
-  message(FATAL_ERROR "Python version must be at least 3.8, but found ${Python3_VERSION}")
+if(Python_VERSION VERSION_LESS "3.10")
+  message(
+    FATAL_ERROR
+      "Python version must be at least 3.10, but found ${Python_VERSION}. "
+      "Please install a newer version of Python and set FOUR_C_PYTHON_ROOT to the correct path."
+    )
 endif()
 
 set(FOUR_C_PYTHON_VENV_BUILD "${PROJECT_BINARY_DIR}/python_venv_build_test")
+set(FOUR_C_PYTHON_VENV_BUILD
+    "${PROJECT_BINARY_DIR}/python_venv_build_test"
+    PARENT_SCOPE
+    )
 
 _execute_process(
   PROCESS_COMMAND
-  ${Python3_EXECUTABLE}
+  ${Python_EXECUTABLE}
   -m
   venv
   ${FOUR_C_PYTHON_VENV_BUILD}

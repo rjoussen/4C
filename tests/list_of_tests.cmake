@@ -1969,7 +1969,6 @@ four_c_test_tutorial(PREFIX tutorial_fsi_2d NP 2 COPY_FILES ${PROJECT_SOURCE_DIR
 four_c_test_tutorial(PREFIX tutorial_fsi_3d NP 2 COPY_FILES ${PROJECT_SOURCE_DIR}/tests/input_files/fsi_part_struct_solver.xml ${PROJECT_SOURCE_DIR}/tests/tutorials/tutorial_fsi_3d.e)
 four_c_test_tutorial(PREFIX tutorial_solid NP 3 COPY_FILES ${PROJECT_SOURCE_DIR}/tests/input_files/xml/multigrid/elasticity_template.xml ${PROJECT_SOURCE_DIR}/tests/tutorials/tutorial_solid_geo.e)
 
-# four_c_test_post_processing
 four_c_test_post_processing(constr3D_MPC_direct.4C.yaml 2 2 ndxyz ndxyz 25)
 four_c_test_post_processing(contact2D_onlylin_stdlagr.4C.yaml 2 2 ndxyz ndxyz 50)
 four_c_test_post_processing(contact2D_simpler.4C.yaml 2 2 ndxyz ndxyz 50)
@@ -2101,5 +2100,4 @@ four_c_test_vtk(structure_solid_beam_element_gid_runtime_output-vtk-beam.4C.yaml
 four_c_test_vtk(structure_solid_beam_element_gid_runtime_output-vtk-solid.4C.yaml structure_solid_beam_element_gid_runtime_output.4C.yaml 2 xxx-structure.pvd ref/structure_solid_beam_element_gid_runtime_output-vtk/structure.pvd 1e-08 1e-08 1.0)
 four_c_test_vtk(thermo3D_annulus_anisotropic_statics_vtk_thermo.4C.yaml thermo3D_annulus_anisotropic_statics.4C.yaml 3 xxx-thermo.pvd ref/thermo3D_annulus_anisotropic_statics-thermo.pvd 1e-08)
 four_c_test_vtk(thermo3D_annulus_elementwise_anisotropic_statics_vtk_thermo.4C.yaml thermo3D_annulus_elementwise_anisotropic_statics.4C.yaml 3 xxx-thermo.pvd ref/thermo3D_annulus_elementwise_anisotropic_statics-thermo.pvd 1e-08)
-
 # cmake-format: on

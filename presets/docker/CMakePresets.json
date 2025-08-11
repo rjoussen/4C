@@ -10,7 +10,6 @@
         "CMAKE_CXX_COMPILER": "/usr/bin/mpic++",
         "CMAKE_C_COMPILER": "/usr/bin/mpicc",
         "CMAKE_INSTALL_PREFIX": "/home/user/4C",
-        "FOUR_C_CXX_FLAGS": "-msse3",
         "FOUR_C_ENABLE_WARNINGS_AS_ERRORS": "ON",
         "FOUR_C_TRILINOS_ROOT": "/opt/4C-dependencies",
         "FOUR_C_DEAL_II_ROOT": "/opt/4C-dependencies",
@@ -131,7 +130,10 @@
         "FOUR_C_WITH_ARBORX": "OFF",
         "FOUR_C_WITH_BACKTRACE": "OFF",
         "FOUR_C_WITH_MIRCO": "OFF",
-        "FOUR_C_WITH_DEAL_II": "OFF"
+        "FOUR_C_WITH_DEAL_II": "OFF",
+        "FOUR_C_WITH_PYTHON": "OFF",
+        "FOUR_C_ENABLE_METADATA_GENERATION": "OFF",
+        "FOUR_C_BUILD_DOCUMENTATION": "OFF"
       }
     }
   ]

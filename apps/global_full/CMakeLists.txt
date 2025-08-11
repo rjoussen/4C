@@ -19,7 +19,7 @@ set_target_properties(
 four_c_set_up_executable(${FOUR_C_EXECUTABLE_NAME})
 
 if(FOUR_C_ENABLE_METADATA_GENERATION)
-  if(Python3_VERSION VERSION_GREATER_EQUAL "3.10")
+  if(FOUR_C_WITH_PYTHON)
     add_custom_command(
       TARGET ${FOUR_C_EXECUTABLE_NAME}
       POST_BUILD
@@ -36,15 +36,8 @@ if(FOUR_C_ENABLE_METADATA_GENERATION)
       )
   else()
     message(
-      WARNING
-        "Your python version ${Python3_VERSION} is too old to generate metadata and JSON schema files"
-      )
-    add_custom_command(
-      TARGET ${FOUR_C_EXECUTABLE_NAME}
-      POST_BUILD
-      COMMAND
-        ${CMAKE_COMMAND} -E echo
-        "Skipping metadata and JSON schema generation due to outdated python version"
+      FATAL_ERROR
+        "Specifying FOUR_C_ENABLE_METADATA_GENERATION requires FOUR_C_WITH_PYTHON to be enabled."
       )
   endif()
 endif()
