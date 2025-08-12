@@ -16,13 +16,13 @@
 #include "4C_solver_nonlin_nox_interface_jacobian.hpp"
 #include "4C_solver_nonlin_nox_interface_required.hpp"
 #include "4C_solver_nonlin_nox_linearsystem_prepostoperator.hpp"
+#include "4C_solver_nonlin_nox_scaling.hpp"
 #include "4C_solver_nonlin_nox_solver_ptc.hpp"
 #include "4C_structure_new_nln_linearsystem_scaling.hpp"
 #include "4C_utils_epetra_exceptions.hpp"
 
 #include <Epetra_LinearProblem.h>
 #include <NOX_Epetra_Interface_Preconditioner.H>
-#include <NOX_Epetra_Scaling.H>
 #include <Teuchos_LAPACK.hpp>
 #include <Teuchos_ParameterList.hpp>
 
@@ -41,7 +41,7 @@ NOX::Nln::LinearSystem::LinearSystem(Teuchos::ParameterList& printParams,
     const Teuchos::RCP<::NOX::Epetra::Interface::Preconditioner>& iPrec,
     const Teuchos::RCP<Core::LinAlg::SparseOperator>& preconditioner,
     const ::NOX::Epetra::Vector& cloneVector,
-    const Teuchos::RCP<::NOX::Epetra::Scaling> scalingObject)
+    const std::shared_ptr<NOX::Nln::Scaling> scalingObject)
     : utils_(printParams),
       solvers_(solvers),
       reqInterfacePtr_(iReq),
@@ -86,7 +86,7 @@ NOX::Nln::LinearSystem::LinearSystem(Teuchos::ParameterList& printParams,
       precType_(NOX::Nln::LinSystem::LinalgSparseOperator),
       precPtr_(preconditioner),
       precMatrixSource_(SeparateMatrix),
-      scaling_(Teuchos::null),
+      scaling_(nullptr),
       conditionNumberEstimate_(0.0),
       timer_("", true),
       timeCreatePreconditioner_(0.0),
@@ -110,7 +110,7 @@ NOX::Nln::LinearSystem::LinearSystem(Teuchos::ParameterList& printParams,
     const Teuchos::RCP<::NOX::Epetra::Interface::Jacobian>& iJac,
     const Teuchos::RCP<Core::LinAlg::SparseOperator>& jacobian_op,
     const ::NOX::Epetra::Vector& cloneVector,
-    const Teuchos::RCP<::NOX::Epetra::Scaling> scalingObject)
+    const std::shared_ptr<NOX::Nln::Scaling> scalingObject)
     : utils_(printParams),
       solvers_(solvers),
       reqInterfacePtr_(iReq),
@@ -153,7 +153,7 @@ NOX::Nln::LinearSystem::LinearSystem(Teuchos::ParameterList& printParams,
       precType_(NOX::Nln::LinSystem::LinalgSparseOperator),
       precPtr_(Teuchos::null),
       precMatrixSource_(SeparateMatrix),
-      scaling_(Teuchos::null),
+      scaling_(nullptr),
       conditionNumberEstimate_(0.0),
       timer_("", true),
       timeCreatePreconditioner_(0.0),
@@ -304,13 +304,11 @@ bool NOX::Nln::LinearSystem::applyJacobianInverse(Teuchos::ParameterList& linear
     set_linear_problem_for_solve(linProblem, jacobian(), result_view, nonConstInput_view);
 
     // ************* Begin linear system scaling *****************
-    if (!!(scaling_))
+    if (scaling_)
     {
-      if (!manualScaling_) scaling_->computeScaling(linProblem);
+      if (!manualScaling_) scaling_->compute_scaling(linProblem);
 
-      scaling_->scaleLinearSystem(linProblem);
-
-      if (utils_.isPrintType(::NOX::Utils::Details)) utils_.out() << *scaling_ << std::endl;
+      scaling_->scale_linear_system(linProblem);
     }
     // ************* End linear system scaling *******************
 
@@ -356,7 +354,7 @@ bool NOX::Nln::LinearSystem::applyJacobianInverse(Teuchos::ParameterList& linear
     }
 
     // ************* Begin linear system unscaling *************
-    if (!!(scaling_)) scaling_->unscaleLinearSystem(linProblem);
+    if (scaling_) scaling_->unscale_linear_system(linProblem);
     // ************* End linear system unscaling ***************
 
     complete_solution_after_solve(linProblem, result_view);
@@ -441,17 +439,6 @@ bool NOX::Nln::LinearSystem::compute_correction_system(const enum CorrectionType
   return success;
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-Teuchos::RCP<::NOX::Epetra::Scaling> NOX::Nln::LinearSystem::getScaling() { return scaling_; }
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void NOX::Nln::LinearSystem::resetScaling(const Teuchos::RCP<::NOX::Epetra::Scaling>& scalingObject)
-{
-  scaling_ = scalingObject;
-  return;
-}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

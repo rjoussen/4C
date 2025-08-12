@@ -17,16 +17,6 @@
 
 #include <set>
 
-// forward declaration
-
-namespace NOX
-{
-  namespace Epetra
-  {
-    class Scaling;
-  }
-}  // namespace NOX
-
 FOUR_C_NAMESPACE_OPEN
 
 namespace Core::LinAlg
@@ -46,6 +36,8 @@ namespace NOX
         class Preconditioner;
       }  // namespace Interface
     }  // namespace CONSTRAINT
+
+    class Scaling;
   }  // namespace Nln
 }  // namespace NOX
 
@@ -160,7 +152,7 @@ namespace Solid
         Solid::Integrator& integrator, const std::vector<enum NOX::Nln::SolutionType>& soltypes);
 
     //! Create object to scale linear system
-    void create_scaling(Teuchos::RCP<::NOX::Epetra::Scaling>& iscale,
+    void create_scaling(std::shared_ptr<NOX::Nln::Scaling>& iscale,
         const Solid::TimeInt::BaseDataSDyn& DataSDyn, Solid::TimeInt::BaseDataGlobalState& GState);
   }  // namespace Nln
 }  // namespace Solid

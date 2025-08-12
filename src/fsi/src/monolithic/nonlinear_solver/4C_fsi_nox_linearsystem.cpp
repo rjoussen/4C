@@ -29,7 +29,7 @@ NOX::FSI::LinearSystem::LinearSystem(Teuchos::ParameterList& printParams,
     Teuchos::ParameterList& linearSolverParams,
     const std::shared_ptr<::NOX::Epetra::Interface::Jacobian>& iJac,
     const std::shared_ptr<Epetra_Operator>& J, const ::NOX::Epetra::Vector& cloneVector,
-    std::shared_ptr<Core::LinAlg::Solver> solver, const Teuchos::RCP<::NOX::Epetra::Scaling> s)
+    std::shared_ptr<Core::LinAlg::Solver> solver, const std::shared_ptr<NOX::Nln::Scaling> s)
     : utils_(printParams),
       jac_interface_ptr_(iJac),
       jac_type_(EpetraOperator),
@@ -162,19 +162,6 @@ bool NOX::FSI::LinearSystem::applyRightPreconditioning(bool useTranspose,
   if (&result != &input) result = input;
 
   return true;
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-Teuchos::RCP<::NOX::Epetra::Scaling> NOX::FSI::LinearSystem::getScaling() { return scaling_; }
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void NOX::FSI::LinearSystem::resetScaling(const Teuchos::RCP<::NOX::Epetra::Scaling>& scalingObject)
-{
-  scaling_ = scalingObject;
 }
 
 

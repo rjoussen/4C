@@ -290,7 +290,14 @@ Solid::Nln::LinSystem::StcScaling::StcScaling(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Solid::Nln::LinSystem::StcScaling::scaleLinearSystem(Epetra_LinearProblem& problem)
+void Solid::Nln::LinSystem::StcScaling::compute_scaling(const Epetra_LinearProblem& problem)
+{
+  (void)problem;  // avoid unused parameter warning
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void Solid::Nln::LinSystem::StcScaling::scale_linear_system(Epetra_LinearProblem& problem)
 {
   // get stiffness matrix
   Epetra_CrsMatrix* stiffmat = dynamic_cast<Epetra_CrsMatrix*>(problem.GetMatrix());
@@ -324,7 +331,7 @@ void Solid::Nln::LinSystem::StcScaling::scaleLinearSystem(Epetra_LinearProblem& 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Solid::Nln::LinSystem::StcScaling::unscaleLinearSystem(Epetra_LinearProblem& problem)
+void Solid::Nln::LinSystem::StcScaling::unscale_linear_system(Epetra_LinearProblem& problem)
 {
   std::shared_ptr<Core::LinAlg::Vector<double>> disisdc =
       std::make_shared<Core::LinAlg::Vector<double>>(problem.GetLHS()->Map(), true);

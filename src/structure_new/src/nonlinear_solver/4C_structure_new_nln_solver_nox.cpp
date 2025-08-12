@@ -13,6 +13,7 @@
 #include "4C_solver_nonlin_nox_group.hpp"
 #include "4C_solver_nonlin_nox_linearsystem.hpp"
 #include "4C_solver_nonlin_nox_problem.hpp"
+#include "4C_solver_nonlin_nox_scaling.hpp"
 #include "4C_solver_nonlin_nox_solver_factory.hpp"
 #include "4C_structure_new_timint_base.hpp"
 #include "4C_structure_new_timint_noxinterface.hpp"
@@ -20,7 +21,6 @@
 
 #include <NOX_Abstract_Group.H>
 #include <NOX_Epetra_LinearSystem.H>
-#include <NOX_Epetra_Scaling.H>
 #include <NOX_Epetra_Vector.H>
 #include <NOX_Solver_Generic.H>
 #include <Teuchos_RCPStdSharedPtrConversions.hpp>
@@ -81,7 +81,7 @@ Solid::Nln::SOLVER::Nox::Nox(const Teuchos::ParameterList& default_params,
   Solid::Nln::create_constraint_preconditioner(iconstr_prec, integrator(), soltypes);
 
   // create object to scale linear system
-  Teuchos::RCP<::NOX::Epetra::Scaling> iscale = Teuchos::null;
+  std::shared_ptr<NOX::Nln::Scaling> iscale = nullptr;
   Solid::Nln::create_scaling(iscale, data_sdyn(), data_global_state());
 
   // handle NOX settings

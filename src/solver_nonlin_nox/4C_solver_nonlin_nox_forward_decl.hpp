@@ -41,7 +41,6 @@ namespace NOX
   }  // namespace Direction
   namespace Epetra
   {
-    class Scaling;
     class Vector;
     class LinearSystem;
     namespace Interface
