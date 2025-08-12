@@ -303,7 +303,7 @@ RESULT DESCRIPTION:
   - SSI:
       SPECIAL: true
       QUANTITY: "numiterlastlinearsolve"
-      VALUE: 2
+      VALUE: 1
       TOLERANCE: 1e-16
   - SSI:
       SPECIAL: true

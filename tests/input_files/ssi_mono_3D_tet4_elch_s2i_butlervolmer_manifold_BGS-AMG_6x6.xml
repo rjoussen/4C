@@ -13,7 +13,7 @@
     <Parameter name="type" type="string" value="BGS"/>
     <ParameterList name="parameters">
       <Parameter name="blocks" type="string" value="(0),(1),(2),(3),(4),(5)"/>
-      <Parameter name="smoothers" type="string" value="MueLu,MueLu,MueLu,MueLu_Struct,MueLu,MueLu"/>
+      <Parameter name="smoothers" type="string" value="MueLu_Struct,MueLu,MueLu,MueLu,MueLu,MueLu"/>
       <Parameter name="local sweeps" type="string" value="1,1,1,1,1,1"/>
     </ParameterList>
   </ParameterList>
