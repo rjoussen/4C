@@ -79,4 +79,34 @@ namespace
     container.print(print_output);
     EXPECT_EQ(print_output.str(), "test_enum : A ");
   }
+
+  TEST(InputParameterContainerTest, ExactlyOneGroup)
+  {
+    InputParameterContainer container;
+    container.group("group1").add<int>("a", 1);
+    container.group("group2").add<int>("b", 2);
+    container.group("group3").add<int>("c", 3);
+
+    {
+      SCOPED_TRACE("Exactly one");
+      std::array possible_names = {"group1", "not existing", ""};
+      auto [name, group] = container.exactly_one_group(possible_names);
+      EXPECT_EQ(name, "group1");
+      EXPECT_EQ(group.get<int>("a"), 1);
+    }
+
+    {
+      SCOPED_TRACE("Too many");
+      std::vector<std::string> possible_names = {"group1", "group2", "not existing", ""};
+      EXPECT_THROW(
+          [[maybe_unused]] auto c = container.exactly_one_group(possible_names), Core::Exception);
+    }
+
+    {
+      SCOPED_TRACE("Too few");
+      std::array possible_names = {"not existing", ""};
+      EXPECT_THROW(
+          [[maybe_unused]] auto c = container.exactly_one_group(possible_names), Core::Exception);
+    }
+  }
 }  // namespace

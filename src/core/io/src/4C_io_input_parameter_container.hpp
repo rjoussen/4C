@@ -16,6 +16,7 @@
 #include "4C_utils_exceptions.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
+#include <algorithm>
 #include <any>
 #include <functional>
 #include <map>
@@ -81,6 +82,15 @@ namespace Core::IO
      * Check if a group with the given @p name exists.
      */
     [[nodiscard]] bool has_group(const std::string& name) const;
+
+    /**
+     * Ensure that exactly one group having one of the @p possible_group_names is present in the
+     * container and return that group. Throws if there are no or multiple matching groups.
+     */
+    template <std::ranges::range R>
+      requires std::convertible_to<std::ranges::range_value_t<R>, std::string>
+    [[nodiscard]] std::pair<std::string_view, const InputParameterContainer&> exactly_one_group(
+        const R& possible_group_names) const;
 
     /**
      * Add the list @p data at the given key @p name.
@@ -216,6 +226,24 @@ namespace Core::IO::Internal::InputParameterContainerImplementation
 inline auto Core::IO::InputParameterContainer::groups() const
 {
   return std::ranges::subrange(groups_);
+}
+
+
+template <std::ranges::range R>
+  requires std::convertible_to<std::ranges::range_value_t<R>, std::string>
+std::pair<std::string_view, const Core::IO::InputParameterContainer&>
+Core::IO::InputParameterContainer::exactly_one_group(const R& possible_group_names) const
+{
+  auto matching_group_names =
+      possible_group_names |
+      std::views::filter([this](const std::string& name) { return has_group(name); });
+
+  FOUR_C_ASSERT_ALWAYS(std::ranges::distance(matching_group_names) == 1,
+      "The data container must contain exactly one group that matches a physics name in the "
+      "element definitions but found {} matching groups.",
+      std::ranges::distance(matching_group_names));
+
+  return {*matching_group_names.begin(), group(*matching_group_names.begin())};
 }
 
 

@@ -29,6 +29,7 @@ void Core::IO::InputParameterContainer::print(std::ostream& os) const
 
 Core::IO::InputParameterContainer& Core::IO::InputParameterContainer::group(const std::string& name)
 {
+  FOUR_C_ASSERT_ALWAYS(!name.empty(), "Group name must not be empty.");
   return groups_[name];
 }
 
