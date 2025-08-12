@@ -129,7 +129,7 @@ jobs:
           git config --global --add safe.directory $GITHUB_WORKSPACE
           ./utilities/set_up_dev_env.sh
       - name: Download reports
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           path: ${{ github.workspace }}
           merge-multiple: true
