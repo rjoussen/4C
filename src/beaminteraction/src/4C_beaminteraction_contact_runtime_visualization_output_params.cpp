@@ -64,6 +64,9 @@ void BeamInteraction::BeamContactRuntimeVisualizationOutputParams::setup()
   /****************************************************************************/
   output_gaps_ = beam_contact_visualization_output_paramslist.get<bool>("GAPS");
 
+  output_angles_ = beam_contact_visualization_output_paramslist.get<bool>("CONTACT_ANGLE");
+  output_types_ = beam_contact_visualization_output_paramslist.get<bool>("CONTACT_TYPE");
+
 
   issetup_ = true;
 }

@@ -137,7 +137,8 @@ namespace BeamInteraction
     /**
      * \brief Get all (scalar) contact forces of this contact pair. Not yet implemented.
      */
-    void get_all_active_contact_forces(std::vector<double>& forces) const override
+    void get_all_active_contact_forces(std::vector<double>& forces, std::vector<double>& angles,
+        std::vector<int>& types) const override
     {
       FOUR_C_THROW("get_all_active_contact_forces not yet implemented!");
     }

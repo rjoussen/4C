@@ -184,7 +184,8 @@ namespace BeamInteraction
     /*!
     \brief Get all (scalar) contact forces of this contact pair
     */
-    virtual void get_all_active_contact_forces(std::vector<double>& forces) const = 0;
+    virtual void get_all_active_contact_forces(std::vector<double>& forces,
+        std::vector<double>& angles, std::vector<int>& types) const = 0;
 
     /*!
     \brief Get all (scalar) gap values of this contact pair

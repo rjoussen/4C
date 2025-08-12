@@ -68,6 +68,20 @@ namespace BeamInteraction
       return output_gaps_;
     };
 
+    /// whether to write output for contact angles
+    bool is_write_angles() const
+    {
+      throw_error_if_not_init_and_setup();
+      return output_angles_;
+    };
+
+    /// whether to write which contact contribution (or formulation) is active
+    bool is_write_types() const
+    {
+      throw_error_if_not_init_and_setup();
+      return output_types_;
+    };
+
 
    private:
     //! returns the isinit_ flag
@@ -102,6 +116,12 @@ namespace BeamInteraction
 
     /// whether to write gaps
     bool output_gaps_;
+
+    /// whether to write contact angles
+    bool output_angles_;
+
+    /// whether to write which contact contribution (or formulation) is active
+    bool output_types_;
   };
 
 }  // namespace BeamInteraction

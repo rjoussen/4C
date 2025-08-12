@@ -218,7 +218,21 @@ void BeamContact::set_valid_parameters(std::map<std::string, Core::IO::InputSpec
           // whether to write visualization output for gaps
           parameter<bool>(
               "GAPS", {.description = "write visualization output for gap, i.e. penetration",
-                          .default_value = false})},
+                          .default_value = false}),
+          // whether to write visualization output for the contact angle of beams
+          parameter<bool>("CONTACT_ANGLE",
+              {.description = "write visualization output for gap, i.e. penetration",
+                  .default_value = false}),
+          // whether to write visualization output for the type of contact formulation used
+          parameter<bool>("CONTACT_TYPE",
+              {.description =
+                      "write visualization output to indicate which different penalty values are "
+                      "active."
+                      "Explanation: 0 corresponds to btb point contact;"
+                      "1 corresponds to active btb line contact;"
+                      "2 indicates active end point contact ",
+                  .default_value = false}),
+      },
       {.required = false});
 }
 
