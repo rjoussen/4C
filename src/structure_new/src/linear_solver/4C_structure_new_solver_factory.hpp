@@ -55,7 +55,7 @@ namespace Solid
 
      public:
       //! constructor
-      Factory();
+      Factory() = default;
 
       //! destructor
       virtual ~Factory() = default;
