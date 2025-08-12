@@ -24,7 +24,7 @@ jobs:
     outputs:
       test-chunks: ${{ steps.set-matrix.outputs.chunk-array }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Check docker hash
         uses: ./.github/actions/compute-and-check-dependencies-hash
       - uses: ./.github/actions/build_4C
@@ -62,7 +62,7 @@ jobs:
       run:
         shell: bash
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Check docker hash
         uses: ./.github/actions/compute-and-check-dependencies-hash
       - name: Setup developer environment for testing
@@ -93,7 +93,7 @@ jobs:
     runs-on: ubuntu-latest
     if: github.ref != 'refs/heads/main' && (success() || failure())
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           sparse-checkout: .github
       - uses: ./.github/actions/merge_junit_report_artifacts
@@ -117,7 +117,7 @@ jobs:
       # Due to a bug in runner action the variables $GITHUB_WORKSPACE and ${{ github.workspace }} are different inside a container. https://github.com/actions/runner/issues/2058
       # The repo gets cloned to `/__w/4C/4C` ($GITHUB_WORKSPACE) while ${{ github.workspace }} points to `/home/runner/work/4C/4C`.`
       # Use $GITHUB_WORKSPACE instead of ${{ github.workspace }}
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Check docker hash
         uses: ./.github/actions/compute-and-check-dependencies-hash
       - uses: ./.github/actions/build_4C
@@ -164,7 +164,7 @@ jobs:
       run:
         shell: bash
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Check docker hash
         uses: ./.github/actions/compute-and-check-dependencies-hash
       - name: Setup developer environment for testing
@@ -192,7 +192,7 @@ jobs:
     env:
       CCACHE_DIR: ${{ github.workspace }}/.ccache
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Check docker hash
         uses: ./.github/actions/compute-and-check-dependencies-hash
       - name: Setup developer environment for testing
@@ -227,7 +227,7 @@ jobs:
       run:
         shell: bash
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: actions/download-artifact@v4
         with:
           name: clang18_build-schema
@@ -253,7 +253,7 @@ jobs:
       run:
         shell: bash
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Check docker hash
         uses: ./.github/actions/compute-and-check-dependencies-hash
       - uses: ./.github/actions/build_4C
@@ -279,7 +279,7 @@ jobs:
       run:
         shell: bash
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Check docker hash
         uses: ./.github/actions/compute-and-check-dependencies-hash
       - name: Setup developer environment for testing

@@ -18,7 +18,7 @@ jobs:
     env:
       SKIP: no-commit-to-branch
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Run pre-commit
         run: |
           ./utilities/set_up_dev_env.sh
@@ -35,7 +35,7 @@ jobs:
       run:
         shell: bash
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Check docker hash
         uses: ./.github/actions/compute-and-check-dependencies-hash
       - uses: ./.github/actions/configure_4C
@@ -59,7 +59,7 @@ jobs:
       run:
         shell: bash
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Check docker hash
         uses: ./.github/actions/compute-and-check-dependencies-hash
       - uses: ./.github/actions/build_4C

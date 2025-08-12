@@ -16,7 +16,7 @@ jobs:
     outputs:
       test-chunks: ${{ steps.set-matrix.outputs.chunk-array }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Check docker hash
         uses: ./.github/actions/compute-and-check-dependencies-hash
       - uses: ./.github/actions/build_4C
@@ -53,7 +53,7 @@ jobs:
       run:
         shell: bash
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Check docker hash
         uses: ./.github/actions/compute-and-check-dependencies-hash
       - name: Setup developer environment for testing
@@ -84,7 +84,7 @@ jobs:
     runs-on: ubuntu-latest
     if: success() || failure()
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           sparse-checkout: .github
       - uses: ./.github/actions/merge_junit_report_artifacts
@@ -103,7 +103,7 @@ jobs:
     outputs:
       test-chunks: ${{ steps.set-matrix.outputs.chunk-array }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Check docker hash
         uses: ./.github/actions/compute-and-check-dependencies-hash
       - uses: ./.github/actions/build_4C
@@ -148,13 +148,13 @@ jobs:
       run:
         shell: bash
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
+      - uses: actions/checkout@v5
         with:
           repository: aras-p/ClangBuildAnalyzer
           ref: bae0cb488cce944bfc3da9850a69ad621701ebef # version 1.6.0
           path: ClangBuildAnalyzer
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           repository: nico/ninjatracing
           ref: a669e3644cf22b29cbece31dbed2cfbf34e5f48e # no releases for this repo, this is a stable commit
@@ -205,7 +205,7 @@ jobs:
       run:
         shell: bash
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Check docker hash
         uses: ./.github/actions/compute-and-check-dependencies-hash
       - name: Setup developer environment for testing
@@ -236,7 +236,7 @@ jobs:
     runs-on: ubuntu-latest
     if: success() || failure()
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           sparse-checkout: .github
       - uses: ./.github/actions/merge_junit_report_artifacts
@@ -255,7 +255,7 @@ jobs:
     outputs:
       test-chunks: ${{ steps.set-matrix.outputs.chunk-array }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Check docker hash
         uses: ./.github/actions/compute-and-check-dependencies-hash
       - uses: ./.github/actions/build_4C
@@ -292,7 +292,7 @@ jobs:
       run:
         shell: bash
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Check docker hash
         uses: ./.github/actions/compute-and-check-dependencies-hash
       - name: Setup developer environment for testing
@@ -329,7 +329,7 @@ jobs:
     outputs:
       test-chunks: ${{ steps.set-matrix.outputs.chunk-array }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Check docker hash
         uses: ./.github/actions/compute-and-check-dependencies-hash
       - uses: ./.github/actions/build_4C
@@ -366,7 +366,7 @@ jobs:
       run:
         shell: bash
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Check docker hash
         uses: ./.github/actions/compute-and-check-dependencies-hash
       - name: Setup developer environment for testing
@@ -397,7 +397,7 @@ jobs:
     runs-on: ubuntu-latest
     if: success() || failure()
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           sparse-checkout: .github
       - uses: ./.github/actions/merge_junit_report_artifacts
@@ -416,7 +416,7 @@ jobs:
     outputs:
       test-chunks: ${{ steps.set-matrix.outputs.chunk-array }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Check docker hash
         uses: ./.github/actions/compute-and-check-dependencies-hash
       - uses: ./.github/actions/build_4C
@@ -453,7 +453,7 @@ jobs:
       run:
         shell: bash
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Check docker hash
         uses: ./.github/actions/compute-and-check-dependencies-hash
       - name: Setup developer environment for testing
@@ -484,7 +484,7 @@ jobs:
     runs-on: ubuntu-latest
     if: success() || failure()
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           sparse-checkout: .github
       - uses: ./.github/actions/merge_junit_report_artifacts

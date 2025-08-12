@@ -16,7 +16,7 @@ jobs:
     outputs:
       test-chunks: ${{ steps.set-matrix.outputs.chunk-array }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Check docker hash
         uses: ./.github/actions/compute-and-check-dependencies-hash
       - uses: ./.github/actions/build_4C
@@ -57,7 +57,7 @@ jobs:
           apt-get update
           apt-get upgrade -y
           apt-get install -y llvm
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Check docker hash
         uses: ./.github/actions/compute-and-check-dependencies-hash
       - uses: ./.github/actions/download_directory
@@ -97,7 +97,7 @@ jobs:
     needs: clang18_coverage_test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           sparse-checkout: .github
       - uses: ./.github/actions/merge_junit_report_artifacts
@@ -112,7 +112,7 @@ jobs:
       image: ghcr.io/4c-multiphysics/4c-dependencies-ubuntu24.04:8115e93e
       options: --user root --env OMPI_ALLOW_RUN_AS_ROOT=1 --env OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Check docker hash
         uses: ./.github/actions/compute-and-check-dependencies-hash
       - name: Setup developer environment for testing

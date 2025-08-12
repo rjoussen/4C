@@ -22,7 +22,7 @@ jobs:
       id-token: write
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Log in to the Container registry
         uses: docker/login-action@184bdaa0721073962dff0199f1fb9940f07167d1 # v3.5.0
         with:
@@ -60,7 +60,7 @@ jobs:
     outputs:
       test-chunks: ${{ steps.set-matrix.outputs.chunk-array }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: ./.github/actions/build_4C
         with:
           cmake-preset: docker_assertions
@@ -94,7 +94,7 @@ jobs:
       run:
         shell: bash
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Setup developer environment for testing
         run: |
           cd $GITHUB_WORKSPACE
