@@ -10,6 +10,7 @@
 #include "4C_comm_pack_helpers.hpp"
 #include "4C_global_data.hpp"
 #include "4C_linalg_fixedsizematrix_tensor_products.hpp"
+#include "4C_linalg_symmetric_tensor.hpp"
 #include "4C_linalg_tensor_matrix_conversion.hpp"
 #include "4C_mat_par_bundle.hpp"
 #include "4C_utils_enum.hpp"
@@ -375,12 +376,14 @@ void Mat::ViscoNeoHooke::evaluate(const Core::LinAlg::Tensor<double, 3, 3>* defg
   double scalar3 = 2.0 / 3.0 * mue * I3invcubroot * I1;
   double scalar4 = 2.0 / 3.0 * mue * I3invcubroot;
 
+  Core::LinAlg::SymmetricTensor<double, 3, 3> Cinv_t =
+      Core::LinAlg::make_symmetric_tensor_from_stress_like_voigt_matrix(Cinv);
   // add volumetric elastic part 1
   // add scalar2 Cinv o Cinv (see Holzapfel p. 254)
-  Core::LinAlg::FourTensorOperations::add_holzapfel_product(cmat_view, Cinv, scalar2);
+  cmat += scalar2 * Core::LinAlg::FourTensorOperations::holzapfel_product(Cinv_t);
 
   // add visco-elastic deviatoric part 1
-  Core::LinAlg::FourTensorOperations::add_holzapfel_product(cmat_view, Cinv, scalarvisco * scalar3);
+  cmat += scalarvisco * scalar3 * Core::LinAlg::FourTensorOperations::holzapfel_product(Cinv_t);
 
   for (int i = 0; i < 6; ++i)
   {

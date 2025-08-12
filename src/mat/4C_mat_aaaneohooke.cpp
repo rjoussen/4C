@@ -13,6 +13,8 @@
 #include "4C_global_data.hpp"
 #include "4C_io_pstream.hpp"
 #include "4C_linalg_fixedsizematrix_tensor_products.hpp"
+#include "4C_linalg_symmetric_tensor.hpp"
+#include "4C_linalg_tensor.hpp"
 #include "4C_linalg_tensor_matrix_conversion.hpp"
 #include "4C_mat_par_bundle.hpp"
 #include "4C_utils_enum.hpp"
@@ -285,8 +287,8 @@ void Mat::AAAneohooke::evaluate(const Core::LinAlg::Tensor<double, 3, 3>* defgra
     }
 
   // contribution: boeppel-product
-  Core::LinAlg::FourTensorOperations::add_holzapfel_product(cmat_view, invc, delta7);
-
+  cmat += delta7 * Core::LinAlg::FourTensorOperations::holzapfel_product(
+                       Core::LinAlg::make_symmetric_tensor_from_stress_like_voigt_matrix(invc));
   // 2nd step: volumetric part
   //==========================
   delta6 = komp * pow(detf, -beta2);
@@ -297,7 +299,8 @@ void Mat::AAAneohooke::evaluate(const Core::LinAlg::Tensor<double, 3, 3>* defgra
     for (int j = 0; j < 6; j++) cmat_view(i, j) += delta6 * invc(i) * invc(j);
 
   // contribution: boeppel-product
-  Core::LinAlg::FourTensorOperations::add_holzapfel_product(cmat_view, invc, delta7);
+  cmat += delta7 * Core::LinAlg::FourTensorOperations::holzapfel_product(
+                       Core::LinAlg::make_symmetric_tensor_from_stress_like_voigt_matrix(invc));
 }
 
 /*----------------------------------------------------------------------*

@@ -198,11 +198,9 @@ void Mat::elast_hyper_add_isotropic_stress_cmat(
   // contribution: Cinv \otimes Cinv
   cmat += delta(5) * Core::LinAlg::dyadic(iC_strain, iC_strain);
   // contribution: Cinv \odot Cinv
-  Core::LinAlg::Matrix<6, 6> cmat_view = Core::LinAlg::make_stress_like_voigt_view(cmat);
-  Core::LinAlg::FourTensorOperations::add_holzapfel_product(
-      cmat_view, Core::LinAlg::make_stress_like_voigt_view(iC_strain), delta(6));
+  cmat += delta(6) * Core::LinAlg::FourTensorOperations::holzapfel_product(iC_strain);
   // contribution: Id4^#
-  cmat_view.update(delta(7), id4sharp, 1.0);
+  cmat += Core::LinAlg::TensorGenerators::symmetric_identity<double, 3, 3, 3, 3> * (delta(7));
 }
 
 void Mat::elast_hyper_add_response_stretches(

@@ -121,10 +121,9 @@ void Mat::Elastic::IsoAnisoExpo::add_stress_aniso_modified(
   Saniso = -incJ / 3. * traceCSfbar * icg + incJ * Saniso;
 
   Core::LinAlg::Matrix<6, 1> incJvec = Core::LinAlg::make_strain_like_voigt_matrix(icg);
-  Core::LinAlg::Matrix<6, 6> Psl(
-      Core::LinAlg::Initialization::zero);  // Psl = Cinv o Cinv - 1/3 Cinv x Cinv
-  Core::LinAlg::FourTensorOperations::add_holzapfel_product(Psl, incJvec, 1.0);
-  Psl.multiply_nt(-1. / 3., incJvec, incJvec, 1.0);
+  const Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3> Psl =
+      Core::LinAlg::FourTensorOperations::holzapfel_product(icg) -
+      1.0 / 3.0 * Core::LinAlg::dyadic(icg, icg);
 
   Core::LinAlg::SymmetricTensor<double, 3, 3> Aiso = -J4 / 3.0 * icg + incJ * structural_tensor_;
   Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3> cmataniso{};  // isochoric elastic cmat
@@ -132,10 +131,7 @@ void Mat::Elastic::IsoAnisoExpo::add_stress_aniso_modified(
                     exp(k2 * (J4 - 1.) * (J4 - 1.));  // 4 d^2Wf/dJ4dJ4
   cmataniso += deltabar * Core::LinAlg::dyadic(Aiso, Aiso);
 
-  Core::LinAlg::make_stress_like_voigt_view(cmataniso).update(
-      2. / 3. * incJ * traceCSfbar, Psl, 1.0);
-
-
+  cmataniso += 2. / 3. * incJ * traceCSfbar * Psl;
   cmataniso += -2.0 / 3.0 * (Core::LinAlg::dyadic(icg, Saniso) + Core::LinAlg::dyadic(Saniso, icg));
 
   stress += Saniso;

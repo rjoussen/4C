@@ -7,6 +7,10 @@
 
 #include "4C_linalg_fixedsizematrix_tensor_products.hpp"
 
+#include "4C_linalg_symmetric_tensor.hpp"
+#include "4C_linalg_tensor.hpp"
+#include "4C_linalg_tensor_symmetric_einstein.hpp"
+
 #include <Sacado.hpp>
 
 using FAD = Sacado::Fad::DFad<double>;
@@ -311,6 +315,16 @@ void Core::LinAlg::FourTensorOperations::add_holzapfel_product(
   cmat(5, 3) += scalar * 0.5 * (invc(0) * invc(4) + invc(5) * invc(3));
   cmat(5, 4) += scalar * 0.5 * (invc(3) * invc(2) + invc(4) * invc(5));
   cmat(5, 5) += scalar * 0.5 * (invc(0) * invc(2) + invc(5) * invc(5));
+}
+
+template <typename T>
+Core::LinAlg::SymmetricTensor<T, 3, 3, 3, 3> Core::LinAlg::FourTensorOperations::holzapfel_product(
+    const Core::LinAlg::SymmetricTensor<T, 3, 3>& invc)
+{
+  auto c_inv_ac_bd = einsum_sym<"ik", "jl">(invc, invc);
+  auto c_inv_ad_bc = einsum_sym<"il", "jk">(invc, invc);
+
+  return (0.5) * (c_inv_ac_bd + c_inv_ad_bc);
 }
 
 void Core::LinAlg::FourTensorOperations::add_symmetric_holzapfel_product(
@@ -911,6 +925,12 @@ template void Core::LinAlg::FourTensorOperations::add_holzapfel_product<double>(
     const double scalar);
 template void Core::LinAlg::FourTensorOperations::add_holzapfel_product<FAD>(
     Core::LinAlg::Matrix<6, 6, FAD>&, const Core::LinAlg::Matrix<6, 1, FAD>&, const FAD scalar);
+template Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>
+Core::LinAlg::FourTensorOperations::holzapfel_product<double>(
+    const Core::LinAlg::SymmetricTensor<double, 3, 3>&);
+template Core::LinAlg::SymmetricTensor<FAD, 3, 3, 3, 3>
+Core::LinAlg::FourTensorOperations::holzapfel_product<FAD>(
+    const Core::LinAlg::SymmetricTensor<FAD, 3, 3>&);
 template void Core::LinAlg::FourTensorOperations::add_right_non_symmetric_holzapfel_product<double>(
     Core::LinAlg::Matrix<6, 9, double>&, Core::LinAlg::Matrix<3, 3, double> const&,
     Core::LinAlg::Matrix<3, 3, double> const&, double const);

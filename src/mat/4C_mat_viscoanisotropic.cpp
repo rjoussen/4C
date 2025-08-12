@@ -10,6 +10,7 @@
 #include "4C_comm_pack_helpers.hpp"
 #include "4C_global_data.hpp"
 #include "4C_linalg_fixedsizematrix_tensor_products.hpp"
+#include "4C_linalg_symmetric_tensor.hpp"
 #include "4C_linalg_tensor_matrix_conversion.hpp"
 #include "4C_mat_par_bundle.hpp"
 #include "4C_utils_enum.hpp"
@@ -468,8 +469,9 @@ void Mat::ViscoAnisotropic::evaluate(const Core::LinAlg::Tensor<double, 3, 3>* d
   Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> CisoEla_nh(
       Core::LinAlg::Initialization::zero);  // isochoric elastic C from NeoHooke
 
-  Core::LinAlg::FourTensorOperations::add_holzapfel_product(
-      cmat_view, Cinv, (-2 * J * p));  // -2 J p Cinv o Cinv
+  cmat += (-2 * J * p) *
+          Core::LinAlg::FourTensorOperations::holzapfel_product(
+              make_symmetric_tensor_from_stress_like_voigt_matrix(Cinv));  // -2 J p Cinv o Cinv
 
   const double fac = 2 * third * incJ * mue * I1;  // 2/3 J^{-2/3} Sbar:C
   // fac Psl = fac (Cinv o Cinv) - fac/3 (Cinv x Cinv)
