@@ -46,7 +46,7 @@ set(_dependencies
     xfem
     )
 
-four_c_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_dependencies})
+four_c_add_internal_dependency(${AUTO_DEFINED_MODULE_NAME} ${_dependencies})
 
 four_c_unity_build_compile_separately(${AUTO_DEFINED_MODULE_NAME} 4C_adapter_str_fsiwrapper.cpp)
 four_c_unity_build_compile_separately(

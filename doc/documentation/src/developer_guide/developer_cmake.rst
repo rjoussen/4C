@@ -160,7 +160,7 @@ When defining a module `module_name`:
 - Define a CMake `INTERFACE` target conventionally called `module_name_deps` which contains all the headers and usage requirements of
   the module.
 - If another module `module_other` is required for building `module_name`, this module is added as
-  `four_c_add_dependency(module_name module_other)`. This step encodes internal dependencies.
+  `four_c_add_internal_dependency(module_name module_other)`. This step encodes internal dependencies.
 - Define a CMake `OBJECT` target conventionally called `module_name_objs` which contains the source files. If a module is
   header-only, this target is not defined.
 - Add the `OBJECT` target to a central library which contains all compiled sources.

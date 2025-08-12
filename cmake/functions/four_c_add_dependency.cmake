@@ -10,7 +10,7 @@ function(_four_c_internal_link_with_debug_message target link_type deps)
   target_link_libraries(${target} ${link_type} ${deps})
 endfunction()
 
-function(four_c_add_dependency target)
+function(four_c_add_internal_dependency target)
   # Internal target in the library
   if(TARGET ${target}_deps)
     foreach(_dep ${ARGN})

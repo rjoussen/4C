@@ -20,4 +20,4 @@ set(_dependencies
     porofluid_pressure_based_ele
     )
 
-four_c_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_dependencies})
+four_c_add_internal_dependency(${AUTO_DEFINED_MODULE_NAME} ${_dependencies})
