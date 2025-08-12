@@ -72,11 +72,10 @@ namespace Discret::Elements
    */
   template <Core::FE::CellType celltype>
   inline Core::LinAlg::Matrix<Core::FE::dim<celltype> * Core::FE::num_nodes(celltype), 1>
-  evaluate_fbar_h_operator(
-      const Core::LinAlg::Matrix<Core::FE::dim<celltype>, Core::FE::num_nodes(celltype)>&
-          shape_function_derivs,
-      const Core::LinAlg::Matrix<Core::FE::dim<celltype>, Core::FE::num_nodes(celltype)>&
-          shape_function_derivs_centroid,
+  evaluate_fbar_h_operator(const std::array<Core::LinAlg::Tensor<double, Core::FE::dim<celltype>>,
+                               Core::FE::num_nodes(celltype)>& shape_function_derivs,
+      const std::array<Core::LinAlg::Tensor<double, Core::FE::dim<celltype>>,
+          Core::FE::num_nodes(celltype)>& shape_function_derivs_centroid,
       const Discret::Elements::SpatialMaterialMapping<celltype>& spatial_material_mapping,
       const Discret::Elements::SpatialMaterialMapping<celltype>& spatial_material_mapping_centroid)
     requires(Core::FE::dim<celltype> == 3)
@@ -94,12 +93,13 @@ namespace Discret::Elements
         Core::LinAlg::Initialization::zero);
     for (int idof = 0; idof < Core::FE::dim<celltype> * Core::FE::num_nodes(celltype); idof++)
     {
+      const std::size_t node_id = idof / Core::FE::dim<celltype>;
       for (int idim = 0; idim < Core::FE::dim<celltype>; idim++)
       {
         Hop(idof) += invdefgrd_centroid(idim, idof % Core::FE::dim<celltype>) *
-                     shape_function_derivs_centroid(idim, idof / Core::FE::dim<celltype>);
-        Hop(idof) -= invdefgrd(idim, idof % Core::FE::dim<celltype>) *
-                     shape_function_derivs(idim, idof / Core::FE::dim<celltype>);
+                     shape_function_derivs_centroid[node_id](idim);
+        Hop(idof) -=
+            invdefgrd(idim, idof % Core::FE::dim<celltype>) * shape_function_derivs[node_id](idim);
       }
     }
 

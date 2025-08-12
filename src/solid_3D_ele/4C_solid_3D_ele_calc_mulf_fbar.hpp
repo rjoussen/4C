@@ -28,7 +28,9 @@ namespace Discret::Elements
   template <Core::FE::CellType celltype>
   struct MulfFBarPreparationData
   {
-    Core::LinAlg::Matrix<Internal::num_dim<celltype>, Internal::num_nodes<celltype>> N_XYZ{};
+    std::array<Core::LinAlg::Tensor<double, Internal::num_dim<celltype>>,
+        Internal::num_nodes<celltype>>
+        N_XYZ{};
 
     SpatialMaterialMapping<celltype> spatial_material_mapping{};
   };
@@ -136,8 +138,11 @@ namespace Discret::Elements
       JacobianMapping<celltype> jacobian_mapping =
           evaluate_jacobian_mapping_centroid(nodal_coordinates);
 
-      Core::LinAlg::Matrix<Core::FE::dim<celltype>, Core::FE::num_nodes(celltype)> N_XYZ_0;
-      N_XYZ_0.multiply(Core::LinAlg::make_matrix_view(jacobian_mapping.inverse_jacobian_),
+      std::array<Core::LinAlg::Tensor<double, Core::FE::dim<celltype>>,
+          Core::FE::num_nodes(celltype)>
+          N_XYZ_0;
+      Core::LinAlg::make_matrix_view(N_XYZ_0).multiply(
+          Core::LinAlg::make_matrix_view(jacobian_mapping.inverse_jacobian_),
           shape_functions_centeroid.derivatives_);
 
       return {N_XYZ_0, Internal::evaluate_mulf_spatial_material_mapping_centroid(
@@ -176,7 +181,7 @@ namespace Discret::Elements
                 evaluate_strain_gradient(jacobian_mapping, spatial_material_mapping);
 
             linearization.Hop =
-                evaluate_fbar_h_operator(jacobian_mapping.N_XYZ_, mapping_center.N_XYZ,
+                evaluate_fbar_h_operator(jacobian_mapping.N_XYZ, mapping_center.N_XYZ,
                     spatial_material_mapping, mapping_center.spatial_material_mapping);
 
             linearization.fbar_factor = fbar_factor;
@@ -230,7 +235,7 @@ namespace Discret::Elements
     {
       Discret::Elements::add_elastic_stiffness_matrix(linearization.Bop, stress,
           integration_factor * linearization.fbar_factor, stiffness_matrix);
-      Discret::Elements::add_geometric_stiffness_matrix(jacobian_mapping.N_XYZ_, stress,
+      Discret::Elements::add_geometric_stiffness_matrix(jacobian_mapping.N_XYZ, stress,
           integration_factor / linearization.fbar_factor, stiffness_matrix);
 
       // additional stiffness matrix needed for fbar method

@@ -112,7 +112,7 @@ namespace Discret::Elements
       Discret::Elements::add_elastic_stiffness_matrix(
           linearization.Bop, stress, integration_factor, stiffness_matrix);
       Discret::Elements::add_geometric_stiffness_matrix(
-          jacobian_mapping.N_XYZ_, stress, integration_factor, stiffness_matrix);
+          jacobian_mapping.N_XYZ, stress, integration_factor, stiffness_matrix);
     }
 
     static void pack(

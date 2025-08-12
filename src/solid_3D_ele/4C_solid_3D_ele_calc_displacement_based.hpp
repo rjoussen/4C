@@ -86,15 +86,15 @@ namespace Discret::Elements
       // evaluate derivative w.r.t. displacements
       for (int i = 0; i < Core::FE::num_nodes(celltype); ++i)
       {
-        d_F_dd(0, Core::FE::dim<celltype> * i + 0) = jacobian_mapping.N_XYZ_(0, i);
-        d_F_dd(1, Core::FE::dim<celltype> * i + 1) = jacobian_mapping.N_XYZ_(1, i);
-        d_F_dd(2, Core::FE::dim<celltype> * i + 2) = jacobian_mapping.N_XYZ_(2, i);
-        d_F_dd(3, Core::FE::dim<celltype> * i + 0) = jacobian_mapping.N_XYZ_(1, i);
-        d_F_dd(4, Core::FE::dim<celltype> * i + 1) = jacobian_mapping.N_XYZ_(2, i);
-        d_F_dd(5, Core::FE::dim<celltype> * i + 0) = jacobian_mapping.N_XYZ_(2, i);
-        d_F_dd(6, Core::FE::dim<celltype> * i + 1) = jacobian_mapping.N_XYZ_(0, i);
-        d_F_dd(7, Core::FE::dim<celltype> * i + 2) = jacobian_mapping.N_XYZ_(1, i);
-        d_F_dd(8, Core::FE::dim<celltype> * i + 2) = jacobian_mapping.N_XYZ_(0, i);
+        d_F_dd(0, Core::FE::dim<celltype> * i + 0) = jacobian_mapping.N_XYZ[i](0);
+        d_F_dd(1, Core::FE::dim<celltype> * i + 1) = jacobian_mapping.N_XYZ[i](1);
+        d_F_dd(2, Core::FE::dim<celltype> * i + 2) = jacobian_mapping.N_XYZ[i](2);
+        d_F_dd(3, Core::FE::dim<celltype> * i + 0) = jacobian_mapping.N_XYZ[i](1);
+        d_F_dd(4, Core::FE::dim<celltype> * i + 1) = jacobian_mapping.N_XYZ[i](2);
+        d_F_dd(5, Core::FE::dim<celltype> * i + 0) = jacobian_mapping.N_XYZ[i](2);
+        d_F_dd(6, Core::FE::dim<celltype> * i + 1) = jacobian_mapping.N_XYZ[i](0);
+        d_F_dd(7, Core::FE::dim<celltype> * i + 2) = jacobian_mapping.N_XYZ[i](1);
+        d_F_dd(8, Core::FE::dim<celltype> * i + 2) = jacobian_mapping.N_XYZ[i](0);
       }
 
       return d_F_dd;
@@ -178,7 +178,8 @@ namespace Discret::Elements
           deriv2(Core::LinAlg::Initialization::zero);
       Core::FE::shape_function_deriv2<celltype>(xi, deriv2);
       Xsec.multiply_nt(1.0, deriv2, element_nodes.reference_coordinates, 0.0);
-      N_XYZ_Xsec.multiply_tt(1.0, jacobian_mapping.N_XYZ_, Xsec, 0.0);
+      N_XYZ_Xsec.multiply_tt(
+          1.0, Core::LinAlg::make_matrix_view(jacobian_mapping.N_XYZ), Xsec, 0.0);
 
       for (int i = 0; i < Core::FE::dim<celltype>; ++i)
       {
@@ -249,7 +250,7 @@ namespace Discret::Elements
       Discret::Elements::add_elastic_stiffness_matrix(
           linearization.Bop_, stress, integration_factor, stiffness_matrix);
       Discret::Elements::add_geometric_stiffness_matrix(
-          jacobian_mapping.N_XYZ_, stress, integration_factor, stiffness_matrix);
+          jacobian_mapping.N_XYZ, stress, integration_factor, stiffness_matrix);
     }
   };
 
