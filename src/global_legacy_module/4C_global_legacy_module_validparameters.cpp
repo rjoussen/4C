@@ -146,7 +146,10 @@ std::map<std::string, Core::IO::InputSpec> Global::valid_parameters()
                   .default_value = -1})},
       {.required = false});
 
-  const auto add_geometry_section = [](auto& specs, const std::string& field_identifier)
+  const Core::Elements::ElementDefinition element_definition;
+  auto all_possible_elements_spec = element_definition.element_data_spec();
+
+  const auto add_geometry_section = [&](auto& specs, const std::string& field_identifier)
   {
     specs[field_identifier + " GEOMETRY"] = group(field_identifier + " GEOMETRY",
         {
@@ -163,11 +166,7 @@ std::map<std::string, Core::IO::InputSpec> Global::valid_parameters()
                 all_of({
                     parameter<int>(
                         "ID", {.description = "ID of the element block in the exodus file."}),
-                    parameter<std::string>("ELEMENT_NAME",
-                        {.description =
-                                "The name of the element that should be assigned to the block."}),
-                    parameter<std::string>("ELEMENT_DATA",
-                        {.description = "A dat-style string of parameters for the element."}),
+                    all_possible_elements_spec,
                 })),
         },
         {.description = "Settings related to the geometry of discretization " + field_identifier,

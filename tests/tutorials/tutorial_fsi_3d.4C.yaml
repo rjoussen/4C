@@ -89,15 +89,20 @@ STRUCTURE GEOMETRY:
   SHOW_INFO: "summary"
   ELEMENT_BLOCKS:
     - ID: 1
-      ELEMENT_NAME: SOLID
-      ELEMENT_DATA: "MAT 1 KINEM nonlinear TECH eas_full"
+      SOLID:
+        HEX8:
+          MAT: 1
+          KINEM: nonlinear
+          TECH: eas_full
 
 FLUID GEOMETRY:
   FILE: tutorial_fsi_3d.e
   ELEMENT_BLOCKS:
     - ID: 2
-      ELEMENT_NAME: FLUID
-      ELEMENT_DATA: "MAT 2 NA ALE"
+      FLUID:
+        HEX8:
+          MAT: 2
+          NA: ALE
 
 DESIGN POINT DIRICH CONDITIONS:
   - E: 32

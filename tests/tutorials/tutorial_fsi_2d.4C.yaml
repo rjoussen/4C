@@ -124,16 +124,24 @@ STRUCTURE GEOMETRY:
   FILE: tutorial_fsi_2d.e
   ELEMENT_BLOCKS:
     - ID: 1
-      ELEMENT_NAME: WALL
-      ELEMENT_DATA: "MAT 2 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_strain GP 2 2"
+      WALL:
+        QUAD4:
+          MAT: 2
+          KINEM: nonlinear
+          EAS: none
+          THICK: 1.0
+          STRESS_STRAIN: plane_strain
+          GP: [2, 2]
 
 FLUID GEOMETRY:
   FILE: tutorial_fsi_2d.e
   SHOW_INFO: "summary"
   ELEMENT_BLOCKS:
     - ID: 2
-      ELEMENT_NAME: FLUID
-      ELEMENT_DATA: "MAT 1 NA ALE"
+      FLUID:
+        QUAD4:
+          MAT: 1
+          NA: ALE
 
 DESIGN POINT DIRICH CONDITIONS:
   - E: 3

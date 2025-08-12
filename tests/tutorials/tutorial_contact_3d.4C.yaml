@@ -11,11 +11,15 @@ STRUCTURE GEOMETRY:
   SHOW_INFO: "summary"
   ELEMENT_BLOCKS:
     - ID: 1
-      ELEMENT_NAME: SOLID
-      ELEMENT_DATA: "MAT 1 KINEM nonlinear"
+      SOLID:
+        HEX8:
+          MAT: 1
+          KINEM: nonlinear
     - ID: 2
-      ELEMENT_NAME: SOLID
-      ELEMENT_DATA: "MAT 2 KINEM nonlinear"
+      SOLID:
+        HEX8:
+          MAT: 2
+          KINEM: nonlinear
 
 STRUCTURAL DYNAMIC:
   INT_STRATEGY: "Standard"

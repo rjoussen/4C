@@ -13,11 +13,8 @@
 #include "4C_fem_general_cell_type.hpp"
 #include "4C_io_input_spec.hpp"
 
-#include <iostream>
 #include <map>
-#include <memory>
 #include <string>
-#include <vector>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -40,6 +37,19 @@ namespace Core::Elements
      */
     const Core::IO::InputSpec& get(
         const std::string& element_name, Core::FE::CellType cell_type) const;
+
+    /**
+     * Get an InputSpec that describes all valid element definitions.
+     */
+    [[nodiscard]] Core::IO::InputSpec element_data_spec() const;
+
+    /**
+     * Given a @p data container that matches the element_data_spec(), unpack the information
+     * into a tuple of (element_name, cell_type, specific_data), where specific_data is a
+     * container that matches the spec from get(element_name, cell_type).
+     */
+    [[nodiscard]] std::tuple<std::string, Core::FE::CellType, Core::IO::InputParameterContainer>
+    unpack_element_data(const Core::IO::InputParameterContainer& data) const;
 
     //! Map from physics to cell type to InputSpec.
     std::map<std::string, std::map<Core::FE::CellType, Core::IO::InputSpec>> definitions;

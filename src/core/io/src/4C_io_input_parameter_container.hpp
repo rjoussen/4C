@@ -89,7 +89,7 @@ namespace Core::IO
      */
     template <std::ranges::range R>
       requires std::convertible_to<std::ranges::range_value_t<R>, std::string>
-    [[nodiscard]] std::pair<std::string_view, const InputParameterContainer&> exactly_one_group(
+    [[nodiscard]] std::pair<std::string, const InputParameterContainer&> exactly_one_group(
         const R& possible_group_names) const;
 
     /**
@@ -231,7 +231,7 @@ inline auto Core::IO::InputParameterContainer::groups() const
 
 template <std::ranges::range R>
   requires std::convertible_to<std::ranges::range_value_t<R>, std::string>
-std::pair<std::string_view, const Core::IO::InputParameterContainer&>
+std::pair<std::string, const Core::IO::InputParameterContainer&>
 Core::IO::InputParameterContainer::exactly_one_group(const R& possible_group_names) const
 {
   auto matching_group_names =
@@ -239,8 +239,8 @@ Core::IO::InputParameterContainer::exactly_one_group(const R& possible_group_nam
       std::views::filter([this](const std::string& name) { return has_group(name); });
 
   FOUR_C_ASSERT_ALWAYS(std::ranges::distance(matching_group_names) == 1,
-      "The data container must contain exactly one group that matches a physics name in the "
-      "element definitions but found {} matching groups.",
+      "The data container must contain exactly one group that matches one of the possible names "
+      "but found {} matching groups. ",
       std::ranges::distance(matching_group_names));
 
   return {*matching_group_names.begin(), group(*matching_group_names.begin())};

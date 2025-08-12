@@ -673,17 +673,32 @@ STRUCTURE GEOMETRY:
   SHOW_INFO: "summary"
   ELEMENT_BLOCKS:
     - ID: 1
-      ELEMENT_NAME: SOLIDSCATRA
-      ELEMENT_DATA: "MAT 12 KINEM nonlinear TYPE ElchElectrode"
+      SOLIDSCATRA:
+        TET4:
+          MAT: 12
+          KINEM: nonlinear
+          TYPE: ElchElectrode
     - ID: 2
-      ELEMENT_NAME: SOLIDSCATRA
-      ELEMENT_DATA: "MAT 8 KINEM nonlinear TYPE ElchDiffCond"
+      SOLIDSCATRA:
+        TET4:
+          MAT: 8
+          KINEM: nonlinear
+          TYPE: ElchDiffCond
     - ID: 3
-      ELEMENT_NAME: SOLIDSCATRA
-      ELEMENT_DATA: "MAT 2 KINEM nonlinear TYPE ElchElectrode"
+      SOLIDSCATRA:
+        TET4:
+          MAT: 2
+          KINEM: nonlinear
+          TYPE: ElchElectrode
     - ID: 4
-      ELEMENT_NAME: SOLIDSCATRA
-      ELEMENT_DATA: "MAT 16 KINEM nonlinear TYPE ElchElectrode"
+      SOLIDSCATRA:
+        TET4:
+          MAT: 16
+          KINEM: nonlinear
+          TYPE: ElchElectrode
     - ID: 5
-      ELEMENT_NAME: SOLIDSCATRA
-      ELEMENT_DATA: "MAT 20 KINEM nonlinear TYPE ElchElectrode"
+      SOLIDSCATRA:
+        TET4:
+          MAT: 20
+          KINEM: nonlinear
+          TYPE: ElchElectrode
