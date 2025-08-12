@@ -15,6 +15,7 @@
 #include "4C_solver_nonlin_nox_direction_factory.hpp"
 #include "4C_solver_nonlin_nox_linearsystem.hpp"
 #include "4C_solver_nonlin_nox_meritfunction_factory.hpp"
+#include "4C_solver_nonlin_nox_scaling.hpp"
 #include "4C_solver_nonlin_nox_solver_prepostop_generic.hpp"
 #include "4C_utils_exceptions.hpp"
 
@@ -40,7 +41,7 @@ NOX::Nln::GlobalData::GlobalData(MPI_Comm comm, Teuchos::ParameterList& noxParam
     const NOX::Nln::CONSTRAINT::ReqInterfaceMap& iConstr,
     const Teuchos::RCP<::NOX::Epetra::Interface::Preconditioner>& iPrec,
     const NOX::Nln::CONSTRAINT::PrecInterfaceMap& iConstrPrec,
-    const Teuchos::RCP<::NOX::Epetra::Scaling>& iScale)
+    const std::shared_ptr<NOX::Nln::Scaling>& iScale)
     : comm_(comm),
       nlnparams_(Teuchos::rcpFromRef(noxParams)),
       opt_type_(type),
@@ -426,7 +427,7 @@ bool NOX::Nln::GlobalData::is_constrained() const { return is_constrained_; }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Teuchos::RCP<::NOX::Epetra::Scaling>& NOX::Nln::GlobalData::get_scaling_object()
+const std::shared_ptr<NOX::Nln::Scaling>& NOX::Nln::GlobalData::get_scaling_object()
 {
   return i_scale_;
 }

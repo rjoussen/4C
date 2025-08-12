@@ -37,6 +37,8 @@ namespace NOX
       }  // namespace Interface
     }  // namespace CONSTRAINT
 
+    class Scaling;
+
     class GlobalData
     {
      public:
@@ -52,7 +54,7 @@ namespace NOX
           const OptimizationProblemType& type, const NOX::Nln::CONSTRAINT::ReqInterfaceMap& iConstr,
           const Teuchos::RCP<::NOX::Epetra::Interface::Preconditioner>& iPrec,
           const NOX::Nln::CONSTRAINT::PrecInterfaceMap& iConstrPrec,
-          const Teuchos::RCP<::NOX::Epetra::Scaling>& iscale);
+          const std::shared_ptr<NOX::Nln::Scaling>& iscale);
 
       /*! CONSTRAINED OPTIMIZATION
        * inclusive the constraint interfaces map
@@ -128,7 +130,7 @@ namespace NOX
       const NOX::Nln::CONSTRAINT::PrecInterfaceMap& get_constraint_prec_interfaces();
 
       //! return linear system scaling object
-      const Teuchos::RCP<::NOX::Epetra::Scaling>& get_scaling_object();
+      const std::shared_ptr<NOX::Nln::Scaling>& get_scaling_object();
 
      private:
       //! setup the nln_utils class
@@ -177,7 +179,7 @@ namespace NOX
       NOX::Nln::CONSTRAINT::PrecInterfaceMap i_constr_prec_;
 
       /// scaling object (for the linear system)
-      Teuchos::RCP<::NOX::Epetra::Scaling> i_scale_;
+      std::shared_ptr<NOX::Nln::Scaling> i_scale_;
 
       /// merit function pointer
       Teuchos::RCP<::NOX::MeritFunction::Generic> mrt_fct_ptr_;

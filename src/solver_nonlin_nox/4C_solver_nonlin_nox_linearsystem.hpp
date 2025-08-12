@@ -12,9 +12,9 @@
 
 #include "4C_solver_nonlin_nox_enum_lists.hpp"
 #include "4C_solver_nonlin_nox_forward_decl.hpp"
+#include "4C_solver_nonlin_nox_linearsystem_base.hpp"
 
 #include <NOX_Epetra_Interface_Required.H>
-#include <NOX_Epetra_LinearSystem.H>
 #include <Teuchos_Time.hpp>
 
 FOUR_C_NAMESPACE_OPEN
@@ -44,9 +44,10 @@ namespace NOX
     namespace LinSystem
     {
       class PrePostOperator;
-      class Scaling;
     }  // namespace LinSystem
-    class LinearSystem : public ::NOX::Epetra::LinearSystem
+    class Scaling;
+
+    class LinearSystem : public NOX::Nln::LinearSystemBase
     {
      public:
       using SolverMap = std::map<NOX::Nln::SolutionType, Teuchos::RCP<Core::LinAlg::Solver>>;
@@ -77,7 +78,7 @@ namespace NOX
           const Teuchos::RCP<::NOX::Epetra::Interface::Preconditioner>& iPrec,
           const Teuchos::RCP<Core::LinAlg::SparseOperator>& preconditioner,
           const ::NOX::Epetra::Vector& cloneVector,
-          const Teuchos::RCP<::NOX::Epetra::Scaling> scalingObject);
+          const std::shared_ptr<NOX::Nln::Scaling> scalingObject);
 
       //! Constructor without scaling object
       LinearSystem(Teuchos::ParameterList& printParams, Teuchos::ParameterList& linearSolverParams,
@@ -94,7 +95,7 @@ namespace NOX
           const Teuchos::RCP<::NOX::Epetra::Interface::Jacobian>& iJac,
           const Teuchos::RCP<Core::LinAlg::SparseOperator>& J,
           const ::NOX::Epetra::Vector& cloneVector,
-          const Teuchos::RCP<::NOX::Epetra::Scaling> scalingObject);
+          const std::shared_ptr<NOX::Nln::Scaling> scalingObject);
 
       //! Constructor without preconditioner and scaling object
       LinearSystem(Teuchos::ParameterList& printParams, Teuchos::ParameterList& linearSolverParams,
@@ -193,10 +194,6 @@ namespace NOX
       //! Set the jacobian operator of this class
       void set_jacobian_operator_for_solve(
           const Teuchos::RCP<const Core::LinAlg::SparseOperator>& solveJacOp);
-
-      Teuchos::RCP<::NOX::Epetra::Scaling> getScaling() override;
-
-      void resetScaling(const Teuchos::RCP<::NOX::Epetra::Scaling>& scalingObject) override;
 
       bool destroyPreconditioner() const override;
 
@@ -348,7 +345,7 @@ namespace NOX
       PreconditionerMatrixSourceType precMatrixSource_;
 
       //! Scaling object supplied by the user
-      Teuchos::RCP<::NOX::Epetra::Scaling> scaling_;
+      std::shared_ptr<NOX::Nln::Scaling> scaling_;
 
       double conditionNumberEstimate_;
 

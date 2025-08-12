@@ -14,6 +14,7 @@
 #include "4C_linalg_sparseoperator.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
 #include "4C_solver_nonlin_nox_globaldata.hpp"
+#include "4C_solver_nonlin_nox_scaling.hpp"
 #include "4C_structure_new_nox_nln_str_linearsystem.hpp"
 #include "4C_utils_enum.hpp"
 #include "4C_utils_exceptions.hpp"
@@ -21,7 +22,6 @@
 #include <NOX_Epetra_Interface_Jacobian.H>
 #include <NOX_Epetra_Interface_Preconditioner.H>
 #include <NOX_Epetra_Interface_Required.H>
-#include <NOX_Epetra_Scaling.H>
 #include <NOX_Epetra_Vector.H>
 #include <Teuchos_ParameterList.hpp>
 
@@ -40,7 +40,7 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> NOX::Nln::LinSystem::Factory::build_li
     const NOX::Nln::LinSystem::LinearSystemType& linsystype, NOX::Nln::GlobalData& noxNlnGlobalData,
     const Teuchos::RCP<Core::LinAlg::SparseOperator>& jac, ::NOX::Epetra::Vector& cloneVector,
     const Teuchos::RCP<Core::LinAlg::SparseOperator>& precMat,
-    const Teuchos::RCP<::NOX::Epetra::Scaling>& scalingObject) const
+    const std::shared_ptr<NOX::Nln::Scaling>& scalingObject) const
 {
   Teuchos::RCP<::NOX::Epetra::LinearSystem> linSys = Teuchos::null;
 
@@ -136,7 +136,7 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> NOX::Nln::LinSystem::build_linear_syst
     const NOX::Nln::LinSystem::LinearSystemType& linsystype, NOX::Nln::GlobalData& noxNlnGlobalData,
     const Teuchos::RCP<Core::LinAlg::SparseOperator>& jac, ::NOX::Epetra::Vector& cloneVector,
     const Teuchos::RCP<Core::LinAlg::SparseOperator>& precMat,
-    const Teuchos::RCP<::NOX::Epetra::Scaling>& scalingObject)
+    const std::shared_ptr<NOX::Nln::Scaling>& scalingObject)
 {
   Factory factory;
   return factory.build_linear_system(

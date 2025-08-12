@@ -10,13 +10,14 @@
 
 #include "4C_config.hpp"
 
+#include "4C_solver_nonlin_nox_linearsystem_base.hpp"
+#include "4C_solver_nonlin_nox_scaling.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
 #include <NOX_Common.H>
 #include <NOX_Epetra_Interface_Jacobian.H>
 #include <NOX_Epetra_Interface_Required.H>
 #include <NOX_Epetra_LinearSystem.H>
-#include <NOX_Epetra_Scaling.H>
 #include <NOX_Epetra_Vector.H>
 #include <NOX_Utils.H>
 #include <Teuchos_Time.hpp>
@@ -35,7 +36,7 @@ namespace NOX
       No preconditioner supported.
       Reuse of internal search directions supported.
      */
-    class LinearSystemGCR : public ::NOX::Epetra::LinearSystem
+    class LinearSystemGCR : public NOX::Nln::LinearSystemBase
     {
      protected:
       //! List of types of epetra objects that can be used for the Jacobian and/or Preconditioner.
@@ -58,7 +59,7 @@ namespace NOX
           const Teuchos::RCP<::NOX::Epetra::Interface::Required>& iReq,
           const Teuchos::RCP<::NOX::Epetra::Interface::Jacobian>& iJac,
           const Teuchos::RCP<Epetra_Operator>& J, const ::NOX::Epetra::Vector& cloneVector,
-          const Teuchos::RCP<::NOX::Epetra::Scaling> scalingObject = Teuchos::null);
+          const std::shared_ptr<NOX::Nln::Scaling> scalingObject = nullptr);
 
       //! Reset the linear solver parameters.
       virtual void reset(Teuchos::ParameterList& linearSolverParams);
@@ -122,17 +123,6 @@ namespace NOX
       */
       bool applyRightPreconditioning(bool useTranspose, Teuchos::ParameterList& params,
           const ::NOX::Epetra::Vector& input, ::NOX::Epetra::Vector& result) const override;
-
-      //! Get the scaling object
-      Teuchos::RCP<::NOX::Epetra::Scaling> getScaling() override;
-
-      /*!
-        \brief Sets the diagonal scaling vector(s) used in scaling the linear system.
-
-        See ::NOX::Epetra::Scaling for details on how to specify scaling
-        of the linear system.
-      */
-      void resetScaling(const Teuchos::RCP<::NOX::Epetra::Scaling>& s) override;
 
       //! Evaluates the Jacobian based on the solution vector x.
       bool computeJacobian(const ::NOX::Epetra::Vector& x) override;
@@ -255,7 +245,7 @@ namespace NOX
       mutable Teuchos::RCP<Epetra_Operator> jacPtr;
 
       //! Scaling object supplied by the user
-      Teuchos::RCP<::NOX::Epetra::Scaling> scaling;
+      std::shared_ptr<NOX::Nln::Scaling> scaling;
 
       //! An extra temporary vector, only allocated if needed.
       mutable std::shared_ptr<::NOX::Epetra::Vector> tmpVectorPtr;

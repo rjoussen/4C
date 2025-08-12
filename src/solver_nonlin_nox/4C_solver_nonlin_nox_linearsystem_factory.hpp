@@ -29,6 +29,8 @@ namespace NOX
   namespace Nln
   {
     class GlobalData;
+    class Scaling;
+
     namespace LinSystem
     {
       class Factory
@@ -44,7 +46,7 @@ namespace NOX
             const Teuchos::RCP<Core::LinAlg::SparseOperator>& jac,
             ::NOX::Epetra::Vector& cloneVector,
             const Teuchos::RCP<Core::LinAlg::SparseOperator>& precMat,
-            const Teuchos::RCP<::NOX::Epetra::Scaling>& scalingObject) const;
+            const std::shared_ptr<NOX::Nln::Scaling>& scalingObject) const;
       };
 
       /*! \brief Nonmember helper function for the NOX::Nln::LinearSystem::Factory.
@@ -57,7 +59,7 @@ namespace NOX
           NOX::Nln::GlobalData& noxNlnGlobalData,
           const Teuchos::RCP<Core::LinAlg::SparseOperator>& jac, ::NOX::Epetra::Vector& cloneVector,
           const Teuchos::RCP<Core::LinAlg::SparseOperator>& precMat,
-          const Teuchos::RCP<::NOX::Epetra::Scaling>& scalingObject);
+          const std::shared_ptr<NOX::Nln::Scaling>& scalingObject);
     }  // namespace LinSystem
   }  // namespace Nln
 }  // namespace NOX

@@ -19,10 +19,10 @@
 #include "4C_solver_nonlin_nox_interface_jacobian.hpp"
 #include "4C_solver_nonlin_nox_linearsystem.hpp"
 #include "4C_solver_nonlin_nox_linearsystem_factory.hpp"
+#include "4C_solver_nonlin_nox_scaling.hpp"
 #include "4C_solver_nonlin_nox_singlestep_group.hpp"
 
 #include <NOX_Epetra_Interface_Required.H>
-#include <NOX_Epetra_Scaling.H>
 #include <NOX_Epetra_Vector.H>
 #include <NOX_StatusTest_Generic.H>
 #include <Teuchos_ParameterList.hpp>
@@ -85,7 +85,7 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> NOX::Nln::Problem::create_linear_syste
 
   const NOX::Nln::LinSystem::LinearSystemType linsystype =
       NOX::Nln::Aux::get_linear_system_type(noxNlnGlobalData_->get_linear_solvers());
-  Teuchos::RCP<::NOX::Epetra::Scaling> scalingObject = noxNlnGlobalData_->get_scaling_object();
+  std::shared_ptr<NOX::Nln::Scaling> scalingObject = noxNlnGlobalData_->get_scaling_object();
 
   // build the linear system --> factory call
   return NOX::Nln::LinSystem::build_linear_system(

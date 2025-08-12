@@ -30,7 +30,7 @@ NOX::Nln::MeshTying::LinearSystem::LinearSystem(Teuchos::ParameterList& printPar
     const Teuchos::RCP<::NOX::Epetra::Interface::Preconditioner>& iPrec,
     const NOX::Nln::CONSTRAINT::PrecInterfaceMap& iConstrPrec,
     const Teuchos::RCP<Core::LinAlg::SparseOperator>& M, const ::NOX::Epetra::Vector& cloneVector,
-    const Teuchos::RCP<::NOX::Epetra::Scaling> scalingObject)
+    const std::shared_ptr<NOX::Nln::Scaling> scalingObject)
     : NOX::Nln::LinearSystem(printParams, linearSolverParams, solvers, iReq, iJac, J, iPrec, M,
           cloneVector, scalingObject),
       i_constr_(iConstr),

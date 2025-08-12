@@ -10,6 +10,8 @@
 
 #include "4C_config.hpp"
 
+#include "4C_solver_nonlin_nox_linearsystem_base.hpp"
+#include "4C_solver_nonlin_nox_scaling.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
 #include <NOX.H>
@@ -18,8 +20,6 @@
 #include <NOX_Epetra_Interface_Jacobian.H>
 #include <NOX_Epetra_Interface_Preconditioner.H>
 #include <NOX_Epetra_Interface_Required.H>
-#include <NOX_Epetra_LinearSystem.H>
-#include <NOX_Epetra_Scaling.H>
 #include <NOX_Epetra_Vector.H>
 #include <NOX_Utils.H>
 #include <Teuchos_Time.hpp>
@@ -36,7 +36,7 @@ namespace Core::LinAlg
 
 namespace NOX::FSI
 {
-  class LinearSystem : public ::NOX::Epetra::LinearSystem
+  class LinearSystem : public NOX::Nln::LinearSystemBase
   {
    private:
     enum OperatorType
@@ -58,8 +58,8 @@ namespace NOX::FSI
         const ::NOX::Epetra::Vector& cloneVector,   ///< initial guess of the solution process
         std::shared_ptr<Core::LinAlg::Solver>
             structure_solver,  ///< (used-defined) linear algebraic solver
-        const Teuchos::RCP<::NOX::Epetra::Scaling> scalingObject =
-            Teuchos::null);  ///< scaling of the linear system
+        const std::shared_ptr<NOX::Nln::Scaling> scalingObject =
+            nullptr);  ///< scaling of the linear system
 
     /// provide storage pattern of tangent matrix, i.e. the operator
     OperatorType get_operator_type(const Epetra_Operator& Op);
@@ -83,12 +83,6 @@ namespace NOX::FSI
     /// Apply right preconditiong to the given input vector.
     bool applyRightPreconditioning(bool useTranspose, Teuchos::ParameterList& params,
         const ::NOX::Epetra::Vector& input, ::NOX::Epetra::Vector& result) const override;
-
-    /// Get the scaling object.
-    Teuchos::RCP<::NOX::Epetra::Scaling> getScaling() override;
-
-    /// Sets the diagonal scaling vector(s) used in scaling the linear system.
-    void resetScaling(const Teuchos::RCP<::NOX::Epetra::Scaling>& s) override;
 
     /// Evaluates the Jacobian based on the solution vector x.
     bool computeJacobian(const ::NOX::Epetra::Vector& x) override;
@@ -144,7 +138,7 @@ namespace NOX::FSI
     OperatorType jac_type_;
     mutable std::shared_ptr<Epetra_Operator> jac_ptr_;
     mutable std::shared_ptr<Epetra_Operator> prec_ptr_;
-    Teuchos::RCP<::NOX::Epetra::Scaling> scaling_;
+    std::shared_ptr<NOX::Nln::Scaling> scaling_;
     mutable std::shared_ptr<::NOX::Epetra::Vector> tmp_vector_ptr_;
 
     bool output_solve_details_;

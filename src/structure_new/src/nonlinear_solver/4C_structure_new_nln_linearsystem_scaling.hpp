@@ -12,16 +12,7 @@
 
 #include "4C_inpar_structure.hpp"
 #include "4C_linalg_map.hpp"
-
-#include <NOX_Epetra_Scaling.H>
-
-namespace NOX
-{
-  namespace Epetra
-  {
-    class Scaling;
-  }
-}  // namespace NOX
+#include "4C_solver_nonlin_nox_scaling.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -46,18 +37,21 @@ namespace Solid
   {
     namespace LinSystem
     {
-      class StcScaling : public ::NOX::Epetra::Scaling
+      class StcScaling : public NOX::Nln::Scaling
       {
        public:
         //! Constructor.
         StcScaling(const Solid::TimeInt::BaseDataSDyn& DataSDyn,
             Solid::TimeInt::BaseDataGlobalState& GState);
 
+        //! Compute scaling.
+        void compute_scaling(const Epetra_LinearProblem& problem) override;
+
         //! Scales the linear system.
-        void scaleLinearSystem(Epetra_LinearProblem& problem) override;
+        void scale_linear_system(Epetra_LinearProblem& problem) override;
 
         //! Remove the scaling from the linear system.
-        void unscaleLinearSystem(Epetra_LinearProblem& problem) override;
+        void unscale_linear_system(Epetra_LinearProblem& problem) override;
 
        private:
         //! stiffness matrix after scaling
