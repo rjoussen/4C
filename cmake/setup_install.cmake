@@ -83,6 +83,7 @@ _add_dependency_to_settings(Backtrace)
 _add_dependency_to_settings(ryml)
 _add_dependency_to_settings(magic_enum)
 _add_dependency_to_settings(ZLIB)
+_add_dependency_to_settings(pybind11)
 
 # install the Find modules
 install(

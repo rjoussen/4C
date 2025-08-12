@@ -131,6 +131,7 @@ four_c_configure_dependency(ryml REQUIRED)
 four_c_configure_dependency(magic_enum REQUIRED)
 four_c_configure_dependency(ZLIB REQUIRED)
 four_c_configure_dependency(Python DEFAULT ON) # not required but useful for most developers
+four_c_configure_dependency(pybind11 DEFAULT OFF)
 
 ### end of configuration and feature detection
 
