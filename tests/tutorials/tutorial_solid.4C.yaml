@@ -7,8 +7,11 @@ STRUCTURE GEOMETRY:
   SHOW_INFO: "detailed_summary"
   ELEMENT_BLOCKS:
     - ID: 1
-      ELEMENT_NAME: SOLID
-      ELEMENT_DATA: "MAT 1 KINEM nonlinear"
+      SOLID:
+        HEX27:
+          MAT: 1
+          KINEM: nonlinear
+
 DESIGN SURF DIRICH CONDITIONS:
   - E: 1
     NUMDOF: 3

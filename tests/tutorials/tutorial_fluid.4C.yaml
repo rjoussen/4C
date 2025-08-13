@@ -25,8 +25,10 @@ FLUID GEOMETRY:
   FILE: "tutorial_fluid.e"
   ELEMENT_BLOCKS:
     - ID: 1
-      ELEMENT_NAME: FLUID
-      ELEMENT_DATA: "MAT 1 NA Euler"
+      FLUID:
+        QUAD4:
+          MAT: 1
+          NA: Euler
 
 DESIGN LINE DIRICH CONDITIONS:
   - E: 1

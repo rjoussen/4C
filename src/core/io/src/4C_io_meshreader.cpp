@@ -840,6 +840,8 @@ namespace
       const auto& geometry_data = data.group(exodus_reader.section_name);
       const auto& element_block_data = geometry_data.get_list("ELEMENT_BLOCKS");
 
+      Core::Elements::ElementDefinition element_definition;
+
       std::vector<int> skipped_blocks;
       int ele_count_before = ele_count;
       for (const auto& [eb_id, eb] : mesh.get_element_blocks())
@@ -854,27 +856,21 @@ namespace
           continue;
         }
 
-        const auto& element_name = current_block_data->get<std::string>("ELEMENT_NAME");
-        const auto cell_type = eb.cell_type;
-        const auto cell_type_string = Core::FE::cell_type_to_string(cell_type);
+        const auto [element_name, cell_type, specific_data] =
+            element_definition.unpack_element_data(*current_block_data);
+        const std::string cell_type_string = Core::FE::cell_type_to_string(eb.cell_type);
 
-        Core::Elements::ElementDefinition ed;
-        const auto& linedef = ed.get(element_name, cell_type);
-
-
-        const auto& element_string = current_block_data->get<std::string>("ELEMENT_DATA");
-        Core::IO::ValueParser element_parser{
-            element_string, {.user_scope_message = "While reading element data: "}};
-        Core::IO::InputParameterContainer element_data;
-        linedef.fully_parse(element_parser, element_data);
-
+        FOUR_C_ASSERT_ALWAYS(cell_type == eb.cell_type,
+            "Element block '{}' has cell type '{}' but your given element definition for '{}' has "
+            "cell type '{}'.",
+            eb_id, eb.cell_type, element_name, cell_type);
 
         for (const auto& ele_nodes : eb.elements | std::views::values)
         {
           auto ele = Core::Communication::factory(element_name, cell_type_string, ele_count, 0);
           if (!ele) FOUR_C_THROW("element creation failed");
           ele->set_node_ids(ele_nodes.size(), ele_nodes.data());
-          ele->read_element(element_name, cell_type_string, element_data);
+          ele->read_element(element_name, cell_type_string, specific_data);
           exodus_reader.target_discretization.add_element(ele);
 
           ele_count++;
