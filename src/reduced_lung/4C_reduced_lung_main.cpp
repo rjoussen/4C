@@ -15,10 +15,12 @@
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
 #include "4C_io_discretization_visualization_writer_mesh.hpp"
+#include "4C_io_input_field.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
 #include "4C_red_airways_elementbase.hpp"
 #include "4C_reduced_lung_helpers.hpp"
+#include "4C_reduced_lung_input.hpp"
 #include "4C_reduced_lung_terminal_unit.hpp"
 #include "4C_utils_function_of_time.hpp"
 
@@ -40,10 +42,11 @@ namespace ReducedLung
     {
       actdis->fill_complete();
     }
-    const Teuchos::ParameterList& rawdyn =
-        Global::Problem::instance()->reduced_d_airway_dynamic_params();
-    const int linear_solver_number = rawdyn.get<int>("LINEAR_SOLVER");
-    Core::LinAlg::Solver solver(Global::Problem::instance()->solver_params(linear_solver_number),
+    ReducedLungParameters parameters =
+        Global::Problem::instance()->parameters().get<ReducedLungParameters>(
+            "reduced_dimensional_lung");
+    Core::LinAlg::Solver solver(
+        Global::Problem::instance()->solver_params(parameters.dynamics.linear_solver),
         actdis->get_comm(), Global::Problem::instance()->solver_params_callback(),
         Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
             Global::Problem::instance()->io_params(), "VERBOSITY"));
@@ -81,9 +84,49 @@ namespace ReducedLung
       {
         if (ele->material(0)->material_type() == Core::Materials::m_0d_maxwell_acinus_neohookean)
         {
-          // Default terminal unit model until the new input is available.
-          add_terminal_unit_ele<KelvinVoigt, LinearElasticity>(
-              terminal_units, ele, local_element_id);
+          ReducedLungParameters::LungTree::TerminalUnits::RheologicalModel::RheologicalModelType
+              rheological_model_name =
+                  parameters.lung_tree.terminal_units.rheological_model.rheological_model_type.at(
+                      ele->id(), "rheological_model_type");
+
+          ReducedLungParameters::LungTree::TerminalUnits::ElasticityModel::ElasticityModelType
+              elasticity_model_name =
+                  parameters.lung_tree.terminal_units.elasticity_model.elasticity_model_type.at(
+                      ele->id(), "elasticity_model_type");
+
+          if (rheological_model_name == ReducedLungParameters::LungTree::TerminalUnits::
+                                            RheologicalModel::RheologicalModelType::KelvinVoigt)
+          {
+            if (elasticity_model_name == ReducedLungParameters::LungTree::TerminalUnits::
+                                             ElasticityModel::ElasticityModelType::Linear)
+            {
+              add_terminal_unit_ele<KelvinVoigt, LinearElasticity>(
+                  terminal_units, ele, local_element_id, parameters.lung_tree.terminal_units);
+            }
+            else if (elasticity_model_name == ReducedLungParameters::LungTree::TerminalUnits::
+                                                  ElasticityModel::ElasticityModelType::Ogden)
+            {
+              add_terminal_unit_ele<KelvinVoigt, OgdenHyperelasticity>(
+                  terminal_units, ele, local_element_id, parameters.lung_tree.terminal_units);
+            }
+          }
+          else if (rheological_model_name ==
+                   ReducedLungParameters::LungTree::TerminalUnits::RheologicalModel::
+                       RheologicalModelType::FourElementMaxwell)
+          {
+            if (elasticity_model_name == ReducedLungParameters::LungTree::TerminalUnits::
+                                             ElasticityModel::ElasticityModelType::Linear)
+            {
+              add_terminal_unit_ele<FourElementMaxwell, LinearElasticity>(
+                  terminal_units, ele, local_element_id, parameters.lung_tree.terminal_units);
+            }
+            else if (elasticity_model_name == ReducedLungParameters::LungTree::TerminalUnits::
+                                                  ElasticityModel::ElasticityModelType::Ogden)
+            {
+              add_terminal_unit_ele<FourElementMaxwell, OgdenHyperelasticity>(
+                  terminal_units, ele, local_element_id, parameters.lung_tree.terminal_units);
+            }
+          }
         }
         else
         {
@@ -488,11 +531,9 @@ namespace ReducedLung
     // Jacobian of the system equations.
     auto sysmat = Core::LinAlg::SparseMatrix(row_map, locally_relevant_dof_map, 3);
 
-    // Write results every ... time steps.
-    const int results_every = rawdyn.get<int>("RESULTSEVERY");
     // Time integration parameters.
-    const double dt = rawdyn.get<double>("TIMESTEP");
-    const int n_timesteps = rawdyn.get<int>("NUMSTEP");
+    const double dt = parameters.dynamics.time_increment;
+    const int n_timesteps = parameters.dynamics.number_of_steps;
     // Time loop
     if (Core::Communication::my_mpi_rank(comm) == 0)
     {
@@ -712,7 +753,7 @@ namespace ReducedLung
       update_terminal_unit_internal_state_vectors(terminal_units, locally_relevant_dofs, dt);
 
       // Runtime output
-      if (n % results_every == 0)
+      if (n % parameters.dynamics.results_every == 0)
       {
         visualization_writer.reset();
         collect_runtime_output_data(visualization_writer, airways, terminal_units,
