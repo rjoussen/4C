@@ -71,11 +71,20 @@ namespace SSTI
   {
    public:
     explicit SSTIMono(MPI_Comm comm, const Teuchos::ParameterList& globaltimeparams);
-    //! get vector containing positions within system matrix for specific subproblem
-    std::vector<int> get_block_positions(Subproblem subproblem) const;
 
-    //! get position within global dof map for specific subproblem
-    int get_problem_position(Subproblem subproblem) const;
+    /*!
+     * @brief get a vector containing positions within system matrix for the specific subproblem
+     *
+     * @note the subblocks are ordered such that the dof gid ranges constituting the individual
+     * subblocks are larger for later blocks, i.e.,
+     * block 1: dof gids 1 to m
+     * block 2: dof gids m+1 to n
+     * and so on.
+     */
+    [[nodiscard]] std::vector<int> get_block_positions(Subproblem subproblem) const;
+
+    //! get position within global dof map for the specific subproblem
+    [[nodiscard]] int get_problem_position(Subproblem subproblem) const;
 
     //! Setup of algorithm
     //@{
@@ -121,7 +130,7 @@ namespace SSTI
     std::shared_ptr<Core::LinAlg::Vector<double>> extract_sub_increment(Subproblem sub);
 
     // build and return vector of equilibration methods for each block of system matrix
-    std::vector<Core::LinAlg::EquilibrationMethod> get_block_equilibration();
+    std::vector<Core::LinAlg::EquilibrationMethod> get_block_equilibration() const;
 
     //! evaluate time step using Newton-Raphson iteration
     void newton_loop();
