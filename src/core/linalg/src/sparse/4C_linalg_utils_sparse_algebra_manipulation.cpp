@@ -791,4 +791,55 @@ void Core::LinAlg::multi_vector_to_std_vector(const Core::LinAlg::MultiVector<do
   }
 }
 
+/*----------------------------------------------------------------------*
+ | transform the row map of a matrix                          popp 08/10|
+ *----------------------------------------------------------------------*/
+std::shared_ptr<Core::LinAlg::SparseMatrix> Core::LinAlg::matrix_row_transform(
+    const Core::LinAlg::SparseMatrix& inmat, const Core::LinAlg::Map& newrowmap)
+{
+  return redistribute(inmat, newrowmap, inmat.domain_map());
+}
+
+/*----------------------------------------------------------------------*
+ | transform the column map of a matrix                       popp 08/10|
+ *----------------------------------------------------------------------*/
+std::shared_ptr<Core::LinAlg::SparseMatrix> Core::LinAlg::matrix_col_transform(
+    const Core::LinAlg::SparseMatrix& inmat, const Core::LinAlg::Map& newdomainmap)
+{
+  // initialize output matrix
+  std::shared_ptr<Core::LinAlg::SparseMatrix> outmat =
+      std::make_shared<Core::LinAlg::SparseMatrix>(inmat);
+
+  // complete output matrix
+  outmat->un_complete();
+  outmat->complete(newdomainmap, inmat.row_map());
+
+  return outmat;
+}
+
+/*----------------------------------------------------------------------*
+ | transform the row and column maps of a matrix              popp 08/10|
+ *----------------------------------------------------------------------*/
+std::shared_ptr<Core::LinAlg::SparseMatrix> Core::LinAlg::matrix_row_col_transform(
+    const Core::LinAlg::SparseMatrix& inmat, const Core::LinAlg::Map& newrowmap,
+    const Core::LinAlg::Map& newdomainmap)
+{
+  // redistribute input matrix
+  return redistribute(inmat, newrowmap, newdomainmap);
+}
+
+std::shared_ptr<Core::LinAlg::SparseMatrix> Core::LinAlg::redistribute(
+    const Core::LinAlg::SparseMatrix& src, const Core::LinAlg::Map& permrowmap,
+    const Core::LinAlg::Map& permdomainmap)
+{
+  Core::LinAlg::Export exporter(permrowmap, src.row_map());
+
+  auto permsrc = std::make_shared<Core::LinAlg::SparseMatrix>(permrowmap, src.max_num_entries());
+  int err = permsrc->import(src, exporter, Insert);
+  if (err) FOUR_C_THROW("Import failed with err={}", err);
+
+  permsrc->complete(permdomainmap, permrowmap);
+  return permsrc;
+}
+
 FOUR_C_NAMESPACE_CLOSE

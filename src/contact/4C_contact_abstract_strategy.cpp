@@ -677,7 +677,7 @@ void CONTACT::AbstractStrategy::setup(bool redistributed, bool init)
       dold_->complete();
     }
     else if (dold_->row_map().num_global_elements() > 0)
-      dold_ = Mortar::matrix_row_col_transform(
+      dold_ = Core::LinAlg::matrix_row_col_transform(
           *dold_, *slave_dof_row_map_ptr(true), *slave_dof_row_map_ptr(true));
 
     if (mold_ == nullptr)
@@ -687,7 +687,8 @@ void CONTACT::AbstractStrategy::setup(bool redistributed, bool init)
       mold_->complete(*gmdofrowmap_, slave_dof_row_map(true));
     }
     else if (mold_->row_map().num_global_elements() > 0)
-      mold_ = Mortar::matrix_row_col_transform(*mold_, *slave_dof_row_map_ptr(true), *gmdofrowmap_);
+      mold_ = Core::LinAlg::matrix_row_col_transform(
+          *mold_, *slave_dof_row_map_ptr(true), *gmdofrowmap_);
   }
 
   // output contact stress vectors
@@ -757,7 +758,7 @@ void CONTACT::AbstractStrategy::setup(bool redistributed, bool init)
       doldmod_->complete();
     }
     else
-      doldmod_ = Mortar::matrix_row_col_transform(
+      doldmod_ = Core::LinAlg::matrix_row_col_transform(
           *doldmod_, *slave_dof_row_map_ptr(true), *slave_dof_row_map_ptr(true));
   }
 

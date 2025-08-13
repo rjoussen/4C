@@ -150,7 +150,7 @@ void CONTACT::MtLagrangeStrategy::mortar_coupling(
     // (only necessary in the parallel redistribution case)
     std::shared_ptr<Core::LinAlg::SparseMatrix> temp;
     if (par_redist())
-      temp = Mortar::matrix_row_transform(*constrmt, *problem_dofs());
+      temp = Core::LinAlg::matrix_row_transform(*constrmt, *problem_dofs());
     else
       temp = constrmt;
 
@@ -406,7 +406,7 @@ void CONTACT::MtLagrangeStrategy::evaluate_meshtying(
           Core::LinAlg::create_identity_matrix(*gndofrowmap_);
       systrafo.add(*eye, false, 1.0, 1.0);
       if (par_redist())
-        trafo_ = Mortar::matrix_row_col_transform(
+        trafo_ = Core::LinAlg::matrix_row_col_transform(
             *trafo_, *non_redist_gsmdofrowmap_, *non_redist_gsmdofrowmap_);
       systrafo.add(*trafo_, false, 1.0, 1.0);
       systrafo.complete();
@@ -424,9 +424,9 @@ void CONTACT::MtLagrangeStrategy::evaluate_meshtying(
       // split and transform to redistributed maps
       Core::LinAlg::split_matrix2x2(kteffmatrix, non_redist_gsmdofrowmap_, gndofrowmap_,
           non_redist_gsmdofrowmap_, gndofrowmap_, ksmsm, ksmn, knsm, knn);
-      ksmsm = Mortar::matrix_row_col_transform(*ksmsm, *gsmdofrowmap_, *gsmdofrowmap_);
-      ksmn = Mortar::matrix_row_transform(*ksmn, *gsmdofrowmap_);
-      knsm = Mortar::matrix_col_transform(*knsm, *gsmdofrowmap_);
+      ksmsm = Core::LinAlg::matrix_row_col_transform(*ksmsm, *gsmdofrowmap_, *gsmdofrowmap_);
+      ksmn = Core::LinAlg::matrix_row_transform(*ksmn, *gsmdofrowmap_);
+      knsm = Core::LinAlg::matrix_col_transform(*knsm, *gsmdofrowmap_);
     }
     else
     {
@@ -607,9 +607,9 @@ void CONTACT::MtLagrangeStrategy::evaluate_meshtying(
     // independently of the underlying problem discretization.
     if (par_redist())
     {
-      kmnmod = Mortar::matrix_row_transform(*kmnmod, *non_redist_gmdofrowmap_);
-      kmmmod = Mortar::matrix_row_transform(*kmmmod, *non_redist_gmdofrowmap_);
-      onesdiag = Mortar::matrix_row_transform(*onesdiag, *non_redist_gsdofrowmap_);
+      kmnmod = Core::LinAlg::matrix_row_transform(*kmnmod, *non_redist_gmdofrowmap_);
+      kmmmod = Core::LinAlg::matrix_row_transform(*kmmmod, *non_redist_gmdofrowmap_);
+      onesdiag = Core::LinAlg::matrix_row_transform(*onesdiag, *non_redist_gsdofrowmap_);
     }
 
     /**********************************************************************/
@@ -689,7 +689,7 @@ void CONTACT::MtLagrangeStrategy::evaluate_meshtying(
           Core::LinAlg::create_identity_matrix(*gndofrowmap_);
       systrafo.add(*eye, false, 1.0, 1.0);
       if (par_redist())
-        trafo_ = Mortar::matrix_row_col_transform(
+        trafo_ = Core::LinAlg::matrix_row_col_transform(
             *trafo_, *non_redist_gsmdofrowmap_, *non_redist_gsmdofrowmap_);
       systrafo.add(*trafo_, false, 1.0, 1.0);
       systrafo.complete();
@@ -927,7 +927,7 @@ void CONTACT::MtLagrangeStrategy::recover(std::shared_ptr<Core::LinAlg::Vector<d
           Core::LinAlg::create_identity_matrix(*gndofrowmap_);
       systrafo.add(*eye, false, 1.0, 1.0);
       if (par_redist())
-        trafo_ = Mortar::matrix_row_col_transform(
+        trafo_ = Core::LinAlg::matrix_row_col_transform(
             *trafo_, *non_redist_gsmdofrowmap_, *non_redist_gsmdofrowmap_);
       systrafo.add(*trafo_, false, 1.0, 1.0);
       systrafo.complete();
@@ -977,7 +977,7 @@ void CONTACT::MtLagrangeStrategy::recover(std::shared_ptr<Core::LinAlg::Vector<d
           Core::LinAlg::create_identity_matrix(*gndofrowmap_);
       systrafo.add(*eye, false, 1.0, 1.0);
       if (par_redist())
-        trafo_ = Mortar::matrix_row_col_transform(
+        trafo_ = Core::LinAlg::matrix_row_col_transform(
             *trafo_, *non_redist_gsmdofrowmap_, *non_redist_gsmdofrowmap_);
       systrafo.add(*trafo_, false, 1.0, 1.0);
       systrafo.complete();
@@ -1033,7 +1033,7 @@ bool CONTACT::MtLagrangeStrategy::evaluate_stiff(
   // (only necessary in the parallel redistribution case)
   std::shared_ptr<Core::LinAlg::SparseMatrix> temp;
   if (par_redist())
-    temp = Mortar::matrix_row_transform(*constrmt, *problem_dofs());
+    temp = Core::LinAlg::matrix_row_transform(*constrmt, *problem_dofs());
   else
     temp = constrmt;
 
@@ -1059,7 +1059,7 @@ bool CONTACT::MtLagrangeStrategy::evaluate_stiff(
         Core::LinAlg::create_identity_matrix(*gndofrowmap_);
     systrafo_->add(*eye, false, 1.0, 1.0);
     if (par_redist())
-      trafo_ = Mortar::matrix_row_col_transform(
+      trafo_ = Core::LinAlg::matrix_row_col_transform(
           *trafo_, *non_redist_gsmdofrowmap_, *non_redist_gsmdofrowmap_);
     systrafo_->add(*trafo_, false, 1.0, 1.0);
     systrafo_->complete();
@@ -1137,7 +1137,7 @@ std::shared_ptr<Core::LinAlg::SparseMatrix> CONTACT::MtLagrangeStrategy::get_mat
 std::shared_ptr<const Core::LinAlg::SparseMatrix>
 CONTACT::MtLagrangeStrategy::get_non_redist_m_hat()
 {
-  return Mortar::matrix_row_col_transform(
+  return Core::LinAlg::matrix_row_col_transform(
       *mhatmatrix_, *non_redist_slave_row_dofs(), *non_redist_master_row_dofs());
 }
 

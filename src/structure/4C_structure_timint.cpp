@@ -1334,8 +1334,8 @@ void Solid::TimInt::update_step_contact_vum()
               cmtbridge_->get_strategy().params().sublist("PARALLEL REDISTRIBUTION"),
               "PARALLEL_REDIST") != Inpar::Mortar::ParallelRedist::redist_none)
       {
-        M = Mortar::matrix_col_transform(*Mmat, *notredistmasterdofmap);
-        D = Mortar::matrix_col_transform(*Dmat, *notredistslavedofmap);
+        M = Core::LinAlg::matrix_col_transform(*Mmat, *notredistmasterdofmap);
+        D = Core::LinAlg::matrix_col_transform(*Dmat, *notredistslavedofmap);
       }
       else
       {

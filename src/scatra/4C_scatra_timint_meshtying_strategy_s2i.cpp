@@ -684,11 +684,11 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_meshtying()
               const std::shared_ptr<const Core::LinAlg::SparseMatrix> islavematrix =
                   not imortarredistribution_
                       ? islavematrix_
-                      : Mortar::matrix_row_transform(*islavematrix_, *islavemap_);
+                      : Core::LinAlg::matrix_row_transform(*islavematrix_, *islavemap_);
               const std::shared_ptr<const Core::LinAlg::SparseMatrix> imastermatrix =
                   not imortarredistribution_
                       ? imastermatrix_
-                      : Mortar::matrix_row_transform(*imastermatrix_, *imastermap_);
+                      : Core::LinAlg::matrix_row_transform(*imastermatrix_, *imastermap_);
               systemmatrix->add(*islavematrix, false, 1., 1.);
               systemmatrix->add(*imastermatrix, false, 1., 1.);
               interfacemaps_->add_vector(*islaveresidual_, 1, *scatratimint_->residual());
@@ -830,7 +830,7 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_meshtying()
               const std::shared_ptr<const Core::LinAlg::SparseMatrix> islavematrix =
                   not imortarredistribution_
                       ? islavematrix_
-                      : Mortar::matrix_row_transform(*islavematrix_, *islavemap_);
+                      : Core::LinAlg::matrix_row_transform(*islavematrix_, *islavemap_);
               std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> blockslavematrix(
                   Core::LinAlg::split_matrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
                       *islavematrix, *scatratimint_->block_maps(), *blockmaps_slave_));
@@ -838,7 +838,7 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_meshtying()
               const std::shared_ptr<const Core::LinAlg::SparseMatrix> imastermatrix =
                   not imortarredistribution_
                       ? imastermatrix_
-                      : Mortar::matrix_row_transform(*imastermatrix_, *imastermap_);
+                      : Core::LinAlg::matrix_row_transform(*imastermatrix_, *imastermap_);
               std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> blockmastermatrix(
                   Core::LinAlg::split_matrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
                       *imastermatrix, *scatratimint_->block_maps(), *blockmaps_master_));

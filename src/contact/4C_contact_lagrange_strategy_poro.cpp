@@ -458,8 +458,8 @@ void CONTACT::LagrangeStrategyPoro::evaluate_mat_poro_no_pen(
   if (parallel_redistribution_status())
   {
     FOUR_C_THROW("CHECK ME!!!");
-    lindmatrix_ = Mortar::matrix_row_transform(*lindmatrix_, *non_redist_gsdofrowmap_);
-    linmmatrix_ = Mortar::matrix_row_transform(*linmmatrix_, *non_redist_gmdofrowmap_);
+    lindmatrix_ = Core::LinAlg::matrix_row_transform(*lindmatrix_, *non_redist_gsdofrowmap_);
+    linmmatrix_ = Core::LinAlg::matrix_row_transform(*linmmatrix_, *non_redist_gmdofrowmap_);
   }
 
   k_fseff->un_complete();
