@@ -10,6 +10,7 @@
 #include "4C_fem_general_utils_local_connectivity_matrices.hpp"
 #include "4C_io_pstream.hpp"
 #include "4C_utils_enum.hpp"
+#include "4C_utils_std23_unreachable.hpp"
 
 #include <exodusII.h>
 #include <Teuchos_Time.hpp>
@@ -125,6 +126,25 @@ namespace
     }
   }
 }  // namespace
+
+
+std::string Core::IO::Exodus::describe(VerbosityLevel level)
+{
+  switch (level)
+  {
+    case VerbosityLevel::none:
+      return "no output";
+    case VerbosityLevel::summary:
+      return "output of summary for blocks and sets";
+    case VerbosityLevel::detailed_summary:
+      return "output of summary for each block and set";
+    case VerbosityLevel::detailed:
+      return "detailed output for each block and set";
+    case VerbosityLevel::full:
+      return "detailed output, even for nodes and element connectivities";
+  }
+  std23::unreachable();
+}
 
 
 Core::IO::Exodus::Mesh::Mesh(std::filesystem::path exodus_file, MeshParameters mesh_parameters)

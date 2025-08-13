@@ -22,7 +22,7 @@ namespace Core::IO::Exodus
 {
   enum class VerbosityLevel : int
   {
-    none = 0,              ///< output of summary for blocks and sets,
+    none = 0,              ///< no output,
     summary = 1,           ///< output of summary for blocks and sets,
     detailed_summary = 2,  ///< output of summary for each block and set,
     detailed = 3,          ///< detailed output for each block and set,
@@ -32,6 +32,11 @@ namespace Core::IO::Exodus
   {
     return static_cast<int>(lhs) > static_cast<int>(rhs);
   }
+
+  /**
+   * Describe each of the VerbosityLevel options.
+   */
+  std::string describe(VerbosityLevel level);
 
 
   struct ElementBlock;

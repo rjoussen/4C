@@ -181,7 +181,9 @@ def schema_from_enum(enum):
         dict: JSON schema data
     """
     # One could also do this using a oneOf where the choices are strings with constant values.
-    # This would allow to add a description for each option.
+    # This would allow to add a description for each option. However, at the time we tried
+    # this, good editor support was not available for this feature, i.e., editors only show
+    # either the description of the parameter or the description of the choice, but not both.
     schema = json_schema(
         schema_type=FOURC_BASE_TYPES_TO_JSON_SCHEMA_DICT["string"],
         title=enum.short_description(),

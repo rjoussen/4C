@@ -105,7 +105,19 @@ namespace
       C,
     };
 
-    auto spec = parameter<EnumClass>("enum");
+    const auto describe = [](EnumClass e) -> std::string
+    {
+      switch (e)
+      {
+        case EnumClass::A:
+          return "The option A";
+        default:
+          return "Other option";
+      }
+    };
+
+    auto spec = parameter<EnumClass>(
+        "enum", {.description = "An enum constant", .enum_value_description = describe});
 
     {
       SCOPED_TRACE("Valid enum constant");
@@ -135,11 +147,15 @@ namespace
 
       std::string expected = R"(name: enum
 type: enum
+description: "An enum constant"
 required: true
 choices:
   - name: A
+    description: "The option A"
   - name: B
+    description: "Other option"
   - name: C
+    description: "Other option"
 )";
       EXPECT_EQ(out.str(), expected);
     }

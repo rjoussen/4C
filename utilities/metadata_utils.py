@@ -136,9 +136,16 @@ class Enum(Primitive):
 
     def __post_init__(self):
         super().__post_init__()
+        combined_description = ""
         for i, choice in enumerate(self.choices):
             if isinstance(choice, dict):
                 self.choices[i] = choice["name"]
+                if d := choice.get("description", None):
+                    combined_description += f"{choice['name']}: {d}\n"
+        if self.description is not NOTSET:
+            self.description += "\n" + combined_description
+        elif combined_description != "":
+            self.description = combined_description
 
 
 @dataclass
