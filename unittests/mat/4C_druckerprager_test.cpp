@@ -7,8 +7,6 @@
 
 #include <gtest/gtest.h>
 
-#include "4C_beam3_kirchhoff.hpp"
-#include "4C_beam3_reissner.hpp"
 #include "4C_comm_pack_buffer.hpp"
 #include "4C_global_data.hpp"
 #include "4C_linalg_FADmatrix_utils.hpp"
