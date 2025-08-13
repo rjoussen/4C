@@ -13,6 +13,8 @@ Everyone is warmly invited to download, use, and contribute to |FOURC|.
 If you come across any inconsistency, please let us know by opening an issue and describe your findings.
 We also welcome contributions to both the code and documentation - just follow our `CONTRIBUTING.md <https://github.com/4C-multiphysics/4C/blob/main/CONTRIBUTING.md>`_ guidelines.
 
+To foster collaboration, a community meeting is held every four weeks (currently on the last Wednesday of each month), providing an opportunity for broader discussions.
+
 .. _developer_definition:
 
 4C Developer
@@ -21,8 +23,6 @@ We also welcome contributions to both the code and documentation - just follow o
 Members of this group actively contribute to |FOURC| by writing and improving both code and documentation.
 They also play a key role in reviewing pull requests and engaging in ongoing development discussions.
 Developers have the privilege to approve and merge pull requests.
-
-To foster collaboration, a developer meeting is held every four weeks (currently on the last Wednesday of each month), providing an opportunity for broader discussions.
 
 4C Maintainer
 -------------
