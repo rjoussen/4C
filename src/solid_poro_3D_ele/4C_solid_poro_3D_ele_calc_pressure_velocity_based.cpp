@@ -254,7 +254,7 @@ namespace
                 dInverseDeformationGradientTransposed_dDisp(
                     i * Discret::Elements::Internal::num_dim<celltype> + l, gid) +=
                     -spatial_material_mapping.inverse_deformation_gradient_(l, j) *
-                    jacobian_mapping.N_XYZ_(k, n) *
+                    jacobian_mapping.N_XYZ[n](k) *
                     spatial_material_mapping.inverse_deformation_gradient_(k, i);
           }
         }
@@ -421,11 +421,13 @@ void Discret::Elements::SolidPoroPressureVelocityBasedEleCalc<celltype,
 
         // material fluid velocity gradient at integration point
         Core::LinAlg::Matrix<num_dim_, num_dim_> fvelder(Core::LinAlg::Initialization::zero);
-        fvelder.multiply_nt(fluid_variables.fluidvel_nodal, jacobian_mapping.N_XYZ_);
+        fvelder.multiply_nt(
+            fluid_variables.fluidvel_nodal, Core::LinAlg::make_matrix_view(jacobian_mapping.N_XYZ));
 
         // pressure gradient at integration point
         Core::LinAlg::Matrix<num_dim_, 1> Gradp(Core::LinAlg::Initialization::zero);
-        Gradp.multiply(jacobian_mapping.N_XYZ_, fluid_variables.fluidpress_nodal);
+        Gradp.multiply(Core::LinAlg::make_matrix_view(jacobian_mapping.N_XYZ),
+            fluid_variables.fluidpress_nodal);
 
         // F^-1 * Grad p
         Core::LinAlg::Matrix<num_dim_, 1> FinvGradp(Core::LinAlg::Initialization::zero);
@@ -526,7 +528,7 @@ void Discret::Elements::SolidPoroPressureVelocityBasedEleCalc<celltype,
                   spatial_material_mapping.determinant_deformation_gradient_);
 
           update_geometric_stiffness_matrix<celltype>(
-              sfac, jacobian_mapping.N_XYZ_, *matrix_views.K_displacement_displacement);
+              sfac, jacobian_mapping.N_XYZ, *matrix_views.K_displacement_displacement);
 
           if (react_matrix.has_value())
           {
@@ -680,11 +682,12 @@ void Discret::Elements::SolidPoroPressureVelocityBasedEleCalc<celltype,
         Core::LinAlg::Matrix<num_dim_, num_dim_> fluid_velocity_gradient(
             Core::LinAlg::Initialization::zero);
         fluid_velocity_gradient.multiply_nt(
-            fluid_variables.fluidvel_nodal, jacobian_mapping.N_XYZ_);
+            fluid_variables.fluidvel_nodal, Core::LinAlg::make_matrix_view(jacobian_mapping.N_XYZ));
 
         // pressure gradient at integration point
         Core::LinAlg::Matrix<num_dim_, 1> pressure_gradient(Core::LinAlg::Initialization::zero);
-        pressure_gradient.multiply(jacobian_mapping.N_XYZ_, fluid_variables.fluidpress_nodal);
+        pressure_gradient.multiply(Core::LinAlg::make_matrix_view(jacobian_mapping.N_XYZ),
+            fluid_variables.fluidpress_nodal);
 
         const PorosityAndLinearizationOD porosity_and_linearization_od =
             compute_porosity_and_linearization_od<celltype, porosity_formulation>(porostructmat,
@@ -709,7 +712,7 @@ void Discret::Elements::SolidPoroPressureVelocityBasedEleCalc<celltype,
         Core::LinAlg::Matrix<num_dim_, num_nodes_> FinvNXYZ;
         FinvNXYZ.multiply_tn(
             Core::LinAlg::make_matrix_view(spatial_material_mapping.inverse_deformation_gradient_),
-            jacobian_mapping.N_XYZ_);
+            Core::LinAlg::make_matrix_view(jacobian_mapping.N_XYZ));
 
         Core::LinAlg::Matrix<num_dim_, num_dim_> reatensor(Core::LinAlg::Initialization::zero);
         Core::LinAlg::Matrix<num_dim_, num_dim_> linreac_dporosity(

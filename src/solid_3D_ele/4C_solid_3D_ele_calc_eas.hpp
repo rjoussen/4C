@@ -159,7 +159,7 @@ namespace Discret::Elements
       add_elastic_stiffness_matrix(
           eas_kinematics.b_op, stress, integration_factor, stiffness_matrix);
       add_geometric_stiffness_matrix(
-          jacobian_mapping.N_XYZ_, stress, integration_factor, stiffness_matrix);
+          jacobian_mapping.N_XYZ, stress, integration_factor, stiffness_matrix);
     }
 
     static void reset_condensed_variable_integration(const Core::Elements::Element& ele,

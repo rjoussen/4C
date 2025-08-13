@@ -160,7 +160,7 @@ void Discret::Elements::SolidPoroPressureBasedEleCalc<celltype>::evaluate_nonlin
           sfac.scale((-integration_factor * solidpressure *
                       spatial_material_mapping.determinant_deformation_gradient_));
 
-          update_geometric_stiffness_matrix<celltype>(sfac, jacobian_mapping.N_XYZ_, *stiff);
+          update_geometric_stiffness_matrix<celltype>(sfac, jacobian_mapping.N_XYZ, *stiff);
         }
       });
 }

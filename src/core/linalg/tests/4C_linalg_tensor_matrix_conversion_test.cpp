@@ -175,6 +175,25 @@ namespace
     EXPECT_DOUBLE_EQ(tensor(2, 0), 7.0);
   }
 
+  TEST(TensorMatrixConversionTest, makeMatrixViewFromArray)
+  {
+    std::array<Core::LinAlg::Tensor<double, 2>, 3> array_of_tensors;
+    array_of_tensors[0] = {{1.0, 2.0}};
+    array_of_tensors[1] = {{3.0, 4.0}};
+    array_of_tensors[2] = {{5.0, 6.0}};
+
+    Core::LinAlg::Matrix<2, 3> matrix_view = Core::LinAlg::make_matrix_view(array_of_tensors);
+    EXPECT_DOUBLE_EQ(matrix_view(0, 0), 1.0);
+    EXPECT_DOUBLE_EQ(matrix_view(0, 1), 3.0);
+    EXPECT_DOUBLE_EQ(matrix_view(0, 2), 5.0);
+    EXPECT_DOUBLE_EQ(matrix_view(1, 0), 2.0);
+    EXPECT_DOUBLE_EQ(matrix_view(1, 1), 4.0);
+    EXPECT_DOUBLE_EQ(matrix_view(1, 2), 6.0);
+
+    matrix_view(1, 2) = 7.0;
+    EXPECT_DOUBLE_EQ(array_of_tensors[2](1), 7.0);
+  }
+
   TEST(TensorMatrixConversionTest, makeMatrixViewReinterpretation)
   {
     Core::LinAlg::Tensor<double, 3> tensor = {{1.0, 2.0, 3.0}};

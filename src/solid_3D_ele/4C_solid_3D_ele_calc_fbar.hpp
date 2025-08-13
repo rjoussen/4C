@@ -85,8 +85,8 @@ namespace Discret::Elements
             linearization.Bop =
                 evaluate_strain_gradient(jacobian_mapping, spatial_material_mapping);
 
-            linearization.Hop = evaluate_fbar_h_operator(jacobian_mapping.N_XYZ_,
-                preparation_data.jacobian_mapping_centroid.N_XYZ_, spatial_material_mapping,
+            linearization.Hop = evaluate_fbar_h_operator(jacobian_mapping.N_XYZ,
+                preparation_data.jacobian_mapping_centroid.N_XYZ, spatial_material_mapping,
                 preparation_data.spatial_material_mapping_centroid);
 
             linearization.fbar_factor = fbar_factor;
@@ -182,7 +182,7 @@ namespace Discret::Elements
     {
       Discret::Elements::add_elastic_stiffness_matrix(linearization.Bop, stress,
           integration_factor * linearization.fbar_factor, stiffness_matrix);
-      Discret::Elements::add_geometric_stiffness_matrix(jacobian_mapping.N_XYZ_, stress,
+      Discret::Elements::add_geometric_stiffness_matrix(jacobian_mapping.N_XYZ, stress,
           integration_factor / linearization.fbar_factor, stiffness_matrix);
 
       // additional stiffness matrix needed for fbar method

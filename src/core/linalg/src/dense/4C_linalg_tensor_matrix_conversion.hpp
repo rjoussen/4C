@@ -15,6 +15,8 @@
 #include "4C_linalg_tensor.hpp"
 #include "4C_linalg_tensor_internals.hpp"
 
+#include <ranges>
+#include <tuple>
 #include <type_traits>
 
 FOUR_C_NAMESPACE_OPEN
@@ -141,6 +143,25 @@ namespace Core::LinAlg
   {
     using ValueType = std::remove_cvref_t<decltype(tensor)>::value_type;
     return Core::LinAlg::Matrix<n1, n2, ValueType>{tensor.data(), true};
+  }
+
+  /*!
+   * @brief Creates a matrix view from a contiguous range of rank-1 tensors.
+   *
+   * The dimension of the tensors matches the number of rows and the number of tensors matches the
+   * number of columns of the resulting matrix, e.g., given std::array<Tensor<T, dim>, n> the
+   * resulting matrix will have shape (dim, n).
+   */
+  template <std::ranges::contiguous_range R>
+  auto make_matrix_view(R& array_of_tensors)
+    requires(Core::LinAlg::is_tensor<typename std::remove_cvref_t<R>::value_type> &&
+             !Core::LinAlg::is_compressed_tensor<typename std::remove_cvref_t<R>::value_type> &&
+             std::remove_cvref_t<R>::value_type::rank() == 1)
+  {
+    using T = typename std::remove_cvref_t<R>::value_type::value_type;
+    constexpr std::size_t n1 = std::remove_cvref_t<R>::value_type::template extent<0>();
+    constexpr std::size_t n2 = std::tuple_size_v<R>;
+    return Core::LinAlg::Matrix<n1, n2, T>{array_of_tensors[0].data(), true};
   }
 
   /*!

@@ -38,6 +38,8 @@
 
 #include <Teuchos_ParameterList.hpp>
 
+#include <algorithm>
+
 FOUR_C_NAMESPACE_OPEN
 
 namespace Discret::Elements
@@ -412,7 +414,8 @@ namespace Discret::Elements
         inverse_jacobian_;
 
     /// Derivative of the shape functions w.r.t. the reference coordinates
-    Core::LinAlg::Matrix<Internal::num_dim<celltype>, Internal::num_nodes<celltype>> N_XYZ_;
+    std::array<Core::LinAlg::Tensor<double, Core::FE::dim<celltype>>, Core::FE::num_nodes(celltype)>
+        N_XYZ;
   };
 
   /*!
@@ -439,8 +442,9 @@ namespace Discret::Elements
 
     jacobian.inverse_jacobian_ = Core::LinAlg::inv(jacobian.jacobian_);
     jacobian.determinant_ = Core::LinAlg::det(jacobian.jacobian_);
-    jacobian.N_XYZ_.multiply(
-        Core::LinAlg::make_matrix_view(jacobian.inverse_jacobian_), shapefcns.derivatives_);
+    Core::LinAlg::make_matrix_view(jacobian.N_XYZ)
+        .multiply(
+            Core::LinAlg::make_matrix_view(jacobian.inverse_jacobian_), shapefcns.derivatives_);
 
     return jacobian;
   }
@@ -587,16 +591,17 @@ namespace Discret::Elements
       // displacements. Until we found the problem, we compute the deformation gradient based on
       // the current coordinates (F=(X+u)^T  dN/dX^T) for hex8 and based on the displacement (F=I
       // + u^T dN/dX^T) for the other celltypes.
-      Core::LinAlg::make_matrix_view(defgrd).multiply_nt(
-          scale_defgrd, element_nodes.current_coordinates, jacobian_mapping.N_XYZ_);
+      Core::LinAlg::make_matrix_view(defgrd).multiply_nt(scale_defgrd,
+          element_nodes.current_coordinates,
+          Core::LinAlg::make_matrix_view(jacobian_mapping.N_XYZ));
     }
     else
     {
       defgrd = Core::LinAlg::get_full(Core::LinAlg::TensorGenerators::identity<double,
           Core::FE::dim<celltype>, Core::FE::dim<celltype>>);
 
-      Core::LinAlg::make_matrix_view(defgrd).multiply_nt(
-          scale_defgrd, element_nodes.displacements, jacobian_mapping.N_XYZ_, scale_defgrd);
+      Core::LinAlg::make_matrix_view(defgrd).multiply_nt(scale_defgrd, element_nodes.displacements,
+          Core::LinAlg::make_matrix_view(jacobian_mapping.N_XYZ), scale_defgrd);
     }
 
     return defgrd;
@@ -713,37 +718,37 @@ namespace Discret::Elements
         for (int e = 0; e < Internal::num_dim<celltype>; ++e)
         {
           Bop(d, Internal::num_dim<celltype> * i + e) =
-              spatial_material_mapping.deformation_gradient_(e, d) * jacobian_mapping.N_XYZ_(d, i);
+              spatial_material_mapping.deformation_gradient_(e, d) * jacobian_mapping.N_XYZ[i](d);
         }
       }
 
       Bop(3, Internal::num_dim<celltype> * i + 0) =
-          spatial_material_mapping.deformation_gradient_(0, 0) * jacobian_mapping.N_XYZ_(1, i) +
-          spatial_material_mapping.deformation_gradient_(0, 1) * jacobian_mapping.N_XYZ_(0, i);
+          spatial_material_mapping.deformation_gradient_(0, 0) * jacobian_mapping.N_XYZ[i](1) +
+          spatial_material_mapping.deformation_gradient_(0, 1) * jacobian_mapping.N_XYZ[i](0);
       Bop(3, Internal::num_dim<celltype> * i + 1) =
-          spatial_material_mapping.deformation_gradient_(1, 0) * jacobian_mapping.N_XYZ_(1, i) +
-          spatial_material_mapping.deformation_gradient_(1, 1) * jacobian_mapping.N_XYZ_(0, i);
+          spatial_material_mapping.deformation_gradient_(1, 0) * jacobian_mapping.N_XYZ[i](1) +
+          spatial_material_mapping.deformation_gradient_(1, 1) * jacobian_mapping.N_XYZ[i](0);
       Bop(3, Internal::num_dim<celltype> * i + 2) =
-          spatial_material_mapping.deformation_gradient_(2, 0) * jacobian_mapping.N_XYZ_(1, i) +
-          spatial_material_mapping.deformation_gradient_(2, 1) * jacobian_mapping.N_XYZ_(0, i);
+          spatial_material_mapping.deformation_gradient_(2, 0) * jacobian_mapping.N_XYZ[i](1) +
+          spatial_material_mapping.deformation_gradient_(2, 1) * jacobian_mapping.N_XYZ[i](0);
       Bop(4, Internal::num_dim<celltype> * i + 0) =
-          spatial_material_mapping.deformation_gradient_(0, 1) * jacobian_mapping.N_XYZ_(2, i) +
-          spatial_material_mapping.deformation_gradient_(0, 2) * jacobian_mapping.N_XYZ_(1, i);
+          spatial_material_mapping.deformation_gradient_(0, 1) * jacobian_mapping.N_XYZ[i](2) +
+          spatial_material_mapping.deformation_gradient_(0, 2) * jacobian_mapping.N_XYZ[i](1);
       Bop(4, Internal::num_dim<celltype> * i + 1) =
-          spatial_material_mapping.deformation_gradient_(1, 1) * jacobian_mapping.N_XYZ_(2, i) +
-          spatial_material_mapping.deformation_gradient_(1, 2) * jacobian_mapping.N_XYZ_(1, i);
+          spatial_material_mapping.deformation_gradient_(1, 1) * jacobian_mapping.N_XYZ[i](2) +
+          spatial_material_mapping.deformation_gradient_(1, 2) * jacobian_mapping.N_XYZ[i](1);
       Bop(4, Internal::num_dim<celltype> * i + 2) =
-          spatial_material_mapping.deformation_gradient_(2, 1) * jacobian_mapping.N_XYZ_(2, i) +
-          spatial_material_mapping.deformation_gradient_(2, 2) * jacobian_mapping.N_XYZ_(1, i);
+          spatial_material_mapping.deformation_gradient_(2, 1) * jacobian_mapping.N_XYZ[i](2) +
+          spatial_material_mapping.deformation_gradient_(2, 2) * jacobian_mapping.N_XYZ[i](1);
       Bop(5, Internal::num_dim<celltype> * i + 0) =
-          spatial_material_mapping.deformation_gradient_(0, 2) * jacobian_mapping.N_XYZ_(0, i) +
-          spatial_material_mapping.deformation_gradient_(0, 0) * jacobian_mapping.N_XYZ_(2, i);
+          spatial_material_mapping.deformation_gradient_(0, 2) * jacobian_mapping.N_XYZ[i](0) +
+          spatial_material_mapping.deformation_gradient_(0, 0) * jacobian_mapping.N_XYZ[i](2);
       Bop(5, Internal::num_dim<celltype> * i + 1) =
-          spatial_material_mapping.deformation_gradient_(1, 2) * jacobian_mapping.N_XYZ_(0, i) +
-          spatial_material_mapping.deformation_gradient_(1, 0) * jacobian_mapping.N_XYZ_(2, i);
+          spatial_material_mapping.deformation_gradient_(1, 2) * jacobian_mapping.N_XYZ[i](0) +
+          spatial_material_mapping.deformation_gradient_(1, 0) * jacobian_mapping.N_XYZ[i](2);
       Bop(5, Internal::num_dim<celltype> * i + 2) =
-          spatial_material_mapping.deformation_gradient_(2, 2) * jacobian_mapping.N_XYZ_(0, i) +
-          spatial_material_mapping.deformation_gradient_(2, 0) * jacobian_mapping.N_XYZ_(2, i);
+          spatial_material_mapping.deformation_gradient_(2, 2) * jacobian_mapping.N_XYZ[i](0) +
+          spatial_material_mapping.deformation_gradient_(2, 0) * jacobian_mapping.N_XYZ[i](2);
     }
 
     return Bop;
@@ -771,18 +776,18 @@ namespace Discret::Elements
     {
       for (int d = 0; d < Internal::num_dim<celltype>; ++d)
       {
-        Bop(d, Internal::num_dim<celltype> * i + d) = jacobian_mapping.N_XYZ_(d, i);
+        Bop(d, Internal::num_dim<celltype> * i + d) = jacobian_mapping.N_XYZ[i](d);
       }
 
-      Bop(3, Internal::num_dim<celltype> * i + 0) = jacobian_mapping.N_XYZ_(1, i);
-      Bop(3, Internal::num_dim<celltype> * i + 1) = jacobian_mapping.N_XYZ_(0, i);
+      Bop(3, Internal::num_dim<celltype> * i + 0) = jacobian_mapping.N_XYZ[i](1);
+      Bop(3, Internal::num_dim<celltype> * i + 1) = jacobian_mapping.N_XYZ[i](0);
       Bop(3, Internal::num_dim<celltype> * i + 2) = 0;
       Bop(4, Internal::num_dim<celltype> * i + 0) = 0;
-      Bop(4, Internal::num_dim<celltype> * i + 1) = jacobian_mapping.N_XYZ_(2, i);
-      Bop(4, Internal::num_dim<celltype> * i + 2) = jacobian_mapping.N_XYZ_(1, i);
-      Bop(5, Internal::num_dim<celltype> * i + 0) = jacobian_mapping.N_XYZ_(2, i);
+      Bop(4, Internal::num_dim<celltype> * i + 1) = jacobian_mapping.N_XYZ[i](2);
+      Bop(4, Internal::num_dim<celltype> * i + 2) = jacobian_mapping.N_XYZ[i](1);
+      Bop(5, Internal::num_dim<celltype> * i + 0) = jacobian_mapping.N_XYZ[i](2);
       Bop(5, Internal::num_dim<celltype> * i + 1) = 0;
-      Bop(5, Internal::num_dim<celltype> * i + 2) = jacobian_mapping.N_XYZ_(0, i);
+      Bop(5, Internal::num_dim<celltype> * i + 2) = jacobian_mapping.N_XYZ[i](0);
     }
 
     return Bop;
@@ -889,7 +894,8 @@ namespace Discret::Elements
    */
   template <Core::FE::CellType celltype>
   void add_geometric_stiffness_matrix(
-      const Core::LinAlg::Matrix<Internal::num_dim<celltype>, Internal::num_nodes<celltype>>& B_L,
+      const std::array<Core::LinAlg::Tensor<double, Internal::num_dim<celltype>>,
+          Internal::num_nodes<celltype>>& N_XYZ,
       const Stress<celltype>& stress, const double integration_fac,
       Core::LinAlg::Matrix<Internal::num_dim<celltype> * Internal::num_nodes<celltype>,
           Internal::num_dim<celltype> * Internal::num_nodes<celltype>>& stiffness_matrix)
@@ -898,18 +904,18 @@ namespace Discret::Elements
     // kgeo += (B_L^T . sigma . B_L) * detJ * w(gp)  with B_L = Ni,Xj see NiliFEM-Skript
     for (int inod = 0; inod < Internal::num_nodes<celltype>; ++inod)
     {
-      SmB_L[0] = stress.pk2_.data()[0] * B_L(0, inod) + stress.pk2_.data()[3] * B_L(1, inod) +
-                 stress.pk2_.data()[5] * B_L(2, inod);
-      SmB_L[1] = stress.pk2_.data()[3] * B_L(0, inod) + stress.pk2_.data()[1] * B_L(1, inod) +
-                 stress.pk2_.data()[4] * B_L(2, inod);
-      SmB_L[2] = stress.pk2_.data()[5] * B_L(0, inod) + stress.pk2_.data()[4] * B_L(1, inod) +
-                 stress.pk2_.data()[2] * B_L(2, inod);
+      SmB_L[0] = stress.pk2_.data()[0] * N_XYZ[inod](0) + stress.pk2_.data()[3] * N_XYZ[inod](1) +
+                 stress.pk2_.data()[5] * N_XYZ[inod](2);
+      SmB_L[1] = stress.pk2_.data()[3] * N_XYZ[inod](0) + stress.pk2_.data()[1] * N_XYZ[inod](1) +
+                 stress.pk2_.data()[4] * N_XYZ[inod](2);
+      SmB_L[2] = stress.pk2_.data()[5] * N_XYZ[inod](0) + stress.pk2_.data()[4] * N_XYZ[inod](1) +
+                 stress.pk2_.data()[2] * N_XYZ[inod](2);
 
       for (int jnod = 0; jnod < Internal::num_nodes<celltype>; ++jnod)
       {
         double bopstrbop = 0.0;  // intermediate value
         for (int idim = 0; idim < Internal::num_dim<celltype>; ++idim)
-          bopstrbop += B_L(idim, jnod) * SmB_L[idim];
+          bopstrbop += N_XYZ[jnod](idim) * SmB_L[idim];
 
         for (int d = 0; d < Internal::num_dim<celltype>; ++d)
           stiffness_matrix(Internal::num_dim<celltype> * inod + d,
