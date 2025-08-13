@@ -8,4 +8,4 @@
 four_c_auto_define_module(NO_CYCLES)
 
 # deal.II support is a pure extension of the core module and may not depend on any other module
-four_c_add_dependency(${AUTO_DEFINED_MODULE_NAME} core)
+four_c_add_internal_dependency(${AUTO_DEFINED_MODULE_NAME} core)

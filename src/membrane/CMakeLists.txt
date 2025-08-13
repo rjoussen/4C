@@ -18,7 +18,7 @@ set(_dependencies
     thermo
     )
 
-four_c_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_dependencies})
+four_c_add_internal_dependency(${AUTO_DEFINED_MODULE_NAME} ${_dependencies})
 
 # duplicate template instantiations
 four_c_unity_build_compile_separately(${AUTO_DEFINED_MODULE_NAME} 4C_membrane_evaluate.cpp)
