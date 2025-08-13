@@ -8,10 +8,10 @@
       <PDataArray type="Float64" NumberOfComponents="3"/>
     </PPoints>
     <PPointData>
-      <PDataArray type="Float64" Name="angles" format="ascii"/>
+      <PDataArray type="Float64" Name="angle" format="ascii"/>
       <PDataArray type="Float64" Name="force" NumberOfComponents="3" format="ascii"/>
       <PDataArray type="Float64" Name="gap" format="ascii"/>
-      <PDataArray type="Int32" Name="types" format="ascii"/>
+      <PDataArray type="Int32" Name="type" format="ascii"/>
     </PPointData>
     <Piece Source="beam-contact-00230-0.vtu"/>
     <Piece Source="beam-contact-00230-1.vtu"/>

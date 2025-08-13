@@ -220,9 +220,9 @@ void BeamContact::set_valid_parameters(std::map<std::string, Core::IO::InputSpec
               "GAPS", {.description = "write visualization output for gap, i.e. penetration",
                           .default_value = false}),
           // whether to write visualization output for the contact angle of beams
-          parameter<bool>("CONTACT_ANGLE",
-              {.description = "write visualization output for gap, i.e. penetration",
-                  .default_value = false}),
+          parameter<bool>(
+              "CONTACT_ANGLE", {.description = "write visualization output for contact angle",
+                                   .default_value = false}),
           // whether to write visualization output for the type of contact formulation used
           parameter<bool>("CONTACT_TYPE",
               {.description =

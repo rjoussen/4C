@@ -39,7 +39,7 @@
       </Cells>
 
   <PointData>
-        <DataArray type="Float64" Name="angles" format="ascii">
+        <DataArray type="Float64" Name="angle" format="ascii">
 4.712623641834625e-01
 4.712623641834625e-01
 4.712044167629857e-01
@@ -75,7 +75,7 @@
 4.947839798010157e-03
 4.947839798010157e-03
         </DataArray>
-        <DataArray type="Int32" Name="types" format="ascii">
+        <DataArray type="Int32" Name="type" format="ascii">
 0
 0
 1

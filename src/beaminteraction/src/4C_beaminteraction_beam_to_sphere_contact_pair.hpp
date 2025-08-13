@@ -98,10 +98,7 @@ namespace BeamInteraction
     /**
      * \brief Returns the type of this beam to sphere contact pair.
      */
-    ContactPairType get_type() const override final
-    {
-      return ContactPairType::beam_to_sphere_contact;
-    }
+    ContactPairType get_type() const override { return ContactPairType::beam_to_sphere_contact; }
 
     /** \brief print this beam contact element pair to screen
      *
@@ -153,16 +150,9 @@ namespace BeamInteraction
     /*!
     \brief Get all (scalar) contact forces of this contact pair
     */
-    inline void get_all_active_contact_forces(std::vector<double>& forces,
-        std::vector<double>& angles, std::vector<int>& types) const override
-    {
-      FOUR_C_THROW("not implemented yet!");
-    }
-
-    /*!
-    \brief Get all (scalar) gap values of this contact pair
-    */
-    void get_all_active_contact_gaps(std::vector<double>& gaps) const override
+    inline void get_all_active_beam_to_beam_visualization_values(std::vector<double>& forces,
+        std::vector<double>& gaps, std::vector<double>& angles,
+        std::vector<int>& types) const override
     {
       FOUR_C_THROW("not implemented yet!");
     }

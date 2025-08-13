@@ -29,13 +29,13 @@
       </Cells>
 
   <PointData>
-        <DataArray type="Float64" Name="angles" format="ascii">
+        <DataArray type="Float64" Name="angle" format="ascii">
         </DataArray>
         <DataArray type="Float64" Name="force" NumberOfComponents="3" format="ascii">
         </DataArray>
         <DataArray type="Float64" Name="gap" format="ascii">
         </DataArray>
-        <DataArray type="Int32" Name="types" format="ascii">
+        <DataArray type="Int32" Name="type" format="ascii">
         </DataArray>
       </PointData>
 

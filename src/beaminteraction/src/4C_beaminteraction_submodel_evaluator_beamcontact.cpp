@@ -559,9 +559,8 @@ void BeamInteraction::SubmodelEvaluator::BeamContact::write_output_runtime_beam_
       (*pair_iter)->get_all_active_contact_point_coords_element1(coordinates_ele1_this_pair);
       (*pair_iter)->get_all_active_contact_point_coords_element2(coordinates_ele2_this_pair);
       (*pair_iter)
-          ->get_all_active_contact_forces(
-              contact_forces_this_pair, angles_this_pair, types_this_pair);
-      (*pair_iter)->get_all_active_contact_gaps(gaps_this_pair);
+          ->get_all_active_beam_to_beam_visualization_values(
+              contact_forces_this_pair, gaps_this_pair, angles_this_pair, types_this_pair);
 
       const unsigned int num_active_point_pairs = (unsigned int)coordinates_ele1_this_pair.size();
 
@@ -626,12 +625,12 @@ void BeamInteraction::SubmodelEvaluator::BeamContact::write_output_runtime_beam_
 
   if (beam_contact_params().beam_contact_runtime_visualization_output_params()->is_write_angles())
   {
-    visualization_manager_ptr_->get_visualization_data().set_point_data_vector("angles", angles, 1);
+    visualization_manager_ptr_->get_visualization_data().set_point_data_vector("angle", angles, 1);
   }
 
   if (beam_contact_params().beam_contact_runtime_visualization_output_params()->is_write_types())
   {
-    visualization_manager_ptr_->get_visualization_data().set_point_data_vector("types", types, 1);
+    visualization_manager_ptr_->get_visualization_data().set_point_data_vector("type", types, 1);
   }
 
   // finalize everything and write all required vtk files to filesystem

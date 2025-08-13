@@ -340,22 +340,25 @@ void Solid::ModelEvaluator::BeamInteraction::set_sub_model_types()
   std::vector<const Core::Conditions::Condition*> beamtobeamcontactconditions;
   discret_ptr_->get_condition("BeamToBeamContact", beamtobeamcontactconditions);
 
-  // ensure that no beam to beam contact condition is specified with a penalty point coupling
-  // condition
-  for (auto btbcc : beamtobeamcontactconditions)
+  // ensure that no beam to beam contact condition is specified
+  // with a penalty point coupling condition
+  for (auto bpcc : beampenaltycouplingconditions)
   {
     // get all nodes of beam to beam contact condition
-    const std::vector<int>* nodes = btbcc->get_nodes();
-    for (auto bpcc : beampenaltycouplingconditions)
+    const std::vector<int>* nodes = bpcc->get_nodes();
+    for (auto btbcc : beamtobeamcontactconditions)
     {
       for (auto node : *nodes)
       {
-        if (bpcc->contains_node(node))
+        if (btbcc->contains_node(node))
         {
+          btbcc->print(std::cout);
+          bpcc->print(std::cout);
           FOUR_C_THROW(
               "It is not possible to use beam-to-beam contact in combination with "
-              "beam-to-beam point coupling for the same node. Please reconsider boundary "
-              "conditions with the ids {} and {}, since they are intersection at the node with id "
+              "beam-to-beam point coupling for the same node. Please reconsider the specified "
+              "interaction conditions with the ids {} and {}, since they are intersecting at the "
+              "node with id "
               "{}",
               btbcc->id(), bpcc->id(), node);
         }
