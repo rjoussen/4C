@@ -10,13 +10,13 @@
 
 #include "4C_config.hpp"
 
-#include <Epetra_LinearProblem.h>
-
-
 FOUR_C_NAMESPACE_OPEN
 
 namespace NOX::Nln
 {
+  // Forward declaration
+  class LinearProblem;
+
   class Scaling
   {
    public:
@@ -31,21 +31,21 @@ namespace NOX::Nln
      *
      * @param problem The linear problem to be scaled.
      */
-    virtual void compute_scaling(const Epetra_LinearProblem& problem) = 0;
+    virtual void compute_scaling(const NOX::Nln::LinearProblem& problem) = 0;
 
     /**
      * @brief Scales the linear system.
      *
      * @param problem The linear problem to be scaled.
      */
-    virtual void scale_linear_system(Epetra_LinearProblem& problem) = 0;
+    virtual void scale_linear_system(NOX::Nln::LinearProblem& problem) = 0;
 
     /**
      * @brief Remove the scaling from the linear system.
      *
      * @param problem The linear problem to be unscaled.
      */
-    virtual void unscale_linear_system(Epetra_LinearProblem& problem) = 0;
+    virtual void unscale_linear_system(NOX::Nln::LinearProblem& problem) = 0;
   };
 }  // namespace NOX::Nln
 

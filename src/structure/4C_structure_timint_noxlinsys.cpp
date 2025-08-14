@@ -16,7 +16,6 @@
 #include "4C_utils_enum.hpp"
 
 #include <Epetra_CrsMatrix.h>
-#include <Epetra_LinearProblem.h>
 #include <Epetra_Operator.h>
 #include <Epetra_RowMatrix.h>
 #include <Epetra_VbrMatrix.h>

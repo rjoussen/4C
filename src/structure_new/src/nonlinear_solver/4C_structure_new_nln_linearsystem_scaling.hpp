@@ -31,6 +31,11 @@ namespace Core::LinAlg
   class SparseMatrix;
 }
 
+namespace NOX::Nln
+{
+  class LinearProblem;
+}
+
 namespace Solid
 {
   namespace Nln
@@ -45,13 +50,13 @@ namespace Solid
             Solid::TimeInt::BaseDataGlobalState& GState);
 
         //! Compute scaling.
-        void compute_scaling(const Epetra_LinearProblem& problem) override;
+        void compute_scaling(const NOX::Nln::LinearProblem& problem) override;
 
         //! Scales the linear system.
-        void scale_linear_system(Epetra_LinearProblem& problem) override;
+        void scale_linear_system(NOX::Nln::LinearProblem& problem) override;
 
         //! Remove the scaling from the linear system.
-        void unscale_linear_system(Epetra_LinearProblem& problem) override;
+        void unscale_linear_system(NOX::Nln::LinearProblem& problem) override;
 
        private:
         //! stiffness matrix after scaling
