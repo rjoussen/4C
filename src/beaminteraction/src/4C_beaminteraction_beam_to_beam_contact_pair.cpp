@@ -5189,60 +5189,47 @@ void BeamInteraction::BeamToBeamContactPair<numnodes, numnodalvalues>::
  *----------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues>
 void BeamInteraction::BeamToBeamContactPair<numnodes,
-    numnodalvalues>::get_all_active_contact_forces(std::vector<double>& forces) const
+    numnodalvalues>::get_all_active_beam_to_beam_visualization_values(std::vector<double>& forces,
+    std::vector<double>& gaps, std::vector<double>& angles, std::vector<int>& types) const
 {
   int size1 = cpvariables_.size();
   int size2 = gpvariables_.size();
   int size3 = epvariables_.size();
 
   forces.resize(size1 + size2 + size3, 0.0);
+  angles.resize(size1 + size2 + size3, 0.0);
+  types.resize(size1 + size2 + size3, 0.0);
+  gaps.resize(size1 + size2 + size3, 0.0);
 
   for (int i = 0; i < size1; i++)
   {
     forces[i] =
         Core::FADUtils::cast_to_double(cpvariables_[i]->getfp() * cpvariables_[i]->get_p_pfac());
+    gaps[i] = Core::FADUtils::cast_to_double(cpvariables_[i]->get_gap());
+    angles[i] = Core::FADUtils::cast_to_double(cpvariables_[i]->get_angle());
+    types[i] = 0;
   }
 
   for (int i = size1; i < size2 + size1; i++)
   {
     forces[i] = Core::FADUtils::cast_to_double(
         gpvariables_[i - size1]->getfp() * gpvariables_[i - size1]->get_p_pfac());
+    gaps[i] = Core::FADUtils::cast_to_double(gpvariables_[i - size1]->get_gap());
+    angles[i] = Core::FADUtils::cast_to_double(gpvariables_[i - size1]->get_angle());
+    types[i] = 1;
   }
 
   for (int i = size1 + size2; i < size1 + size2 + size3; i++)
   {
     forces[i] = Core::FADUtils::cast_to_double(
         epvariables_[i - size1 - size2]->getfp() * epvariables_[i - size1 - size2]->get_p_pfac());
-  }
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-template <unsigned int numnodes, unsigned int numnodalvalues>
-void BeamInteraction::BeamToBeamContactPair<numnodes, numnodalvalues>::get_all_active_contact_gaps(
-    std::vector<double>& gaps) const
-{
-  int size1 = cpvariables_.size();
-  int size2 = gpvariables_.size();
-  int size3 = epvariables_.size();
-
-  gaps.resize(size1 + size2 + size3, 0.0);
-
-  for (int i = 0; i < size1; i++)
-  {
-    gaps[i] = Core::FADUtils::cast_to_double(cpvariables_[i]->get_gap());
-  }
-
-  for (int i = size1; i < size2 + size1; i++)
-  {
-    gaps[i] = Core::FADUtils::cast_to_double(gpvariables_[i - size1]->get_gap());
-  }
-
-  for (int i = size1 + size2; i < size1 + size2 + size3; i++)
-  {
     gaps[i] = Core::FADUtils::cast_to_double(epvariables_[i - size1 - size2]->get_gap());
+    angles[i] = Core::FADUtils::cast_to_double(epvariables_[i - size1 - size2]->get_angle());
+    types[i] = 2;
   }
 }
+
+
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

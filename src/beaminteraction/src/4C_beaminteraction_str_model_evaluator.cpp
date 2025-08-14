@@ -336,15 +336,35 @@ void Solid::ModelEvaluator::BeamInteraction::set_sub_model_types()
   if (beampotconditions.size() > 0)
     submodeltypes_->insert(Inpar::BeamInteraction::submodel_potential);
 
-  // Check if all all combinations of submodel evaluators work
-  if (Teuchos::getIntegralValue<Inpar::BeamInteraction::Strategy>(
-          Global::Problem::instance()->beam_interaction_params().sublist("BEAM TO BEAM CONTACT"),
-          "STRATEGY") != Inpar::BeamInteraction::bstr_none and
-      beampenaltycouplingconditions.size() > 0)
-    FOUR_C_THROW(
-        "It is not yet possible to use beam-to-beam contact in combination with beam-to-beam point "
-        "coupling because every coupling point is also interpreted as a point of contact between 2 "
-        "beams.");
+  // extract beam to beam contact conditions
+  std::vector<const Core::Conditions::Condition*> beamtobeamcontactconditions;
+  discret_ptr_->get_condition("BeamToBeamContact", beamtobeamcontactconditions);
+
+  // ensure that no beam to beam contact condition is specified
+  // with a penalty point coupling condition
+  for (auto bpcc : beampenaltycouplingconditions)
+  {
+    // get all nodes of beam to beam contact condition
+    const std::vector<int>* nodes = bpcc->get_nodes();
+    for (auto btbcc : beamtobeamcontactconditions)
+    {
+      for (auto node : *nodes)
+      {
+        if (btbcc->contains_node(node))
+        {
+          btbcc->print(std::cout);
+          bpcc->print(std::cout);
+          FOUR_C_THROW(
+              "It is not possible to use beam-to-beam contact in combination with "
+              "beam-to-beam point coupling for the same node. Please reconsider the specified "
+              "interaction conditions with the ids {} and {}, since they are intersecting at the "
+              "node with id "
+              "{}",
+              btbcc->id(), bpcc->id(), node);
+        }
+      }
+    }
+  }
 }
 
 /*----------------------------------------------------------------------------*

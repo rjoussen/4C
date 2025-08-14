@@ -514,7 +514,10 @@ void BeamInteraction::SubmodelEvaluator::BeamContact::write_output_runtime_beam_
   std::vector<std::shared_ptr<BeamInteraction::BeamContactPair>>::const_iterator pair_iter;
   for (pair_iter = contact_elepairs_.begin(); pair_iter != contact_elepairs_.end(); ++pair_iter)
   {
-    num_row_points += 2 * (*pair_iter)->get_num_all_active_contact_point_pairs();
+    if ((*pair_iter)->get_type() == ContactPairType::beam_to_beam_contact)
+    {
+      num_row_points += 2 * (*pair_iter)->get_num_all_active_contact_point_pairs();
+    }
   }
 
   // get and prepare storage for point coordinate values
@@ -531,23 +534,33 @@ void BeamInteraction::SubmodelEvaluator::BeamContact::write_output_runtime_beam_
   std::vector<double> gaps;
   gaps.reserve(num_row_points);
 
+  std::vector<double> angles;
+  angles.reserve(num_row_points);
+  std::vector<int> types;
+  types.reserve(num_row_points);
+
   // loop over my points and collect the geometry/grid data, i.e. contact points
   std::vector<Core::LinAlg::Matrix<3, 1, double>> coordinates_ele1_this_pair;
   std::vector<Core::LinAlg::Matrix<3, 1, double>> coordinates_ele2_this_pair;
 
   std::vector<double> contact_forces_this_pair;
+  std::vector<double> angles_this_pair;
+  std::vector<int> types_this_pair;
   std::vector<double> gaps_this_pair;
 
   // loop over contact pairs and retrieve all active contact point coordinates
   for (pair_iter = contact_elepairs_.begin(); pair_iter != contact_elepairs_.end(); ++pair_iter)
   {
-    if ((*pair_iter)->get_contact_flag() == true)
+    // ensure that
+    if ((*pair_iter)->get_contact_flag() == true &&
+        (*pair_iter)->get_type() == ContactPairType::beam_to_beam_contact)
     {
       // active contact points of element 1 and element 2
       (*pair_iter)->get_all_active_contact_point_coords_element1(coordinates_ele1_this_pair);
       (*pair_iter)->get_all_active_contact_point_coords_element2(coordinates_ele2_this_pair);
-      (*pair_iter)->get_all_active_contact_forces(contact_forces_this_pair);
-      (*pair_iter)->get_all_active_contact_gaps(gaps_this_pair);
+      (*pair_iter)
+          ->get_all_active_beam_to_beam_visualization_values(
+              contact_forces_this_pair, gaps_this_pair, angles_this_pair, types_this_pair);
 
       const unsigned int num_active_point_pairs = (unsigned int)coordinates_ele1_this_pair.size();
 
@@ -577,6 +590,8 @@ void BeamInteraction::SubmodelEvaluator::BeamContact::write_output_runtime_beam_
               contact_forces_this_pair[ipointpair] * normal_vector(idim));
         }
         gaps.push_back(gaps_this_pair[ipointpair]);
+        angles.push_back(angles_this_pair[ipointpair]);
+        types.push_back(types_this_pair[ipointpair]);
 
         // contact point on second element
         for (unsigned int idim = 0; idim < num_spatial_dimensions; ++idim)
@@ -587,6 +602,8 @@ void BeamInteraction::SubmodelEvaluator::BeamContact::write_output_runtime_beam_
               -1.0 * contact_forces_this_pair[ipointpair] * normal_vector(idim));
         }
         gaps.push_back(gaps_this_pair[ipointpair]);
+        angles.push_back(angles_this_pair[ipointpair]);
+        types.push_back(types_this_pair[ipointpair]);
       }
     }
   }
@@ -600,9 +617,20 @@ void BeamInteraction::SubmodelEvaluator::BeamContact::write_output_runtime_beam_
     visualization_manager_ptr_->get_visualization_data().set_point_data_vector(
         "force", contact_force_vector, num_spatial_dimensions);
   }
+
   if (beam_contact_params().beam_contact_runtime_visualization_output_params()->is_write_gaps())
   {
     visualization_manager_ptr_->get_visualization_data().set_point_data_vector("gap", gaps, 1);
+  }
+
+  if (beam_contact_params().beam_contact_runtime_visualization_output_params()->is_write_angles())
+  {
+    visualization_manager_ptr_->get_visualization_data().set_point_data_vector("angle", angles, 1);
+  }
+
+  if (beam_contact_params().beam_contact_runtime_visualization_output_params()->is_write_types())
+  {
+    visualization_manager_ptr_->get_visualization_data().set_point_data_vector("type", types, 1);
   }
 
   // finalize everything and write all required vtk files to filesystem

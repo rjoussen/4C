@@ -128,18 +128,20 @@ namespace BeamInteraction
     /*!
     \brief Get all (scalar) contact forces of this contact pair
     */
-    void get_all_active_contact_forces(std::vector<double>& forces) const override;
+    void get_all_active_beam_to_beam_visualization_values(std::vector<double>& forces,
+        std::vector<double>& gaps, std::vector<double>& angles,
+        std::vector<int>& types) const override;
 
-    /*!
-    \brief Get all (scalar) gap values of this contact pair
-    */
-    void get_all_active_contact_gaps(std::vector<double>& gaps) const override;
 
     /*!
     \brief Get energy of penalty contact.
     */
     double get_energy() const override;
 
+    /**
+     * \brief Returns the type of this beam contact element pair.
+     */
+    ContactPairType get_type() const override { return ContactPairType::beam_to_beam_contact; }
     //@}
 
    private:

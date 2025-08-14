@@ -133,17 +133,11 @@ namespace BeamInteraction
     /**
      * \brief Get all (scalar) contact forces of this contact pair. Not yet implemented.
      */
-    void get_all_active_contact_forces(std::vector<double>& forces) const override
+    void get_all_active_beam_to_beam_visualization_values(std::vector<double>& forces,
+        std::vector<double>& gaps, std::vector<double>& angles,
+        std::vector<int>& types) const override
     {
       FOUR_C_THROW("get_all_active_contact_forces not yet implemented!");
-    }
-
-    /**
-     * \brief Get all (scalar) gap values of this contact pair. Not yet implemented.
-     */
-    void get_all_active_contact_gaps(std::vector<double>& gaps) const override
-    {
-      FOUR_C_THROW("get_all_active_contact_gaps not yet implemented!");
     }
 
     /**
@@ -164,6 +158,14 @@ namespace BeamInteraction
      * \brief Print this beam contact element pair to screen.
      */
     void print_summary_one_line_per_active_segment_pair(std::ostream& out) const override;
+
+    /**
+     * \brief Returns the type of this beam point coupling pair.
+     */
+    ContactPairType get_type() const override
+    {
+      return ContactPairType::beam_to_beam_point_coupling;
+    }
 
    private:
     /**

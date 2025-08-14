@@ -51,6 +51,15 @@ namespace BeamInteraction
   class BeamInteractionConditions;
   class BeamToSolidMortarManager;
 
+  enum class ContactPairType
+  {
+    unspecified_base,
+    beam_to_beam_contact,
+    beam_to_beam_point_coupling,
+    beam_to_solid_base,
+    beam_to_sphere_contact,
+  };
+
   /*!
    \brief
    */
@@ -173,14 +182,11 @@ namespace BeamInteraction
         std::vector<Core::LinAlg::Matrix<3, 1, double>>& coords) const = 0;
 
     /*!
-    \brief Get all (scalar) contact forces of this contact pair
+    \brief Get all active visualization values of this contact pair
     */
-    virtual void get_all_active_contact_forces(std::vector<double>& forces) const = 0;
+    virtual void get_all_active_beam_to_beam_visualization_values(std::vector<double>& forces,
+        std::vector<double>& gaps, std::vector<double>& angles, std::vector<int>& types) const = 0;
 
-    /*!
-    \brief Get all (scalar) gap values of this contact pair
-    */
-    virtual void get_all_active_contact_gaps(std::vector<double>& gaps) const = 0;
 
     //  virtual Core::LinAlg::Matrix< 3, 1,TYPE>* GetNormalOld()=0;
     //
@@ -386,6 +392,12 @@ namespace BeamInteraction
     {
       FOUR_C_THROW("This method has to be implemented in the derived class.");
     }
+
+    /**
+     * \brief Returns the type of this beam contact pair.
+     */
+    virtual ContactPairType get_type() const { return ContactPairType::unspecified_base; }
+
 
    protected:
     //! returns init state

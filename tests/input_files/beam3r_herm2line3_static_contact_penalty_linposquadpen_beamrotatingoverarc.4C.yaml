@@ -1,5 +1,6 @@
 TITLE:
   - "test case in order to test transition from large-angle to small-angle-contact"
+  - "including the runtime visualization for beam to beam contact"
 PROBLEM TYPE:
   PROBLEMTYPE: "Structure"
 DISCRETISATION:
@@ -8,6 +9,7 @@ DISCRETISATION:
   NUMTHERMDIS: 0
 IO:
   VERBOSITY: "Standard"
+  OUTPUT_BIN: false
 IO/RUNTIME VTK OUTPUT:
   INTERVAL_STEPS: 1
 IO/RUNTIME VTK OUTPUT/BEAMS:
@@ -52,6 +54,14 @@ BEAM CONTACT:
   BEAMS_PENREGPARAM_F0: 0
   BEAMS_PENREGPARAM_C0: 0
   BEAMS_EXTVAL: "2.0"
+BEAM CONTACT/RUNTIME VTK OUTPUT:
+  VTK_OUTPUT_BEAM_CONTACT: true
+  INTERVAL_STEPS: 1
+  EVERY_ITERATION: false
+  CONTACT_FORCES: true
+  GAPS: true
+  CONTACT_ANGLE: true
+  CONTACT_TYPE: true
 BEAM INTERACTION/BEAM TO BEAM CONTACT CONDITIONS:
   - E: 1
     COUPLING_ID: 1

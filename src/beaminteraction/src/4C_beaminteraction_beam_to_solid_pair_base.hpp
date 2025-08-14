@@ -137,17 +137,11 @@ namespace BeamInteraction
     /**
      * \brief Get all (scalar) contact forces of this contact pair. Not yet implemented.
      */
-    void get_all_active_contact_forces(std::vector<double>& forces) const override
+    void get_all_active_beam_to_beam_visualization_values(std::vector<double>& forces,
+        std::vector<double>& gaps, std::vector<double>& angles,
+        std::vector<int>& types) const override
     {
       FOUR_C_THROW("get_all_active_contact_forces not yet implemented!");
-    }
-
-    /**
-     * \brief Get all (scalar) gap values of this contact pair. Not yet implemented.
-     */
-    void get_all_active_contact_gaps(std::vector<double>& gaps) const override
-    {
-      FOUR_C_THROW("get_all_active_contact_gaps not yet implemented!");
     }
 
     /**
@@ -158,6 +152,11 @@ namespace BeamInteraction
       FOUR_C_THROW("get_energy not implemented yet!");
       return 0.0;
     }
+
+    /**
+     * \brief Returns the type of this beam contact element pair.
+     */
+    ContactPairType get_type() const override { return ContactPairType::beam_to_solid_base; }
 
    protected:
     /**
