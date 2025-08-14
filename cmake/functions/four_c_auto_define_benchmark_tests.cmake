@@ -24,7 +24,7 @@ function(_set_up_benchmark_test_target _module_under_test _target)
   # Common dependencies for benchmark tests
   target_link_libraries(${_target} PRIVATE four_c_private_compile_interface)
 
-  target_link_libraries(${_target} PRIVATE ${_module_under_test}_unit_test_deps)
+  target_link_libraries(${_target} PRIVATE ${_module_under_test}_module)
 
   target_link_libraries(${_target} PRIVATE benchmark::benchmark)
 

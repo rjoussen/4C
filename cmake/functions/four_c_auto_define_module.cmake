@@ -50,9 +50,9 @@ function(four_c_auto_define_module)
       add_library(4C_${_target})
       target_link_libraries(4C_${_target} PUBLIC ${_target}_deps)
       target_link_libraries(4C_${_target} PUBLIC ${_target}_objs)
-      add_library(${_target}_unit_test_deps ALIAS 4C_${_target})
+      add_library(${_target}_module ALIAS 4C_${_target})
     else()
-      add_library(${_target}_unit_test_deps ALIAS ${FOUR_C_LIBRARY_NAME})
+      add_library(${_target}_module ALIAS ${FOUR_C_LIBRARY_NAME})
     endif()
 
     # Define an interface library for usage requirements only

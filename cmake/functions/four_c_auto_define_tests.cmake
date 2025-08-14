@@ -52,7 +52,7 @@ function(_set_up_unit_test_target _module_under_test _target)
   target_link_libraries(${_target} PRIVATE gtest gmock)
   target_link_libraries(${_target} PRIVATE unittests_common)
 
-  target_link_libraries(${_target} PRIVATE ${_module_under_test}_unit_test_deps)
+  target_link_libraries(${_target} PRIVATE ${_module_under_test}_module)
 
   # the first process will write a unit test report
   separate_arguments(
