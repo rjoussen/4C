@@ -236,7 +236,7 @@ namespace Core::IO
   void RuntimeCsvWriterProc0::append_data_vector(
       const std::string& dataname, const std::vector<double>& datavalues)
   {
-    FOUR_C_ASSERT(data_vectors_.count(dataname) > 0, "data vector '{}' not registered!", dataname);
+    FOUR_C_ASSERT(data_vectors_.contains(dataname), "data vector '{}' not registered!", dataname);
 
     FOUR_C_ASSERT((data_vectors_[dataname].first).size() == datavalues.size(),
         "size of data vector '{}' changed!", dataname);
@@ -277,7 +277,7 @@ namespace Core::IO
     for (const auto& [data_name, data_vector] : data)
     {
       FOUR_C_ASSERT(
-          data_vectors_.count(data_name) > 0, "data vector '{}' not registered!", data_name);
+          data_vectors_.contains(data_name), "data vector '{}' not registered!", data_name);
 
       FOUR_C_ASSERT((data_vectors_.at(data_name).first).size() == data_vector.size(),
           "size of data vector '{}' changed!", data_name);

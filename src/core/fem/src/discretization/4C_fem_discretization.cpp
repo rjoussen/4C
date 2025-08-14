@@ -571,7 +571,7 @@ void Core::FE::Discretization::set_condition(
 void Core::FE::Discretization::replace_conditions(
     const std::string& name, const std::vector<std::shared_ptr<Core::Conditions::Condition>>& conds)
 {
-  if (condition_.count(name) > 0) condition_.erase(name);
+  if (condition_.contains(name)) condition_.erase(name);
 
   std::vector<std::shared_ptr<Core::Conditions::Condition>>::const_iterator cit;
   for (cit = conds.begin(); cit != conds.end(); ++cit)

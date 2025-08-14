@@ -2294,7 +2294,7 @@ void Cut::Mesh::new_nodes_from_points(std::map<Point*, Node*>& nodemap)
   for (std::map<Point*, Node*>::iterator i = nodemap.begin(); i != nodemap.end(); ++i)
   {
     Point* p = i->first;
-    while (nodes_.count(nid) > 0) nid += 1;
+    while (nodes_.contains(nid)) nid += 1;
     Node* n = get_node(nid, p->x());
     i->second = n;
     nid += 1;

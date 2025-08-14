@@ -37,7 +37,7 @@ Core::IO::InputParameterContainer& Core::IO::InputParameterContainer::group(cons
 const Core::IO::InputParameterContainer& Core::IO::InputParameterContainer::group(
     const std::string& name) const
 {
-  FOUR_C_ASSERT_ALWAYS(groups_.count(name) > 0, "Group '{}' not found in container.", name);
+  FOUR_C_ASSERT_ALWAYS(groups_.contains(name), "Group '{}' not found in container.", name);
   return groups_.at(name);
 }
 
@@ -82,7 +82,7 @@ auto Core::IO::InputParameterContainer::get_list(const std::string& name) const 
 
 bool Core::IO::InputParameterContainer::has_group(const std::string& name) const
 {
-  return groups_.count(name) > 0;
+  return groups_.contains(name);
 }
 
 void Core::IO::InputParameterContainer::merge(const Core::IO::InputParameterContainer& other)
@@ -91,7 +91,7 @@ void Core::IO::InputParameterContainer::merge(const Core::IO::InputParameterCont
   {
     for (const auto& [key, value] : map2)
     {
-      if (map1.count(key) > 0)
+      if (map1.contains(key))
       {
         FOUR_C_THROW("Duplicate key '{}' encountered while merging two containers.", key);
       }
