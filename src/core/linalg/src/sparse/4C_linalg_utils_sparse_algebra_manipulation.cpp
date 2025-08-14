@@ -807,8 +807,7 @@ std::shared_ptr<Core::LinAlg::SparseMatrix> Core::LinAlg::matrix_col_transform(
   std::shared_ptr<Core::LinAlg::SparseMatrix> outmat =
       std::make_shared<Core::LinAlg::SparseMatrix>(inmat);
 
-  outmat->un_complete();
-  outmat->complete(newdomainmap, inmat.row_map());
+  outmat->complete(newdomainmap, inmat.row_map(), true);
 
   return outmat;
 }
