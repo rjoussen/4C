@@ -17,6 +17,7 @@
 #include <Epetra_Operator.h>
 #include <Epetra_RowMatrix.h>
 #include <Epetra_VbrMatrix.h>
+#include <NOX_Epetra_Scaling.H>
 #include <Teuchos_ParameterList.hpp>
 
 #include <vector>
@@ -29,7 +30,7 @@ NOX::FSI::LinearSystemGCR::LinearSystemGCR(Teuchos::ParameterList& printParams,
     const Teuchos::RCP<::NOX::Epetra::Interface::Required>& iReq,
     const Teuchos::RCP<::NOX::Epetra::Interface::Jacobian>& iJac,
     const Teuchos::RCP<Epetra_Operator>& jacobian, const ::NOX::Epetra::Vector& cloneVector,
-    const std::shared_ptr<NOX::Nln::Scaling> s)
+    const Teuchos::RCP<::NOX::Epetra::Scaling> s)
     : utils(printParams),
       jacInterfacePtr(iJac),
       jacType(EpetraOperator),
@@ -105,9 +106,14 @@ bool NOX::FSI::LinearSystemGCR::applyJacobianInverse(
   // ************* Begin linear system scaling *******************
   if (scaling)
   {
-    if (!manualScaling) scaling->compute_scaling(Problem);
+    if (!manualScaling) scaling->computeScaling(Problem);
 
-    scaling->scale_linear_system(Problem);
+    scaling->scaleLinearSystem(Problem);
+
+    if (utils.isPrintType(::NOX::Utils::Details))
+    {
+      utils.out() << *scaling << std::endl;
+    }
   }
   // ************* End linear system scaling *******************
 
@@ -131,7 +137,7 @@ bool NOX::FSI::LinearSystemGCR::applyJacobianInverse(
   }
 
   // Unscale the linear system
-  if (scaling) scaling->unscale_linear_system(Problem);
+  if (scaling) scaling->unscaleLinearSystem(Problem);
 
   // Set the output parameters in the "Output" sublist
   if (outputSolveDetails)

@@ -59,7 +59,7 @@ namespace NOX
           const Teuchos::RCP<::NOX::Epetra::Interface::Required>& iReq,
           const Teuchos::RCP<::NOX::Epetra::Interface::Jacobian>& iJac,
           const Teuchos::RCP<Epetra_Operator>& J, const ::NOX::Epetra::Vector& cloneVector,
-          const std::shared_ptr<NOX::Nln::Scaling> scalingObject = nullptr);
+          const Teuchos::RCP<::NOX::Epetra::Scaling> scalingObject = Teuchos::null);
 
       //! Reset the linear solver parameters.
       virtual void reset(Teuchos::ParameterList& linearSolverParams);
@@ -245,7 +245,7 @@ namespace NOX
       mutable Teuchos::RCP<Epetra_Operator> jacPtr;
 
       //! Scaling object supplied by the user
-      std::shared_ptr<NOX::Nln::Scaling> scaling;
+      Teuchos::RCP<::NOX::Epetra::Scaling> scaling;
 
       //! An extra temporary vector, only allocated if needed.
       mutable std::shared_ptr<::NOX::Epetra::Vector> tmpVectorPtr;
