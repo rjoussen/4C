@@ -155,15 +155,19 @@ CMake calls this information "usage requirements" and it mainly consists of head
 Notably, the compiled object files of a module are not needed to build another module. They only become necessary when an executable is built.
 This leads us to the following strategy:
 
-When defining a module `module_name`:
+When defining a module ``module_name`` via ``four_c_auto_define_module``, the following CMake targets are defined:
 
-- Define a CMake `INTERFACE` target conventionally called `module_name_deps` which contains all the headers and usage requirements of
-  the module.
-- If another module `module_other` is required for building `module_name`, this module is added as
-  `four_c_add_internal_dependency(module_name module_other)`. This step encodes internal dependencies.
-- Define a CMake `OBJECT` target conventionally called `module_name_objs` which contains the source files. If a module is
-  header-only, this target is not defined.
-- Add the `OBJECT` target to a central library which contains all compiled sources.
++---------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| CMake target              | Description                                                                                                                                                               |
++===========================+===========================================================================================================================================================================+
+| ``${module_name}_deps``   | Contains all dependencies (headers and usage requirements) of a module required to build the respective module                                                            |
+| ``${module_name}_objs``   | Contains all source files of the respective module.                                                                                                                       |
+| ``${module_name}_module`` | Contains all source files and all its dependencies needed to use this module (for all legacy modules with cyclic dependencies, this often involves the whole 4C library). |
++---------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+- If another module ``module_other`` is required for building ``module_name``, this module is added as
+  ``four_c_add_internal_dependency(module_name module_other)``. This step encodes internal dependencies.
+- The ``${module_name}_objs`` target is added to the central library ``lib4C``.
 
 Any executable links against the central library. Note that the central library may have a certain modules turned on or
 off, once that module is refactored enough to separate it from the rest of the library.
