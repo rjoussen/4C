@@ -5,9 +5,6 @@
 //
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
-#define DIRECTMANIPULATION
-#define ZEROSYSMAT
-
 #include "4C_fluid_meshtying.hpp"
 
 #include "4C_coupling_adapter_mortar.hpp"
@@ -236,25 +233,10 @@ void FLD::Meshtying::setup_meshtying(const std::vector<int>& coupleddof, const b
 
       if (myrank_ == 0)
       {
-#ifdef ZEROSYSMAT
         std::cout << "Condensation operation takes place in the original sysmat -> graph is saved"
                   << std::endl;
         std::cout << "The sysmat is set to zero and all parts are added -> exact" << std::endl
                   << std::endl;
-#else
-
-#ifdef DIRECTMANIPULATION
-        std::cout << "Condensation operation takes place in the original sysmat -> graph is saved"
-                  << std::endl
-                  << std::endl;
-#else
-
-        std::cout << "Condensation operation is carried out in a new allocated sparse matrix -> "
-                     "graph is not saved"
-                  << std::endl
-                  << std::endl;
-#endif
-#endif
       }
     }
     break;
@@ -884,19 +866,12 @@ void FLD::Meshtying::condensation_operation_sparse_matrix(
   // | ksn | ksm | kss |
   // -------------------
 
-  // DIRECTMANIPULATION:
   // the sysmat is manipulated directly with out changing the graph
   // -> subtract blocks to get zeros in the slave blocks
   // -> graph is saved -> fast element assembly
   // -> less memory is needed since everything is done with the original system matrix
   // -> is it dangerous to subtract blocks to get zeros
   //
-  // not DIRECTMANIPULATION:
-  // a new matrix is allocated
-  // -> more memory is required and element time is slower since graph cannot be saved
-  // -> there are zeros in the slave block by definition
-  //
-  // both methods work with a 3x3 (n,m,s) system matrix
 
   // Dirichlet or Dirichlet-like condition on the master side of the internal interface:
   // First time step:
@@ -926,7 +901,6 @@ void FLD::Meshtying::condensation_operation_sparse_matrix(
   // the sysmat is manipulated directly with out changing the graph
   // (subtract blocks to get zeros in the slave blocks)
 
-#ifdef ZEROSYSMAT
   sysmat.un_complete();
 
   /*--------------------------------------------------------------------*/
@@ -989,145 +963,6 @@ void FLD::Meshtying::condensation_operation_sparse_matrix(
   sysmat.add(*onesdiag, false, 1.0, 1.0);
 
   sysmat.complete();
-#else
-#ifdef DIRECTMANIPULATION
-  sysmat->UnComplete();
-
-  /*--------------------------------------------------------------------*/
-  // Part nm
-  /*--------------------------------------------------------------------*/
-  // knm: add kns*P
-  std::shared_ptr<Core::LinAlg::SparseMatrix> knm_add =
-      matrix_multiply(splitmatrix->Matrix(0, 2), false, *P, false, false, false, true);
-  knm_add->Complete(splitmatrix->Matrix(0, 1).DomainMap(), splitmatrix->Matrix(0, 1).RowMap());
-  sysmat->Add(*knm_add, false, 1.0, 1.0);
-
-  if (dconmaster_ == true and firstnonliniter_ == true)
-    knm_add->Multiply(false, *(splitdcmaster[1]), *dcnm);
-
-  /*--------------------------------------------------------------------*/
-  // Part mn
-  /*--------------------------------------------------------------------*/
-  // kmn: add P^T*ksn
-  std::shared_ptr<Core::LinAlg::SparseMatrix> kmn_add =
-      matrix_multiply(*P, true, splitmatrix->Matrix(2, 0), false, false, false, true);
-  kmn_add->Complete(splitmatrix->Matrix(1, 0).DomainMap(), splitmatrix->Matrix(1, 0).RowMap());
-  sysmat->Add(*kmn_add, false, 1.0, 1.0);
-
-  /*--------------------------------------------------------------------*/
-  // Part mm
-  /*--------------------------------------------------------------------*/
-  // kms: add P^T*kss, kmm: add kms*P + kmm
-  std::shared_ptr<Core::LinAlg::SparseMatrix> kmm_mod =
-      std::make_shared<Core::LinAlg::SparseMatrix>(*gmdofrowmap_, 100);
-  std::shared_ptr<Core::LinAlg::SparseMatrix> kms =
-      matrix_multiply(*P, true, splitmatrix->Matrix(2, 2), false, false, false, true);
-  std::shared_ptr<Core::LinAlg::SparseMatrix> kmm_add =
-      matrix_multiply(*kms, false, *P, false, false, false, true);
-  kmm_mod->Add(*kmm_add, false, 1.0, 1.0);
-  kmm_mod->Complete(splitmatrix->Matrix(1, 1).DomainMap(), splitmatrix->Matrix(1, 1).RowMap());
-
-  sysmat->Add(*kmm_mod, false, 1.0, 1.0);
-
-  if (dconmaster_ == true and firstnonliniter_ == true)
-    kmm_mod->Multiply(false, *(splitdcmaster[1]), *dcmm);
-
-  // Dangerous??: Get zero in block ... by subtracting
-  sysmat->Add(splitmatrix->Matrix(0, 2), false, -1.0, 1.0);
-  sysmat->Add(splitmatrix->Matrix(1, 2), false, -1.0, 1.0);
-  sysmat->Add(splitmatrix->Matrix(2, 0), false, -1.0, 1.0);
-  sysmat->Add(splitmatrix->Matrix(2, 1), false, -1.0, 1.0);
-  sysmat->Add(splitmatrix->Matrix(2, 2), false, -1.0, 1.0);
-
-  std::shared_ptr<Core::LinAlg::Vector<double>> ones =
-      std::make_shared<Core::LinAlg::Vector<double>>(*gsdofrowmap_);
-  std::shared_ptr<Core::LinAlg::SparseMatrix> onesdiag;
-  // build identity matrix for slave dofs
-  ones->PutScalar(1.0);
-  // std::shared_ptr<Core::LinAlg::SparseMatrix> onesdiag = Teuchos::rcp(new
-  // Core::LinAlg::SparseMatrix(*ones));
-  onesdiag = std::make_shared<Core::LinAlg::SparseMatrix>(*ones);
-  onesdiag->Complete();
-
-  sysmat->Add(*onesdiag, false, 1.0, 1.0);
-
-  sysmat->Complete();
-
-#else
-  // the sysmat is manipulated indirectly via a second sparse matrix
-  // and therefore, the graph changes
-  std::shared_ptr<Core::LinAlg::SparseOperator> sysmatnew = std::shared_ptr(
-      new Core::LinAlg::SparseMatrix(*dofrowmapsysmatnew->Matrix(0, 2) _, 81, true, false));
-
-  /*--------------------------------------------------------------------*/
-  // Part nn
-  /*--------------------------------------------------------------------*/
-  sysmatnew->Add(splitmatrix->Matrix(0, 0), false, 1.0, 1.0);
-
-  /*--------------------------------------------------------------------*/
-  // Part nm
-  /*--------------------------------------------------------------------*/
-  // knm: add kns*P
-  std::shared_ptr<Core::LinAlg::SparseMatrix> knm_mod =
-      std::make_shared<Core::LinAlg::SparseMatrix>(*gndofrowmap_, 100);
-  knm_mod->Add(splitmatrix->Matrix(0, 1), false, 1.0, 1.0);
-  std::shared_ptr<Core::LinAlg::SparseMatrix> knm_add =
-      matrix_multiply(splitmatrix->Matrix(0, 2), false, *P, false, false, false, true);
-  knm_mod->Add(*knm_add, false, 1.0, 1.0);
-  knm_mod->Complete(splitmatrix->Matrix(0, 1).DomainMap(), splitmatrix->Matrix(0, 1).RowMap());
-
-  sysmatnew->Add(*knm_mod, false, 1.0, 1.0);
-
-  if (dconmaster_ == true and firstnonliniter_ == true)
-    knm_add->Multiply(false, *(splitdcmaster[1]), *dcnm);
-
-  /*--------------------------------------------------------------------*/
-  // Part mn
-  /*--------------------------------------------------------------------*/
-  // kmn: add P^T*ksn
-  std::shared_ptr<Core::LinAlg::SparseMatrix> kmn_mod =
-      std::make_shared<Core::LinAlg::SparseMatrix>(*gmdofrowmap_, 100);
-  kmn_mod->Add(splitmatrix->Matrix(1, 0), false, 1.0, 1.0);
-  std::shared_ptr<Core::LinAlg::SparseMatrix> kmn_add =
-      matrix_multiply(*P, true, splitmatrix->Matrix(2, 0), false, false, false, true);
-  kmn_mod->Add(*kmn_add, false, 1.0, 1.0);
-  kmn_mod->Complete(splitmatrix->Matrix(1, 0).DomainMap(), splitmatrix->Matrix(1, 0).RowMap());
-
-  sysmatnew->Add(*kmn_mod, false, 1.0, 1.0);
-
-  /*--------------------------------------------------------------------*/
-  // Part mm
-  /*--------------------------------------------------------------------*/
-  // kms: add P^T*kss, kmm: add kms*P + kmm
-  std::shared_ptr<Core::LinAlg::SparseMatrix> kmm_mod =
-      std::make_shared<Core::LinAlg::SparseMatrix>(*gmdofrowmap_, 100);
-  kmm_mod->Add(splitmatrix->Matrix(1, 1), false, 1.0, 1.0);
-  std::shared_ptr<Core::LinAlg::SparseMatrix> kms =
-      matrix_multiply(*P, true, splitmatrix->Matrix(2, 2), false, false, false, true);
-  std::shared_ptr<Core::LinAlg::SparseMatrix> kmm_add =
-      matrix_multiply(*kms, false, *P, false, false, false, true);
-  kmm_mod->Add(*kmm_add, false, 1.0, 1.0);
-  kmm_mod->Complete(splitmatrix->Matrix(1, 1).DomainMap(), splitmatrix->Matrix(1, 1).RowMap());
-
-  sysmatnew->Add(*kmm_mod, false, 1.0, 1.0);
-
-  if (dconmaster_ == true and firstnonliniter_ == true)
-    kmm_mod->Multiply(false, *(splitdcmaster[1]), *dcmm);
-
-  std::shared_ptr<Core::LinAlg::Vector<double>> ones =
-      std::make_shared<Core::LinAlg::Vector<double>>(*gsdofrowmap_);
-  std::shared_ptr<Core::LinAlg::SparseMatrix> onesdiag;
-  ones->PutScalar(1.0);
-  onesdiag = std::make_shared<Core::LinAlg::SparseMatrix>(*ones);
-  onesdiag->Complete();
-
-  sysmatnew->Add(*onesdiag, false, 1.0, 1.0);
-
-  sysmatnew->Complete();
-
-  sysmat = sysmatnew;
-#endif
-#endif
 
   //*************************************************
   //  condensation operation for the residual

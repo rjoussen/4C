@@ -5,13 +5,11 @@
 //
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
-#include "4C_comm_mpi_utils.hpp"
-#define DIRECTMANIPULATION
-#define ZEROSYSMAT
-
 #include "4C_ale_meshtying.hpp"
+
 #include "4C_ale_utils.hpp"
 #include "4C_ale_utils_mapextractor.hpp"
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_coupling_adapter_mortar.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
