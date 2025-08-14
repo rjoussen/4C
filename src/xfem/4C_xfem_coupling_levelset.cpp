@@ -101,7 +101,7 @@ void XFEM::LevelSetCoupling::set_cutter_discretization()
   else
     FOUR_C_THROW("unsupported cutter dis!");
 
-  if (not(dofset_coupling_map_.count(dofset_name) > 0))
+  if (not(dofset_coupling_map_.contains(dofset_name)))
     FOUR_C_THROW("dofset not set in dofset_coupling_map for cutter dis!");
 
   cutter_nds_phi_ = dofset_coupling_map_[dofset_name];  // dofset id for scalar field
