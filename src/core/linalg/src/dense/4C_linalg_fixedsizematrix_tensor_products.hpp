@@ -19,6 +19,8 @@
 
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_linalg_four_tensor.hpp"
+#include "4C_linalg_symmetric_tensor.hpp"
+#include "4C_linalg_tensor.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -161,6 +163,39 @@ namespace Core::LinAlg::FourTensorOperations
   void add_holzapfel_product(Core::LinAlg::Matrix<6, 6, T>& cmat,
       const Core::LinAlg::Matrix<6, 1, T>& invc, const T scalar);
 
+  /*!
+   * @brief Calculate the 'Holzapfel product' for a given symmetric 2nd-order tensor
+   *
+   * This function computes the fourth-order tensor product:
+   * \f[
+   *    \mathbb{H} = \boldsymbol{C}^{-1} \odot \boldsymbol{C}^{-1}
+   * \f]
+   * where \f$\odot\f$ denotes the symmetric tensor product defined in index notation as:
+   * \f[
+   *    \mathbb{H}^{ABCD} = \frac{1}{2} \left(
+   *      {C^{-1}}^{AC} {C^{-1}}^{BD} + {C^{-1}}^{AD} {C^{-1}}^{BC}
+   *    \right)
+   * \f]
+   *
+   * This is often used to compute the derivative of the inverse right Cauchy-Green tensor
+   * with respect to itself:
+   * \f[
+   *    \mathbb{H} = -\frac{\partial \boldsymbol{C}^{-1}}{\partial \boldsymbol{C}}
+   * \f]
+   * as derived by Holzapfel [1], p. 254.
+   *
+   * References:
+   * [1] G.A. Holzapfel, "Nonlinear solid mechanics", Wiley, 2000.
+   *
+   * @tparam T            Scalar type (e.g., double, float)
+   * @param[in] invC      Any symmetric 2nd-order Tensor. Mostly the
+   *                      inverse right Cauchy-Green tensor in 3D space.
+   * @return              Fourth-order symmetric tensor representing
+   *                      the Holzapfel product in 3D space.
+   */
+  template <typename T>
+  Core::LinAlg::SymmetricTensor<T, 3, 3, 3, 3> holzapfel_product(
+      const Core::LinAlg::SymmetricTensor<T, 3, 3>& invc);
 
   /*!
    * @brief Add symmetric Holzapfel product to a 4th order tensor in matrix notation

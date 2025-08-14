@@ -240,9 +240,10 @@ void Mat::Elastic::IsoMuscleBlemker::add_stress_aniso_modified(
 
   // modified projection tensor Psl = Cinv o Cinv - 1/3 Cinv x Cinv
   Core::LinAlg::Matrix<6, 1> icg_view = Core::LinAlg::make_stress_like_voigt_view(icg);
-  Core::LinAlg::Matrix<6, 6> Psl(Core::LinAlg::Initialization::zero);
-  Core::LinAlg::FourTensorOperations::add_holzapfel_product(Psl, icg_view, 1.0);
-  Psl.multiply_nt(-1.0 / 3.0, icg_view, icg_view, 1.0);
+  const Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3> Psl_t =
+      Core::LinAlg::FourTensorOperations::holzapfel_product(icg) -
+      1.0 / 3.0 * Core::LinAlg::dyadic(icg, icg);
+  Core::LinAlg::Matrix<6, 6> Psl = Core::LinAlg::make_stress_like_voigt_view(Psl_t);
 
   // Right Cauchy-Green tensor in stress-like Voigt notation
   Core::LinAlg::Matrix<6, 1> rcg_stress = Core::LinAlg::make_stress_like_voigt_view(rcg);
