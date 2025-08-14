@@ -1,0 +1,294 @@
+DESIGN LINE DIRICH CONDITIONS:
+  - E: 1
+    NUMDOF: 3
+    ONOFF:
+      - 1
+      - 1
+      - 1
+    VAL:
+      - 0.0
+      - 0.0
+      - 0.0
+    FUNCT:
+      - 0
+      - 0
+      - 0
+  - E: 2
+    NUMDOF: 3
+    ONOFF:
+      - 1
+      - 0
+      - 0
+    VAL:
+      - 0.0
+      - 0.0
+      - 0.0
+    FUNCT:
+      - 0
+      - 0
+      - 0
+BEAM INTERACTION/BEAM TO SOLID SURFACE CONTACT SURFACE:
+  - E: 1
+    COUPLING_ID: 1
+DESIGN POINT COUPLING CONDITIONS:
+  - E: 1
+    NUMDOF: 3
+    ONOFF:
+      - 0
+      - 1
+      - 1
+  - E: 2
+    NUMDOF: 3
+    ONOFF:
+      - 0
+      - 1
+      - 1
+  - E: 3
+    NUMDOF: 3
+    ONOFF:
+      - 0
+      - 1
+      - 1
+MATERIALS:
+  - MAT: 1
+    MAT_Kirchhoff_Love_shell:
+      YOUNG_MODULUS: 1.0
+      POISSON_RATIO: 0.3
+      THICKNESS: 0.05
+  - MAT: 2
+    MAT_BeamReissnerElastHyper:
+      YOUNG: 10
+      POISSONRATIO: 0.0
+      DENS: 0.0
+      CROSSAREA: 0.007853981633974483
+      SHEARCORR: 1
+      MOMINPOL: 9.817477042468105e-06
+      MOMIN2: 4.9087385212340526e-06
+      MOMIN3: 4.9087385212340526e-06
+FUNCT1:
+  - SYMBOLIC_FUNCTION_OF_SPACE_TIME: "t"
+DESIGN POINT DIRICH CONDITIONS:
+  - E: 4
+    NUMDOF: 9
+    ONOFF:
+      - 1
+      - 1
+      - 1
+      - 1
+      - 1
+      - 1
+      - 0
+      - 0
+      - 0
+    VAL:
+      - 0.0
+      - 0.0
+      - -0.2
+      - 0.0
+      - 0.0
+      - 0.0
+      - 0.0
+      - 0.0
+      - 0.0
+    FUNCT:
+      - 0
+      - 0
+      - 1
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+  - E: 5
+    NUMDOF: 9
+    ONOFF:
+      - 1
+      - 1
+      - 1
+      - 1
+      - 1
+      - 1
+      - 0
+      - 0
+      - 0
+    VAL:
+      - 0.0
+      - 0.0
+      - -0.2
+      - 0.0
+      - 0.0
+      - 0.0
+      - 0.0
+      - 0.0
+      - 0.0
+    FUNCT:
+      - 0
+      - 0
+      - 1
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+      - 0
+BEAM INTERACTION/BEAM TO SOLID SURFACE CONTACT LINE:
+  - E: 3
+    COUPLING_ID: 1
+PROBLEM TYPE:
+  PROBLEMTYPE: "Structure"
+  SHAPEFCT: "Nurbs"
+IO:
+  OUTPUT_BIN: false
+  STRUCT_DISP: false
+  STRUCT_STRESS: "no"
+  STRUCT_STRAIN: "no"
+  VERBOSITY: "Standard"
+STRUCTURAL DYNAMIC:
+  LINEAR_SOLVER: 1
+  INT_STRATEGY: "Standard"
+  DYNAMICTYPE: "Statics"
+  PREDICT: "TangDis"
+  PRESTRESS: "None"
+  PRESTRESSTIME: 0
+  TIMESTEP: 0.1
+  NUMSTEP: 10
+  MAXTIME: 1.0
+  LOADLIN: false
+  TOLDISP: 1e-12
+  TOLRES: 1e-12
+  MAXITER: 11
+SOLVER 1:
+  NAME: "Structure_Solver"
+  SOLVER: "Superlu"
+STRUCT NOX/Printing:
+  Error: true
+  Inner Iteration: false
+  Details: true
+  Linear Solver Details: true
+  Test Details: true
+IO/RUNTIME VTK OUTPUT:
+  OUTPUT_DATA_FORMAT: "binary"
+  INTERVAL_STEPS: 1
+  EVERY_ITERATION: false
+IO/RUNTIME VTK OUTPUT/STRUCTURE:
+  OUTPUT_STRUCTURE: true
+  DISPLACEMENT: true
+  STRESS_STRAIN: false
+  ELEMENT_OWNER: true
+  ELEMENT_GID: true
+  ELEMENT_MAT_ID: true
+IO/RUNTIME VTK OUTPUT/BEAMS:
+  OUTPUT_BEAMS: true
+  DISPLACEMENT: true
+  USE_ABSOLUTE_POSITIONS: true
+  TRIAD_VISUALIZATIONPOINT: true
+  STRAINS_GAUSSPOINT: true
+  ELEMENT_GID: true
+BEAM INTERACTION/BEAM TO SOLID VOLUME MESHTYING/RUNTIME VTK OUTPUT:
+  WRITE_OUTPUT: true
+  NODAL_FORCES: true
+  MORTAR_LAMBDA_DISCRET: true
+  MORTAR_LAMBDA_CONTINUOUS: true
+  MORTAR_LAMBDA_CONTINUOUS_SEGMENTS: 5
+  SEGMENTATION: true
+  INTEGRATION_POINTS: true
+BEAM INTERACTION/BEAM TO SOLID SURFACE/RUNTIME VTK OUTPUT:
+  WRITE_OUTPUT: true
+  NODAL_FORCES: true
+  MORTAR_LAMBDA_DISCRET: true
+  MORTAR_LAMBDA_CONTINUOUS: true
+  MORTAR_LAMBDA_CONTINUOUS_SEGMENTS: 5
+  SEGMENTATION: true
+  INTEGRATION_POINTS: true
+  AVERAGED_NORMALS: true
+BEAM INTERACTION:
+  REPARTITIONSTRATEGY: "Everydt"
+  SEARCH_STRATEGY: "bounding_volume_hierarchy"
+BEAM CONTACT:
+  MODELEVALUATOR: "Standard"
+BINNING STRATEGY:
+  BIN_SIZE_LOWER_BOUND: 1.0
+  DOMAINBOUNDINGBOX: "-5 -5 -5 5 5 5"
+BEAM INTERACTION/BEAM TO SOLID SURFACE CONTACT:
+  CONSTRAINT_STRATEGY: "penalty"
+  PENALTY_PARAMETER: 1.0
+  CONTACT_DISCRETIZATION: "mortar"
+  CONTACT_TYPE: "gap_variation"
+  GEOMETRY_PAIR_SEGMENTATION_SEARCH_POINTS: 2
+  GAUSS_POINTS: 6
+  GEOMETRY_PAIR_STRATEGY: "segmentation"
+  PENALTY_LAW: "linear_quadratic"
+  PENALTY_PARAMETER_G0: 0.01
+  MORTAR_SHAPE_FUNCTION: "line2"
+  MORTAR_CONTACT_DEFINED_IN: "reference_configuration"
+STRUCTURE KNOTVECTORS:
+  - "NURBS_DIMENSION 2"
+  - "BEGIN NURBSPATCH"
+  - "ID 1"
+  - "NUMKNOTS 6"
+  - "DEGREE 2"
+  - "TYPE Interpolated"
+  - "0.0"
+  - "0.0"
+  - "0.0"
+  - "1.0"
+  - "1.0"
+  - "1.0"
+  - "NUMKNOTS 6"
+  - "DEGREE 2"
+  - "TYPE Interpolated"
+  - "0.0"
+  - "0.0"
+  - "0.0"
+  - "1.0"
+  - "1.0"
+  - "1.0"
+  - "END NURBSPATCH"
+DSURF-NODE TOPOLOGY:
+  - "NODE 1 DSURFACE 1"
+  - "NODE 2 DSURFACE 1"
+  - "NODE 3 DSURFACE 1"
+  - "NODE 4 DSURFACE 1"
+  - "NODE 5 DSURFACE 1"
+  - "NODE 6 DSURFACE 1"
+  - "NODE 7 DSURFACE 1"
+  - "NODE 8 DSURFACE 1"
+  - "NODE 9 DSURFACE 1"
+DNODE-NODE TOPOLOGY:
+  - "NODE 1 DNODE 1"
+  - "NODE 2 DNODE 1"
+  - "NODE 4 DNODE 2"
+  - "NODE 5 DNODE 2"
+  - "NODE 7 DNODE 3"
+  - "NODE 8 DNODE 3"
+  - "NODE 10 DNODE 4"
+  - "NODE 12 DNODE 5"
+DLINE-NODE TOPOLOGY:
+  - "NODE 3 DLINE 1"
+  - "NODE 6 DLINE 1"
+  - "NODE 9 DLINE 1"
+  - "NODE 1 DLINE 2"
+  - "NODE 4 DLINE 2"
+  - "NODE 7 DLINE 2"
+  - "NODE 10 DLINE 3"
+  - "NODE 11 DLINE 3"
+  - "NODE 12 DLINE 3"
+NODE COORDS:
+  - "CP 1 COORD 0.0 -0.5 0.0 1.0"
+  - "CP 2 COORD 0.5 -0.5 0.0 1.0"
+  - "CP 3 COORD 1.0 -0.5 0.0 1.0"
+  - "CP 4 COORD 0.0 0.0 0.0 1.0"
+  - "CP 5 COORD 0.5 0.0 0.0 1.0"
+  - "CP 6 COORD 1.0 0.0 0.0 1.0"
+  - "CP 7 COORD 0.0 0.5 0.0 1.0"
+  - "CP 8 COORD 0.5 0.5 0.0 1.0"
+  - "CP 9 COORD 1.0 0.5 0.0 1.0"
+  - "NODE 10 COORD 0.1564344650402309 0.09999999999999978 0.11731165940486221"
+  - "NODE 11 COORD 0.07845909572784497 0.09999999999999978 0.10808266626687202"
+  - "NODE 12 COORD 2.7755575615628914e-17 0.09999999999999978 0.10499999999999998"
+STRUCTURE ELEMENTS:
+  - "1 SHELL_KIRCHHOFF_LOVE_NURBS NURBS9 1 2 3 4 5 6 7 8 9 MAT 1 GP 3 3"
+  - "2 BEAM3R LINE3 10 12 11 MAT 2 TRIADS -0.16839264576855187 2.139631433201363 2.1396314332013624 -3.082869333536052e-17
+    2.221441469079183 2.221441469079183 -0.08570488292702183 2.1813349327425287 2.181334932742528 HERMITE_CENTERLINE
+    true"
