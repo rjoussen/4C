@@ -322,9 +322,12 @@ namespace Core::LinAlg
 
   *
   *  This method changes the row map of an input matrix to new row map with identical GIDs but
-  different parallel distribution.
+  *  different parallel distribution.
+  *
   *  \param(in) inmat:  A Core::LinAlg::SparseMatrix that needs to be transformed.
   *  \param(in) newrowmap: A Core::LinAlg::Map providing the rowmap of the new distribution.
+  *
+  *  \returns A Core::LinAlg::SparseMatrix with the rowmap given by newrowmap
   */
   std::shared_ptr<Core::LinAlg::SparseMatrix> matrix_row_transform(
       const Core::LinAlg::SparseMatrix& inmat, const Core::LinAlg::Map& newrowmap);
@@ -333,9 +336,12 @@ namespace Core::LinAlg
 
   *
   *  This method changes the column map of an input matrix to new column map with identical GIDs but
-  different parallel distribution. (and the domain map, accordingly).
+  *  different parallel distribution. (and the domain map, accordingly).
+  *
   *  \param(in) inmat:  A Core::LinAlg::SparseMatrix that needs to be transformed.
   *  \param(in) newrowmap: A Core::LinAlg::Map providing the rowmap of the new distribution.
+  *
+  *  \returns A Core::LinAlg::SparseMatrix with the domainmap given by newdomainmap
   */
   std::shared_ptr<Core::LinAlg::SparseMatrix> matrix_col_transform(
       const Core::LinAlg::SparseMatrix& inmat, const Core::LinAlg::Map& newdomainmap);
@@ -344,17 +350,21 @@ namespace Core::LinAlg
 
   *
   *  This method changes the row and column maps of an input matrix to new row and column maps with
-  identical GIDs but different parallel distribution (and the domain map, accordingly).
+  *  identical GIDs but different parallel distribution (and the domain map, accordingly).
+  *
   *  \param(in) inmat:  A Core::LinAlg::SparseMatrix that needs to be transformed.
   *  \param(in) newrowmap: A Core::LinAlg::Map providing the rowmap of the new distribution.
   *  \param(in) newdomainmap: A Core::LinAlg::Map providing the domainmap of the new distribution.
+  *
+  *  \returns A Core::LinAlg::SparseMatrix with the rowmap given by newrowmap and domainmap
+  *   given by newdomainmap
   */
   std::shared_ptr<Core::LinAlg::SparseMatrix> matrix_row_col_transform(
       const Core::LinAlg::SparseMatrix& inmat, const Core::LinAlg::Map& newrowmap,
       const Core::LinAlg::Map& newdomainmap);
 
   /*! \brief Parallel redistribution of a sparse matrix
-   * Helper method for the MatrixTransform() methods above.
+   *  Helper method for the MatrixTransform() methods above.
    */
   std::shared_ptr<Core::LinAlg::SparseMatrix> redistribute(const Core::LinAlg::SparseMatrix& src,
       const Core::LinAlg::Map& permrowmap, const Core::LinAlg::Map& permdomainmap);

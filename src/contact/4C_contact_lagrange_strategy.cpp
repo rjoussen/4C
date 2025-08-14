@@ -3086,7 +3086,7 @@ void CONTACT::LagrangeStrategy::build_saddle_point_system(
     // transform constraint matrix kzd to lmdofmap (MatrixRowTransform)
     trkzd = Mortar::matrix_row_transform_gids(kzd, *glmdofrowmap_);
 
-    // transform constraint matrix kzz to lmCore::LinAlg::matrix_row_col_transform)
+    // transform constraint matrix kzz to lmdofmap (matrix_row_col_transform)
     trkzz = Mortar::matrix_row_col_transform_gids(kzz, *glmdofrowmap_, *glmdofrowmap_);
 
     // transform constraint matrix kzd to lmdofmap (matrix_col_transform)
