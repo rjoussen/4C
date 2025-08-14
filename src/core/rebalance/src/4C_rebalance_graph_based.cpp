@@ -121,8 +121,7 @@ Core::Rebalance::build_weights(const Core::FE::Discretization& dis)
 {
   const Core::LinAlg::Map* noderowmap = dis.node_row_map();
 
-  auto crs_ge_weights =
-      std::make_shared<Core::LinAlg::SparseMatrix>(noderowmap->get_epetra_map(), 15);
+  auto crs_ge_weights = std::make_shared<Core::LinAlg::SparseMatrix>(*noderowmap, 15);
   std::shared_ptr<Core::LinAlg::Vector<double>> vweights =
       Core::LinAlg::create_vector(*noderowmap, true);
 
@@ -147,7 +146,7 @@ Core::Rebalance::build_weights(const Core::FE::Discretization& dis)
     // evaluate elements to get their evaluation cost
     ele->nodal_connectivity(edgeweigths_ele, nodeweights_ele);
 
-    Core::LinAlg::assemble(*crs_ge_weights->epetra_matrix(), edgeweigths_ele, lm, lmrowowner, lm);
+    Core::LinAlg::assemble(*crs_ge_weights, edgeweigths_ele, lm, lmrowowner, lm);
     Core::LinAlg::assemble(*vweights, nodeweights_ele, lm, lmrowowner);
   }
 

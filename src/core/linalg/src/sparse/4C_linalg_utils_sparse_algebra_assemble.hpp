@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
 namespace Core::LinAlg
 {
   /*!
-   \brief Assemble an Core::LinAlg::SerialDenseMatrix into an Epetra_CrsMatrix
+   \brief Assemble an Core::LinAlg::SerialDenseMatrix into an Core::LinAlg::SparseMatrix
 
    This is an individual call.
    Will only assemble locally and will never do any communication.
@@ -45,7 +45,7 @@ namespace Core::LinAlg
    \param lmrowowner (in) : vector with owner procs of row gids
    \param lmcol (in)      : vector with column gids
    */
-  void assemble(Epetra_CrsMatrix& A, const Core::LinAlg::SerialDenseMatrix& Aele,
+  void assemble(Core::LinAlg::SparseMatrix& A, const Core::LinAlg::SerialDenseMatrix& Aele,
       const std::vector<int>& lmrow, const std::vector<int>& lmrowowner,
       const std::vector<int>& lmcol);
 

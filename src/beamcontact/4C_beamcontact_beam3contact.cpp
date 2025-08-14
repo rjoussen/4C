@@ -5564,7 +5564,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::fd_check(
 
   std::cout << "ANALYT_LIN: " << std::endl;
 
-  std::cout << (*(stiffmatrix_analyt.epetra_matrix())) << std::endl;
+  stiffmatrix_analyt.print(std::cout);
 }
 /*----------------------------------------------------------------------*
 |  end: FD-Check of stiffness matrix

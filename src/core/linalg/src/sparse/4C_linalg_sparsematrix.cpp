@@ -1538,6 +1538,12 @@ const Epetra_Map& Core::LinAlg::SparseMatrix::OperatorRangeMap() const
  *----------------------------------------------------------------------*/
 int Core::LinAlg::SparseMatrix::max_num_entries() const { return sysmat_->MaxNumEntries(); }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+int Core::LinAlg::SparseMatrix::global_max_num_entries() const
+{
+  return sysmat_->GlobalMaxNumEntries();
+}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

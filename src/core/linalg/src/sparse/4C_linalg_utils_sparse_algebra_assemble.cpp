@@ -12,11 +12,10 @@
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
- |  assemble a matrix                                         popp 01/08|
  *----------------------------------------------------------------------*/
-void Core::LinAlg::assemble(Epetra_CrsMatrix& A, const Core::LinAlg::SerialDenseMatrix& Aele,
-    const std::vector<int>& lmrow, const std::vector<int>& lmrowowner,
-    const std::vector<int>& lmcol)
+void Core::LinAlg::assemble(Core::LinAlg::SparseMatrix& A,
+    const Core::LinAlg::SerialDenseMatrix& Aele, const std::vector<int>& lmrow,
+    const std::vector<int>& lmrowowner, const std::vector<int>& lmcol)
 {
   const int lrowdim = (int)lmrow.size();
   const int lcoldim = (int)lmcol.size();
@@ -27,12 +26,11 @@ void Core::LinAlg::assemble(Epetra_CrsMatrix& A, const Core::LinAlg::SerialDense
 
   const int myrank =
       Core::Communication::my_mpi_rank(Core::Communication::unpack_epetra_comm(A.Comm()));
-  const Core::LinAlg::Map& rowmap = Map(A.RowMap());
+  const Core::LinAlg::Map& rowmap = Map(A.row_map());
 
   // this 'Assemble' is not implemented for a Filled() matrix A
-  if (A.Filled())
+  if (A.filled())
     FOUR_C_THROW("Sparse matrix A is already Filled()");
-
   else
   {
     // loop rows of local matrix
@@ -52,17 +50,19 @@ void Core::LinAlg::assemble(Epetra_CrsMatrix& A, const Core::LinAlg::SerialDense
 
         // Now that we do not rebuild the sparse mask in each step, we
         // are bound to assemble the whole thing. Zeros included.
-        int errone = A.SumIntoGlobalValues(rgid, 1, &val, &cgid);
+        int errone = A.sum_into_global_values(rgid, 1, &val, &cgid);
         if (errone > 0)
         {
-          int errtwo = A.InsertGlobalValues(rgid, 1, &val, &cgid);
+          int errtwo = A.insert_global_values(rgid, 1, &val, &cgid);
           if (errtwo < 0)
-            FOUR_C_THROW("Epetra_CrsMatrix::InsertGlobalValues returned error code {}", errtwo);
+            FOUR_C_THROW(
+                "Core::LinAlg::SparseMatrix::InsertGlobalValues returned error code {}", errtwo);
         }
         else if (errone)
-          FOUR_C_THROW("Epetra_CrsMatrix::SumIntoGlobalValues returned error code {}", errone);
-      }  // for (int lcol=0; lcol<lcoldim; ++lcol)
-    }  // for (int lrow=0; lrow<lrowdim; ++lrow)
+          FOUR_C_THROW(
+              "Core::LinAlg::SparseMatrix::SumIntoGlobalValues returned error code {}", errone);
+      }
+    }
   }
 }
 

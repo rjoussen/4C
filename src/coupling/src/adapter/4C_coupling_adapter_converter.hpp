@@ -122,9 +122,9 @@ namespace Coupling::Adapter
       other side. So the row map transformation requires a parallel redistribution followed by a row
   map exchange.
 
-      This operator does not utilize Epetra_CrsMatrix::ReplaceRowMap() but
+      This operator does not utilize Core::LinAlg::SparseMatrix::replace_row_map() but
       copies the temporary matrix. This is required both to preserve the
-      internal Epetra_CrsMatrix from the destination Core::LinAlg::SparseMatrix and
+      internal Core::LinAlg::SparseMatrix from the destination Core::LinAlg::SparseMatrix and
       because the destination matrix row map may be much larger than the source
       matrix row map.
 
@@ -186,27 +186,27 @@ namespace Coupling::Adapter
     /*!
       Internal method.
      */
-    void internal_add(Epetra_CrsMatrix& esrc, const Core::LinAlg::Map& logical_range_map,
+    void internal_add(Core::LinAlg::SparseMatrix& esrc, const Core::LinAlg::Map& logical_range_map,
         const Core::LinAlg::Map& logical_domain_map, const Core::LinAlg::Map& matching_dst_rows,
-        Epetra_CrsMatrix& edst, bool exactmatch, double scale);
+        Core::LinAlg::SparseMatrix& edst, bool exactmatch, double scale);
 
     /// fast method that adds into filled matrices
     /*!
       Internal method called by internal_add.
      */
-    void add_into_filled(Epetra_CrsMatrix& esrc, const Core::LinAlg::Map& logical_range_map,
-        const Core::LinAlg::Map& logical_domain_map, const Core::LinAlg::Vector<double>& selector,
-        const Core::LinAlg::Map& matching_dst_rows, Epetra_CrsMatrix& edst, bool exactmatch,
-        double scale);
+    void add_into_filled(Core::LinAlg::SparseMatrix& esrc,
+        const Core::LinAlg::Map& logical_range_map, const Core::LinAlg::Map& logical_domain_map,
+        const Core::LinAlg::Vector<double>& selector, const Core::LinAlg::Map& matching_dst_rows,
+        Core::LinAlg::SparseMatrix& edst, bool exactmatch, double scale);
 
     /// slow method that adds into unfilled matrices
     /*!
       Internal method called by internal_add.
      */
-    void add_into_unfilled(Epetra_CrsMatrix& esrc, const Core::LinAlg::Map& logical_range_map,
-        const Core::LinAlg::Map& logical_domain_map, const Core::LinAlg::Vector<double>& selector,
-        const Core::LinAlg::Map& matching_dst_rows, Epetra_CrsMatrix& edst, bool exactmatch,
-        double scale);
+    void add_into_unfilled(Core::LinAlg::SparseMatrix& esrc,
+        const Core::LinAlg::Map& logical_range_map, const Core::LinAlg::Map& logical_domain_map,
+        const Core::LinAlg::Vector<double>& selector, const Core::LinAlg::Map& matching_dst_rows,
+        Core::LinAlg::SparseMatrix& edst, bool exactmatch, double scale);
 
     /// source and destination gid matching
     std::map<int, int> gidmap_;
@@ -235,9 +235,9 @@ namespace Coupling::Adapter
   other side. So the row map transformation requires a parallel redistribution followed by a row map
   exchange.
 
-  This operator does not utilize Epetra_CrsMatrix::ReplaceRowMap() but
+  This operator does not utilize Core::LinAlg::SparseMatrix::replace_row_map() but
   copies the temporary matrix. This is required both to preserve the
-  internal Epetra_CrsMatrix from the destination Core::LinAlg::SparseMatrix and
+  internal Core::LinAlg::SparseMatrix from the destination Core::LinAlg::SparseMatrix and
   because the destination matrix row map may be much larger than the source
   matrix row map.
 
