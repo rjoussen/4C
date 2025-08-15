@@ -17,7 +17,6 @@
 
 class Epetra_Operator;
 class Epetra_RowMatrix;
-class Epetra_LinearProblem;
 
 namespace FourC::Core::LinAlg
 {

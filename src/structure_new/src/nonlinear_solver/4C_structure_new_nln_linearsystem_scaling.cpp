@@ -21,12 +21,12 @@
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_linalg_vector.hpp"
 #include "4C_solid_3D_ele_calc_lib.hpp"
+#include "4C_solver_nonlin_nox_linearproblem.hpp"
 #include "4C_structure_new_timint_basedataglobalstate.hpp"
 #include "4C_structure_new_timint_basedatasdyn.hpp"
 #include "4C_utils_exceptions.hpp"
 
 #include <Epetra_CrsMatrix.h>
-#include <Epetra_LinearProblem.h>
 #include <Teuchos_ParameterList.hpp>
 
 #include <iostream>
@@ -290,24 +290,17 @@ Solid::Nln::LinSystem::StcScaling::StcScaling(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Solid::Nln::LinSystem::StcScaling::compute_scaling(const Epetra_LinearProblem& problem)
+void Solid::Nln::LinSystem::StcScaling::compute_scaling(const NOX::Nln::LinearProblem& problem)
 {
   (void)problem;  // avoid unused parameter warning
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Solid::Nln::LinSystem::StcScaling::scale_linear_system(Epetra_LinearProblem& problem)
+void Solid::Nln::LinSystem::StcScaling::scale_linear_system(NOX::Nln::LinearProblem& problem)
 {
   // get stiffness matrix
-  Epetra_CrsMatrix* stiffmat = dynamic_cast<Epetra_CrsMatrix*>(problem.GetMatrix());
-  std::shared_ptr<Epetra_CrsMatrix> stiff_epetra = Core::Utils::shared_ptr_from_ref(*stiffmat);
-  std::shared_ptr<Core::LinAlg::SparseMatrix> stiff_linalg =
-      std::make_shared<Core::LinAlg::SparseMatrix>(stiff_epetra, Core::LinAlg::DataAccess::View);
-
-  // get rhs
-  Core::LinAlg::View rhs_view(*dynamic_cast<Epetra_Vector*>(problem.GetRHS()));
-  Core::LinAlg::Vector<double>& rhs(rhs_view);
+  auto stiff_linalg = std::dynamic_pointer_cast<Core::LinAlg::SparseMatrix>(problem.jac);
 
   // right multiplication of stiffness matrix
   stiff_scaled_ =
@@ -319,27 +312,23 @@ void Solid::Nln::LinSystem::StcScaling::scale_linear_system(Epetra_LinearProblem
     stiff_scaled_ =
         Core::LinAlg::matrix_multiply(*stcmat_, true, *stiff_scaled_, false, true, false, true);
 
-    std::shared_ptr<Core::LinAlg::Vector<double>> rhs_scaled =
-        std::make_shared<Core::LinAlg::Vector<double>>(problem.GetRHS()->Map(), true);
-    stcmat_->multiply(true, rhs, *rhs_scaled);
-    rhs.update(1.0, *rhs_scaled, 0.0);
+    Core::LinAlg::Vector<double> rhs_scaled(problem.rhs->get_map(), true);
+    stcmat_->multiply(true, *problem.rhs, rhs_scaled);
+    problem.rhs->update(1.0, rhs_scaled, 0.0);
   }
 
   // set new stiffness matrix
-  problem.SetOperator(stiff_scaled_->epetra_matrix().get());
+  problem.jac = stiff_scaled_;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Solid::Nln::LinSystem::StcScaling::unscale_linear_system(Epetra_LinearProblem& problem)
+void Solid::Nln::LinSystem::StcScaling::unscale_linear_system(NOX::Nln::LinearProblem& problem)
 {
-  std::shared_ptr<Core::LinAlg::Vector<double>> disisdc =
-      std::make_shared<Core::LinAlg::Vector<double>>(problem.GetLHS()->Map(), true);
-  Epetra_MultiVector* disi = problem.GetLHS();
+  Core::LinAlg::Vector<double> lhs_unscaled(problem.lhs->get_map(), true);
 
-  Core::LinAlg::View disi_view(*disi);
-  stcmat_->multiply(false, disi_view, *disisdc);
-  disi->Update(1.0, *disisdc, 0.0);
+  stcmat_->multiply(false, *problem.lhs, lhs_unscaled);
+  problem.lhs->update(1.0, lhs_unscaled, 0.0);
 }
 
 FOUR_C_NAMESPACE_CLOSE

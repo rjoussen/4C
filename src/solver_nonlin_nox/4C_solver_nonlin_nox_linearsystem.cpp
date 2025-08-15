@@ -15,13 +15,13 @@
 #include "4C_solver_nonlin_nox_aux.hpp"
 #include "4C_solver_nonlin_nox_interface_jacobian.hpp"
 #include "4C_solver_nonlin_nox_interface_required.hpp"
+#include "4C_solver_nonlin_nox_linearproblem.hpp"
 #include "4C_solver_nonlin_nox_linearsystem_prepostoperator.hpp"
 #include "4C_solver_nonlin_nox_scaling.hpp"
 #include "4C_solver_nonlin_nox_solver_ptc.hpp"
 #include "4C_structure_new_nln_linearsystem_scaling.hpp"
 #include "4C_utils_epetra_exceptions.hpp"
 
-#include <Epetra_LinearProblem.h>
 #include <NOX_Epetra_Interface_Preconditioner.H>
 #include <Teuchos_LAPACK.hpp>
 #include <Teuchos_ParameterList.hpp>
@@ -254,19 +254,18 @@ bool NOX::Nln::LinearSystem::applyJacobianTranspose(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void NOX::Nln::LinearSystem::set_linear_problem_for_solve(Epetra_LinearProblem& linear_problem,
+NOX::Nln::LinearProblem NOX::Nln::LinearSystem::set_linear_problem_for_solve(
     Core::LinAlg::SparseOperator& jac, Core::LinAlg::Vector<double>& lhs,
     Core::LinAlg::Vector<double>& rhs) const
 {
-  linear_problem.SetOperator(jac.epetra_operator().get());
-  linear_problem.SetLHS(&lhs.get_ref_of_epetra_vector());
-  linear_problem.SetRHS(&rhs.get_ref_of_epetra_vector());
+  return NOX::Nln::LinearProblem{Core::Utils::shared_ptr_from_ref(jac),
+      Core::Utils::shared_ptr_from_ref(lhs), Core::Utils::shared_ptr_from_ref(rhs)};
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void NOX::Nln::LinearSystem::complete_solution_after_solve(
-    const Epetra_LinearProblem& linProblem, Core::LinAlg::Vector<double>& lhs) const
+    const NOX::Nln::LinearProblem& linProblem, Core::LinAlg::Vector<double>& lhs) const
 { /* nothing to do in the default case */
 }
 
@@ -276,7 +275,7 @@ bool NOX::Nln::LinearSystem::applyJacobianInverse(Teuchos::ParameterList& linear
     const ::NOX::Epetra::Vector& input, ::NOX::Epetra::Vector& result)
 {
   /* Need non-const version of the input vector
-   * Epetra_LinearProblem requires non-const versions so we can perform
+   * NOX::Nln::LinearProblem requires non-const versions so we can perform
    * scaling of the linear problem.
    * Same is valid for the prePostOperator. We want to have the
    * possibility to change the linear system. */
@@ -296,12 +295,11 @@ bool NOX::Nln::LinearSystem::applyJacobianInverse(Teuchos::ParameterList& linear
   /* Note: We switch from LINALG_objects to pure Epetra_objects.
    * This is necessary for the linear solver.
    *     Core::LinAlg::SparseMatrix ---> Epetra_CrsMatrix */
-  Epetra_LinearProblem linProblem;
   int linsol_status;
   {
     Core::LinAlg::View result_view(result.getEpetraVector());
     Core::LinAlg::View nonConstInput_view(nonConstInput.getEpetraVector());
-    set_linear_problem_for_solve(linProblem, jacobian(), result_view, nonConstInput_view);
+    auto linProblem = set_linear_problem_for_solve(jacobian(), result_view, nonConstInput_view);
 
     // ************* Begin linear system scaling *****************
     if (scaling_)
@@ -336,14 +334,9 @@ bool NOX::Nln::LinearSystem::applyJacobianInverse(Teuchos::ParameterList& linear
     solver_params.refactor = true;
     solver_params.reset = iter == 0;
 
-    auto matrix = Core::Utils::shared_ptr_from_ref(*linProblem.GetOperator());
+    auto matrix = Core::Utils::shared_ptr_from_ref(*linProblem.jac->epetra_operator());
 
-    Core::LinAlg::View x(*linProblem.GetLHS());
-    Core::LinAlg::View b(*linProblem.GetRHS());
-
-    linsol_status = currSolver->solve_with_multi_vector(matrix,
-        Core::Utils::shared_ptr_from_ref(x.underlying()),
-        Core::Utils::shared_ptr_from_ref(b.underlying()), solver_params);
+    linsol_status = currSolver->solve(matrix, linProblem.lhs, linProblem.rhs, solver_params);
 
     if (linsol_status)
     {

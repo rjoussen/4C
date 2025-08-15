@@ -149,23 +149,20 @@ Core::LinAlg::SolverParams NOX::Nln::CONTACT::LinearSystem::set_solver_options(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void NOX::Nln::CONTACT::LinearSystem::set_linear_problem_for_solve(
-    Epetra_LinearProblem& linear_problem, Core::LinAlg::SparseOperator& jac,
-    Core::LinAlg::Vector<double>& lhs, Core::LinAlg::Vector<double>& rhs) const
+NOX::Nln::LinearProblem NOX::Nln::CONTACT::LinearSystem::set_linear_problem_for_solve(
+    Core::LinAlg::SparseOperator& jac, Core::LinAlg::Vector<double>& lhs,
+    Core::LinAlg::Vector<double>& rhs) const
 {
   switch (jacType_)
   {
     case NOX::Nln::LinSystem::LinalgSparseMatrix:
-      NOX::Nln::LinearSystem::set_linear_problem_for_solve(linear_problem, jac, lhs, rhs);
+      return NOX::Nln::LinearSystem::set_linear_problem_for_solve(jac, lhs, rhs);
 
-      break;
     case NOX::Nln::LinSystem::LinalgBlockSparseMatrix:
     {
       p_lin_prob_.extract_active_blocks(jac, lhs, rhs);
-      NOX::Nln::LinearSystem::set_linear_problem_for_solve(
-          linear_problem, *p_lin_prob_.p_jac_, *p_lin_prob_.p_lhs_, *p_lin_prob_.p_rhs_);
-
-      break;
+      return NOX::Nln::LinearSystem::set_linear_problem_for_solve(
+          *p_lin_prob_.p_jac_, *p_lin_prob_.p_lhs_, *p_lin_prob_.p_rhs_);
     }
     default:
     {
@@ -178,7 +175,7 @@ void NOX::Nln::CONTACT::LinearSystem::set_linear_problem_for_solve(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void NOX::Nln::CONTACT::LinearSystem::complete_solution_after_solve(
-    const Epetra_LinearProblem& linProblem, Core::LinAlg::Vector<double>& lhs) const
+    const NOX::Nln::LinearProblem& linProblem, Core::LinAlg::Vector<double>& lhs) const
 {
   p_lin_prob_.insert_into_global_lhs(lhs);
   p_lin_prob_.reset();

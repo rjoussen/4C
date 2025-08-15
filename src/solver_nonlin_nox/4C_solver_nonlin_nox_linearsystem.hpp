@@ -12,6 +12,7 @@
 
 #include "4C_solver_nonlin_nox_enum_lists.hpp"
 #include "4C_solver_nonlin_nox_forward_decl.hpp"
+#include "4C_solver_nonlin_nox_linearproblem.hpp"
 #include "4C_solver_nonlin_nox_linearsystem_base.hpp"
 
 #include <NOX_Epetra_Interface_Required.H>
@@ -267,9 +268,8 @@ namespace NOX
           Teuchos::RCP<Core::LinAlg::Solver>& currSolver) = 0;
 
       //! Set-up the linear problem object
-      virtual void set_linear_problem_for_solve(Epetra_LinearProblem& linear_problem,
-          Core::LinAlg::SparseOperator& jac, Core::LinAlg::Vector<double>& lhs,
-          Core::LinAlg::Vector<double>& rhs) const;
+      virtual LinearProblem set_linear_problem_for_solve(Core::LinAlg::SparseOperator& jac,
+          Core::LinAlg::Vector<double>& lhs, Core::LinAlg::Vector<double>& rhs) const;
 
       /*! \brief Complete the solution vector after a linear solver attempt
        *
@@ -281,7 +281,7 @@ namespace NOX
        *
        *  */
       virtual void complete_solution_after_solve(
-          const Epetra_LinearProblem& linProblem, Core::LinAlg::Vector<double>& lhs) const;
+          const NOX::Nln::LinearProblem& linProblem, Core::LinAlg::Vector<double>& lhs) const;
 
       /// convert jacobian matrix to dense matrix
       void convert_jacobian_to_dense_matrix(Core::LinAlg::SerialDenseMatrix& dense) const;

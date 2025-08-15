@@ -67,12 +67,11 @@ namespace NOX
             Teuchos::RCP<Core::LinAlg::Solver>& currSolver) override;
 
         //! derived
-        void set_linear_problem_for_solve(Epetra_LinearProblem& linear_problem,
-            Core::LinAlg::SparseOperator& jac, Core::LinAlg::Vector<double>& lhs,
-            Core::LinAlg::Vector<double>& rhs) const override;
+        NOX::Nln::LinearProblem set_linear_problem_for_solve(Core::LinAlg::SparseOperator& jac,
+            Core::LinAlg::Vector<double>& lhs, Core::LinAlg::Vector<double>& rhs) const override;
 
         //! Combine the linear solution parts [derived]
-        void complete_solution_after_solve(const Epetra_LinearProblem& linProblem,
+        void complete_solution_after_solve(const NOX::Nln::LinearProblem& linProblem,
             Core::LinAlg::Vector<double>& lhs) const override;
 
        private:
