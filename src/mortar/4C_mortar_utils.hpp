@@ -107,48 +107,6 @@ namespace Mortar
       const Core::LinAlg::Map& newdomainmap);
 
   /*!
-  \brief Transform the row map of a matrix (parallel distribution)
-
-  This method changes the row map of an input matrix to a new
-  row map with identical GIDs but different parallel distribution.
-
-  */
-  std::shared_ptr<Core::LinAlg::SparseMatrix> matrix_row_transform(
-      const Core::LinAlg::SparseMatrix& inmat, const Core::LinAlg::Map& newrowmap);
-
-  /*!
-  \brief Transform the column map of a matrix (parallel distribution)
-
-  This method changes the column map of an input matrix to a new
-  column map with identical GIDs but different parallel distribution
-  (and the domain map, accordingly).
-
-  */
-  std::shared_ptr<Core::LinAlg::SparseMatrix> matrix_col_transform(
-      const Core::LinAlg::SparseMatrix& inmat, const Core::LinAlg::Map& newdomainmap);
-
-  /*!
-  \brief Transform the row and column maps of a matrix (parallel distribution)
-
-  This method changes the row and column maps of an input matrix
-  to new row and column maps with identical GIDs but different
-  parallel distribution (and the domain map, accordingly).
-
-  */
-  std::shared_ptr<Core::LinAlg::SparseMatrix> matrix_row_col_transform(
-      const Core::LinAlg::SparseMatrix& inmat, const Core::LinAlg::Map& newrowmap,
-      const Core::LinAlg::Map& newdomainmap);
-
-  /*!
-  \brief Parallel redistribution of a sparse matrix
-
-  Helper method for the MatrixTransform() methods above.
-
-  */
-  std::shared_ptr<Core::LinAlg::SparseMatrix> redistribute(const Core::LinAlg::SparseMatrix& src,
-      const Core::LinAlg::Map& permrowmap, const Core::LinAlg::Map& permdomainmap);
-
-  /*!
   \brief Convex hull points are sorted in order to obtain final clip polygon
 
   \param out (in): bool to switch output on/off

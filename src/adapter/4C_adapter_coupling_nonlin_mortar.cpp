@@ -834,8 +834,8 @@ void Adapter::CouplingNonLinMortar::integrate_lin_d(const std::string& statename
       FOUR_C_THROW("ERROR: Dof maps based on initial parallel distribution are wrong!");
 
     // transform everything back to old distribution
-    D_ = Mortar::matrix_row_col_transform(*D_, *pslavedofrowmap_, *pslavedofrowmap_);
-    DLin_ = Mortar::matrix_row_col_transform(*DLin_, *pslavedofrowmap_, *pslavedofrowmap_);
+    D_ = Core::LinAlg::matrix_row_col_transform(*D_, *pslavedofrowmap_, *pslavedofrowmap_);
+    DLin_ = Core::LinAlg::matrix_row_col_transform(*DLin_, *pslavedofrowmap_, *pslavedofrowmap_);
   }
 
   return;
@@ -914,19 +914,19 @@ void Adapter::CouplingNonLinMortar::matrix_row_col_transform()
       FOUR_C_THROW("ERROR: Dof maps based on initial parallel distribution are wrong!");
 
     if (DLin_ != nullptr)
-      DLin_ = Mortar::matrix_row_col_transform(*DLin_, *pslavedofrowmap_, *psmdofrowmap_);
+      DLin_ = Core::LinAlg::matrix_row_col_transform(*DLin_, *pslavedofrowmap_, *psmdofrowmap_);
 
     if (MLin_ != nullptr)
-      MLin_ = Mortar::matrix_row_col_transform(*MLin_, *pmasterdofrowmap_, *psmdofrowmap_);
+      MLin_ = Core::LinAlg::matrix_row_col_transform(*MLin_, *pmasterdofrowmap_, *psmdofrowmap_);
 
     if (H_ != nullptr)
-      H_ = Mortar::matrix_row_col_transform(*H_, *pslavedofrowmap_, *pslavedofrowmap_);
+      H_ = Core::LinAlg::matrix_row_col_transform(*H_, *pslavedofrowmap_, *pslavedofrowmap_);
 
     if (T_ != nullptr)
-      T_ = Mortar::matrix_row_col_transform(*T_, *pslavedofrowmap_, *pslavedofrowmap_);
+      T_ = Core::LinAlg::matrix_row_col_transform(*T_, *pslavedofrowmap_, *pslavedofrowmap_);
 
     if (N_ != nullptr)
-      N_ = Mortar::matrix_row_col_transform(*N_, *pslavedofrowmap_, *psmdofrowmap_);
+      N_ = Core::LinAlg::matrix_row_col_transform(*N_, *pslavedofrowmap_, *psmdofrowmap_);
 
     // transform gap vector
     if (gap_ != nullptr)

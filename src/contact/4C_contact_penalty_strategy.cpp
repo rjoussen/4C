@@ -305,8 +305,8 @@ void CONTACT::PenaltyStrategy::evaluate_contact(
   // transform if necessary
   if (parallel_redistribution_status())
   {
-    lindmatrix_ = Mortar::matrix_row_transform(*lindmatrix_, *non_redist_gsdofrowmap_);
-    linmmatrix_ = Mortar::matrix_row_transform(*linmmatrix_, *non_redist_gmdofrowmap_);
+    lindmatrix_ = Core::LinAlg::matrix_row_transform(*lindmatrix_, *non_redist_gsdofrowmap_);
+    linmmatrix_ = Core::LinAlg::matrix_row_transform(*linmmatrix_, *non_redist_gmdofrowmap_);
   }
 
   // add to kteff
@@ -328,8 +328,8 @@ void CONTACT::PenaltyStrategy::evaluate_contact(
   // transform if necessary
   if (parallel_redistribution_status())
   {
-    dtilde = Mortar::matrix_row_transform(*dtilde, *non_redist_gsdofrowmap_);
-    mtilde = Mortar::matrix_row_transform(*mtilde, *non_redist_gmdofrowmap_);
+    dtilde = Core::LinAlg::matrix_row_transform(*dtilde, *non_redist_gsdofrowmap_);
+    mtilde = Core::LinAlg::matrix_row_transform(*mtilde, *non_redist_gmdofrowmap_);
   }
 
   // add to kteff
@@ -492,8 +492,8 @@ void CONTACT::PenaltyStrategy::initialize_uzawa(
   // transform if necessary
   if (parallel_redistribution_status())
   {
-    dtilde = Mortar::matrix_row_transform(*dtilde, *non_redist_gsdofrowmap_);
-    mtilde = Mortar::matrix_row_transform(*mtilde, *non_redist_gmdofrowmap_);
+    dtilde = Core::LinAlg::matrix_row_transform(*dtilde, *non_redist_gsdofrowmap_);
+    mtilde = Core::LinAlg::matrix_row_transform(*mtilde, *non_redist_gmdofrowmap_);
   }
 
   // remove contact stiffness #2 from kteff
@@ -868,8 +868,8 @@ void CONTACT::PenaltyStrategy::assemble()
   // transform if necessary
   if (parallel_redistribution_status())
   {
-    lindmatrix_ = Mortar::matrix_row_transform(*lindmatrix_, *non_redist_gsdofrowmap_);
-    linmmatrix_ = Mortar::matrix_row_transform(*linmmatrix_, *non_redist_gmdofrowmap_);
+    lindmatrix_ = Core::LinAlg::matrix_row_transform(*lindmatrix_, *non_redist_gsdofrowmap_);
+    linmmatrix_ = Core::LinAlg::matrix_row_transform(*linmmatrix_, *non_redist_gmdofrowmap_);
   }
 
   // add to kteff
@@ -891,8 +891,8 @@ void CONTACT::PenaltyStrategy::assemble()
   // transform if necessary
   if (parallel_redistribution_status())
   {
-    dtilde = Mortar::matrix_row_transform(*dtilde, *non_redist_gsdofrowmap_);
-    mtilde = Mortar::matrix_row_transform(*mtilde, *non_redist_gmdofrowmap_);
+    dtilde = Core::LinAlg::matrix_row_transform(*dtilde, *non_redist_gsdofrowmap_);
+    mtilde = Core::LinAlg::matrix_row_transform(*mtilde, *non_redist_gmdofrowmap_);
   }
 
   // add to kteff

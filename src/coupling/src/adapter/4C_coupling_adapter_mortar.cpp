@@ -1168,10 +1168,10 @@ void Coupling::Adapter::CouplingMortar::matrix_row_col_transform()
       FOUR_C_THROW("Dof maps based on initial parallel distribution are wrong!");
 
     // transform everything back to old distribution
-    D_ = Mortar::matrix_row_col_transform(*D_, *pslavedofrowmap_, *pslavedofrowmap_);
-    M_ = Mortar::matrix_row_col_transform(*M_, *pslavedofrowmap_, *pmasterdofrowmap_);
-    Dinv_ = Mortar::matrix_row_col_transform(*Dinv_, *pslavedofrowmap_, *pslavedofrowmap_);
-    P_ = Mortar::matrix_row_col_transform(*P_, *pslavedofrowmap_, *pmasterdofrowmap_);
+    D_ = Core::LinAlg::matrix_row_col_transform(*D_, *pslavedofrowmap_, *pslavedofrowmap_);
+    M_ = Core::LinAlg::matrix_row_col_transform(*M_, *pslavedofrowmap_, *pmasterdofrowmap_);
+    Dinv_ = Core::LinAlg::matrix_row_col_transform(*Dinv_, *pslavedofrowmap_, *pslavedofrowmap_);
+    P_ = Core::LinAlg::matrix_row_col_transform(*P_, *pslavedofrowmap_, *pmasterdofrowmap_);
   }
 }
 
