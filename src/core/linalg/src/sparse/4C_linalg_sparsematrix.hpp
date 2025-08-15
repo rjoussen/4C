@@ -183,7 +183,7 @@ namespace Core::LinAlg
     /// destroy the underlying Epetra objects
     virtual bool destroy(bool throw_exception = true);
 
-    /// assemble method for Epetra_CrsMatrices, if ONLY local values are assembled
+    /// assemble method, if ONLY local values are assembled
     void assemble(int eid, const std::vector<int>& lmstride,
         const Core::LinAlg::SerialDenseMatrix& Aele, const std::vector<int>& lm,
         const std::vector<int>& lmowner) override
@@ -191,19 +191,19 @@ namespace Core::LinAlg
       assemble(eid, lmstride, Aele, lm, lmowner, lm);
     }
 
-    /// assemble method for Epetra_CrsMatrices, if ONLY local values are assembled
+    /// assemble method, if ONLY local values are assembled
     virtual void assemble(int eid, const Core::LinAlg::SerialDenseMatrix& Aele,
         const std::vector<int>& lm, const std::vector<int>& lmowner)
     {
       assemble(eid, Aele, lm, lmowner, lm);
     }
 
-    /// assemble method for Epetra_CrsMatrices, if ONLY local values are assembled
+    /// assemble method, if ONLY local values are assembled
     void assemble(int eid, const std::vector<int>& lmstride,
         const Core::LinAlg::SerialDenseMatrix& Aele, const std::vector<int>& lmrow,
         const std::vector<int>& lmrowowner, const std::vector<int>& lmcol) override;
 
-    /// assemble method for Epetra_CrsMatrices, if ONLY local values are assembled
+    /// assemble method, if ONLY local values are assembled
     void assemble(int eid, const Core::LinAlg::SerialDenseMatrix& Aele,
         const std::vector<int>& lmrow, const std::vector<int>& lmrowowner,
         const std::vector<int>& lmcol);
@@ -213,9 +213,9 @@ namespace Core::LinAlg
 
 
     /*
-     * \brief Set a single value in a Epetra_FECrsMatrix
+     * \brief Set a single value
      *
-     * This method inserts a new entry in a EpetraFECrsMatrix if it does not yet exist. If the entry
+     * This method inserts a new entry if it does not yet exist. If the entry
      * already exists, it is overwritten.
      *
      * \params[in] val Value to insert
@@ -225,39 +225,42 @@ namespace Core::LinAlg
     void set_value(double val, int rgid, int cgid);
 
     /*!
-      Assemble method for an Epetra_FECrsMatrix.
-      This method is also able to handle the assembly of nonlocal values.
-      It sets the doGlobalAssemble-flag to true and causes the
-      GlobalAssemble() method to redistribute the non-local
-      values to their owning procs, such that fill_complete can be safely
-      called on this matrix.
-
-      NOTE: This methods checks if rowowner == myrank. Only in this case
-      values are set. This is needed if the method is called in a loop over
-      column elements (which is the standard in 4C) to avoid multiple same entries.
+     * \brief Assemble method for an FE-style sparse matrix
+     *
+     * This method is also able to handle the assembly of nonlocal values.
+     * It sets the doGlobalAssemble-flag to true and causes the
+     * GlobalAssemble() method to redistribute the non-local
+     * values to their owning procs, such that fill_complete can be safely
+     * called on this matrix.
+     *
+     * \note This methods checks if rowowner == myrank. Only in this case
+     * values are set. This is needed if the method is called in a loop over
+     * column elements (which is the standard in 4C) to avoid multiple same entries.
      */
     void fe_assemble(const Core::LinAlg::SerialDenseMatrix& Aele, const std::vector<int>& lmrow,
         const std::vector<int>& lmrowowner, const std::vector<int>& lmcol);
 
     /*!
-      Assemble method for an Epetra_FECrsMatrices.
-      This method is also able to handle the assembly of nonlocal values.
-      It sets the doGlobalAssemble-flag to true and causes the
-      GlobalAssemble() method to redistribute the non-local
-      values to their owning procs, such that fill_complete can be safely
-      called on this matrix.
+     * \brief Assemble method for an FE-style sparse matrix
+     *
+     * This method is also able to handle the assembly of nonlocal values.
+     * It sets the doGlobalAssemble-flag to true and causes the
+     * GlobalAssemble() method to redistribute the non-local
+     * values to their owning procs, such that fill_complete can be safely
+     * called on this matrix.
      */
     void fe_assemble(const Core::LinAlg::SerialDenseMatrix& Aele, const std::vector<int>& lmrow,
         const std::vector<int>& lmcol);
 
     /*!
-      Assemble method for an Epetra_FECrsMatrices.
-      This method is also able
-      to handle the assembly of nonlocal values.
-      It sets the doGlobalAssemble-flag to true and causes the
-      GlobalAssemble -method() to redistribute the non-local
-      values to their owning procs, such that fill_complete can be safely
-      called on this matrix.
+     * \brief Assemble method for an FE-style sparse matrix
+     *
+     * This method is also able
+     * to handle the assembly of nonlocal values.
+     * It sets the doGlobalAssemble-flag to true and causes the
+     * GlobalAssemble -method() to redistribute the non-local
+     * values to their owning procs, such that fill_complete can be safely
+     * called on this matrix.
      */
     void fe_assemble(double val, int rgid, int cgid);
 
