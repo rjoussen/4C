@@ -121,8 +121,7 @@ Core::Rebalance::build_weights(const Core::FE::Discretization& dis)
 {
   const Core::LinAlg::Map* noderowmap = dis.node_row_map();
 
-  auto crs_ge_weights =
-      std::make_shared<Core::LinAlg::SparseMatrix>(noderowmap->get_epetra_map(), 15);
+  auto crs_ge_weights = std::make_shared<Core::LinAlg::SparseMatrix>(*noderowmap, 15);
   std::shared_ptr<Core::LinAlg::Vector<double>> vweights =
       Core::LinAlg::create_vector(*noderowmap, true);
 
