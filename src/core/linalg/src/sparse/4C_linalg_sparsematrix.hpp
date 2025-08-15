@@ -111,10 +111,6 @@ namespace Core::LinAlg
     SparseMatrix(const Epetra_Map& rowmap, const int npr, bool explicitdirichlet = true,
         bool savegraph = false, MatrixType matrixtype = CRS_MATRIX);
 
-    // TODO remove Epetra_Map here
-    SparseMatrix(const Epetra_Map& rowmap, std::vector<int>& numentries,
-        bool explicitdirichlet = true, bool savegraph = false, MatrixType matrixtype = CRS_MATRIX);
-
     /// construction of sparse matrix
     /*!
        Makes either a deep copy of the Epetra_CrsMatrix or Epetra_FECrsMatrix.
