@@ -238,50 +238,6 @@ std::shared_ptr<Core::LinAlg::SparseMatrix> Mortar::matrix_col_transform_gids(
   return outmat;
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void Mortar::create_new_col_map(const Core::LinAlg::SparseMatrix& mat,
-    const Core::LinAlg::Map& newdomainmap, std::shared_ptr<Core::LinAlg::Map>& newcolmap)
-{
-  if (not mat.filled()) FOUR_C_THROW("Matrix must be filled!");
-
-  if (newcolmap and mat.col_map().same_as(*newcolmap)) return;
-
-  // reset old no longer correct column map
-  newcolmap = nullptr;
-
-  // mapping of column gids
-  std::map<int, int> gidmap;
-  Core::Communication::Exporter exDomain2Col(
-      mat.domain_map(), mat.col_map(), Core::Communication::unpack_epetra_comm(mat.Comm()));
-
-  const int nummyelements = mat.domain_map().num_my_elements();
-  if (nummyelements != newdomainmap.num_my_elements())
-    FOUR_C_THROW("NumMyElements must be the same on each proc!");
-
-  const int* old_gids = mat.domain_map().my_global_elements();
-  const int* new_gids = newdomainmap.my_global_elements();
-
-  for (int i = 0; i < nummyelements; ++i) gidmap[old_gids[i]] = new_gids[i];
-
-  exDomain2Col.do_export(gidmap);
-
-  std::vector<int> my_col_gids(gidmap.size(), -1);
-  for (std::map<int, int>::const_iterator cit = gidmap.begin(); cit != gidmap.end(); ++cit)
-  {
-    const int lid = mat.col_map().lid(cit->first);
-    if (lid == -1)
-      FOUR_C_THROW("Couldn't find the GID {} in the old column map on proc {}.", cit->first,
-          Core::Communication::my_mpi_rank(Core::Communication::unpack_epetra_comm(mat.Comm())));
-
-    my_col_gids[lid] = cit->second;
-  }
-
-  newcolmap = std::make_shared<Core::LinAlg::Map>(mat.col_map().num_global_elements(),
-      static_cast<int>(my_col_gids.size()), my_col_gids.data(), 0,
-      Core::Communication::unpack_epetra_comm(mat.Comm()));
-}
-
 
 /*----------------------------------------------------------------------*
  | transform the row and column maps of a matrix (GIDs)       popp 08/10|

@@ -75,17 +75,6 @@ namespace Mortar
       const Core::LinAlg::SparseMatrix& inmat, const Core::LinAlg::Map& newdomainmap);
 
 
-  /*! \brief Create a new column map
-   *
-   *  \param mat          (in) : Filled matrix, which has already a column and domain map
-   *  \param newdomainmap (in) : new domain map which is going to replace the old column map of
-   *                             the matrix %mat.
-   *  \param newcolmap    (out): new column map
-   *
-   *  */
-  void create_new_col_map(const Core::LinAlg::SparseMatrix& mat,
-      const Core::LinAlg::Map& newdomainmap, std::shared_ptr<Core::LinAlg::Map>& newcolmap);
-
   /*!
   \brief Transform the row and column maps of a matrix (only GIDs)
 
