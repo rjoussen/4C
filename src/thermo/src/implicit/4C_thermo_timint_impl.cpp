@@ -74,8 +74,7 @@ Thermo::TimIntImpl::TimIntImpl(const Teuchos::ParameterList& ioparams,
   auto material = std::dynamic_pointer_cast<Mat::Fourier>(discret_->l_row_element(0)->material());
   const size_t columns = material->conductivity(discret_->l_row_element(0)->id()).size();
   Core::LinAlg::FEVector<double> overlapping_element_material_vector =
-      Core::LinAlg::FEVector<double>(
-          discret_->element_col_map()->get_epetra_block_map(), columns, true);
+      Core::LinAlg::FEVector<double>(*discret_->element_col_map(), columns, true);
 
   auto get_element_material_vector = [&](Core::Elements::Element& ele)
   {

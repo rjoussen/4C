@@ -88,8 +88,8 @@ void PoroPressureBased::PorofluidElastScatraArteryCouplingNonConformingAlgorithm
       *(artery_dis_->dof_row_map()), 27, false, true, Core::LinAlg::SparseMatrix::FE_MATRIX);
   mortar_matrix_m_ = std::make_shared<Core::LinAlg::SparseMatrix>(
       *(artery_dis_->dof_row_map()), 27, false, true, Core::LinAlg::SparseMatrix::FE_MATRIX);
-  mortar_kappa_inv_ = std::make_shared<Core::LinAlg::FEVector<double>>(
-      artery_dis_->dof_row_map()->get_epetra_map(), true);
+  mortar_kappa_inv_ =
+      std::make_shared<Core::LinAlg::FEVector<double>>(*artery_dis_->dof_row_map(), true);
 
   // full map of homogenized and artery dofs
   std::vector<std::shared_ptr<const Core::LinAlg::Map>> maps;
@@ -104,8 +104,7 @@ void PoroPressureBased::PorofluidElastScatraArteryCouplingNonConformingAlgorithm
   coupling_matrix_ = std::make_shared<Core::LinAlg::SparseMatrix>(
       *fullmap_, 81, true, true, Core::LinAlg::SparseMatrix::FE_MATRIX);
 
-  coupling_rhs_vector_ =
-      std::make_shared<Core::LinAlg::FEVector<double>>(fullmap_->get_epetra_map());
+  coupling_rhs_vector_ = std::make_shared<Core::LinAlg::FEVector<double>>(*fullmap_);
 
   global_extractor_->check_for_valid_map_extractor();
 }
