@@ -26,11 +26,6 @@
 #include "4C_structure_new_timint_basedatasdyn.hpp"
 #include "4C_utils_exceptions.hpp"
 
-#include <Epetra_CrsMatrix.h>
-#include <Teuchos_ParameterList.hpp>
-
-#include <iostream>
-
 FOUR_C_NAMESPACE_OPEN
 
 namespace

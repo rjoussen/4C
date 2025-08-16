@@ -15,8 +15,6 @@
 #include "4C_coupling_adapter.hpp"
 #include "4C_utils_exceptions.hpp"
 
-#include <Epetra_Operator.h>
-
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
