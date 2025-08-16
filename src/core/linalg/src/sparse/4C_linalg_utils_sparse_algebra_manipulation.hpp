@@ -369,6 +369,61 @@ namespace Core::LinAlg
   std::shared_ptr<Core::LinAlg::SparseMatrix> redistribute(const Core::LinAlg::SparseMatrix& src,
       const Core::LinAlg::Map& permrowmap, const Core::LinAlg::Map& permdomainmap);
 
+  /*!
+   * \brief Transform the row map of a matrix (only GIDs)
+   *
+   * This method changes the row map of an input matrix to a new row map
+   * with different GID numbering. However, the parallel distribution of
+   * this new row map is exactly the same as in the old row map. Thus, this
+   * is simply a processor-local 1:1 matching of old and new GIDs.
+   *
+   * @param inmat Matrix on which the row and column maps will be transformed
+   * @param newrowmap New row map used for the given input matrix
+   *
+   * \post Output matrix will be fill_complete()
+   */
+  std::shared_ptr<Core::LinAlg::SparseMatrix> matrix_row_transform_gids(
+      const Core::LinAlg::SparseMatrix& inmat, const Core::LinAlg::Map& newrowmap);
+
+  /*!
+   * \brief Transform the column map of a matrix (only GIDs)
+   *
+   * This method changes the column map of an input matrix to a new column
+   * map with different GID numbering (and the domain map, accordingly).
+   * However, the parallel distribution of the new domain map is exactly
+   * the same as in the old domain map. Thus, this is simply a processor-local
+   * 1:1 matching of old and new GIDs.
+   *
+   * @param inmat Matrix on which the row and column maps will be transformed
+   * @param newdomainmap New domain map used for the given input matrix, which will indirectly
+   * transform the column map of the given input matrix
+   *
+   * \post Output matrix will be fill_complete()
+   */
+  std::shared_ptr<Core::LinAlg::SparseMatrix> matrix_col_transform_gids(
+      const Core::LinAlg::SparseMatrix& inmat, const Core::LinAlg::Map& newdomainmap);
+
+
+  /*!
+   * \brief Transform the row and column maps of a matrix (only GIDs)
+   *
+   * This method changes the row and column maps of an input matrix to new
+   * row and column maps with different GID numbering (and the domain map,
+   * accordingly). However, the parallel distribution of the new row and
+   * domain maps is exactly the same as in the old ones. Thus, this is simply
+   * a processor-local 1:1 matching of old and new GIDs.
+   *
+   * @param inmat Matrix on which the row and column maps will be transformed
+   * @param newrowmap New row map used for the given input matrix
+   * @param newdomainmap New domain map used for the given input matrix, which will indirectly
+   * transform the column map of the given input matrix
+   *
+   * \post Output matrix will be fill_complete()
+   */
+  std::shared_ptr<Core::LinAlg::SparseMatrix> matrix_row_col_transform_gids(
+      const Core::LinAlg::SparseMatrix& inmat, const Core::LinAlg::Map& newrowmap,
+      const Core::LinAlg::Map& newdomainmap);
+
 
 }  // namespace Core::LinAlg
 
