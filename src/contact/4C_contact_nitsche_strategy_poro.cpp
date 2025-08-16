@@ -17,8 +17,6 @@
 #include "4C_linalg_fevector.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 
-#include <Epetra_Operator.h>
-
 FOUR_C_NAMESPACE_OPEN
 
 void CONTACT::NitscheStrategyPoro::apply_force_stiff_cmt(

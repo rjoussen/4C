@@ -1078,11 +1078,9 @@ void Coupling::Adapter::CouplingMortar::evaluate(
   std::shared_ptr<Core::LinAlg::Vector<double>> idisp_master_slave =
       Core::LinAlg::create_vector(*dofrowmap, true);
   err = idisp_master_slave->import(*idispma, master_importer, Add);
-  if (err != 0)
-    FOUR_C_THROW("Import failed with error code {}. See Epetra source code for details.", err);
+  if (err != 0) FOUR_C_THROW("Import failed with error code {}.", err);
   err = idisp_master_slave->import(*idispsl, slaveImporter, Add);
-  if (err != 0)
-    FOUR_C_THROW("Import failed with error code {}. See Epetra source code for details.", err);
+  if (err != 0) FOUR_C_THROW("Import failed with error code {}.", err);
 
   // set new displacement state in mortar interface
   interface_->set_state(Mortar::state_new_displacement, *idisp_master_slave);

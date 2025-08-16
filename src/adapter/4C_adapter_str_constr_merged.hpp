@@ -17,8 +17,6 @@
 #include "4C_linalg_vector.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
-#include <Epetra_Operator.h>
-
 #include <memory>
 
 FOUR_C_NAMESPACE_OPEN
