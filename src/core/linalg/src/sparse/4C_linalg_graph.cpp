@@ -22,17 +22,6 @@ Core::LinAlg::Graph::Graph(const Epetra_FECrsGraph& Source)
 {
 }
 
-Core::LinAlg::Graph::Graph(Epetra_DataAccess CV, const Epetra_BlockMap& RowMap,
-    const int* NumIndicesPerRow, bool StaticProfile, GraphType graphtype)
-    : graphtype_(graphtype)
-{
-  if (graphtype_ == CRS_GRAPH)
-    graph_ = std::make_unique<Epetra_CrsGraph>(CV, RowMap, NumIndicesPerRow, StaticProfile);
-  else if (graphtype_ == FE_GRAPH)
-    graph_ = std::make_unique<Epetra_FECrsGraph>(
-        CV, RowMap, const_cast<int*>(NumIndicesPerRow), StaticProfile);
-}
-
 Core::LinAlg::Graph::Graph(Epetra_DataAccess CV, const Map& RowMap, const int* NumIndicesPerRow,
     bool StaticProfile, GraphType graphtype)
     : graphtype_(graphtype)
@@ -43,16 +32,6 @@ Core::LinAlg::Graph::Graph(Epetra_DataAccess CV, const Map& RowMap, const int* N
   else if (graphtype_ == FE_GRAPH)
     graph_ = std::make_unique<Epetra_FECrsGraph>(
         CV, RowMap.get_epetra_block_map(), const_cast<int*>(NumIndicesPerRow), StaticProfile);
-}
-
-Core::LinAlg::Graph::Graph(Epetra_DataAccess CV, const Epetra_BlockMap& RowMap,
-    int NumIndicesPerRow, bool StaticProfile, GraphType graphtype)
-    : graphtype_(graphtype)
-{
-  if (graphtype_ == CRS_GRAPH)
-    graph_ = std::make_unique<Epetra_CrsGraph>(CV, RowMap, NumIndicesPerRow, StaticProfile);
-  else if (graphtype_ == FE_GRAPH)
-    graph_ = std::make_unique<Epetra_FECrsGraph>(CV, RowMap, NumIndicesPerRow, StaticProfile);
 }
 
 Core::LinAlg::Graph::Graph(Epetra_DataAccess CV, const Map& RowMap, int NumIndicesPerRow,

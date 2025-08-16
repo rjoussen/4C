@@ -496,8 +496,7 @@ namespace Core::IO
     const int my_proc = Core::Communication::my_mpi_rank(comm);
 
     // Create Vectors to store the ghosting information.
-    LinAlg::FEVector<double> ghosting_information(
-        discretization.element_row_map()->get_epetra_block_map(), n_proc, false);
+    LinAlg::FEVector<double> ghosting_information(*discretization.element_row_map(), n_proc, false);
 
     // Get elements ghosted by this rank.
     std::vector<int> my_ghost_elements;

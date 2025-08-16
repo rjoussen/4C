@@ -23,16 +23,11 @@ Core::LinAlg::FEVector<T>::FEVector(const Map& Map, bool zeroOut)
 {
 }
 
-template <typename T>
-Core::LinAlg::FEVector<T>::FEVector(const Epetra_BlockMap& Map, bool zeroOut)
-    : vector_(Utils::make_owner<Epetra_FEVector>(Map, zeroOut))
-{
-}
 
 template <typename T>
-Core::LinAlg::FEVector<T>::FEVector(
-    const Epetra_BlockMap& Map, int numVectors, bool ignoreNonLocalEntries)
-    : vector_(Utils::make_owner<Epetra_FEVector>(Map, numVectors, ignoreNonLocalEntries))
+Core::LinAlg::FEVector<T>::FEVector(const Map& Map, int numVectors, bool ignoreNonLocalEntries)
+    : vector_(Utils::make_owner<Epetra_FEVector>(
+          Map.get_epetra_block_map(), numVectors, ignoreNonLocalEntries))
 {
 }
 

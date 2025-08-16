@@ -33,9 +33,8 @@ namespace Core::LinAlg
 
    public:
     /// Basic vector constructor to create vector based on a map and initialize memory with zeros
-    explicit FEVector(const Epetra_BlockMap& Map, bool zeroOut = true);
 
-    explicit FEVector(const Epetra_BlockMap& Map, int numVectors, bool ignoreNonLocalEntries);
+    explicit FEVector(const Map& Map, int numVectors, bool ignoreNonLocalEntries);
 
     explicit FEVector(const Map& Map, bool zeroOut = true);
 

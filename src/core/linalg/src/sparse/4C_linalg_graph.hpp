@@ -36,13 +36,6 @@ namespace Core::LinAlg
       FE_GRAPH
     };
 
-    //! Creates a Epetra_CrsGraph object and allocates storage.
-    Graph(Epetra_DataAccess CV, const Epetra_BlockMap& RowMap, const int* NumIndicesPerRow,
-        bool StaticProfile = false, GraphType graphtype = CRS_GRAPH);
-
-    Graph(Epetra_DataAccess CV, const Epetra_BlockMap& RowMap, int NumIndicesPerRow,
-        bool StaticProfile = false, GraphType graphtype = CRS_GRAPH);
-
     Graph(Epetra_DataAccess CV, const Core::LinAlg::Map& RowMap, const int* NumIndicesPerRow,
         bool StaticProfile = false, GraphType graphtype = CRS_GRAPH);
 

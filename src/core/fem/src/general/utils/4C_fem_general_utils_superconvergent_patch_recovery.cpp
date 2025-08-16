@@ -152,7 +152,7 @@ std::shared_ptr<Core::LinAlg::MultiVector<double>> Core::FE::compute_superconver
 
   // step 2: use precalculated (velocity) gradient for patch-recovery of gradient
   // solution vector based on reduced node row map
-  Core::LinAlg::FEVector<double> nodevec(noderowmap.get_epetra_block_map(), numvec, false);
+  Core::LinAlg::FEVector<double> nodevec(noderowmap, numvec, false);
 
   std::vector<const Core::Conditions::Condition*> conds;
   dis.get_condition("SPRboundary", conds);

@@ -335,10 +335,10 @@ void PoroPressureBased::PorofluidElastScatraArteryCouplingLineBasedAlgorithm::
   // If the above quantity is bigger than zero, a 1D element protrudes.
 
   // initialize the unaffected and current lengths
-  unaffected_artery_segment_lengths_ = std::make_shared<Core::LinAlg::FEVector<double>>(
-      artery_dis_->dof_row_map(1)->get_epetra_map(), true);
-  current_artery_segment_lengths_ = std::make_shared<Core::LinAlg::FEVector<double>>(
-      artery_dis_->dof_row_map(1)->get_epetra_map());
+  unaffected_artery_segment_lengths_ =
+      std::make_shared<Core::LinAlg::FEVector<double>>(*artery_dis_->dof_row_map(1), true);
+  current_artery_segment_lengths_ =
+      std::make_shared<Core::LinAlg::FEVector<double>>(*artery_dis_->dof_row_map(1));
 
   // set segment ID on coupling pairs and fill the unaffected artery length
   for (int iele = 0; iele < artery_dis_->element_col_map()->num_my_elements(); ++iele)
@@ -410,7 +410,7 @@ void PoroPressureBased::PorofluidElastScatraArteryCouplingLineBasedAlgorithm::
     fill_unaffected_integrated_diameter() const
 {
   Core::LinAlg::FEVector<double> unaffected_artery_diameters_row(
-      artery_dis_->element_row_map()->get_epetra_map(), true);
+      *artery_dis_->element_row_map(), true);
 
   for (int i = 0; i < artery_dis_->element_row_map()->num_my_elements(); ++i)
   {
@@ -514,8 +514,8 @@ void PoroPressureBased::PorofluidElastScatraArteryCouplingLineBasedAlgorithm::
   // set up the required vectors
   if (has_variable_diameter_)
   {
-    integrated_artery_diameters_row_ = std::make_shared<Core::LinAlg::FEVector<double>>(
-        artery_dis_->element_row_map()->get_epetra_map(), true);
+    integrated_artery_diameters_row_ =
+        std::make_shared<Core::LinAlg::FEVector<double>>(*artery_dis_->element_row_map(), true);
     unaffected_integrated_artery_diameters_col_ =
         std::make_shared<Core::LinAlg::Vector<double>>(*artery_dis_->element_col_map(), true);
     integrated_artery_diameters_col_ =
