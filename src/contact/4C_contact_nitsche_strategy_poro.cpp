@@ -179,34 +179,15 @@ void CONTACT::NitscheStrategyPoro::complete_matrix_block_ptr(
   switch (bt)
   {
     case CONTACT::MatBlockType::displ_porofluid:
-      if (dynamic_cast<Epetra_FECrsMatrix&>(*kc->epetra_matrix())
-              .GlobalAssemble(Global::Problem::instance()
-                                  ->get_dis("porofluid")
-                                  ->dof_row_map()
-                                  ->get_epetra_map(),  // col map
-                  Global::Problem::instance()
-                      ->get_dis("structure")
-                      ->dof_row_map()
-                      ->get_epetra_map(),  // row map
-                  true, Add))
-        FOUR_C_THROW("GlobalAssemble(...) failed");
+      kc->complete(*Global::Problem::instance()->get_dis("porofluid")->dof_row_map(),
+          *Global::Problem::instance()->get_dis("structure")->dof_row_map());
       break;
     case CONTACT::MatBlockType::porofluid_displ:
-      if (dynamic_cast<Epetra_FECrsMatrix&>(*kc->epetra_matrix())
-              .GlobalAssemble(Global::Problem::instance()
-                                  ->get_dis("structure")
-                                  ->dof_row_map()
-                                  ->get_epetra_map(),  // col map
-                  Global::Problem::instance()
-                      ->get_dis("porofluid")
-                      ->dof_row_map()
-                      ->get_epetra_map(),  // row map
-                  true, Add))
-        FOUR_C_THROW("GlobalAssemble(...) failed");
+      kc->complete(*Global::Problem::instance()->get_dis("structure")->dof_row_map(),
+          *Global::Problem::instance()->get_dis("porofluid")->dof_row_map());
       break;
     case CONTACT::MatBlockType::porofluid_porofluid:
-      if (dynamic_cast<Epetra_FECrsMatrix&>(*kc->epetra_matrix()).GlobalAssemble(true, Add))
-        FOUR_C_THROW("GlobalAssemble(...) failed");
+      kc->complete();
       break;
     default:
       CONTACT::NitscheStrategy::complete_matrix_block_ptr(bt, kc);

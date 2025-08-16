@@ -478,6 +478,9 @@ namespace Core::LinAlg
     /// Returns the maximum number of nonzero entries across all rows on this processor.
     int max_num_entries() const;
 
+    /// Returns the maximum number of nonzero entries across all rows on all processors.
+    int global_max_num_entries() const;
+
     /// Returns the global number of nonzeros.
     int num_my_nonzeros() const { return sysmat_->NumMyNonzeros(); }
 
@@ -648,6 +651,8 @@ namespace Core::LinAlg
     void add_other(Core::LinAlg::BlockSparseMatrixBase& B, const bool transposeA,
         const double scalarA, const double scalarB) const override;
 
+    //! Print to user-provided output stream
+    void print(std::ostream& os) const { sysmat_->Print(os); }
 
    protected:
     /// internal epetra matrix (Epetra_CrsMatrix or Epetra_FECrsMatrix)
