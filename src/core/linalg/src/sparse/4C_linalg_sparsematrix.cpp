@@ -117,28 +117,6 @@ Core::LinAlg::SparseMatrix::SparseMatrix(const Core::LinAlg::Map& rowmap,
 }
 
 
-Core::LinAlg::SparseMatrix::SparseMatrix(const Epetra_Map& rowmap, std::vector<int>& numentries,
-    bool explicitdirichlet, bool savegraph, MatrixType matrixtype)
-    : graph_(nullptr),
-      dbcmaps_(nullptr),
-      explicitdirichlet_(explicitdirichlet),
-      savegraph_(savegraph),
-      matrixtype_(matrixtype)
-{
-  if (!rowmap.UniqueGIDs()) FOUR_C_THROW("Row map is not unique");
-
-  if ((int)(numentries.size()) != rowmap.NumMyElements())
-    FOUR_C_THROW("estimate for non zero entries per row does not match the size of row map");
-
-  if (matrixtype_ == CRS_MATRIX)
-    sysmat_ = std::make_shared<Epetra_CrsMatrix>(::Copy, rowmap, numentries.data(), false);
-  else if (matrixtype_ == FE_MATRIX)
-    sysmat_ = std::make_shared<Epetra_FECrsMatrix>(::Copy, rowmap, numentries.data(), false);
-  else
-    FOUR_C_THROW("matrix type is not correct");
-}
-
-
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Core::LinAlg::SparseMatrix::SparseMatrix(std::shared_ptr<Epetra_CrsMatrix> matrix,
