@@ -21,7 +21,6 @@ void Inpar::FSI::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>
 
           deprecated_selection<FsiCoupling>("COUPALGO",
               {
-                  {"basic_sequ_stagg", fsi_basic_sequ_stagg},
                   {"iter_stagg_fixed_rel_param", fsi_iter_stagg_fixed_rel_param},
                   {"iter_stagg_AITKEN_rel_param", fsi_iter_stagg_AITKEN_rel_param},
                   {"iter_stagg_steep_desc", fsi_iter_stagg_steep_desc},
@@ -29,7 +28,6 @@ void Inpar::FSI::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>
                   {"iter_stagg_MFNK_FD", fsi_iter_stagg_MFNK_FD},
                   {"iter_stagg_MFNK_FSI", fsi_iter_stagg_MFNK_FSI},
                   {"iter_stagg_MPE", fsi_iter_stagg_MPE},
-                  {"iter_stagg_RRE", fsi_iter_stagg_RRE},
                   {"iter_monolithicfluidsplit", fsi_iter_monolithicfluidsplit},
                   {"iter_monolithicstructuresplit", fsi_iter_monolithicstructuresplit},
                   {"iter_xfem_monolithic", fsi_iter_xfem_monolithic},

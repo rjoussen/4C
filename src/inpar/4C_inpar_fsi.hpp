@@ -30,7 +30,6 @@ enum FsiCoupling
 {
   fsi_coupling_freesurface = -1,
   fsi_coupling_undefined = 0,
-  fsi_basic_sequ_stagg = 1,            /*< sequential coupling (no iteration!) */
   fsi_iter_stagg_fixed_rel_param = 4,  /*!< fixed-point solver with fixed relaxation parameter */
   fsi_iter_stagg_AITKEN_rel_param = 5, /*!< fixed-point solver with Aitken relaxation parameter */
   fsi_iter_stagg_steep_desc = 6, /* fixed-point solver with steepest descent relaxation parameter */
@@ -49,7 +48,6 @@ enum FsiCoupling
   fsi_iter_stagg_MFNK_FD,  /*!< matrix free Newton Krylov with finite difference Jacobian */
   fsi_iter_stagg_MFNK_FSI, /*!< matrix free Newton Krylov with FSI specific Jacobian */
   fsi_iter_stagg_MPE,      /*!< minimal polynomial extrapolation */
-  fsi_iter_stagg_RRE,      /*!< reduced rank extrapolation */
   fsi_iter_fluidfluid_monolithicstructuresplit,
   fsi_iter_fluidfluid_monolithicfluidsplit,
   fsi_iter_fluidfluid_monolithicstructuresplit_nonox,

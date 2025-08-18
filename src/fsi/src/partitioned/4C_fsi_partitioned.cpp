@@ -309,47 +309,6 @@ void FSI::Partitioned::set_default_parameters(
       lineSearchParams.sublist("Full Step").set("Full Step", 1.0);
       break;
     }
-    case fsi_iter_stagg_RRE:
-    {
-      // reduced rank extrapolation
-      set_method("ITERATIVE STAGGERED SCHEME WITH REDUCED RANK EXTRAPOLATION");
-
-      nlParams.set("Jacobian", "None");
-      dirParams.set("Method", "User Defined");
-
-      Teuchos::RCP<::NOX::Direction::UserDefinedFactory> factory =
-          Teuchos::make_rcp<NOX::FSI::MinimalPolynomialFactory>();
-      dirParams.set("User Defined Direction Factory", factory);
-
-      Teuchos::ParameterList& exParams = dirParams.sublist("Extrapolation");
-      exParams.set("Tolerance", fsipart.get<double>("BASETOL"));
-      exParams.set("omega", fsipart.get<double>("RELAX"));
-      exParams.set("kmax", 25);
-      exParams.set("Method", "RRE");
-
-      // lsParams.set("Preconditioner","None");
-
-      lineSearchParams.set("Method", "Full Step");
-      lineSearchParams.sublist("Full Step").set("Full Step", 1.0);
-      break;
-    }
-    case fsi_basic_sequ_stagg:
-    {
-      // sequential coupling (no iteration!)
-      set_method("BASIC SEQUENTIAL STAGGERED SCHEME");
-
-      nlParams.set("Jacobian", "None");
-      nlParams.set("Max Iterations", 1);
-
-      dirParams.set("Method", "User Defined");
-      Teuchos::RCP<::NOX::Direction::UserDefinedFactory> fixpointfactory =
-          Teuchos::make_rcp<NOX::FSI::FixPointFactory>();
-      dirParams.set("User Defined Direction Factory", fixpointfactory);
-
-      lineSearchParams.set("Method", "Full Step");
-      lineSearchParams.sublist("Full Step").set("Full Step", 1.0);
-      break;
-    }
     default:
     {
       FOUR_C_THROW("Coupling method type {} unsupported",
@@ -659,28 +618,6 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> FSI::Partitioned::create_linear_system
       linSys = Teuchos::make_rcp<NOX::FSI::LinearSystemGCR>(
           printParams, lsParams, interface, iJac, J, noxSoln);
     }
-  }
-  else if (preconditioner == "Dump Finite Difference")
-  {
-    if (lsParams.get("Preconditioner", "None") == "None")
-    {
-      if (Core::Communication::my_mpi_rank(get_comm()) == 0)
-        utils.out() << "Warning: Preconditioner turned off in linear solver settings.\n";
-    }
-
-    Teuchos::ParameterList& fdParams = nlParams.sublist("Finite Difference");
-    // fdresitemax_ = fdParams.get("itemax", -1);
-    double alpha = fdParams.get("alpha", 1.0e-4);
-    double beta = fdParams.get("beta", 1.0e-6);
-
-    Teuchos::RCP<::NOX::Epetra::FiniteDifference> precFD =
-        Teuchos::make_rcp<::NOX::Epetra::FiniteDifference>(printParams, interface, noxSoln,
-            Teuchos::rcpFromRef(raw_graph_->get_epetra_crs_graph()), beta, alpha);
-    iPrec = precFD;
-    M = precFD;
-
-    linSys = Teuchos::make_rcp<::NOX::Epetra::LinearSystemAztecOO>(
-        printParams, lsParams, iJac, J, iPrec, M, noxSoln);
   }
   else
   {
