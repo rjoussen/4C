@@ -188,8 +188,7 @@ void Adapter::AleBaseAlgorithm::setup_ale(
                coupling == fsi_iter_stagg_CHEB_rel_param or coupling == fsi_iter_stagg_MFNK_FD or
                coupling == fsi_iter_stagg_MFNK_FSI or coupling == fsi_iter_stagg_MPE or
                coupling == fsi_iter_stagg_NLCG or coupling == fsi_iter_stagg_Newton_FD or
-               coupling == fsi_iter_stagg_Newton_I or coupling == fsi_iter_stagg_RRE or
-               coupling == fsi_iter_stagg_fixed_rel_param or
+               coupling == fsi_iter_stagg_Newton_I or coupling == fsi_iter_stagg_fixed_rel_param or
                coupling == fsi_iter_stagg_steep_desc or coupling == fsi_iter_stagg_steep_desc_force)
       {
         ale_ = std::make_shared<Adapter::AleFluidWrapper>(ale);
@@ -220,8 +219,7 @@ void Adapter::AleBaseAlgorithm::setup_ale(
                coupling == fsi_iter_stagg_CHEB_rel_param or coupling == fsi_iter_stagg_MFNK_FD or
                coupling == fsi_iter_stagg_MFNK_FSI or coupling == fsi_iter_stagg_MPE or
                coupling == fsi_iter_stagg_NLCG or coupling == fsi_iter_stagg_Newton_FD or
-               coupling == fsi_iter_stagg_Newton_I or coupling == fsi_iter_stagg_RRE or
-               coupling == fsi_iter_stagg_fixed_rel_param or
+               coupling == fsi_iter_stagg_Newton_I or coupling == fsi_iter_stagg_fixed_rel_param or
                coupling == fsi_iter_stagg_steep_desc or coupling == fsi_iter_stagg_steep_desc_force)
       {
         ale_ = std::make_shared<Adapter::AleFluidWrapper>(ale);
