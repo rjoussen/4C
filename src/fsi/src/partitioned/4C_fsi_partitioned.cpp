@@ -660,28 +660,6 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> FSI::Partitioned::create_linear_system
           printParams, lsParams, interface, iJac, J, noxSoln);
     }
   }
-  else if (preconditioner == "Dump Finite Difference")
-  {
-    if (lsParams.get("Preconditioner", "None") == "None")
-    {
-      if (Core::Communication::my_mpi_rank(get_comm()) == 0)
-        utils.out() << "Warning: Preconditioner turned off in linear solver settings.\n";
-    }
-
-    Teuchos::ParameterList& fdParams = nlParams.sublist("Finite Difference");
-    // fdresitemax_ = fdParams.get("itemax", -1);
-    double alpha = fdParams.get("alpha", 1.0e-4);
-    double beta = fdParams.get("beta", 1.0e-6);
-
-    Teuchos::RCP<::NOX::Epetra::FiniteDifference> precFD =
-        Teuchos::make_rcp<::NOX::Epetra::FiniteDifference>(printParams, interface, noxSoln,
-            Teuchos::rcpFromRef(raw_graph_->get_epetra_crs_graph()), beta, alpha);
-    iPrec = precFD;
-    M = precFD;
-
-    linSys = Teuchos::make_rcp<::NOX::Epetra::LinearSystemAztecOO>(
-        printParams, lsParams, iJac, J, iPrec, M, noxSoln);
-  }
   else
   {
     FOUR_C_THROW("unsupported preconditioner '{}'", preconditioner);
