@@ -565,7 +565,7 @@ namespace Core::LinAlg
           and give it to all processors.
 
    This method is currently used within the constraint management, since
-   current values of constraint values and langrange multipliers are distributed
+   current values of constraint values and Lagrange multipliers are distributed
    uniquely for computation. At some places we need the full information of these
    values on every processor, so this method has to be used.
 

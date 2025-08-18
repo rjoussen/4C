@@ -482,7 +482,7 @@ namespace CONTACT
       return data().constr_rhs_ptr();
     }
 
-    //! Returns increment of LagrangeMultiplier solution vector in SaddlePointSolve routine
+    //! Returns increment of Lagrange multiplier solution vector in SaddlePointSolve routine
     std::shared_ptr<const Core::LinAlg::Vector<double>> lagrange_multiplier_increment()
         const override
     {

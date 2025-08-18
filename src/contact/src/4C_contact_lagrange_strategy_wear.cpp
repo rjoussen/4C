@@ -3322,7 +3322,7 @@ void Wear::LagrangeStrategyWear::build_saddle_point_system(
      ****************************************************************************************/
 
 
-    // We solve for the incremental Langrange multiplier dz_. Hence,
+    // We solve for the incremental Lagrange multiplier dz_. Hence,
     // we can keep the contact force terms on the right-hand side!
     //
     // r = r_effdyn,co = r_effdyn + a_f * B_co(d_(n)) * z_(n) + (1-a_f) * B_co(d^(i)_(n+1)) *
@@ -3501,7 +3501,7 @@ void Wear::LagrangeStrategyWear::build_saddle_point_system(
      ****************************************************************************************/
 
 
-    // We solve for the incremental Langrange multiplier dz_. Hence,
+    // We solve for the incremental Lagrange multiplier dz_. Hence,
     // we can keep the contact force terms on the right-hand side!
     //
     // r = r_effdyn,co = r_effdyn + a_f * B_co(d_(n)) * z_(n) + (1-a_f) * B_co(d^(i)_(n+1)) *
@@ -3719,7 +3719,7 @@ void Wear::LagrangeStrategyWear::build_saddle_point_system(
     ****************************************************************************************/
 
 
-    // We solve for the incremental Langrange multiplier dz_. Hence,
+    // We solve for the incremental Lagrange multiplier dz_. Hence,
     // we can keep the contact force terms on the right-hand side!
     //
     // r = r_effdyn,co = r_effdyn + a_f * B_co(d_(n)) * z_(n) + (1-a_f) * B_co(d^(i)_(n+1)) *

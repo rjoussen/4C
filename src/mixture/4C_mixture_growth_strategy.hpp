@@ -105,7 +105,7 @@ namespace Mixture
      * @param dCurrentReferenceGrowthScalarDC (in) : Derivative of the current reference growth
      * scalar w.r.t. Cauchy green deformation tensor
      * @param F (in) : deformation gradient
-     * @param E_strain (in) : Green-Langrange strain tensor
+     * @param E_strain (in) : Green-Lagrange strain tensor
      * @param params (in) : Container for additional information
      * @param S_stress (out) : 2nd Piola-Kirchhoff stress tensor in stress like Voigt notation
      * @param cmat (out) : linearization of the 2nd Piola-Kirchhoff stress tensor

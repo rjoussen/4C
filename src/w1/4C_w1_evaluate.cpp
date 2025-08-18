@@ -1253,7 +1253,7 @@ void Discret::Elements::Wall1::w1_boplin(Core::LinAlg::SerialDenseMatrix& boplin
 /* Discret::Elements::Wall1::w1_boplin */
 
 /*----------------------------------------------------------------------*
- | Deformation gradient F and Green-Langrange strain (private)  mgit 04/07|
+ | Deformation gradient F and Green-Lagrange strain (private)  mgit 04/07|
  *----------------------------------------------------------------------*/
 void Discret::Elements::Wall1::w1_defgrad(Core::LinAlg::SerialDenseVector& F,
     Core::LinAlg::SerialDenseVector& strain, const Core::LinAlg::SerialDenseMatrix& xrefe,

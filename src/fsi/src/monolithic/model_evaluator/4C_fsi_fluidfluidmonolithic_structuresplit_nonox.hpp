@@ -153,7 +153,7 @@ namespace FSI
 
     //@}
 
-    /// @name Some quantities to recover the Langrange multiplier at the end of each time step
+    /// @name Some quantities to recover the Lagrange multiplier at the end of each time step
 
     //! Lagrange multiplier \f$\lambda_\Gamma^n\f$ at the interface (ie condensed forces onto the
     //! structure) evaluated at old time step \f$t_n\f$ but needed for next time step \f$t_{n+1}\f$

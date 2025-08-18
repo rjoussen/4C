@@ -128,7 +128,7 @@ namespace PoroElast
 
     //!@}
 
-    //! @name Some quantities to recover the Langrange multiplier at the end of each iteration step
+    //! @name Some quantities to recover the Lagrange multiplier at the end of each iteration step
 
     //! block \f$F_{\Gamma I,i+1}\f$ of fluid matrix at current iteration \f$i+1\f$
     std::shared_ptr<const Core::LinAlg::SparseMatrix> fgicur_;
