@@ -284,7 +284,7 @@ add a JSON schema file, which is automatically created during the build process,
 3. Give it a descriptive name.
 4. Select the Schema file ``4C_schema.json`` from your local build directory.
 5. Select Schema version *JSON Schema v4*.
-6. Add the file name pattern ``\*.4C.yaml``, to which this schema is applied.
+6. Add the file name pattern ``*.4C.yaml``, to which this schema is applied.
 
 Note that this Schema is only valid for the current project, that is, only files in this directory tree are recognized.
 
