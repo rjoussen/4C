@@ -13,18 +13,6 @@ endif()
 
 if(FOUR_C_WITH_TRILINOS)
   find_package(Trilinos REQUIRED)
-  if(Trilinos_FOUND AND NOT TARGET Trilinos::all_selected_libs)
-    add_library(Trilinos::all_selected_libs IMPORTED INTERFACE)
-    target_include_directories(
-      Trilinos::all_selected_libs
-      SYSTEM
-      INTERFACE ${Trilinos_INCLUDE_DIRS}
-      INTERFACE ${Trilinos_TPL_INCLUDE_DIRS}
-      )
-    target_link_libraries(
-      Trilinos::all_selected_libs INTERFACE ${Trilinos_LIBRARIES} ${Trilinos_TPL_LIBRARIES}
-      )
-  endif()
 endif()
 
 if(FOUR_C_WITH_DEAL_II)
