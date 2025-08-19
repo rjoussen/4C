@@ -5,24 +5,34 @@
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
-function(_add_dependency_to_settings _package_name)
+##
+# Append configuration for a package to FOUR_C_ACTIVATED_DEPENDENCIES_CONFIG
+##
+macro(_add_dependency_to_config _package_name)
   # Sanitize the package name: all upper case, no hyphens and dots.
   string(TOUPPER ${_package_name} _package_name_SANITIZED)
   string(REGEX REPLACE "[^A-Z0-9]" "_" _package_name_SANITIZED ${_package_name_SANITIZED})
+
+  string(
+    APPEND
+    FOUR_C_ACTIVATED_DEPENDENCIES_CONFIG
+    "set(FOUR_C_WITH_${_package_name_SANITIZED} ${FOUR_C_WITH_${_package_name_SANITIZED}})\n"
+    )
 
   # Append the dependency info to the target settings
   if(FOUR_C_WITH_${_package_name_SANITIZED})
     # Append a tab at the start of each line of content
     file(READ ${PROJECT_BINARY_DIR}/cmake/templates/${_package_name}.cmake _content)
     string(REPLACE "\n" "\n\t" _content_with_tab "${_content}")
-    file(
-      APPEND ${PROJECT_BINARY_DIR}/cmake/templates/4CSettings.cmake
+    string(
+      APPEND
+      FOUR_C_ACTIVATED_DEPENDENCIES_CONFIG
       "\nif(FOUR_C_WITH_${_package_name_SANITIZED})\n\t"
       )
-    file(APPEND ${PROJECT_BINARY_DIR}/cmake/templates/4CSettings.cmake "${_content_with_tab}")
-    file(APPEND ${PROJECT_BINARY_DIR}/cmake/templates/4CSettings.cmake "\nendif()\n")
+    string(APPEND FOUR_C_ACTIVATED_DEPENDENCIES_CONFIG "${_content_with_tab}")
+    string(APPEND FOUR_C_ACTIVATED_DEPENDENCIES_CONFIG "\nendif()\n")
   endif()
-endfunction()
+endmacro()
 
 include(GNUInstallDirs)
 
@@ -61,40 +71,27 @@ install(
   DESTINATION ${CMAKE_INSTALL_DATADIR}/cmake/4C
   )
 
-# create the settings file
-configure_file(
-  ${PROJECT_SOURCE_DIR}/cmake/templates/4CSettings.cmake.in
-  ${PROJECT_BINARY_DIR}/cmake/templates/4CSettings.cmake
-  @ONLY
-  )
-
 # add the dependency info to settings
-_add_dependency_to_settings(HDF5)
-_add_dependency_to_settings(MPI)
-_add_dependency_to_settings(Qhull)
-_add_dependency_to_settings(Trilinos)
-_add_dependency_to_settings(deal.II)
-_add_dependency_to_settings(Boost)
-_add_dependency_to_settings(ArborX)
-_add_dependency_to_settings(FFTW)
-_add_dependency_to_settings(CLN)
-_add_dependency_to_settings(MIRCO)
-_add_dependency_to_settings(Backtrace)
-_add_dependency_to_settings(ryml)
-_add_dependency_to_settings(magic_enum)
-_add_dependency_to_settings(ZLIB)
-_add_dependency_to_settings(pybind11)
+_add_dependency_to_config(HDF5)
+_add_dependency_to_config(MPI)
+_add_dependency_to_config(Qhull)
+_add_dependency_to_config(Trilinos)
+_add_dependency_to_config(deal.II)
+_add_dependency_to_config(Boost)
+_add_dependency_to_config(ArborX)
+_add_dependency_to_config(FFTW)
+_add_dependency_to_config(CLN)
+_add_dependency_to_config(MIRCO)
+_add_dependency_to_config(Backtrace)
+_add_dependency_to_config(ryml)
+_add_dependency_to_config(magic_enum)
+_add_dependency_to_config(ZLIB)
+_add_dependency_to_config(pybind11)
 
 # install the Find modules
 install(
   DIRECTORY ${PROJECT_SOURCE_DIR}/cmake/modules/
   DESTINATION ${CMAKE_INSTALL_DATADIR}/cmake/4C/modules
-  )
-
-# install
-install(
-  FILES ${PROJECT_BINARY_DIR}/cmake/templates/4CSettings.cmake
-  DESTINATION ${CMAKE_INSTALL_DATADIR}/cmake/4C
   )
 
 # create and install the config file
