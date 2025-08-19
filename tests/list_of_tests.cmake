@@ -9,7 +9,6 @@
 # Switch off cmake-format so that each test specification can be one a single line.
 
 # four_c_test: regular .4C.yaml file based tests
-four_c_test(TEST_FILE beam3r_herm2line3_static_contact_penalty_with_positional_coupling.yaml NP 1)
 four_c_test(TEST_FILE ale2d_laplace_material.4C.yaml NP 2 RESTART_STEP 1)
 four_c_test(TEST_FILE ale2d_laplace_spatial.4C.yaml NP 2)
 four_c_test(TEST_FILE ale2d_solid.4C.yaml NP 2 RESTART_STEP 1)
@@ -69,7 +68,6 @@ four_c_test(TEST_FILE beam3r_herm2line3_static_beam_to_solid_surface_contact_iro
 four_c_test(TEST_FILE beam3r_herm2line3_static_beam_to_solid_surface_contact_mortar_line2_gap_variation_current_segmentation_penalty_lin_quad.4C.yaml NP 3)
 four_c_test(TEST_FILE beam3r_herm2line3_static_beam_to_solid_surface_contact_mortar_line2_gap_variation_reference_segmentation_penalty_lin_quad.4C.yaml NP 3)
 four_c_test(TEST_FILE beam3r_herm2line3_static_beam_to_solid_surface_contact_mortar_line2_gap_variation_reference_segmentation_penalty_lin_quad_kl_shell.4C.yaml NP 2)
-four_c_test(TEST_FILE beam3r_herm2line3_static_beam_to_solid_surface_contact_mortar_line2_gap_variation_reference_segmentation_penalty_lin_quad_point_coupling.4C.yaml NP 1)
 four_c_test(TEST_FILE beam3r_herm2line3_static_beam_to_solid_surface_coupling_gpts_consistent_FAD.4C.yaml NP 3)
 four_c_test(TEST_FILE beam3r_herm2line3_static_beam_to_solid_surface_coupling_gpts_consistent_FAD_nurbs.4C.yaml NP 3)
 four_c_test(TEST_FILE beam3r_herm2line3_static_beam_to_solid_surface_coupling_gpts_displacement.4C.yaml NP 3)
@@ -1926,6 +1924,7 @@ if (FOUR_C_WITH_ARBORX)
     four_c_test(TEST_FILE beam3eb_static_beam_to_solid_volume_meshtying_beam_to_beam_contact_boundingvolume.4C.yaml NP 2 RESTART_STEP 3)
     four_c_test(TEST_FILE beam3eb_static_beam_to_solid_volume_meshtying_monolithic_partitioning.4C.yaml NP 3)
     four_c_test(TEST_FILE beam3r_herm2line3_static_beam_to_solid_surface_coupling_gpts_reference_forced_boundingvolume.4C.yaml NP 3 RESTART_STEP 2)
+    four_c_test(TEST_FILE beam3r_herm2line3_static_beam_to_solid_surface_contact_mortar_line2_gap_variation_reference_segmentation_penalty_lin_quad_point_coupling.4C.yaml NP 1)
     four_c_test(TEST_FILE beam3r_herm2line3_static_contact_penalty_linposquadpen_beamrotatingoverarc_boundingvolume.4C.yaml NP 2)
     four_c_test(TEST_FILE beam3r_herm2line3_static_point_coupling_BTSPH_contact_stent_honeycomb_stretch_r01_circ10_boundingvolume.4C.yaml NP 3 RESTART_STEP 20)
     four_c_test(TEST_FILE embeddedmesh_parallel_bending_beam.4C.yaml NP 3)
