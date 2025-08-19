@@ -334,9 +334,8 @@ bool NOX::Nln::LinearSystem::applyJacobianInverse(Teuchos::ParameterList& linear
     solver_params.refactor = true;
     solver_params.reset = iter == 0;
 
-    auto matrix = Core::Utils::shared_ptr_from_ref(*linProblem.jac->epetra_operator());
-
-    linsol_status = currSolver->solve(matrix, linProblem.lhs, linProblem.rhs, solver_params);
+    linsol_status =
+        currSolver->solve(linProblem.jac, linProblem.lhs, linProblem.rhs, solver_params);
 
     if (linsol_status)
     {
