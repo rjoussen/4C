@@ -232,17 +232,13 @@ jobs:
         with:
           name: clang18_build-schema
           path: ${{ github.workspace }}
-      - name: json-yaml-validate
-        uses: GrantBirki/json-yaml-validate@v3.3.2
-        with:
-          base_dir: .
-          json_schema: ${{ github.workspace }}/4C_schema.json
-          yaml_as_json: true
-          ajv_strict_mode: false
-          json_schema_version: draft-2020-12
-          yaml_extension: .4C.yaml
-          yaml_extension_short: .4C.yml
-          json_extension: .4C.json
+      - name: Validate all input files against schema
+        run: |
+          cd $GITHUB_WORKSPACE
+          ${{ github.workspace }}/utilities/set_up_dev_env.sh
+          source ${{ github.workspace }}/utilities/python-venv/bin/activate
+          shopt -s globstar nullglob
+          python ${{ github.workspace }}/utilities/validate_schema.py --schema ${{ github.workspace }}/4C_schema.json  **/*.4C.yaml **/*.4C.yml **/*.4C.json
 
   gcc13_no_optional_dependencies_build:
     runs-on: ubuntu-latest
