@@ -371,7 +371,7 @@ std::shared_ptr<const Core::LinAlg::Graph> Core::Rebalance::build_monolithic_nod
         element->id(), element_node_ids.size(), element_node_ids.data());
     if (err != 0) FOUR_C_THROW("Core::LinAlg::Graph::InsertGlobalIndices returned {}", err);
   }
-  element_connectivity.fill_complete();
+  element_connectivity.fill_complete(*dis.node_row_map(), *dis.element_row_map());
 
   // 3. Get the connectivity information of each element that collides with an element on this rank
   std::set<int> my_colliding_primitives;
