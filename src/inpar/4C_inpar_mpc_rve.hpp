@@ -46,7 +46,7 @@ namespace Inpar::RveMpc
   enum EnforcementStrategy
   {
     penalty,            ///< Enforce the Multi-Point Constraint with the penalty method
-    lagrangeMultiplier  ///< Enforce the Multi-Point Constraint with the Lagrange Multiplier
+    lagrangeMultiplier  ///< Enforce the Multi-Point Constraint with the Lagrange multiplier
                         ///< Method
   };
 

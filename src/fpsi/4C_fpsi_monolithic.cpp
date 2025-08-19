@@ -416,7 +416,7 @@ void FPSI::Monolithic::time_step()
   // recover Lagrange multiplier \lambda_{\Gamma} at the interface at the end of each time step
   // (i.e. condensed traction/forces onto the structure) needed for rhs in next time step
   if (FSI_Interface_exists_)
-    recover_lagrange_multiplier();  // LagrangeMultiplier of the FSI interface!
+    recover_lagrange_multiplier();  // Lagrange multiplier of the FSI interface!
 }
 
 /*----------------------------------------------------------------------*/

@@ -84,7 +84,7 @@ namespace PoroElast
 
     //!@}
 
-    //! @name Some quantities to recover the Langrange multiplier at the end of each time step
+    //! @name Some quantities to recover the Lagrange multiplier at the end of each time step
 
     //! block \f$S_{\Gamma I,i+1}\f$ of structural matrix at current iteration \f$i+1\f$
     std::shared_ptr<const Core::LinAlg::SparseOperator> sgicur_;

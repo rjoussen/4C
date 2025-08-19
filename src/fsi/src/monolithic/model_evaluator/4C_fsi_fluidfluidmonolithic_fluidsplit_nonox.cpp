@@ -996,7 +996,7 @@ void FSI::FluidFluidMonolithicFluidSplitNoNOX::recover_lagrange_multiplier()
   /*----------------------------------------------------------------------
     Lagrange Multiplier Setup
   ------------------------------------------------------------------------
-   The Langrange Multiplier is updated as follows:
+   The Lagrange Multiplier is updated as follows:
 
    lambda_^{n+1}=
 

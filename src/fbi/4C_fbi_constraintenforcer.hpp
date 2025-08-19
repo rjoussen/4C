@@ -120,7 +120,7 @@ namespace Adapter
      * structure field.
      *
      * Depending on the constraint enforcement strategy, either only an interface force is returned
-     * (Mortar-Lagrangemultiplier partitioned, linearized penalty force partitioned), or a force
+     * (mortar Lagrange multiplier partitioned, linearized penalty force partitioned), or a force
      * vector as well as a stiffness matrix with additional
      * information is returned (monolithic formulation, full penalty partitioned).
      *
@@ -135,7 +135,7 @@ namespace Adapter
      * slave field.
      *
      * Depending on the constraint enforcement strategy, either only an interface force is returned
-     * (Mortar-Lagrangemultiplier partitioned, linearized penalty force partitioned), or force
+     * (Mortar-Lagrange multiplier partitioned, linearized penalty force partitioned), or force
      * vector with additional contributions as well as a stiffness matrix with additional
      * information is returned (monolithic formulation, full penalty partitioned, weak Dirichlet).
      *

@@ -43,7 +43,7 @@ namespace CONTACT
 
     /*!
     \brief Recovery method
-    This method recovers the Langrangemultiplier correctly for the fluid-structure coupling
+    This method recovers the Lagrange multiplier correctly for the fluid-structure coupling
     matrix block. Complete Recovery only correct if the structural part is recovered elsewhere
     additionally. This is not needed for solving the problem in pure elast-poroelast meshtying
     cases. It is needed for postprocessing though.*/

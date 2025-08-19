@@ -17,3 +17,6 @@ Equil = "Equil" # "Equilibration" (used to pre-order a linear system)
 # German words we want to keep as is.
 Interaktion = "Interaktion"
 Elemente = "Elemente"
+
+[default.replacements]
+"lagrange" = "Lagrange"
