@@ -634,21 +634,17 @@ std::vector<int> SSTI::SSTIMono::get_block_positions(Subproblem subproblem) cons
   {
     case Subproblem::structure:
     {
-      if (scatra_field()->matrix_type() == Core::LinAlg::MatrixType::sparse)
-        block_position.emplace_back(1);
-      else
-        block_position.emplace_back(scatra_field()->block_maps()->num_maps());
+      block_position.emplace_back(0);
       break;
     }
     case Subproblem::scalar_transport:
     {
       if (scatra_field()->matrix_type() == Core::LinAlg::MatrixType::sparse)
-        block_position.emplace_back(0);
+        block_position.emplace_back(1);
       else
-
       {
-        for (int i = 0; i < static_cast<int>(scatra_field()->block_maps()->num_maps()); ++i)
-          block_position.emplace_back(i);
+        for (int i = 0; i < scatra_field()->block_maps()->num_maps(); ++i)
+          block_position.emplace_back(i + 1);
       }
       break;
     }
@@ -658,7 +654,7 @@ std::vector<int> SSTI::SSTIMono::get_block_positions(Subproblem subproblem) cons
         block_position.emplace_back(2);
       else
       {
-        for (int i = 0; i < static_cast<int>(thermo_field()->block_maps()->num_maps()); ++i)
+        for (int i = 0; i < thermo_field()->block_maps()->num_maps(); ++i)
           block_position.emplace_back(scatra_field()->block_maps()->num_maps() + 1 + i);
       }
       break;
@@ -666,7 +662,6 @@ std::vector<int> SSTI::SSTIMono::get_block_positions(Subproblem subproblem) cons
     default:
     {
       FOUR_C_THROW("Unknown type of subproblem");
-      break;
     }
   }
 
@@ -675,7 +670,7 @@ std::vector<int> SSTI::SSTIMono::get_block_positions(Subproblem subproblem) cons
 
 /*--------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------*/
-int SSTI::SSTIMono::get_problem_position(Subproblem subproblem) const
+int SSTI::SSTIMono::get_problem_position(const Subproblem subproblem) const
 {
   int position = -1;
 
@@ -683,12 +678,12 @@ int SSTI::SSTIMono::get_problem_position(Subproblem subproblem) const
   {
     case Subproblem::structure:
     {
-      position = 1;
+      position = 0;
       break;
     }
     case Subproblem::scalar_transport:
     {
-      position = 0;
+      position = 1;
       break;
     }
     case Subproblem::thermo:
@@ -699,7 +694,6 @@ int SSTI::SSTIMono::get_problem_position(Subproblem subproblem) const
     default:
     {
       FOUR_C_THROW("Unknown type of subproblem");
-      break;
     }
   }
 
@@ -708,7 +702,7 @@ int SSTI::SSTIMono::get_problem_position(Subproblem subproblem) const
 
 /*--------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------*/
-std::vector<Core::LinAlg::EquilibrationMethod> SSTI::SSTIMono::get_block_equilibration()
+std::vector<Core::LinAlg::EquilibrationMethod> SSTI::SSTIMono::get_block_equilibration() const
 {
   std::vector<Core::LinAlg::EquilibrationMethod> equilibration_method_vector;
   switch (matrixtype_)
@@ -759,7 +753,6 @@ std::vector<Core::LinAlg::EquilibrationMethod> SSTI::SSTIMono::get_block_equilib
     default:
     {
       FOUR_C_THROW("Invalid matrix type associated with system matrix field!");
-      break;
     }
   }
 

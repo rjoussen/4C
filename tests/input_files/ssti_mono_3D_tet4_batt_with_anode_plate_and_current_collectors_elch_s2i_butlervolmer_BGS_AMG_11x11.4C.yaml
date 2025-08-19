@@ -66,6 +66,7 @@ SOLVER 1:
   SOLVER: "Belos"
   AZPREC: "AMGnxn"
   AZSUB: 10
+  AZTOL: 1.0e-10
   AMGNXN_TYPE: "XML"
   AMGNXN_XML_FILE: "ssti_mono_3D_tet4_batt_with_anode_plate_and_current_collectors_elch_s2i_butlervolmer_BGS_AMG_11x11.xml"
 SOLVER 2:
@@ -373,7 +374,7 @@ RESULT DESCRIPTION:
       DIS: "scatra"
       NODE: 4
       QUANTITY: "phi2"
-      VALUE: 0.006853490261494826
+      VALUE: 6.85349056391118278e-03
       TOLERANCE: 6.9e-11
   - STRUCTURE:
       DIS: "structure"
