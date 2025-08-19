@@ -6,23 +6,3 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
 four_c_auto_define_module()
-
-set(_dependencies
-    # cmake-format: sortable
-    beam3
-    beamcontact
-    config
-    core
-    geometry_pair
-    global_data
-    inpar
-    mat
-    rigidsphere
-    solid_3D_ele
-    structure
-    structure_new
-    timestepping
-    truss3
-    )
-
-four_c_add_internal_dependency(${AUTO_DEFINED_MODULE_NAME} ${_dependencies})
