@@ -167,13 +167,19 @@ namespace Core::IO
 
     /**
      * Access the value of the field for the given @p element index. If the @p element_id
-     * is not a valid index, this function will throw an error.
+     * is not a valid index, this function will throw an error which contains the optional @p
+     * field_name for informational purposes.
      */
-    [[nodiscard]] const T& at(IndexType element_id) const { return get(element_id, true); }
+    [[nodiscard]] const T& at(
+        IndexType element_id, std::string_view field_name = "unknown field") const
+    {
+      return get(element_id, true, field_name);
+    }
 
    private:
     //! Internal getter which can optionally check for the validity of the element index.
-    const T& get(IndexType element_id, bool check) const
+    const T& get(
+        IndexType element_id, bool check, std::string_view field_name = "unknown field") const
     {
       if (std::holds_alternative<T>(data_))
       {
@@ -185,8 +191,8 @@ namespace Core::IO
         auto it = map.find(element_id);
         if (check)
         {
-          FOUR_C_ASSERT_ALWAYS(
-              it != map.end(), "Element index {} not found in InputField.", element_id);
+          FOUR_C_ASSERT_ALWAYS(it != map.end(), "Element index {} not found in InputField '{}'.",
+              element_id + 1, field_name);
         }
         return it->second;
       }
