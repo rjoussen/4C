@@ -2,3 +2,6 @@
 -e utilities/four_c_utils
 pre-commit==4.1.0
 networkx==3.4.2
+# for validating YAML files against a JSON schema:
+rapidyaml
+jsonschema-rs
