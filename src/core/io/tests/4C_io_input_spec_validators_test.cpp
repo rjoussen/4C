@@ -76,4 +76,15 @@ namespace
     EXPECT_EQ(ss.str(), "all_elements{in_range[1,4]}");
   }
 
+  TEST(InputSpecValidators, Pattern)
+  {
+    using namespace std::string_literals;
+    const auto validator = pattern(R"(\d-\d-\d)");
+    EXPECT_TRUE(validator("1-2-3"s));
+    // This works since the regex performs a search and not a full match
+    EXPECT_TRUE(validator("1-2-3-4"s));
+
+    EXPECT_FALSE(validator("1-a-2"s));
+  }
+
 }  // namespace

@@ -26,6 +26,7 @@ from metadata_utils import (
     One_Of,
     Primitive,
     RangeValidator,
+    PatternValidator,
     Selection,
     Vector,
     metadata_object_from_file,
@@ -65,6 +66,9 @@ def validator_to_schema(validator):
                 data["maximum"] = validator.maximum
 
             return data
+
+        case PatternValidator():
+            return {"pattern": validator.pattern}
 
         case _:
             if validator is not None:
