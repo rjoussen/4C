@@ -1527,19 +1527,19 @@ void BeamInteraction::BeamToBeamContactPair<numnodes, numnodalvalues>::calc_pena
     }
     case BeamContact::pl_lpqp:  // quadratic regularization for positive gaps
     {
-      if (g0 == -1.0)
+      if (std::abs(-1.0 - g0) < std::numeric_limits<double>::epsilon() ||
+          std::abs(g0 * g0) < std::numeric_limits<double>::epsilon())
         FOUR_C_THROW("Invalid value of regularization parameter BEAMS_PENREGPARAM_G0!");
 
       // Parameter to shift penalty law
       double gbar = params()->beam_to_beam_contact_params()->gap_shift();
       gap = gap + gbar;
-
       double f0 = g0 * pp / 2.0;
-      double factor_a = pp / (g0)-f0 / (g0 * g0);  //=pp/(2*g0)
       double factor_b = -pp;
       double factor_c = f0;
       if (gap > 0)
       {
+        double factor_a = pp / (g0)-f0 / (g0 * g0);
         // std::cout << "Regularized Penalty!" << std::endl;
         fp = factor_a * gap * gap + factor_b * gap + factor_c;
         dfp = 2 * factor_a * gap + factor_b;
