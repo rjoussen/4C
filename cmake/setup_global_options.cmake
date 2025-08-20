@@ -254,16 +254,35 @@ four_c_process_global_option(
 # Add potential user flags at the very end
 ##
 
+four_c_process_cache_variable(
+  FOUR_C_CXX_FLAGS
+  TYPE
+  STRING
+  DESCRIPTION
+  "Expert setting. Additional C++ compiler flags to use for all 4C targets.
+  Note that these flags are added at the very end and can override various other flags."
+  DEFAULT
+  ""
+  )
+four_c_process_cache_variable(
+  FOUR_C_CXX_LINKER_FLAGS
+  TYPE
+  STRING
+  DESCRIPTION
+  "Expert setting. Additional C++ linker flags to use for all 4C targets.
+  Note that these flags are added at the very end and can override various other flags."
+  DEFAULT
+  ""
+  )
+
 # Compiler
 separate_arguments(_split UNIX_COMMAND ${FOUR_C_CXX_FLAGS})
-target_compile_options(four_c_private_compile_interface INTERFACE ${_split})
-separate_arguments(_split UNIX_COMMAND ${FOUR_C_CXX_FLAGS_${FOUR_C_BUILD_TYPE_UPPER}})
 target_compile_options(four_c_private_compile_interface INTERFACE ${_split})
 
 # Linker
 separate_arguments(_split UNIX_COMMAND ${FOUR_C_CXX_LINKER_FLAGS})
 target_link_options(four_c_private_compile_interface INTERFACE ${_split})
-separate_arguments(_split UNIX_COMMAND ${FOUR_C_CXX_LINKER_FLAGS_${FOUR_C_BUILD_TYPE_UPPER}})
-target_link_options(four_c_private_compile_interface INTERFACE ${_split})
 
 ### Do not add any more flags here! User flags have already been added.
+
+message(STATUS "") # Separate output with empty line
