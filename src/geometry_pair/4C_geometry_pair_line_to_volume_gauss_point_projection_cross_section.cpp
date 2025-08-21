@@ -124,6 +124,7 @@ void GeometryPair::GeometryPairLineToVolumeGaussPointProjectionCrossSection<Scal
         r_surface += r_cross_section;
 
         // Project point to the volume.
+        StartValues<Volume::geometry_type_>::set(xi_volume);
         this->project_point_to_other(r_surface, element_data_volume, xi_volume, projection_result);
         if (projection_result == ProjectionResult::projection_found_valid)
         {
