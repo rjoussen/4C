@@ -136,9 +136,9 @@ void SSTI::SSTIMono::build_null_spaces()
     case Core::LinAlg::MatrixType::block_condition_dof:
     {
       scatra_field()->build_block_null_spaces(
-          solver_, get_block_positions(Subproblem::scalar_transport).at(0));
+          *solver_, get_block_positions(Subproblem::scalar_transport).at(0));
       thermo_field()->build_block_null_spaces(
-          solver_, get_block_positions(Subproblem::thermo).at(0));
+          *solver_, get_block_positions(Subproblem::thermo).at(0));
       break;
     }
     case Core::LinAlg::MatrixType::sparse:
@@ -642,7 +642,7 @@ std::vector<int> SSTI::SSTIMono::get_block_positions(Subproblem subproblem) cons
         block_position.emplace_back(1);
       else
       {
-        for (int i = 0; i < scatra_field()->block_maps()->num_maps(); ++i)
+        for (int i = 0; i < scatra_field()->dof_block_maps()->num_maps(); ++i)
           block_position.emplace_back(i + 1);
       }
       break;
@@ -653,8 +653,8 @@ std::vector<int> SSTI::SSTIMono::get_block_positions(Subproblem subproblem) cons
         block_position.emplace_back(2);
       else
       {
-        for (int i = 0; i < thermo_field()->block_maps()->num_maps(); ++i)
-          block_position.emplace_back(scatra_field()->block_maps()->num_maps() + 1 + i);
+        for (int i = 0; i < thermo_field()->dof_block_maps()->num_maps(); ++i)
+          block_position.emplace_back(scatra_field()->dof_block_maps()->num_maps() + 1 + i);
       }
       break;
     }

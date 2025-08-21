@@ -345,7 +345,8 @@ void Constraints::ConstraintSolver::solve_simple(Core::LinAlg::SparseMatrix& sti
   solver_->params() = Core::LinAlg::Solver::translate_solver_parameters(solverparams,
       Global::Problem::instance()->solver_params_callback(),
       Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
-          Global::Problem::instance()->io_params(), "VERBOSITY"));
+          Global::Problem::instance()->io_params(), "VERBOSITY"),
+      actdisc_->get_comm());
 
   const auto prectype =
       Teuchos::getIntegralValue<Core::LinearSolver::PreconditionerType>(solverparams, "AZPREC");

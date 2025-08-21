@@ -18,6 +18,8 @@
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_TimeMonitor.hpp>
+#include <Teuchos_XMLParameterListHelpers.hpp>
+#include <Xpetra_EpetraUtils.hpp>
 
 #include <filesystem>
 
@@ -31,7 +33,7 @@ Core::LinAlg::Solver::Solver(const Teuchos::ParameterList& inparams, MPI_Comm co
     : comm_(comm), params_(std::make_shared<Teuchos::ParameterList>())
 {
   if (translate_params_to_belos)
-    *params_ = translate_solver_parameters(inparams, get_solver_params, verbosity);
+    *params_ = translate_solver_parameters(inparams, get_solver_params, verbosity, comm);
   else
     *params_ = inparams;
 }
@@ -274,7 +276,7 @@ Teuchos::ParameterList translate_four_c_to_teko(
  *------------------------------------------------------------------------------------------------*/
 Teuchos::ParameterList translate_four_c_to_belos(const Teuchos::ParameterList& inparams,
     const std::function<const Teuchos::ParameterList&(int)>& get_solver_params,
-    Core::IO::Verbositylevel verbosity)
+    const Core::IO::Verbositylevel verbosity, const MPI_Comm& comm)
 {
   Teuchos::ParameterList outparams;
   outparams.set("solver", "belos");
@@ -291,6 +293,18 @@ Teuchos::ParameterList translate_four_c_to_belos(const Teuchos::ParameterList& i
   if (xmlfile)
   {
     beloslist.set("SOLVER_XML_FILE", xmlfile->string());
+
+    const std::string xml_file_name = xmlfile->string();
+    Teuchos::ParameterList belos_parameters;
+    Teuchos::updateParametersFromXmlFileAndBroadcast(xml_file_name,
+        Teuchos::Ptr<Teuchos::ParameterList>(&belos_parameters),
+        *Xpetra::toXpetra(Core::Communication::as_epetra_comm(comm)));
+
+    // required for adaptive linear solver tolerance
+    beloslist.set("Convergence Tolerance",
+        belos_parameters.sublist("GMRES").get<double>("Convergence Tolerance"));
+    beloslist.set("Implicit Residual Scaling",
+        belos_parameters.sublist("GMRES").get<std::string>("Implicit Residual Scaling"));
   }
   else
   {
@@ -405,7 +419,7 @@ Teuchos::ParameterList translate_four_c_to_belos(const Teuchos::ParameterList& i
 Teuchos::ParameterList Core::LinAlg::Solver::translate_solver_parameters(
     const Teuchos::ParameterList& inparams,
     const std::function<const Teuchos::ParameterList&(int)>& get_solver_params,
-    Core::IO::Verbositylevel verbosity)
+    const Core::IO::Verbositylevel verbosity, const MPI_Comm& comm)
 {
   TEUCHOS_FUNC_TIME_MONITOR("Core::LinAlg::Solver:  0)   translate_solver_parameters");
 
@@ -427,7 +441,7 @@ Teuchos::ParameterList Core::LinAlg::Solver::translate_solver_parameters(
       outparams.set("solver", "superlu");
       break;
     case Core::LinearSolver::SolverType::belos:
-      outparams = translate_four_c_to_belos(inparams, get_solver_params, verbosity);
+      outparams = translate_four_c_to_belos(inparams, get_solver_params, verbosity, comm);
       break;
     default:
       FOUR_C_THROW("Unsupported type of solver");

@@ -325,7 +325,8 @@ std::shared_ptr<Core::LinAlg::Solver> Solid::SOLVER::Factory::build_lag_pen_cons
           Global::Problem::instance()->solver_params(linsolvernumber),
           Global::Problem::instance()->solver_params_callback(),
           Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
-              Global::Problem::instance()->io_params(), "VERBOSITY"));
+              Global::Problem::instance()->io_params(), "VERBOSITY"),
+          actdis.get_comm());
     }
     break;
     case Inpar::Solid::consolve_simple:
@@ -343,7 +344,8 @@ std::shared_ptr<Core::LinAlg::Solver> Solid::SOLVER::Factory::build_lag_pen_cons
           Global::Problem::instance()->solver_params(linsolvernumber),
           Global::Problem::instance()->solver_params_callback(),
           Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
-              Global::Problem::instance()->io_params(), "VERBOSITY"));
+              Global::Problem::instance()->io_params(), "VERBOSITY"),
+          actdis.get_comm());
 
       if (!linsolver->params().isSublist("Belos Parameters"))
         FOUR_C_THROW("Iterative solver expected!");
@@ -401,7 +403,8 @@ std::shared_ptr<Core::LinAlg::Solver> Solid::SOLVER::Factory::build_cardiovascul
       Global::Problem::instance()->solver_params(linsolvernumber),
       Global::Problem::instance()->solver_params_callback(),
       Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
-          Global::Problem::instance()->io_params(), "VERBOSITY"));
+          Global::Problem::instance()->io_params(), "VERBOSITY"),
+      actdis.get_comm());
 
   // solution algorithm - direct or simple
   Inpar::Cardiovascular0D::Cardvasc0DSolveAlgo algochoice =
@@ -418,14 +421,16 @@ std::shared_ptr<Core::LinAlg::Solver> Solid::SOLVER::Factory::build_cardiovascul
           Global::Problem::instance()->solver_params(linsolvernumber),
           Global::Problem::instance()->solver_params_callback(),
           Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
-              Global::Problem::instance()->io_params(), "VERBOSITY"));
+              Global::Problem::instance()->io_params(), "VERBOSITY"),
+          actdis.get_comm());
       actdis.compute_null_space_if_necessary(linsolver->params().sublist("Inverse1"), true);
 
       linsolver->put_solver_params_to_sub_params("Inverse2",
           Global::Problem::instance()->solver_params(linsolvernumber),
           Global::Problem::instance()->solver_params_callback(),
           Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
-              Global::Problem::instance()->io_params(), "VERBOSITY"));
+              Global::Problem::instance()->io_params(), "VERBOSITY"),
+          actdis.get_comm());
       actdis.compute_null_space_if_necessary(linsolver->params().sublist("Inverse2"), true);
       break;
     }

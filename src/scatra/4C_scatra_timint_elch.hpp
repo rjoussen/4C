@@ -65,11 +65,9 @@ namespace ScaTra
     //! additional, to standard partitioning in scatra, the global system matrix in elch can be
     //! partitioned into concentration and potential dofs
     void build_block_maps(
-        const std::vector<const Core::Conditions::Condition*>& partitioningconditions,
-        std::vector<std::shared_ptr<const Core::LinAlg::Map>>& blockmaps) const override;
-
-    void build_block_null_spaces(
-        std::shared_ptr<Core::LinAlg::Solver> solver, int init_block_number) const override;
+        const std::vector<const Core::Conditions::Condition*>& partitioning_conditions,
+        std::vector<std::shared_ptr<const Core::LinAlg::Map>>& dof_block_maps,
+        std::vector<std::shared_ptr<const Core::LinAlg::Map>>& node_block_maps) const override;
 
     /*========================================================================*/
     //! @name general framework
@@ -266,14 +264,6 @@ namespace ScaTra
     //! set up concentration-potential-potential splitter for macro scale in multi-scale
     //! simulations
     void setup_conc_pot_pot_split();
-
-    //! reduces the dimension of the null space by one (if system matrix is partitioned according to
-    //! concentration and potential). The original full null space was computed for all degrees of
-    //! freedom on the discretization, such that the reduced null spaces still have the full
-    //! dimension. Thus, the dimension of each null space is decreased by one, and the corresponding
-    //! zero null space vector is removed from the null space.
-    void reduce_dimension_null_space_blocks(
-        Core::LinAlg::Solver& solver, int init_block_number) const;
 
     /*--- calculate and update -----------------------------------------------*/
 
