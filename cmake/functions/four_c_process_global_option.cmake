@@ -67,5 +67,9 @@ function(four_c_process_cache_variable variable_name)
       "${_parsed_DEFAULT}"
       CACHE ${_parsed_TYPE} "${_parsed_DESCRIPTION} (default: ${_parsed_DEFAULT})"
       )
-  message(STATUS "Cache variable ${variable_name} = ${${variable_name}}")
+  if(${variable_name} STREQUAL "")
+    message(STATUS "Cache variable ${variable_name} not set")
+  else()
+    message(STATUS "Cache variable ${variable_name} = ${${variable_name}}")
+  endif()
 endfunction()
