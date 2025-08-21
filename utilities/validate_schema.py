@@ -23,10 +23,10 @@ def load_yaml(path_to_yaml_file):
     )
 
     # Convert `inf` to a string to avoid JSON parsing errors, see https://github.com/biojppm/rapidyaml/issues/312
-    json_str = re.sub(r":\s*inf\b", r': "inf"', json_str)
+    json_str = re.sub(r":\s*(-?)inf\b", r': "\1inf"', json_str)
     # Convert floats that are missing digits on either side of the decimal point
-    json_str = re.sub(r":\s*\.([0-9]+)", r": 0.\1", json_str)
-    json_str = re.sub(r":\s*([0-9]+)\.(\D)", r": \1.0\2", json_str)
+    json_str = re.sub(r":\s*(-?)\.([0-9]+)", r": \g<1>0.\2", json_str)
+    json_str = re.sub(r":\s*(-?)([0-9]+)\.(\D)", r": \1\2.0\3", json_str)
 
     data = json.loads(json_str)
 
