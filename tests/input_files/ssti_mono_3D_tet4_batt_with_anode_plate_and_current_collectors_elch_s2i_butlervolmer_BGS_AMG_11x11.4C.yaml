@@ -374,7 +374,7 @@ RESULT DESCRIPTION:
       DIS: "scatra"
       NODE: 4
       QUANTITY: "phi2"
-      VALUE: 6.85349056391118278e-03
+      VALUE: 0.006853490381277293
       TOLERANCE: 6.9e-11
   - STRUCTURE:
       DIS: "structure"
