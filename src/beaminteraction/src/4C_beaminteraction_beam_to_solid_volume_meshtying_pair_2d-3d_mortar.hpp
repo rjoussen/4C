@@ -36,6 +36,9 @@ namespace GeometryPair
   class FourierDiscretization
   {
    public:
+    // Mark this as a Fourier type element.
+    using fourier_tag = void;
+
     // Discretization of the 1D part
     using curve_discretization_ = CurveDiscretization;
 
@@ -65,50 +68,18 @@ namespace GeometryPair
         ElementDiscretizationToGeometryType<discretization_>::geometry_type_;
   };
 
-  //! Fourier types
-  using t_line2_fourier_0 = FourierDiscretization<t_line2_scalar, 0>;
-  using t_line2_fourier_1 = FourierDiscretization<t_line2_scalar, 1>;
-  using t_line2_fourier_2 = FourierDiscretization<t_line2_scalar, 2>;
-  using t_line2_fourier_3 = FourierDiscretization<t_line2_scalar, 3>;
-
-
   /**
-   * \brief Compile time struct to check if an element type is based on Fourier shape functions
+   * \brief This allows for an easy overload of the EvaluateShapeFunction struct for Fourier shape
+   * functions.
    */
-  template <typename ElementType>
-  struct IsFourierElement
-  {
-    static const bool value_ = false;
-  };
-
-  template <>
-  struct IsFourierElement<t_line2_fourier_0>
-  {
-    static const bool value_ = true;
-  };
-  template <>
-  struct IsFourierElement<t_line2_fourier_1>
-  {
-    static const bool value_ = true;
-  };
-  template <>
-  struct IsFourierElement<t_line2_fourier_2>
-  {
-    static const bool value_ = true;
-  };
-  template <>
-  struct IsFourierElement<t_line2_fourier_3>
-  {
-    static const bool value_ = true;
-  };
-
+  template <class T>
+  concept FourierElement = requires { typename T::fourier_tag; };
 
   /**
    * \brief Specialization for Fourier elements
    */
-  template <typename ElementType>
-  struct EvaluateShapeFunction<ElementType,
-      typename std::enable_if<IsFourierElement<ElementType>::value_>::type>
+  template <FourierElement ElementType>
+  struct EvaluateShapeFunction<ElementType>
   {
     /**
      * \brief Evaluate the shape functions of the element.
@@ -272,7 +243,7 @@ namespace BeamInteraction
   /**
    * \brief Factory for the mortar cross section pair
    */
-  std::shared_ptr<BeamContactPair> create_beam_to_solid_volume_pair_mortar_cross_section(
+  std::unique_ptr<BeamContactPair> create_beam_to_solid_volume_pair_mortar_cross_section(
       const Core::FE::CellType shape,
       const Inpar::BeamToSolid::BeamToSolidMortarShapefunctions mortar_shape_function,
       const int n_fourier_modes);
