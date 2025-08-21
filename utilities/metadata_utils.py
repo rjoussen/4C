@@ -472,6 +472,12 @@ class RangeValidator(Validator):
 
 
 @dataclass
+class PatternValidator(Validator):
+    allowed_types: ClassVar[tuple] = ("string",)
+    pattern: str
+
+
+@dataclass
 class AllElementsValidator(Validator):
     inner_validator: object
 
@@ -489,5 +495,7 @@ def validator_from_dict(validator_dict):
             return RangeValidator(**validator_settings)
         case "all_elements":
             return AllElementsValidator(validator_from_dict(validator_settings))
+        case "pattern":
+            return PatternValidator(**validator_settings)
         case _:
             raise ValueError("Validator '{}' not known.".format(validator_type))

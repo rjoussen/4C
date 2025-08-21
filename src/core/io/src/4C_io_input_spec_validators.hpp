@@ -240,6 +240,18 @@ namespace Core::IO::InputSpecBuilders::Validators
    */
   template <typename T>
   [[nodiscard]] Validator<std::optional<T>> null_or(Validator<T> validator);
+
+
+  /**
+   * A validator that ensures a string matches a given regular expression @p pattern.
+   * Note that the pattern is expected to be a valid regular expression in the modified ECMAScript
+   * regex syntax.
+   *
+   * @note The validator internally will match any string that contains the @p pattern
+   * _anywhere_ in the string. To achieve a full match, surround the @p pattern with `^` and `$`.
+   */
+  [[nodiscard]] Validator<std::string> pattern(std::string pattern);
+
 }  // namespace Core::IO::InputSpecBuilders::Validators
 
 // --- template definitions --- //

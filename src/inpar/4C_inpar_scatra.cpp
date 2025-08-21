@@ -166,9 +166,12 @@ void Inpar::ScaTra::set_valid_parameters(std::map<std::string, Core::IO::InputSp
                   .default_value = true}),
 
           parameter<std::string>("WRITEFLUX_IDS",
-              {.description = "Write diffusive/total flux vector fields for these scalar "
-                              "fields only (starting with 1)",
-                  .default_value = "-1"}),
+              {
+                  .description = "Write diffusive/total flux vector fields for these scalar "
+                                 "fields only (starting with 1)",
+                  .default_value = "-1",
+                  .validator = Validators::pattern(R"(^(-?\d+)(\s+-?\d+)*$)"),
+              }),
 
 
           deprecated_selection<Inpar::ScaTra::OutputScalarType>("OUTPUTSCALARS",
