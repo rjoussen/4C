@@ -22,21 +22,6 @@ find_package(Trilinos REQUIRED)
 message(STATUS "Trilinos version: ${Trilinos_VERSION}")
 message(STATUS "Trilinos packages: ${Trilinos_PACKAGE_LIST}")
 
-if(Trilinos_FOUND AND NOT TARGET Trilinos::all_selected_libs)
-  # In preparation for newer Trilinos releases, create a target
-  # Trilinos::all_selected_libs with the correct dependencies
-  add_library(Trilinos::all_selected_libs IMPORTED INTERFACE)
-  target_include_directories(
-    Trilinos::all_selected_libs
-    SYSTEM
-    INTERFACE ${Trilinos_INCLUDE_DIRS}
-    INTERFACE ${Trilinos_TPL_INCLUDE_DIRS}
-    )
-  target_link_libraries(
-    Trilinos::all_selected_libs INTERFACE ${Trilinos_LIBRARIES} ${Trilinos_TPL_LIBRARIES}
-    )
-endif()
-
 # Figure out the version.
 if(EXISTS "${Trilinos_DIR}/../../../TrilinosRepoVersion.txt")
   file(STRINGS "${Trilinos_DIR}/../../../TrilinosRepoVersion.txt" TrilinosRepoVersionFile)
