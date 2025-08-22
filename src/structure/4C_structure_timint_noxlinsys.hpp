@@ -93,34 +93,8 @@ namespace NOX
       bool applyJacobianInverse(Teuchos::ParameterList& params, const ::NOX::Epetra::Vector& input,
           ::NOX::Epetra::Vector& result) override;
 
-      /// Apply right preconditiong to the given input vector.
-      bool applyRightPreconditioning(bool useTranspose, Teuchos::ParameterList& params,
-          const ::NOX::Epetra::Vector& input, ::NOX::Epetra::Vector& result) const override;
-
       /// Evaluates the Jacobian based on the solution vector x.
       bool computeJacobian(const ::NOX::Epetra::Vector& x) override;
-
-      /// Explicitly constructs a preconditioner based on the solution vector x and the parameter
-      /// list p.
-      bool createPreconditioner(const ::NOX::Epetra::Vector& x, Teuchos::ParameterList& p,
-          bool recomputeGraph) const override;
-
-      /// Deletes the preconditioner.
-      bool destroyPreconditioner() const override;
-
-      /// Recalculates the preconditioner using an already allocated graph.
-      bool recomputePreconditioner(const ::NOX::Epetra::Vector& x,
-          Teuchos::ParameterList& linearSolverParams) const override;
-
-      /// Evaluates the preconditioner policy at the current state.
-      PreconditionerReusePolicyType getPreconditionerPolicy(
-          bool advanceReuseCounter = true) override;
-
-      /// Indicates whether a preconditioner has been constructed.
-      bool isPreconditionerConstructed() const override;
-
-      /// Indicates whether the linear system has a preconditioner.
-      bool hasPreconditioner() const override;
 
       /// Return Jacobian operator.
       Teuchos::RCP<const Epetra_Operator> getJacobianOperator() const override;
@@ -128,18 +102,9 @@ namespace NOX
       /// Return Jacobian operator.
       Teuchos::RCP<Epetra_Operator> getJacobianOperator() override;
 
-      /// Return preconditioner operator.
-      Teuchos::RCP<const Epetra_Operator> getGeneratedPrecOperator() const override;
-
-      /// Return preconditioner operator.
-      Teuchos::RCP<Epetra_Operator> getGeneratedPrecOperator() override;
-
       /// Set Jacobian operator for solve.
       void setJacobianOperatorForSolve(
           const Teuchos::RCP<const Epetra_Operator>& solveJacOp) override;
-
-      /// Set preconditioner operator for solve.
-      void setPrecOperatorForSolve(const Teuchos::RCP<const Epetra_Operator>& solvePrecOp) override;
 
      protected:
       /// throw an error

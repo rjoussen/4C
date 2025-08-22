@@ -134,12 +134,6 @@ namespace NOX
       bool applyJacobianInverse(Teuchos::ParameterList& linearSolverParams,
           const ::NOX::Epetra::Vector& input, ::NOX::Epetra::Vector& result) override;
 
-      bool applyRightPreconditioning(bool useTranspose, Teuchos::ParameterList& linearSolverParams,
-          const ::NOX::Epetra::Vector& input, ::NOX::Epetra::Vector& result) const override;
-
-      bool createPreconditioner(const ::NOX::Epetra::Vector& x,
-          Teuchos::ParameterList& linearSolverParams, bool recomputeGraph) const override;
-
       //! adjust the pseudo time step (using a least squares approximation)
       void adjust_pseudo_time_step(double& delta, const double& stepSize,
           const ::NOX::Epetra::Vector& dir, const ::NOX::Epetra::Vector& rhs,
@@ -195,24 +189,6 @@ namespace NOX
       //! Set the jacobian operator of this class
       void set_jacobian_operator_for_solve(
           const Teuchos::RCP<const Core::LinAlg::SparseOperator>& solveJacOp);
-
-      bool destroyPreconditioner() const override;
-
-      bool recomputePreconditioner(const ::NOX::Epetra::Vector& x,
-          Teuchos::ParameterList& linearSolverParams) const override;
-
-      ::NOX::Epetra::LinearSystem::PreconditionerReusePolicyType getPreconditionerPolicy(
-          bool advanceReuseCounter) override;
-
-      bool isPreconditionerConstructed() const override;
-
-      bool hasPreconditioner() const override;
-
-      Teuchos::RCP<const Epetra_Operator> getGeneratedPrecOperator() const override;
-
-      Teuchos::RCP<Epetra_Operator> getGeneratedPrecOperator() override;
-
-      void setPrecOperatorForSolve(const Teuchos::RCP<const Epetra_Operator>& solvePrecOp) override;
 
       //! destroy the jacobian ptr
       bool destroy_jacobian();
@@ -351,9 +327,6 @@ namespace NOX
 
       //! Teuchos::Time object
       Teuchos::Time timer_;
-
-      //! Total time spent in createPreconditioner (sec.).
-      double timeCreatePreconditioner_;
 
       //! Total time spent in applyJacobianInverse (sec.).
       double timeApplyJacbianInverse_;

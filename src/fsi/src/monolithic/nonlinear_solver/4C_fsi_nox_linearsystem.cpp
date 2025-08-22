@@ -155,17 +155,6 @@ bool NOX::FSI::LinearSystem::applyJacobianInverse(
   return true;
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-bool NOX::FSI::LinearSystem::applyRightPreconditioning(bool useTranspose,
-    Teuchos::ParameterList& params, const ::NOX::Epetra::Vector& input,
-    ::NOX::Epetra::Vector& result) const
-{
-  if (&result != &input) result = input;
-
-  return true;
-}
-
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -174,48 +163,6 @@ bool NOX::FSI::LinearSystem::computeJacobian(const ::NOX::Epetra::Vector& x)
   bool success = jac_interface_ptr_->computeJacobian(x.getEpetraVector(), *jac_ptr_);
   return success;
 }
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-bool NOX::FSI::LinearSystem::createPreconditioner(
-    const ::NOX::Epetra::Vector& x, Teuchos::ParameterList& p, bool recomputeGraph) const
-{
-  return false;
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-bool NOX::FSI::LinearSystem::destroyPreconditioner() const { return false; }
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-bool NOX::FSI::LinearSystem::recomputePreconditioner(
-    const ::NOX::Epetra::Vector& x, Teuchos::ParameterList& linearSolverParams) const
-{
-  return false;
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-NOX::FSI::LinearSystem::PreconditionerReusePolicyType
-NOX::FSI::LinearSystem::getPreconditionerPolicy(bool advanceReuseCounter)
-{
-  return PRPT_REBUILD;
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-bool NOX::FSI::LinearSystem::isPreconditionerConstructed() const { return false; }
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-bool NOX::FSI::LinearSystem::hasPreconditioner() const { return false; }
 
 
 /*----------------------------------------------------------------------*
@@ -236,22 +183,6 @@ Teuchos::RCP<Epetra_Operator> NOX::FSI::LinearSystem::getJacobianOperator()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Operator> NOX::FSI::LinearSystem::getGeneratedPrecOperator() const
-{
-  return Teuchos::null;
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Operator> NOX::FSI::LinearSystem::getGeneratedPrecOperator()
-{
-  return Teuchos::null;
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 void NOX::FSI::LinearSystem::setJacobianOperatorForSolve(
     const Teuchos::RCP<const Epetra_Operator>& solveJacOp)
 {
@@ -260,14 +191,6 @@ void NOX::FSI::LinearSystem::setJacobianOperatorForSolve(
   jac_type_ = get_operator_type(*solveJacOp);
 }
 
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void NOX::FSI::LinearSystem::setPrecOperatorForSolve(
-    const Teuchos::RCP<const Epetra_Operator>& solvePrecOp)
-{
-  throw_error("setPrecOperatorForSolve", "no preconditioner supported");
-}
 
 
 /*----------------------------------------------------------------------*
