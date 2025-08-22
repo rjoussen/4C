@@ -8,11 +8,13 @@
 #
 # Build routine/test for doxygen documentation
 four_c_process_global_option(
-  FOUR_C_BUILD_DOXYGEN
+  FOUR_C_ENABLE_DOXYGEN
   DESCRIPTION
   "Build doxygen documentation"
   DEFAULT
   OFF
+  DEPRECATED_NAMES
+  "FOUR_C_BUILD_DOXYGEN"
   )
 four_c_process_global_option(
   FOUR_C_DOXYGEN_USE_LOCAL_MATHJAX
@@ -30,7 +32,7 @@ four_c_process_cache_variable(
   DEFAULT
   ""
   )
-if(FOUR_C_BUILD_DOXYGEN)
+if(FOUR_C_ENABLE_DOXYGEN)
 
   # add doc-specific cmake modules
   list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
