@@ -16,6 +16,7 @@
 #include <map>
 #include <optional>
 #include <string>
+#include <type_traits>
 #include <vector>
 
 FOUR_C_NAMESPACE_OPEN
@@ -168,10 +169,11 @@ namespace Core::IO
   /**
    * Determine the rank of a type, i.e., how many levels of nested containers are present.
    */
-  template <SupportedType T>
+  template <typename T>
+    requires SupportedType<std::decay_t<T>>
   constexpr std::size_t rank()
   {
-    return Internal::RankHelper<T>::value;
+    return Internal::RankHelper<std::decay_t<T>>::value;
   }
 
   /**

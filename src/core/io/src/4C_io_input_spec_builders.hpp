@@ -423,7 +423,7 @@ namespace Core::IO
       //! insert keys and values into the yaml emitter.
       virtual void emit_metadata(YamlNodeRef node) const = 0;
 
-      virtual bool emit(YamlNodeRef node, const InputParameterContainer&,
+      [[nodiscard]] virtual bool emit(YamlNodeRef node, const InputParameterContainer&,
           const InputSpecEmitOptions& options) const = 0;
 
       [[nodiscard]] virtual std::string pretty_type_name() const = 0;
@@ -485,7 +485,7 @@ namespace Core::IO
 
       void emit_metadata(YamlNodeRef node) const override { wrapped.emit_metadata(node); }
 
-      bool emit(YamlNodeRef node, const InputParameterContainer& container,
+      [[nodiscard]] bool emit(YamlNodeRef node, const InputParameterContainer& container,
           const InputSpecEmitOptions& options) const override
       {
         return wrapped.emit(node, container, options);
@@ -519,7 +519,7 @@ namespace Core::IO
         }
       }
 
-      std::string pretty_type_name() const override
+      [[nodiscard]] std::string pretty_type_name() const override
       {
         if constexpr (StoresType<T>)
         {
@@ -1094,7 +1094,11 @@ namespace Core::IO
 
     struct SizeChecker
     {
-      constexpr bool operator()(const auto& val, std::size_t* size_info) const { return true; }
+      constexpr bool operator()(const auto& val, std::size_t* size_info) const
+      {
+        static_assert(rank<decltype(val)>() == 0, "Missing overload.");
+        return true;
+      }
 
       template <typename U>
       constexpr bool operator()(const std::vector<U>& v, std::size_t* size_info) const
@@ -1110,6 +1114,19 @@ namespace Core::IO
         return ((*size_info == InputSpecBuilders::dynamic_size) || (m.size() == *size_info)) &&
                std::ranges::all_of(
                    m, [&](const auto& val) { return this->operator()(val.second, size_info + 1); });
+      }
+
+      template <typename T>
+      constexpr bool operator()(const std::optional<T>& opt, std::size_t* size_info) const
+      {
+        if (opt.has_value())
+        {
+          return this->operator()(opt.value(), size_info);
+        }
+        else
+        {
+          return true;
+        }
       }
     };
 

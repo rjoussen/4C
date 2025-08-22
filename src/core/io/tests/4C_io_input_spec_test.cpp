@@ -2092,7 +2092,7 @@ parameters:
       SCOPED_TRACE("Invalid input");
       ryml::Tree tree = init_yaml_tree_with_exceptions();
       ryml::NodeRef root = tree.rootref();
-      ryml::parse_in_arena(R"(v: [-1, null])", root);
+      ryml::parse_in_arena(R"(v: [-1, null, 4])", root);
       ConstYamlNodeRef node(root, "");
       InputParameterContainer container;
       FOUR_C_EXPECT_THROW_WITH_MESSAGE(spec.match(node, container), Core::Exception,
