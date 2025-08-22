@@ -43,12 +43,12 @@ Core::Rebalance::rebalance_node_maps(const Core::LinAlg::Graph& initialGraph,
       initialNodeWeights, initialEdgeWeights, initialNodeCoordinates);
 
   // extract repartitioned maps
-  std::shared_ptr<Core::LinAlg::Map> rownodes = std::make_shared<Core::LinAlg::Map>(-1,
-      balanced_graph->row_map().num_my_elements(), balanced_graph->row_map().my_global_elements(),
-      0, Core::Communication::unpack_epetra_comm(initialGraph.get_comm()));
-  std::shared_ptr<Core::LinAlg::Map> colnodes = std::make_shared<Core::LinAlg::Map>(-1,
-      balanced_graph->col_map().num_my_elements(), balanced_graph->col_map().my_global_elements(),
-      0, Core::Communication::unpack_epetra_comm(initialGraph.get_comm()));
+  std::shared_ptr<Core::LinAlg::Map> rownodes =
+      std::make_shared<Core::LinAlg::Map>(-1, balanced_graph->row_map().num_my_elements(),
+          balanced_graph->row_map().my_global_elements(), 0, initialGraph.get_comm());
+  std::shared_ptr<Core::LinAlg::Map> colnodes =
+      std::make_shared<Core::LinAlg::Map>(-1, balanced_graph->col_map().num_my_elements(),
+          balanced_graph->col_map().my_global_elements(), 0, initialGraph.get_comm());
 
   return {rownodes, colnodes};
 }
