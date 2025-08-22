@@ -25,4 +25,67 @@ void NOX::Nln::LinearSystemBase::resetScaling(const Teuchos::RCP<::NOX::Epetra::
   FOUR_C_THROW("This is a mock and if you need it, most probably you are doing something wrong.");
 }
 
+void NOX::Nln::LinearSystemBase::setPrecOperatorForSolve(
+    const Teuchos::RCP<const Epetra_Operator>& solvePrecOp)
+{
+  (void)solvePrecOp;
+
+  FOUR_C_THROW("setPrecOperatorForSolve() is not implemented for NOX::Nln::LinearSystemBase.");
+}
+
+bool NOX::Nln::LinearSystemBase::isPreconditionerConstructed() const { return false; }
+
+bool NOX::Nln::LinearSystemBase::hasPreconditioner() const { return false; }
+
+Teuchos::RCP<const Epetra_Operator> NOX::Nln::LinearSystemBase::getGeneratedPrecOperator() const
+{
+  return Teuchos::null;
+}
+
+Teuchos::RCP<Epetra_Operator> NOX::Nln::LinearSystemBase::getGeneratedPrecOperator()
+{
+  return Teuchos::null;
+}
+
+bool NOX::Nln::LinearSystemBase::createPreconditioner(
+    const ::NOX::Epetra::Vector& x, Teuchos::ParameterList& p, bool recomputeGraph) const
+{
+  (void)x;
+  (void)p;
+  (void)recomputeGraph;
+
+  return false;
+}
+
+bool NOX::Nln::LinearSystemBase::destroyPreconditioner() const { return false; }
+
+bool NOX::Nln::LinearSystemBase::recomputePreconditioner(
+    const ::NOX::Epetra::Vector& x, Teuchos::ParameterList& linearSolverParams) const
+{
+  (void)x;
+  (void)linearSolverParams;
+
+  return false;
+}
+
+::NOX::Epetra::LinearSystem::PreconditionerReusePolicyType
+NOX::Nln::LinearSystemBase::getPreconditionerPolicy(bool advanceReuseCounter)
+{
+  (void)advanceReuseCounter;
+
+  return ::NOX::Epetra::LinearSystem::PRPT_REBUILD;
+}
+
+bool NOX::Nln::LinearSystemBase::applyRightPreconditioning(bool useTranspose,
+    Teuchos::ParameterList& params, const ::NOX::Epetra::Vector& input,
+    ::NOX::Epetra::Vector& result) const
+{
+  (void)useTranspose;
+  (void)params;
+
+  if (&result != &input) result = input;
+
+  return true;
+}
+
 FOUR_C_NAMESPACE_CLOSE
