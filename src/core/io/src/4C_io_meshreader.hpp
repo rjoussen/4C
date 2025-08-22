@@ -88,6 +88,9 @@ namespace Core::IO
      *
      * After calling this functions, the Discretization objects that were added to this reader
      * are filled with the mesh data.
+     *
+     * We can read mesh information from a separate file, directly from the input file or generate a
+     * mesh.
      */
     void read_and_partition();
 

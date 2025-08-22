@@ -137,4 +137,3 @@ Default parameters for a structural analysis can be obtained using
 .. code-block:: python
 
    params_step_1 = abaqus_meshio.GenerateDefaultParams()
-
