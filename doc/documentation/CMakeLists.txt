@@ -8,7 +8,13 @@
 #
 # Set up the main documentation based on Sphinx
 
-four_c_process_global_option(FOUR_C_BUILD_DOCUMENTATION "Build the documentation" OFF)
+four_c_process_global_option(
+  FOUR_C_BUILD_DOCUMENTATION
+  DESCRIPTION
+  "Build the documentation"
+  DEFAULT
+  OFF
+  )
 if(FOUR_C_BUILD_DOCUMENTATION)
 
   if(NOT FOUR_C_WITH_PYTHON)
