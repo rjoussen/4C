@@ -1305,14 +1305,13 @@ void Core::Conditions::PeriodicBoundaryConditions::balance_load()
   int err = node_graph->fill_complete();
   if (err) FOUR_C_THROW("graph->FillComplete returned {}", err);
 
-  const int myrank = Core::Communication::my_mpi_rank(
-      Core::Communication::unpack_epetra_comm(node_graph->get_comm()));
+  const int myrank = Core::Communication::my_mpi_rank(node_graph->get_comm());
 
   // get rowmap of the graph  (from blockmap -> map)
   const Core::LinAlg::Map& graph_row_map = node_graph->row_map();
   const Core::LinAlg::Map graph_rowmap(graph_row_map.num_global_elements(),
       graph_row_map.num_my_elements(), graph_row_map.my_global_elements(), 0,
-      Core::Communication::unpack_epetra_comm(node_graph->get_comm()));
+      node_graph->get_comm());
 
   // 3. set graph edge weights
   auto edge_weights = std::make_shared<Core::LinAlg::SparseMatrix>(graph_rowmap, 15);

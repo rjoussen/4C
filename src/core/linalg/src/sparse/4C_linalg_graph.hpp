@@ -11,6 +11,7 @@
 
 #include "4C_config.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_linalg_map.hpp"
 #include "4C_linalg_transfer.hpp"
 
@@ -59,8 +60,8 @@ namespace Core::LinAlg
 
     Epetra_CrsGraph& get_epetra_crs_graph() { return *graph_; }
 
-    //! Returns a pointer to the Epetra_Comm communicator associated with this graph.
-    const Epetra_Comm& get_comm() const { return (graph_->Comm()); }
+    //! Return the communicator associated with this Graph.
+    MPI_Comm get_comm() const { return Core::Communication::unpack_epetra_comm(graph_->Comm()); }
 
     //! Extract a list of elements in a specified global row of the graph. Put into storage
     //! allocated by calling
