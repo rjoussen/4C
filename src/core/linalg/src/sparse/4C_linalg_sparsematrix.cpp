@@ -1709,7 +1709,7 @@ void Core::LinAlg::SparseMatrix::add(const Core::LinAlg::SparseOperator& A, cons
 void Core::LinAlg::SparseMatrix::add(const Core::LinAlg::SparseMatrix& A, const bool transposeA,
     const double scalarA, const double scalarB)
 {
-  Core::LinAlg::add(*A.epetra_matrix(), transposeA, scalarA, *this, scalarB);
+  Core::LinAlg::add(A, transposeA, scalarA, *this, scalarB);
 }
 
 /*----------------------------------------------------------------------*
@@ -1717,8 +1717,7 @@ void Core::LinAlg::SparseMatrix::add(const Core::LinAlg::SparseMatrix& A, const 
 void Core::LinAlg::SparseMatrix::add_other(Core::LinAlg::SparseMatrix& B, const bool transposeA,
     const double scalarA, const double scalarB) const
 {
-  // B.add(*this, transposeA, scalarA, scalarB);
-  Core::LinAlg::add(*sysmat_, transposeA, scalarA, B, scalarB);
+  B.add(*this, transposeA, scalarA, scalarB);
 }
 
 /*----------------------------------------------------------------------*

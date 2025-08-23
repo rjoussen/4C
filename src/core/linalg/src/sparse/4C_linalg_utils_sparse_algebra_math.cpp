@@ -29,31 +29,31 @@ namespace Core::LinAlg
      |  Return value: number of local rows in A added successfully          |
      |             (in case B must be uncompleted, this must be remembered) |
      *----------------------------------------------------------------------*/
-    int do_add(const Epetra_CrsMatrix& A, const double scalarA, Epetra_CrsMatrix& B,
-        const double scalarB, const int startRow = 0)
+    int do_add(const Core::LinAlg::SparseMatrix& A, const double scalarA,
+        Core::LinAlg::SparseMatrix& B, const double scalarB, const int startRow = 0)
     {
-      if (!A.Filled()) FOUR_C_THROW("Internal error, matrix A must have called fill_complete()");
+      if (!A.filled()) FOUR_C_THROW("Internal error, matrix A must have called fill_complete()");
 
-      const int NumMyRows = A.NumMyRows();
+      const int NumMyRows = A.num_my_rows();
 
       // Case 1 where matrix B is filled. In that case, we can attempt to add in local indices,
       // much faster than the global indices... :-)
-      if (B.Filled())
+      if (B.filled())
       {
         if (startRow != 0) FOUR_C_THROW("Internal error. Not implemented.");
 
         // step 1: get the indexing from A to B in a random-access array
-        std::vector<int> AcolToBcol(A.ColMap().NumMyElements());
-        for (int i = 0; i < A.ColMap().NumMyElements(); ++i)
-          AcolToBcol[i] = B.ColMap().LID(A.ColMap().GID(i));
+        std::vector<int> AcolToBcol(A.col_map().num_my_elements());
+        for (int i = 0; i < A.col_map().num_my_elements(); ++i)
+          AcolToBcol[i] = B.col_map().lid(A.col_map().gid(i));
 
-        std::vector<int> indicesInB(A.MaxNumEntries());
+        std::vector<int> indicesInB(A.max_num_entries());
 
         // step 2: loop over all local rows in matrix A and attempt the addition in local index
         // space
         for (int i = 0; i < NumMyRows; ++i)
         {
-          const int myRowB = B.RowMap().LID(A.RowMap().GID(i));
+          const int myRowB = B.row_map().lid(A.row_map().gid(i));
           if (myRowB == -1)
             FOUR_C_THROW(
                 "Core::LinAlg::Add: The row map of matrix B must be a superset of the row map of "
@@ -64,8 +64,8 @@ namespace Core::LinAlg
           double *valuesA = nullptr, *valuesB = nullptr;
           int *indicesA = nullptr, *indicesB = nullptr;
           int NumEntriesA = -1, NumEntriesB = -1;
-          A.ExtractMyRowView(i, NumEntriesA, valuesA, indicesA);
-          B.ExtractMyRowView(myRowB, NumEntriesB, valuesB, indicesB);
+          A.extract_my_row_view(i, NumEntriesA, valuesA, indicesA);
+          B.extract_my_row_view(myRowB, NumEntriesB, valuesB, indicesB);
 
           // check if we can identify all indices from matrix A in matrix B. quite a lot of
           // indirect addressing in here, but these are all local operations and thus pretty fast
@@ -110,26 +110,24 @@ namespace Core::LinAlg
       // case 2 where B is not filled -> good old slow addition in global indices
 
       // Loop over Aprime's rows and sum into
-      std::vector<int> Indices(A.MaxNumEntries());
-      std::vector<double> Values(A.MaxNumEntries());
+      std::vector<int> Indices(A.max_num_entries());
+      std::vector<double> Values(A.max_num_entries());
 
       // Continue with i from the previous attempt
       for (int i = startRow; i < NumMyRows; ++i)
       {
-        const int Row = A.GRID(i);
+        const int Row = A.global_row_index(i);
         int NumEntries = 0;
-        int ierr =
-            A.ExtractGlobalRowCopy(Row, Values.size(), NumEntries, Values.data(), Indices.data());
-        if (ierr) FOUR_C_THROW("Epetra_CrsMatrix::ExtractGlobalRowCopy returned err={}", ierr);
+        int ierr = A.extract_global_row_copy(
+            Row, Values.size(), NumEntries, Values.data(), Indices.data());
+        if (ierr) FOUR_C_THROW("extract_global_row_copy() returned err={}", ierr);
         if (scalarA != 1.0)
           for (int j = 0; j < NumEntries; ++j) Values[j] *= scalarA;
         for (int j = 0; j < NumEntries; ++j)
         {
-          int err = B.SumIntoGlobalValues(Row, 1, &Values[j], &Indices[j]);
-          if (err < 0 || err == 2) err = B.InsertGlobalValues(Row, 1, &Values[j], &Indices[j]);
-          if (err < 0)
-            FOUR_C_THROW(
-                "Epetra_CrsMatrix::InsertGlobalValues returned err={} at row {}", err, Row);
+          int err = B.sum_into_global_values(Row, 1, &Values[j], &Indices[j]);
+          if (err < 0 || err == 2) err = B.insert_global_values(Row, 1, &Values[j], &Indices[j]);
+          if (err < 0) FOUR_C_THROW("insert_global_values() returned err={} at row {}", err, Row);
         }
       }
 
@@ -140,30 +138,22 @@ namespace Core::LinAlg
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::LinAlg::add(const Epetra_CrsMatrix& A, const bool transposeA, const double scalarA,
-    Core::LinAlg::SparseMatrix& B, const double scalarB)
+void Core::LinAlg::add(const Core::LinAlg::SparseMatrix& A, const bool transposeA,
+    const double scalarA, Core::LinAlg::SparseMatrix& B, const double scalarB)
 {
-  if (!A.Filled()) FOUR_C_THROW("fill_complete was not called on A");
+  if (!A.filled()) FOUR_C_THROW("fill_complete was not called on A");
 
-  Epetra_CrsMatrix* Aprime = nullptr;
-  std::shared_ptr<EpetraExt::RowMatrix_Transpose> Atrans = nullptr;
-  if (transposeA)
-  {
-    Atrans = std::make_shared<EpetraExt::RowMatrix_Transpose>();
-    Aprime = &(dynamic_cast<Epetra_CrsMatrix&>(((*Atrans)(const_cast<Epetra_CrsMatrix&>(A)))));
-  }
-  else
-  {
-    Aprime = const_cast<Epetra_CrsMatrix*>(&A);
-  }
+  auto Aprime = std::make_shared<Core::LinAlg::SparseMatrix>(A);
+
+  if (transposeA) Aprime = matrix_transpose(A);
 
   if (scalarB == 0.)
     B.put_scalar(0.0);
   else if (scalarB != 1.0)
     B.scale(scalarB);
 
-  int rowsAdded = do_add(*Aprime, scalarA, *B.epetra_matrix(), scalarB);
-  int localSuccess = rowsAdded == Aprime->RowMap().NumMyElements();
+  int rowsAdded = do_add(*Aprime, scalarA, B, scalarB);
+  int localSuccess = rowsAdded == Aprime->row_map().num_my_elements();
   int globalSuccess = 0;
   Core::Communication::min_all(
       &localSuccess, &globalSuccess, 1, Core::Communication::unpack_epetra_comm(B.Comm()));
@@ -171,10 +161,9 @@ void Core::LinAlg::add(const Epetra_CrsMatrix& A, const bool transposeA, const d
   {
     if (!B.filled()) FOUR_C_THROW("Unexpected state of B (expected: B not filled, got: B filled)");
 
-    // not successful -> matrix structure must be un-completed to be able to add new
-    // indices.
+    // not successful -> matrix structure must be un-completed to be able to add new indices.
     B.un_complete();
-    do_add(*Aprime, scalarA, *B.epetra_matrix(), scalarB, rowsAdded);
+    do_add(*Aprime, scalarA, B, scalarB, rowsAdded);
     B.complete();
   }
 }
@@ -238,33 +227,23 @@ std::unique_ptr<Core::LinAlg::SparseMatrix> Core::LinAlg::matrix_multiply(
   // now create resultmatrix C with correct rowmap
   auto map = transA ? A.domain_map() : A.range_map();
   auto C = std::make_unique<SparseMatrix>(map, nnz, A.explicit_dirichlet(), A.save_graph());
-
-  EpetraExt::RowMatrix_Transpose transposer;
-  Epetra_CrsMatrix* Atrans = nullptr;
-  Epetra_CrsMatrix* Btrans = nullptr;
+  auto A_trans = std::make_shared<Core::LinAlg::SparseMatrix>(A);
+  auto B_trans = std::make_shared<Core::LinAlg::SparseMatrix>(B);
 
   if (transA)
   {
-    Atrans = dynamic_cast<Epetra_CrsMatrix*>(&transposer(*A.epetra_matrix()));
+    A_trans = matrix_transpose(A);
     transA = false;
-  }
-  else
-  {
-    Atrans = A.epetra_matrix().get();
   }
 
   if (transB)
   {
-    Btrans = dynamic_cast<Epetra_CrsMatrix*>(&transposer(*B.epetra_matrix()));
+    B_trans = matrix_transpose(B);
     transB = false;
   }
-  else
-  {
-    Btrans = B.epetra_matrix().get();
-  }
 
-  int err = EpetraExt::MatrixMatrix::Multiply(
-      *Atrans, transA, *Btrans, transB, *C->epetra_matrix(), complete);
+  int err = EpetraExt::MatrixMatrix::Multiply(*A_trans->epetra_matrix(), transA,
+      *B_trans->epetra_matrix(), transB, *C->epetra_matrix(), complete);
   if (err) FOUR_C_THROW("EpetraExt::MatrixMatrix::MatrixMultiply returned err = {}", err);
 
   return C;
@@ -286,33 +265,23 @@ std::unique_ptr<Core::LinAlg::SparseMatrix> Core::LinAlg::matrix_multiply(const 
   // now create resultmatrix C with correct rowmap
   auto map = transA ? Map(A.domain_map()) : A.range_map();
   auto C = std::make_unique<SparseMatrix>(map, nnz, explicitdirichlet, savegraph);
-
-  EpetraExt::RowMatrix_Transpose transposer;
-  Epetra_CrsMatrix* Atrans = nullptr;
-  Epetra_CrsMatrix* Btrans = nullptr;
+  auto A_trans = std::make_shared<Core::LinAlg::SparseMatrix>(A);
+  auto B_trans = std::make_shared<Core::LinAlg::SparseMatrix>(B);
 
   if (transA)
   {
-    Atrans = dynamic_cast<Epetra_CrsMatrix*>(&transposer(*A.epetra_matrix()));
+    A_trans = matrix_transpose(A);
     transA = false;
-  }
-  else
-  {
-    Atrans = A.epetra_matrix().get();
   }
 
   if (transB)
   {
-    Btrans = dynamic_cast<Epetra_CrsMatrix*>(&transposer(*B.epetra_matrix()));
+    B_trans = matrix_transpose(B);
     transB = false;
   }
-  else
-  {
-    Btrans = B.epetra_matrix().get();
-  }
 
-  int err = EpetraExt::MatrixMatrix::Multiply(
-      *Atrans, transA, *Btrans, transB, *C->epetra_matrix(), complete);
+  int err = EpetraExt::MatrixMatrix::Multiply(*A_trans->epetra_matrix(), transA,
+      *B_trans->epetra_matrix(), transB, *C->epetra_matrix(), complete);
   if (err) FOUR_C_THROW("EpetraExt::MatrixMatrix::MatrixMultiply returned err = {}", err);
 
   return C;

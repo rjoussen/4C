@@ -11,10 +11,8 @@
 #include "4C_config.hpp"
 
 #include "4C_linalg_blocksparsematrix.hpp"
-#include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_linalg_graph.hpp"
 #include "4C_linalg_map.hpp"
-#include "4C_linalg_serialdensematrix.hpp"
 
 #include <Epetra_CrsMatrix.h>
 
@@ -25,9 +23,15 @@ FOUR_C_NAMESPACE_OPEN
 namespace Core::LinAlg
 {
   /*!
-   \brief Add a (transposed) Epetra_CrsMatrix to another: B = B*scalarB + A(^T)*scalarA
+   \brief Add a (transposed) Epetra_CrsMatrix to a Core::LinAlg::SparseMatrix: B = B*scalarB +
+   A(^T)*scalarA
 
    Add one matrix to another.
+
+   As opposed to the other Add() functions, this method can handle both the case where
+   matrix B is fill-completed (for performance reasons) but does not have to.
+   If B is completed and new matrix elements are detected, the matrix is un-completed and
+   rebuild internally (expensive).
 
    The matrix B may or may not be completed. If B is completed, no new elements can be
    inserted and the addition only succeeds in case the sparsity pattern of B is a superset of
@@ -50,34 +54,7 @@ namespace Core::LinAlg
    \param B          (in/out) : Matrix to be added to (must have Filled()==false)
    \param scalarB    (in)     : scaling factor for B
    */
-  void add(const Epetra_CrsMatrix& A, const bool transposeA, const double scalarA,
-      Epetra_CrsMatrix& B, const double scalarB);
-
-  /*!
-   \brief Add a (transposed) Epetra_CrsMatrix to a Core::LinAlg::SparseMatrix: B = B*scalarB +
-   A(^T)*scalarA
-
-   Add one matrix to another.
-
-   As opposed to the other Add() functions, this method can handle both the case where
-   matrix B is fill-completed (for performance reasons) but does not have to.
-   If B is completed and new matrix elements are detected, the matrix is un-completed and
-   rebuild internally (expensive).
-
-   Sparsity patterns of A and B need not match and A and B can be
-   nonsymmetric in value and pattern.
-
-   Row map of A has to be a processor-local subset of the row map of B.
-
-   Note that this is a true parallel add, even in the transposed case!
-
-   \param A          (in)     : Matrix to add to B (must have Filled()==true)
-   \param transposeA (in)     : flag indicating whether transposed of A should be used
-   \param scalarA    (in)     : scaling factor for A
-   \param B          (in/out) : Matrix to be added to (must have Filled()==false)
-   \param scalarB    (in)     : scaling factor for B
-   */
-  void add(const Epetra_CrsMatrix& A, const bool transposeA, const double scalarA,
+  void add(const Core::LinAlg::SparseMatrix& A, const bool transposeA, const double scalarA,
       Core::LinAlg::SparseMatrix& B, const double scalarB);
 
   /*!
