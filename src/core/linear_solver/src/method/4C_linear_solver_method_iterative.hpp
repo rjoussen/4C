@@ -10,6 +10,7 @@
 
 #include "4C_config.hpp"
 
+#include "4C_linalg_sparseoperator.hpp"
 #include "4C_linear_solver_method.hpp"
 #include "4C_linear_solver_preconditioner_type.hpp"
 #include "4C_utils_exceptions.hpp"
@@ -22,8 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 namespace Core::LinearSolver
 {
   //! krylov subspace linear solvers with right-side preconditioning
-  template <class MatrixType, class VectorType>
-  class IterativeSolver : public SolverTypeBase<MatrixType, VectorType>
+  class IterativeSolver : public SolverTypeBase
   {
    public:
     //! Constructor
@@ -38,8 +38,9 @@ namespace Core::LinearSolver
      * @param reset Boolean flag to enforce a full reset of the solver object
      * @param projector Krylov projector
      */
-    void setup(std::shared_ptr<MatrixType> A, std::shared_ptr<VectorType> x,
-        std::shared_ptr<VectorType> b, const bool refactor, const bool reset,
+    void setup(std::shared_ptr<Core::LinAlg::SparseOperator> A,
+        std::shared_ptr<Core::LinAlg::MultiVector<double>> x,
+        std::shared_ptr<Core::LinAlg::MultiVector<double>> b, const bool refactor, const bool reset,
         std::shared_ptr<Core::LinAlg::KrylovProjector> projector) override;
 
     //! Actual call to the underlying Belos solver
@@ -85,13 +86,13 @@ namespace Core::LinearSolver
     Teuchos::ParameterList& params_;
 
     //! initial guess and solution
-    std::shared_ptr<VectorType> x_;
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> x_;
 
     //! right hand side vector
-    std::shared_ptr<VectorType> b_;
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> b_;
 
     //! system of equations
-    std::shared_ptr<MatrixType> a_;
+    std::shared_ptr<Core::LinAlg::SparseOperator> a_;
 
     //! counting how many times matrix was solved between resets
     int ncall_{0};

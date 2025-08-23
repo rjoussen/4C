@@ -67,7 +67,6 @@ namespace Core::LinearSolver
   };
 
   /// linear solver type base class
-  template <class MatrixType, class VectorType>
   class SolverTypeBase
   {
    public:
@@ -83,8 +82,9 @@ namespace Core::LinearSolver
      * @param reset Boolean flag to enforce a full reset of the solver object
      * @param projector Krylov projector
      */
-    virtual void setup(std::shared_ptr<MatrixType> A, std::shared_ptr<VectorType> x,
-        std::shared_ptr<VectorType> b, const bool refactor, const bool reset,
+    virtual void setup(std::shared_ptr<Core::LinAlg::SparseOperator> A,
+        std::shared_ptr<Core::LinAlg::MultiVector<double>> x,
+        std::shared_ptr<Core::LinAlg::MultiVector<double>> b, const bool refactor, const bool reset,
         std::shared_ptr<Core::LinAlg::KrylovProjector> projector) = 0;
 
     virtual int solve() = 0;
