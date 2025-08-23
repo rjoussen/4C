@@ -122,13 +122,13 @@ void Core::LinAlg::BlockSparseMatrixBase::reset()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::LinAlg::BlockSparseMatrixBase::complete(bool enforce_complete)
+void Core::LinAlg::BlockSparseMatrixBase::complete(OptionsMatrixComplete options_matrix_complete)
 {
   for (int r = 0; r < rows(); ++r)
   {
     for (int c = 0; c < cols(); ++c)
     {
-      matrix(r, c).complete(domain_map(c), range_map(r), enforce_complete);
+      matrix(r, c).complete(domain_map(c), range_map(r), options_matrix_complete);
     }
   }
 
@@ -158,8 +158,8 @@ void Core::LinAlg::BlockSparseMatrixBase::complete(bool enforce_complete)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::LinAlg::BlockSparseMatrixBase::complete(
-    const Core::LinAlg::Map& domainmap, const Core::LinAlg::Map& rangemap, bool enforce_complete)
+void Core::LinAlg::BlockSparseMatrixBase::complete(const Core::LinAlg::Map& domainmap,
+    const Core::LinAlg::Map& rangemap, OptionsMatrixComplete options_matrix_complete)
 {
   FOUR_C_THROW("Complete with arguments not supported for block matrices");
 }

@@ -129,9 +129,7 @@ namespace
         }
       }
 
-      // TODO: we are not allowed to optimize data storage here, otherwise results in the second
-      //       run won't fit
-      matrix_->epetra_matrix()->FillComplete(false);
+      matrix_->complete({.optimize_data_storage = false});
     }
 
     void TearDown() override { Core::IO::cout.close(); }
@@ -255,9 +253,7 @@ namespace
 
     matrix_->insert_my_values(myLastLid[0], 1, &value[0], &myLastLid[0]);
 
-    // TODO: we are not allowed to optimize data storage here, otherwise results from the first
-    //       run won't fit
-    matrix_->epetra_matrix()->FillComplete(false);
+    matrix_->complete({.enforce_complete = true, .optimize_data_storage = false});
 
     EXPECT_THROW(Core::Communication::are_distributed_sparse_matrices_identical(
                      *communicators_, *matrix_, "matrix"),

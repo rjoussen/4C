@@ -860,7 +860,8 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::setup_system_matrix(
   aux_fluidblock.add(fluid_interf_inner, false, 1.0, 1.0);
   aux_fluidblock.add(fluid_inner_interf, false, 1.0, 1.0);
   aux_fluidblock.add(fluid_interf_interf, false, 1.0, 1.0);
-  aux_fluidblock.complete(fluidblock->full_domain_map(), fluidblock->full_range_map(), true);
+  aux_fluidblock.complete(
+      fluidblock->full_domain_map(), fluidblock->full_range_map(), {.enforce_complete = true});
 
   // ---------Addressing contribution to block (5,4)
   std::shared_ptr<Core::LinAlg::SparseMatrix> aux_ale_inner_interf =
@@ -871,7 +872,8 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::setup_system_matrix(
       *aux_ale_inner_interf);
 
   aux_ale_inner_interf->scale(1. / fluid_timescale);
-  aux_ale_inner_interf->complete(fluidblock->domain_map(), aux_ale_inner_interf->range_map(), true);
+  aux_ale_inner_interf->complete(
+      fluidblock->domain_map(), aux_ale_inner_interf->range_map(), {.enforce_complete = true});
 
   mat.assign(2, 1, Core::LinAlg::DataAccess::View, *aux_ale_inner_interf);
 
@@ -881,7 +883,7 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::setup_system_matrix(
   // ---------Addressing contribution to block (6,2)
   std::shared_ptr<Core::LinAlg::SparseMatrix> aux_mortar_m =
       Core::LinAlg::matrix_row_transform_gids(*mortar_m, *lag_mult_dof_map_);
-  aux_mortar_m->complete(solidblock->domain_map(), *lag_mult_dof_map_, true);
+  aux_mortar_m->complete(solidblock->domain_map(), *lag_mult_dof_map_, {.enforce_complete = true});
 
   mat.assign(3, 0, Core::LinAlg::DataAccess::View, *aux_mortar_m);
 
@@ -889,7 +891,8 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::setup_system_matrix(
   aux_mortar_m = Core::LinAlg::matrix_row_transform_gids(*mortar_m, *lag_mult_dof_map_);
   Core::LinAlg::SparseMatrix aux_mortar_m_trans(solidblock->row_map(), 81, false);
   aux_mortar_m_trans.add(*aux_mortar_m, true, -1.0 * (1.0 - solid_time_int_param), 0.0);
-  aux_mortar_m_trans.complete(*lag_mult_dof_map_, solidblock->range_map(), true);
+  aux_mortar_m_trans.complete(
+      *lag_mult_dof_map_, solidblock->range_map(), {.enforce_complete = true});
 
   mat.assign(0, 3, Core::LinAlg::DataAccess::View, aux_mortar_m_trans);
 
@@ -898,7 +901,8 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::setup_system_matrix(
       Core::LinAlg::matrix_row_transform_gids(*mortar_d, *lag_mult_dof_map_);
 
   aux_mortar_d->scale(-1.0 / fluid_timescale);
-  aux_mortar_d->complete(fluidblock->full_domain_map(), *lag_mult_dof_map_, true);
+  aux_mortar_d->complete(
+      fluidblock->full_domain_map(), *lag_mult_dof_map_, {.enforce_complete = true});
 
   mat.assign(3, 1, Core::LinAlg::DataAccess::View, *aux_mortar_d);
 
@@ -907,7 +911,8 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::setup_system_matrix(
   Core::LinAlg::SparseMatrix aux_mortar_d_trans(fluidblock->full_row_map(), 81, false);
   aux_mortar_d_trans.add(
       *aux_mortar_d, true, 1.0 * (1.0 - fluid_time_int_param) / fluid_res_scale, 0.0);
-  aux_mortar_d_trans.complete(*lag_mult_dof_map_, fluidblock->full_range_map(), true);
+  aux_mortar_d_trans.complete(
+      *lag_mult_dof_map_, fluidblock->full_range_map(), {.enforce_complete = true});
 
   mat.assign(1, 3, Core::LinAlg::DataAccess::View, aux_mortar_d_trans);
 
@@ -927,8 +932,8 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::setup_system_matrix(
     Core::LinAlg::SparseMatrix aux_fluid_mesh_inner_interf(
         fluid_mesh_inner_interf.row_map(), 81, false);
     aux_fluid_mesh_inner_interf.add(fluid_mesh_inner_interf, false, 1.0, 0.0);
-    aux_fluid_mesh_inner_interf.complete(
-        fluidblock->domain_map(), aux_fluid_mesh_inner_interf.range_map(), true);
+    aux_fluid_mesh_inner_interf.complete(fluidblock->domain_map(),
+        aux_fluid_mesh_inner_interf.range_map(), {.enforce_complete = true});
     aux_fluidblock.add(aux_fluid_mesh_inner_interf, false, 1. / fluid_timescale, 1.0);
 
     // Addressing contribution to block (3,5)
@@ -940,8 +945,8 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::setup_system_matrix(
     Core::LinAlg::SparseMatrix aux_fluid_mesh_interf_interf(
         fluid_mesh_interf_interf.row_map(), 81, false);
     aux_fluid_mesh_interf_interf.add(fluid_mesh_interf_interf, false, 1.0, 0.0);
-    aux_fluid_mesh_interf_interf.complete(
-        fluidblock->domain_map(), aux_fluid_mesh_interf_interf.range_map(), true);
+    aux_fluid_mesh_interf_interf.complete(fluidblock->domain_map(),
+        aux_fluid_mesh_interf_interf.range_map(), {.enforce_complete = true});
     aux_fluidblock.add(aux_fluid_mesh_interf_interf, false, 1. / fluid_timescale, 1.0);
 
     // Addressing contribution to block (4,5)

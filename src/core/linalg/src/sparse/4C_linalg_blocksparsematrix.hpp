@@ -89,10 +89,10 @@ namespace Core::LinAlg
     void zero() override;
     void reset() override;
 
-    void complete(bool enforce_complete = false) override;
+    void complete(OptionsMatrixComplete options_matrix_complete = {}) override;
 
     void complete(const Core::LinAlg::Map& domainmap, const Core::LinAlg::Map& rangemap,
-        bool enforce_complete = false) override;
+        OptionsMatrixComplete options_matrix_complete = {}) override;
 
     void un_complete() override;
 
@@ -321,7 +321,7 @@ namespace Core::LinAlg
      */
     void assemble(double val, int rgid, int cgid) override { Strategy::assemble(val, rgid, cgid); }
 
-    void complete(bool enforce_complete = false) override;
+    void complete(OptionsMatrixComplete options_matrix_complete = {}) override;
 
    private:
     /** \brief internal clone method which provides the possibility to clone only
@@ -511,10 +511,11 @@ Core::LinAlg::BlockSparseMatrix<Strategy>::clone(DataAccess access,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <class Strategy>
-void Core::LinAlg::BlockSparseMatrix<Strategy>::complete(bool enforce_complete)
+void Core::LinAlg::BlockSparseMatrix<Strategy>::complete(
+    OptionsMatrixComplete options_matrix_complete)
 {
   Strategy::complete();
-  BlockSparseMatrixBase::complete(enforce_complete);
+  BlockSparseMatrixBase::complete(options_matrix_complete);
 }
 
 

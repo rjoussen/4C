@@ -814,9 +814,8 @@ void Core::LinAlg::SparseMatrix::fe_assemble(double val, int rgid, int cgid)
 
 
 /*----------------------------------------------------------------------*
- |  fill_complete a matrix  (public)                          mwgee 12/06|
  *----------------------------------------------------------------------*/
-void Core::LinAlg::SparseMatrix::complete(bool enforce_complete)
+void Core::LinAlg::SparseMatrix::complete(OptionsMatrixComplete options_matrix_complete)
 {
   TEUCHOS_FUNC_TIME_MONITOR("Core::LinAlg::SparseMatrix::Complete");
 
@@ -828,9 +827,9 @@ void Core::LinAlg::SparseMatrix::complete(bool enforce_complete)
     if (err) FOUR_C_THROW("Epetra_FECrsMatrix::GlobalAssemble() returned err={}", err);
   }
 
-  if (sysmat_->Filled() and not enforce_complete) return;
+  if (sysmat_->Filled() and not options_matrix_complete.enforce_complete) return;
 
-  int err = sysmat_->FillComplete(true);
+  int err = sysmat_->FillComplete(options_matrix_complete.optimize_data_storage);
   if (err) FOUR_C_THROW("Epetra_CrsMatrix::fill_complete(domain,range) returned err={}", err);
 
   // keep mask for further use
@@ -842,10 +841,9 @@ void Core::LinAlg::SparseMatrix::complete(bool enforce_complete)
 
 
 /*----------------------------------------------------------------------*
- |  fill_complete a matrix  (public)                          mwgee 01/08|
  *----------------------------------------------------------------------*/
-void Core::LinAlg::SparseMatrix::complete(
-    const Core::LinAlg::Map& domainmap, const Core::LinAlg::Map& rangemap, bool enforce_complete)
+void Core::LinAlg::SparseMatrix::complete(const Core::LinAlg::Map& domainmap,
+    const Core::LinAlg::Map& rangemap, OptionsMatrixComplete options_matrix_complete)
 {
   TEUCHOS_FUNC_TIME_MONITOR("Core::LinAlg::SparseMatrix::Complete(domain,range)");
 
@@ -858,13 +856,14 @@ void Core::LinAlg::SparseMatrix::complete(
     if (err) FOUR_C_THROW("Epetra_FECrsMatrix::GlobalAssemble() returned err={}", err);
   }
 
-  if (sysmat_->Filled() and not enforce_complete) return;
+  if (sysmat_->Filled() and not options_matrix_complete.enforce_complete) return;
 
   int err = 1;
-  if (enforce_complete and sysmat_->Filled())
+  if (options_matrix_complete.enforce_complete and sysmat_->Filled())
     err = sysmat_->ExpertStaticFillComplete(domainmap.get_epetra_map(), rangemap.get_epetra_map());
   else
-    err = sysmat_->FillComplete(domainmap.get_epetra_map(), rangemap.get_epetra_map(), true);
+    err = sysmat_->FillComplete(domainmap.get_epetra_map(), rangemap.get_epetra_map(),
+        options_matrix_complete.optimize_data_storage);
 
   if (err) FOUR_C_THROW("Epetra_CrsMatrix::fill_complete(domain,range) returned err={}", err);
 
@@ -873,24 +872,6 @@ void Core::LinAlg::SparseMatrix::complete(
   {
     graph_ = std::make_shared<Core::LinAlg::Graph>(sysmat_->Graph());
   }
-}
-
-void Core::LinAlg::SparseMatrix::complete(
-    const Epetra_Map& domainmap, const Epetra_Map& rangemap, bool enforce_complete)
-{
-  this->complete(Map(domainmap), Map(rangemap), enforce_complete);
-}
-
-void Core::LinAlg::SparseMatrix::complete(
-    const Map& domainmap, const Epetra_Map& rangemap, bool enforce_complete)
-{
-  this->complete(domainmap, Map(rangemap), enforce_complete);
-}
-
-void Core::LinAlg::SparseMatrix::complete(
-    const Epetra_Map& domainmap, const Map& rangemap, bool enforce_complete)
-{
-  this->complete(Map(domainmap), rangemap, enforce_complete);
 }
 
 /*----------------------------------------------------------------------*

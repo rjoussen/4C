@@ -264,35 +264,20 @@ namespace Core::LinAlg
      */
     void fe_assemble(double val, int rgid, int cgid);
 
-
     /*!
       The GlobalAssembleMethod() distributes nonlocal values to their owning procs
       for Epetra_FECrsMatrices.
       Afterwards Fillcomplete is called such as for Epetra_CrsMatrices.
-
-      @param enforce_complete Enforce fill_complete() even though the matrix might already be filled
      */
-    void complete(bool enforce_complete = false) override;
+    void complete(OptionsMatrixComplete options_matrix_complete = {}) override;
 
     /*!
       The GlobalAssembleMethod() distributes nonlocal values to their owning procs
       for Epetra_FECrsMatrices.
       Afterwards Fillcomplete is called such as for Epetra_CrsMatrices.
-
-      @param enforce_complete Enforce fill_complete() even though the matrix might already be filled
      */
     void complete(const Core::LinAlg::Map& domainmap, const Core::LinAlg::Map& rangemap,
-        bool enforce_complete = false) override;
-
-    // The following three interfaces needs so be merged into one.
-    void complete(const Core::LinAlg::Map& domainmap, const Epetra_Map& rangemap,
-        bool enforce_complete = false);
-
-    void complete(const Epetra_Map& domainmap, const Core::LinAlg::Map& rangemap,
-        bool enforce_complete = false);
-
-    void complete(
-        const Epetra_Map& domainmap, const Epetra_Map& rangemap, bool enforce_complete = false);
+        OptionsMatrixComplete options_matrix_complete = {}) override;
 
     void un_complete() override;
 
