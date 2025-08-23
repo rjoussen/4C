@@ -242,7 +242,7 @@ namespace CONTACT
         std::shared_ptr<Core::LinAlg::Vector<double>> fd,
         std::shared_ptr<Core::LinAlg::Vector<double>> sold,
         std::shared_ptr<Core::LinAlg::MapExtractor> dbcmaps,
-        std::shared_ptr<Epetra_Operator>& blockMat,
+        std::shared_ptr<Core::LinAlg::SparseOperator>& blockMat,
         std::shared_ptr<Core::LinAlg::Vector<double>>& blocksol,
         std::shared_ptr<Core::LinAlg::Vector<double>>& blockrhs) override;
 

@@ -3115,7 +3115,7 @@ void Solid::TimIntImpl::cmt_linear_solve()
     {
       // otherwise, solve the saddle point linear system
 
-      std::shared_ptr<Epetra_Operator> blockMat = nullptr;
+      std::shared_ptr<Core::LinAlg::SparseOperator> blockMat = nullptr;
       std::shared_ptr<Core::LinAlg::Vector<double>> blocksol = nullptr;
       std::shared_ptr<Core::LinAlg::Vector<double>> blockrhs = nullptr;
 

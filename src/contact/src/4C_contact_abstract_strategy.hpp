@@ -17,7 +17,6 @@
 #include "4C_inpar_mortar.hpp"
 #include "4C_mortar_strategy_base.hpp"
 
-#include <Epetra_Operator.h>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
 FOUR_C_NAMESPACE_OPEN
@@ -931,7 +930,7 @@ namespace CONTACT
         std::shared_ptr<Core::LinAlg::Vector<double>> fd,
         std::shared_ptr<Core::LinAlg::Vector<double>> sold,
         std::shared_ptr<Core::LinAlg::MapExtractor> dbcmaps,
-        std::shared_ptr<Epetra_Operator>& blockMat,
+        std::shared_ptr<Core::LinAlg::SparseOperator>& blockMat,
         std::shared_ptr<Core::LinAlg::Vector<double>>& blocksol,
         std::shared_ptr<Core::LinAlg::Vector<double>>& blockrhs) override = 0;
     void update_displacements_and_l_mincrements(std::shared_ptr<Core::LinAlg::Vector<double>> sold,

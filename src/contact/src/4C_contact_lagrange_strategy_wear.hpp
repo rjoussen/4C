@@ -8,9 +8,6 @@
 #ifndef FOUR_C_CONTACT_LAGRANGE_STRATEGY_WEAR_HPP
 #define FOUR_C_CONTACT_LAGRANGE_STRATEGY_WEAR_HPP
 
-/*----------------------------------------------------------------------*
- | header                                                   farah 09/13 |
- *----------------------------------------------------------------------*/
 #include "4C_config.hpp"
 
 #include "4C_contact_lagrange_strategy.hpp"
@@ -101,7 +98,7 @@ namespace Wear
         std::shared_ptr<Core::LinAlg::Vector<double>> fd,
         std::shared_ptr<Core::LinAlg::Vector<double>> sold,
         std::shared_ptr<Core::LinAlg::MapExtractor> dbcmaps,
-        std::shared_ptr<Epetra_Operator>& blockMat,
+        std::shared_ptr<Core::LinAlg::SparseOperator>& blockMat,
         std::shared_ptr<Core::LinAlg::Vector<double>>& blocksol,
         std::shared_ptr<Core::LinAlg::Vector<double>>& blockrhs) override;
 
