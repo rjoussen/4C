@@ -11,6 +11,7 @@
 #include "4C_config.hpp"
 
 #include "4C_linalg_krylov_projector.hpp"
+#include "4C_linalg_sparseoperator.hpp"
 #include "4C_utils_exceptions.hpp"
 
 FOUR_C_NAMESPACE_OPEN
