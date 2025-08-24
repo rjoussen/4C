@@ -853,7 +853,7 @@ void FSI::MortarMonolithicFluidSplit::setup_system_matrix(Core::LinAlg::BlockSpa
   (*aigtransform_)(a->full_row_map(), a->full_col_map(), aig, 1.,
       Coupling::Adapter::CouplingSlaveConverter(interface_fluid_ale_coupling()), *laig);
 
-  laig->complete(f->matrix(1, 1).domain_map(), aii.range_map(), true);
+  laig->complete(f->matrix(1, 1).domain_map(), aii.range_map(), {.enforce_complete = true});
   std::shared_ptr<Core::LinAlg::SparseMatrix> llaig =
       matrix_multiply(*laig, false, *mortarp, false, false, false, true);
   laig = std::make_shared<Core::LinAlg::SparseMatrix>(llaig->row_map(), 81, false);
@@ -920,7 +920,7 @@ void FSI::MortarMonolithicFluidSplit::setup_system_matrix(Core::LinAlg::BlockSpa
         Coupling::Adapter::CouplingMasterConverter(coupfa), *lfmgi, false);
 
     // ---------Addressing contribution to block (2,4)
-    lfmgi->complete(aii.domain_map(), mortarp->range_map(), true);
+    lfmgi->complete(aii.domain_map(), mortarp->range_map(), {.enforce_complete = true});
     std::shared_ptr<Core::LinAlg::SparseMatrix> llfmgi =
         matrix_multiply(*mortarp, true, *lfmgi, false, false, false, true);
     lfmgi = std::make_shared<Core::LinAlg::SparseMatrix>(s->row_map(), 81, false);

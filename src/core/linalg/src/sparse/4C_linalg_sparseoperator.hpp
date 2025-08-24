@@ -67,6 +67,17 @@ namespace Core::LinAlg
                             each 'original' block is divided into 2 blocks. */
   };
 
+  //! \brief Options for matrix completion
+  struct OptionsMatrixComplete
+  {
+    //! enforce a lightweight fill_complete() even though the matrix might already have been filled
+    bool enforce_complete = false;
+
+    //! make consecutive row index sections contiguous, minimize internal storage used for
+    //! constructing graph
+    bool optimize_data_storage = true;
+  };
+
   /// Linear operator interface enhanced for use in FE simulations
   /*!
 
@@ -184,15 +195,11 @@ namespace Core::LinAlg
     virtual bool filled() const = 0;
 
     /// Call fill_complete on a matrix
-    /*!
-     * @param enforce_complete Enforce fill_complete() even though the matrix might already be
-     * filled
-     */
-    virtual void complete(bool enforce_complete = false) = 0;
+    virtual void complete(OptionsMatrixComplete options_matrix_complete = {}) = 0;
 
     /// Call fill_complete on a matrix (for rectangular and square matrices)
     virtual void complete(const Core::LinAlg::Map& domainmap, const Core::LinAlg::Map& rangemap,
-        bool enforce_complete = false) = 0;
+        OptionsMatrixComplete options_matrix_complete = {}) = 0;
 
     /// Undo a previous Complete() call
     virtual void un_complete() = 0;
