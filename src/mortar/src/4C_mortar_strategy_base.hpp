@@ -10,14 +10,12 @@
 
 #include "4C_config.hpp"
 
-#include "4C_contact_input.hpp"  // for the CONTACT enums
+#include "4C_contact_input.hpp"
 #include "4C_linalg_map.hpp"
 #include "4C_linalg_vector.hpp"
-#include "4C_mortar_interface.hpp"                                       // for the enum state type
-#include "4C_solver_nonlin_nox_constraint_interface_preconditioner.hpp"  // interface specifications
+#include "4C_mortar_interface.hpp"
+#include "4C_solver_nonlin_nox_constraint_interface_preconditioner.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
-
-#include <Epetra_Operator.h>
 
 #include <memory>
 
@@ -327,7 +325,7 @@ namespace Mortar
         std::shared_ptr<Core::LinAlg::Vector<double>> fd,
         std::shared_ptr<Core::LinAlg::Vector<double>> sold,
         std::shared_ptr<Core::LinAlg::MapExtractor> dbcmaps,
-        std::shared_ptr<Epetra_Operator>& blockMat,
+        std::shared_ptr<Core::LinAlg::SparseOperator>& blockMat,
         std::shared_ptr<Core::LinAlg::Vector<double>>& blocksol,
         std::shared_ptr<Core::LinAlg::Vector<double>>& blockrhs) = 0;
     virtual void update_displacements_and_l_mincrements(
