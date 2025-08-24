@@ -15,7 +15,6 @@
 #include "4C_linalg_vector.hpp"
 #include "4C_utils_exceptions.hpp"
 
-#include <Epetra_Operator.h>
 #include <Teuchos_ParameterList.hpp>
 
 #include <functional>
@@ -34,7 +33,6 @@ namespace Core::LinAlg
 
 namespace Core::LinearSolver
 {
-  template <class MatrixType, class VectorType>
   class SolverTypeBase;
 }
 
@@ -67,12 +65,7 @@ namespace Core::LinAlg
   };
 
   /*!
-  \brief A general solver interface to Trilinos solvers and spooles
-
-  - The input of parameters needs to be completely reworked (hiwi job)
-
-  - This class should implement Epetra_Operator in the future
-
+  \brief A general solver interface
   */
   class Solver
   {
@@ -92,7 +85,7 @@ namespace Core::LinAlg
 
     \param inparams (in): input parameter list as provided by Global::Problem,
                           e.g. Global::Problem::SolverParams(num)
-    \param comm     (in): a reference to a Epetra communicator object
+    \param comm     (in): a reference to a communicator object
     \param get_solver_params (in): function to get solver parameters based on ID used inside
                                    inparams
     \param verbosity (in): verbosity level for output
@@ -285,9 +278,7 @@ namespace Core::LinAlg
     std::shared_ptr<Teuchos::ParameterList> params_;
 
     /// internal solver strategy
-    std::shared_ptr<
-        Core::LinearSolver::SolverTypeBase<Epetra_Operator, Core::LinAlg::MultiVector<double>>>
-        solver_;
+    std::shared_ptr<Core::LinearSolver::SolverTypeBase> solver_;
 
    private:
     //! don't want = operator

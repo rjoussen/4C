@@ -22,8 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-template <class MatrixType, class VectorType>
-Core::LinearSolver::DirectSolver<MatrixType, VectorType>::DirectSolver(std::string solvertype)
+Core::LinearSolver::DirectSolver::DirectSolver(std::string solvertype)
     : solvertype_(solvertype), factored_(false), solver_(nullptr), projector_(nullptr)
 {
 #if FOUR_C_TRILINOS_INTERNAL_VERSION_GE(2025, 3)
@@ -35,13 +34,12 @@ Core::LinearSolver::DirectSolver<MatrixType, VectorType>::DirectSolver(std::stri
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-template <class MatrixType, class VectorType>
-void Core::LinearSolver::DirectSolver<MatrixType, VectorType>::setup(
-    std::shared_ptr<MatrixType> matrix, std::shared_ptr<VectorType> x,
-    std::shared_ptr<VectorType> b, const bool refactor, const bool reset,
+void Core::LinearSolver::DirectSolver::setup(std::shared_ptr<Core::LinAlg::SparseOperator> matrix,
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> x,
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> b, const bool refactor, const bool reset,
     std::shared_ptr<Core::LinAlg::KrylovProjector> projector)
 {
-  auto crsA = std::dynamic_pointer_cast<Epetra_CrsMatrix>(matrix);
+  auto crsA = std::dynamic_pointer_cast<Core::LinAlg::SparseMatrix>(matrix);
 
   // 1. merge the block system matrix into a standard sparse matrix if necessary
   if (!crsA)
@@ -53,18 +51,16 @@ void Core::LinearSolver::DirectSolver<MatrixType, VectorType>::setup(
     if (matrixDim > 50000)
       std::cout << "\n WARNING: Direct linear solver is merging matrix, this is very expensive! \n";
 
-    std::shared_ptr<Core::LinAlg::SparseMatrix> Ablock_merged = Ablock->merge();
-    crsA = Ablock_merged->epetra_matrix();
+    crsA = Ablock->merge();
   }
 
   // 2. project the linear system if close to being singular and set the final matrix and vectors
   projector_ = projector;
   if (projector_ != nullptr)
   {
-    Core::LinAlg::SparseMatrix A_view(crsA, Core::LinAlg::DataAccess::View);
-    std::shared_ptr<Core::LinAlg::SparseMatrix> A2 = projector_->project(A_view);
+    Core::LinAlg::SparseMatrix A_view(*crsA);
+    crsA = projector_->project(A_view);
 
-    crsA = A2->epetra_matrix();
     projector_->apply_pt(*b);
   }
 
@@ -76,7 +72,7 @@ void Core::LinearSolver::DirectSolver<MatrixType, VectorType>::setup(
 #else
   linear_problem_->SetRHS(&b_->get_epetra_multi_vector());
   linear_problem_->SetLHS(&x_->get_epetra_multi_vector());
-  linear_problem_->SetOperator(a_.get());
+  linear_problem_->SetOperator(a_->epetra_operator());
 
   if (reindexer_ and not(reset or refactor)) reindexer_->fwd();
 #endif
@@ -127,7 +123,7 @@ void Core::LinearSolver::DirectSolver<MatrixType, VectorType>::setup(
 
 #if FOUR_C_TRILINOS_INTERNAL_VERSION_GE(2025, 3)
     solver_ = Amesos2::create<Epetra_CrsMatrix, Epetra_MultiVector>(solver_type,
-        Teuchos::rcp_dynamic_cast<Epetra_CrsMatrix>(Teuchos::rcpFromRef(*a_)),
+        Teuchos::rcp_dynamic_cast<Epetra_CrsMatrix>(Teuchos::rcpFromRef(*a_->epetra_operator())),
         Teuchos::rcpFromRef(x_->get_epetra_multi_vector()),
         Teuchos::rcpFromRef(b_->get_epetra_multi_vector()));
 
@@ -140,8 +136,7 @@ void Core::LinearSolver::DirectSolver<MatrixType, VectorType>::setup(
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-template <class MatrixType, class VectorType>
-int Core::LinearSolver::DirectSolver<MatrixType, VectorType>::solve()
+int Core::LinearSolver::DirectSolver::solve()
 {
   if (not is_factored())
   {
@@ -165,10 +160,5 @@ int Core::LinearSolver::DirectSolver<MatrixType, VectorType>::solve()
 
   return 0;
 }
-
-//----------------------------------------------------------------------------------
-//----------------------------------------------------------------------------------
-// explicit initialization
-template class Core::LinearSolver::DirectSolver<Epetra_Operator, Core::LinAlg::MultiVector<double>>;
 
 FOUR_C_NAMESPACE_CLOSE

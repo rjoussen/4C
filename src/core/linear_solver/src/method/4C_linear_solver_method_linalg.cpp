@@ -182,21 +182,17 @@ void Core::LinAlg::Solver::setup(std::shared_ptr<Core::LinAlg::SparseOperator> m
 
     if ("belos" == solvertype)
     {
-      solver_ = std::make_shared<
-          Core::LinearSolver::IterativeSolver<Epetra_Operator, Core::LinAlg::MultiVector<double>>>(
-          comm_, Solver::params());
+      solver_ = std::make_shared<Core::LinearSolver::IterativeSolver>(comm_, Solver::params());
     }
     else if ("umfpack" == solvertype or "superlu" == solvertype)
     {
-      solver_ = std::make_shared<
-          Core::LinearSolver::DirectSolver<Epetra_Operator, Core::LinAlg::MultiVector<double>>>(
-          solvertype);
+      solver_ = std::make_shared<Core::LinearSolver::DirectSolver>(solvertype);
     }
     else
       FOUR_C_THROW("Unknown type of solver");
   }
 
-  solver_->setup(matrix->epetra_operator(), x, b, refactor, params.reset, params.projector);
+  solver_->setup(matrix, x, b, refactor, params.reset, params.projector);
 }
 
 /*----------------------------------------------------------------------*

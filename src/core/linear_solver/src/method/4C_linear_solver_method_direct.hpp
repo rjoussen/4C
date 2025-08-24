@@ -10,6 +10,7 @@
 
 #include "4C_config.hpp"
 
+#include "4C_linalg_sparseoperator.hpp"
 #include "4C_linear_solver_method.hpp"
 
 #if FOUR_C_TRILINOS_INTERNAL_VERSION_GE(2025, 3)
@@ -24,8 +25,7 @@ FOUR_C_NAMESPACE_OPEN
 namespace Core::LinearSolver
 {
   /// direct linear solver (using amesos)
-  template <class MatrixType, class VectorType>
-  class DirectSolver : public SolverTypeBase<MatrixType, VectorType>
+  class DirectSolver : public SolverTypeBase
   {
    public:
     //! Constructor
@@ -40,8 +40,9 @@ namespace Core::LinearSolver
      * @param reset Boolean flag to enforce a full reset of the solver object
      * @param projector Krylov projector
      */
-    void setup(std::shared_ptr<MatrixType> matrix, std::shared_ptr<VectorType> x,
-        std::shared_ptr<VectorType> b, const bool refactor, const bool reset,
+    void setup(std::shared_ptr<Core::LinAlg::SparseOperator> matrix,
+        std::shared_ptr<Core::LinAlg::MultiVector<double>> x,
+        std::shared_ptr<Core::LinAlg::MultiVector<double>> b, const bool refactor, const bool reset,
         std::shared_ptr<Core::LinAlg::KrylovProjector> projector = nullptr) override;
 
     //! Actual call to the underlying amesos solver
@@ -57,13 +58,13 @@ namespace Core::LinearSolver
     bool factored_;
 
     //! initial guess and solution
-    std::shared_ptr<VectorType> x_;
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> x_;
 
     //! right hand side vector
-    std::shared_ptr<VectorType> b_;
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> b_;
 
     //! system of equations
-    std::shared_ptr<MatrixType> a_;
+    std::shared_ptr<Core::LinAlg::SparseOperator> a_;
 
 #if FOUR_C_TRILINOS_INTERNAL_VERSION_GE(2025, 3)
     //! an abstract Amesos2 solver that can be any of the concrete implementations
