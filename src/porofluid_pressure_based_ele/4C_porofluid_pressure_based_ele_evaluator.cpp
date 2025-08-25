@@ -174,7 +174,8 @@ Discret::Elements::PoroFluidEvaluator::EvaluatorInterface<nsd, nen>::create_eval
               {
                 // add evaluator for the instationary solid pressure term
                 assembler = std::make_shared<AssembleStandard>(curphase, inittimederiv);
-                tmpevaluator = std::make_shared<EvaluatorVolFracAddInstatTermsSat<nsd, nen>>(
+                tmpevaluator = std::make_shared<
+                    EvaluatorVolFracHomogenizedVasculatureTumorAddInstatTermsSat<nsd, nen>>(
                     assembler, curphase);
                 evaluator_phase->add_evaluator(tmpevaluator);
               }
@@ -182,7 +183,8 @@ Discret::Elements::PoroFluidEvaluator::EvaluatorInterface<nsd, nen>::create_eval
               if (para.is_ale())
               {
                 assembler = std::make_shared<AssembleStandard>(curphase, inittimederiv);
-                tmpevaluator = std::make_shared<EvaluatorVolFracAddDivVelTermSat<nsd, nen>>(
+                tmpevaluator = std::make_shared<
+                    EvaluatorVolFracHomogenizedVasculatureTumorAddDivVelTermSat<nsd, nen>>(
                     assembler, curphase);
                 evaluator_phase->add_evaluator(tmpevaluator);
               }
@@ -279,17 +281,18 @@ Discret::Elements::PoroFluidEvaluator::EvaluatorInterface<nsd, nen>::create_eval
               {
                 // add evaluator for the instationary solid pressure term
                 assembler = std::make_shared<AssembleStandard>(curphase, inittimederiv);
-                tmpevaluator =
-                    std::make_shared<EvaluatorVolFracAddInstatTerms<nsd, nen>>(assembler, curphase);
+                tmpevaluator = std::make_shared<
+                    EvaluatorVolFracHomogenizedVasculatureTumorAddInstatTerms<nsd, nen>>(
+                    assembler, curphase);
                 evaluator_lastphase->add_evaluator(tmpevaluator);
               }
 
               if (para.is_ale())
               {
                 assembler = std::make_shared<AssembleStandard>(curphase, inittimederiv);
-                tmpevaluator =
-                    std::make_shared<EvaluatorVolFracAddDivVelTerm<nsd, nen>>(assembler, curphase);
-
+                tmpevaluator = std::make_shared<
+                    EvaluatorVolFracHomogenizedVasculatureTumorAddDivVelTerm<nsd, nen>>(
+                    assembler, curphase);
                 evaluator_lastphase->add_evaluator(tmpevaluator);
               }
             }
@@ -352,7 +355,9 @@ Discret::Elements::PoroFluidEvaluator::EvaluatorInterface<nsd, nen>::create_eval
           if (not para.is_stationary())
           {
             assembler = std::make_shared<AssembleStandard>(-1, inittimederiv);
-            tmpevaluator = std::make_shared<EvaluatorVolFracInstat<nsd, nen>>(assembler, -1);
+            tmpevaluator =
+                std::make_shared<EvaluatorVolFracHomogenizedVasculatureTumorInstat<nsd, nen>>(
+                    assembler, -1);
             evaluator_volfrac->add_evaluator(tmpevaluator);
           }
 
@@ -360,34 +365,46 @@ Discret::Elements::PoroFluidEvaluator::EvaluatorInterface<nsd, nen>::create_eval
           if (para.is_ale())
           {
             assembler = std::make_shared<AssembleStandard>(-1, inittimederiv);
-            tmpevaluator = std::make_shared<EvaluatorVolFracDivVel<nsd, nen>>(assembler, -1);
+            tmpevaluator =
+                std::make_shared<EvaluatorVolFracHomogenizedVasculatureTumorDivVel<nsd, nen>>(
+                    assembler, -1);
             evaluator_volfrac->add_evaluator(tmpevaluator);
           }
 
           // diffusive term
           assembler = std::make_shared<AssembleStandard>(-1, inittimederiv);
-          tmpevaluator = std::make_shared<EvaluatorVolFracDiff<nsd, nen>>(assembler, -1);
+          tmpevaluator =
+              std::make_shared<EvaluatorVolFracHomogenizedVasculatureTumorDiff<nsd, nen>>(
+                  assembler, -1);
           evaluator_volfrac->add_evaluator(tmpevaluator);
 
           // reactive term
           assembler = std::make_shared<AssembleStandard>(-1, inittimederiv);
-          tmpevaluator = std::make_shared<EvaluatorVolFracReac<nsd, nen>>(assembler, -1);
+          tmpevaluator =
+              std::make_shared<EvaluatorVolFracHomogenizedVasculatureTumorReac<nsd, nen>>(
+                  assembler, -1);
           evaluator_volfrac->add_evaluator(tmpevaluator);
 
           // additional flux term
           assembler = std::make_shared<AssembleStandard>(-1, inittimederiv);
-          tmpevaluator = std::make_shared<EvaluatorVolFracAddFlux<nsd, nen>>(assembler, -1);
+          tmpevaluator =
+              std::make_shared<EvaluatorVolFracHomogenizedVasculatureTumorAddFlux<nsd, nen>>(
+                  assembler, -1);
           evaluator_volfrac->add_evaluator(tmpevaluator);
 
           // 2) volume fraction pressure terms
           // -------------------------------------------------------- diffusive term
           assembler = std::make_shared<AssembleStandard>(-1, inittimederiv);
-          tmpevaluator = std::make_shared<EvaluatorVolFracPressureDiff<nsd, nen>>(assembler, -1);
+          tmpevaluator =
+              std::make_shared<EvaluatorVolFracHomogenizedVasculatureTumorPressureDiff<nsd, nen>>(
+                  assembler, -1);
           evaluator_volfrac->add_evaluator(tmpevaluator);
 
           // reactive term
           assembler = std::make_shared<AssembleStandard>(-1, inittimederiv);
-          tmpevaluator = std::make_shared<EvaluatorVolFracPressureReac<nsd, nen>>(assembler, -1);
+          tmpevaluator =
+              std::make_shared<EvaluatorVolFracHomogenizedVasculatureTumorPressureReac<nsd, nen>>(
+                  assembler, -1);
           evaluator_volfrac->add_evaluator(tmpevaluator);
         }
 
@@ -423,7 +440,8 @@ Discret::Elements::PoroFluidEvaluator::EvaluatorInterface<nsd, nen>::create_eval
         else
         {
           tmpevaluator =
-              std::make_shared<EvaluatorPressureAndSaturation<nsd, nen>>(assembler, iphase);
+              std::make_shared<EvaluatorPressureAndSaturationHomogenizedVasculatureTumor<nsd, nen>>(
+                  assembler, iphase);
         }
         evaluator_multiphase->add_evaluator(tmpevaluator);
       }
@@ -497,8 +515,9 @@ Discret::Elements::PoroFluidEvaluator::EvaluatorInterface<nsd, nen>::create_eval
         for (int iphase = 0; iphase < numdofpernode; iphase++)
         {
           assembler = std::make_shared<AssembleStandard>(iphase, false);
-          tmpevaluator = std::make_shared<EvaluatorPhaseVelocities<nsd, nen>>(
-              assembler, iphase, para.is_ale());
+          tmpevaluator =
+              std::make_shared<EvaluatorPhaseVelocitiesHomogenizedVasculatureTumor<nsd, nen>>(
+                  assembler, iphase, para.is_ale());
           evaluator_multiphase->add_evaluator(tmpevaluator);
         }
       }
@@ -517,7 +536,9 @@ Discret::Elements::PoroFluidEvaluator::EvaluatorInterface<nsd, nen>::create_eval
       }
       else
       {
-        evaluator = std::make_shared<EvaluatorValidVolFracPressures<nsd, nen>>(assembler, -1);
+        evaluator =
+            std::make_shared<EvaluatorValidVolFracHomogenizedVasculatureTumorPressures<nsd, nen>>(
+                assembler, -1);
       }
 
       break;
@@ -2542,13 +2563,14 @@ double Discret::Elements::PoroFluidEvaluator::EvaluatorMassSaturation<nsd, nen>:
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::Elements::PoroFluidEvaluator::EvaluatorPressureAndSaturation<nsd,
-    nen>::evaluate_matrix_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
-    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
-    int curphase, int phasetoadd, int numdofpernode,
-    const PoroFluidManager::PhaseManagerInterface& phasemanager,
-    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
-    double fac, bool inittimederiv)
+void Discret::Elements::PoroFluidEvaluator::
+    EvaluatorPressureAndSaturationHomogenizedVasculatureTumor<nsd,
+        nen>::evaluate_matrix_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
+        const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
+        int curphase, int phasetoadd, int numdofpernode,
+        const PoroFluidManager::PhaseManagerInterface& phasemanager,
+        const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager,
+        double timefacfac, double fac, bool inittimederiv)
 {
   // do nothing
 }
@@ -2556,13 +2578,14 @@ void Discret::Elements::PoroFluidEvaluator::EvaluatorPressureAndSaturation<nsd,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::Elements::PoroFluidEvaluator::EvaluatorPressureAndSaturation<nsd,
-    nen>::evaluate_vector_and_assemble(std::vector<Core::LinAlg::SerialDenseVector*>& elevec,
-    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
-    const Core::LinAlg::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
-    const PoroFluidManager::PhaseManagerInterface& phasemanager,
-    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
-    double fac, bool inittimederiv)
+void Discret::Elements::PoroFluidEvaluator::
+    EvaluatorPressureAndSaturationHomogenizedVasculatureTumor<nsd,
+        nen>::evaluate_vector_and_assemble(std::vector<Core::LinAlg::SerialDenseVector*>& elevec,
+        const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
+        const Core::LinAlg::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
+        const PoroFluidManager::PhaseManagerInterface& phasemanager,
+        const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
+        double fac, bool inittimederiv)
 {
   // get vectors to be filled
   // pressure
@@ -2629,15 +2652,16 @@ void Discret::Elements::PoroFluidEvaluator::EvaluatorPressureAndSaturation<nsd,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::Elements::PoroFluidEvaluator::EvaluatorPressureAndSaturation<nsd,
-    nen>::evaluate_matrix_od_struct_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
-                                                     elemat,
-    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& deriv,
-    const Core::LinAlg::Matrix<nsd, nen>& derxy, const Core::LinAlg::Matrix<nsd, nsd>& xjm,
-    int curphase, int phasetoadd, int numdofpernode,
-    const PoroFluidManager::PhaseManagerInterface& phasemanager,
-    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
-    double fac, double det)
+void Discret::Elements::PoroFluidEvaluator::
+    EvaluatorPressureAndSaturationHomogenizedVasculatureTumor<nsd,
+        nen>::evaluate_matrix_od_struct_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
+                                                         elemat,
+        const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& deriv,
+        const Core::LinAlg::Matrix<nsd, nen>& derxy, const Core::LinAlg::Matrix<nsd, nsd>& xjm,
+        int curphase, int phasetoadd, int numdofpernode,
+        const PoroFluidManager::PhaseManagerInterface& phasemanager,
+        const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager,
+        double timefacfac, double fac, double det)
 {
   // nothing to do
 }
@@ -2645,14 +2669,15 @@ void Discret::Elements::PoroFluidEvaluator::EvaluatorPressureAndSaturation<nsd,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::Elements::PoroFluidEvaluator::EvaluatorPressureAndSaturation<nsd,
-    nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
-                                                     elemat,
-    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
-    int curphase, int phasetoadd, int numdofpernode,
-    const PoroFluidManager::PhaseManagerInterface& phasemanager,
-    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
-    double fac)
+void Discret::Elements::PoroFluidEvaluator::
+    EvaluatorPressureAndSaturationHomogenizedVasculatureTumor<nsd,
+        nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
+                                                         elemat,
+        const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
+        int curphase, int phasetoadd, int numdofpernode,
+        const PoroFluidManager::PhaseManagerInterface& phasemanager,
+        const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager,
+        double timefacfac, double fac)
 {
   // nothing to do
 }
@@ -2837,13 +2862,14 @@ void Discret::Elements::PoroFluidEvaluator::EvaluatorSolidPressure<nsd,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::Elements::PoroFluidEvaluator::EvaluatorValidVolFracPressures<nsd,
-    nen>::evaluate_matrix_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
-    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
-    int curphase, int phasetoadd, int numdofpernode,
-    const PoroFluidManager::PhaseManagerInterface& phasemanager,
-    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
-    double fac, bool inittimederiv)
+void Discret::Elements::PoroFluidEvaluator::
+    EvaluatorValidVolFracHomogenizedVasculatureTumorPressures<nsd,
+        nen>::evaluate_matrix_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
+        const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
+        int curphase, int phasetoadd, int numdofpernode,
+        const PoroFluidManager::PhaseManagerInterface& phasemanager,
+        const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager,
+        double timefacfac, double fac, bool inittimederiv)
 {
   // do nothing
 }
@@ -2851,13 +2877,14 @@ void Discret::Elements::PoroFluidEvaluator::EvaluatorValidVolFracPressures<nsd,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::Elements::PoroFluidEvaluator::EvaluatorValidVolFracPressures<nsd,
-    nen>::evaluate_vector_and_assemble(std::vector<Core::LinAlg::SerialDenseVector*>& elevec,
-    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
-    const Core::LinAlg::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
-    const PoroFluidManager::PhaseManagerInterface& phasemanager,
-    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
-    double fac, bool inittimederiv)
+void Discret::Elements::PoroFluidEvaluator::
+    EvaluatorValidVolFracHomogenizedVasculatureTumorPressures<nsd,
+        nen>::evaluate_vector_and_assemble(std::vector<Core::LinAlg::SerialDenseVector*>& elevec,
+        const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
+        const Core::LinAlg::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
+        const PoroFluidManager::PhaseManagerInterface& phasemanager,
+        const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
+        double fac, bool inittimederiv)
 {
   const int numfluidphases = phasemanager.num_fluid_phases();
   const int numvolfrac = phasemanager.num_vol_frac();
@@ -2886,15 +2913,16 @@ void Discret::Elements::PoroFluidEvaluator::EvaluatorValidVolFracPressures<nsd,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::Elements::PoroFluidEvaluator::EvaluatorValidVolFracPressures<nsd,
-    nen>::evaluate_matrix_od_struct_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
-                                                     elemat,
-    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& deriv,
-    const Core::LinAlg::Matrix<nsd, nen>& derxy, const Core::LinAlg::Matrix<nsd, nsd>& xjm,
-    int curphase, int phasetoadd, int numdofpernode,
-    const PoroFluidManager::PhaseManagerInterface& phasemanager,
-    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
-    double fac, double det)
+void Discret::Elements::PoroFluidEvaluator::
+    EvaluatorValidVolFracHomogenizedVasculatureTumorPressures<nsd,
+        nen>::evaluate_matrix_od_struct_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
+                                                         elemat,
+        const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& deriv,
+        const Core::LinAlg::Matrix<nsd, nen>& derxy, const Core::LinAlg::Matrix<nsd, nsd>& xjm,
+        int curphase, int phasetoadd, int numdofpernode,
+        const PoroFluidManager::PhaseManagerInterface& phasemanager,
+        const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager,
+        double timefacfac, double fac, double det)
 {
   // nothing to do
 }
@@ -2902,14 +2930,15 @@ void Discret::Elements::PoroFluidEvaluator::EvaluatorValidVolFracPressures<nsd,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::Elements::PoroFluidEvaluator::EvaluatorValidVolFracPressures<nsd,
-    nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
-                                                     elemat,
-    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
-    int curphase, int phasetoadd, int numdofpernode,
-    const PoroFluidManager::PhaseManagerInterface& phasemanager,
-    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
-    double fac)
+void Discret::Elements::PoroFluidEvaluator::
+    EvaluatorValidVolFracHomogenizedVasculatureTumorPressures<nsd,
+        nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
+                                                         elemat,
+        const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
+        int curphase, int phasetoadd, int numdofpernode,
+        const PoroFluidManager::PhaseManagerInterface& phasemanager,
+        const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager,
+        double timefacfac, double fac)
 {
   // nothing to do
 }
@@ -3387,7 +3416,7 @@ void Discret::Elements::PoroFluidEvaluator::ReconstructFluxRHS<nsd,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::Elements::PoroFluidEvaluator::EvaluatorPhaseVelocities<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorPhaseVelocitiesHomogenizedVasculatureTumor<nsd,
     nen>::evaluate_vector_and_assemble(std::vector<Core::LinAlg::SerialDenseVector*>& elevec,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     const Core::LinAlg::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
@@ -3583,13 +3612,14 @@ void Discret::Elements::PoroFluidEvaluator::EvaluatorPhaseVelocitiesBloodLung<ns
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracAddInstatTerms<nsd,
-    nen>::evaluate_matrix_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
-    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
-    int curphase, int phasetoadd, int numdofpernode,
-    const PoroFluidManager::PhaseManagerInterface& phasemanager,
-    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
-    double fac, bool inittimederiv)
+void Discret::Elements::PoroFluidEvaluator::
+    EvaluatorVolFracHomogenizedVasculatureTumorAddInstatTerms<nsd,
+        nen>::evaluate_matrix_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
+        const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
+        int curphase, int phasetoadd, int numdofpernode,
+        const PoroFluidManager::PhaseManagerInterface& phasemanager,
+        const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager,
+        double timefacfac, double fac, bool inittimederiv)
 {
   // get matrix to fill
   Core::LinAlg::SerialDenseMatrix& mymat = *elemat[0];
@@ -3740,13 +3770,14 @@ void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracAddInstatTerms<nsd,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracAddInstatTerms<nsd,
-    nen>::evaluate_vector_and_assemble(std::vector<Core::LinAlg::SerialDenseVector*>& elevec,
-    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
-    const Core::LinAlg::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
-    const PoroFluidManager::PhaseManagerInterface& phasemanager,
-    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
-    double fac, bool inittimederiv)
+void Discret::Elements::PoroFluidEvaluator::
+    EvaluatorVolFracHomogenizedVasculatureTumorAddInstatTerms<nsd,
+        nen>::evaluate_vector_and_assemble(std::vector<Core::LinAlg::SerialDenseVector*>& elevec,
+        const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
+        const Core::LinAlg::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
+        const PoroFluidManager::PhaseManagerInterface& phasemanager,
+        const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
+        double fac, bool inittimederiv)
 {
   // get vector to fill
   Core::LinAlg::SerialDenseVector& myvec = *elevec[0];
@@ -3769,15 +3800,16 @@ void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracAddInstatTerms<nsd,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracAddInstatTerms<nsd,
-    nen>::evaluate_matrix_od_struct_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
-                                                     elemat,
-    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& deriv,
-    const Core::LinAlg::Matrix<nsd, nen>& derxy, const Core::LinAlg::Matrix<nsd, nsd>& xjm,
-    int curphase, int phasetoadd, int numdofpernode,
-    const PoroFluidManager::PhaseManagerInterface& phasemanager,
-    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
-    double fac, double det)
+void Discret::Elements::PoroFluidEvaluator::
+    EvaluatorVolFracHomogenizedVasculatureTumorAddInstatTerms<nsd,
+        nen>::evaluate_matrix_od_struct_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
+                                                         elemat,
+        const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& deriv,
+        const Core::LinAlg::Matrix<nsd, nen>& derxy, const Core::LinAlg::Matrix<nsd, nsd>& xjm,
+        int curphase, int phasetoadd, int numdofpernode,
+        const PoroFluidManager::PhaseManagerInterface& phasemanager,
+        const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager,
+        double timefacfac, double fac, double det)
 {
   // get matrix to fill
   Core::LinAlg::SerialDenseMatrix& mymat = *elemat[0];
@@ -3793,14 +3825,15 @@ void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracAddInstatTerms<nsd,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracAddInstatTerms<nsd,
-    nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
-                                                     elemat,
-    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
-    int curphase, int phasetoadd, int numdofpernode,
-    const PoroFluidManager::PhaseManagerInterface& phasemanager,
-    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
-    double fac)
+void Discret::Elements::PoroFluidEvaluator::
+    EvaluatorVolFracHomogenizedVasculatureTumorAddInstatTerms<nsd,
+        nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
+                                                         elemat,
+        const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
+        int curphase, int phasetoadd, int numdofpernode,
+        const PoroFluidManager::PhaseManagerInterface& phasemanager,
+        const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager,
+        double timefacfac, double fac)
 {
   // nothing to do
 }
@@ -3808,11 +3841,12 @@ void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracAddInstatTerms<nsd,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-double Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracAddInstatTerms<nsd, nen>::get_rhs(
-    int curphase, int phasetoadd, int numdofpernode,
-    const PoroFluidManager::PhaseManagerInterface& phasemanager,
-    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
-    double fac)
+double Discret::Elements::PoroFluidEvaluator::
+    EvaluatorVolFracHomogenizedVasculatureTumorAddInstatTerms<nsd, nen>::get_rhs(int curphase,
+        int phasetoadd, int numdofpernode,
+        const PoroFluidManager::PhaseManagerInterface& phasemanager,
+        const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
+        double fac)
 {
   const int numfluidphases = phasemanager.num_fluid_phases();
   const int numvolfrac = phasemanager.num_vol_frac();
@@ -4301,13 +4335,14 @@ void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracBloodLungAddInstatTe
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracAddDivVelTerm<nsd,
-    nen>::evaluate_matrix_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
-    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
-    int curphase, int phasetoadd, int numdofpernode,
-    const PoroFluidManager::PhaseManagerInterface& phasemanager,
-    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
-    double fac, bool inittimederiv)
+void Discret::Elements::PoroFluidEvaluator::
+    EvaluatorVolFracHomogenizedVasculatureTumorAddDivVelTerm<nsd,
+        nen>::evaluate_matrix_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
+        const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
+        int curphase, int phasetoadd, int numdofpernode,
+        const PoroFluidManager::PhaseManagerInterface& phasemanager,
+        const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager,
+        double timefacfac, double fac, bool inittimederiv)
 {
   // we do not need the matrix if we calculate the initial time derivative
   if (!inittimederiv)
@@ -4345,13 +4380,14 @@ void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracAddDivVelTerm<nsd,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracAddDivVelTerm<nsd,
-    nen>::evaluate_vector_and_assemble(std::vector<Core::LinAlg::SerialDenseVector*>& elevec,
-    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
-    const Core::LinAlg::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
-    const PoroFluidManager::PhaseManagerInterface& phasemanager,
-    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
-    double fac, bool inittimederiv)
+void Discret::Elements::PoroFluidEvaluator::
+    EvaluatorVolFracHomogenizedVasculatureTumorAddDivVelTerm<nsd,
+        nen>::evaluate_vector_and_assemble(std::vector<Core::LinAlg::SerialDenseVector*>& elevec,
+        const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
+        const Core::LinAlg::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
+        const PoroFluidManager::PhaseManagerInterface& phasemanager,
+        const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
+        double fac, bool inittimederiv)
 {
   // get vector to fill
   Core::LinAlg::SerialDenseVector& myvec = *elevec[0];
@@ -4369,15 +4405,16 @@ void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracAddDivVelTerm<nsd,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracAddDivVelTerm<nsd,
-    nen>::evaluate_matrix_od_struct_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
-                                                     elemat,
-    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& deriv,
-    const Core::LinAlg::Matrix<nsd, nen>& derxy, const Core::LinAlg::Matrix<nsd, nsd>& xjm,
-    int curphase, int phasetoadd, int numdofpernode,
-    const PoroFluidManager::PhaseManagerInterface& phasemanager,
-    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
-    double fac, double det)
+void Discret::Elements::PoroFluidEvaluator::
+    EvaluatorVolFracHomogenizedVasculatureTumorAddDivVelTerm<nsd,
+        nen>::evaluate_matrix_od_struct_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
+                                                         elemat,
+        const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& deriv,
+        const Core::LinAlg::Matrix<nsd, nen>& derxy, const Core::LinAlg::Matrix<nsd, nsd>& xjm,
+        int curphase, int phasetoadd, int numdofpernode,
+        const PoroFluidManager::PhaseManagerInterface& phasemanager,
+        const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager,
+        double timefacfac, double fac, double det)
 {
   // get matrix to fill
   Core::LinAlg::SerialDenseMatrix& mymat = *elemat[0];
@@ -4396,14 +4433,15 @@ void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracAddDivVelTerm<nsd,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracAddDivVelTerm<nsd,
-    nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
-                                                     elemat,
-    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
-    int curphase, int phasetoadd, int numdofpernode,
-    const PoroFluidManager::PhaseManagerInterface& phasemanager,
-    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
-    double fac)
+void Discret::Elements::PoroFluidEvaluator::
+    EvaluatorVolFracHomogenizedVasculatureTumorAddDivVelTerm<nsd,
+        nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
+                                                         elemat,
+        const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
+        int curphase, int phasetoadd, int numdofpernode,
+        const PoroFluidManager::PhaseManagerInterface& phasemanager,
+        const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager,
+        double timefacfac, double fac)
 {
   // nothing to do
 }
@@ -4474,9 +4512,9 @@ void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracBloodLungAddDivVelTe
     double fac, bool inittimederiv)
 {
   // call base class
-  EvaluatorVolFracAddDivVelTerm<nsd, nen>::evaluate_vector_and_assemble(elevec, funct, derxy, xyze,
-      curphase, phasetoadd, numdofpernode, phasemanager, variablemanager, rhsfac, fac,
-      inittimederiv);
+  EvaluatorVolFracHomogenizedVasculatureTumorAddDivVelTerm<nsd, nen>::evaluate_vector_and_assemble(
+      elevec, funct, derxy, xyze, curphase, phasetoadd, numdofpernode, phasemanager,
+      variablemanager, rhsfac, fac, inittimederiv);
 }
 
 
@@ -4496,9 +4534,9 @@ void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracBloodLungAddDivVelTe
 {
   // d(sumvolfrac * divvel)dd = sumvolfrac * ddivveldd + dsumvolfracdd * divvel
   // class Based class for sumvolfrac * ddivveldd
-  EvaluatorVolFracAddDivVelTerm<nsd, nen>::evaluate_matrix_od_struct_and_assemble(elemat, funct,
-      deriv, derxy, xjm, curphase, phasetoadd, numdofpernode, phasemanager, variablemanager,
-      timefacfac, fac, det);
+  EvaluatorVolFracHomogenizedVasculatureTumorAddDivVelTerm<nsd,
+      nen>::evaluate_matrix_od_struct_and_assemble(elemat, funct, deriv, derxy, xjm, curphase,
+      phasetoadd, numdofpernode, phasemanager, variablemanager, timefacfac, fac, det);
 
 
   // get matrix to fill for dsumvolfracdd * divvel
@@ -4631,17 +4669,18 @@ void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracBloodLungAddDivVelTe
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracAddInstatTermsSat<nsd,
-    nen>::evaluate_matrix_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
-    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
-    int curphase, int phasetoadd, int numdofpernode,
-    const PoroFluidManager::PhaseManagerInterface& phasemanager,
-    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
-    double fac, bool inittimederiv)
+void Discret::Elements::PoroFluidEvaluator::
+    EvaluatorVolFracHomogenizedVasculatureTumorAddInstatTermsSat<nsd,
+        nen>::evaluate_matrix_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
+        const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
+        int curphase, int phasetoadd, int numdofpernode,
+        const PoroFluidManager::PhaseManagerInterface& phasemanager,
+        const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager,
+        double timefacfac, double fac, bool inittimederiv)
 {
   // call base class with scaled factors
-  EvaluatorVolFracAddInstatTerms<nsd, nen>::evaluate_matrix_and_assemble(elemat, funct, derxy,
-      curphase, phasetoadd, numdofpernode, phasemanager, variablemanager,
+  EvaluatorVolFracHomogenizedVasculatureTumorAddInstatTerms<nsd, nen>::evaluate_matrix_and_assemble(
+      elemat, funct, derxy, curphase, phasetoadd, numdofpernode, phasemanager, variablemanager,
       timefacfac * phasemanager.saturation(curphase), fac * phasemanager.saturation(curphase),
       inittimederiv);
 
@@ -4657,8 +4696,9 @@ void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracAddInstatTermsSat<ns
     //----------------------------------------------------------------
 
     // first: get rhs
-    const double vrhs = EvaluatorVolFracAddInstatTerms<nsd, nen>::get_rhs(
-        curphase, phasetoadd, numdofpernode, phasemanager, variablemanager, timefacfac, fac);
+    const double vrhs =
+        EvaluatorVolFracHomogenizedVasculatureTumorAddInstatTerms<nsd, nen>::get_rhs(
+            curphase, phasetoadd, numdofpernode, phasemanager, variablemanager, timefacfac, fac);
 
     // call base class for saturation linearization
     EvaluatorBase<nsd, nen>::saturation_linearization_fluid(
@@ -4669,51 +4709,55 @@ void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracAddInstatTermsSat<ns
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracAddInstatTermsSat<nsd,
-    nen>::evaluate_vector_and_assemble(std::vector<Core::LinAlg::SerialDenseVector*>& elevec,
-    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
-    const Core::LinAlg::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
-    const PoroFluidManager::PhaseManagerInterface& phasemanager,
-    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
-    double fac, bool inittimederiv)
+void Discret::Elements::PoroFluidEvaluator::
+    EvaluatorVolFracHomogenizedVasculatureTumorAddInstatTermsSat<nsd,
+        nen>::evaluate_vector_and_assemble(std::vector<Core::LinAlg::SerialDenseVector*>& elevec,
+        const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
+        const Core::LinAlg::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
+        const PoroFluidManager::PhaseManagerInterface& phasemanager,
+        const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
+        double fac, bool inittimederiv)
 {
   // call base class with scaled factors
-  EvaluatorVolFracAddInstatTerms<nsd, nen>::evaluate_vector_and_assemble(elevec, funct, derxy, xyze,
-      curphase, phasetoadd, numdofpernode, phasemanager, variablemanager,
-      phasemanager.saturation(curphase) * rhsfac, phasemanager.saturation(curphase) * fac,
-      inittimederiv);
+  EvaluatorVolFracHomogenizedVasculatureTumorAddInstatTerms<nsd, nen>::evaluate_vector_and_assemble(
+      elevec, funct, derxy, xyze, curphase, phasetoadd, numdofpernode, phasemanager,
+      variablemanager, phasemanager.saturation(curphase) * rhsfac,
+      phasemanager.saturation(curphase) * fac, inittimederiv);
 };
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracAddInstatTermsSat<nsd,
-    nen>::evaluate_matrix_od_struct_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
-                                                     elemat,
-    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& deriv,
-    const Core::LinAlg::Matrix<nsd, nen>& derxy, const Core::LinAlg::Matrix<nsd, nsd>& xjm,
-    int curphase, int phasetoadd, int numdofpernode,
-    const PoroFluidManager::PhaseManagerInterface& phasemanager,
-    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
-    double fac, double det)
+void Discret::Elements::PoroFluidEvaluator::
+    EvaluatorVolFracHomogenizedVasculatureTumorAddInstatTermsSat<nsd,
+        nen>::evaluate_matrix_od_struct_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
+                                                         elemat,
+        const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& deriv,
+        const Core::LinAlg::Matrix<nsd, nen>& derxy, const Core::LinAlg::Matrix<nsd, nsd>& xjm,
+        int curphase, int phasetoadd, int numdofpernode,
+        const PoroFluidManager::PhaseManagerInterface& phasemanager,
+        const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager,
+        double timefacfac, double fac, double det)
 {
   // call base class with scaled factors
-  EvaluatorVolFracAddInstatTerms<nsd, nen>::evaluate_matrix_od_struct_and_assemble(elemat, funct,
-      deriv, derxy, xjm, curphase, phasetoadd, numdofpernode, phasemanager, variablemanager,
+  EvaluatorVolFracHomogenizedVasculatureTumorAddInstatTerms<nsd,
+      nen>::evaluate_matrix_od_struct_and_assemble(elemat, funct, deriv, derxy, xjm, curphase,
+      phasetoadd, numdofpernode, phasemanager, variablemanager,
       phasemanager.saturation(curphase) * timefacfac, phasemanager.saturation(curphase) * fac, det);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracAddInstatTermsSat<nsd,
-    nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
-                                                     elemat,
-    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
-    int curphase, int phasetoadd, int numdofpernode,
-    const PoroFluidManager::PhaseManagerInterface& phasemanager,
-    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
-    double fac)
+void Discret::Elements::PoroFluidEvaluator::
+    EvaluatorVolFracHomogenizedVasculatureTumorAddInstatTermsSat<nsd,
+        nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
+                                                         elemat,
+        const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
+        int curphase, int phasetoadd, int numdofpernode,
+        const PoroFluidManager::PhaseManagerInterface& phasemanager,
+        const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager,
+        double timefacfac, double fac)
 {
   // nothing to do
 }
@@ -4724,17 +4768,18 @@ void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracAddInstatTermsSat<ns
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracAddDivVelTermSat<nsd,
-    nen>::evaluate_matrix_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
-    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
-    int curphase, int phasetoadd, int numdofpernode,
-    const PoroFluidManager::PhaseManagerInterface& phasemanager,
-    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
-    double fac, bool inittimederiv)
+void Discret::Elements::PoroFluidEvaluator::
+    EvaluatorVolFracHomogenizedVasculatureTumorAddDivVelTermSat<nsd,
+        nen>::evaluate_matrix_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
+        const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
+        int curphase, int phasetoadd, int numdofpernode,
+        const PoroFluidManager::PhaseManagerInterface& phasemanager,
+        const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager,
+        double timefacfac, double fac, bool inittimederiv)
 {
   // call base class with scaled factors
-  EvaluatorVolFracAddDivVelTerm<nsd, nen>::evaluate_matrix_and_assemble(elemat, funct, derxy,
-      curphase, phasetoadd, numdofpernode, phasemanager, variablemanager,
+  EvaluatorVolFracHomogenizedVasculatureTumorAddDivVelTerm<nsd, nen>::evaluate_matrix_and_assemble(
+      elemat, funct, derxy, curphase, phasetoadd, numdofpernode, phasemanager, variablemanager,
       timefacfac * phasemanager.saturation(curphase), fac * phasemanager.saturation(curphase),
       inittimederiv);
 
@@ -4757,51 +4802,55 @@ void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracAddDivVelTermSat<nsd
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracAddDivVelTermSat<nsd,
-    nen>::evaluate_vector_and_assemble(std::vector<Core::LinAlg::SerialDenseVector*>& elevec,
-    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
-    const Core::LinAlg::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
-    const PoroFluidManager::PhaseManagerInterface& phasemanager,
-    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
-    double fac, bool inittimederiv)
+void Discret::Elements::PoroFluidEvaluator::
+    EvaluatorVolFracHomogenizedVasculatureTumorAddDivVelTermSat<nsd,
+        nen>::evaluate_vector_and_assemble(std::vector<Core::LinAlg::SerialDenseVector*>& elevec,
+        const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
+        const Core::LinAlg::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
+        const PoroFluidManager::PhaseManagerInterface& phasemanager,
+        const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
+        double fac, bool inittimederiv)
 {
   // call base class with scaled factors
-  EvaluatorVolFracAddDivVelTerm<nsd, nen>::evaluate_vector_and_assemble(elevec, funct, derxy, xyze,
-      curphase, phasetoadd, numdofpernode, phasemanager, variablemanager,
-      phasemanager.saturation(curphase) * rhsfac, phasemanager.saturation(curphase) * fac,
-      inittimederiv);
+  EvaluatorVolFracHomogenizedVasculatureTumorAddDivVelTerm<nsd, nen>::evaluate_vector_and_assemble(
+      elevec, funct, derxy, xyze, curphase, phasetoadd, numdofpernode, phasemanager,
+      variablemanager, phasemanager.saturation(curphase) * rhsfac,
+      phasemanager.saturation(curphase) * fac, inittimederiv);
 };
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracAddDivVelTermSat<nsd,
-    nen>::evaluate_matrix_od_struct_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
-                                                     elemat,
-    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& deriv,
-    const Core::LinAlg::Matrix<nsd, nen>& derxy, const Core::LinAlg::Matrix<nsd, nsd>& xjm,
-    int curphase, int phasetoadd, int numdofpernode,
-    const PoroFluidManager::PhaseManagerInterface& phasemanager,
-    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
-    double fac, double det)
+void Discret::Elements::PoroFluidEvaluator::
+    EvaluatorVolFracHomogenizedVasculatureTumorAddDivVelTermSat<nsd,
+        nen>::evaluate_matrix_od_struct_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
+                                                         elemat,
+        const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& deriv,
+        const Core::LinAlg::Matrix<nsd, nen>& derxy, const Core::LinAlg::Matrix<nsd, nsd>& xjm,
+        int curphase, int phasetoadd, int numdofpernode,
+        const PoroFluidManager::PhaseManagerInterface& phasemanager,
+        const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager,
+        double timefacfac, double fac, double det)
 {
   // call base class with scaled factors
-  EvaluatorVolFracAddDivVelTerm<nsd, nen>::evaluate_matrix_od_struct_and_assemble(elemat, funct,
-      deriv, derxy, xjm, curphase, phasetoadd, numdofpernode, phasemanager, variablemanager,
+  EvaluatorVolFracHomogenizedVasculatureTumorAddDivVelTerm<nsd,
+      nen>::evaluate_matrix_od_struct_and_assemble(elemat, funct, deriv, derxy, xjm, curphase,
+      phasetoadd, numdofpernode, phasemanager, variablemanager,
       phasemanager.saturation(curphase) * timefacfac, phasemanager.saturation(curphase) * fac, det);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracAddDivVelTermSat<nsd,
-    nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
-                                                     elemat,
-    const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
-    int curphase, int phasetoadd, int numdofpernode,
-    const PoroFluidManager::PhaseManagerInterface& phasemanager,
-    const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double timefacfac,
-    double fac)
+void Discret::Elements::PoroFluidEvaluator::
+    EvaluatorVolFracHomogenizedVasculatureTumorAddDivVelTermSat<nsd,
+        nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
+                                                         elemat,
+        const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
+        int curphase, int phasetoadd, int numdofpernode,
+        const PoroFluidManager::PhaseManagerInterface& phasemanager,
+        const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager,
+        double timefacfac, double fac)
 {
   // nothing to do
 }
@@ -4812,7 +4861,7 @@ void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracAddDivVelTermSat<nsd
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracInstat<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracHomogenizedVasculatureTumorInstat<nsd,
     nen>::evaluate_matrix_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     int curphase, int phasetoadd, int numdofpernode,
@@ -4855,7 +4904,7 @@ void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracInstat<nsd,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracInstat<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracHomogenizedVasculatureTumorInstat<nsd,
     nen>::evaluate_vector_and_assemble(std::vector<Core::LinAlg::SerialDenseVector*>& elevec,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     const Core::LinAlg::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
@@ -4897,7 +4946,7 @@ void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracInstat<nsd,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracInstat<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracHomogenizedVasculatureTumorInstat<nsd,
     nen>::evaluate_matrix_od_struct_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& deriv,
@@ -4955,7 +5004,7 @@ void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracInstat<nsd,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracInstat<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracHomogenizedVasculatureTumorInstat<nsd,
     nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
@@ -5090,7 +5139,7 @@ void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracBloodLungInstat<nsd,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracDivVel<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracHomogenizedVasculatureTumorDivVel<nsd,
     nen>::evaluate_matrix_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     int curphase, int phasetoadd, int numdofpernode,
@@ -5134,7 +5183,7 @@ void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracDivVel<nsd,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracDivVel<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracHomogenizedVasculatureTumorDivVel<nsd,
     nen>::evaluate_vector_and_assemble(std::vector<Core::LinAlg::SerialDenseVector*>& elevec,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     const Core::LinAlg::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
@@ -5172,7 +5221,7 @@ void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracDivVel<nsd,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracDivVel<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracHomogenizedVasculatureTumorDivVel<nsd,
     nen>::evaluate_matrix_od_struct_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& deriv,
@@ -5316,7 +5365,7 @@ void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracDivVel<nsd,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracDivVel<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracHomogenizedVasculatureTumorDivVel<nsd,
     nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
@@ -5470,7 +5519,7 @@ void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracBloodLungDivVel<nsd,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracDiff<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracHomogenizedVasculatureTumorDiff<nsd,
     nen>::evaluate_matrix_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     int curphase, int phasetoadd, int numdofpernode,
@@ -5518,7 +5567,7 @@ void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracDiff<nsd,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracDiff<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracHomogenizedVasculatureTumorDiff<nsd,
     nen>::evaluate_vector_and_assemble(std::vector<Core::LinAlg::SerialDenseVector*>& elevec,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     const Core::LinAlg::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
@@ -5559,7 +5608,7 @@ void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracDiff<nsd,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracDiff<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracHomogenizedVasculatureTumorDiff<nsd,
     nen>::evaluate_matrix_od_struct_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& deriv,
@@ -5603,7 +5652,7 @@ void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracDiff<nsd,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracDiff<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracHomogenizedVasculatureTumorDiff<nsd,
     nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
@@ -5621,7 +5670,7 @@ void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracDiff<nsd,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracReac<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracHomogenizedVasculatureTumorReac<nsd,
     nen>::evaluate_matrix_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     int curphase, int phasetoadd, int numdofpernode,
@@ -5673,7 +5722,7 @@ void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracReac<nsd,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracReac<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracHomogenizedVasculatureTumorReac<nsd,
     nen>::evaluate_vector_and_assemble(std::vector<Core::LinAlg::SerialDenseVector*>& elevec,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     const Core::LinAlg::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
@@ -5709,7 +5758,7 @@ void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracReac<nsd,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracReac<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracHomogenizedVasculatureTumorReac<nsd,
     nen>::evaluate_matrix_od_struct_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& deriv,
@@ -5761,7 +5810,7 @@ void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracReac<nsd,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracReac<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracHomogenizedVasculatureTumorReac<nsd,
     nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
@@ -5811,7 +5860,7 @@ void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracReac<nsd,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracAddFlux<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracHomogenizedVasculatureTumorAddFlux<nsd,
     nen>::evaluate_matrix_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     int curphase, int phasetoadd, int numdofpernode,
@@ -5940,7 +5989,7 @@ void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracAddFlux<nsd,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracAddFlux<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracHomogenizedVasculatureTumorAddFlux<nsd,
     nen>::evaluate_vector_and_assemble(std::vector<Core::LinAlg::SerialDenseVector*>& elevec,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     const Core::LinAlg::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
@@ -6013,7 +6062,7 @@ void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracAddFlux<nsd,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracAddFlux<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracHomogenizedVasculatureTumorAddFlux<nsd,
     nen>::evaluate_matrix_od_struct_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& deriv,
@@ -6163,7 +6212,7 @@ void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracAddFlux<nsd,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracAddFlux<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracHomogenizedVasculatureTumorAddFlux<nsd,
     nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
@@ -6271,8 +6320,8 @@ void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracAddFlux<nsd,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracPressureDiff<nsd,
-    nen>::evaluate_matrix_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracHomogenizedVasculatureTumorPressureDiff<
+    nsd, nen>::evaluate_matrix_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     int curphase, int phasetoadd, int numdofpernode,
     const PoroFluidManager::PhaseManagerInterface& phasemanager,
@@ -6336,8 +6385,8 @@ void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracPressureDiff<nsd,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracPressureDiff<nsd,
-    nen>::evaluate_vector_and_assemble(std::vector<Core::LinAlg::SerialDenseVector*>& elevec,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracHomogenizedVasculatureTumorPressureDiff<
+    nsd, nen>::evaluate_vector_and_assemble(std::vector<Core::LinAlg::SerialDenseVector*>& elevec,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     const Core::LinAlg::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
     const PoroFluidManager::PhaseManagerInterface& phasemanager,
@@ -6394,9 +6443,9 @@ void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracPressureDiff<nsd,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracPressureDiff<nsd,
-    nen>::evaluate_matrix_od_struct_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
-                                                     elemat,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracHomogenizedVasculatureTumorPressureDiff<
+    nsd, nen>::evaluate_matrix_od_struct_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
+                                                          elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& deriv,
     const Core::LinAlg::Matrix<nsd, nen>& derxy, const Core::LinAlg::Matrix<nsd, nsd>& xjm,
     int curphase, int phasetoadd, int numdofpernode,
@@ -6450,9 +6499,9 @@ void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracPressureDiff<nsd,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracPressureDiff<nsd,
-    nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
-                                                     elemat,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracHomogenizedVasculatureTumorPressureDiff<
+    nsd, nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
+                                                          elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     int curphase, int phasetoadd, int numdofpernode,
     const PoroFluidManager::PhaseManagerInterface& phasemanager,
@@ -6656,8 +6705,8 @@ void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracBloodLungPressureDif
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracPressureReac<nsd,
-    nen>::evaluate_matrix_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracHomogenizedVasculatureTumorPressureReac<
+    nsd, nen>::evaluate_matrix_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     int curphase, int phasetoadd, int numdofpernode,
     const PoroFluidManager::PhaseManagerInterface& phasemanager,
@@ -6713,8 +6762,8 @@ void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracPressureReac<nsd,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracPressureReac<nsd,
-    nen>::evaluate_vector_and_assemble(std::vector<Core::LinAlg::SerialDenseVector*>& elevec,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracHomogenizedVasculatureTumorPressureReac<
+    nsd, nen>::evaluate_vector_and_assemble(std::vector<Core::LinAlg::SerialDenseVector*>& elevec,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     const Core::LinAlg::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
     const PoroFluidManager::PhaseManagerInterface& phasemanager,
@@ -6755,9 +6804,9 @@ void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracPressureReac<nsd,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracPressureReac<nsd,
-    nen>::evaluate_matrix_od_struct_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
-                                                     elemat,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracHomogenizedVasculatureTumorPressureReac<
+    nsd, nen>::evaluate_matrix_od_struct_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
+                                                          elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& deriv,
     const Core::LinAlg::Matrix<nsd, nen>& derxy, const Core::LinAlg::Matrix<nsd, nsd>& xjm,
     int curphase, int phasetoadd, int numdofpernode,
@@ -6813,9 +6862,9 @@ void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracPressureReac<nsd,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracPressureReac<nsd,
-    nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
-                                                     elemat,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracHomogenizedVasculatureTumorPressureReac<
+    nsd, nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
+                                                          elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     int curphase, int phasetoadd, int numdofpernode,
     const PoroFluidManager::PhaseManagerInterface& phasemanager,
