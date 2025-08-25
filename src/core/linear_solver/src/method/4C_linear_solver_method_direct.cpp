@@ -72,7 +72,7 @@ void Core::LinearSolver::DirectSolver::setup(std::shared_ptr<Core::LinAlg::Spars
 #else
   linear_problem_->SetRHS(&b_->get_epetra_multi_vector());
   linear_problem_->SetLHS(&x_->get_epetra_multi_vector());
-  linear_problem_->SetOperator(a_->epetra_operator());
+  linear_problem_->SetOperator(a_->epetra_operator().get());
 
   if (reindexer_ and not(reset or refactor)) reindexer_->fwd();
 #endif
