@@ -229,6 +229,46 @@ namespace
     EXPECT_DOUBLE_EQ(value, 16.0);
   }
 
+  TEST(SymbolicExpressionTest, Comparison)
+  {
+    Core::Utils::SymbolicExpression<double, "x", "y"> expr("x*y > 0");
+    EXPECT_DOUBLE_EQ(expr.value(Core::Utils::var<"x">(2.0), Core::Utils::var<"y">(3.0)), 1.0);
+    EXPECT_DOUBLE_EQ(expr.value(Core::Utils::var<"x">(2.0), Core::Utils::var<"y">(-3.0)), 0.0);
+  }
+
+  TEST(SymbolicExpressionTest, Equality)
+  {
+    Core::Utils::SymbolicExpression<double, "x", "y"> expr("x == 2^2*y");
+    EXPECT_DOUBLE_EQ(expr.value(Core::Utils::var<"x">(4.0), Core::Utils::var<"y">(1.0)), 1.0);
+    EXPECT_DOUBLE_EQ(expr.value(Core::Utils::var<"x">(0.0), Core::Utils::var<"y">(-3.0)), 0.0);
+  }
+
+  TEST(SymbolicExpressionTest, NotEqual)
+  {
+    Core::Utils::SymbolicExpression<double, "x", "y"> expr("x != 2^2*y");
+    EXPECT_DOUBLE_EQ(expr.value(Core::Utils::var<"x">(4.0), Core::Utils::var<"y">(1.0)), 0.0);
+    EXPECT_DOUBLE_EQ(expr.value(Core::Utils::var<"x">(0.0), Core::Utils::var<"y">(-3.0)), 1.0);
+  }
+
+  TEST(SymbolicExpressionTest, SumOfComparisons)
+  {
+    Core::Utils::SymbolicExpression<double, "x", "y"> expr("(x*y > 0) + (x >= y)");
+    EXPECT_DOUBLE_EQ(expr.value(Core::Utils::var<"x">(2.0), Core::Utils::var<"y">(1.0)), 2.0);
+    EXPECT_DOUBLE_EQ(expr.value(Core::Utils::var<"x">(0.0), Core::Utils::var<"y">(0.0)), 1.0);
+    EXPECT_DOUBLE_EQ(expr.value(Core::Utils::var<"x">(0.0), Core::Utils::var<"y">(1.0)), 0.0);
+  }
+
+  TEST(SymbolicExpressionTest, LogicalOperators)
+  {
+    // Note that || has lower precedence than &&
+    Core::Utils::SymbolicExpression<double, "x", "y"> expr(
+        "(x > 1.0 - 1.0) && (y > sin(0)) || (x <= !2) && !(y > 0)");
+    EXPECT_DOUBLE_EQ(expr.value(Core::Utils::var<"x">(2.0), Core::Utils::var<"y">(3.0)), 1.0);
+    EXPECT_DOUBLE_EQ(expr.value(Core::Utils::var<"x">(-2.0), Core::Utils::var<"y">(-3.0)), 1.0);
+    EXPECT_DOUBLE_EQ(expr.value(Core::Utils::var<"x">(2.0), Core::Utils::var<"y">(-3.0)), 0.0);
+    EXPECT_DOUBLE_EQ(expr.value(Core::Utils::var<"x">(0.0), Core::Utils::var<"y">(3.0)), 0.0);
+  }
+
 
 }  // namespace
 FOUR_C_NAMESPACE_CLOSE
