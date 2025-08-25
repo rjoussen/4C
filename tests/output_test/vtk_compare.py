@@ -53,6 +53,24 @@ def compare_vtk(path1, path2, points_in_time, tol_float=1e-8, raise_error=True):
         comp_root = comp_data.getroot()
         ref_root = ref_data.getroot()
 
+        num_collections = len(comp_root.findall("Collection"))
+        num_collections_ref = len(ref_root.findall("Collection"))
+
+        if num_collections != num_collections_ref:
+            raise ValueError(
+                f"Number of Collections in PVD file differ! {num_collections} != {num_collections_ref}"
+            )
+
+        for collection, collection_ref in zip(
+            comp_root.findall("Collection"), ref_root.findall("Collection")
+        ):
+            num_datasets = len(collection.findall("DataSet"))
+            num_datasets_ref = len(collection_ref.findall("DataSet"))
+            if num_datasets != num_datasets_ref:
+                raise ValueError(
+                    f"Number of DataSets in Collections of PVD file differ! {num_datasets} != {num_datasets_ref}"
+                )
+
         # remove file attrib to compare the rest
         for collection in comp_root.findall("Collection"):
             for dataset in collection.findall("DataSet"):
@@ -64,7 +82,9 @@ def compare_vtk(path1, path2, points_in_time, tol_float=1e-8, raise_error=True):
 
         # Check that both etrees are the same except from file links
         if not (ET.tostring(comp_root) == ET.tostring(ref_root)):
-            raise ValueError("XML structures in PVD files differ!")
+            raise ValueError(
+                f"XML structures in PVD files differ!\n\n{ET.tostring(comp_root).decode()}\n\nvs.\n\n{ET.tostring(ref_root).decode()}"
+            )
 
     def find_pvtk(pvdpath, points_in_time):
         """
