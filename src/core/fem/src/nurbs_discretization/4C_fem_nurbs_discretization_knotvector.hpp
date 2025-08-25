@@ -460,11 +460,11 @@ namespace Core::FE
 
      private:
       //! Knotvector types
-      enum KnotvectorType
+      enum class KnotvectorType
       {
-        knotvector_is_interpolating,
-        knotvector_is_periodic,
-        knotvector_is_not_defined
+        Undefined,
+        Interpolated,
+        Periodic,
       };
 
       //! Spatial dimension

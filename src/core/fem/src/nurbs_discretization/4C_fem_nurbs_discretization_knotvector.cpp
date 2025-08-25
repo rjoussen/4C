@@ -73,7 +73,7 @@ Core::FE::Nurbs::Knotvector::Knotvector(const int dim, const int npatches)
     (knot_values_[rr]).resize(dim_);
 
     // initialize interpolation type
-    for (int mm = 0; mm < dim_; ++mm) (interpolation_[rr])[mm] = knotvector_is_not_defined;
+    for (int mm = 0; mm < dim_; ++mm) (interpolation_[rr])[mm] = KnotvectorType::Undefined;
   }
 
   return;
@@ -543,11 +543,11 @@ void Core::FE::Nurbs::Knotvector::set_knots(const int& direction, const int& npa
   // set the type
   if (knotvectortype == "Interpolated")
   {
-    (interpolation_[npatch])[direction] = knotvector_is_interpolating;
+    (interpolation_[npatch])[direction] = KnotvectorType::Interpolated;
   }
   else if (knotvectortype == "Periodic")
   {
-    (interpolation_[npatch])[direction] = knotvector_is_periodic;
+    (interpolation_[npatch])[direction] = KnotvectorType::Periodic;
   }
   else
   {
@@ -651,11 +651,11 @@ void Core::FE::Nurbs::Knotvector::finish_knots(const int smallest_gid_in_dis)
       }
 
       // is interpolation/periodicity assigned correctly?
-      if ((interpolation_[np])[rr] == knotvector_is_not_defined)
+      if ((interpolation_[np])[rr] == KnotvectorType::Undefined)
       {
         FOUR_C_THROW("undefined knotvector type\n");
       }
-      else if ((interpolation_[np])[rr] == knotvector_is_interpolating)
+      else if ((interpolation_[np])[rr] == KnotvectorType::Interpolated)
       {
         // for interpolating knot vectors, the first and last
         // knots have to be repeated degree+1 times
@@ -675,7 +675,7 @@ void Core::FE::Nurbs::Knotvector::finish_knots(const int smallest_gid_in_dis)
           }
         }
       }
-      else if ((interpolation_[np])[rr] == knotvector_is_periodic)
+      else if ((interpolation_[np])[rr] == KnotvectorType::Periodic)
       {
         // for periodic knot vectors, distances between the
         // degree+1 first and last nodes have to be equal
