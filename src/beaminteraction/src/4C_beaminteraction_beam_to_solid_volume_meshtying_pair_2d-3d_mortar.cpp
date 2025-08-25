@@ -600,38 +600,76 @@ void BeamInteraction::BeamToSolidVolumeMeshtyingPair2D3DMortar<Beam, Solid,
 /**
  *
  */
-std::shared_ptr<BeamInteraction::BeamContactPair>
+std::unique_ptr<BeamInteraction::BeamContactPair>
 BeamInteraction::create_beam_to_solid_volume_pair_mortar_cross_section(
     const Core::FE::CellType shape,
     const Inpar::BeamToSolid::BeamToSolidMortarShapefunctions mortar_shape_function,
     const int n_fourier_modes)
 {
-  switch (mortar_shape_function)
+  using namespace GeometryPair;
+
+  // Function to create the mortar pair for a given solid type
+  auto make_mortar_pair =
+      []<typename Solid>(Inpar::BeamToSolid::BeamToSolidMortarShapefunctions mortar_shape_function,
+          int n_fourier_modes) -> std::unique_ptr<BeamInteraction::BeamContactPair>
   {
-    case Inpar::BeamToSolid::BeamToSolidMortarShapefunctions::line2:
+    switch (mortar_shape_function)
     {
-      switch (n_fourier_modes)
-      {
-        case 0:
-          return std::make_shared<BeamToSolidVolumeMeshtyingPair2D3DMortar<GeometryPair::t_hermite,
-              GeometryPair::t_hex8, GeometryPair::t_line2_fourier_0>>();
-        case 1:
-          return std::make_shared<BeamToSolidVolumeMeshtyingPair2D3DMortar<GeometryPair::t_hermite,
-              GeometryPair::t_hex8, GeometryPair::t_line2_fourier_1>>();
-        case 2:
-          return std::make_shared<BeamToSolidVolumeMeshtyingPair2D3DMortar<GeometryPair::t_hermite,
-              GeometryPair::t_hex8, GeometryPair::t_line2_fourier_2>>();
-        case 3:
-          return std::make_shared<BeamToSolidVolumeMeshtyingPair2D3DMortar<GeometryPair::t_hermite,
-              GeometryPair::t_hex8, GeometryPair::t_line2_fourier_3>>();
-        default:
-          FOUR_C_THROW("Got wrong number of fourier mortar modes {}.", n_fourier_modes);
-      }
+      case Inpar::BeamToSolid::BeamToSolidMortarShapefunctions::line2:
+        switch (n_fourier_modes)
+        {
+          case 0:
+            return std::make_unique<BeamToSolidVolumeMeshtyingPair2D3DMortar<t_hermite, Solid,
+                FourierDiscretization<t_line2_scalar, 0>>>();
+          case 1:
+            return std::make_unique<BeamToSolidVolumeMeshtyingPair2D3DMortar<t_hermite, Solid,
+                FourierDiscretization<t_line2_scalar, 1>>>();
+          case 2:
+            return std::make_unique<BeamToSolidVolumeMeshtyingPair2D3DMortar<t_hermite, Solid,
+                FourierDiscretization<t_line2_scalar, 2>>>();
+          case 3:
+            return std::make_unique<BeamToSolidVolumeMeshtyingPair2D3DMortar<t_hermite, Solid,
+                FourierDiscretization<t_line2_scalar, 3>>>();
+          case 4:
+            return std::make_unique<BeamToSolidVolumeMeshtyingPair2D3DMortar<t_hermite, Solid,
+                FourierDiscretization<t_line2_scalar, 4>>>();
+          case 5:
+            return std::make_unique<BeamToSolidVolumeMeshtyingPair2D3DMortar<t_hermite, Solid,
+                FourierDiscretization<t_line2_scalar, 5>>>();
+          case 6:
+            return std::make_unique<BeamToSolidVolumeMeshtyingPair2D3DMortar<t_hermite, Solid,
+                FourierDiscretization<t_line2_scalar, 6>>>();
+          case 7:
+            return std::make_unique<BeamToSolidVolumeMeshtyingPair2D3DMortar<t_hermite, Solid,
+                FourierDiscretization<t_line2_scalar, 7>>>();
+          case 8:
+            return std::make_unique<BeamToSolidVolumeMeshtyingPair2D3DMortar<t_hermite, Solid,
+                FourierDiscretization<t_line2_scalar, 8>>>();
+          case 9:
+            return std::make_unique<BeamToSolidVolumeMeshtyingPair2D3DMortar<t_hermite, Solid,
+                FourierDiscretization<t_line2_scalar, 9>>>();
+          case 10:
+            return std::make_unique<BeamToSolidVolumeMeshtyingPair2D3DMortar<t_hermite, Solid,
+                FourierDiscretization<t_line2_scalar, 10>>>();
+          default:
+            FOUR_C_THROW("Got wrong number of fourier mortar modes {}.", n_fourier_modes);
+        }
+      default:
+        FOUR_C_THROW("Wrong mortar shape function.");
     }
+  };
+
+  switch (shape)
+  {
+    case Core::FE::CellType::hex8:
+      return make_mortar_pair.operator()<t_hex8>(mortar_shape_function, n_fourier_modes);
+    case Core::FE::CellType::hex27:
+      return make_mortar_pair.operator()<t_hex27>(mortar_shape_function, n_fourier_modes);
     default:
-      FOUR_C_THROW("Wrong mortar shape function.");
+      FOUR_C_THROW("Got unexpected FE shape function");
   }
 }
+
 
 
 FOUR_C_NAMESPACE_CLOSE
