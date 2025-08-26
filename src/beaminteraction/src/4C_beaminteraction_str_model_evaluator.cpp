@@ -342,24 +342,24 @@ void Solid::ModelEvaluator::BeamInteraction::set_sub_model_types()
 
   // Ensure that no point coupling condition connects two beams that are possibly in contact with
   // each other.
-  for (auto bpcc : beampenaltycouplingconditions)
+  for (auto beam_point_coupling_condition : beampenaltycouplingconditions)
   {
     // get all nodes of beam to beam point coupling condition
-    const std::vector<int>& nodes = *(bpcc->get_nodes());
+    const std::vector<int>& nodes = *(beam_point_coupling_condition->get_nodes());
     if (nodes.size() != 2)
       FOUR_C_THROW("Beam-to-beam point coupling condition should contain exactly two nodes.");
-    for (auto btbcc : beamtobeamcontactconditions)
+    for (auto beam_to_beam_contact_condition : beamtobeamcontactconditions)
     {
-      if (btbcc->contains_node(nodes[0]) and btbcc->contains_node(nodes[1]))
+      if (beam_to_beam_contact_condition->contains_node(nodes[0]) and
+          beam_to_beam_contact_condition->contains_node(nodes[1]))
       {
-        btbcc->print(std::cout);
-        bpcc->print(std::cout);
         FOUR_C_THROW(
             "It is not possible to use beam-to-beam contact in combination with "
             "beam-to-beam point coupling for the same node pair. Please reconsider the specified "
             "interaction conditions with the ids {} and {}, since they are intersecting at the "
             "nodes with ids {} and {}",
-            btbcc->id(), bpcc->id(), nodes[0], nodes[1]);
+            beam_to_beam_contact_condition->id(), beam_point_coupling_condition->id(), nodes[0],
+            nodes[1]);
       }
     }
   }
