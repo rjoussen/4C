@@ -26,7 +26,7 @@
       ],
       "cacheVariables": {
         "FOUR_C_BOOST_ROOT": "/cluster/lib/gcc/9.1.0/boost_1_86_0",
-        "Python3_ROOT_DIR": "/lnm/miniconda3/envs/python_3_12_env/bin"
+        "FOUR_C_PYTHON_ROOT": "/lnm/miniconda3/envs/python_3_12_env/bin"
       }
     },
     {
