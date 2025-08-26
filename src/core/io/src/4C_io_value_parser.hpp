@@ -23,6 +23,7 @@
 #include <stack>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <vector>
 
 FOUR_C_NAMESPACE_OPEN
@@ -245,6 +246,19 @@ namespace Core::IO
       {
         read_internal(value[i]);
       }
+    }
+
+    template <typename... Ts>
+    void read_internal(std::tuple<Ts...>& value)
+    {
+      std::apply([this](auto&... val) { (this->read_internal(val), ...); }, value);
+    }
+
+    template <typename T1, typename T2>
+    void read_internal(std::pair<T1, T2>& value)
+    {
+      read_internal(value.first);
+      read_internal(value.second);
     }
 
     template <typename U>

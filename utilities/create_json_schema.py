@@ -9,7 +9,6 @@
 
 import argparse
 import json
-
 from pathlib import Path
 
 from metadata_utils import (
@@ -27,6 +26,7 @@ from metadata_utils import (
     Primitive,
     RangeValidator,
     Selection,
+    Tuple,
     Vector,
     metadata_object_from_file,
 )
@@ -89,6 +89,7 @@ def json_schema(
     patternProperties=None,
     additionalProperties=False,
     items=None,
+    prefixItems=None,
     minItems=None,
     maxItems=None,
     validator=None,
@@ -141,6 +142,7 @@ def json_schema(
     # Arrays
     if schema_type == "array":
         set_if_not_none(schema, "items", items)
+        set_if_not_none(schema, "prefixItems", prefixItems)
         set_if_not_none(schema, "maxItems", maxItems)
         set_if_not_none(schema, "minItems", minItems)
 
@@ -281,6 +283,24 @@ def array_schema(parameter, items):
         maxItems=parameter.size,
         minItems=parameter.size,
         noneable=parameter.noneable,
+    )
+
+    return schema
+
+
+def schema_from_tuple(tuple):
+    """Create schema from tuple.
+    Args:
+        tuple (Tuple): Tuple parameter
+    Returns:
+        dict: JSON schema data
+    """
+    schema = json_schema(
+        title=tuple.short_description(),
+        description=tuple.description,
+        schema_type="array",
+        prefixItems=[get_schema(vt) for vt in tuple.value_types],
+        noneable=tuple.noneable,
     )
 
     return schema
@@ -494,6 +514,8 @@ def get_schema(parameter):
             schema = schema_from_enum(parameter)
         case Vector():
             schema = schema_from_vector(parameter)
+        case Tuple():
+            schema = schema_from_tuple(parameter)
         case Map():
             schema = schema_from_map(parameter)
         case Primitive():

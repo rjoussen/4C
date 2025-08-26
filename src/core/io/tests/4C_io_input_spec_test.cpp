@@ -1127,6 +1127,88 @@ specs:
     }
   }
 
+  TEST(InputSpecTest, MatchYamlComplicatedParameterTuplePairMap)
+  {
+    using ComplicatedType =
+        std::tuple<int, std::pair<std::vector<double>, std::map<std::string, bool>>,
+            std::tuple<std::string, int, double>>;
+
+    // vector and map are sized to 2 entries each
+    auto spec = parameter<ComplicatedType>("t", {.description = "", .size = {2, 2}});
+    auto tree = init_yaml_tree_with_exceptions();
+    ryml::NodeRef root = tree.rootref();
+
+    ryml::parse_in_arena(R"(
+t:
+  - 42
+  - [ [1.1, 2.2], {a: true, b: false} ]
+  - ["hello", 7, 8.9]
+)",
+        root);
+
+    ConstYamlNodeRef node(root, "");
+    InputParameterContainer container;
+    spec.match(node, container);
+
+    const auto& tuple = container.get<ComplicatedType>("t");
+
+    // first element: int
+    EXPECT_EQ(std::get<0>(tuple), 42);
+
+    // second element: pair<vector<double>, map<string,bool>>
+    const auto& pair = std::get<1>(tuple);
+    const auto& vec = pair.first;
+    ASSERT_EQ(vec.size(), 2);
+    EXPECT_DOUBLE_EQ(vec[0], 1.1);
+    EXPECT_DOUBLE_EQ(vec[1], 2.2);
+
+    const auto& map = pair.second;
+    ASSERT_EQ(map.size(), 2);
+    EXPECT_EQ(map.at("a"), true);
+    EXPECT_EQ(map.at("b"), false);
+
+    // third element: tuple<string,int>
+    const auto& inner_tuple = std::get<2>(tuple);
+    EXPECT_EQ(std::get<0>(inner_tuple), "hello");
+    EXPECT_EQ(std::get<1>(inner_tuple), 7);
+  }
+
+  TEST(InputSpecTest, MatchYamlComplicatedParameterPairVectorMap)
+  {
+    using ComplicatedType =
+        std::pair<std::vector<double>, std::pair<std::vector<double>, std::map<std::string, bool>>>;
+
+    // outer vector is sized to 3 entries, inner vector to 2 entries, map to 4 entries
+    auto spec = parameter<ComplicatedType>("c", {.description = "", .size = {2, 3, 4}});
+
+    auto tree = init_yaml_tree_with_exceptions();
+    ryml::NodeRef root = tree.rootref();
+    ryml::parse_in_arena(R"(
+c: [[1.0, 2.0], [[1.0, 2.0, 8.0], {a: true, b: false, c: true, d: false}]])",
+        root);
+
+    ConstYamlNodeRef node(root, "");
+    InputParameterContainer container;
+    spec.match(node, container);
+
+    const auto& pair = container.get<ComplicatedType>("c");
+    ASSERT_EQ(pair.first.size(), 2);
+    EXPECT_EQ(pair.first[0], 1.0);
+    EXPECT_EQ(pair.first[1], 2.0);
+
+    ASSERT_EQ(pair.second.first.size(), 3);
+    EXPECT_EQ(pair.second.first[0], 1.0);
+    EXPECT_EQ(pair.second.first[1], 2.0);
+    EXPECT_EQ(pair.second.first[2], 8.0);
+
+    const auto& map = pair.second.second;
+    ASSERT_EQ(map.size(), 4);
+    EXPECT_EQ(map.at("a"), true);
+    EXPECT_EQ(map.at("b"), false);
+    EXPECT_EQ(map.at("c"), true);
+    EXPECT_EQ(map.at("d"), false);
+  }
+
   TEST(InputSpecTest, MatchYamlGroup)
   {
     auto spec = group("group", {
@@ -1602,22 +1684,23 @@ specs:
 
   TEST(InputSpecTest, MatchYamlSizes)
   {
-    using ComplicatedType = std::vector<std::map<std::string, std::vector<int>>>;
+    using ComplicatedType = std::vector<std::map<std::string,
+        std::tuple<std::vector<int>, std::vector<double>, std::pair<std::string, bool>>>>;
     auto spec = group("data", {
                                   parameter<int>("num"),
-                                  parameter<ComplicatedType>(
-                                      "v", {.size = {2, dynamic_size, from_parameter<int>("num")}}),
+                                  parameter<ComplicatedType>("v",
+                                      {.size = {2, dynamic_size, from_parameter<int>("num"), 1}}),
                               });
 
     {
       SCOPED_TRACE("Expected sizes");
       ryml::Tree tree = init_yaml_tree_with_exceptions();
       ryml::parse_in_arena(R"(data:
-  num: 2
+  num: 3
   v:
-    - key1: [1, 2]
-      key2: [3, 4]
-    - key1: [5, 6])",
+    - key1: [[1, 2, 1], [9.876], [true, true]]
+      key2: [[3, 4, 5], [9.876], [true, false]]
+    - key1: [[5, 6, 9], [9.876], [false, false]])",
           &tree);
       ryml::NodeRef root = tree.rootref();
       ConstYamlNodeRef node(root, "");
@@ -1626,17 +1709,23 @@ specs:
       spec.match(node, container);
       const auto& v = container.group("data").get<ComplicatedType>("v");
       EXPECT_EQ(v.size(), 2);
+      EXPECT_EQ(std::get<0>(v[0].at("key1")).size(), 3);
+      EXPECT_EQ(std::get<1>(v[0].at("key1")).size(), 1);
+
+      auto pair = std::get<2>(v[0].at("key1"));
+      EXPECT_EQ(pair.first, "true");
+      EXPECT_EQ(pair.second, true);
     }
 
     {
       SCOPED_TRACE("Wrong size from_parameter");
       ryml::Tree tree = init_yaml_tree_with_exceptions();
       ryml::parse_in_arena(R"(data:
-  num: 2
+  num: 3
   v:
-    - key1: [1, 2, 3]
-      key2: [3, 4]
-    - key1: [5, 6])",
+    - key1: [[1, 2, 3], [9.876], [true, true]]
+      key2: [[3, 4, 5], [9.876], [true, false]]
+    - key1: [[5, 6], [9.876], [false, false]])",  // [5, 6] should be size 3
           &tree);
       ryml::NodeRef root = tree.rootref();
       ConstYamlNodeRef node(root, "");
@@ -1646,21 +1735,39 @@ specs:
     }
 
     {
-      SCOPED_TRACE("Wrong size explicitly set.");
+      SCOPED_TRACE("Wrong size explicitly set for outer vector.");
       ryml::Tree tree = init_yaml_tree_with_exceptions();
       ryml::parse_in_arena(R"(data:
-  num: 2
+  num: 3
   v:
-    - key1: [1, 2]
-    - key1: [5, 6]
-    - key1: [7, 8])",
+    - key1: [[1, 2, 3], [9.876], [true, true]]
+    - key1: [[5, 6, 5], [9.876], [true, false]]
+    - key1: [[7, 8, 9], [9.876], [false, false]])",  // v should only have 2 entries
           &tree);
       ryml::NodeRef root = tree.rootref();
       ConstYamlNodeRef node(root, "");
 
       InputParameterContainer container;
       FOUR_C_EXPECT_THROW_WITH_MESSAGE(
-          spec.match(node, container), Core::Exception, "Candidate parameter 'v'");
+          spec.match(node, container), Core::Exception, "value has incorrect size");
+    }
+
+    {
+      SCOPED_TRACE("Wrong size explicitly set for inner vector.");
+      ryml::Tree tree = init_yaml_tree_with_exceptions();
+      ryml::parse_in_arena(R"(data:
+  num: 3
+  v:
+    - key1: [[1, 2, 3], [9.876], [true, true]]
+      key2: [[5, 6, 5], [9.876, 4.244], [true, false]]
+    - key1: [[7, 8, 9], [9.876], [false, false]])",  // [9.876, 4.244] should be size 1
+          &tree);
+      ryml::NodeRef root = tree.rootref();
+      ConstYamlNodeRef node(root, "");
+
+      InputParameterContainer container;
+      FOUR_C_EXPECT_THROW_WITH_MESSAGE(
+          spec.match(node, container), Core::Exception, "value has incorrect size");
     }
   }
 
