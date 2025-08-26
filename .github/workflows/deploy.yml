@@ -39,7 +39,7 @@ jobs:
           name: 4C_coverage_report
           path: ${{ github.workspace }}/coverage_report
           branch: ${{ github.event.repository.default_branch }}
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v4
         id: deployment
         with:
           path: ${{ github.workspace }}
