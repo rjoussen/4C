@@ -381,10 +381,9 @@ namespace
       Global::Problem* problem = Global::Problem::instance();
 
       // create default communicators
-      std::shared_ptr<Core::Communication::Communicators> communicators =
-          Core::Communication::create_comm({});
+      Core::Communication::Communicators communicators = Core::Communication::create_comm({});
       problem->set_communicators(communicators);
-      MPI_Comm comm = communicators->global_comm();
+      MPI_Comm comm = communicators.global_comm();
 
       std::string csv_template_file_name = "4C_electrode_test.csv";
       std::string file_name = "4C_electrode_test.4C.yaml";

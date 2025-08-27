@@ -24,8 +24,8 @@ Mat::PAR::ScatraMat::ScatraMat(const Core::Mat::PAR::Parameter::Data& matdata) :
 {
   // extract relevant communicator
   MPI_Comm comm = Global::Problem::instance()->materials()->get_read_from_problem() == 0
-                      ? Global::Problem::instance()->get_communicators()->local_comm()
-                      : Global::Problem::instance()->get_communicators()->sub_comm();
+                      ? Global::Problem::instance()->get_communicators().local_comm()
+                      : Global::Problem::instance()->get_communicators().sub_comm();
 
   Core::LinAlg::Map dummy_map(1, 1, 0, comm);
   for (int i = first; i <= last; i++)

@@ -920,9 +920,7 @@ void Solid::TimeInt::Base::set_action_type(const Core::Elements::ActionType& act
  *----------------------------------------------------------------------------*/
 int Solid::TimeInt::Base::group_id() const
 {
-  std::shared_ptr<Core::Communication::Communicators> group =
-      Global::Problem::instance()->get_communicators();
-  return group->group_id();
+  return Global::Problem::instance()->get_communicators().group_id();
 }
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

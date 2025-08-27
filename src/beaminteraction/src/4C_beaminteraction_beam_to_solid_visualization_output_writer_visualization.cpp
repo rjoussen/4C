@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 BeamInteraction::BeamToSolidOutputWriterVisualization::BeamToSolidOutputWriterVisualization(
     const std::string& writer_full_name, Core::IO::VisualizationParameters visualization_params)
     : Core::IO::VisualizationManager(std::move(visualization_params),
-          (Global::Problem::instance()->get_communicators()->global_comm()), writer_full_name),
+          (Global::Problem::instance()->get_communicators().global_comm()), writer_full_name),
       discret_(nullptr),
       node_gid_map_(nullptr)
 {

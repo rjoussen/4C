@@ -99,19 +99,18 @@ std::function<const Teuchos::ParameterList&(int)> Global::Problem::solver_params
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Global::Problem::set_communicators(
-    std::shared_ptr<Core::Communication::Communicators> communicators)
+void Global::Problem::set_communicators(Core::Communication::Communicators communicators)
 {
   if (communicators_ != nullptr) FOUR_C_THROW("Communicators were already set.");
-  communicators_ = communicators;
+  communicators_ = std::make_unique<Core::Communication::Communicators>(std::move(communicators));
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::shared_ptr<Core::Communication::Communicators> Global::Problem::get_communicators() const
+Core::Communication::Communicators& Global::Problem::get_communicators() const
 {
   if (communicators_ == nullptr) FOUR_C_THROW("No communicators allocated yet.");
-  return communicators_;
+  return *communicators_;
 }
 
 

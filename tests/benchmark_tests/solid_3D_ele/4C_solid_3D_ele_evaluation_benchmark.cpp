@@ -102,7 +102,7 @@ namespace
       Discret::Elements::ElementTechnology ele_tech, Inpar::Solid::KinemType kinem_type)
   {
     auto dis = std::make_unique<Core::FE::Discretization>("solid",
-        Global::Problem::instance()->get_communicators()->global_comm(), Core::FE::dim<celltype>);
+        Global::Problem::instance()->get_communicators().global_comm(), Core::FE::dim<celltype>);
 
     add_nodes_to_discretization<celltype>(*dis);
     dis->add_element(make_solid_element<celltype>(ele_tech, kinem_type));

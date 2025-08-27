@@ -26,7 +26,7 @@ void particle_drt()
   Global::Problem* problem = Global::Problem::instance();
 
   // get local communicator
-  MPI_Comm comm = problem->get_communicators()->local_comm();
+  MPI_Comm comm = problem->get_communicators().local_comm();
 
   // get parameter lists
   const Teuchos::ParameterList& params = problem->particle_params();

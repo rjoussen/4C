@@ -200,10 +200,10 @@ namespace Global
     /// @name Communicators and their parallel groups
 
     /// set communicators
-    void set_communicators(std::shared_ptr<Core::Communication::Communicators> communicators);
+    void set_communicators(Core::Communication::Communicators communicators);
 
     /// return communicators
-    std::shared_ptr<Core::Communication::Communicators> get_communicators() const;
+    Core::Communication::Communicators& get_communicators() const;
 
     //@}
 
@@ -570,7 +570,7 @@ namespace Global
     std::map<std::pair<std::string, std::string>, std::map<int, int>> clonefieldmatmap_;
 
     /// communicators
-    std::shared_ptr<Core::Communication::Communicators> communicators_;
+    std::unique_ptr<Core::Communication::Communicators> communicators_;
 
     /// @name File IO
 

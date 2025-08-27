@@ -1225,7 +1225,7 @@ void MultiScale::MicroStatic::static_homogenization(Core::LinAlg::Matrix<6, 1>* 
 
 void MultiScale::stop_np_multiscale()
 {
-  MPI_Comm subcomm = Global::Problem::instance(0)->get_communicators()->sub_comm();
+  MPI_Comm subcomm = Global::Problem::instance(0)->get_communicators().sub_comm();
   int task[2] = {
       static_cast<int>(MultiScale::MicromaterialNestedParallelismAction::stop_multiscale), -1};
   Core::Communication::broadcast(task, 2, 0, subcomm);
