@@ -181,7 +181,7 @@ void Core::LinAlg::matrix_put(const Core::LinAlg::SparseMatrix& A, const double 
   if (Aprime == nullptr) FOUR_C_THROW("Cast failed");
 
   // Loop over Aprime's rows, extract row content and replace respective row in sysmat
-  const int MaxNumEntries = EPETRA_MAX(Aprime->max_num_entries(), B.max_num_entries());
+  const int MaxNumEntries = std::max(Aprime->max_num_entries(), B.max_num_entries());
 
   // define row map to tackle
   // if #rowmap (a subset of #RowMap()) is provided, a selective replacing is performed
