@@ -8,8 +8,9 @@
 """Utilities to handle 4C metadata files."""
 from dataclasses import dataclass, field
 from pathlib import Path
-from ruamel.yaml import YAML
 from typing import ClassVar
+
+from ruamel.yaml import YAML
 
 
 # In order to allow None as defaults
@@ -126,6 +127,20 @@ class Map(Primitive):
         # If dict create object
         if isinstance(self.value_type, dict):
             self.value_type = _metadata_object_from_dict(self.value_type)
+
+
+@dataclass
+class Tuple(Primitive):
+    """Tuple parameter."""
+
+    size: int = None
+    value_types: list = field(default_factory=list)
+
+    def __post_init__(self):
+        # If dict create object
+        for i, vt in enumerate(self.value_types):
+            if isinstance(vt, dict):
+                self.value_types[i] = _metadata_object_from_dict(vt)
 
 
 @dataclass
@@ -382,6 +397,8 @@ def _metadata_object_from_dict(metadata_dict):
             cls = Vector
         case "map":
             cls = Map
+        case "tuple":
+            cls = Tuple
         # Collections
         case "selection":
             cls = Selection
