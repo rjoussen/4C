@@ -240,7 +240,7 @@ std::shared_ptr<Core::LinAlg::Vector<double>> EHL::Base::evaluate_fluid_force(
       if (abs(inf_gap_toggle_lub_->operator[](inf_gap_toggle_lub_->get_map().lid(
                   lubrication_->lubrication_field()->prenp()->get_map().gid(i))) -
               1) < 1.e-2)
-        lubrication_->lubrication_field()->prenp()->operator[](i) = 0.;
+        lubrication_->lubrication_field()->prenp()->get_values()[i] = 0.;
     }
 
   // Forces on the interfaces due to the fluid traction
@@ -725,7 +725,7 @@ void EHL::Base::output(bool forced_writerestart)
     std::shared_ptr<Core::LinAlg::Vector<double>> active_toggle, slip_toggle;
     mortaradapter_->create_active_slip_toggle(&active_toggle, &slip_toggle);
     for (int i = 0; i < active_toggle->get_map().num_my_elements(); ++i)
-      slip_toggle->operator[](i) += active_toggle->operator[](i);
+      slip_toggle->get_values()[i] += active_toggle->operator[](i);
     std::shared_ptr<Core::LinAlg::Vector<double>> active =
         std::make_shared<Core::LinAlg::Vector<double>>(
             *structure_field()->discretization()->node_row_map());

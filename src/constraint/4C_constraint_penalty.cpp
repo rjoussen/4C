@@ -213,9 +213,10 @@ void Constraints::ConstraintPenalty::evaluate_constraint(Teuchos::ParameterList&
 
       // take care when calling this evaluate function separately (evaluate force / evaluate
       // force+stiff)
-      if (assemblemat1) (*lagrvalues_)[condID - 1] += rho_[condID] * diff;
+      if (assemblemat1) (*lagrvalues_).get_values()[condID - 1] += rho_[condID] * diff;
       if (assemblevec1 and !(assemblemat1))
-        (*lagrvalues_force_)[condID - 1] = (*lagrvalues_)[condID - 1] + rho_[condID] * diff;
+        (*lagrvalues_force_).get_values()[condID - 1] =
+            (*lagrvalues_)[condID - 1] + rho_[condID] * diff;
 
       // elements might need condition
       params.set<const Core::Conditions::Condition*>("condition", cond);

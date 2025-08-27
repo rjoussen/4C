@@ -136,8 +136,8 @@ namespace
     // set an arbitrary state
     for (int i = 0; i < displacement->local_length(); ++i)
     {
-      (*displacement)[i] = 0.1 * std::sin(4321.0 * i);
-      (*residual_displacements)[i] = 0.0001 * std::cos(1234.0 * i);
+      (*displacement).get_values()[i] = 0.1 * std::sin(4321.0 * i);
+      (*residual_displacements).get_values()[i] = 0.0001 * std::cos(1234.0 * i);
     }
 
     dis.set_state("displacement", *displacement);

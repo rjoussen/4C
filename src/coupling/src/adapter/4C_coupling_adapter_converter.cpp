@@ -202,9 +202,9 @@ void Coupling::Adapter::MatrixLogicalSplitAndTransform::internal_add(
   {
     const int gid = esrc.domain_map().gid(i);
     if (logical_domain_map.my_gid(gid))
-      dselector[i] = 1.;
+      dselector.get_values()[i] = 1.;
     else
-      dselector[i] = 0.;
+      dselector.get_values()[i] = 0.;
   }
   Core::LinAlg::Vector<double> selector(esrc.col_map());
   Core::LinAlg::export_to(dselector, selector);

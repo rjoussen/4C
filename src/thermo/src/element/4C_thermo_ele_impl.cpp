@@ -510,7 +510,7 @@ int Discret::Elements::TemperImpl<distype>::evaluate(
           // nquad_: number of Gauss points
           for (int jquad = 0; jquad < nquad_; ++jquad) s += gpheatflux(jquad, idim);
           s /= nquad_;
-          (((*eleheatflux)(idim)))[lid] = s;
+          (((*eleheatflux)(idim))).get_values()[lid] = s;
         }
       }
     }  // end "cxyz" or "cxyz_ndxyz"

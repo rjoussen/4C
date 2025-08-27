@@ -1251,10 +1251,10 @@ namespace FLD
           if ((*velnp_)[lid] != 0)
           {
             double tmp = (*velnp_)[lid];
-            (*velnp_)[lid] = 0.5 * (tmp + elevec3(i));
+            (*velnp_).get_values()[lid] = 0.5 * (tmp + elevec3(i));
           }
           else
-            (*velnp_)[lid] = elevec3(i);
+            (*velnp_).get_values()[lid] = elevec3(i);
         }
       }
     }

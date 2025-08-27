@@ -352,16 +352,17 @@ void CONTACT::Interface::set_cn_ct_values(const int& iter)
 
     if (cnode->is_on_edge())
     {
-      get_cn_ref()[get_cn_ref().get_map().lid(cnode->id())] = cn * (length * length);
-      if (friction_) get_ct_ref()[get_ct_ref().get_map().lid(cnode->id())] = ct * (length * length);
+      get_cn_ref().get_values()[get_cn_ref().get_map().lid(cnode->id())] = cn * (length * length);
+      if (friction_)
+        get_ct_ref().get_values()[get_ct_ref().get_map().lid(cnode->id())] = ct * (length * length);
     }
 
     if (cnode->is_on_corner())
     {
-      get_cn_ref()[get_cn_ref().get_map().lid(cnode->id())] =
+      get_cn_ref().get_values()[get_cn_ref().get_map().lid(cnode->id())] =
           cn * (length * length * length * length);
       if (friction_)
-        get_ct_ref()[get_ct_ref().get_map().lid(cnode->id())] =
+        get_ct_ref().get_values()[get_ct_ref().get_map().lid(cnode->id())] =
             ct * (length * length * length * length);
     }
   }
@@ -7767,7 +7768,7 @@ void CONTACT::Interface::postprocess_quantities(const Teuchos::ParameterList& ou
     std::shared_ptr<Core::LinAlg::Vector<double>> owner = Core::LinAlg::create_vector(*eleRowMap);
 
     for (int i = 0; i < idiscret_->element_row_map()->num_my_elements(); ++i)
-      (*owner)[i] = idiscret_->l_row_element(i)->owner();
+      (*owner).get_values()[i] = idiscret_->l_row_element(i)->owner();
 
     writer->write_vector("Owner", owner, Core::IO::VectorType::elementvector);
   }

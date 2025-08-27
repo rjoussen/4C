@@ -624,46 +624,46 @@ void Utils::CardiovascularRespiratory0DSysPulPeriphCirculation::evaluate(
         atrium_model_ == Inpar::Cardiovascular0D::atr_prescribed)
     {
       // 0D left atrial volume
-      (*sysvec5)[0] = p_at_l_np / E_at_l_np + v_at_l_u_;
+      (*sysvec5).get_values()[0] = p_at_l_np / E_at_l_np + v_at_l_u_;
       // 0D right atrial volume
-      (*sysvec5)[24] = p_at_r_np / E_at_r_np + v_at_r_u_;
+      (*sysvec5).get_values()[24] = p_at_r_np / E_at_r_np + v_at_r_u_;
     }
     if (ventricle_model_ == Inpar::Cardiovascular0D::ventr_elastance_0d or
         ventricle_model_ == Inpar::Cardiovascular0D::ventr_prescribed)
     {
       // 0D left ventricular volume
-      (*sysvec5)[2] = p_v_l_np / E_v_l_np + v_v_l_u_;
+      (*sysvec5).get_values()[2] = p_v_l_np / E_v_l_np + v_v_l_u_;
       // 0D right ventricular volume
-      (*sysvec5)[26] = p_v_r_np / E_v_r_np + v_v_r_u_;
+      (*sysvec5).get_values()[26] = p_v_r_np / E_v_r_np + v_v_r_u_;
     }
     // systemic arterial compartment volume
-    (*sysvec5)[4] = c_ar_sys_ * (p_ar_sys_np - z_ar_sys_ * q_vout_l_np) + v_ar_sys_u_;
+    (*sysvec5).get_values()[4] = c_ar_sys_ * (p_ar_sys_np - z_ar_sys_ * q_vout_l_np) + v_ar_sys_u_;
     // systemic peripheral arterial compartment volume
-    (*sysvec5)[6] = (c_arspl_sys_ + c_arespl_sys_ + c_armsc_sys_ + c_arcer_sys_ + c_arcor_sys_) *
-                        p_arperi_sys_np +
-                    v_arspl_sys_u_ + v_arespl_sys_u_ + v_armsc_sys_u_ + v_arcer_sys_u_ +
-                    v_arcor_sys_u_;
+    (*sysvec5).get_values()[6] =
+        (c_arspl_sys_ + c_arespl_sys_ + c_armsc_sys_ + c_arcer_sys_ + c_arcor_sys_) *
+            p_arperi_sys_np +
+        v_arspl_sys_u_ + v_arespl_sys_u_ + v_armsc_sys_u_ + v_arcer_sys_u_ + v_arcor_sys_u_;
 
 
     // systemic venous splanchnic volume
-    (*sysvec5)[12] = c_venspl_sys_ * p_venspl_sys_np + v_venspl_sys_u_;
+    (*sysvec5).get_values()[12] = c_venspl_sys_ * p_venspl_sys_np + v_venspl_sys_u_;
     // systemic venous extra-splanchnic volume
-    (*sysvec5)[14] = c_venespl_sys_ * p_venespl_sys_np + v_venespl_sys_u_;
+    (*sysvec5).get_values()[14] = c_venespl_sys_ * p_venespl_sys_np + v_venespl_sys_u_;
     // systemic venous musclular volume
-    (*sysvec5)[16] = c_venmsc_sys_ * p_venmsc_sys_np + v_venmsc_sys_u_;
+    (*sysvec5).get_values()[16] = c_venmsc_sys_ * p_venmsc_sys_np + v_venmsc_sys_u_;
     // systemic venous cerebral volume
-    (*sysvec5)[18] = c_vencer_sys_ * p_vencer_sys_np + v_vencer_sys_u_;
+    (*sysvec5).get_values()[18] = c_vencer_sys_ * p_vencer_sys_np + v_vencer_sys_u_;
     // systemic venous coronary volume
-    (*sysvec5)[20] = c_vencor_sys_ * p_vencor_sys_np + v_vencor_sys_u_;
+    (*sysvec5).get_values()[20] = c_vencor_sys_ * p_vencor_sys_np + v_vencor_sys_u_;
 
     // systemic venous compartment volume
-    (*sysvec5)[22] = c_ven_sys_ * p_ven_sys_np + v_ven_sys_u_;
+    (*sysvec5).get_values()[22] = c_ven_sys_ * p_ven_sys_np + v_ven_sys_u_;
     // pulmonary arterial compartment volume
-    (*sysvec5)[28] = c_ar_pul_ * (p_ar_pul_np - z_ar_pul_ * q_vout_r_np) + v_ar_pul_u_;
+    (*sysvec5).get_values()[28] = c_ar_pul_ * (p_ar_pul_np - z_ar_pul_ * q_vout_r_np) + v_ar_pul_u_;
     // pulmonary capillary volume
-    (*sysvec5)[30] = c_cap_pul_ * p_cap_pul_np + v_cap_pul_u_;
+    (*sysvec5).get_values()[30] = c_cap_pul_ * p_cap_pul_np + v_cap_pul_u_;
     // pulmonary venous compartment volume
-    (*sysvec5)[32] = c_ven_pul_ * p_ven_pul_np + v_ven_pul_u_;
+    (*sysvec5).get_values()[32] = c_ven_pul_ * p_ven_pul_np + v_ven_pul_u_;
 
     // call sub evaluate method for respiratory model
     // after all vascular compartment volumes have been set - since these enter the 0D respiratory
@@ -1235,7 +1235,7 @@ void Utils::CardiovascularRespiratory0DSysPulPeriphCirculation::evaluate_respira
 
 
   // alveolar volume
-  (*volvec)[34] = V_alv_np;
+  (*volvec).get_values()[34] = V_alv_np;
 
   // we misuse the vol vector to carry information about the O2 saturation S_O2 of the respective
   // compartment in order to avoid introducing another vector for this purpose the vol vector
@@ -1243,9 +1243,9 @@ void Utils::CardiovascularRespiratory0DSysPulPeriphCirculation::evaluate_respira
   // t_{n+\theta} inside the manager
 
   // pulmonary arterial O2 saturation
-  (*volvec)[49] = s_o2(ppCO2_ar_pul_np, ppO2_ar_pul_np);
+  (*volvec).get_values()[49] = s_o2(ppCO2_ar_pul_np, ppO2_ar_pul_np);
   // systemic arterial O2 saturation
-  (*volvec)[59] = s_o2(ppCO2_ar_sys_np, ppO2_ar_sys_np);
+  (*volvec).get_values()[59] = s_o2(ppCO2_ar_sys_np, ppO2_ar_sys_np);
 
   // contributions to residual
   // 0D lung

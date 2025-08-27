@@ -327,19 +327,19 @@ namespace
         const int localIndex = dis.node_row_map()->lid(node->id());
         if (localIndex < 0) continue;
         touchCount[localIndex]++;
-        (*phi)[localIndex] += interpolVec(i);
-        (*tracephi)[localIndex] += interpolVec(i + ele->num_node());
+        (*phi).get_values()[localIndex] += interpolVec(i);
+        (*tracephi).get_values()[localIndex] += interpolVec(i + ele->num_node());
         for (int d = 0; d < ndim; ++d)
-          (*gradphi)(d)[localIndex] += interpolVec(i + (d + 2) * ele->num_node());
+          (*gradphi)(d).get_values()[localIndex] += interpolVec(i + (d + 2) * ele->num_node());
       }
     }
 
     // build average of values
     for (int i = 0; i < phi->local_length(); ++i)
     {
-      (*phi)[i] /= touchCount[i];
-      (*tracephi)[i] /= touchCount[i];
-      for (int d = 0; d < ndim; ++d) (*gradphi)(d)[i] /= touchCount[i];
+      (*phi).get_values()[i] /= touchCount[i];
+      (*tracephi).get_values()[i] /= touchCount[i];
+      for (int d = 0; d < ndim; ++d) (*gradphi)(d).get_values()[i] /= touchCount[i];
     }
     dis.clear_state(true);
   }
@@ -565,9 +565,10 @@ void ScaTra::TimIntHDG::set_initial_field(
           {
             // safety check if initial value for trace dof is set for all elements the same
             // (interior face)
-            if ((*phinp_)[lid] != 0) error += std::abs((*phinp_)[lid] - updateVec1(i));
-            (*phinp_)[lid] = updateVec1(i);
-            (*phin_)[lid] = updateVec1(i);
+            if ((*phinp_).get_values()[lid] != 0)
+              error += std::abs((*phinp_).get_values()[lid] - updateVec1(i));
+            (*phinp_).get_values()[lid] = updateVec1(i);
+            (*phin_).get_values()[lid] = updateVec1(i);
           }
         }
       }
@@ -811,7 +812,7 @@ void ScaTra::TimIntHDG::fd_check()
       // finite difference suggestion (first divide by epsilon and then subtract for better
       // conditioning)
       for (int j = 0; j < phinp_->local_length(); ++j)
-        (*fdvec)[j] = -(*systemvector1)[j] / eps + (residualVec)[j] / eps;
+        (*fdvec).get_values()[j] = -(*systemvector1)[j] / eps + (residualVec)[j] / eps;
 
       for (int rowlid = 0; rowlid < discret_->dof_row_map()->num_my_elements(); ++rowlid)
       {
@@ -1141,7 +1142,7 @@ void ScaTra::TimIntHDG::adapt_degree()
 
       // store element degree (only for output)
       const int eleIndex = discret_->element_row_map()->lid(ele->id());
-      if (eleIndex >= 0) (*elementdegree_)[eleIndex] = deg;
+      if (eleIndex >= 0) (*elementdegree_).get_values()[eleIndex] = deg;
     }
   }
 
@@ -1346,7 +1347,7 @@ void ScaTra::TimIntHDG::adapt_variable_vector(std::shared_ptr<Core::LinAlg::Vect
     {
       const int lid = dofrowmap->lid(la[0].lm_[i]);
 
-      if (lid >= 0) (*phi_new)[lid] = phi_ele(i);
+      if (lid >= 0) (*phi_new).get_values()[lid] = phi_ele(i);
     }
   }
 

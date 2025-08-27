@@ -149,9 +149,9 @@ void Solid::ModelEvaluator::Meshtying::setup()
             int dof = gdiscret->dof(node, d);
             if (strategy_ptr_->non_redist_slave_row_dofs()->lid(dof) != -1)
             {
-              mesh_relocation_->operator[](mesh_relocation_->get_map().lid(dof)) =
+              mesh_relocation_->get_values()[mesh_relocation_->get_map().lid(dof)] =
                   node->x()[d] -
-                  Xslavemod_noredist->operator[](Xslavemod_noredist->get_map().lid(dof));
+                  Xslavemod_noredist->get_values()[Xslavemod_noredist->get_map().lid(dof)];
             }
           }
         }

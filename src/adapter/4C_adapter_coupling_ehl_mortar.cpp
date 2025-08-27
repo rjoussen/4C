@@ -810,7 +810,7 @@ void Adapter::CouplingEhlMortar::assemble_real_gap()
   static const double offset =
       Global::Problem::instance()->lubrication_dynamic_params().get<double>("GAP_OFFSET");
   for (int i = 0; i < nodal_gap_->get_map().num_my_elements(); ++i)
-    nodal_gap_->operator[](i) += offset;
+    nodal_gap_->get_values()[i] += offset;
 }
 
 void Adapter::CouplingEhlMortar::assemble_real_gap_deriv()
@@ -1088,8 +1088,8 @@ void Adapter::CouplingEhlMortar::create_force_vec(std::shared_ptr<Core::LinAlg::
     lmt.update(-1., lmn, 1.);
     for (int d = 0; d < 3; ++d)
     {
-      n->operator[](n->get_map().lid(cnode->dofs()[d])) = lmn(d);
-      t->operator[](t->get_map().lid(cnode->dofs()[d])) = lmt(d);
+      n->get_values()[(n->get_map().lid(cnode->dofs()[d]))] = lmn(d);
+      t->get_values()[(t->get_map().lid(cnode->dofs()[d]))] = lmt(d);
     }
   }
 }
@@ -1108,20 +1108,20 @@ void Adapter::CouplingEhlMortar::create_active_slip_toggle(
     CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(interface_->discret().l_row_node(i));
     if (!cnode) FOUR_C_THROW("cast failed");
     if (cnode->active())
-      (*active)->operator[](i) = 1.;
+      (*active)->get_values()[i] = 1.;
     else
-      (*active)->operator[](i) = 0.;
+      (*active)->get_values()[i] = 0.;
     if (cnode->fri_data().slip())
-      (*slip)->operator[](i) = 1.;
+      (*slip)->get_values()[i] = 1.;
     else
-      (*slip)->operator[](i) = 0.;
+      (*slip)->get_values()[i] = 0.;
 
     if (active_old != nullptr)
     {
       if (cnode->data().active_old())
-        (*active_old)->operator[](i) = 1.;
+        (*active_old)->get_values()[i] = 1.;
       else
-        (*active_old)->operator[](i) = 0.;
+        (*active_old)->get_values()[i] = 0.;
     }
   }
 }

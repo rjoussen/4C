@@ -165,9 +165,9 @@ void ScaTra::TimIntCardiacMonodomainHDG::collect_problem_specific_runtime_output
   {
     for (int k = 0; k < interpolatedPhi->local_length(); k++)
     {
-      if ((*interpolatedPhi)[k] >= activation_threshold_ &&
-          (*activation_time_interpol_)[k] <= dta_ * 0.9)
-        (*activation_time_interpol_)[k] = time_;
+      if ((*interpolatedPhi).get_values()[k] >= activation_threshold_ &&
+          (*activation_time_interpol_).get_values()[k] <= dta_ * 0.9)
+        (*activation_time_interpol_).get_values()[k] = time_;
     }
     visualization_writer().append_result_data_vector_with_context(
         *activation_time_interpol_, Core::IO::OutputEntity::node, {"activation_time"});

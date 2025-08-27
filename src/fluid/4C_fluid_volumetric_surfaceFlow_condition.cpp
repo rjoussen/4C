@@ -1266,7 +1266,7 @@ void FLD::Utils::FluidVolumetricSurfaceFlowBc::correct_flow_rate(
       correction = correction_factor * (*correction_velnp)[lid];
 
       int bc_lid = cond_velocities_->get_map().lid(gid);
-      (*cond_velocities_)[bc_lid] += correction;
+      (*cond_velocities_).get_values()[bc_lid] += correction;
     }
   }
   else
@@ -1280,7 +1280,7 @@ void FLD::Utils::FluidVolumetricSurfaceFlowBc::correct_flow_rate(
       correction = correction_factor * (*correction_velnp)[lid];
 
       int bc_lid = cond_velocities_->get_map().lid(gid);
-      (*cond_velocities_)[bc_lid] = correction;
+      (*cond_velocities_).get_values()[bc_lid] = correction;
     }
   }
 }

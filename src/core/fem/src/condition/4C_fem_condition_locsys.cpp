@@ -351,7 +351,8 @@ void Core::Conditions::LocsysManager::update(const double time,
       }
 
       // node dofs are marked now as already processed
-      for (int rr = 0; rr < numdof; ++rr) (*already_processed)[dofrowmap->lid(dofs[rr])] = 1.0;
+      for (int rr = 0; rr < numdof; ++rr)
+        (*already_processed).get_values()[dofrowmap->lid(dofs[rr])] = 1.0;
     }
   }
 

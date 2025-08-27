@@ -101,7 +101,7 @@ void FLD::XFluidOutputService::output(int step, double time, bool write_restart_
       for (std::size_t idof = 0; idof < numdof; ++idof)
       {
         // std::cout << dofrowmap->LID(gdofs[idof]) << std::endl;
-        (*outvec_fluid_)[dofrowmap->lid(gdofs_original[idof])] = 0.0;
+        (*outvec_fluid_).get_values()[dofrowmap->lid(gdofs_original[idof])] = 0.0;
       }
     }
     else if (gdofs_current.size() == gdofs_original.size())
@@ -111,7 +111,7 @@ void FLD::XFluidOutputService::output(int step, double time, bool write_restart_
       for (std::size_t idof = 0; idof < numdof; ++idof)
       {
         // std::cout << dofrowmap->LID(gdofs[idof]) << std::endl;
-        (*outvec_fluid_)[dofrowmap->lid(gdofs_original[idof])] =
+        (*outvec_fluid_).get_values()[dofrowmap->lid(gdofs_original[idof])] =
             (*state.velnp_)[xdofrowmap->lid(gdofs_current[idof])];
       }
     }
@@ -149,7 +149,7 @@ void FLD::XFluidOutputService::output(int step, double time, bool write_restart_
       // copy all values
       for (std::size_t idof = 0; idof < numdof; ++idof)
       {
-        (*outvec_fluid_)[dofrowmap->lid(gdofs_original[idof])] =
+        (*outvec_fluid_).get_values()[dofrowmap->lid(gdofs_original[idof])] =
             (*state.velnp_)[xdofrowmap->lid(gdofs_current[offset + idof])];
       }
 

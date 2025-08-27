@@ -241,7 +241,7 @@ void Discret::Elements::FluidEleCalcHDG<distype>::update_secondary_solution(
     double update = i < nsd_ * nsd_ * shapes_->ndofs_ ? updateG(i)
                                                       : updateUp(i - nsd_ * nsd_ * shapes_->ndofs_);
 
-    secondary[lid] += update * valfac;
+    secondary.get_values()[lid] += update * valfac;
 
     // write the update back into the local vectors (when doing local update,
     // we do not re-read from the global vectors)

@@ -97,7 +97,7 @@ void FS3I::FS3IBase::check_interface_dirichlet_bc()
     int gid = mastermap->gid(i);
     if (masterdirichmap->my_gid(gid))
     {
-      (masterifdirich)[i] = 1.0;
+      (masterifdirich).get_values()[i] = 1.0;
     }
   }
   std::shared_ptr<Core::LinAlg::Vector<double>> test_slaveifdirich =
@@ -114,7 +114,7 @@ void FS3I::FS3IBase::check_interface_dirichlet_bc()
     int gid = slavemap->gid(i);
     if (slavedirichmap->my_gid(gid))
     {
-      (slaveifdirich)[i] = 1.0;
+      (slaveifdirich).get_values()[i] = 1.0;
     }
   }
   std::shared_ptr<Core::LinAlg::Vector<double>> test_masterifdirich =
@@ -551,7 +551,7 @@ std::shared_ptr<Core::LinAlg::Vector<double>> FS3I::FS3IBase::calc_membrane_conc
   for (int i = 0; i < temp->local_length(); i++)
   {
     // here the unweighted average is uses. One could also use a logarithmic average...
-    (*temp)[i] =
+    (*temp).get_values()[i] =
         0.5 *
         ((*temp)[i] +
             (*scatrafield1_phi2np)

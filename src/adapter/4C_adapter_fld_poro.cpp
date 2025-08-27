@@ -74,14 +74,14 @@ void Adapter::FluidPoro::evaluate_no_penetration_cond(
         isset = false;
         for (int j = 0; j < ndof; j++)
         {
-          if ((*condVector)[i * ndof + j] != 0.0 and isset == false)
+          if ((*condVector).get_values()[i * ndof + j] != 0.0 and isset == false)
           {
             condIDs.insert(map.gid(i * ndof + j));
             isset = true;
             // break;
           }
           else
-            (*condVector)[i * ndof + j] = 0.0;
+            (*condVector).get_values()[i * ndof + j] = 0.0;
         }
       }
     }

@@ -864,10 +864,10 @@ void ScaTra::ScaTraTimIntElchSCL::scale_micro_problem()
   // extract dof values to node values
   for (int row_lid = 0; row_lid < dof_row_map()->num_my_elements(); row_lid += 2)
   {
-    const double row_value = (*nodal_size_macro)[row_lid];
+    const double row_value = (*nodal_size_macro).get_values()[row_lid];
     const double scale_fac = row_value == 0.0 ? 1.0 : row_value;
     for (int dof = 0; dof < num_dof_per_node(); ++dof)
-      (*nodal_size_macro)[row_lid + dof] = scale_fac;
+      (*nodal_size_macro).get_values()[row_lid + dof] = scale_fac;
   }
 
   // transform to micro discretization
@@ -894,8 +894,8 @@ void ScaTra::ScaTraTimIntElchSCL::scale_micro_problem()
     const int gid_micro = micro_scatra_field()->dof_row_map()->gid(lid_micro);
     const int coupled_node = coupled_micro_nodes_[gid_micro];
     const double scale_val = glob_nodal_size_micro.at(coupled_node);
-    (*micro_scale)[lid_micro] = scale_val;
-    (*micro_scatra_field()->residual())[lid_micro] *= scale_val;
+    micro_scale->get_values()[lid_micro] = scale_val;
+    micro_scatra_field()->residual()->get_values()[lid_micro] *= scale_val;
   }
   micro_scatra_field()->system_matrix()->left_scale(*micro_scale);
 }

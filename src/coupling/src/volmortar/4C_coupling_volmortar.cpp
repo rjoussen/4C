@@ -3683,7 +3683,7 @@ void Coupling::VolMortar::VolMortarCoupl::create_projection_operator()
 
   // set zero diagonal values to dummy 1.0
   for (int i = 0; i < diag1->local_length(); ++i)
-    if (abs((*diag1)[i]) < 1e-12) (*diag1)[i] = 1.0;
+    if (abs((*diag1)[i]) < 1e-12) (*diag1).get_values()[i] = 1.0;
 
   // scalar inversion of diagonal values
   err = diag1->reciprocal(*diag1);
@@ -3708,7 +3708,7 @@ void Coupling::VolMortar::VolMortarCoupl::create_projection_operator()
 
   // set zero diagonal values to dummy 1.0
   for (int i = 0; i < diag2->local_length(); ++i)
-    if (abs((*diag2)[i]) < 1e-12) (*diag2)[i] = 1.0;
+    if (abs((*diag2)[i]) < 1e-12) (*diag2).get_values()[i] = 1.0;
 
   // scalar inversion of diagonal values
   err = diag2->reciprocal(*diag2);

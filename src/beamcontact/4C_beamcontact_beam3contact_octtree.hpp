@@ -207,7 +207,8 @@ class Beam3ContactOctTree
       if ((int)stdvector[i].size() > vector.NumVectors())
         FOUR_C_THROW("stdvector[{}].size() = {} is larger than vector.NumVectors() = {}", i,
             (int)stdvector[i].size(), vector.NumVectors());
-      for (int j = 0; j < (int)stdvector[i].size(); j++) vector(j)[i] = (TYPE)stdvector[i][j];
+      for (int j = 0; j < (int)stdvector[i].size(); j++)
+        vector(j).get_values()[i] = (TYPE)stdvector[i][j];
     }
   }
   //! \brief translate Core::LinAlg::MultiVector<double> to std::vec<std::vec<type> > >

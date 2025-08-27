@@ -147,7 +147,7 @@ void ScaTra::ScaTraTimIntPoroMulti::collect_runtime_output_data()
     {
       Core::Nodes::Node* node = discret_->l_row_node(inode);
       for (int idim = 0; idim < nsd_; ++idim)
-        (dispnp_multi)(idim)[inode] =
+        (dispnp_multi)(idim).get_values()[inode] =
             (*dispnp)[dispnp->get_map().lid(discret_->dof(nds_disp(), node, idim))];
     }
 

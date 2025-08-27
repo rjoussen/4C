@@ -348,7 +348,8 @@ std::shared_ptr<Core::LinAlg::MultiVector<double>> ScaTra::ScaTraTimIntImpl::cal
 
       // compute normal boundary fluxes
       for (int idof = 0; idof < dofrowmap.num_my_elements(); ++idof)
-        (*normalfluxes)[idof] = (*trueresidual_boundary)[idof] / (*integratedshapefunc)[idof];
+        (*normalfluxes).get_values()[idof] =
+            (*trueresidual_boundary)[idof] / (*integratedshapefunc)[idof];
 
       // get value of boundary integral on this processor
       boundaryint = params.get<double>("area");

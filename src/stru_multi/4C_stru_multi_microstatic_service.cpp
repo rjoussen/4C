@@ -45,12 +45,12 @@ void MultiScale::MicroStatic::determine_toggle()
         const int lid = disn_->get_map().lid(gid);
         if (lid < 0) FOUR_C_THROW("Global id {} not on this proc in system vector", gid);
 
-        if ((*dirichtoggle_)[lid] != 1.0)  // be careful not to count dofs more
-                                           // than once since nodes belong to
-                                           // several surfaces simultaneously
+        if ((*dirichtoggle_).get_values()[lid] != 1.0)  // be careful not to count dofs more
+                                                        // than once since nodes belong to
+                                                        // several surfaces simultaneously
           ++np;
 
-        (*dirichtoggle_)[lid] = 1.0;
+        (*dirichtoggle_).get_values()[lid] = 1.0;
       }
     }
   }
@@ -127,7 +127,7 @@ void MultiScale::MicroStatic::set_up_homogenization()
 
         for (int l = 0; l < np_; ++l)
         {
-          if (pdof[l] == gid) Xp_temp[l] = x[k];
+          if (pdof[l] == gid) Xp_temp.get_values()[l] = x[k];
         }
       }
     }
@@ -143,32 +143,36 @@ void MultiScale::MicroStatic::set_up_homogenization()
 
   for (int n = 0; n < np_ / 3; ++n)
   {
-    ((*d_matrix_)(0))[3 * n] = (*material_coords_boundary_nodes_)[3 * n];
-    ((*d_matrix_)(3))[3 * n] = (*material_coords_boundary_nodes_)[3 * n + 1];
-    ((*d_matrix_)(6))[3 * n] = (*material_coords_boundary_nodes_)[3 * n + 2];
+    ((*d_matrix_)(0)).get_values()[3 * n] = (*material_coords_boundary_nodes_)[3 * n];
+    ((*d_matrix_)(3)).get_values()[3 * n] = (*material_coords_boundary_nodes_)[3 * n + 1];
+    ((*d_matrix_)(6)).get_values()[3 * n] = (*material_coords_boundary_nodes_)[3 * n + 2];
 
-    ((*d_matrix_)(1))[3 * n + 1] = (*material_coords_boundary_nodes_)[3 * n + 1];
-    ((*d_matrix_)(4))[3 * n + 1] = (*material_coords_boundary_nodes_)[3 * n + 2];
-    ((*d_matrix_)(7))[3 * n + 1] = (*material_coords_boundary_nodes_)[3 * n];
+    ((*d_matrix_)(1)).get_values()[3 * n + 1] = (*material_coords_boundary_nodes_)[3 * n + 1];
+    ((*d_matrix_)(4)).get_values()[3 * n + 1] = (*material_coords_boundary_nodes_)[3 * n + 2];
+    ((*d_matrix_)(7)).get_values()[3 * n + 1] = (*material_coords_boundary_nodes_)[3 * n];
 
-    ((*d_matrix_)(2))[3 * n + 2] = (*material_coords_boundary_nodes_)[3 * n + 2];
-    ((*d_matrix_)(5))[3 * n + 2] = (*material_coords_boundary_nodes_)[3 * n];
-    ((*d_matrix_)(8))[3 * n + 2] = (*material_coords_boundary_nodes_)[3 * n + 1];
+    ((*d_matrix_)(2)).get_values()[3 * n + 2] = (*material_coords_boundary_nodes_)[3 * n + 2];
+    ((*d_matrix_)(5)).get_values()[3 * n + 2] = (*material_coords_boundary_nodes_)[3 * n];
+    ((*d_matrix_)(8)).get_values()[3 * n + 2] = (*material_coords_boundary_nodes_)[3 * n + 1];
   }
 
   Core::LinAlg::MultiVector<double> d_matrix_transposed(*pdof_, 9);
 
   for (int n = 0; n < np_ / 3; ++n)
   {
-    ((d_matrix_transposed(0)))[3 * n] = (*material_coords_boundary_nodes_)[3 * n];
-    ((d_matrix_transposed(1)))[3 * n + 1] = (*material_coords_boundary_nodes_)[3 * n + 1];
-    ((d_matrix_transposed(2)))[3 * n + 2] = (*material_coords_boundary_nodes_)[3 * n + 2];
-    ((d_matrix_transposed(3)))[3 * n] = (*material_coords_boundary_nodes_)[3 * n + 1];
-    ((d_matrix_transposed(4)))[3 * n + 1] = (*material_coords_boundary_nodes_)[3 * n + 2];
-    ((d_matrix_transposed(5)))[3 * n + 2] = (*material_coords_boundary_nodes_)[3 * n];
-    ((d_matrix_transposed(6)))[3 * n] = (*material_coords_boundary_nodes_)[3 * n + 2];
-    ((d_matrix_transposed(7)))[3 * n + 1] = (*material_coords_boundary_nodes_)[3 * n];
-    ((d_matrix_transposed(8)))[3 * n + 2] = (*material_coords_boundary_nodes_)[3 * n + 1];
+    ((d_matrix_transposed(0))).get_values()[3 * n] = (*material_coords_boundary_nodes_)[3 * n];
+    ((d_matrix_transposed(1))).get_values()[3 * n + 1] =
+        (*material_coords_boundary_nodes_)[3 * n + 1];
+    ((d_matrix_transposed(2))).get_values()[3 * n + 2] =
+        (*material_coords_boundary_nodes_)[3 * n + 2];
+    ((d_matrix_transposed(3))).get_values()[3 * n] = (*material_coords_boundary_nodes_)[3 * n + 1];
+    ((d_matrix_transposed(4))).get_values()[3 * n + 1] =
+        (*material_coords_boundary_nodes_)[3 * n + 2];
+    ((d_matrix_transposed(5))).get_values()[3 * n + 2] = (*material_coords_boundary_nodes_)[3 * n];
+    ((d_matrix_transposed(6))).get_values()[3 * n] = (*material_coords_boundary_nodes_)[3 * n + 2];
+    ((d_matrix_transposed(7))).get_values()[3 * n + 1] = (*material_coords_boundary_nodes_)[3 * n];
+    ((d_matrix_transposed(8))).get_values()[3 * n + 2] =
+        (*material_coords_boundary_nodes_)[3 * n + 1];
   }
 
   rhs_ = std::make_shared<Core::LinAlg::MultiVector<double>>(*(discret_->dof_row_map()), 9);

@@ -305,12 +305,12 @@ void ScaTra::MeshtyingStrategyS2IElch::evaluate_point_coupling()
 
         // assemble concentration residuals
         auto residual = scatratimint_->residual();
-        (*residual)[ed_conc_lid] -= timefacrhsfac * j;
-        (*residual)[el_conc_lid] -= timefacrhsfac * j * -1.0;
+        (*residual).get_values()[ed_conc_lid] -= timefacrhsfac * j;
+        (*residual).get_values()[el_conc_lid] -= timefacrhsfac * j * -1.0;
 
         // assemble potential residuals
-        (*residual)[ed_pot_lid] -= timefacrhsfac * nume * j;
-        (*residual)[el_pot_lid] -= timefacrhsfac * nume * j * -1.0;
+        (*residual).get_values()[ed_pot_lid] -= timefacrhsfac * nume * j;
+        (*residual).get_values()[el_pot_lid] -= timefacrhsfac * nume * j * -1.0;
 
         // assemble concentration linearizations
         auto sys_mat = scatratimint_->system_matrix_operator();
@@ -506,7 +506,7 @@ void ScaTra::MeshtyingStrategyS2IElch::update() const
                 if (!heaviside and eta >= 0.) i = 0.;
 
                 // update lithium plating variable
-                (*growthn_)[doflid_growth] -= i * integrationfac;
+                (*growthn_).get_values()[doflid_growth] -= i * integrationfac;
               }  // nodes owned by current processor
             }  // nodes stored by current processor
           }  // loop over all nodes

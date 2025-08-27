@@ -1346,7 +1346,7 @@ void Core::IO::DiscretizationWriter::write_element_data(bool writeowner)
 
         FOUR_C_ASSERT_ALWAYS(
             (int)eledata.size() == dimension, "element manipulated size of visualization data");
-        for (int j = 0; j < dimension; ++j) sysdata(j)[ele_counter] = eledata[j];
+        for (int j = 0; j < dimension; ++j) sysdata(j).get_values()[ele_counter] = eledata[j];
 
         ele_counter++;
       }
@@ -1410,7 +1410,7 @@ void Core::IO::DiscretizationWriter::write_node_data(bool writeowner)
         if ((int)nodedata.size() != dimension)
           FOUR_C_THROW("element manipulated size of visualization data");
 
-        for (int j = 0; j < dimension; ++j) sysdata(j)[i] = nodedata[j];
+        for (int j = 0; j < dimension; ++j) sysdata(j).get_values()[i] = nodedata[j];
       }
 
       write_multi_vector(fool->first, sysdata, Core::IO::nodevector);

@@ -406,7 +406,7 @@ void Core::FE::Dbc::read_dirichlet_condition(const Teuchos::ParameterList& param
         if (hierarchical_order < current_order) info.hierarchy[lid] = hierarchical_order;
 
         // record the prescribed value of dof if it is fixed
-        info.values[lid] = value;
+        info.values.get_values()[lid] = value;
 
         // record the condition that assign the value
         info.condition[lid] = cond.id();
@@ -549,9 +549,9 @@ void Core::FE::Dbc::do_dirichlet_condition(const Teuchos::ParameterList& params,
       }
 
       // assign value
-      if (systemvectors[0] != nullptr) (*systemvectors[0])[lid] = value[0];
-      if (systemvectors[1] != nullptr) (*systemvectors[1])[lid] = value[1];
-      if (systemvectors[2] != nullptr) (*systemvectors[2])[lid] = value[2];
+      if (systemvectors[0] != nullptr) (*systemvectors[0]).get_values()[lid] = value[0];
+      if (systemvectors[1] != nullptr) (*systemvectors[1]).get_values()[lid] = value[1];
+      if (systemvectors[2] != nullptr) (*systemvectors[2]).get_values()[lid] = value[2];
 
     }  // loop over nodal DOFs
   }  // loop over nodes

@@ -586,7 +586,7 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
 
   // set zero diagonal values to dummy 1.0
   for (int i = 0; i < diag->local_length(); ++i)
-    if ((*diag)[i] == 0.0) (*diag)[i] = 1.0;
+    if ((*diag)[i] == 0.0) (*diag).get_values()[i] = 1.0;
 
   // scalar inversion of diagonal values
   err = diag->reciprocal(*diag);
@@ -1594,7 +1594,7 @@ void Wear::LagrangeStrategyWear::condense_wear_discr(
 
   // set zero diagonal values to dummy 1.0
   for (int i = 0; i < diag->local_length(); ++i)
-    if ((*diag)[i] == 0.0) (*diag)[i] = 1.0;
+    if ((*diag)[i] == 0.0) (*diag).get_values()[i] = 1.0;
 
   // scalar inversion of diagonal values
   err = diag->reciprocal(*diag);
@@ -1870,7 +1870,7 @@ void Wear::LagrangeStrategyWear::condense_wear_discr(
 
   // set zero diagonal values to dummy 1.0
   for (int i = 0; i < diage->local_length(); ++i)
-    if ((*diage)[i] == 0.0) (*diage)[i] = 1.0;
+    if ((*diage)[i] == 0.0) (*diage).get_values()[i] = 1.0;
 
   // scalar inversion of diagonal values
   erre = diage->reciprocal(*diage);
@@ -4136,7 +4136,7 @@ void Wear::LagrangeStrategyWear::output_wear()
         for (int dof = 0; dof < dim; ++dof)
         {
           locindex[dof] = (wear_vector.get_map()).lid(frinode->dofs()[dof]);
-          (wear_vector)[locindex[dof]] = wear * nn[dof];
+          (wear_vector).get_values()[locindex[dof]] = wear * nn[dof];
         }
       }
     }
@@ -4180,7 +4180,7 @@ void Wear::LagrangeStrategyWear::output_wear()
 
       // solve by dividing through diagonal elements of data. Do not divide by 0.
       for (int i = 0; i < lNumActiveDOFs; ++i)
-        if ((diagD)[i] != 0.0) (real_weara)[i] = (*wear_vectora)[i] / (diagD)[i];
+        if ((diagD)[i] != 0.0) (real_weara).get_values()[i] = (*wear_vectora)[i] / (diagD)[i];
     }
 
     Core::LinAlg::Vector<double> real_wearexp(*gsdofrowmap_);
@@ -4199,7 +4199,7 @@ void Wear::LagrangeStrategyWear::output_wear()
     {
       const int gid = gsdofrowmap_->my_global_elements()[i];
       const double tmp = (real_wear)[real_wear.get_map().lid(gid)];
-      (*wearoutput_)[wearoutput_->get_map().lid(gid)] = tmp * fac;
+      (*wearoutput_).get_values()[wearoutput_->get_map().lid(gid)] = tmp * fac;
     }
 
     /**********************************************************************
@@ -4258,7 +4258,7 @@ void Wear::LagrangeStrategyWear::output_wear()
 
         // solve by dividing through diagonal elements of data. Do not divide by 0.
         for (int i = 0; i < lNumActiveDOFs; ++i)
-          if ((diagD)[i] != 0.0) (wear2_real)[i] = (*wear2_vectori)[i] / (diagD)[i];
+          if ((diagD)[i] != 0.0) (wear2_real).get_values()[i] = (*wear2_vectori)[i] / (diagD)[i];
       }
 
       Core::LinAlg::Vector<double> real_wear2exp(*gmdofrowmap_);
@@ -4270,7 +4270,7 @@ void Wear::LagrangeStrategyWear::output_wear()
       {
         int gid = gmdofrowmap_->my_global_elements()[i];
         double tmp = (real_wear2)[real_wear2.get_map().lid(gid)];
-        (*wearoutput2_)[wearoutput2_->get_map().lid(gid)] =
+        (*wearoutput2_).get_values()[wearoutput2_->get_map().lid(gid)] =
             -(tmp * fac);  // negative sign because on other interface side
         //--> this Wear-vector (defined on master side) is along slave-side normal field!
       }
@@ -4324,16 +4324,16 @@ void Wear::LagrangeStrategyWear::do_write_restart(
       int dof = (activetoggle->get_map()).lid(gid);
 
       // set value active / inactive in toggle vector
-      if (cnode->active()) (*activetoggle)[dof] = 1;
+      if (cnode->active()) (*activetoggle).get_values()[dof] = 1;
 
       // set value slip / stick in the toggle vector
       if (friction_)
       {
         CONTACT::FriNode* frinode = dynamic_cast<CONTACT::FriNode*>(cnode);
-        if (frinode->fri_data().slip()) (*sliptoggle)[dof] = 1;
+        if (frinode->fri_data().slip()) (*sliptoggle).get_values()[dof] = 1;
         if (weightedwear_)
         {
-          (*weightedwear)[dof] = frinode->wear_data().weighted_wear();
+          (*weightedwear).get_values()[dof] = frinode->wear_data().weighted_wear();
         }
       }
     }
@@ -5204,7 +5204,7 @@ void Wear::LagrangeStrategyWear::store_nodal_quantities(Mortar::StrategyBase::Qu
                 FOUR_C_THROW("Slave node {} is active AND carries D.B.C.s!", cnode->id());
 
               // explicitly set global Lag. Mult. to zero for D.B.C nodes
-              if (cnode->is_dbc()) (*vectorinterface)[locindex[dof]] = 0.0;
+              if (cnode->is_dbc()) (*vectorinterface).get_values()[locindex[dof]] = 0.0;
 
               // store updated wcurr into node
               CONTACT::FriNode* fnode = dynamic_cast<CONTACT::FriNode*>(cnode);
@@ -5219,7 +5219,7 @@ void Wear::LagrangeStrategyWear::store_nodal_quantities(Mortar::StrategyBase::Qu
                 FOUR_C_THROW("Slave node {} is active AND carries D.B.C.s!", cnode->id());
 
               // explicitly set global Lag. Mult. to zero for D.B.C nodes
-              if (cnode->is_dbc()) (*vectorinterface)[locindex[dof]] = 0.0;
+              if (cnode->is_dbc()) (*vectorinterface).get_values()[locindex[dof]] = 0.0;
 
               // store updated wcurr into node
               CONTACT::FriNode* fnode = dynamic_cast<CONTACT::FriNode*>(cnode);
@@ -5234,7 +5234,7 @@ void Wear::LagrangeStrategyWear::store_nodal_quantities(Mortar::StrategyBase::Qu
                 FOUR_C_THROW("Slave node {} is active AND carries D.B.C.s!", cnode->id());
 
               // explicitly set global Lag. Mult. to zero for D.B.C nodes
-              if (cnode->is_dbc()) (*vectorinterface)[locindex[dof]] = 0.0;
+              if (cnode->is_dbc()) (*vectorinterface).get_values()[locindex[dof]] = 0.0;
 
               // store updated wcurr into node
               CONTACT::FriNode* fnode = dynamic_cast<CONTACT::FriNode*>(cnode);

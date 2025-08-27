@@ -46,7 +46,7 @@ void Core::FE::assemble_gauss_point_values(
     {
       for (int i = 0; i < gp_data.numCols(); ++i)
       {
-        ((*global_data[gp])(i))[lid] += gp_data(gp, i);
+        ((*global_data[gp])(i)).get_values()[lid] += gp_data(gp, i);
       }
     }
   }

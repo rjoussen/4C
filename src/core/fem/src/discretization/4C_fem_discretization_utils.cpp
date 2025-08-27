@@ -113,7 +113,7 @@ void Core::FE::do_initial_field(const Core::Utils::FunctionManager& function_man
           const int gid = node_dofs[j];
           const int lid = fieldvector.get_map().lid(gid);
           if (lid < 0) FOUR_C_THROW("Global id {} not on this proc in system vector", gid);
-          fieldvector[lid] = functfac;
+          fieldvector.get_values()[lid] = functfac;
         }
       }
     }

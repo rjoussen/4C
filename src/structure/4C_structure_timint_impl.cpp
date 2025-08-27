@@ -806,7 +806,7 @@ void Solid::TimIntImpl::update_krylov_space_projection()
     const size_t myLength = ci.local_length();
     for (size_t j = 0; j < myLength; j++)
     {
-      ci[j] = ni[j];
+      ci.get_values()[j] = ni.get_values()[j];
     }
   }
 

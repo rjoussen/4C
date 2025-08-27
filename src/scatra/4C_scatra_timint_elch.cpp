@@ -2823,7 +2823,7 @@ void ScaTra::ScaTraTimIntElch::check_concentration_values(Core::LinAlg::Vector<d
       if (((vec)[lid]) < 1e-13)
       {
         numfound[k]++;
-        if (makepositive) ((vec)[lid]) = 1e-13;
+        if (makepositive) ((vec).get_values()[lid]) = 1e-13;
       }
     }
   }

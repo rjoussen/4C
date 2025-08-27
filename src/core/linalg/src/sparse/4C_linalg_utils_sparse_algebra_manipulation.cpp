@@ -42,7 +42,7 @@ void Core::LinAlg::export_to(
           const int lid = source.get_map().lid(gid);
           if (lid < 0) continue;
           // FOUR_C_THROW("No source for target");
-          target(k)[i] = source(k)[lid];
+          target(k).get_values()[i] = source(k)[lid];
         }
       return;
     }
@@ -74,7 +74,8 @@ void Core::LinAlg::export_to(
           FOUR_C_THROW(
               "Export of non-unique source failed. Source data not available on target proc");
 
-        for (int k = 0; k < source.NumVectors(); ++k) target(k)[targetlid] = source(k)[sourcelid];
+        for (int k = 0; k < source.NumVectors(); ++k)
+          target(k).get_values()[targetlid] = source(k)[sourcelid];
       }
       return;
     }
@@ -390,11 +391,11 @@ void Core::LinAlg::split_matrix2x2(
   {
     const int gid = ASparse.domain_map().gid(i);
     if (A11dmap.my_gid(gid))
-      dselector[i] = 0.;
+      dselector.get_values()[i] = 0.;
     else if (A22dmap.my_gid(gid))
-      dselector[i] = 1.;
+      dselector.get_values()[i] = 1.;
     else
-      dselector[i] = -1.;
+      dselector.get_values()[i] = -1.;
   }
   Core::LinAlg::Vector<double> selector(Map(ASparse.col_map()));
   Core::LinAlg::export_to(dselector, selector);
@@ -484,7 +485,7 @@ void Core::LinAlg::split_matrixmxn(
     {
       if (ABlock.domain_map(n).my_gid(colgid))
       {
-        dselector[collid] = n;
+        dselector.get_values()[collid] = n;
         break;
       }
     }

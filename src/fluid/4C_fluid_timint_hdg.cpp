@@ -300,7 +300,8 @@ void FLD::TimIntHDG::clear_state_assemble_mat_and_rhs()
     // data back before it disappears when clearing the state (at least for nproc>1)
     const Core::LinAlg::Vector<double>& intvelnpGhosted = *discret_->get_state(1, "intvelnp");
     for (int i = 0; i < intvelnp_->local_length(); ++i)
-      (*intvelnp_)[i] = intvelnpGhosted[intvelnpGhosted.get_map().lid(intvelnp_->get_map().gid(i))];
+      (*intvelnp_).get_values()[i] =
+          intvelnpGhosted[intvelnpGhosted.get_map().lid(intvelnp_->get_map().gid(i))];
   }
   first_assembly_ = false;
   FluidImplicitTimeInt::clear_state_assemble_mat_and_rhs();
@@ -377,9 +378,9 @@ void FLD::TimIntHDG::set_initial_flow_field(
         if (lid >= 0)
         {
           if ((*velnp_)[lid] != 0) error += std::abs((*velnp_)[lid] - elevec1(i));
-          (*velnp_)[lid] = elevec1(i);
-          (*veln_)[lid] = elevec1(i);
-          (*velnm_)[lid] = elevec1(i);
+          (*velnp_).get_values()[lid] = elevec1(i);
+          (*veln_).get_values()[lid] = elevec1(i);
+          (*velnm_).get_values()[lid] = elevec1(i);
         }
       }
 
@@ -499,20 +500,22 @@ namespace
         if (localIndex < 0) continue;
         touchCount[localIndex]++;
         for (int d = 0; d < ndim; ++d)
-          (*velocity)(d)[localIndex] += interpolVec(i + d * ele->num_node());
-        (*pressure)[localIndex] += interpolVec(i + ndim * ele->num_node());
+          (*velocity)(d).get_values()[localIndex] += interpolVec(i + d * ele->num_node());
+        (*pressure).get_values()[localIndex] += interpolVec(i + ndim * ele->num_node());
         for (int d = 0; d < ndim; ++d)
-          (*tracevel)(d)[localIndex] += interpolVec(i + (ndim + 1 + d) * ele->num_node());
+          (*tracevel)(d).get_values()[localIndex] +=
+              interpolVec(i + (ndim + 1 + d) * ele->num_node());
       }
       const int eleIndex = dis.element_row_map()->lid(ele->id());
-      if (eleIndex >= 0) (*cellPres)[eleIndex] += interpolVec((2 * ndim + 1) * ele->num_node());
+      if (eleIndex >= 0)
+        (*cellPres).get_values()[eleIndex] += interpolVec((2 * ndim + 1) * ele->num_node());
     }
 
     for (int i = 0; i < pressure->local_length(); ++i)
     {
-      (*pressure)[i] /= touchCount[i];
-      for (int d = 0; d < ndim; ++d) (*velocity)(d)[i] /= touchCount[i];
-      for (int d = 0; d < ndim; ++d) (*tracevel)(d)[i] /= touchCount[i];
+      (*pressure).get_values()[i] /= touchCount[i];
+      for (int d = 0; d < ndim; ++d) (*velocity)(d).get_values()[i] /= touchCount[i];
+      for (int d = 0; d < ndim; ++d) (*tracevel)(d).get_values()[i] /= touchCount[i];
     }
     dis.clear_state();
   }

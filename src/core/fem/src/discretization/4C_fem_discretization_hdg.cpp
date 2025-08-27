@@ -525,9 +525,9 @@ void Core::FE::DbcHDG::do_dirichlet_condition(const Teuchos::ParameterList& para
           const int lid = discret.dof_row_map(0)->lid(gid);
 
           // amend vector of DOF-IDs which are Dirichlet BCs
-          if (systemvectors[0] != nullptr) (*systemvectors[0])[lid] = 0.0;
-          if (systemvectors[1] != nullptr) (*systemvectors[1])[lid] = 0.0;
-          if (systemvectors[2] != nullptr) (*systemvectors[2])[lid] = 0.0;
+          if (systemvectors[0] != nullptr) (*systemvectors[0]).get_values()[lid] = 0.0;
+          if (systemvectors[1] != nullptr) (*systemvectors[1]).get_values()[lid] = 0.0;
+          if (systemvectors[2] != nullptr) (*systemvectors[2]).get_values()[lid] = 0.0;
 
           // --------------------------------------------------------------------------------------
           pressureDone = true;
@@ -585,9 +585,12 @@ void Core::FE::DbcHDG::do_dirichlet_condition(const Teuchos::ParameterList& para
         std::vector<double> value(deg + 1, val[onesetj]);
 
         // assign value
-        if (systemvectors[0] != nullptr) (*systemvectors[0])[lid] = value[0] * elevec1(j);
-        if (systemvectors[1] != nullptr) (*systemvectors[1])[lid] = value[1] * elevec1(j);
-        if (systemvectors[2] != nullptr) (*systemvectors[2])[lid] = value[2] * elevec1(j);
+        if (systemvectors[0] != nullptr)
+          (*systemvectors[0]).get_values()[lid] = value[0] * elevec1(j);
+        if (systemvectors[1] != nullptr)
+          (*systemvectors[1]).get_values()[lid] = value[1] * elevec1(j);
+        if (systemvectors[2] != nullptr)
+          (*systemvectors[2]).get_values()[lid] = value[2] * elevec1(j);
 
       }  // loop over all DOFs
     }  // loop over all faces

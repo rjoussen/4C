@@ -96,7 +96,7 @@ namespace Core::FE
     {
       for (decltype(gp_data.numCols()) i = 0; i < gp_data.numCols(); ++i)
       {
-        double& s = (global_data(i))[lid];  // resolve pointer for faster access
+        double& s = (global_data(i)).get_values()[lid];  // resolve pointer for faster access
         s = 0.;
         for (decltype(gp_data.numRows()) j = 0; j < gp_data.numRows(); ++j)
         {

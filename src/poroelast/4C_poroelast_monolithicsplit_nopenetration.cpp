@@ -518,7 +518,7 @@ void PoroElast::MonolithicSplitNoPenetration::apply_fluid_coupl_matrix(
   {
     if ((*diag)[i] == 0.0)
     {
-      (*diag)[i] = 1.0;
+      (*diag).get_values()[i] = 1.0;
       std::cout << "--- --- --- WARNING: D-Matrix Diagonal Element " << i
                 << " is zero!!! --- --- ---" << std::endl;
     }

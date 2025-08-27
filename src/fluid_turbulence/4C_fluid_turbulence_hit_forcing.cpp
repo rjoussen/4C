@@ -2036,8 +2036,8 @@ namespace FLD
       double locflow = ((massflvec)(0))[i];
       if (locflow < -1.0e-9)
       {
-        ((massflvec)(0))[i] = 0.0;
-        ((massflvecneg)(0))[i] = locflow;
+        ((massflvec)(0)).get_values()[i] = 0.0;
+        ((massflvecneg)(0)).get_values()[i] = locflow;
       }
     }
 
