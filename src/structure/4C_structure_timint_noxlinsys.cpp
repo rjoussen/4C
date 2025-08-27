@@ -198,16 +198,6 @@ Teuchos::RCP<Epetra_Operator> NOX::Solid::LinearSystem::getJacobianOperator()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void NOX::Solid::LinearSystem::setJacobianOperatorForSolve(
-    const Teuchos::RCP<const Epetra_Operator>& solveJacOp)
-{
-  jacPtr_ = Core::Utils::shared_ptr_from_ref(*Teuchos::rcp_const_cast<Epetra_Operator>(solveJacOp));
-  jacType_ = get_operator_type(*solveJacOp);
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 void NOX::Solid::LinearSystem::throw_error(
     const std::string& functionName, const std::string& errorMsg) const
 {

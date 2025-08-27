@@ -158,11 +158,6 @@ namespace NOX
       //! Returns the operator type of the jacobian
       const enum NOX::Nln::LinSystem::OperatorType& get_jacobian_operator_type() const;
 
-      //! Set the jacobian operator
-      //! Derived function: Check if the input operator is a LINALG_SparseOperator
-      void setJacobianOperatorForSolve(
-          const Teuchos::RCP<const Epetra_Operator>& solveJacOp) override;
-
       //! Set the jacobian operator of this class
       void set_jacobian_operator_for_solve(
           const Teuchos::RCP<const Core::LinAlg::SparseOperator>& solveJacOp);

@@ -88,4 +88,10 @@ bool NOX::Nln::LinearSystemBase::applyRightPreconditioning(bool useTranspose,
   return true;
 }
 
+void NOX::Nln::LinearSystemBase::setJacobianOperatorForSolve(
+    const Teuchos::RCP<const Epetra_Operator>& solveJacOp)
+{
+  (void)solveJacOp;
+}
+
 FOUR_C_NAMESPACE_CLOSE

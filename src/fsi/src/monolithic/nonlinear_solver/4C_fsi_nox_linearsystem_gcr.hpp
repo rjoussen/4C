@@ -111,10 +111,6 @@ namespace NOX
       //! Return Jacobian operator
       Teuchos::RCP<Epetra_Operator> getJacobianOperator() override;
 
-      //! Set Jacobian operator for solve
-      void setJacobianOperatorForSolve(
-          const Teuchos::RCP<const Epetra_Operator>& solveJacOp) override;
-
       //! Returns the type of operator that is passed into the group constructors.
       /*! Uses dynamic casting to identify the underlying object type. */
       virtual OperatorType get_operator_type(const Epetra_Operator& o);
