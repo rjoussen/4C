@@ -81,8 +81,8 @@ namespace Core::LinearSolver::AMGNxN
 
     Teuchos::RCP<MueLu::Hierarchy<Scalar, LocalOrdinal, GlobalOrdinal, Node>>
     build_mue_lu_hierarchy(Teuchos::ParameterList paramListFromXml, int numdf, int dimns,
-        std::shared_ptr<std::vector<double>> nsdata, Teuchos::RCP<Epetra_Operator> A_eop, int block,
-        int NumBlocks, std::vector<int>& offsets, int offsetFineLevel);
+        std::shared_ptr<std::vector<double>> nsdata, Teuchos::RCP<Epetra_CrsMatrix> A_eop,
+        int block, int NumBlocks, std::vector<int>& offsets, int offsetFineLevel);
 
     std::string convert_int(int number)
     {
