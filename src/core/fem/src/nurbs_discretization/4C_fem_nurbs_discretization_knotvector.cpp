@@ -8,6 +8,7 @@
 #include "4C_fem_nurbs_discretization_knotvector.hpp"
 
 #include "4C_comm_pack_helpers.hpp"
+#include "4C_io_input_spec_builders.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -496,7 +497,7 @@ bool Core::FE::Nurbs::Knotvector::get_boundary_ele_and_parent_knots(
  | set knots in one direction                       (public) gammi 05/08|
  *----------------------------------------------------------------------*/
 void Core::FE::Nurbs::Knotvector::set_knots(const int& direction, const int& npatch,
-    const int& degree, const int& numknots, const std::string& knotvectortype,
+    const int& degree, const int& numknots, KnotvectorType knotvectortype,
     const std::vector<double>& directions_knots)
 {
   // filled is false now since new add new knots
@@ -513,18 +514,8 @@ void Core::FE::Nurbs::Knotvector::set_knots(const int& direction, const int& npa
   }
 
   // set the type
-  if (knotvectortype == "Interpolated")
-  {
-    (interpolation_[npatch])[direction] = KnotvectorType::Interpolated;
-  }
-  else if (knotvectortype == "Periodic")
-  {
-    (interpolation_[npatch])[direction] = KnotvectorType::Periodic;
-  }
-  else
-  {
-    FOUR_C_THROW("unknown knotvector-type '{}'\n", knotvectortype);
-  }
+  FOUR_C_ASSERT_ALWAYS(knotvectortype != KnotvectorType::Undefined, "Undefined knot vector type.");
+  (interpolation_[npatch])[direction] = knotvectortype;
 
   // set the degree of the added knotvector
   (degree_[npatch])[direction] = degree;
@@ -1037,5 +1028,75 @@ void Core::FE::Nurbs::Knotvector::print(std::ostream& os) const
     os << std::endl;
   }
 }
+
+Core::IO::InputSpec Core::FE::Nurbs::Knotvector::spec()
+{
+  using namespace Core::IO::InputSpecBuilders;
+  using namespace Core::IO::InputSpecBuilders::Validators;
+
+  return list("PATCHES",
+      all_of({
+          parameter<int>(
+              "ID", {.description = "ID of the NURBS patch", .validator = positive<int>()}),
+          list("KNOT_VECTORS",
+              all_of({
+                  parameter<int>("DEGREE", {.description = "Degree of the NURBS interpolation",
+                                               .validator = positive<int>()}),
+                  parameter<KnotvectorType>(
+                      "TYPE", {.description = "Type of the knot vector",
+                                  .default_value = KnotvectorType::Interpolated}),
+                  parameter<std::vector<double>>(
+                      "KNOTS", {.description = "Support points of the NURSB interpolation"}),
+              })),
+      }));
+}
+
+
+Core::FE::Nurbs::Knotvector Core::FE::Nurbs::Knotvector::from_input(
+    const Core::IO::InputParameterContainer& data)
+{
+  const auto& patches = data.get_or<std::vector<Core::IO::InputParameterContainer>>("PATCHES", {});
+
+  // Some sections may try to parse KNOTVECTORS, although they are not required. Return an
+  // empty Knotvector in this case.
+  if (patches.empty()) return Knotvector(0, 0);
+
+  // For now assume that all KNOT_VECTORS contain the same number of entries and use this
+  // as the dimension
+  const unsigned int dim = patches[0].get_list("KNOT_VECTORS").size();
+  FOUR_C_ASSERT_ALWAYS(dim >= 1 && dim <= 3, "NURBS dimension must be 1, 2, or 3.");
+  // Check the other patches
+  for (unsigned int p = 1; p < patches.size(); ++p)
+  {
+    const auto& knot_vectors = patches[p].get_list("KNOT_VECTORS");
+    FOUR_C_ASSERT_ALWAYS(knot_vectors.size() == dim,
+        "Every patch needs the same number of knot vectors as the first patch with {} knot "
+        "vectors.",
+        dim);
+  }
+
+
+  Knotvector knotvector(dim, patches.size());
+
+  for (unsigned int p = 0; p < patches.size(); ++p)
+  {
+    const auto& patch = patches[p];
+    const auto& id = patch.get<int>("ID");
+
+    const auto& knot_vectors = patch.get_list("KNOT_VECTORS");
+
+    for (unsigned int d = 0; d < dim; ++d)
+    {
+      const int& degree = knot_vectors[d].get<int>("DEGREE");
+      const auto& type = knot_vectors[d].get<KnotvectorType>("TYPE");
+      const auto& knots = knot_vectors[d].get<std::vector<double>>("KNOTS");
+
+      knotvector.set_knots(d, id - 1, degree, knots.size(), type, knots);
+    }
+  }
+
+  return knotvector;
+}
+
 
 FOUR_C_NAMESPACE_CLOSE

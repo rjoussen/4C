@@ -501,7 +501,6 @@ namespace
         std::make_shared<Core::FE::Nurbs::Knotvector>(3, 1);
 
     // Set the knotvector.
-    const std::string knotvectortype = "Interpolated";
     for (unsigned int dir = 0; dir < 3; dir++)
     {
       std::vector<double> directions_knots;
@@ -511,7 +510,8 @@ namespace
       directions_knots.push_back(1.);
       directions_knots.push_back(1.);
       directions_knots.push_back(1.);
-      knot_vector->set_knots(dir, 0, 2, 6, knotvectortype, directions_knots);
+      knot_vector->set_knots(dir, 0, 2, 6,
+          Core::FE::Nurbs::Knotvector::KnotvectorType::Interpolated, directions_knots);
     }
     knot_vector->finish_knots(0);
     structdis->set_knot_vector(knot_vector);
