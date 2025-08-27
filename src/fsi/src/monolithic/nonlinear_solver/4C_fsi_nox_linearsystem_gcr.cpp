@@ -405,14 +405,6 @@ Teuchos::RCP<Epetra_Operator> NOX::FSI::LinearSystemGCR::getJacobianOperator()
 }
 
 
-void NOX::FSI::LinearSystemGCR::setJacobianOperatorForSolve(
-    const Teuchos::RCP<const Epetra_Operator>& solveJacOp)
-{
-  jacPtr = Teuchos::rcp_const_cast<Epetra_Operator>(solveJacOp);
-  jacType = get_operator_type(*solveJacOp);
-}
-
-
 void NOX::FSI::LinearSystemGCR::throw_error(
     const std::string& functionName, const std::string& errorMsg) const
 {

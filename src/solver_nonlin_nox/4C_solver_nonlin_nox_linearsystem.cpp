@@ -519,20 +519,6 @@ const enum NOX::Nln::LinSystem::OperatorType& NOX::Nln::LinearSystem::get_jacobi
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void NOX::Nln::LinearSystem::setJacobianOperatorForSolve(
-    const Teuchos::RCP<const Epetra_Operator>& solveJacOp)
-{
-  const Teuchos::RCP<const Core::LinAlg::SparseOperator>& linalgSprOp =
-      Teuchos::rcp_dynamic_cast<const Core::LinAlg::SparseOperator>(solveJacOp);
-  if (linalgSprOp.is_null())
-    throw_error("setJacobianOperatorForSolve", "dynamic_cast to LINALG_SparseOperator failed!");
-
-  set_jacobian_operator_for_solve(linalgSprOp);
-  return;
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 void NOX::Nln::LinearSystem::set_jacobian_operator_for_solve(
     const Teuchos::RCP<const Core::LinAlg::SparseOperator>& solveJacOp)
 {

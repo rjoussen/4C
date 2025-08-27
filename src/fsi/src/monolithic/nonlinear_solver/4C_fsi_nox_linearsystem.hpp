@@ -90,10 +90,6 @@ namespace NOX::FSI
     /// Return Jacobian operator.
     Teuchos::RCP<Epetra_Operator> getJacobianOperator() override;
 
-    /// Set Jacobian operator for solve.
-    void setJacobianOperatorForSolve(
-        const Teuchos::RCP<const Epetra_Operator>& solveJacOp) override;
-
    private:
     /// throw an error
     void throw_error(const std::string& functionName, const std::string& errorMsg) const;
