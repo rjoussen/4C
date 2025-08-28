@@ -193,6 +193,7 @@ namespace Solid
         check_init_setup();
         return lambda_;
       }
+
       /// Return lagrange multiplier vector
       std::shared_ptr<const Core::LinAlg::FEVector<double>> get_lambda() const
       {

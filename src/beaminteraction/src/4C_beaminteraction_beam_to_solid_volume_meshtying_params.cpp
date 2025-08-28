@@ -63,7 +63,6 @@ void BeamInteraction::BeamToSolidVolumeMeshtyingParams::init()
     rotational_coupling_ = rotational_coupling_triad_construction_ !=
                            Inpar::BeamToSolid::BeamToSolidRotationCoupling::none;
 
-
     // Mortar contact discretization to be used.
     mortar_shape_function_rotation_ =
         Teuchos::getIntegralValue<Inpar::BeamToSolid::BeamToSolidMortarShapefunctions>(

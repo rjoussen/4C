@@ -233,6 +233,7 @@ BeamInteraction::SubmodelEvaluator::BeamContact::get_lagrange_multiplier_assembl
   if (assembly_managers_.size() != 1) FOUR_C_THROW("Only working for single assembly manager");
   return std::dynamic_pointer_cast<BeamContactAssemblyManagerInDirect>(assembly_managers_[0]);
 }
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void BeamInteraction::SubmodelEvaluator::BeamContact::post_setup()

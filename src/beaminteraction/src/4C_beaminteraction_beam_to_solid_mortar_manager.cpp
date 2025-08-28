@@ -494,6 +494,7 @@ void BeamInteraction::BeamToSolidMortarManager::evaluate_coupling_terms_lagrange
 
   global_lambda_ = data_state->get_lambda();
 }
+
 /**
  *
  */
@@ -513,8 +514,7 @@ BeamInteraction::BeamToSolidMortarManager::get_global_lambda() const
   if (beam_to_solid_params_->get_constraint_enforcement() ==
       Inpar::BeamToSolid::BeamToSolidConstraintEnforcement::lagrange)
   {
-    auto global_lambda =
-        std::make_shared<Core::LinAlg::Vector<double>>(*lambda_dof_rowmap_);  // row map
+    auto global_lambda = std::make_shared<Core::LinAlg::Vector<double>>(*lambda_dof_rowmap_);
 
     Core::LinAlg::export_to(*global_lambda_, *global_lambda);
     return global_lambda;
@@ -608,10 +608,6 @@ void BeamInteraction::BeamToSolidMortarManager::add_global_force_stiffness_penal
 {
   check_setup();
   check_global_maps();
-
-  /*if (beam_to_solid_params_->get_constraint_enforcement() ==
-      Inpar::BeamToSolid::BeamToSolidConstraintEnforcement::lagrange)
-    return;*/
 
   // Get the penalty regularization
   const bool is_stiff = stiff != nullptr;
