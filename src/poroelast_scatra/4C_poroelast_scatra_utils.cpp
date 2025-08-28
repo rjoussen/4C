@@ -66,26 +66,26 @@ PoroElastScaTra::Utils::create_poro_scatra_algorithm(
   // Parameter reading
   const Teuchos::ParameterList& params = problem->poro_scatra_control_params();
   const auto coupling =
-      Teuchos::getIntegralValue<Inpar::PoroScaTra::SolutionSchemeOverFields>(params, "COUPALGO");
+      Teuchos::getIntegralValue<PoroElastScaTra::SolutionSchemeOverFields>(params, "COUPALGO");
 
   switch (coupling)
   {
-    case Inpar::PoroScaTra::Monolithic:
+    case PoroElastScaTra::Monolithic:
     {
       algo = std::make_shared<PoroElastScaTra::PoroScatraMono>(comm, timeparams);
       break;
     }
-    case Inpar::PoroScaTra::Part_ScatraToPoro:
+    case PoroElastScaTra::Part_ScatraToPoro:
     {
       algo = std::make_shared<PoroElastScaTra::PoroScatraPart1WCScatraToPoro>(comm, timeparams);
       break;
     }
-    case Inpar::PoroScaTra::Part_PoroToScatra:
+    case PoroElastScaTra::Part_PoroToScatra:
     {
       algo = std::make_shared<PoroElastScaTra::PoroScatraPart1WCPoroToScatra>(comm, timeparams);
       break;
     }
-    case Inpar::PoroScaTra::Part_TwoWay:
+    case PoroElastScaTra::Part_TwoWay:
     {
       algo = std::make_shared<PoroElastScaTra::PoroScatraPart2WC>(comm, timeparams);
       break;
