@@ -52,9 +52,8 @@ namespace FLD
     virtual void set_element_custom_parameter();
 
     //! set the initial porosity field
-    void set_initial_porosity_field(
-        const Inpar::PoroElast::InitialField init,  //!< type of initial field
-        const int startfuncno                       //!< number of spatial function
+    void set_initial_porosity_field(const PoroElast::InitialField init,  //!< type of initial field
+        const int startfuncno  //!< number of spatial function
         ) override;
 
     /*!

@@ -901,11 +901,10 @@ namespace FLD
     //@}
 
     /// set the initial porosity field
-    void set_initial_porosity_field(
-        const Inpar::PoroElast::InitialField,  ///< type of initial field
-                                               // const int, ///< type of
-                                               // initial field
-        const int startfuncno                  ///< number of spatial function
+    void set_initial_porosity_field(const PoroElast::InitialField,  ///< type of initial field
+                                                                    // const int, ///< type of
+                                                                    // initial field
+        const int startfuncno                                       ///< number of spatial function
         ) override
     {
       FOUR_C_THROW("not implemented in base class");

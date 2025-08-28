@@ -11,7 +11,7 @@
 #include "4C_config.hpp"
 
 #include "4C_fluid_ele_parameter.hpp"
-#include "4C_inpar_poroelast.hpp"
+#include "4C_poroelast_input.hpp"
 #include "4C_utils_singleton_owner.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -47,15 +47,15 @@ namespace Discret
       //! flag for inclusion of transient terms in continuity equation
       bool is_stationary_conti() const
       {
-        return (not(transient_terms_ == Inpar::PoroElast::transient_all or
-                    transient_terms_ == Inpar::PoroElast::transient_continuity_only));
+        return (not(transient_terms_ == PoroElast::transient_all or
+                    transient_terms_ == PoroElast::transient_continuity_only));
       };
 
       //! flag for inclusion of transient terms in momentum equation
       bool is_stationary_momentum() const
       {
-        return (not(transient_terms_ == Inpar::PoroElast::transient_all or
-                    transient_terms_ == Inpar::PoroElast::transient_momentum_only));
+        return (not(transient_terms_ == PoroElast::transient_all or
+                    transient_terms_ == PoroElast::transient_momentum_only));
       };
 
 
@@ -76,7 +76,7 @@ namespace Discret
       bool poro_convective_term_;
 
       //! type of handling transient terms
-      Inpar::PoroElast::TransientEquationsOfPoroFluid transient_terms_;
+      PoroElast::TransientEquationsOfPoroFluid transient_terms_;
 
       /// private Constructor since we are a Singleton.
       FluidEleParameterPoro();

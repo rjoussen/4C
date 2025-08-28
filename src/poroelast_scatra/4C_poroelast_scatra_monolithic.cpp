@@ -237,7 +237,7 @@ void PoroElastScaTra::PoroScatraMono::solve()
     // build norms
     build_convergence_norms();
 
-    if ((not converged()) or combincfres_ == Inpar::PoroElast::bop_or)
+    if ((not converged()) or combincfres_ == PoroElast::bop_or)
     {
       // (Newton-ready) residual with blanked Dirichlet DOFs (see adapter_timint!)
       // is done in prepare_system_for_newton_solve() within evaluate(iterinc_)
@@ -592,15 +592,14 @@ bool PoroElastScaTra::PoroScatraMono::setup_solver()
   // Get the parameters for the Newton iteration
   itermax_ = poroscatradyn.get<int>("ITEMAX");
   itermin_ = poroscatradyn.get<int>("ITEMIN");
-  normtypeinc_ = Teuchos::getIntegralValue<Inpar::PoroElast::ConvNorm>(poroscatradyn, "NORM_INC");
-  normtypeinc_ = Teuchos::getIntegralValue<Inpar::PoroElast::ConvNorm>(poroscatradyn, "NORM_INC");
-  normtypefres_ = Teuchos::getIntegralValue<Inpar::PoroElast::ConvNorm>(poroscatradyn, "NORM_RESF");
-  combincfres_ =
-      Teuchos::getIntegralValue<Inpar::PoroElast::BinaryOp>(poroscatradyn, "NORMCOMBI_RESFINC");
+  normtypeinc_ = Teuchos::getIntegralValue<PoroElast::ConvNorm>(poroscatradyn, "NORM_INC");
+  normtypeinc_ = Teuchos::getIntegralValue<PoroElast::ConvNorm>(poroscatradyn, "NORM_INC");
+  normtypefres_ = Teuchos::getIntegralValue<PoroElast::ConvNorm>(poroscatradyn, "NORM_RESF");
+  combincfres_ = Teuchos::getIntegralValue<PoroElast::BinaryOp>(poroscatradyn, "NORMCOMBI_RESFINC");
   vectornormfres_ =
-      Teuchos::getIntegralValue<Inpar::PoroElast::VectorNorm>(poroscatradyn, "VECTORNORM_RESF");
+      Teuchos::getIntegralValue<PoroElast::VectorNorm>(poroscatradyn, "VECTORNORM_RESF");
   vectornorminc_ =
-      Teuchos::getIntegralValue<Inpar::PoroElast::VectorNorm>(poroscatradyn, "VECTORNORM_INC");
+      Teuchos::getIntegralValue<PoroElast::VectorNorm>(poroscatradyn, "VECTORNORM_INC");
 
   tolinc_ = poroscatradyn.get<double>("TOLINC_GLOBAL");
   tolfres_ = poroscatradyn.get<double>("TOLRES_GLOBAL");
@@ -632,10 +631,10 @@ bool PoroElastScaTra::PoroScatraMono::converged()
   // residual increments
   switch (normtypeinc_)
   {
-    case Inpar::PoroElast::convnorm_abs_global:
+    case PoroElast::convnorm_abs_global:
       convinc = norminc_ < tolinc_;
       break;
-    case Inpar::PoroElast::convnorm_abs_singlefields:
+    case PoroElast::convnorm_abs_singlefields:
       convinc = (normincstruct_ < tolinc_struct_ and normincfluidvel_ < tolinc_velocity_ and
                  normincfluidpres_ < tolinc_pressure_ and normincscalar_ < tolinc_scalar_
           //                  normincporo_      < tolinc_porosity_
@@ -649,10 +648,10 @@ bool PoroElastScaTra::PoroScatraMono::converged()
   // residual forces
   switch (normtypefres_)
   {
-    case Inpar::PoroElast::convnorm_abs_global:
+    case PoroElast::convnorm_abs_global:
       convfres = normrhs_ < tolfres_;
       break;
-    case Inpar::PoroElast::convnorm_abs_singlefields:
+    case PoroElast::convnorm_abs_singlefields:
       convfres = (normrhsstruct_ < tolfres_struct_ and normrhsfluidvel_ < tolfres_velocity_ and
                   normrhsfluidpres_ < tolfres_pressure_ and normrhsscalar_ < tolfres_scalar_
           //                   normrhsporo_      < tolfres_porosity_
@@ -667,10 +666,10 @@ bool PoroElastScaTra::PoroScatraMono::converged()
   bool conv = false;
   switch (combincfres_)
   {
-    case Inpar::PoroElast::bop_and:
+    case PoroElast::bop_and:
       conv = convinc and convfres;
       break;
-    case Inpar::PoroElast::bop_or:
+    case PoroElast::bop_or:
       conv = convinc or convfres;
       break;
     default:
@@ -725,15 +724,15 @@ void PoroElastScaTra::PoroScatraMono::print_newton_iter_header(FILE* ofile)
   // residual forces
   switch (normtypefres_)
   {
-    case Inpar::PoroElast::convnorm_abs_global:
+    case PoroElast::convnorm_abs_global:
       oss << std::setw(15) << "abs-res"
           << "(" << std::setw(5) << std::setprecision(2) << tolfres_ << ")";
       break;
-      //    case Inpar::PoroElastScaTra::convnorm_rel_global:
+      //    case PoroElastScaTra::convnorm_rel_global:
       //      oss << std::setw(18) << "rel-res";
       break;
-    case Inpar::PoroElast::convnorm_abs_singlefields:
-      //  case Inpar::PoroElastScaTra::convnorm_rel_singlefields:
+    case PoroElast::convnorm_abs_singlefields:
+      //  case PoroElastScaTra::convnorm_rel_singlefields:
       break;
     default:
       FOUR_C_THROW("You should not turn up here.");
@@ -742,15 +741,15 @@ void PoroElastScaTra::PoroScatraMono::print_newton_iter_header(FILE* ofile)
 
   switch (normtypeinc_)
   {
-    case Inpar::PoroElast::convnorm_abs_global:
+    case PoroElast::convnorm_abs_global:
       oss << std::setw(15) << "abs-inc"
           << "(" << std::setw(5) << std::setprecision(2) << tolinc_ << ")";
       break;
-      //    case Inpar::PoroElastScaTra::convnorm_rel_global:
+      //    case PoroElastScaTra::convnorm_rel_global:
       //      oss << std::setw(18) << "rel-inc";
       break;
-    case Inpar::PoroElast::convnorm_abs_singlefields:
-      // case Inpar::PoroElastScaTra::convnorm_rel_singlefields:
+    case PoroElast::convnorm_abs_singlefields:
+      // case PoroElastScaTra::convnorm_rel_singlefields:
       break;
     default:
       FOUR_C_THROW("You should not turn up here.");
@@ -760,9 +759,9 @@ void PoroElastScaTra::PoroScatraMono::print_newton_iter_header(FILE* ofile)
   // --------------------------------------------------------single field test
   switch (normtypefres_)
   {
-    case Inpar::PoroElast::convnorm_abs_global:
+    case PoroElast::convnorm_abs_global:
       break;
-    case Inpar::PoroElast::convnorm_abs_singlefields:
+    case PoroElast::convnorm_abs_singlefields:
       oss << std::setw(15) << "abs-s-res"
           << "(" << std::setw(5) << std::setprecision(2) << tolfres_struct_ << ")";
       //      if(porositydof_)
@@ -782,9 +781,9 @@ void PoroElastScaTra::PoroScatraMono::print_newton_iter_header(FILE* ofile)
 
   switch (normtypeinc_)
   {
-    case Inpar::PoroElast::convnorm_abs_global:
+    case PoroElast::convnorm_abs_global:
       break;
-    case Inpar::PoroElast::convnorm_abs_singlefields:
+    case PoroElast::convnorm_abs_singlefields:
       oss << std::setw(15) << "abs-s-inc"
           << "(" << std::setw(5) << std::setprecision(2) << tolinc_struct_ << ")";
       //      if(porositydof_)
@@ -838,10 +837,10 @@ void PoroElastScaTra::PoroScatraMono::print_newton_iter_text(FILE* ofile)
   // residual forces
   switch (normtypefres_)
   {
-    case Inpar::PoroElast::convnorm_abs_global:
+    case PoroElast::convnorm_abs_global:
       oss << std::setw(22) << std::setprecision(5) << std::scientific << normrhs_;
       break;
-    case Inpar::PoroElast::convnorm_abs_singlefields:
+    case PoroElast::convnorm_abs_singlefields:
       break;
     default:
       FOUR_C_THROW("You should not turn up here.");
@@ -850,10 +849,10 @@ void PoroElastScaTra::PoroScatraMono::print_newton_iter_text(FILE* ofile)
   // increments
   switch (normtypeinc_)
   {
-    case Inpar::PoroElast::convnorm_abs_global:
+    case PoroElast::convnorm_abs_global:
       oss << std::setw(22) << std::setprecision(5) << std::scientific << norminc_;
       break;
-    case Inpar::PoroElast::convnorm_abs_singlefields:
+    case PoroElast::convnorm_abs_singlefields:
       break;
     default:
       FOUR_C_THROW("You should not turn up here.");
@@ -863,7 +862,7 @@ void PoroElastScaTra::PoroScatraMono::print_newton_iter_text(FILE* ofile)
   // --------------------------------------------------------single field test
   switch (normtypefres_)
   {
-    case Inpar::PoroElast::convnorm_abs_singlefields:
+    case PoroElast::convnorm_abs_singlefields:
       oss << std::setw(22) << std::setprecision(5) << std::scientific << normrhsstruct_;
       //      if(porositydof_)
       //        oss << std::setw(22) << std::setprecision(5) << std::scientific << normrhsporo_;
@@ -871,7 +870,7 @@ void PoroElastScaTra::PoroScatraMono::print_newton_iter_text(FILE* ofile)
       oss << std::setw(22) << std::setprecision(5) << std::scientific << normrhsfluidpres_;
       oss << std::setw(22) << std::setprecision(5) << std::scientific << normrhsscalar_;
       break;
-    case Inpar::PoroElast::convnorm_abs_global:
+    case PoroElast::convnorm_abs_global:
       break;
     default:
       FOUR_C_THROW("You should not turn up here.");
@@ -880,7 +879,7 @@ void PoroElastScaTra::PoroScatraMono::print_newton_iter_text(FILE* ofile)
 
   switch (normtypeinc_)
   {
-    case Inpar::PoroElast::convnorm_abs_singlefields:
+    case PoroElast::convnorm_abs_singlefields:
       oss << std::setw(22) << std::setprecision(5) << std::scientific << normincstruct_;
       //      if(porositydof_)
       //        oss << std::setw(22) << std::setprecision(5) << std::scientific << normincporo_;
@@ -888,7 +887,7 @@ void PoroElastScaTra::PoroScatraMono::print_newton_iter_text(FILE* ofile)
       oss << std::setw(22) << std::setprecision(5) << std::scientific << normincfluidpres_;
       oss << std::setw(22) << std::setprecision(5) << std::scientific << normincscalar_;
       break;
-    case Inpar::PoroElast::convnorm_abs_global:
+    case PoroElast::convnorm_abs_global:
       break;
     default:
       FOUR_C_THROW("You should not turn up here.");

@@ -50,11 +50,11 @@ PoroElast::Monolithic::Monolithic(MPI_Comm comm, const Teuchos::ParameterList& t
       printiter_(true),    // ADD INPUT PARAMETER
       zeros_(nullptr),
       blockrowdofmap_(nullptr),
-      normtypeinc_(Inpar::PoroElast::convnorm_undefined),
-      normtypefres_(Inpar::PoroElast::convnorm_undefined),
-      combincfres_(Inpar::PoroElast::bop_undefined),
-      vectornormfres_(Inpar::PoroElast::norm_undefined),
-      vectornorminc_(Inpar::PoroElast::norm_undefined),
+      normtypeinc_(PoroElast::convnorm_undefined),
+      normtypefres_(PoroElast::convnorm_undefined),
+      combincfres_(PoroElast::bop_undefined),
+      vectornormfres_(PoroElast::norm_undefined),
+      vectornorminc_(PoroElast::norm_undefined),
       tolinc_(0.0),
       tolfres_(0.0),
       tolinc_struct_(0.0),
@@ -195,7 +195,7 @@ void PoroElast::Monolithic::solve()
 
     // build norms
     build_convergence_norms();
-    if ((not converged()) or combincfres_ == Inpar::PoroElast::bop_or)
+    if ((not converged()) or combincfres_ == PoroElast::bop_or)
     {
       // (Newton-ready) residual with blanked Dirichlet DOFs (see adapter_timint!)
       // is done in prepare_system_for_newton_solve() within evaluate(iterinc_)
@@ -757,10 +757,10 @@ bool PoroElast::Monolithic::converged()
   // residual increments
   switch (normtypeinc_)
   {
-    case Inpar::PoroElast::convnorm_abs_global:
+    case PoroElast::convnorm_abs_global:
       convinc = norminc_ < tolinc_;
       break;
-    case Inpar::PoroElast::convnorm_abs_singlefields:
+    case PoroElast::convnorm_abs_singlefields:
       convinc = (normincstruct_ < tolinc_struct_ and normincfluidvel_ < tolinc_velocity_ and
                  normincfluidpres_ < tolinc_pressure_ and normincporo_ < tolinc_porosity_);
       break;
@@ -772,10 +772,10 @@ bool PoroElast::Monolithic::converged()
   // residual forces
   switch (normtypefres_)
   {
-    case Inpar::PoroElast::convnorm_abs_global:
+    case PoroElast::convnorm_abs_global:
       convfres = normrhs_ < tolfres_;
       break;
-    case Inpar::PoroElast::convnorm_abs_singlefields:
+    case PoroElast::convnorm_abs_singlefields:
       convfres = (normrhsstruct_ < tolfres_struct_ and normrhsfluidvel_ < tolfres_velocity_ and
                   normrhsfluidpres_ < tolfres_pressure_ and normrhsporo_ < tolfres_porosity_);
       break;
@@ -786,9 +786,9 @@ bool PoroElast::Monolithic::converged()
 
   // combine increments and forces
   bool conv = false;
-  if (combincfres_ == Inpar::PoroElast::bop_and)
+  if (combincfres_ == PoroElast::bop_and)
     conv = convinc and convfres;
-  else if (combincfres_ == Inpar::PoroElast::bop_or)
+  else if (combincfres_ == PoroElast::bop_or)
     conv = convinc or convfres;
   else
     FOUR_C_THROW("Something went terribly wrong with binary operator!");
@@ -864,11 +864,11 @@ void PoroElast::Monolithic::print_newton_iter_header_stream(std::ostringstream& 
   // residual forces
   switch (normtypefres_)
   {
-    case Inpar::PoroElast::convnorm_abs_global:
+    case PoroElast::convnorm_abs_global:
       oss << std::setw(15) << "abs-res"
           << "(" << std::setw(5) << std::setprecision(2) << tolfres_ << ")";
       break;
-    case Inpar::PoroElast::convnorm_abs_singlefields:
+    case PoroElast::convnorm_abs_singlefields:
       oss << std::setw(15) << "abs-s-res"
           << "(" << std::setw(5) << std::setprecision(2) << tolfres_struct_ << ")";
       if (porosity_dof_)
@@ -886,12 +886,12 @@ void PoroElast::Monolithic::print_newton_iter_header_stream(std::ostringstream& 
 
   switch (normtypeinc_)
   {
-    case Inpar::PoroElast::convnorm_abs_global:
+    case PoroElast::convnorm_abs_global:
       oss << std::setw(15) << "abs-inc"
           << "(" << std::setw(5) << std::setprecision(2) << tolinc_ << ")";
       break;
       break;
-    case Inpar::PoroElast::convnorm_abs_singlefields:
+    case PoroElast::convnorm_abs_singlefields:
       oss << std::setw(15) << "abs-s-inc"
           << "(" << std::setw(5) << std::setprecision(2) << tolinc_struct_ << ")";
       if (porosity_dof_)
@@ -939,10 +939,10 @@ void PoroElast::Monolithic::print_newton_iter_text_stream(std::ostringstream& os
   // residual forces
   switch (normtypefres_)
   {
-    case Inpar::PoroElast::convnorm_abs_global:
+    case PoroElast::convnorm_abs_global:
       oss << std::setw(22) << std::setprecision(5) << std::scientific << normrhs_;
       break;
-    case Inpar::PoroElast::convnorm_abs_singlefields:
+    case PoroElast::convnorm_abs_singlefields:
       break;
     default:
       FOUR_C_THROW("Unknown or undefined convergence form for global residual.");
@@ -951,10 +951,10 @@ void PoroElast::Monolithic::print_newton_iter_text_stream(std::ostringstream& os
   // increments
   switch (normtypeinc_)
   {
-    case Inpar::PoroElast::convnorm_abs_global:
+    case PoroElast::convnorm_abs_global:
       oss << std::setw(22) << std::setprecision(5) << std::scientific << norminc_;
       break;
-    case Inpar::PoroElast::convnorm_abs_singlefields:
+    case PoroElast::convnorm_abs_singlefields:
       break;
     default:
       FOUR_C_THROW("Unknown or undefined convergence form for global increment.");
@@ -964,14 +964,14 @@ void PoroElast::Monolithic::print_newton_iter_text_stream(std::ostringstream& os
   // --------------------------------------------------------single field test
   switch (normtypefres_)
   {
-    case Inpar::PoroElast::convnorm_abs_singlefields:
+    case PoroElast::convnorm_abs_singlefields:
       oss << std::setw(22) << std::setprecision(5) << std::scientific << normrhsstruct_;
       if (porosity_dof_)
         oss << std::setw(22) << std::setprecision(5) << std::scientific << normrhsporo_;
       oss << std::setw(22) << std::setprecision(5) << std::scientific << normrhsfluidvel_;
       oss << std::setw(22) << std::setprecision(5) << std::scientific << normrhsfluidpres_;
       break;
-    case Inpar::PoroElast::convnorm_abs_global:
+    case PoroElast::convnorm_abs_global:
       break;
     default:
       FOUR_C_THROW("Unknown or undefined convergence form for single field residual.");
@@ -980,14 +980,14 @@ void PoroElast::Monolithic::print_newton_iter_text_stream(std::ostringstream& os
 
   switch (normtypeinc_)
   {
-    case Inpar::PoroElast::convnorm_abs_singlefields:
+    case PoroElast::convnorm_abs_singlefields:
       oss << std::setw(22) << std::setprecision(5) << std::scientific << normincstruct_;
       if (porosity_dof_)
         oss << std::setw(22) << std::setprecision(5) << std::scientific << normincporo_;
       oss << std::setw(22) << std::setprecision(5) << std::scientific << normincfluidvel_;
       oss << std::setw(22) << std::setprecision(5) << std::scientific << normincfluidpres_;
       break;
-    case Inpar::PoroElast::convnorm_abs_global:
+    case PoroElast::convnorm_abs_global:
       break;
     default:
       FOUR_C_THROW("Unknown or undefined convergence form for single field increment.");
@@ -1624,14 +1624,12 @@ bool PoroElast::Monolithic::setup_solver()
   // Get the parameters for the Newton iteration
   itermax_ = poroelastdyn.get<int>("ITEMAX");
   itermin_ = poroelastdyn.get<int>("ITEMIN");
-  normtypeinc_ = Teuchos::getIntegralValue<Inpar::PoroElast::ConvNorm>(poroelastdyn, "NORM_INC");
-  normtypefres_ = Teuchos::getIntegralValue<Inpar::PoroElast::ConvNorm>(poroelastdyn, "NORM_RESF");
-  combincfres_ =
-      Teuchos::getIntegralValue<Inpar::PoroElast::BinaryOp>(poroelastdyn, "NORMCOMBI_RESFINC");
+  normtypeinc_ = Teuchos::getIntegralValue<PoroElast::ConvNorm>(poroelastdyn, "NORM_INC");
+  normtypefres_ = Teuchos::getIntegralValue<PoroElast::ConvNorm>(poroelastdyn, "NORM_RESF");
+  combincfres_ = Teuchos::getIntegralValue<PoroElast::BinaryOp>(poroelastdyn, "NORMCOMBI_RESFINC");
   vectornormfres_ =
-      Teuchos::getIntegralValue<Inpar::PoroElast::VectorNorm>(poroelastdyn, "VECTORNORM_RESF");
-  vectornorminc_ =
-      Teuchos::getIntegralValue<Inpar::PoroElast::VectorNorm>(poroelastdyn, "VECTORNORM_INC");
+      Teuchos::getIntegralValue<PoroElast::VectorNorm>(poroelastdyn, "VECTORNORM_RESF");
+  vectornorminc_ = Teuchos::getIntegralValue<PoroElast::VectorNorm>(poroelastdyn, "VECTORNORM_INC");
 
   tolinc_ = poroelastdyn.get<double>("TOLINC_GLOBAL");
   tolfres_ = poroelastdyn.get<double>("TOLRES_GLOBAL");

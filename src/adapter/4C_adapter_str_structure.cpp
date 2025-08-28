@@ -18,7 +18,6 @@
 #include "4C_contact_input.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_fsi.hpp"
-#include "4C_inpar_poroelast.hpp"
 #include "4C_inpar_structure.hpp"
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
@@ -30,6 +29,7 @@
 #include "4C_linear_solver_method_linalg.hpp"
 #include "4C_linear_solver_method_parameters.hpp"
 #include "4C_mat_par_bundle.hpp"
+#include "4C_poroelast_input.hpp"
 #include "4C_structure_timada_create.hpp"
 #include "4C_structure_timint_create.hpp"
 #include "4C_structure_timint_impl.hpp"
@@ -310,13 +310,13 @@ void Adapter::StructureBaseAlgorithm::create_tim_int(const Teuchos::ParameterLis
       case Core::ProblemType::fsi_xfem:
       {
         const Teuchos::ParameterList& porodyn = problem->poroelast_dynamic_params();
-        const auto coupling = Teuchos::getIntegralValue<Inpar::PoroElast::SolutionSchemeOverFields>(
-            porodyn, "COUPALGO");
+        const auto coupling =
+            Teuchos::getIntegralValue<PoroElast::SolutionSchemeOverFields>(porodyn, "COUPALGO");
         if (tmpstr->have_constraint())
         {
-          if (coupling == Inpar::PoroElast::Monolithic_structuresplit or
-              coupling == Inpar::PoroElast::Monolithic_fluidsplit or
-              coupling == Inpar::PoroElast::Monolithic_nopenetrationsplit)
+          if (coupling == PoroElast::SolutionSchemeOverFields::Monolithic_structuresplit or
+              coupling == PoroElast::SolutionSchemeOverFields::Monolithic_fluidsplit or
+              coupling == PoroElast::SolutionSchemeOverFields::Monolithic_nopenetrationsplit)
             structure_ = std::make_shared<FPSIStructureWrapper>(tmpstr);
           else
             structure_ = std::make_shared<StructureConstrMerged>(tmpstr);

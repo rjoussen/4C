@@ -32,7 +32,7 @@ Discret::Elements::FluidEleParameterPoro::FluidEleParameterPoro()
       stab_biot_(false),
       stab_biot_scaling_(0.0),
       poro_convective_term_(false),
-      transient_terms_(Inpar::PoroElast::transient_all)
+      transient_terms_(PoroElast::transient_all)
 {
 }
 
@@ -47,7 +47,7 @@ void Discret::Elements::FluidEleParameterPoro::set_element_poro_parameter(
   set_fluid_parameter_poro_ = true;
   poro_conti_partint_ = params.get<bool>("conti partial integration", false);
   reaction_ = true;
-  transient_terms_ = Teuchos::getIntegralValue<Inpar::PoroElast::TransientEquationsOfPoroFluid>(
+  transient_terms_ = Teuchos::getIntegralValue<PoroElast::TransientEquationsOfPoroFluid>(
       params, "Transient Terms Poro Fluid");
   poro_convective_term_ = params.get<bool>("convective term", false);
   if (poro_convective_term_ and not FluidEleParameter::is_newton_)
