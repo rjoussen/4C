@@ -59,12 +59,12 @@ since both are governed by similar equations. The table below compares the key f
       - :math:`f`
     * - Boundary Conditions
       - Dirichlet/Neumann
-      - Dirichlet/Neumann
-      - Dirichlet/Neumann + Initial condition
+      - Dirichlet/Neumann + Initial condition (if not steady-state)
+      - Dirichlet/Neumann + Initial condition (if not steady-state)
 
-From a physical point of view, the thermal conduction problem describes the heat distribution in a solid body after a long time (steady-state),
-with the temperature kept at zero on the boundary and a constant internal heat source.
-Analogously, the diffusion problem can be interpreted as the steady-state distribution of a chemical species in a domain,
+From a physical point of view, the Poisson problem can be interpreted as heat distribution in a solid body after
+a long time (steady-state), with the temperature kept at zero on the boundary and a constant internal heat source.
+Analogously, steady-state diffusion simulates the distribution of a chemical species in a domain,
 with the concentration set to zero at the boundary and a constant internal source.
 
 In the following sections, we demonstrate how to set up and solve the problem using both the scalar transport and thermal solvers.
@@ -79,9 +79,10 @@ Mesh Setup
 ----------
 
 The mesh can be generated using any pre-processor. For this tutorial, we created the Exodus file `poisson_problem_geo.e`
-using Cubit. The domain is a square in the x-y plane: :math:`\Omega = [-1, 1]^2`.
+using Coreform Cubit. The domain is a square in the x-y plane: :math:`\Omega = [-1, 1]^2`.
 
-The mesh is shown below. Node sets 1 to 4 represent the boundary lines, and the entire surface is defined as node set 5.
+The mesh consists of 32×32 linear elements (QUAD4) and 1089 nodes. Since there is one variable per node,
+the resulting linear system has 1089 degrees of freedom (DOFs).
 
 .. figure:: /_assets/tutorial_scatra_mesh.png
    :alt: tutorial_scatra mesh
@@ -90,8 +91,34 @@ The mesh is shown below. Node sets 1 to 4 represent the boundary lines, and the 
 
    2D mesh for the Poisson problem.
 
-The mesh consists of 32×32 linear elements and 1089 nodes. Since there is one variable per node,
-the resulting linear system has 1089 degrees of freedom (DOFs).
+Five nodesets are defined in the exodus file. Node sets 1 to 4 represent the boundary lines.
+Node set 5 encompasses all nodes for the Neumann boundary condition.
+
+In an exodus file, node sets may have names.
+Even though |FOURC| does not utilize these names, they can be helpful for identifying sets.
+In the respective geometry input section, which depends on the analysis type
+(see :ref:`here for scalar transport <poissontutorial_scatra_geometry>` and :ref:`here for the thermal analysis <poissontutorial_thermo_geometry>`),
+one may print out the set names using the parameter ``SHOW_INFO: detailed_summary``.
+The |FOURC| output then contains a summary of the geometry, which is useful for verifying the mesh and node sets, see the relevant part here:
+
+.. code-block:: none
+
+    Mesh read in from "tutorial_poisson_geo.e"
+      consists of 1089 Nodes and 1024 Elements;
+      organized in 1 ElementBlocks, 5 NodeSets and 0 SideSets.
+
+    ElementBlocks
+    -------------
+    Block 1: 1024 Elements of Shape quad4
+
+    NodeSets
+    --------
+    NodeSet 1: (xmax) contains 33 Nodes
+    NodeSet 2: (xmin) contains 33 Nodes
+    NodeSet 3: (ymin) contains 33 Nodes
+    NodeSet 4: (ymax) contains 33 Nodes
+    NodeSet 5: (wholesurf) contains 1089 Nodes
+
 
 We solve the system using the direct solver ``UMFPACK`` for simplicity. This is a robust serial solver
 that does not support MPI parallelization. However, for this small problem, parallelization or iterative solvers
@@ -100,8 +127,8 @@ would not offer a performance benefit.
 Boundary and Source Conditions
 ------------------------------
 
-For both solver types, the **boundary condition** is that the primary variable (:math:`T` or :math:`C`) is zero at the boundary.
-This corresponds to a Dirichlet condition applied to all four boundary lines, defined identically in both cases:
+For both solver types, the **boundary condition** defines the primary variable (:math:`T` or :math:`C`) to be zero at the boundary.
+This corresponds to a Dirichlet condition applied to all four boundary lines and is identical in both cases:
 
 {{ section_dump(scatra_file_content, "DESIGN LINE DIRICH CONDITIONS") }}
 
@@ -110,9 +137,11 @@ This is implemented as a Neumann (flux) condition:
 
 {{ section_dump(scatra_file_content, "DESIGN SURF NEUMANN CONDITIONS") }}
 
-Simulation is performed in a single step for both problem types.
+Simulation is performed in a single load step for both problem types.
 Note that the initial conditions are irrelevant for steady-state simulations.
 However, for a time-dependent simulation, you would need to define an initial condition, i.e., an initial concentration or temperature.
+
+.. _poissontutorial_scatra:
 
 Poisson Problem Solved with the Scalar Transport Solver
 --------------------------------------------------------
@@ -137,13 +166,17 @@ The only material parameter in this model is the diffusivity, which is defined i
 
 The geometry, defined in the Exodus file (see above), is read using:
 
+.. _poissontutorial_scatra_geometry:
+
 {{ section_dump(scatra_file_content, "TRANSPORT GEOMETRY") }}
 
-In the ``ELEMENT_BLOCK`` section, the cell type, material, and transport formulation (here: *Standard*) are specified.
+In the ``ELEMENT_BLOCK`` section, the cell type, material, and transport formulation (here: *Standard*, denoted as `Std`) are specified.
 
 For scalar transport simulations, the primary variable is written to VTK files as ``phi_1``.
 Currently, the flux is not included in the VTK output.
 Therefore, no explicit output section is required in this input file.
+
+.. _poissontutorial_thermo:
 
 Poisson Problem Solved with the Thermal Solver
 ----------------------------------------------
@@ -162,6 +195,8 @@ Thermal conduction models always require two material parameters: heat capacity 
 Although heat capacity is not relevant for steady-state simulations, both parameters must be defined:
 
 {{ section_dump(thermo_file_content, "MATERIALS") }}
+
+.. _poissontutorial_thermo_geometry:
 
 The geometry is read from the Exodus file using:
 
@@ -218,8 +253,6 @@ Thus, the error between the |FOURC| and deal.II solutions is within this range, 
    Error between diffusion and thermal conduction,
    and between deal.II and thermal conduction along the line at :math:`y=0`.
 
-The following Python script generates the figure for the structure loaded in ParaView (visible in the current RenderView):
-
-.. literalinclude::  /_assets/tutorial_poisson_pvscript.py
-   :linenos:
+Here is a :download:`ParaView Python script </_assets/tutorial_poisson_pvscript.py>`
+that generates the figure for the structure loaded in ParaView (visible in Paraview's current RenderView).
 

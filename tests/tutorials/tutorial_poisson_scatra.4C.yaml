@@ -20,37 +20,37 @@ DESIGN LINE DIRICH CONDITIONS:
     ENTITY_TYPE: node_set_id
     NUMDOF: 1
     ONOFF: [1]
-    VAL: [0]
+    VAL: [0.0]
     FUNCT: [0]
   - E: 2
     ENTITY_TYPE: node_set_id
     NUMDOF: 1
     ONOFF: [1]
-    VAL: [0]
+    VAL: [0.0]
     FUNCT: [0]
   - E: 3
     ENTITY_TYPE: node_set_id
     NUMDOF: 1
     ONOFF: [1]
-    VAL: [0]
+    VAL: [0.0]
     FUNCT: [0]
   - E: 4
     ENTITY_TYPE: node_set_id
     NUMDOF: 1
     ONOFF: [1]
-    VAL: [0]
+    VAL: [0.0]
     FUNCT: [0]
 DESIGN SURF NEUMANN CONDITIONS:
   - E: 5
     ENTITY_TYPE: node_set_id
     NUMDOF: 1
     ONOFF: [1]
-    VAL: [1]
+    VAL: [1.0]
     FUNCT: [0]
 MATERIALS:
   - MAT: 1
     MAT_scatra:
-      DIFFUSIVITY: 1
+      DIFFUSIVITY: 1.0
 TRANSPORT GEOMETRY:
   ELEMENT_BLOCKS:
     - ID: 1

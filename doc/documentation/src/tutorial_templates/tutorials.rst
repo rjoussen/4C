@@ -15,6 +15,22 @@ The output format used here is the binary `EXODUS <https://sandialabs.github.io/
 format.
 
 The following tutorials are available to show different features of |FOURC|.
+If you are new to |FOURC|, we recommend to start with a tutorial that fits to your application:
+
+- Scalar transport or thermal analysis: start with the :ref:`Poisson tutorial <poissontutorial>`.
+- Solid mechanics: start with the :ref:`solid mechanics tutorial <3d_solidtutorial>`.
+- Contact mechanics: start with the :ref:`solid mechanics tutorial <3d_solidtutorial>`
+  and proceed to the :ref:`3D contact tutorial <contacttutorial>`.
+- Fluid dynamics: start with the :ref:`fluid mechanics tutorial <fluidtutorial>`.
+
+The other tutorials are more advanced and show some of the multiphysics capabilities of |FOURC|.
+
+- FSI: Connection between fluid and solid mechanics in 2D and 3D
+  (:ref:`FSI 2D tutorial <2d_fsitutorial>`, :ref:`FSI 3D tutorial <3d_fsitutorial>`).
+- Battery simulation: Coupled thermal, mechanical and electrochemical simulation of a battery
+  (:ref:`battery tutorial <batterytutorial>`).
+
+Here is the outline of all available tutorials:
 
 .. toctree::
    :maxdepth: 2
