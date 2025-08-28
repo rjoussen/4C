@@ -160,6 +160,20 @@ namespace BeamInteraction
         std::shared_ptr<Core::LinAlg::FEVector<double>> force);
 
     /**
+     * \brief Evaluate the coupling contributions resulting from a lagrange
+     * type of constraint enforcement.
+     * @param data_state (in) Beam interaction data state.
+     */
+    void evaluate_coupling_terms_lagrange(
+        const std::shared_ptr<const Solid::ModelEvaluator::BeamInteractionDataState>& data_state);
+
+    /**
+     * \brief Check if the model uses Lagrange multipliers.
+     */
+    bool have_lagrange_dofs() const;
+
+
+    /**
      * \brief Get the global vector of Lagrange multipliers.
      * @return Global vector of Lagrange multipliers.
      */

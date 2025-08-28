@@ -481,10 +481,27 @@ void BeamInteraction::BeamToSolidMortarManager::evaluate_force_stiff_penalty_reg
 
   // Add the penalty terms to the global force and stiffness matrix
   add_global_force_stiffness_penalty_contributions(data_state, stiff, force);
+}
 
-  if (beam_to_solid_params_->get_constraint_enforcement() ==
-      Inpar::BeamToSolid::BeamToSolidConstraintEnforcement::lagrange)
-    global_lambda_ = data_state->get_lambda();
+/**
+ *
+ */
+void BeamInteraction::BeamToSolidMortarManager::evaluate_coupling_terms_lagrange(
+    const std::shared_ptr<const Solid::ModelEvaluator::BeamInteractionDataState>& data_state)
+{
+  // Evaluate the global coupling terms
+  evaluate_and_assemble_global_coupling_contributions(data_state->get_dis_col_np());
+
+  global_lambda_ = data_state->get_lambda();
+}
+/**
+ *
+ */
+bool BeamInteraction::BeamToSolidMortarManager::have_lagrange_dofs() const
+{
+  return beam_to_solid_params_ &&
+         beam_to_solid_params_->get_constraint_enforcement() ==
+             Inpar::BeamToSolid::BeamToSolidConstraintEnforcement::lagrange;
 }
 
 /**
