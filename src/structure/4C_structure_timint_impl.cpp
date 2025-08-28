@@ -176,12 +176,6 @@ void Solid::TimIntImpl::init(const Teuchos::ParameterList& timeparams,
 
   if (ptcdt_ <= 0) FOUR_C_THROW("PTCDT has to be greater than zero. Fix your input file.");
 
-  // setup NOX parameter lists
-  if (itertype_ == Inpar::Solid::soltech_noxnewtonlinesearch)
-    nox_setup();
-  else if (itertype_ == Inpar::Solid::soltech_noxgeneral)
-    nox_setup(xparams.sublist("NOX"));
-
   // done so far
   return;
 }
@@ -1398,10 +1392,6 @@ Inpar::Solid::ConvergenceStatus Solid::TimIntImpl::solve()
         break;
       case Inpar::Solid::soltech_newtonuzawalin:
         nonlin_error = uzawa_linear_newton_full();
-        break;
-      case Inpar::Solid::soltech_noxnewtonlinesearch:
-      case Inpar::Solid::soltech_noxgeneral:
-        nonlin_error = nox_solve();
         break;
       case Inpar::Solid::soltech_ptc:
         nonlin_error = ptc();

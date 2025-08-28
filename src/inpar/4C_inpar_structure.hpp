@@ -163,20 +163,17 @@ namespace Inpar
     /// type of solution techniques
     enum NonlinSolTech
     {
-      soltech_vague,                ///< undefined
-      soltech_newtonfull,           ///< full Newton-Raphson iteration
-      soltech_newtonls,             ///< line search Newton-Raphson
-      soltech_newtonmod,            ///< modified Newton-Raphson iteration
-      soltech_newtonuzawalin,       ///< linear Uzawa iteration for
-                                    ///< constraint system
-      soltech_newtonuzawanonlin,    ///< non-linear Uzawa iteration
-                                    ///< for constraint system
-      soltech_ptc,                  ///< pseudo transient continuation nonlinear iteration
-      soltech_noxnewtonlinesearch,  ///< Line search Newton
-                                    ///< utilizing NOX
-      soltech_noxgeneral,           ///< non-linear solution with NOX
-      soltech_nox_nln,              ///< non-linear solution with NOX (new)
-      soltech_singlestep            ///< single step for explicit dynamics
+      soltech_vague,              ///< undefined
+      soltech_newtonfull,         ///< full Newton-Raphson iteration
+      soltech_newtonls,           ///< line search Newton-Raphson
+      soltech_newtonmod,          ///< modified Newton-Raphson iteration
+      soltech_newtonuzawalin,     ///< linear Uzawa iteration for
+                                  ///< constraint system
+      soltech_newtonuzawanonlin,  ///< non-linear Uzawa iteration
+                                  ///< for constraint system
+      soltech_ptc,                ///< pseudo transient continuation nonlinear iteration
+      soltech_nox_nln,            ///< non-linear solution with NOX (new)
+      soltech_singlestep          ///< single step for explicit dynamics
     };
 
 

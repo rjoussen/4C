@@ -1,5 +1,5 @@
 TITLE:
-  - "strufem_hex8_cantilever_nox to test STRUCT NOX framework"
+  - "strufem_hex8_cantilever"
 PROBLEM SIZE:
   ELEMENTS: 300
   NODES: 808
@@ -19,7 +19,7 @@ STRUCTURAL DYNAMIC:
   TOLDISP: 1e-05
   TOLRES: 1e-05
   TOLCONSTR: 1e-05
-  NLNSOL: "noxgeneral"
+  NLNSOL: "fullnewton"
   PREDICT: "ConstDisVelAcc"
   UZAWAMAXITER: 20
   LINEAR_SOLVER: 1

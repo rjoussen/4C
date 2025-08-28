@@ -16,11 +16,6 @@
 #include "4C_fem_discretization.hpp"
 #include "4C_structure_timint.hpp"
 
-#include <NOX_Direction_UserDefinedFactory.H>
-#include <NOX_Epetra.H>
-#include <NOX_Epetra_Group.H>
-#include <NOX_Epetra_Interface_Jacobian.H>
-
 FOUR_C_NAMESPACE_OPEN
 
 namespace Core::LinAlg
@@ -56,9 +51,7 @@ namespace Solid
    *
 
    */
-  class TimIntImpl : public TimInt,
-                     public ::NOX::Epetra::Interface::Required,
-                     public ::NOX::Epetra::Interface::Jacobian
+  class TimIntImpl : public TimInt
   {
    public:
     //! @name Construction
@@ -498,78 +491,6 @@ namespace Solid
 
     //@}
 
-    //! @name NOX solution
-    //@{
-
-    /*! \brief Compute the residual of linear momentum
-     *
-     *  Computes the set of nonlinear equations, \f$F(x)=0\f$, to be solved by
-     *  NOX. This method must be supplied by the user.
-     */
-    bool computeF(const Epetra_Vector& x,  //!< solution vector \f$x\f$ specified from NOX
-                                           //!< i.e. total displacements
-        Epetra_Vector& RHS,                //!< to be filled with the \f$F\f$ values that correspond
-                                           //!< to the input solution vector \f$x\f$.
-        const ::NOX::Epetra::Interface::Required::FillType
-            flag  //!< enumerated
-                  //!< type (see ::NOX::Epetra::FillType)
-                  //!< that tells a users interface why
-                  //!< computeF() was called. NOX has
-                  //!< the ability to generate
-                  //!< Jacobians based on numerical
-                  //!< differencing using calls to
-                  //!< computeF(). In this case,
-                  //!< the user may want to compute
-                  //!< an inexact
-                  //!< (and hopefully cheaper) \f$F\f$
-                  //!< since it
-                  //!< is only used in the Jacobian (or
-                  //!< preconditioner).
-        ) override;
-
-    //! Compute effective dynamic stiffness matrix
-    bool computeJacobian(const Epetra_Vector& x,  //!< solution vector \f$x\f$ specified from
-                                                  //!< NOX i.e. total displacements
-        Epetra_Operator& Jac                      //!< a reference to the Jacobian operator
-                                                  //!< \f$\frac{\partial F}{\partial x}\f$
-                                                  //!< that the user supplied in the
-                                                  //!< ::NOX::Epetra::Group constructor.
-        ) override;
-
-    //! Setup for solution with NOX
-    void nox_setup();
-
-    //! Setup for solution with NOX
-    void nox_setup(const Teuchos::ParameterList& noxparams  //!< NOX parameters from read-in
-    );
-
-    //! Create status test for non-linear solution with NOX
-    Teuchos::RCP<::NOX::StatusTest::Combo> nox_create_status_test(
-        ::NOX::Abstract::Group& grp  //!< NOX group
-    );
-
-    //! Create solver parameters for  non-linear solution with NOX
-    std::shared_ptr<Teuchos::ParameterList> nox_create_solver_parameters();
-
-    //! Create printing parameters for non-linear solution with NOX
-    std::shared_ptr<Teuchos::ParameterList> nox_create_print_parameters(
-        const bool verbose = false  //!< verbosity level
-    ) const;
-
-    //! Create the linear system that is passed into NOX
-    std::shared_ptr<::NOX::Epetra::LinearSystem> nox_create_linear_system(
-        Teuchos::ParameterList& nlParams,  ///< parameter list
-        ::NOX::Epetra::Vector& noxSoln,    ///< solution vector to operate on
-        ::NOX::Utils& utils                ///< printing utilities
-    );
-
-    //! Do non-linear solve with NOX
-    int nox_solve();
-
-    //! check for success of nonlinear solve otherwise return error code
-    int nox_error_check(::NOX::StatusTest::StatusType status, ::NOX::Solver::Generic& solver);
-    //@}
-
     //! @name Updates
     //@{
 
@@ -966,15 +887,6 @@ namespace Solid
     //@{
     std::shared_ptr<Core::LinAlg::Vector<double>> fres_;    //!< force residual used for solution
     std::shared_ptr<Core::LinAlg::Vector<double>> freact_;  //!< reaction force
-    //@}
-
-    //! @name NOX variables
-    //@{
-    Teuchos::RCP<::NOX::StatusTest::Combo>
-        noxstatustest_;  //!< NOX status test for convergence check
-    std::shared_ptr<Teuchos::ParameterList>
-        noxparams_;                           //!< NOX parameter list to configure the NOX solver
-    std::shared_ptr<::NOX::Utils> noxutils_;  //!< NOX utils for printing
     //@}
 
     //! @name Krylov projection variables

@@ -305,8 +305,6 @@ namespace Inpar
                       {"ptc", soltech_ptc},
                       {"newtonlinuzawa", soltech_newtonuzawalin},
                       {"augmentedlagrange", soltech_newtonuzawanonlin},
-                      {"NoxNewtonLineSearch", soltech_noxnewtonlinesearch},
-                      {"noxgeneral", soltech_noxgeneral},
                       {"noxnln", soltech_nox_nln},
                       {"singlestep", soltech_singlestep},
                   },
