@@ -26,7 +26,7 @@ namespace Core::Communication
   /*----------------------------------------------------------------------*
    | create communicator                                      ghamm 02/12 |
    *----------------------------------------------------------------------*/
-  std::shared_ptr<Communicators> create_comm(std::vector<std::string> argv)
+  Communicators create_comm(std::vector<std::string> argv)
   {
     // for coupled simulations: color = 1 for 4C and color = 0 for other programs
     // so far: either nested parallelism within 4C or coupling with further
@@ -267,8 +267,7 @@ namespace Core::Communication
     }
 
     // nested parallelism group is created
-    std::shared_ptr<Communicators> communicators =
-        std::make_shared<Communicators>(color, ngroup, lpidgpid, lcomm, gcomm, npType);
+    Communicators communicators(color, ngroup, lpidgpid, lcomm, gcomm, npType);
 
     // info for the nested parallelism user
     if (Core::Communication::my_mpi_rank(lcomm) == 0 && ngroup > 1)
@@ -277,7 +276,6 @@ namespace Core::Communication
     fflush(stdout);
 
     // for sync of output
-    Core::Communication::barrier(gcomm);
     Core::Communication::barrier(gcomm);
 
     return communicators;
@@ -299,24 +297,6 @@ namespace Core::Communication
     return;
   }
 
-  /*----------------------------------------------------------------------*
-   | local proc id  of global proc id is returned             ghamm 03/12 |
-   *----------------------------------------------------------------------*/
-  int Communicators::lpid(int GPID)
-  {
-    std::map<int, int>::iterator it = lpidgpid_.begin();
-    while (it != lpidgpid_.end())
-    {
-      if (it->second == GPID) return it->first;
-      ++it;
-    }
-    // if GPID is not part of the current group
-    printf("\n\n\nERROR: GPID (%d) is not in this group (%d) \n\n\n\n", GPID, group_id_);
-    MPI_Abort(gcomm_, EXIT_FAILURE);
-    exit(EXIT_FAILURE);
-
-    return -1;
-  }
 
   /*----------------------------------------------------------------------*
    | set sub communicator                                     ghamm 04/12 |

@@ -57,7 +57,7 @@ void Mat::MicroMaterial::evaluate(const Core::LinAlg::Tensor<double, 3, 3>* defg
       Global::Problem::instance(0)->get_dis("structure")->element_row_map()->my_gid(eleGID);
 
   // get sub communicator including the supporting procs
-  MPI_Comm subcomm = Global::Problem::instance(0)->get_communicators()->sub_comm();
+  MPI_Comm subcomm = Global::Problem::instance(0)->get_communicators().sub_comm();
 
   // tell the supporting procs that the micro material will be evaluated
   int task[2] = {
@@ -122,7 +122,7 @@ double Mat::MicroMaterial::density() const { return density_; }
 void Mat::MicroMaterial::post_setup()
 {
   // get sub communicator including the supporting procs
-  MPI_Comm subcomm = Global::Problem::instance(0)->get_communicators()->sub_comm();
+  MPI_Comm subcomm = Global::Problem::instance(0)->get_communicators().sub_comm();
   if (Core::Communication::my_mpi_rank(subcomm) == 0)
   {
     // tell the supporting procs that the micro material will call post_setup
@@ -168,7 +168,7 @@ void Mat::MicroMaterial::evaluate(Core::LinAlg::Matrix<3, 3>* defgrd,
 void Mat::MicroMaterial::update()
 {
   // get sub communicator including the supporting procs
-  MPI_Comm subcomm = Global::Problem::instance(0)->get_communicators()->sub_comm();
+  MPI_Comm subcomm = Global::Problem::instance(0)->get_communicators().sub_comm();
   if (Core::Communication::my_mpi_rank(subcomm) == 0)
   {
     // tell the supporting procs that the micro material will be evaluated for the element with id
@@ -200,7 +200,7 @@ void Mat::MicroMaterial::runtime_pre_output_step_state() const
   PAR::MicroMaterial::RuntimeOutputOption output_action_type;
 
   // get sub communicator including the supporting procs
-  MPI_Comm subcomm = Global::Problem::instance(0)->get_communicators()->sub_comm();
+  MPI_Comm subcomm = Global::Problem::instance(0)->get_communicators().sub_comm();
   if (Core::Communication::my_mpi_rank(subcomm) == 0)
   {
     // tell the supporting procs that the micro material will be prepared for output
@@ -239,7 +239,7 @@ void Mat::MicroMaterial::runtime_output_step_state(
   int output_step;
 
   // get sub communicator including the supporting procs
-  MPI_Comm subcomm = Global::Problem::instance(0)->get_communicators()->sub_comm();
+  MPI_Comm subcomm = Global::Problem::instance(0)->get_communicators().sub_comm();
   if (Core::Communication::my_mpi_rank(subcomm) == 0)
   {
     // tell the supporting procs that the micro material will be output
@@ -291,7 +291,7 @@ void Mat::MicroMaterial::initialize_density(const int gp)
 void Mat::MicroMaterial::write_restart() const
 {
   // get sub communicator including the supporting procs
-  MPI_Comm subcomm = Global::Problem::instance(0)->get_communicators()->sub_comm();
+  MPI_Comm subcomm = Global::Problem::instance(0)->get_communicators().sub_comm();
   if (Core::Communication::my_mpi_rank(subcomm) == 0)
   {
     // tell the supporting procs that the micro material will be output
@@ -320,7 +320,7 @@ void Mat::MicroMaterial::read_restart(const int gp, const int eleID, const bool 
   double initial_volume = init_vol();
 
   // get sub communicator including the supporting procs
-  MPI_Comm subcomm = Global::Problem::instance(0)->get_communicators()->sub_comm();
+  MPI_Comm subcomm = Global::Problem::instance(0)->get_communicators().sub_comm();
 
   // tell the supporting procs that the micro material will restart
   int task[2] = {
@@ -377,7 +377,7 @@ void Mat::MicroMaterial::read_restart(
 
 bool Mat::MicroMaterial::is_runtime_output_writer_necessary(int gp) const
 {
-  MPI_Comm subcomm = Global::Problem::instance(0)->get_communicators()->sub_comm();
+  MPI_Comm subcomm = Global::Problem::instance(0)->get_communicators().sub_comm();
   PAR::MicroMaterial::RuntimeOutputOption output_action_type;
   if (Core::Communication::my_mpi_rank(subcomm) == 0)
     output_action_type = params_->runtime_output_option_;

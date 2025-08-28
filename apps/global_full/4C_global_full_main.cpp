@@ -287,7 +287,7 @@ int main(int argc, char* argv[])
   // Initialize our own singleton registry to ensure we clean up all singletons properly.
   Core::Utils::SingletonOwnerRegistry::ScopeGuard singleton_owner_guard{};
 
-  std::shared_ptr<Core::Communication::Communicators> communicators =
+  Core::Communication::Communicators communicators =
       Core::Communication::create_comm(std::vector<std::string>(argv, argv + argc));
 
   CommandlineArguments arguments{
@@ -305,8 +305,8 @@ int main(int argc, char* argv[])
     char hostname[256];
     gethostname(hostname, sizeof(hostname));
     printf("Global rank %d with PID %d on %s is ready for attach\n",
-        Core::Communication::my_mpi_rank(arguments.comms->global_comm()), getpid(), hostname);
-    if (Core::Communication::my_mpi_rank(arguments.comms->global_comm()) == 0)
+        Core::Communication::my_mpi_rank(arguments.comms.global_comm()), getpid(), hostname);
+    if (Core::Communication::my_mpi_rank(arguments.comms.global_comm()) == 0)
     {
       printf("\n** Enter a character to continue > \n");
       fflush(stdout);
@@ -318,11 +318,11 @@ int main(int argc, char* argv[])
     }
   }
 
-  Core::Communication::barrier(arguments.comms->global_comm());
+  Core::Communication::barrier(arguments.comms.global_comm());
 
   if ((argc == 2) && ((strcmp(argv[1], "-h") == 0) || (strcmp(argv[1], "--help") == 0)))
   {
-    if (Core::Communication::my_mpi_rank(arguments.comms->local_comm()) == 0)
+    if (Core::Communication::my_mpi_rank(arguments.comms.local_comm()) == 0)
     {
       printf("\n\n");
       print_help_message();
@@ -331,7 +331,7 @@ int main(int argc, char* argv[])
   }
   else if ((argc == 2) && ((strcmp(argv[1], "-p") == 0) || (strcmp(argv[1], "--parameters") == 0)))
   {
-    if (Core::Communication::my_mpi_rank(arguments.comms->local_comm()) == 0)
+    if (Core::Communication::my_mpi_rank(arguments.comms.local_comm()) == 0)
     {
       ryml::Tree tree = Core::IO::init_yaml_tree_with_exceptions();
       ryml::NodeRef root = tree.rootref();
@@ -342,7 +342,7 @@ int main(int argc, char* argv[])
       emit_general_metadata(root_ref);
 
       // Write the user input defined for various physics module.
-      Core::IO::InputFile input_file = setup_input_file(arguments.comms->local_comm());
+      Core::IO::InputFile input_file = setup_input_file(arguments.comms.local_comm());
       input_file.emit_metadata(root_ref);
 
       // Finally, dump everything.
@@ -351,7 +351,7 @@ int main(int argc, char* argv[])
   }
   else
   {
-    if (Core::Communication::my_mpi_rank(arguments.comms->global_comm()) == 0)
+    if (Core::Communication::my_mpi_rank(arguments.comms.global_comm()) == 0)
     {
       constexpr int box_width = 54;
 
@@ -378,7 +378,7 @@ int main(int argc, char* argv[])
 
       std::cout << "Trilinos Version: " << FOUR_C_TRILINOS_HASH << " (git SHA1)\n";
       std::cout << "Total number of MPI ranks: "
-                << Core::Communication::num_mpi_ranks(arguments.comms->global_comm()) << '\n';
+                << Core::Communication::num_mpi_ranks(arguments.comms.global_comm()) << '\n';
     }
 
     /* Here we turn the NaN and INF numbers off. No need to calculate
@@ -421,11 +421,11 @@ int main(int argc, char* argv[])
                 << line << "\n"
                 << std::endl;
 
-      if (arguments.comms->num_groups() > 1)
+      if (arguments.comms.num_groups() > 1)
       {
         printf("Global processor %d has thrown an error and is waiting for the remaining procs\n\n",
-            Core::Communication::my_mpi_rank(arguments.comms->global_comm()));
-        Core::Communication::barrier(arguments.comms->global_comm());
+            Core::Communication::my_mpi_rank(arguments.comms.global_comm()));
+        Core::Communication::barrier(arguments.comms.global_comm());
       }
 
       MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
@@ -433,24 +433,25 @@ int main(int argc, char* argv[])
 #endif
     /*----------------------------------------------------------------------*/
 
-    get_memory_high_water_mark(arguments.comms->global_comm());
+    get_memory_high_water_mark(arguments.comms.global_comm());
 
-    Core::Communication::barrier(arguments.comms->local_comm());
-    if (arguments.comms->num_groups() > 1)
+    Core::Communication::barrier(arguments.comms.local_comm());
+    if (arguments.comms.num_groups() > 1)
     {
       printf("Global processor %d with local rank %d finished normally\n",
-          Core::Communication::my_mpi_rank(arguments.comms->global_comm()),
-          Core::Communication::my_mpi_rank(arguments.comms->local_comm()));
-      Core::Communication::barrier(arguments.comms->global_comm());
+          Core::Communication::my_mpi_rank(arguments.comms.global_comm()),
+          Core::Communication::my_mpi_rank(arguments.comms.local_comm()));
+      Core::Communication::barrier(arguments.comms.global_comm());
     }
     else
     {
-      Core::Communication::barrier(arguments.comms->global_comm());
+      Core::Communication::barrier(arguments.comms.global_comm());
       printf("processor %d finished normally\n",
-          Core::Communication::my_mpi_rank(arguments.comms->local_comm()));
+          Core::Communication::my_mpi_rank(arguments.comms.local_comm()));
     }
   }
 
+  communicators.finalize();
   return (0);
 }
 
@@ -463,18 +464,18 @@ void run(CommandlineArguments& arguments)
   double t0 = walltime_in_seconds();
 
   // and now the actual reading
-  Core::IO::InputFile input_file = setup_input_file(arguments.comms->local_comm());
+  Core::IO::InputFile input_file = setup_input_file(arguments.comms.local_comm());
   input_file.read(arguments.input_file_name);
   setup_global_problem(input_file, arguments);
 
   // we wait till all procs are here. Otherwise a hang up might occur where
   // one proc ended with FOUR_C_THROW but other procs were not finished and waited...
   // we also want to have the printing above being finished.
-  Core::Communication::barrier(arguments.comms->local_comm());
+  Core::Communication::barrier(arguments.comms.local_comm());
 
 
   const double ti = walltime_in_seconds() - t0;
-  if (Core::Communication::my_mpi_rank(arguments.comms->global_comm()) == 0)
+  if (Core::Communication::my_mpi_rank(arguments.comms.global_comm()) == 0)
   {
     Core::IO::cout << "\nTotal wall time for INPUT:       " << std::setw(10) << std::setprecision(3)
                    << std::scientific << ti << " sec \n\n";
@@ -487,7 +488,7 @@ void run(CommandlineArguments& arguments)
 
 
   const double tc = walltime_in_seconds() - t0;
-  if (Core::Communication::my_mpi_rank(arguments.comms->global_comm()) == 0)
+  if (Core::Communication::my_mpi_rank(arguments.comms.global_comm()) == 0)
   {
     Core::IO::cout << "\nTotal wall time for CALCULATION: " << std::setw(10) << std::setprecision(3)
                    << std::scientific << tc << " sec \n\n";

@@ -29,7 +29,7 @@ struct CommandlineArguments
   std::string restart_file_identifier;
   int restart_step = 0;
 
-  std::shared_ptr<Core::Communication::Communicators> comms;
+  Core::Communication::Communicators comms;
 };
 
 /**

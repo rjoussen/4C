@@ -44,8 +44,8 @@ void setup_parallel_output(const CommandlineArguments& arguments)
   int oproc = io.get<int>("LIMIT_OUTP_TO_PROC");
   auto level = Teuchos::getIntegralValue<Core::IO::Verbositylevel>(io, "VERBOSITY");
 
-  Core::IO::cout.setup(screen, file, preGrpID, level, std::move(arguments.comms->local_comm()),
-      oproc, arguments.comms->group_id(), arguments.output_file_identifier);
+  Core::IO::cout.setup(screen, file, preGrpID, level, std::move(arguments.comms.local_comm()),
+      oproc, arguments.comms.group_id(), arguments.output_file_identifier);
 }
 
 void setup_global_problem(Core::IO::InputFile& input_file, const CommandlineArguments& arguments)
@@ -58,7 +58,7 @@ void setup_global_problem(Core::IO::InputFile& input_file, const CommandlineArgu
   setup_parallel_output(arguments);
 
   // create control file for output and read restart data if required
-  problem->open_control_file(arguments.comms->local_comm(), arguments.input_file_name,
+  problem->open_control_file(arguments.comms.local_comm(), arguments.input_file_name,
       arguments.output_file_identifier, arguments.restart_file_identifier);
 
   // input of materials
@@ -109,10 +109,10 @@ double walltime_in_seconds()
 
 void parse_commandline_arguments(CommandlineArguments& arguments)
 {
-  int group = arguments.comms->group_id();
+  int group = arguments.comms.group_id();
 
   int restart_group = 0;
-  int my_rank = Core::Communication::my_mpi_rank(arguments.comms->local_comm());
+  int my_rank = Core::Communication::my_mpi_rank(arguments.comms.local_comm());
 
   std::vector<std::string> inout =
       parse_input_output_files(arguments.argc, arguments.argv, my_rank);
@@ -124,7 +124,7 @@ void parse_commandline_arguments(CommandlineArguments& arguments)
   std::string output_file_identifier;
   std::string restart_file_identifier;
   // set input file name in each group
-  switch (arguments.comms->np_type())
+  switch (arguments.comms.np_type())
   {
     case Core::Communication::NestedParallelismType::no_nested_parallelism:
       input_filename = inout[0];
@@ -155,9 +155,9 @@ void parse_commandline_arguments(CommandlineArguments& arguments)
     }
     break;
     case Core::Communication::NestedParallelismType::separate_input_files:
-      if (inout_args % arguments.comms->num_groups() != 0)
+      if (inout_args % arguments.comms.num_groups() != 0)
         FOUR_C_THROW("Each group needs the same number of arguments for input/output.");
-      inout_args /= arguments.comms->num_groups();
+      inout_args /= arguments.comms.num_groups();
       input_filename = inout[group * inout_args];
       output_file_identifier = inout[group * inout_args + 1];
       restart_group = group;
@@ -255,7 +255,7 @@ void parse_restart_definition(const std::vector<std::string>& inout, const int i
     {
       restart_file_identifier = (restart.substr(12, std::string::npos).c_str());
 
-      switch (arguments.comms->np_type())
+      switch (arguments.comms.np_type())
       {
         case Core::Communication::NestedParallelismType::no_nested_parallelism:
         case Core::Communication::NestedParallelismType::separate_input_files:
@@ -271,12 +271,12 @@ void parse_restart_definition(const std::vector<std::string>& inout, const int i
             int number = atoi(restart_file_identifier.substr(pos + 1).c_str());
             std::string identifier = restart_file_identifier.substr(0, pos);
             restart_file_identifier =
-                std::format("{}_group_{}_-{}", identifier, arguments.comms->group_id(), number);
+                std::format("{}_group_{}_-{}", identifier, arguments.comms.group_id(), number);
           }
           else
           {
             restart_file_identifier =
-                std::format("{}_group_{}", restart_file_identifier, arguments.comms->group_id());
+                std::format("{}_group_{}", restart_file_identifier, arguments.comms.group_id());
           }
         }
         break;

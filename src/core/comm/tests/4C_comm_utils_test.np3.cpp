@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace
 {
-  std::shared_ptr<Core::Communication::Communicators> mock_up_communicators()
+  Core::Communication::Communicators mock_up_communicators()
   {
     // mock up for command line to create communicators
     std::vector<std::string> argv{
@@ -40,15 +40,14 @@ namespace
     /**
      * \brief Set up the testing environment.
      */
-    SetupCompareParallelVectorsTest()
+    SetupCompareParallelVectorsTest() : communicators_(mock_up_communicators())
     {
-      communicators_ = mock_up_communicators();
       Core::IO::cout.setup(
-          false, false, false, Core::IO::standard, communicators_->local_comm(), 0, 0, "dummy");
+          false, false, false, Core::IO::standard, communicators_.local_comm(), 0, 0, "dummy");
 
       // create arbitrary distributed map within each group
       std::shared_ptr<Core::LinAlg::Map> map = std::make_shared<Core::LinAlg::Map>(
-          numberOfElementsToDistribute_, 0, communicators_->local_comm());
+          numberOfElementsToDistribute_, 0, communicators_.local_comm());
       vector_ = std::make_shared<Core::LinAlg::Vector<double>>(*map, false);
 
       // fill test Core::LinAlg::Vector<double> with entry equals gid
@@ -67,7 +66,7 @@ namespace
     void TearDown() override { Core::IO::cout.close(); }
 
    public:
-    std::shared_ptr<Core::Communication::Communicators> communicators_;
+    Core::Communication::Communicators communicators_;
     const int numberOfElementsToDistribute_ = 791;
     std::shared_ptr<Core::LinAlg::Vector<double>> vector_;
   };
@@ -82,15 +81,14 @@ namespace
     /**
      * \brief Set up the testing environment.
      */
-    SetupCompareParallelMatricesTest()
+    SetupCompareParallelMatricesTest() : communicators_(mock_up_communicators())
     {
-      communicators_ = mock_up_communicators();
       Core::IO::cout.setup(
-          false, false, false, Core::IO::standard, communicators_->local_comm(), 0, 0, "dummy");
+          false, false, false, Core::IO::standard, communicators_.local_comm(), 0, 0, "dummy");
 
       // create arbitrary distributed map within each group
       std::shared_ptr<Core::LinAlg::Map> rowmap = std::make_shared<Core::LinAlg::Map>(
-          numberOfElementsToDistribute_, 0, communicators_->local_comm());
+          numberOfElementsToDistribute_, 0, communicators_.local_comm());
       int approximateNumberOfNonZeroesPerRow = 3;
       matrix_ =
           std::make_shared<Core::LinAlg::SparseMatrix>(*rowmap, approximateNumberOfNonZeroesPerRow);
@@ -135,7 +133,7 @@ namespace
     void TearDown() override { Core::IO::cout.close(); }
 
    public:
-    std::shared_ptr<Core::Communication::Communicators> communicators_;
+    Core::Communication::Communicators communicators_;
     const int numberOfElementsToDistribute_ = 673;
     std::shared_ptr<Core::LinAlg::SparseMatrix> matrix_;
   };
@@ -150,15 +148,14 @@ namespace
     /**
      * \brief Set up the testing environment.
      */
-    SetupCompareParallelRectangularMatricesTest()
+    SetupCompareParallelRectangularMatricesTest() : communicators_(mock_up_communicators())
     {
-      communicators_ = mock_up_communicators();
       Core::IO::cout.setup(
-          false, false, false, Core::IO::standard, communicators_->local_comm(), 0, 0, "dummy");
+          false, false, false, Core::IO::standard, communicators_.local_comm(), 0, 0, "dummy");
 
       // create arbitrary distributed map within each group
-      Core::LinAlg::Map rowmap(numberOfElementsToDistribute_, 0, communicators_->local_comm());
-      Core::LinAlg::Map colmap(2 * numberOfElementsToDistribute_, 0, communicators_->local_comm());
+      Core::LinAlg::Map rowmap(numberOfElementsToDistribute_, 0, communicators_.local_comm());
+      Core::LinAlg::Map colmap(2 * numberOfElementsToDistribute_, 0, communicators_.local_comm());
       int approximateNumberOfNonZeroesPerRow = 6;
       matrix_ =
           std::make_shared<Core::LinAlg::SparseMatrix>(rowmap, approximateNumberOfNonZeroesPerRow);
@@ -214,7 +211,7 @@ namespace
     void TearDown() override { Core::IO::cout.close(); }
 
    public:
-    std::shared_ptr<Core::Communication::Communicators> communicators_;
+    Core::Communication::Communicators communicators_;
     const int numberOfElementsToDistribute_ = 673;
     std::shared_ptr<Core::LinAlg::SparseMatrix> matrix_;
   };
@@ -222,7 +219,7 @@ namespace
   TEST_F(SetupCompareParallelVectorsTest, PositiveTestCompareVectors)
   {
     bool success =
-        Core::Communication::are_distributed_vectors_identical(*communicators_, *vector_, "vector");
+        Core::Communication::are_distributed_vectors_identical(communicators_, *vector_, "vector");
     EXPECT_EQ(success, true);
   }
 
@@ -234,14 +231,14 @@ namespace
     vector_->replace_local_value(lastLocalIndex, disturbedValue);
 
     EXPECT_THROW(
-        Core::Communication::are_distributed_vectors_identical(*communicators_, *vector_, "vector"),
+        Core::Communication::are_distributed_vectors_identical(communicators_, *vector_, "vector"),
         Core::Exception);
   }
 
   TEST_F(SetupCompareParallelMatricesTest, PositiveTestCompareMatrices)
   {
     bool success = Core::Communication::are_distributed_sparse_matrices_identical(
-        *communicators_, *matrix_, "matrix");
+        communicators_, *matrix_, "matrix");
     EXPECT_EQ(success, true);
   }
 
@@ -256,14 +253,14 @@ namespace
     matrix_->complete({.enforce_complete = true, .optimize_data_storage = false});
 
     EXPECT_THROW(Core::Communication::are_distributed_sparse_matrices_identical(
-                     *communicators_, *matrix_, "matrix"),
+                     communicators_, *matrix_, "matrix"),
         Core::Exception);
   }
 
   TEST_F(SetupCompareParallelRectangularMatricesTest, PositiveTestCompareRectangularMatrices)
   {
     bool success = Core::Communication::are_distributed_sparse_matrices_identical(
-        *communicators_, *matrix_, "rectangular_matrix");
+        communicators_, *matrix_, "rectangular_matrix");
     EXPECT_EQ(success, true);
   }
 

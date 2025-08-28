@@ -35,7 +35,7 @@ namespace Core::Communication
   };
 
   //! create a local and a global communicator for the problem
-  std::shared_ptr<Communicators> create_comm(std::vector<std::string> argv);
+  Communicators create_comm(std::vector<std::string> argv);
 
   /*! \brief debug routine to compare vectors from different parallel 4C runs
    *
@@ -95,6 +95,9 @@ namespace Core::Communication
   }
 
 
+  /**
+   * A class to gather various MPI_Comm objects.
+   */
   class Communicators
   {
    public:
@@ -106,15 +109,6 @@ namespace Core::Communication
 
     /// return number of groups
     int num_groups() const { return ngroup_; }
-
-    /// return group size
-    int group_size() const { return Core::Communication::num_mpi_ranks(lcomm_); }
-
-    /// return global processor id of local processor id
-    int gpid(int LPID) { return lpidgpid_[LPID]; }
-
-    /// return local processor id of global processor id if GPID is in this group
-    int lpid(int GPID);
 
     /// return local communicator
     MPI_Comm local_comm() const { return lcomm_; }
@@ -130,6 +124,22 @@ namespace Core::Communication
 
     /// return nested parallelism type
     NestedParallelismType np_type() const { return np_type_; }
+
+    //! Cleanup MPI communicators
+    void finalize()
+    {
+      if (lcomm_ != MPI_COMM_NULL)
+      {
+        MPI_Comm_free(&lcomm_);
+        lcomm_ = MPI_COMM_NULL;
+      }
+
+      if (subcomm_ != MPI_COMM_NULL)
+      {
+        MPI_Comm_free(&subcomm_);
+        subcomm_ = MPI_COMM_NULL;
+      }
+    }
 
    private:
     /// group id

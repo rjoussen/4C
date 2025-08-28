@@ -307,7 +307,7 @@ void Solid::TimeInt::BaseDataSDyn::setup()
                 ? Global::Problem::instance()->get_dis("boundingbox")
                 : nullptr;
         periodic_boundingbox_->setup(Global::Problem::instance()->io_params(), boundingbox_dis,
-            Global::Problem::instance()->get_communicators()->global_comm(),
+            Global::Problem::instance()->get_communicators().global_comm(),
             Global::Problem::instance()->n_dim(),
             *Global::Problem::instance()->output_control_file());
         break;

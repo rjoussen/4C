@@ -29,7 +29,7 @@ Mat::PAR::AAAneohooke::AAAneohooke(const Core::Mat::PAR::Parameter::Data& matdat
 {
   Core::LinAlg::Map dummy_map(1, 1, 0,
 
-      Global::Problem::instance()->get_communicators()->local_comm());
+      Global::Problem::instance()->get_communicators().local_comm());
   for (int i = first; i <= last; i++)
   {
     matparams_.push_back(std::make_shared<Core::LinAlg::Vector<double>>(dummy_map, true));

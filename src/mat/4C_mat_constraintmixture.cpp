@@ -71,7 +71,7 @@ Mat::PAR::ConstraintMixture::ConstraintMixture(const Core::Mat::PAR::Parameter::
       degtol_(1.0e-6)
 {
   Core::LinAlg::Map dummy_map(
-      1, 1, 0, Global::Problem::instance()->get_communicators()->local_comm());
+      1, 1, 0, Global::Problem::instance()->get_communicators().local_comm());
   for (int i = first; i <= last; i++)
   {
     matparams_.push_back(std::make_shared<Core::LinAlg::Vector<double>>(dummy_map, true));

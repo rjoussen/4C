@@ -240,7 +240,7 @@ std::unique_ptr<Core::IO::MeshReader> Global::read_discretization(
              });
   auto& meshreader = *meshreader_out;
 
-  MPI_Comm comm = problem.get_communicators()->local_comm();
+  MPI_Comm comm = problem.get_communicators().local_comm();
 
   enum class DiscretizationType
   {
@@ -907,8 +907,8 @@ void Global::read_micro_fields(Global::Problem& problem, const std::filesystem::
     macro_dis_name = "scatra";
 
   // fetch communicators
-  MPI_Comm lcomm = problem.get_communicators()->local_comm();
-  MPI_Comm gcomm = problem.get_communicators()->global_comm();
+  MPI_Comm lcomm = problem.get_communicators().local_comm();
+  MPI_Comm gcomm = problem.get_communicators().global_comm();
 
   Global::Problem* macro_problem = Global::Problem::instance();
   std::shared_ptr<Core::FE::Discretization> macro_dis = macro_problem->get_dis(macro_dis_name);
@@ -1007,7 +1007,7 @@ void Global::read_micro_fields(Global::Problem& problem, const std::filesystem::
   {
     // create the sub communicator that includes one macro proc and some supporting procs
     MPI_Comm subgroupcomm = mpi_local_comm;
-    problem.get_communicators()->set_sub_comm(subgroupcomm);
+    problem.get_communicators().set_sub_comm(subgroupcomm);
 
     // find out how many micro problems have to be solved on this macro proc
     int microcount = 0;
@@ -1103,7 +1103,7 @@ void Global::read_micro_fields(Global::Problem& problem, const std::filesystem::
         // replace standard dofset inside micro discretization by independent dofset
         // to avoid inconsistent dof numbering in non-nested parallel settings with more than one
         // micro discretization
-        if (problem.get_communicators()->np_type() ==
+        if (problem.get_communicators().np_type() ==
             Core::Communication::NestedParallelismType::no_nested_parallelism)
           dis_micro->replace_dof_set(std::make_shared<Core::DOFSets::IndependentDofSet>());
 
@@ -1174,8 +1174,8 @@ void Global::read_micro_fields(Global::Problem& problem, const std::filesystem::
 /*----------------------------------------------------------------------*/
 void Global::read_microfields_np_support(Global::Problem& problem)
 {
-  MPI_Comm lcomm = problem.get_communicators()->local_comm();
-  MPI_Comm gcomm = problem.get_communicators()->global_comm();
+  MPI_Comm lcomm = problem.get_communicators().local_comm();
+  MPI_Comm gcomm = problem.get_communicators().global_comm();
 
   // receive number of procs that have micro material
   int nummicromat = 0;
@@ -1210,7 +1210,7 @@ void Global::read_microfields_np_support(Global::Problem& problem)
 
   // create the sub communicator that includes one macro proc and some supporting procs
   MPI_Comm subgroupcomm = mpi_local_comm;
-  problem.get_communicators()->set_sub_comm(subgroupcomm);
+  problem.get_communicators().set_sub_comm(subgroupcomm);
 
   // number of micro problems for this sub group
   int microcount = 0;
@@ -1347,7 +1347,7 @@ void Global::read_parameter(Global::Problem& problem, Core::IO::InputFile& input
     if (rs < 0)
       rs = static_cast<int>(time(nullptr)) +
            42 * Core::Communication::my_mpi_rank(
-                    Global::Problem::instance(0)->get_communicators()->global_comm());
+                    Global::Problem::instance(0)->get_communicators().global_comm());
 
     srand((unsigned int)rs);  // Set random seed for stdlibrary. This is deprecated, as it does not
     // produce random numbers on some platforms!
