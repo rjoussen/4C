@@ -53,7 +53,8 @@ RUN apt-get update && apt-get install -y \
       liblapack-dev \
       libopenmpi-dev \
       libparmetis-dev \
-      metis \
+      libmetis-dev \
+      libsuitesparse-dev \
       ninja-build \
       libyaml-dev \
       clang \
@@ -73,9 +74,6 @@ RUN mkdir -p ${INSTALL_DIR}
 COPY dependencies /dependencies
 # Install cmake
 RUN /dependencies/current/cmake/install.sh /usr/local
-
-# Install SuiteSparse 5.4.0
-RUN /dependencies/current/suitesparse/install.sh ${INSTALL_DIR}
 
 # Install superLU_dist 7.2.0
 RUN /dependencies/current/superlu_dist/install.sh ${INSTALL_DIR}
