@@ -4100,7 +4100,7 @@ void Mortar::Interface::detect_tied_slave_nodes(int& founduntied)
       mrtrnode->set_tied_slave() = false;
 
       // set vector entry (tiedtoggle)
-      (rowtied)[i] = 1.0;
+      (rowtied).get_values()[i] = 1.0;
     }
 
     // found tied node
@@ -4386,7 +4386,7 @@ void Mortar::Interface::postprocess_quantities(const Teuchos::ParameterList& out
     std::shared_ptr<Core::LinAlg::Vector<double>> owner = Core::LinAlg::create_vector(*eleRowMap);
 
     for (int i = 0; i < idiscret_->element_row_map()->num_my_elements(); ++i)
-      (*owner)[i] = idiscret_->l_row_element(i)->owner();
+      (*owner).get_values()[i] = idiscret_->l_row_element(i)->owner();
 
     writer->write_vector("Owner", owner, Core::IO::VectorType::elementvector);
   }

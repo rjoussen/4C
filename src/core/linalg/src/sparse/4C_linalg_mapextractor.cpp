@@ -254,7 +254,7 @@ void Core::LinAlg::MultiMapExtractor::put_scalar(
   {
     int lid = fm.lid(v[i]);
     if (lid == -1) FOUR_C_THROW("maps do not match");
-    full[lid] = scalar;
+    full.get_values()[lid] = scalar;
   }
 }
 
@@ -302,7 +302,7 @@ void Core::LinAlg::MultiMapExtractor::scale(
   {
     int lid = fm.lid(v[i]);
     if (lid == -1) FOUR_C_THROW("maps do not match");
-    full[lid] *= scalar;
+    full.get_values()[lid] *= scalar;
   }
 }
 

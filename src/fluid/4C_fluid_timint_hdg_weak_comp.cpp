@@ -301,7 +301,8 @@ void FLD::TimIntHDGWeakComp::clear_state_assemble_mat_and_rhs()
     // data back before it disappears when clearing the state (at least for nproc>1)
     const Core::LinAlg::Vector<double>& intvelnpGhosted = *discret_->get_state(1, "intvelnp");
     for (int i = 0; i < intvelnp_->local_length(); ++i)
-      (*intvelnp_)[i] = intvelnpGhosted[intvelnpGhosted.get_map().lid(intvelnp_->get_map().gid(i))];
+      (*intvelnp_).get_values()[i] =
+          intvelnpGhosted[intvelnpGhosted.get_map().lid(intvelnp_->get_map().gid(i))];
   }
   first_assembly_ = false;
   FluidImplicitTimeInt::clear_state_assemble_mat_and_rhs();
@@ -453,9 +454,9 @@ void FLD::TimIntHDGWeakComp::set_initial_flow_field(
       if (lid >= 0)
       {
         if ((*velnp_)[lid] != 0) error += std::abs((*velnp_)[lid] - elevec1(i));
-        (*velnp_)[lid] = elevec1(i);
-        (*veln_)[lid] = elevec1(i);
-        (*velnm_)[lid] = elevec1(i);
+        (*velnp_).get_values()[lid] = elevec1(i);
+        (*veln_).get_values()[lid] = elevec1(i);
+        (*velnm_).get_values()[lid] = elevec1(i);
       }
     }
 
@@ -692,17 +693,17 @@ namespace
         if (localIndex < 0) continue;
         touchCount[localIndex]++;
         for (int m = 0; m < msd; ++m)
-          (*mixedvar)(m)[localIndex] += interpolVec(i + m * ele->num_node());
-        (*density)[localIndex] += interpolVec(i + msd * ele->num_node());
-        (*traceden)[localIndex] += interpolVec(i + (msd + 1 + ndim) * ele->num_node());
+          (*mixedvar)(m).get_values()[localIndex] += interpolVec(i + m * ele->num_node());
+        (*density).get_values()[localIndex] += interpolVec(i + msd * ele->num_node());
+        (*traceden).get_values()[localIndex] += interpolVec(i + (msd + 1 + ndim) * ele->num_node());
       }
     }
 
     for (int i = 0; i < density->local_length(); ++i)
     {
-      for (int m = 0; m < msd; ++m) (*mixedvar)(m)[i] /= touchCount[i];
-      (*density)[i] /= touchCount[i];
-      (*traceden)[i] /= touchCount[i];
+      for (int m = 0; m < msd; ++m) (*mixedvar)(m).get_values()[i] /= touchCount[i];
+      (*density).get_values()[i] /= touchCount[i];
+      (*traceden).get_values()[i] /= touchCount[i];
     }
     dis.clear_state();
   }
@@ -747,7 +748,7 @@ void FLD::TimIntHDGWeakComp::output()
         std::make_shared<Core::LinAlg::Vector<double>>(interpolatedDensity_->get_map());
     for (int i = 0; i < interpolatedDensity_->local_length(); ++i)
     {
-      (*interpolatedPressure)[i] =
+      (*interpolatedPressure).get_values()[i] =
           actmat->refpressure_ +
           1.0 / actmat->comprcoeff_ * ((*interpolatedDensity_)[i] - actmat->refdensity_);
     }
@@ -765,7 +766,8 @@ void FLD::TimIntHDGWeakComp::output()
     {
       Core::LinAlg::MultiVector<double> AleDisplacement(*discret_->node_row_map(), nsd);
       for (int i = 0; i < interpolatedDensity_->local_length(); ++i)
-        for (unsigned int d = 0; d < nsd; ++d) AleDisplacement(d)[i] = (*dispnp_)[(i * nsd) + d];
+        for (unsigned int d = 0; d < nsd; ++d)
+          AleDisplacement(d).get_values()[i] = (*dispnp_)[(i * nsd) + d];
 
       output_->write_multi_vector("Ale_displacement", AleDisplacement, Core::IO::nodevector);
     }

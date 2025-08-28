@@ -4275,9 +4275,10 @@ void CONTACT::Interface::assemble_normal_contact_regularization(Core::LinAlg::Sp
     double dval = cnode->mo_data().get_d().at(cnode->id());
 
     if (constr_direction == CONTACT::ConstraintDirection::xyz)
-      for (int d = 0; d < dim; ++d) f[f.get_map().lid(cnode->dofs()[d])] += n(d) * dval * gLM;
+      for (int d = 0; d < dim; ++d)
+        f.get_values()[f.get_map().lid(cnode->dofs()[d])] += n(d) * dval * gLM;
     else
-      f[f.get_map().lid(cnode->dofs()[0])] += dval * gLM;
+      f.get_values()[f.get_map().lid(cnode->dofs()[0])] += dval * gLM;
 
     for (int l = 0; l < dim; ++l)
     {

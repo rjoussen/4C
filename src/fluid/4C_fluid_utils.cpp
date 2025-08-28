@@ -247,7 +247,7 @@ std::shared_ptr<Core::LinAlg::Vector<double>> FLD::Utils::StressManager::calc_st
       // overwrite integratedshapefunc values with the calculated traction coefficients,
       // which are reconstructed out of the nodal forces (trueresidual_) using the
       // same shape functions on the boundary as for velocity and pressure.
-      (*integratedshapefunc)[i] = (trueresidual)[i] / (*integratedshapefunc)[i];
+      (*integratedshapefunc).get_values()[i] = (trueresidual)[i] / (*integratedshapefunc)[i];
     }
   }
 
@@ -336,7 +336,7 @@ std::shared_ptr<Core::LinAlg::Vector<double>> FLD::Utils::StressManager::calc_wa
     {
       for (int j = 0; j < numdim_; j++)
       {
-        (*ndnorm0)[i + j] /= L;
+        (*ndnorm0).get_values()[i + j] /= L;
       }
     }
   }
@@ -362,7 +362,7 @@ std::shared_ptr<Core::LinAlg::Vector<double>> FLD::Utils::StressManager::calc_wa
     // subtract the normal stresses from traction
     for (int j = 0; j < numdim_; j++)
     {
-      (*wss)[i + j] -= normal_stress * (*ndnorm0)[i + j];
+      (*wss).get_values()[i + j] -= normal_stress * (*ndnorm0)[i + j];
     }
   }
 

@@ -1025,7 +1025,7 @@ void CONTACT::AbstractStrategy::update_global_self_contact_state()
               "Self contact: The Lagrange multiplier increment vector "
               "could not be transferred consistently.");
         else
-          (*tmp_ptr)[new_lid] = (*zincr_)[i];
+          (*tmp_ptr).get_values()[new_lid] = (*zincr_)[i];
       }
     }
     zincr_ = std::make_shared<Core::LinAlg::Vector<double>>(*tmp_ptr);
@@ -1044,7 +1044,7 @@ void CONTACT::AbstractStrategy::update_global_self_contact_state()
               "Self contact: The Lagrange multiplier vector "
               "could not be transferred consistently.");
         else
-          (*tmp_ptr)[new_lid] = (*z_)[i];
+          (*tmp_ptr).get_values()[new_lid] = (*z_)[i];
       }
     }
     z_ = tmp_ptr;
@@ -1730,14 +1730,14 @@ void CONTACT::AbstractStrategy::compute_contact_stresses()
       for (int dof = 0; dof < n_dim(); ++dof)
       {
         locindex[dof] = (stressnormal_->get_map()).lid(cnode->dofs()[dof]);
-        (*stressnormal_)[locindex[dof]] = -lmn * nn[dof];
+        (*stressnormal_).get_values()[locindex[dof]] = -lmn * nn[dof];
       }
 
       // tangential stress components
       for (int dof = 0; dof < n_dim(); ++dof)
       {
         locindex[dof] = (stresstangential_->get_map()).lid(cnode->dofs()[dof]);
-        (*stresstangential_)[locindex[dof]] = -lmt1 * nt1[dof] - lmt2 * nt2[dof];
+        (*stresstangential_).get_values()[locindex[dof]] = -lmt1 * nt1[dof] - lmt2 * nt2[dof];
       }
     }
   }
@@ -1918,12 +1918,12 @@ void CONTACT::AbstractStrategy::do_write_restart(
       if (forcedrestart)
       {
         // set value active / inactive in toggle vector
-        if (cnode->data().active_old()) (*activetoggle)[dof] = 1;
+        if (cnode->data().active_old()) (*activetoggle).get_values()[dof] = 1;
       }
       else
       {
         // set value active / inactive in toggle vector
-        if (cnode->active()) (*activetoggle)[dof] = 1;
+        if (cnode->active()) (*activetoggle).get_values()[dof] = 1;
       }
 
       // set value slip / stick in the toggle vector
@@ -1932,11 +1932,11 @@ void CONTACT::AbstractStrategy::do_write_restart(
         CONTACT::FriNode* frinode = dynamic_cast<CONTACT::FriNode*>(cnode);
         if (forcedrestart)
         {
-          if (frinode->fri_data().slip_old()) (*sliptoggle)[dof] = 1;
+          if (frinode->fri_data().slip_old()) (*sliptoggle).get_values()[dof] = 1;
         }
         else
         {
-          if (frinode->fri_data().slip()) (*sliptoggle)[dof] = 1;
+          if (frinode->fri_data().slip()) (*sliptoggle).get_values()[dof] = 1;
         }
       }
     }

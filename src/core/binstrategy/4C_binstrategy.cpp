@@ -794,9 +794,9 @@ void Core::Binstrategy::BinningStrategy::write_bin_output(int const step, double
     Core::Elements::Element* ele = visbindis_->l_row_element(i);
 
     if (ele->id() < maxgid)
-      (*ownedghostsvec)[i] = 0;  // owned
+      (*ownedghostsvec).get_values()[i] = 0;  // owned
     else
-      (*ownedghostsvec)[i] = 1;  // ghost
+      (*ownedghostsvec).get_values()[i] = 1;  // ghost
   }
 
   // write output
@@ -1210,7 +1210,7 @@ Core::Binstrategy::BinningStrategy::weighted_distribution_of_bins_to_procs(
             Core::Communication::my_mpi_rank(discret[i]->get_comm()), biniter->first);
 
       // weighting
-      (*vweights)[lid] += weight * static_cast<double>(biniter->second.size());
+      (*vweights).get_values()[lid] += weight * static_cast<double>(biniter->second.size());
     }
   }
 

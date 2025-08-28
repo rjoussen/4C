@@ -461,7 +461,7 @@ void Constraints::ConstrManager::print_monitor_values() const
 
   for (int i = 0; i < num_monitor_id_; ++i)
   {
-    if ((*monitortypes_)[i] == 1.0)
+    if ((*monitortypes_).get_values()[i] == 1.0)
     {
       printf("%2d (volume): %10.5e (%5.2f%% of initial value)\n", i + min_monitor_id_,
           abs((*monitorvalues_)[i]), ((*monitorvalues_)[i]) * 100 / ((*initialmonvalues_)[i]));
@@ -490,7 +490,7 @@ void Constraints::ConstrManager::build_moni_type()
   Core::LinAlg::export_to(dummymondist, dummymonredundant);
   for (int i = 0; i < dummymonredundant.local_length(); i++)
   {
-    if ((dummymonredundant)[i] != 0.0) (*monitortypes_)[i] = 1.0;
+    if ((dummymonredundant)[i] != 0.0) (*monitortypes_).get_values()[i] = 1.0;
   }
 
   // do the area in 3D
@@ -503,7 +503,7 @@ void Constraints::ConstrManager::build_moni_type()
   Core::LinAlg::export_to(dummymondist, dummymonredundant);
   for (int i = 0; i < dummymonredundant.local_length(); i++)
   {
-    if ((dummymonredundant)[i] != 0.0) (*monitortypes_)[i] = 2.0;
+    if ((dummymonredundant)[i] != 0.0) (*monitortypes_).get_values()[i] = 2.0;
   }
 
   // do the area in 2D
@@ -516,7 +516,7 @@ void Constraints::ConstrManager::build_moni_type()
   Core::LinAlg::export_to(dummymondist, dummymonredundant);
   for (int i = 0; i < dummymonredundant.local_length(); i++)
   {
-    if ((dummymonredundant)[i] != 0.0) (*monitortypes_)[i] = 3.0;
+    if ((dummymonredundant)[i] != 0.0) (*monitortypes_).get_values()[i] = 3.0;
   }
 }
 

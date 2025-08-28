@@ -228,7 +228,7 @@ void Core::FE::Discretization::evaluate_neumann(Teuchos::ParameterList& params,
         value *= functfac;
         const int lid = systemvector.get_map().lid(gid);
         if (lid < 0) FOUR_C_THROW("Global id {} not on this proc in system vector", gid);
-        systemvector[lid] += value;
+        systemvector.get_values()[lid] += value;
       }
     }
   }
@@ -647,7 +647,7 @@ void Core::FE::Discretization::evaluate_scalars(
 
     for (int j = 0; j < numscalars; ++j)
     {
-      sca(j)[i] = elescalars(j);
+      sca(j).get_values()[i] = elescalars(j);
     }
 
   }  // for (int i=0; i<numrowele; ++i)

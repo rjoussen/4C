@@ -425,23 +425,26 @@ void Beam3ContactOctTree::initialize_octree_search()
         Core::Elements::Element* element = searchdis_.l_col_element(i);
         const Core::Elements::ElementType& eot = element->element_type();
 
-        (*diameter_)[i] = -1.0;  // TODO get diameter from call of abstract Beam3Base::Radius();
+        (*diameter_).get_values()[i] =
+            -1.0;  // TODO get diameter from call of abstract Beam3Base::Radius();
 
         if (eot == Discret::Elements::Beam3rType::instance() or
             eot == Discret::Elements::Beam3ebType::instance())
         {
-          (*diameter_)[i] = 2.0 * (dynamic_cast<Discret::Elements::Beam3Base*>(element))
-                                      ->get_circular_cross_section_radius_for_interactions();
+          (*diameter_).get_values()[i] =
+              2.0 * (dynamic_cast<Discret::Elements::Beam3Base*>(element))
+                        ->get_circular_cross_section_radius_for_interactions();
         }
         else if (eot == Discret::Elements::RigidsphereType::instance())
-          (*diameter_)[i] =
+          (*diameter_).get_values()[i] =
               2.0 * (dynamic_cast<Discret::Elements::Rigidsphere*>(element))->radius();
         // If we have a solid element, we don't need its diameter and can it set to zero:
         else if (!BeamInteraction::Utils::is_beam_element(*element) and
                  !BeamInteraction::Utils::is_rigid_sphere_element(*element))
-          (*diameter_)[i] = 0.0;
+          (*diameter_).get_values()[i] = 0.0;
         // feasibility check
-        if ((*diameter_)[i] < 0.0) FOUR_C_THROW("ERROR: Did not receive feasible element radius.");
+        if ((*diameter_).get_values()[i] < 0.0)
+          FOUR_C_THROW("ERROR: Did not receive feasible element radius.");
       }
     }
   }
@@ -644,13 +647,13 @@ void Beam3ContactOctTree::create_aabb(Core::LinAlg::SerialDenseMatrix& coord, co
   // Calculate limits of AABB
   // first bounding box
   // mins
-  (*allbboxes_)(0)[elecolid] = midpoint(0) - 0.5 * maxedgelength;  // x
-  (*allbboxes_)(2)[elecolid] = midpoint(1) - 0.5 * maxedgelength;  // y
-  (*allbboxes_)(4)[elecolid] = midpoint(2) - 0.5 * maxedgelength;  // z
+  (*allbboxes_)(0).get_values()[elecolid] = midpoint(0) - 0.5 * maxedgelength;  // x
+  (*allbboxes_)(2).get_values()[elecolid] = midpoint(1) - 0.5 * maxedgelength;  // y
+  (*allbboxes_)(4).get_values()[elecolid] = midpoint(2) - 0.5 * maxedgelength;  // z
   // maxes
-  (*allbboxes_)(1)[elecolid] = midpoint(0) + 0.5 * maxedgelength;  // x
-  (*allbboxes_)(3)[elecolid] = midpoint(1) + 0.5 * maxedgelength;  // y
-  (*allbboxes_)(5)[elecolid] = midpoint(2) + 0.5 * maxedgelength;  // z
+  (*allbboxes_)(1).get_values()[elecolid] = midpoint(0) + 0.5 * maxedgelength;  // x
+  (*allbboxes_)(3).get_values()[elecolid] = midpoint(1) + 0.5 * maxedgelength;  // y
+  (*allbboxes_)(5).get_values()[elecolid] = midpoint(2) + 0.5 * maxedgelength;  // z
 
   // periodic shifts of bounding box
   if (numshifts > 0)
@@ -673,20 +676,21 @@ void Beam3ContactOctTree::create_aabb(Core::LinAlg::SerialDenseMatrix& coord, co
         }
         for (int i = 0; i < 6; i++)
         {
-          (*allbboxes_)(6 * shift + i)[elecolid] = (*allbboxes_)(i)[elecolid];
-          if (i % 3 == dof) (*allbboxes_)(6 * shift + i)[elecolid] += periodicshift;
+          (*allbboxes_)(6 * shift + i).get_values()[elecolid] =
+              (*allbboxes_)(i).get_values()[elecolid];
+          if (i % 3 == dof) (*allbboxes_)(6 * shift + i).get_values()[elecolid] += periodicshift;
         }
       }
     }
-    (*numshifts_)[elecolid] = shift;  // store number of shifts
+    (*numshifts_).get_values()[elecolid] = shift;  // store number of shifts
   }
 
   if (periodic_bc_ && numshifts < 3)
     for (int i = allbboxes_->NumVectors() - 1; i > (numshifts + 1) * 6 - 1; i--)
-      (*allbboxes_)(i)[elecolid] = -1e9;
+      (*allbboxes_)(i).get_values()[elecolid] = -1e9;
 
   // store GID (=box number)
-  (*allbboxes_)(allbboxes_->NumVectors() - 1)[elecolid] = elegid;
+  (*allbboxes_)(allbboxes_->NumVectors() - 1).get_values()[elecolid] = elegid;
 
   return;
 }
@@ -734,8 +738,8 @@ void Beam3ContactOctTree::create_cobb(Core::LinAlg::SerialDenseMatrix& coord, co
   // First bounding box is the untreated set of coordinates!
   for (int dof = 0; dof < coord.numRows(); dof++)
   {
-    (*allbboxes_)(dof)[elecolid] = midpoint(dof) - 0.5 * dir(dof);
-    (*allbboxes_)(dof + 3)[elecolid] = midpoint(dof) + 0.5 * dir(dof);
+    (*allbboxes_)(dof).get_values()[elecolid] = midpoint(dof) - 0.5 * dir(dof);
+    (*allbboxes_)(dof + 3).get_values()[elecolid] = midpoint(dof) + 0.5 * dir(dof);
   }
 
   int shift = 0;
@@ -758,27 +762,28 @@ void Beam3ContactOctTree::create_cobb(Core::LinAlg::SerialDenseMatrix& coord, co
             break;
         }
         // (node) position 1
-        (*allbboxes_)(6 * shift + dof)[elecolid] = (*allbboxes_)(dof)[elecolid] + periodicshift;
+        (*allbboxes_)(6 * shift + dof).get_values()[elecolid] =
+            (*allbboxes_)(dof)[elecolid] + periodicshift;
         // (node) position 2
-        (*allbboxes_)(6 * shift + dof + 3)[elecolid] =
+        (*allbboxes_)(6 * shift + dof + 3).get_values()[elecolid] =
             (*allbboxes_)(dof + 3)[elecolid] + periodicshift;
 
         // unshifted DOFs
         // (node) position 1
-        (*allbboxes_)(6 * shift + ((dof + 1) % 3))[elecolid] =
+        (*allbboxes_)(6 * shift + ((dof + 1) % 3)).get_values()[elecolid] =
             (*allbboxes_)((dof + 1) % 3)[elecolid];
-        (*allbboxes_)(6 * shift + ((dof + 2) % 3))[elecolid] =
+        (*allbboxes_)(6 * shift + ((dof + 2) % 3)).get_values()[elecolid] =
             (*allbboxes_)((dof + 2) % 3)[elecolid];
         // (node) position 2
-        (*allbboxes_)(6 * shift + ((dof + 1) % 3) + 3)[elecolid] =
+        (*allbboxes_)(6 * shift + ((dof + 1) % 3) + 3).get_values()[elecolid] =
             (*allbboxes_)((dof + 1) % 3 + 3)[elecolid];
-        (*allbboxes_)(6 * shift + ((dof + 2) % 3) + 3)[elecolid] =
+        (*allbboxes_)(6 * shift + ((dof + 2) % 3) + 3).get_values()[elecolid] =
             (*allbboxes_)((dof + 2) % 3 + 3)[elecolid];
       }
     }
     // fill all latter entries  except for the last one (->ID) with bogus values (in case of
     // periodic BCs)
-    (*numshifts_)[elecolid] = numshifts;
+    (*numshifts_).get_values()[elecolid] = numshifts;
 
     //    std::cout<<"Shifted BBOX "<<elecolid<<": ";
     //    for(int i=0; i<allbboxes_->NumVectors(); i++)
@@ -787,10 +792,10 @@ void Beam3ContactOctTree::create_cobb(Core::LinAlg::SerialDenseMatrix& coord, co
   }
   if (periodic_bc_ && numshifts < 3)
     for (int i = allbboxes_->NumVectors() - 1; i > (numshifts + 1) * 6 - 1; i--)
-      (*allbboxes_)(i)[elecolid] = -1e9;
+      (*allbboxes_)(i).get_values()[elecolid] = -1e9;
 
   // last entry: element GID
-  (*allbboxes_)(allbboxes_->NumVectors() - 1)[elecolid] = elegid;
+  (*allbboxes_)(allbboxes_->NumVectors() - 1).get_values()[elecolid] = elegid;
 
   return;
 }
@@ -850,13 +855,13 @@ void Beam3ContactOctTree::create_spbb(Core::LinAlg::SerialDenseMatrix& coord, co
 
   // we want an additive extrusion of the radius, hence "2.0"
   if (additiveextrusion_)
-    (*diameter_)[elecolid] = diameter + 2.0 * extrusionvalue;
+    (*diameter_).get_values()[elecolid] = diameter + 2.0 * extrusionvalue;
   else
-    (*diameter_)[elecolid] = diameter * extrusionvalue;
+    (*diameter_).get_values()[elecolid] = diameter * extrusionvalue;
 
   // first bounding box
   for (int dof = 0; dof < coord.numRows(); dof++)
-    (*allbboxes_)(dof)[elecolid] = 0.5 * (coord(dof, 0) + coord(dof, 1));
+    (*allbboxes_)(dof).get_values()[elecolid] = 0.5 * (coord(dof, 0) + coord(dof, 1));
 
   bool periodicbbox = false;
   int shift = 0;
@@ -873,11 +878,11 @@ void Beam3ContactOctTree::create_spbb(Core::LinAlg::SerialDenseMatrix& coord, co
           // shift downwards
           if (coord(dof, pos) >= (*periodlength_)[dof] - 0.5 * (*diameter_)[elecolid])
           {
-            (*allbboxes_)(3 * shift + dof)[elecolid] =
+            (*allbboxes_)(3 * shift + dof).get_values()[elecolid] =
                 (*allbboxes_)(dof)[elecolid] - (*periodlength_)[dof];
-            (*allbboxes_)(3 * shift + (dof + 1) % 3)[elecolid] =
+            (*allbboxes_)(3 * shift + (dof + 1) % 3).get_values()[elecolid] =
                 (*allbboxes_)((dof + 1) % 3)[elecolid];
-            (*allbboxes_)(3 * shift + (dof + 2) % 3)[elecolid] =
+            (*allbboxes_)(3 * shift + (dof + 2) % 3).get_values()[elecolid] =
                 (*allbboxes_)((dof + 2) % 3)[elecolid];
             // no need to check the second position if pos==0
             periodicbbox = true;
@@ -886,11 +891,11 @@ void Beam3ContactOctTree::create_spbb(Core::LinAlg::SerialDenseMatrix& coord, co
           // shift upwards
           else if (coord(dof, pos) <= 0.5 * (*diameter_)[elecolid])
           {
-            (*allbboxes_)(3 * shift + dof)[elecolid] =
+            (*allbboxes_)(3 * shift + dof).get_values()[elecolid] =
                 (*allbboxes_)(dof)[elecolid] + (*periodlength_)[dof];
-            (*allbboxes_)(3 * shift + (dof + 1) % 3)[elecolid] =
+            (*allbboxes_)(3 * shift + (dof + 1) % 3).get_values()[elecolid] =
                 (*allbboxes_)((dof + 1) % 3)[elecolid];
-            (*allbboxes_)(3 * shift + (dof + 2) % 3)[elecolid] =
+            (*allbboxes_)(3 * shift + (dof + 2) % 3).get_values()[elecolid] =
                 (*allbboxes_)((dof + 2) % 3)[elecolid];
             // no need to check the second position if pos==0
             periodicbbox = true;
@@ -900,15 +905,15 @@ void Beam3ContactOctTree::create_spbb(Core::LinAlg::SerialDenseMatrix& coord, co
       }
       if (periodicbbox) break;
     }
-    (*numshifts_)[elecolid] = shift;  // store number of shifts
+    (*numshifts_).get_values()[elecolid] = shift;  // store number of shifts
   }
 
   if (periodic_bc_ && shift < 3)
     for (int i = allbboxes_->NumVectors() - 1; i > (shift + 1) * 3 - 1; i--)
-      (*allbboxes_)(i)[elecolid] = -1e9;
+      (*allbboxes_)(i).get_values()[elecolid] = -1e9;
 
   // last entry: element GID
-  (*allbboxes_)(allbboxes_->NumVectors() - 1)[elecolid] = elegid;
+  (*allbboxes_)(allbboxes_->NumVectors() - 1).get_values()[elecolid] = elegid;
   return;
 }
 /*-----------------------------------------------------------------------------------------*

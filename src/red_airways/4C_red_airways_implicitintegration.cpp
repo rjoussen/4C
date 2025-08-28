@@ -268,15 +268,15 @@ Airway::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(
   {
     if ((*radii_in)[i] == 0.0)
     {
-      (*radii_)[i] = (*radii_out)[i];
+      (*radii_).get_values()[i] = (*radii_out)[i];
     }
     else if ((*radii_out)[i] == 0.0)
     {
-      (*radii_)[i] = (*radii_in)[i];
+      (*radii_).get_values()[i] = (*radii_in)[i];
     }
     else
     {
-      (*radii_)[i] = 0.5 * ((*radii_in)[i] + (*radii_out)[i]);
+      (*radii_).get_values()[i] = 0.5 * ((*radii_in)[i] + (*radii_out)[i]);
     }
   }
 
@@ -338,12 +338,12 @@ Airway::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(
           const double val = airway_params.open_init;
 
           // adjust airway states
-          (*x_np_)[j] = val;
-          (*x_n_)[j] = val;
+          (*x_np_).get_values()[j] = val;
+          (*x_n_).get_values()[j] = val;
           //(*open_)[j] = val;
         }
         const double val = airway_params.open_init;
-        (*open_)[j] = val;
+        (*open_).get_values()[j] = val;
       }
     }
   }
@@ -458,10 +458,10 @@ void Airway::RedAirwayImplicitTimeInt::compute_vol0_for_pre_stress()
           // adjust acini volumes in the vectors used in this function
           if (not Global::Problem::instance()->restart())
           {
-            (*acini_e_volumenp_)[i] = val;
-            (*acini_e_volumen_)[i] = val;
-            (*acini_e_volumenm_)[i] = val;
-            (*acini_e_volume0_)[i] = val;
+            (*acini_e_volumenp_).get_values()[i] = val;
+            (*acini_e_volumen_).get_values()[i] = val;
+            (*acini_e_volumenm_).get_values()[i] = val;
+            (*acini_e_volume0_).get_values()[i] = val;
           }
         }
       }
@@ -559,7 +559,8 @@ void Airway::RedAirwayImplicitTimeInt::compute_nearest_acinus(
           nodecolset->insert(nodeids[inode]);
       }
 
-      if (airway_acinus_dep != nullptr) (*airway_acinus_dep)[j] = (ele_acinus->nodes()[1])->lid();
+      if (airway_acinus_dep != nullptr)
+        (*airway_acinus_dep).get_values()[j] = (ele_acinus->nodes()[1])->lid();
     }
   }
 }

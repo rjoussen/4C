@@ -283,7 +283,7 @@ void XFEM::MeshProjector::project(std::map<int, std::set<int>>& projection_nodeT
 
         for (unsigned isd = 0; isd < numdofperset; ++isd)
         {
-          (*target_statevecs[iv])[target_statevecs[iv]->get_map().lid(dofs[isd])] =
+          (*target_statevecs[iv]).get_values()[target_statevecs[iv]->get_map().lid(dofs[isd])] =
               interpolated_vecs[ni](isd + offset);
         }
         dofs.clear();

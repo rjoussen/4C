@@ -75,7 +75,7 @@ void CONTACT::MtLagrangeStrategy::mortar_coupling(
 
   // set zero diagonal values to dummy 1.0
   for (int i = 0; i < diag->local_length(); ++i)
-    if ((*diag)[i] == 0.0) (*diag)[i] = 1.0;
+    if ((*diag)[i] == 0.0) (*diag).get_values()[i] = 1.0;
 
   // scalar inversion of diagonal values
   err = diag->reciprocal(*diag);
@@ -321,7 +321,7 @@ CONTACT::MtLagrangeStrategy::mesh_initialization()
 
   // set zero diagonal values to dummy 1.0
   for (int i = 0; i < diag->local_length(); ++i)
-    if ((*diag)[i] == 0.0) (*diag)[i] = 1.0;
+    if ((*diag)[i] == 0.0) (*diag).get_values()[i] = 1.0;
 
   // scalar inversion of diagonal values
   err = diag->reciprocal(*diag);

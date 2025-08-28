@@ -1072,7 +1072,7 @@ void Adapter::CouplingNonLinMortar::create_p()
     {
       std::cout << "WARNING: Diagonal entry of D matrix is skipped because it is less than 1e-12!!!"
                 << std::endl;
-      (*diag)[i] = 1.0;
+      (*diag).get_values()[i] = 1.0;
     }
   }
 

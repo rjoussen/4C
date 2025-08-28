@@ -167,7 +167,7 @@ void Solid::ModelEvaluator::GaussPointDataOutputManager::post_evaluate()
         {
           if (nodal_count[i] != 0)
           {
-            data_item[i] /= nodal_count[i];
+            data_item.get_values()[i] /= nodal_count[i];
           }
         }
       }

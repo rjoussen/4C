@@ -1411,8 +1411,8 @@ void PoroPressureBased::PorofluidAlgorithm::reconstruct_pressures_and_saturation
     // evaluations
     for (int i = 0; i < discret_->dof_row_map()->num_my_elements(); i++)
     {
-      (*pressure_)[i] *= 1.0 / (*counter)[i];
-      (*saturation_)[i] *= 1.0 / (*counter)[i];
+      (*pressure_).get_values()[i] *= 1.0 / (*counter)[i];
+      (*saturation_).get_values()[i] *= 1.0 / (*counter)[i];
     }
   }
 
@@ -1455,7 +1455,7 @@ void PoroPressureBased::PorofluidAlgorithm::reconstruct_solid_pressures()
   // evaluations
   for (int i = 0; i < discret_->dof_row_map(nds_solidpressure_)->num_my_elements(); i++)
   {
-    (*solidpressure_)[i] *= 1.0 / (*counter)[i];
+    (*solidpressure_).get_values()[i] *= 1.0 / (*counter)[i];
   }
 }
 
@@ -1536,7 +1536,7 @@ void PoroPressureBased::PorofluidAlgorithm::reconstruct_porosity()
   // evaluations
   for (int i = 0; i < discret_->dof_row_map(nds_solidpressure_)->num_my_elements(); i++)
   {
-    (*porosity_)[i] *= 1.0 / (*counter)[i];
+    (*porosity_).get_values()[i] *= 1.0 / (*counter)[i];
   }
 }
 

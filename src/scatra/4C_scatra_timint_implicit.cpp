@@ -1770,7 +1770,7 @@ void ScaTra::ScaTraTimIntImpl::collect_runtime_output_data()
     {
       Core::Nodes::Node* node = discret_->l_row_node(inode);
       for (int idim = 0; idim < nsd_; ++idim)
-        (convel_multi)(idim)[inode] =
+        (convel_multi)(idim).get_values()[inode] =
             (*convel)[convel->get_map().lid(discret_->dof(nds_vel(), node, idim))];
     }
 
@@ -1792,8 +1792,9 @@ void ScaTra::ScaTraTimIntImpl::collect_runtime_output_data()
       {
         const Core::Nodes::Node* node = discret_->l_row_node(inode);
         for (int idim = 0; idim < nsd_; ++idim)
-          (multi_vector)(idim)[inode] =
-              (*state_vector)[state_vector->get_map().lid(discret_->dof(nds_vel(), node, idim))];
+          (multi_vector)(idim).get_values()[inode] =
+              (*state_vector)
+                  .get_values()[state_vector->get_map().lid(discret_->dof(nds_vel(), node, idim))];
       }
       const std::vector<std::optional<std::string>> context(nsd_, field_name);
       visualization_writer_->append_result_data_vector_with_context(
@@ -1818,8 +1819,8 @@ void ScaTra::ScaTraTimIntImpl::collect_runtime_output_data()
     {
       Core::Nodes::Node* node = discret_->l_row_node(inode);
       for (int idim = 0; idim < nsd_; ++idim)
-        (dispnp_multi)(idim)[inode] =
-            (*dispnp)[dispnp->get_map().lid(discret_->dof(nds_disp(), node, idim))];
+        (dispnp_multi)(idim).get_values()[inode] =
+            (*dispnp).get_values()[dispnp->get_map().lid(discret_->dof(nds_disp(), node, idim))];
     }
 
     std::vector<std::optional<std::string>> context(nsd_, "ale-displacement");
@@ -1835,7 +1836,7 @@ void ScaTra::ScaTraTimIntImpl::collect_runtime_output_data()
     auto micro_conc_multi = Core::LinAlg::MultiVector<double>(*discret_->node_row_map(), 1, true);
 
     for (int inode = 0; inode < discret_->num_my_row_nodes(); ++inode)
-      (micro_conc_multi)(0)[inode] = (*phinp_micro_)[inode];
+      (micro_conc_multi)(0).get_values()[inode] = (*phinp_micro_)[inode];
 
     visualization_writer_->append_result_data_vector_with_context(
         micro_conc_multi, Core::IO::OutputEntity::node, {"micro_conc"});
@@ -3184,7 +3185,7 @@ ScaTra::ScaTraTimIntImpl::convert_dof_vector_to_componentwise_node_vector(
   {
     Core::Nodes::Node* node = discret_->l_row_node(inode);
     for (int idim = 0; idim < nsd_; ++idim)
-      (*componentwise_node_vector)(idim)[inode] =
+      (*componentwise_node_vector)(idim).get_values()[inode] =
           (dof_vector)[dof_vector.get_map().lid(discret_->dof(nds, node, idim))];
   }
   return componentwise_node_vector;
@@ -3434,7 +3435,7 @@ void ScaTra::ScaTraTimIntImpl::evaluate_macro_micro_coupling()
               dq_dphi_[0] = -(*permeabilities)[0];
 
               // assemble contribution from macro-micro coupling into global residual vector
-              (*residual_)[lid] -=
+              (*residual_).get_values()[lid] -=
                   Discret::Elements::ScaTraEleParameterTimInt::instance(discret_->name())
                       ->time_fac_rhs() *
                   q_ * fac;
@@ -3561,7 +3562,7 @@ void ScaTra::ScaTraTimIntImpl::evaluate_macro_micro_coupling()
               dq_dphi_[2] = dj_dpot_ed;
 
               // assemble contribution from macro-micro coupling into global residual vector
-              (*residual_)[lid] -= timefacrhsfac * q_;
+              (*residual_).get_values()[lid] -= timefacrhsfac * q_;
 
               // assemble contribution from macro-micro coupling into micro global system matrix
               sysmat_->assemble(timefacfac * dj_dc_ed, gid, gid);

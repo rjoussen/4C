@@ -220,7 +220,7 @@ void BeamInteraction::SubmodelEvaluator::Crosslinking::post_setup()
       for (unsigned int dim = 0; dim < 3; ++dim)
       {
         int doflid = dis_at_last_redistr_->get_map().lid(dofnode[dim]);
-        (*dis_at_last_redistr_)[doflid] = crosslinker_i->x()[dim];
+        (*dis_at_last_redistr_).get_values()[doflid] = crosslinker_i->x()[dim];
       }
     }
     // build up column linker information
@@ -1031,12 +1031,12 @@ bool BeamInteraction::SubmodelEvaluator::Crosslinking::pre_update_step_element(b
     {
       doflid[dim] = dis_at_last_redistr_->get_map().lid(dofnode[dim]);
       d(dim) = (*dis_at_last_redistr_)[doflid[dim]];
-      (*linker_disnp_)[doflid[dim]] = ref(dim) = node->x()[dim];
+      (*linker_disnp_).get_values()[doflid[dim]] = ref(dim) = node->x()[dim];
     }
     // unshift
     periodic_bounding_box().un_shift_3d(d, ref);
 
-    for (int dim = 0; dim < 3; ++dim) (dis_increment)[doflid[dim]] = d(dim) - ref(dim);
+    for (int dim = 0; dim < 3; ++dim) (dis_increment).get_values()[doflid[dim]] = d(dim) - ref(dim);
   }
 
   // get maximal displacement increment since last redistribution over all procs
@@ -1313,23 +1313,23 @@ void BeamInteraction::SubmodelEvaluator::Crosslinking::fill_state_data_vectors_f
     for (unsigned int dim = 0; dim < num_spatial_dim; ++dim)
     {
       int doflid = displacement.get_map().lid(dofnode[dim]);
-      (displacement)[doflid] = crosslinker_i->x()[dim];
+      (displacement).get_values()[doflid] = crosslinker_i->x()[dim];
 
       if (numbonds == 2)
       {
-        (orientation)[doflid] =
+        (orientation).get_values()[doflid] =
             beamlink->get_bind_spot_pos1()(dim) - beamlink->get_bind_spot_pos2()(dim);
-        (force)[doflid] = bspotforce(dim);
+        (force).get_values()[doflid] = bspotforce(dim);
       }
       else
       {
-        (orientation)[doflid] = 0.0;
-        (force)[doflid] = 0.0;
+        (orientation).get_values()[doflid] = 0.0;
+        (force).get_values()[doflid] = 0.0;
       }
     }
 
-    (numberofbonds)[i] = numbonds;
-    (owner)[i] = crosslinker_i->owner();
+    (numberofbonds).get_values()[i] = numbonds;
+    (owner).get_values()[i] = crosslinker_i->owner();
   }
 }
 
@@ -1567,7 +1567,7 @@ void BeamInteraction::SubmodelEvaluator::Crosslinking::post_read_restart()
     for (unsigned int dim = 0; dim < 3; ++dim)
     {
       int doflid = dis_at_last_redistr_->get_map().lid(dofnode[dim]);
-      (*dis_at_last_redistr_)[doflid] = crosslinker_i->x()[dim];
+      (*dis_at_last_redistr_).get_values()[doflid] = crosslinker_i->x()[dim];
     }
   }
 }

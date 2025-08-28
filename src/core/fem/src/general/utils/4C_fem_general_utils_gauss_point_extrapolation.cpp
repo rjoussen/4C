@@ -276,7 +276,7 @@ namespace
         const double invmyadjele = (nodal_average) ? 1.0 / ele.nodes()[i]->num_element() : 1.0;
         for (decltype(nodal_data.numCols()) j = 0; j < nodal_data.numCols(); ++j)
         {
-          (global_data(j))[lid] += nodal_data(i, j) * invmyadjele;
+          (global_data(j)).get_values()[lid] += nodal_data(i, j) * invmyadjele;
         }
       }
     }

@@ -1912,13 +1912,13 @@ void FSI::MonolithicXFEM::permute_fluid_dofs_forward(Core::LinAlg::Vector<double
       {
         tmp_value =
             (fx)[fx.get_map().lid(*(key + 1))];  // save the value before it will be overwritten
-        (fx)[fx.get_map().lid(*(key + 1))] =
+        (fx).get_values()[fx.get_map().lid(*(key + 1))] =
             (fx)[fx.get_map().lid(*(key))];  // set current value to next position
         // std::cout << "copy value from gid " << *(key) << " to " << *(key+1) << std::endl;
       }
       else  // last value in cycle reached
       {
-        (fx)[fx.get_map().lid(*p_cycle.begin())] = tmp_value;
+        (fx).get_values()[fx.get_map().lid(*p_cycle.begin())] = tmp_value;
         // std::cout << "copy value from tmp to " << *p_cycle.begin() << std::endl;
       }
     }
@@ -1966,14 +1966,14 @@ void FSI::MonolithicXFEM::permute_fluid_dofs_backward(Core::LinAlg::Vector<doubl
       {
         tmp_value = (fx)[fx.get_map().lid(
             *(key_reverse - 1))];  // save the value before it will be overwritten
-        (fx)[fx.get_map().lid(*(key_reverse - 1))] =
+        (fx).get_values()[fx.get_map().lid(*(key_reverse - 1))] =
             (fx)[fx.get_map().lid(*(key_reverse))];  // set current value to position before
         // std::cout << "copy value from gid " << *(key_reverse) << " to " << *(key_reverse-1) <<
         // std::endl;
       }
       else
       {
-        (fx)[fx.get_map().lid(*(p_cycle.end() - 1))] = tmp_value;
+        (fx).get_values()[fx.get_map().lid(*(p_cycle.end() - 1))] = tmp_value;
         // std::cout << "copy value from tmp to " << *(p_cycle.end()-1) << std::endl;
       }
     }

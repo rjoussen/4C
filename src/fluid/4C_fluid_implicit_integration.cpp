@@ -2563,7 +2563,7 @@ void FLD::FluidImplicitTimeInt::ale_update(std::string condName)
         // Calculate new ale velocities
         for (int i = 0; i < numdim_; i++)
         {
-          (*gridv)[dofsLocalInd[i]] = (*velnp)[dofsLocalInd[i]];
+          (*gridv).get_values()[dofsLocalInd[i]] = (*velnp)[dofsLocalInd[i]];
         }
       }
     }
@@ -2637,7 +2637,7 @@ void FLD::FluidImplicitTimeInt::ale_update(std::string condName)
           // Calculate node normal components
           for (int i = 0; i < numdim_; i++)
           {
-            (*nodeNormals)[dofsLocalInd[i]] =
+            (*nodeNormals).get_values()[dofsLocalInd[i]] =
                 (Global::Problem::instance()->function_by_id<Core::Utils::FunctionOfSpaceTime>(
                      nodeNormalFunct))
                     .evaluate(currPos.data(), 0.0, i);
@@ -2667,7 +2667,7 @@ void FLD::FluidImplicitTimeInt::ale_update(std::string condName)
         // Normalize vector
         for (int i = 0; i < numdim_; i++)
         {
-          (*nodeNormals)[dofsLocalInd[i]] =
+          (*nodeNormals).get_values()[dofsLocalInd[i]] =
               (1.0 / lengthNodeNormal) * (*nodeNormals)[dofsLocalInd[i]];
         }
 
@@ -2683,18 +2683,22 @@ void FLD::FluidImplicitTimeInt::ale_update(std::string condName)
                    (*nodeNormals)[dofsLocalInd[2]] * (*nodeNormals)[dofsLocalInd[2]]);
           if (lengthNodeTangent > 0.1)
           {  // Tangent vector orthogonal to normal and e_y
-            (*nodeTangents)[dofsLocalInd[0]] = -(*nodeNormals)[dofsLocalInd[2]] / lengthNodeTangent;
-            (*nodeTangents)[dofsLocalInd[1]] = 0.0;
-            (*nodeTangents)[dofsLocalInd[2]] = (*nodeNormals)[dofsLocalInd[0]] / lengthNodeTangent;
+            (*nodeTangents).get_values()[dofsLocalInd[0]] =
+                -(*nodeNormals)[dofsLocalInd[2]] / lengthNodeTangent;
+            (*nodeTangents).get_values()[dofsLocalInd[1]] = 0.0;
+            (*nodeTangents).get_values()[dofsLocalInd[2]] =
+                (*nodeNormals)[dofsLocalInd[0]] / lengthNodeTangent;
           }
           else
           {  // Tangent vector orthogonal to normal and e_z
             lengthNodeTangent =
                 sqrt((*nodeNormals)[dofsLocalInd[0]] * (*nodeNormals)[dofsLocalInd[0]] +
                      (*nodeNormals)[dofsLocalInd[1]] * (*nodeNormals)[dofsLocalInd[1]]);
-            (*nodeTangents)[dofsLocalInd[0]] = -(*nodeNormals)[dofsLocalInd[1]] / lengthNodeTangent;
-            (*nodeTangents)[dofsLocalInd[1]] = (*nodeNormals)[dofsLocalInd[0]] / lengthNodeTangent;
-            (*nodeTangents)[dofsLocalInd[2]] = 0.0;
+            (*nodeTangents).get_values()[dofsLocalInd[0]] =
+                -(*nodeNormals)[dofsLocalInd[1]] / lengthNodeTangent;
+            (*nodeTangents).get_values()[dofsLocalInd[1]] =
+                (*nodeNormals)[dofsLocalInd[0]] / lengthNodeTangent;
+            (*nodeTangents).get_values()[dofsLocalInd[2]] = 0.0;
           }
         }
         else if (numdim_ == 2)
@@ -2702,9 +2706,11 @@ void FLD::FluidImplicitTimeInt::ale_update(std::string condName)
           double lengthNodeTangent =
               sqrt((*nodeNormals)[dofsLocalInd[0]] * (*nodeNormals)[dofsLocalInd[0]] +
                    (*nodeNormals)[dofsLocalInd[1]] * (*nodeNormals)[dofsLocalInd[1]]);
-          (*nodeTangents)[dofsLocalInd[0]] = (*nodeNormals)[dofsLocalInd[1]] / lengthNodeTangent;
-          (*nodeTangents)[dofsLocalInd[1]] = -(*nodeNormals)[dofsLocalInd[0]] / lengthNodeTangent;
-          (*nodeTangents)[dofsLocalInd[2]] = 0.0;
+          (*nodeTangents).get_values()[dofsLocalInd[0]] =
+              (*nodeNormals)[dofsLocalInd[1]] / lengthNodeTangent;
+          (*nodeTangents).get_values()[dofsLocalInd[1]] =
+              -(*nodeNormals)[dofsLocalInd[0]] / lengthNodeTangent;
+          (*nodeTangents).get_values()[dofsLocalInd[2]] = 0.0;
         }
         else
         {
@@ -2736,9 +2742,10 @@ void FLD::FluidImplicitTimeInt::ale_update(std::string condName)
             // Height function approach: last entry of u_G is
             // (velnp*nodeNormals / nodeNormals_z), the other entries are zero
             if (i == numdim_ - 1)
-              (*gridv)[dofsLocalInd[i]] = velnpDotNodeNormal / (*nodeNormals)[dofsLocalInd[i]];
+              (*gridv).get_values()[dofsLocalInd[i]] =
+                  velnpDotNodeNormal / (*nodeNormals)[dofsLocalInd[i]];
             else
-              (*gridv)[dofsLocalInd[i]] = 0.0;
+              (*gridv).get_values()[dofsLocalInd[i]] = 0.0;
           }
         }
         // Do the coupling based on a mean tangential velocity
@@ -2846,7 +2853,7 @@ void FLD::FluidImplicitTimeInt::ale_update(std::string condName)
           // Calculate ale velocities
           for (int i = 0; i < numdim_; i++)
           {
-            (*gridv)[dofsLocalInd[i]] = sol(i, 0);
+            (*gridv).get_values()[dofsLocalInd[i]] = sol(i, 0);
           }
         }
         // Do the coupling based on a spherical height function
@@ -2930,7 +2937,7 @@ void FLD::FluidImplicitTimeInt::ale_update(std::string condName)
           // Calculate ale velocities
           for (int i = 0; i < numdim_; i++)
           {
-            (*gridv)[dofsLocalInd[i]] = sol(i, 0);
+            (*gridv).get_values()[dofsLocalInd[i]] = sol(i, 0);
           }
         }
       }

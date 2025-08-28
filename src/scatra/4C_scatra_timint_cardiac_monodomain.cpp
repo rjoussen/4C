@@ -92,7 +92,7 @@ void ScaTra::TimIntCardiacMonodomain::collect_runtime_output_data()
     for (int k = 0; k < phinp_->local_length(); k++)
     {
       if ((*phinp_)[k] >= activation_threshold_ && (*activation_time_np_)[k] <= dta_ * 0.9)
-        (*activation_time_np_)[k] = time_;
+        (*activation_time_np_).get_values()[k] = time_;
     }
     std::vector<std::optional<std::string>> context(num_dof_per_node(), "activation_time");
     visualization_writer().append_result_data_vector_with_context(
@@ -198,7 +198,7 @@ void ScaTra::TimIntCardiacMonodomain::write_restart() const
     for (int k = 0; k < phinp_->local_length(); k++)
     {
       if ((*phinp_)[k] >= activation_threshold_ && (*activation_time_np_)[k] <= dta_ * 0.9)
-        (*activation_time_np_)[k] = time_;
+        (*activation_time_np_).get_values()[k] = time_;
     }
     output_->write_vector("activation_time_np", activation_time_np_);
   }

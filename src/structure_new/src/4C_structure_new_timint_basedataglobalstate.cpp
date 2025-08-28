@@ -1145,11 +1145,11 @@ void NOX::Nln::GROUP::PrePostOp::TimeInt::RotVecUpdater::run_pre_compute_x(
   for (int i = 0; i < x_rotvec.get_map().num_my_elements(); i = i + 3)
   {
     // create a Core::LinAlg::Matrix from reference to three x vector entries
-    Core::LinAlg::Matrix<3, 1> theta(&x_rotvec[i], true);
+    Core::LinAlg::Matrix<3, 1> theta(&x_rotvec.get_values()[i], true);
     Core::LargeRotations::angletoquaternion(theta, Qold);
 
     // same for relative rotation angle deltatheta
-    Core::LinAlg::Matrix<3, 1> deltatheta(&dir_rotvec[i], true);
+    Core::LinAlg::Matrix<3, 1> deltatheta(&dir_rotvec.get_values()[i], true);
     deltatheta.scale(step);
 
     Core::LargeRotations::angletoquaternion(deltatheta, deltaQ);

@@ -693,11 +693,12 @@ void Coupling::Adapter::CouplingMortar::mesh_relocation(Core::FE::Discretization
     for (int k = 0; k < dim; ++k)
     {
       int dof = mtnode->dofs()[k];
-      (*Xmaster)[(Xmaster->get_map()).lid(dof)] = mtnode->x()[k];
+      (*Xmaster).get_values()[(Xmaster->get_map()).lid(dof)] = mtnode->x()[k];
 
       // add ALE displacements, if required
       if (idisp != nullptr)
-        (*Xmaster)[(Xmaster->get_map()).lid(dof)] += (*idisp)[(idisp->get_map()).lid(dof)];
+        (*Xmaster).get_values()[(Xmaster->get_map()).lid(dof)] +=
+            (*idisp)[(idisp->get_map()).lid(dof)];
     }
   }
 
@@ -1009,7 +1010,7 @@ void Coupling::Adapter::CouplingMortar::create_p()
     {
       std::cout << "WARNING: Diagonal entry of D matrix (value = " << (*diag)[i]
                 << ") is skipped because it is less than 1e-12!!!" << std::endl;
-      (*diag)[i] = 1.0;
+      (*diag).get_values()[i] = 1.0;
     }
   }
 
@@ -1217,7 +1218,7 @@ void Coupling::Adapter::CouplingMortar::evaluate_with_mesh_relocation(
 
   // set zero diagonal values to dummy 1.0
   for (int i = 0; i < diag->local_length(); ++i)
-    if ((*diag)[i] == 0.0) (*diag)[i] = 1.0;
+    if ((*diag)[i] == 0.0) (*diag).get_values()[i] = 1.0;
 
   // scalar inversion of diagonal values
   diag->reciprocal(*diag);

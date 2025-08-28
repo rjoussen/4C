@@ -150,7 +150,7 @@ namespace
         discret_->get_comm());
     auto displacement_vector = std::make_shared<Core::LinAlg::Vector<double>>(gid_map);
     for (int i = 0; i < displacement_vector->global_length(); i++)
-      (*displacement_vector)[i] = i * 0.01;
+      (*displacement_vector).get_values()[i] = i * 0.01;
     face_element->set_state(displacement_vector, face_elements_map);
     {
       // Check the values of the averaged normals.

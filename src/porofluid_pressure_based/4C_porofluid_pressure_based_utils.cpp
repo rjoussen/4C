@@ -149,7 +149,7 @@ PoroPressureBased::convert_dof_vector_to_node_based_multi_vector(
     Core::Nodes::Node* node = dis.l_row_node(inode);
     // copy each dof value of node
     for (int idof = 0; idof < numdofpernode; ++idof)
-      (*multi)(idof)[inode] = vector[vectormap.lid(dis.dof(nds, node, idof))];
+      (*multi)(idof).get_values()[inode] = vector[vectormap.lid(dis.dof(nds, node, idof))];
   }
 
   return multi;

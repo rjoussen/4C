@@ -87,7 +87,7 @@ void Core::LinAlg::assemble(Core::LinAlg::Vector<double>& V,
     if (!V.get_map().my_gid(rgid))
       FOUR_C_THROW("Sparse vector V does not have global row {}", rgid);
     int rlid = V.get_map().lid(rgid);
-    V[rlid] += Vele[lrow];
+    V.get_values()[rlid] += Vele[lrow];
   }  // for (int lrow=0; lrow<ldim; ++lrow)
 }
 
@@ -107,7 +107,7 @@ void Core::LinAlg::assemble_my_vector(double scalar_target, Core::LinAlg::Vector
           sgid, Core::Communication::my_mpi_rank(target.get_comm()));
 
     // update the vector row
-    target[tlid] = scalar_target * target[tlid] + scalar_source * source[slid];
+    target.get_values()[tlid] = scalar_target * target[tlid] + scalar_source * source[slid];
   }
 }
 
@@ -133,8 +133,8 @@ void Core::LinAlg::apply_dirichlet_to_system(Core::LinAlg::Vector<double>& x,
   {
     if (dbctoggle[i] == 1.0)
     {
-      x[i] = dbcval[i];
-      b[i] = dbcval[i];
+      x.get_values()[i] = dbcval[i];
+      b.get_values()[i] = dbcval[i];
     }
   }
 }
@@ -164,8 +164,8 @@ void Core::LinAlg::apply_dirichlet_to_system(Core::LinAlg::Vector<double>& x,
     int xlid = xmap.lid(gid);
     if (xlid < 0) FOUR_C_THROW("illegal Dirichlet map");
 
-    x[xlid] = dbcval[dbcvlid];
-    b[xlid] = dbcval[dbcvlid];
+    x.get_values()[xlid] = dbcval[dbcvlid];
+    b.get_values()[xlid] = dbcval[dbcvlid];
   }
 }
 
@@ -193,7 +193,7 @@ void Core::LinAlg::apply_dirichlet_to_system(Core::LinAlg::Vector<double>& b,
       if (dbcvlid < 0)
         FOUR_C_THROW("illegal Dirichlet map");
       else
-        b[blid] = dbcval[dbcvlid];
+        b.get_values()[blid] = dbcval[dbcvlid];
     }
   }
 }

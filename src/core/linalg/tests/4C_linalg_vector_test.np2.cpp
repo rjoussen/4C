@@ -66,13 +66,13 @@ namespace
     ASSERT_FLOAT_EQ(0.0, norm_of_test_vector);
 
     // test element access function for proc 0
-    if (Core::Communication::my_mpi_rank(comm_) == 0) test_vector[1] = 1;
+    if (Core::Communication::my_mpi_rank(comm_) == 0) test_vector.get_values()[1] = 1;
 
     // check result of Norm1
     test_vector.norm_1(&norm_of_test_vector);
     ASSERT_FLOAT_EQ(1.0, norm_of_test_vector);
 
-    test_vector[1] = 100.0;
+    test_vector.get_values()[1] = 100.0;
 
     // check result of NormInf
     test_vector.norm_inf(&norm_of_test_vector);

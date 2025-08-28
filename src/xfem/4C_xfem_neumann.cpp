@@ -139,7 +139,7 @@ void XFEM::evaluate_neumann_standard(
         value *= functfac;
         const int lid = systemvector.get_map().lid(gid);
         if (lid < 0) FOUR_C_THROW("Global id {} not on this proc in system vector", gid);
-        systemvector[lid] += value;
+        systemvector.get_values()[lid] += value;
       }
     }
   }

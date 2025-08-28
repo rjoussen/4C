@@ -466,7 +466,7 @@ int Discret::Elements::Membrane<distype>::evaluate(Teuchos::ParameterList& param
           {
             int lid = postthick->get_map().lid(gid);
             int myadjele = nodes()[i]->num_element();
-            (*postthick)(0)[lid] += nodalthickness(i) / myadjele;
+            (*postthick)(0).get_values()[lid] += nodalthickness(i) / myadjele;
           }
         }
       }

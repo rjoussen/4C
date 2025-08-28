@@ -2494,7 +2494,7 @@ void ScaTra::MeshtyingStrategyS2I::setup_meshtying()
           islavenodeslumpedareas = Core::LinAlg::create_vector(noderowmap_slave);
           for (int inode = 0; inode < noderowmap_slave.num_my_elements(); ++inode)
           {
-            (*islavenodeslumpedareas)[inode] =
+            (*islavenodeslumpedareas).get_values()[inode] =
                 (*islavenodeslumpedareas_dofvector)[dofrowmap_slave.lid(
                     idiscret.dof(idiscret.g_node(noderowmap_slave.gid(inode)), 0))];
           }
@@ -2936,7 +2936,7 @@ void ScaTra::MeshtyingStrategyS2I::setup_meshtying()
               }
 
               // set initial value
-              (*growthn_)[doflid_growth] = initthickness;
+              (*growthn_).get_values()[doflid_growth] = initthickness;
             }  // nodes owned by current processor
           }  // nodes stored by current processor
         }  // loop over all nodes
@@ -3329,7 +3329,7 @@ void ScaTra::MeshtyingStrategyS2I::collect_output_data() const
 
           // copy thickness variable into target state vector of discrete scatra-scatra interface
           // layer thicknesses
-          (intlayerthickness)[nodelid] = growth[doflid_growth];
+          (intlayerthickness).get_values()[nodelid] = growth[doflid_growth];
         }  // nodes owned by current processor
       }  // nodes stored by current processor
     }  // loop over all nodes

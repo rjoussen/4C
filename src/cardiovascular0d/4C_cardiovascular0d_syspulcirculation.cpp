@@ -574,27 +574,27 @@ void Utils::Cardiovascular0DSysPulCirculation::evaluate(Teuchos::ParameterList& 
         atrium_model_ == Inpar::Cardiovascular0D::atr_prescribed)
     {
       // 0D left atrial volume
-      (*sysvec5)[0] = p_at_l_np / E_at_l_np + v_at_l_u_;
+      (*sysvec5).get_values()[0] = p_at_l_np / E_at_l_np + v_at_l_u_;
       // 0D right atrial volume
-      (*sysvec5)[8] = p_at_r_np / E_at_r_np + v_at_r_u_;
+      (*sysvec5).get_values()[8] = p_at_r_np / E_at_r_np + v_at_r_u_;
     }
     if (ventricle_model_ == Inpar::Cardiovascular0D::ventr_elastance_0d or
         ventricle_model_ == Inpar::Cardiovascular0D::ventr_prescribed)
     {
       // 0D left ventricular volume
-      (*sysvec5)[2] = p_v_l_np / E_v_l_np + v_v_l_u_;
+      (*sysvec5).get_values()[2] = p_v_l_np / E_v_l_np + v_v_l_u_;
       // 0D right ventricular volume
-      (*sysvec5)[10] = p_v_r_np / E_v_r_np + v_v_r_u_;
+      (*sysvec5).get_values()[10] = p_v_r_np / E_v_r_np + v_v_r_u_;
     }
     // systemic arterial compartment volume
-    (*sysvec5)[4] = c_ar_sys_ * (p_ar_sys_np - z_ar_sys_ * q_vout_l_np) + v_ar_sys_u_;
+    (*sysvec5).get_values()[4] = c_ar_sys_ * (p_ar_sys_np - z_ar_sys_ * q_vout_l_np) + v_ar_sys_u_;
     // systemic venous compartment volume
-    (*sysvec5)[6] = c_ven_sys_ * p_ven_sys_np + v_ven_sys_u_;
+    (*sysvec5).get_values()[6] = c_ven_sys_ * p_ven_sys_np + v_ven_sys_u_;
 
     // pulmonary arterial compartment volume
-    (*sysvec5)[12] = c_ar_pul_ * (p_ar_pul_np - z_ar_pul_ * q_vout_r_np) + v_ar_pul_u_;
+    (*sysvec5).get_values()[12] = c_ar_pul_ * (p_ar_pul_np - z_ar_pul_ * q_vout_r_np) + v_ar_pul_u_;
     // pulmonary venous compartment volume
-    (*sysvec5)[14] = c_ven_pul_ * p_ven_pul_np + v_ven_pul_u_;
+    (*sysvec5).get_values()[14] = c_ven_pul_ * p_ven_pul_np + v_ven_pul_u_;
   }
 
 

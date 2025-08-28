@@ -160,7 +160,8 @@ void FLD::TimIntStationaryHDG::clear_state_assemble_mat_and_rhs()
     // data back before it disappears when clearing the state (at least for nproc>1)
     const Core::LinAlg::Vector<double>& intvelnpGhosted = *discret_->get_state(1, "intvelnp");
     for (int i = 0; i < intvelnp_->local_length(); ++i)
-      (*intvelnp_)[i] = intvelnpGhosted[intvelnpGhosted.get_map().lid(intvelnp_->get_map().gid(i))];
+      (*intvelnp_).get_values()[i] =
+          intvelnpGhosted[intvelnpGhosted.get_map().lid(intvelnp_->get_map().gid(i))];
   }
   first_assembly_ = false;
   FluidImplicitTimeInt::clear_state_assemble_mat_and_rhs();
@@ -200,9 +201,9 @@ void FLD::TimIntStationaryHDG::set_initial_flow_field(
       if (lid >= 0)
       {
         if ((*velnp_)[lid] != 0) error += std::abs((*velnp_)[lid] - elevec1(i));
-        (*velnp_)[lid] = elevec1(i);
-        (*veln_)[lid] = elevec1(i);
-        (*velnm_)[lid] = elevec1(i);
+        (*velnp_).get_values()[lid] = elevec1(i);
+        (*veln_).get_values()[lid] = elevec1(i);
+        (*velnm_).get_values()[lid] = elevec1(i);
       }
     }
 

@@ -977,7 +977,7 @@ void MultiScale::MicroStatic::evaluate_micro_bc(
 
         const int lid = disp.get_map().lid(gid);
         if (lid < 0) FOUR_C_THROW("Global id {} not on this proc in system vector", gid);
-        (disp)[lid] = disp_prescribed[l];
+        (disp).get_values()[lid] = disp_prescribed[l];
       }
     }
   }
@@ -1201,7 +1201,7 @@ void MultiScale::MicroStatic::static_homogenization(Core::LinAlg::Matrix<6, 1>* 
     {
       // write as a 9x9 matrix
       for (int i = 0; i < 9; i++)
-        for (int j = 0; j < 9; j++) ((cmatpf(j)))[i] = sum[i * 9 + j];
+        for (int j = 0; j < 9; j++) ((cmatpf(j))).get_values()[i] = sum[i * 9 + j];
 
       // scale with inverse of RVE volume
       cmatpf.Scale(1.0 / initial_volume_);

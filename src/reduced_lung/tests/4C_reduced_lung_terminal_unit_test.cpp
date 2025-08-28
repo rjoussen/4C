@@ -25,17 +25,17 @@ namespace
     SCOPED_TRACE("Comparing FD approximation with Jacobian column " + std::to_string(jac_col));
 
     // Perturb in +epsilon direction
-    for (int lid : dof_lids) dofs[lid] += eps;
+    for (int lid : dof_lids) dofs.get_values()[lid] += eps;
     Vector<double> res_plus(row_map, true);
     model.negative_residual_evaluator(model.data, res_plus, dofs, dt);
 
     // Perturb in -epsilon direction
-    for (int lid : dof_lids) dofs[lid] -= 2 * eps;
+    for (int lid : dof_lids) dofs.get_values()[lid] -= 2 * eps;
     Vector<double> res_minus(row_map, true);
     model.negative_residual_evaluator(model.data, res_minus, dofs, dt);
 
     // Restore original state
-    for (int lid : dof_lids) dofs[lid] += eps;
+    for (int lid : dof_lids) dofs.get_values()[lid] += eps;
 
     // Compute FD approximation
     Vector<double> fd_derivative(row_map, true);

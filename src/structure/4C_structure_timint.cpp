@@ -1425,23 +1425,23 @@ void Solid::TimInt::update_step_contact_vum()
       {
         if ((*wc)[i] > 0)
         {
-          (*wp)[i] = (*wc)[i];
-          (*wn)[i] = 0;
-          (*wd)[i] = 0;
-          (*wt)[i] = 0;
+          (*wp).get_values()[i] = (*wc)[i];
+          (*wn).get_values()[i] = 0;
+          (*wd).get_values()[i] = 0;
+          (*wt).get_values()[i] = 0;
         }
         else
         {
-          (*wp)[i] = 0;
-          (*wn)[i] = (*wc)[i];
-          (*wd)[i] = pow((*b)[i], 2) / (4 * (*AD)[i]);
+          (*wp).get_values()[i] = 0;
+          (*wn).get_values()[i] = (*wc)[i];
+          (*wd).get_values()[i] = pow((*b)[i], 2) / (4 * (*AD)[i]);
           if ((*wc)[i] > (*wd)[i])
           {
-            (*wt)[i] = (*wc)[i];
+            (*wt).get_values()[i] = (*wc)[i];
           }
           else
           {
-            (*wt)[i] = (*wd)[i];
+            (*wt).get_values()[i] = (*wd)[i];
           }
         }
       }
@@ -1466,14 +1466,14 @@ void Solid::TimInt::update_step_contact_vum()
         wtemp1->update(C, *wn, 0.0);
         for (int i = 0; i < activenodemap->num_my_elements(); ++i)
         {
-          (*wtemp2)[i] = pow((*b)[i], 2) / (4 * (*AD)[i]);
+          (*wtemp2).get_values()[i] = pow((*b)[i], 2) / (4 * (*AD)[i]);
           if ((*wtemp1)[i] > (*wtemp2)[i])
           {
-            (*w)[i] = (*wtemp1)[i];
+            (*w).get_values()[i] = (*wtemp1)[i];
           }
           else
           {
-            (*w)[i] = (1 - tolerance) * (*wtemp2)[i];
+            (*w).get_values()[i] = (1 - tolerance) * (*wtemp2)[i];
             std::cout << "***** WARNING: VelUpdate is not able to compensate the gain of energy****"
                       << std::endl;
           }
@@ -1496,34 +1496,34 @@ void Solid::TimInt::update_step_contact_vum()
       {
         for (int i = 0; i < activenodemap->num_my_elements(); ++i)
         {
-          (*p1)[i] =
+          (*p1).get_values()[i] =
               (-(*b)[i] + pow(pow((*b)[i], 2) - 4 * (*AD)[i] * (*w)[i], 0.5)) / (2 * (*AD)[i]);
 
-          (*p2)[i] =
+          (*p2).get_values()[i] =
               (-(*b)[i] - pow(pow((*b)[i], 2) - 4 * (*AD)[i] * (*w)[i], 0.5)) / (2 * (*AD)[i]);
           if ((*w)[i] == 0)
-            (*p)[i] = 0;
+            (*p).get_values()[i] = 0;
           else if (abs((*p1)[i]) < abs((*p2)[i]))
-            (*p)[i] = (*p1)[i];
+            (*p).get_values()[i] = (*p1)[i];
           else
-            (*p)[i] = (*p2)[i];
+            (*p).get_values()[i] = (*p2)[i];
         }
       }
       else
       {
         for (int i = 0; i < activenodemap->num_my_elements(); ++i)
         {
-          (*p1)[i] =
+          (*p1).get_values()[i] =
               (-(*b)[i] + pow(pow((*b)[i], 2) - 4 * (*AD)[i] * (*w)[i], 0.5)) / (2 * (*AD)[i]);
 
-          (*p2)[i] =
+          (*p2).get_values()[i] =
               (-(*b)[i] - pow(pow((*b)[i], 2) - 4 * (*AD)[i] * (*w)[i], 0.5)) / (2 * (*AD)[i]);
           if ((*w)[i] == 0)
-            (*p)[i] = 0;
+            (*p).get_values()[i] = 0;
           else if (((*p1)[i] > 0) == ((*b)[i] < 0))
-            (*p)[i] = (*p1)[i];
+            (*p).get_values()[i] = (*p1)[i];
           else
-            (*p)[i] = (*p2)[i];
+            (*p).get_values()[i] = (*p2)[i];
         }
       }
 
@@ -1546,10 +1546,10 @@ void Solid::TimInt::update_step_contact_vum()
         x->put_scalar(0.0);
         A->extract_global_row_view(activenodemap->gid(i), NumEntries, Values, Indices);
         x->replace_global_values(NumEntries, Values, Indices);
-        (*f)[i] = (*b)[i] * (*p)[i] + (*w)[i];
+        (*f).get_values()[i] = (*b)[i] * (*p)[i] + (*w)[i];
         for (int j = 0; j < activenodemap->num_my_elements(); ++j)
         {
-          (*f)[i] += (*x)[j] * (*p)[i] * (*p)[j];
+          (*f).get_values()[i] += (*x)[j] * (*p)[i] * (*p)[j];
         }
       }
 
@@ -1608,10 +1608,11 @@ void Solid::TimInt::update_step_contact_vum()
           x->put_scalar(0.0);
           A->extract_global_row_view(activenodemap->gid(i), NumEntries, Values, Indices);
           x->replace_global_values(NumEntries, Values, Indices);
-          (*f)[i] = (*b)[i] * (*p)[i] + (*w)[i];
+          (*f).get_values()[i] = (*b).get_values()[i] * (*p).get_values()[i] + (*w).get_values()[i];
           for (int j = 0; j < activenodemap->num_my_elements(); ++j)
           {
-            (*f)[i] += (*x)[j] * (*p)[i] * (*p)[j];
+            (*f).get_values()[i] +=
+                (*x).get_values()[j] * (*p).get_values()[i] * (*p).get_values()[j];
           }
         }
 

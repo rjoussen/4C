@@ -2101,7 +2101,7 @@ void PARTICLEENGINE::ParticleEngine::determine_bin_weights()
     for (const auto& particleIt : particlestobins_[bincolmap_->lid(gidofbin)])
     {
       // add weight of particle of specific type
-      (*binweights_)(0)[rowlidofbin] += typeweights_[particleIt.first];
+      (*binweights_)(0).get_values()[rowlidofbin] += typeweights_[particleIt.first];
     }
   }
 }

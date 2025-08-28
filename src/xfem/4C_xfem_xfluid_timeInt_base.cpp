@@ -3208,11 +3208,12 @@ void XFEM::XfluidStd::set_final_data()
     for (int i = 0; i < nsd; i++)
     {
       for (size_t index = 0; index < vector_size(data->type_); index++)
-        (*newVectors_[index])[newdofrowmap_.lid(dofs[i])] =
+        (*newVectors_[index]).get_values()[newdofrowmap_.lid(dofs[i])] =
             velValues[index](i, 0);  // set the value
     }
     for (size_t index = 0; index < vector_size(data->type_); index++)
-      (*newVectors_[index])[newdofrowmap_.lid(dofs[nsd])] = presValues[index];  // set the value
+      (*newVectors_[index]).get_values()[newdofrowmap_.lid(dofs[nsd])] =
+          presValues[index];  // set the value
 
     data->type_ = TimeIntData::standard_;  // predictor is done, so next time standard
   }  // end loop over nodes

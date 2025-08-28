@@ -280,7 +280,7 @@ void PostVtuWriterNode::write_dof_result_step(std::ofstream& file,
         vecmap.num_global_elements(), vecmap.num_my_elements(), gids.data(), 0, vecmap.get_comm());
     std::shared_ptr<Core::LinAlg::Vector<double>> dofvec =
         Core::LinAlg::create_vector(rowmap, false);
-    for (int i = 0; i < vecmap.num_my_elements(); ++i) (*dofvec)[i] = (*data)[i];
+    for (int i = 0; i < vecmap.num_my_elements(); ++i) (*dofvec).get_values()[i] = (*data)[i];
 
     ghostedData = Core::LinAlg::create_vector(*colmap, true);
     Core::LinAlg::export_to(*dofvec, *ghostedData);

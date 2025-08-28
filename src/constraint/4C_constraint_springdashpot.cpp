@@ -609,7 +609,7 @@ void Constraints::SpringDashpot::evaluate_robin(std::shared_ptr<Core::LinAlg::Sp
           const double stiffness = force_disp_deriv + force_vel_deriv * time_fac;
 
           // assemble contributions into force vector and stiffness matrix
-          (*fint)[dof_lid] += force * cross_section;
+          (*fint).get_values()[dof_lid] += force * cross_section;
           if (stiff != nullptr) stiff->assemble(-stiffness * cross_section, dof_gid, dof_gid);
         }
       }
@@ -1005,7 +1005,7 @@ void Constraints::SpringDashpot::output_gap_normal(Core::LinAlg::Vector<double>&
     // global id -> local id
     const int lid = gap.get_map().lid(i.first);
     // local id on processor
-    if (lid >= 0) (gap)[lid] += i.second;
+    if (lid >= 0) (gap).get_values()[lid] += i.second;
   }
 
   // export normal
@@ -1017,9 +1017,9 @@ void Constraints::SpringDashpot::output_gap_normal(Core::LinAlg::Vector<double>&
     if (lid >= 0)
     {
       // copy all components of normal vector
-      ((normals)(0))[lid] += (normal.second).at(0);
-      ((normals)(1))[lid] += (normal.second).at(1);
-      ((normals)(2))[lid] += (normal.second).at(2);
+      ((normals)(0)).get_values()[lid] += (normal.second).at(0);
+      ((normals)(1)).get_values()[lid] += (normal.second).at(1);
+      ((normals)(2)).get_values()[lid] += (normal.second).at(2);
     }
   }
 
@@ -1032,9 +1032,9 @@ void Constraints::SpringDashpot::output_gap_normal(Core::LinAlg::Vector<double>&
     if (lid >= 0)
     {
       // copy all components of normal vector
-      ((stress)(0))[lid] += (i.second).at(0);
-      ((stress)(1))[lid] += (i.second).at(1);
-      ((stress)(2))[lid] += (i.second).at(2);
+      ((stress)(0)).get_values()[lid] += (i.second).at(0);
+      ((stress)(1)).get_values()[lid] += (i.second).at(1);
+      ((stress)(2)).get_values()[lid] += (i.second).at(2);
     }
   }
 }
@@ -1063,9 +1063,9 @@ void Constraints::SpringDashpot::output_prestr_offset_old(
     if (lid >= 0)
     {
       // copy all components of spring offset length vector
-      ((springprestroffset)(0))[lid] = (i.second)[0];
-      ((springprestroffset)(1))[lid] = (i.second)[1];
-      ((springprestroffset)(2))[lid] = (i.second)[2];
+      ((springprestroffset)(0)).get_values()[lid] = (i.second)[0];
+      ((springprestroffset)(1)).get_values()[lid] = (i.second)[1];
+      ((springprestroffset)(2)).get_values()[lid] = (i.second)[2];
     }
   }
 }

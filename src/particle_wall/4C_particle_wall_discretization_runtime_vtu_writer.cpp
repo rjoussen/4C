@@ -60,7 +60,7 @@ void PARTICLEWALL::WallDiscretizationRuntimeVtuWriter::write_wall_discretization
     for (int inode = 0; inode < walldiscretization_->num_my_col_nodes(); ++inode)
     {
       const Core::Nodes::Node* node = walldiscretization_->l_col_node(inode);
-      (nodeowner)[inode] = node->owner();
+      (nodeowner).get_values()[inode] = node->owner();
     }
     runtime_vtuwriter_->append_result_data_vector_with_context(
         nodeowner, Core::IO::OutputEntity::node, {"owner"});
@@ -77,7 +77,7 @@ void PARTICLEWALL::WallDiscretizationRuntimeVtuWriter::write_wall_discretization
     for (int iele = 0; iele < walldiscretization_->num_my_row_elements(); ++iele)
     {
       const Core::Elements::Element* ele = walldiscretization_->l_row_element(iele);
-      (eleid)[iele] = ele->id();
+      (eleid).get_values()[iele] = ele->id();
     }
     runtime_vtuwriter_->append_result_data_vector_with_context(
         eleid, Core::IO::OutputEntity::element, {"id"});

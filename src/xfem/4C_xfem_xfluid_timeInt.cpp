@@ -1032,7 +1032,7 @@ void XFEM::XFluidTimeInt::copy_dofs(const Core::Nodes::Node* node,  /// drt node
       int dof_lid_old = vec_old->get_map().lid(dofs_old[i]);
       if (dof_lid_old == -1) FOUR_C_THROW("old dof {} not local on this proc!", dofs_old[i]);
 
-      (*vec_new)[dof_lid_new] = (*vec_old)[dof_lid_old];
+      (*vec_new).get_values()[dof_lid_new] = (*vec_old).get_values()[dof_lid_old];
 
       // set Dirichlet BC for ghost penalty reconstruction
       int gid = dofs_new[i];
@@ -1147,7 +1147,7 @@ void XFEM::XFluidTimeInt::mark_dofs(const Core::Nodes::Node* node,  /// drt node
       int dof_lid_new = vec_new->get_map().lid(dofs_new[i]);
       if (dof_lid_new == -1) FOUR_C_THROW("new dof {} not local on this proc!", dofs_new[i]);
 
-      (*vec_new)[dof_lid_new] =
+      (*vec_new).get_values()[dof_lid_new] =
           0.0;  // zero value as start value for newton for gradient reconstruction
 
       int gid = dofs_new[i];
