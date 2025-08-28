@@ -1577,7 +1577,7 @@ four_c_test(TEST_FILE structure_new_dynamics_statics_restart_input.4C.yaml struc
 four_c_test(TEST_FILE structure_new_dynamics_statics_restart_input.4C.yaml structure_new_dynamics_statics_restart.4C.yaml NP 1 1 RESTART_STEP last_possible)
 four_c_test(TEST_FILE structure_new_nln_solver_singlestep_cube_linear.4C.yaml structure_new_nln_solver_singlestep_cube_linear_restart.4C.yaml NP 1 1 RESTART_STEP 1)
 four_c_test(TEST_FILE structure_solid_beam_element_gid_runtime_output.4C.yaml NP 2)
-four_c_test(TEST_FILE strufem_hex8_cantilever_nox.4C.yaml NP 2)
+four_c_test(TEST_FILE strufem_hex8_cantilever.4C.yaml NP 2)
 four_c_test(TEST_FILE strufem_hex8_eas_cantilever.4C.yaml NP 2)
 four_c_test(TEST_FILE strufem_sosh8_eas_cantilever.4C.yaml NP 2)
 four_c_test(TEST_FILE strufem_tet10_disp_cantilever.4C.yaml NP 2)
