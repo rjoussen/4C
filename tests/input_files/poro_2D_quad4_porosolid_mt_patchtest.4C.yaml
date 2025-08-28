@@ -18,7 +18,7 @@ STRUCTURAL DYNAMIC:
   DAMPING: "Material"
   LINEAR_SOLVER: 1
 POROELASTICITY DYNAMIC:
-  COUPALGO: "poro_monolithicmeshtying"
+  COUPALGO: "Monolithic_meshtying"
   TRANSIENT_TERMS: "none"
   RESTARTEVERY: 10
   NUMSTEP: 5

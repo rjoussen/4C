@@ -16,6 +16,7 @@
 #include "4C_fluid_xfluid.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
+#include "4C_poroelast_input.hpp"
 #include "4C_poroelast_monolithic.hpp"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
@@ -76,8 +77,8 @@ FSI::AlgorithmXFEM::AlgorithmXFEM(MPI_Comm comm, const Teuchos::ParameterList& t
       FOUR_C_THROW(
           "Couldn't cast poro to PoroElast::Monolithic --> check your COUPALGO in the "
           "POROELASTICITY DYNAMIC section!");
-    if (Teuchos::getIntegralValue<Inpar::PoroElast::SolutionSchemeOverFields>(
-            poroelastdyn, "COUPALGO") != Inpar::PoroElast::Monolithic)
+    if (Teuchos::getIntegralValue<PoroElast::SolutionSchemeOverFields>(poroelastdyn, "COUPALGO") !=
+        PoroElast::SolutionSchemeOverFields::Monolithic)
       FOUR_C_THROW(
           "You created a different poroelast algorithm than monolithic (not combineable with xfpsi "
           "at the moment)--> check your COUPALGO in the POROELASTICITY DYNAMIC section!");

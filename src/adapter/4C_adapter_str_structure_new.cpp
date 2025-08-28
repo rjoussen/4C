@@ -28,10 +28,10 @@
 #include "4C_inpar_beam_to_solid.hpp"
 #include "4C_inpar_beaminteraction.hpp"
 #include "4C_inpar_fsi.hpp"
-#include "4C_inpar_poroelast.hpp"
 #include "4C_io.hpp"
 #include "4C_io_pstream.hpp"
 #include "4C_mat_par_bundle.hpp"
+#include "4C_poroelast_input.hpp"
 #include "4C_rebalance_binning_based.hpp"
 #include "4C_rigidsphere.hpp"
 #include "4C_shell7p_ele.hpp"
@@ -864,16 +864,16 @@ void Adapter::StructureBaseAlgorithmNew::create_wrapper(
     case Core::ProblemType::fpsi_xfem:
     {
       const Teuchos::ParameterList& porodyn = problem->poroelast_dynamic_params();
-      const auto coupling = Teuchos::getIntegralValue<Inpar::PoroElast::SolutionSchemeOverFields>(
-          porodyn, "COUPALGO");
+      const auto coupling =
+          Teuchos::getIntegralValue<PoroElast::SolutionSchemeOverFields>(porodyn, "COUPALGO");
       // Are there any constraint conditions active?
       const std::set<Inpar::Solid::ModelType>& modeltypes =
           ti_strategy->get_data_sdyn().get_model_types();
       if (modeltypes.find(Inpar::Solid::model_lag_pen_constraint) != modeltypes.end())
       {
-        if (coupling == Inpar::PoroElast::Monolithic_structuresplit or
-            coupling == Inpar::PoroElast::Monolithic_fluidsplit or
-            coupling == Inpar::PoroElast::Monolithic_nopenetrationsplit)
+        if (coupling == PoroElast::SolutionSchemeOverFields::Monolithic_structuresplit or
+            coupling == PoroElast::SolutionSchemeOverFields::Monolithic_fluidsplit or
+            coupling == PoroElast::SolutionSchemeOverFields::Monolithic_nopenetrationsplit)
           str_wrapper_ = std::make_shared<FPSIStructureWrapper>(ti_strategy);
         else
           str_wrapper_ = std::make_shared<StructureConstrMerged>(ti_strategy);

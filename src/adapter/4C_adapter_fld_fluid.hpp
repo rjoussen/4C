@@ -11,11 +11,11 @@
 #include "4C_config.hpp"
 
 #include "4C_inpar_fluid.hpp"
-#include "4C_inpar_poroelast.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_linalg_graph.hpp"
 #include "4C_linalg_map.hpp"
 #include "4C_linalg_vector.hpp"
+#include "4C_poroelast_input.hpp"
 #include "4C_utils_exceptions.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 #include "4C_utils_result_test.hpp"
@@ -216,7 +216,7 @@ namespace Adapter
 
     /// set initial flow field
     virtual void set_initial_porosity_field(
-        const Inpar::PoroElast::InitialField initfield, const int startfuncno) = 0;
+        const PoroElast::InitialField initfield, const int startfuncno) = 0;
 
     /// apply external forces to the fluid
     virtual void apply_external_forces(std::shared_ptr<Core::LinAlg::MultiVector<double>> fext) = 0;

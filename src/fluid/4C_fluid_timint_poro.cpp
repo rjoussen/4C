@@ -86,8 +86,8 @@ void FLD::TimIntPoro::set_element_custom_parameter()
 
   // set poro specific element parameters
   eleparams.set<bool>("conti partial integration", params_->get<bool>("conti partial integration"));
-  eleparams.set<Inpar::PoroElast::TransientEquationsOfPoroFluid>("Transient Terms Poro Fluid",
-      params_->get<Inpar::PoroElast::TransientEquationsOfPoroFluid>("Transient Terms Poro Fluid"));
+  eleparams.set<PoroElast::TransientEquationsOfPoroFluid>("Transient Terms Poro Fluid",
+      params_->get<PoroElast::TransientEquationsOfPoroFluid>("Transient Terms Poro Fluid"));
   eleparams.set<bool>("convective term", params_->get<bool>("convective term"));
 
   // parameter for stabilization
@@ -102,13 +102,13 @@ void FLD::TimIntPoro::set_element_custom_parameter()
 }
 
 void FLD::TimIntPoro::set_initial_porosity_field(
-    const Inpar::PoroElast::InitialField init, const int startfuncno)
+    const PoroElast::InitialField init, const int startfuncno)
 {
   std::cout << "FLD::TimIntPoro::set_initial_porosity_field()" << std::endl;
 
   switch (init)
   {
-    case Inpar::PoroElast::initfield_field_by_function:
+    case PoroElast::initfield_field_by_function:
     {
       const Core::LinAlg::Map* dofrowmap = discret_->dof_row_map();
 

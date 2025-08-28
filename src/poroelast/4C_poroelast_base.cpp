@@ -205,13 +205,12 @@ PoroElast::PoroBase::PoroBase(MPI_Comm comm, const Teuchos::ParameterList& timep
           "POROELASTICITY DYNAMIC section!");
     }
 
-    auto transientfluid =
-        Teuchos::getIntegralValue<Inpar::PoroElast::TransientEquationsOfPoroFluid>(
-            pedyn, "TRANSIENT_TERMS");
+    auto transientfluid = Teuchos::getIntegralValue<PoroElast::TransientEquationsOfPoroFluid>(
+        pedyn, "TRANSIENT_TERMS");
 
     if (fluidtimealgo == Inpar::FLUID::timeint_stationary)
     {
-      if (transientfluid != Inpar::PoroElast::transient_none)
+      if (transientfluid != PoroElast::transient_none)
       {
         FOUR_C_THROW(
             "Invalid option for stationary fluid! Set 'TRANSIENT_TERMS' in section POROELASTICITY "
@@ -220,7 +219,7 @@ PoroElast::PoroBase::PoroBase(MPI_Comm comm, const Teuchos::ParameterList& timep
     }
     else
     {
-      if (transientfluid == Inpar::PoroElast::transient_none)
+      if (transientfluid == PoroElast::transient_none)
       {
         FOUR_C_THROW(
             "Invalid option for stationary fluid! Set 'TRANSIENT_TERMS' in section POROELASTICITY "
@@ -228,7 +227,7 @@ PoroElast::PoroBase::PoroBase(MPI_Comm comm, const Teuchos::ParameterList& timep
       }
     }
 
-    if (transientfluid == Inpar::PoroElast::transient_momentum_only)
+    if (transientfluid == PoroElast::transient_momentum_only)
     {
       FOUR_C_THROW(
           "Option 'momentum' for parameter 'TRANSIENT_TERMS' in section POROELASTICITY DYNAMIC is "

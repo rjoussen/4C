@@ -13,9 +13,9 @@
  *----------------------------------------------------------------------*/
 #include "4C_config.hpp"
 
-#include "4C_inpar_poroscatra.hpp"
 #include "4C_linalg_mapextractor.hpp"
 #include "4C_poroelast_scatra_base.hpp"
+#include "4C_poroelast_scatra_input.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
 #include <Teuchos_Time.hpp>
@@ -205,12 +205,11 @@ namespace PoroElastScaTra
 
     //! @name Iterative solution technique
 
-    enum Inpar::PoroElast::ConvNorm normtypeinc_;   //!< convergence check for increments
-    enum Inpar::PoroElast::ConvNorm normtypefres_;  //!< convergence check for residual forces
-    enum Inpar::PoroElast::BinaryOp
-        combincfres_;  //!< binary operator to combine increments and residuals
-    enum Inpar::PoroElast::VectorNorm vectornormfres_;  //!< type of norm for residual
-    enum Inpar::PoroElast::VectorNorm vectornorminc_;   //!< type of norm for increments
+    enum PoroElast::ConvNorm normtypeinc_;   //!< convergence check for increments
+    enum PoroElast::ConvNorm normtypefres_;  //!< convergence check for residual forces
+    enum PoroElast::BinaryOp combincfres_;  //!< binary operator to combine increments and residuals
+    enum PoroElast::VectorNorm vectornormfres_;  //!< type of norm for residual
+    enum PoroElast::VectorNorm vectornorminc_;   //!< type of norm for increments
 
     double tolinc_;   //!< tolerance residual increment
     double tolfres_;  //!< tolerance force residual

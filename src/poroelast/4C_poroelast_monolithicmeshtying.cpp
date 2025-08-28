@@ -231,10 +231,10 @@ bool PoroElast::MonolithicMeshtying::converged()
   // residual increments
   switch (normtypeinc_)
   {
-    case Inpar::PoroElast::convnorm_abs_global:
+    case PoroElast::convnorm_abs_global:
       convinc = norminc_ < tolinc_;
       break;
-    case Inpar::PoroElast::convnorm_abs_singlefields:
+    case PoroElast::convnorm_abs_singlefields:
       convinc = (normincstruct_ < tolinc_struct_ and normincfluidvel_ < tolinc_velocity_ and
                  normincfluidpres_ < tolinc_pressure_ and normincporo_ < tolinc_porosity_);
       break;
@@ -246,10 +246,10 @@ bool PoroElast::MonolithicMeshtying::converged()
   // residual forces
   switch (normtypefres_)
   {
-    case Inpar::PoroElast::convnorm_abs_global:
+    case PoroElast::convnorm_abs_global:
       convfres = normrhs_ < tolfres_;
       break;
-    case Inpar::PoroElast::convnorm_abs_singlefields:
+    case PoroElast::convnorm_abs_singlefields:
       convfres = (normrhsstruct_ < tolfres_struct_ and normrhsfluidvel_ < tolfres_velocity_ and
                   normrhsfluidpres_ < tolfres_pressure_ and normrhsporo_ < tolfres_porosity_ and
                   normrhsfactiven_ < tolfres_ncoup_);
@@ -261,9 +261,9 @@ bool PoroElast::MonolithicMeshtying::converged()
 
   // combine increments and forces
   bool conv = false;
-  if (combincfres_ == Inpar::PoroElast::bop_and)
+  if (combincfres_ == PoroElast::bop_and)
     conv = convinc and convfres;
-  else if (combincfres_ == Inpar::PoroElast::bop_or)
+  else if (combincfres_ == PoroElast::bop_or)
     conv = convinc or convfres;
   else
     FOUR_C_THROW("Something went terribly wrong with binary operator!");
@@ -301,11 +301,11 @@ void PoroElast::MonolithicMeshtying::print_newton_iter_header_stream(std::ostrin
   // residual forces
   switch (normtypefres_)
   {
-    case Inpar::PoroElast::convnorm_abs_global:
+    case PoroElast::convnorm_abs_global:
       oss << std::setw(15) << "abs-res"
           << "(" << std::setw(5) << std::setprecision(2) << tolfres_ << ")";
       break;
-    case Inpar::PoroElast::convnorm_abs_singlefields:
+    case PoroElast::convnorm_abs_singlefields:
       oss << std::setw(15) << "abs-s-res"
           << "(" << std::setw(5) << std::setprecision(2) << tolfres_struct_ << ")";
       if (porosity_dof_)
@@ -325,11 +325,11 @@ void PoroElast::MonolithicMeshtying::print_newton_iter_header_stream(std::ostrin
 
   switch (normtypeinc_)
   {
-    case Inpar::PoroElast::convnorm_abs_global:
+    case PoroElast::convnorm_abs_global:
       oss << std::setw(15) << "abs-inc"
           << "(" << std::setw(5) << std::setprecision(2) << tolinc_ << ")";
       break;
-    case Inpar::PoroElast::convnorm_abs_singlefields:
+    case PoroElast::convnorm_abs_singlefields:
       oss << std::setw(15) << "abs-s-inc"
           << "(" << std::setw(5) << std::setprecision(2) << tolinc_struct_ << ")";
       if (porosity_dof_)
@@ -357,10 +357,10 @@ void PoroElast::MonolithicMeshtying::print_newton_iter_text_stream(std::ostrings
   // residual forces
   switch (normtypefres_)
   {
-    case Inpar::PoroElast::convnorm_abs_global:
+    case PoroElast::convnorm_abs_global:
       oss << std::setw(22) << std::setprecision(5) << std::scientific << normrhs_;
       break;
-    case Inpar::PoroElast::convnorm_abs_singlefields:
+    case PoroElast::convnorm_abs_singlefields:
       break;
     default:
       FOUR_C_THROW("Unknown or undefined convergence form for global residual.");
@@ -369,10 +369,10 @@ void PoroElast::MonolithicMeshtying::print_newton_iter_text_stream(std::ostrings
   // increments
   switch (normtypeinc_)
   {
-    case Inpar::PoroElast::convnorm_abs_global:
+    case PoroElast::convnorm_abs_global:
       oss << std::setw(22) << std::setprecision(5) << std::scientific << norminc_;
       break;
-    case Inpar::PoroElast::convnorm_abs_singlefields:
+    case PoroElast::convnorm_abs_singlefields:
       break;
     default:
       FOUR_C_THROW("Unknown or undefined convergence form for global increment.");
@@ -382,7 +382,7 @@ void PoroElast::MonolithicMeshtying::print_newton_iter_text_stream(std::ostrings
   // --------------------------------------------------------single field test
   switch (normtypefres_)
   {
-    case Inpar::PoroElast::convnorm_abs_singlefields:
+    case PoroElast::convnorm_abs_singlefields:
       oss << std::setw(22) << std::setprecision(5) << std::scientific << normrhsstruct_;
       if (porosity_dof_)
         oss << std::setw(22) << std::setprecision(5) << std::scientific << normrhsporo_;
@@ -390,7 +390,7 @@ void PoroElast::MonolithicMeshtying::print_newton_iter_text_stream(std::ostrings
       oss << std::setw(22) << std::setprecision(5) << std::scientific << normrhsfluidpres_;
       oss << std::setw(22) << std::setprecision(5) << std::scientific << normrhsfactiven_;
       break;
-    case Inpar::PoroElast::convnorm_abs_global:
+    case PoroElast::convnorm_abs_global:
       break;
     default:
       FOUR_C_THROW("Unknown or undefined convergence form for single field residual.");
@@ -399,14 +399,14 @@ void PoroElast::MonolithicMeshtying::print_newton_iter_text_stream(std::ostrings
 
   switch (normtypeinc_)
   {
-    case Inpar::PoroElast::convnorm_abs_singlefields:
+    case PoroElast::convnorm_abs_singlefields:
       oss << std::setw(22) << std::setprecision(5) << std::scientific << normincstruct_;
       if (porosity_dof_)
         oss << std::setw(22) << std::setprecision(5) << std::scientific << normincporo_;
       oss << std::setw(22) << std::setprecision(5) << std::scientific << normincfluidvel_;
       oss << std::setw(22) << std::setprecision(5) << std::scientific << normincfluidpres_;
       break;
-    case Inpar::PoroElast::convnorm_abs_global:
+    case PoroElast::convnorm_abs_global:
       break;
     default:
       FOUR_C_THROW("Unknown or undefined convergence form for single field increment.");

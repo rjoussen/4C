@@ -5,7 +5,7 @@
 //
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
-#include "4C_inpar_poroelast.hpp"
+#include "4C_poroelast_input.hpp"
 
 #include "4C_inpar_fluid.hpp"
 #include "4C_io_input_spec_builders.hpp"
@@ -13,7 +13,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-void Inpar::PoroElast::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
+void PoroElast::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
 {
   using namespace Core::IO::InputSpecBuilders;
 
@@ -21,17 +21,9 @@ void Inpar::PoroElast::set_valid_parameters(std::map<std::string, Core::IO::Inpu
       {
 
           // Coupling strategy for (monolithic) porous media solvers
-          deprecated_selection<Inpar::PoroElast::SolutionSchemeOverFields>("COUPALGO",
-              {
-                  {"poro_partitioned", Partitioned},
-                  {"poro_monolithic", Monolithic},
-                  {"poro_monolithicstructuresplit", Monolithic_structuresplit},
-                  {"poro_monolithicfluidsplit", Monolithic_fluidsplit},
-                  {"poro_monolithicnopenetrationsplit", Monolithic_nopenetrationsplit},
-                  {"poro_monolithicmeshtying", Monolithic_meshtying},
-              },
-              {.description = "Coupling strategies for poroelasticity solvers",
-                  .default_value = Monolithic}),
+          parameter<PoroElast::SolutionSchemeOverFields>(
+              "COUPALGO", {.description = "Coupling strategies for poroelasticity solvers",
+                              .default_value = PoroElast::SolutionSchemeOverFields::Monolithic}),
 
           // physical type of poro fluid flow (incompressible, varying density, loma, Boussinesq
           // approximation)
@@ -44,7 +36,7 @@ void Inpar::PoroElast::set_valid_parameters(std::map<std::string, Core::IO::Inpu
 
           // physical type of poro fluid flow (incompressible, varying density, loma, Boussinesq
           // approximation)
-          deprecated_selection<Inpar::PoroElast::TransientEquationsOfPoroFluid>("TRANSIENT_TERMS",
+          deprecated_selection<PoroElast::TransientEquationsOfPoroFluid>("TRANSIENT_TERMS",
               {
                   {"none", transient_none},
                   {"momentum", transient_momentum_only},
@@ -109,7 +101,7 @@ void Inpar::PoroElast::set_valid_parameters(std::map<std::string, Core::IO::Inpu
               {.description = "tolerance in the residual norm for the Newton iteration",
                   .default_value = 1e-8}),
 
-          deprecated_selection<Inpar::PoroElast::ConvNorm>("NORM_INC",
+          deprecated_selection<PoroElast::ConvNorm>("NORM_INC",
               {
                   {"AbsGlobal", convnorm_abs_global},
                   {"AbsSingleFields", convnorm_abs_singlefields},
@@ -117,7 +109,7 @@ void Inpar::PoroElast::set_valid_parameters(std::map<std::string, Core::IO::Inpu
               {.description = "type of norm for primary variables convergence check",
                   .default_value = convnorm_abs_singlefields}),
 
-          deprecated_selection<Inpar::PoroElast::ConvNorm>("NORM_RESF",
+          deprecated_selection<PoroElast::ConvNorm>("NORM_RESF",
               {
                   {"AbsGlobal", convnorm_abs_global},
                   {"AbsSingleFields", convnorm_abs_singlefields},
@@ -126,7 +118,7 @@ void Inpar::PoroElast::set_valid_parameters(std::map<std::string, Core::IO::Inpu
                   .default_value = convnorm_abs_singlefields}),
 
 
-          deprecated_selection<Inpar::PoroElast::BinaryOp>("NORMCOMBI_RESFINC",
+          deprecated_selection<PoroElast::BinaryOp>("NORMCOMBI_RESFINC",
               {
                   {"And", bop_and},
                   {"Or", bop_or},
@@ -136,7 +128,7 @@ void Inpar::PoroElast::set_valid_parameters(std::map<std::string, Core::IO::Inpu
                   .default_value = bop_and}),
 
 
-          deprecated_selection<Inpar::PoroElast::VectorNorm>("VECTORNORM_RESF",
+          deprecated_selection<PoroElast::VectorNorm>("VECTORNORM_RESF",
               {
                   {"L1", norm_l1},
                   {"L1_Scaled", norm_l1_scaled},
@@ -147,7 +139,7 @@ void Inpar::PoroElast::set_valid_parameters(std::map<std::string, Core::IO::Inpu
               {.description = "type of norm to be applied to residuals", .default_value = norm_l2}),
 
 
-          deprecated_selection<Inpar::PoroElast::VectorNorm>("VECTORNORM_INC",
+          deprecated_selection<PoroElast::VectorNorm>("VECTORNORM_INC",
               {
                   {"L1", norm_l1},
                   {"L1_Scaled", norm_l1_scaled},

@@ -41,8 +41,6 @@
 #include "4C_inpar_particle.hpp"
 #include "4C_inpar_pasi.hpp"
 #include "4C_inpar_plasticity.hpp"
-#include "4C_inpar_poroelast.hpp"
-#include "4C_inpar_poroscatra.hpp"
 #include "4C_inpar_problemtype.hpp"
 #include "4C_inpar_s2i.hpp"
 #include "4C_inpar_scatra.hpp"
@@ -61,6 +59,8 @@
 #include "4C_io_pstream.hpp"
 #include "4C_linear_solver_method_input.hpp"
 #include "4C_lubrication_input.hpp"
+#include "4C_poroelast_input.hpp"
+#include "4C_poroelast_scatra_input.hpp"
 #include "4C_porofluid_pressure_based_elast_input.hpp"
 #include "4C_porofluid_pressure_based_elast_scatra_input.hpp"
 #include "4C_porofluid_pressure_based_input.hpp"
@@ -252,8 +252,8 @@ std::map<std::string, Core::IO::InputSpec> Global::valid_parameters()
 
   Inpar::S2I::set_valid_parameters(specs);
   Inpar::FS3I::set_valid_parameters(specs);
-  Inpar::PoroElast::set_valid_parameters(specs);
-  Inpar::PoroScaTra::set_valid_parameters(specs);
+  PoroElast::set_valid_parameters(specs);
+  PoroElastScaTra::set_valid_parameters(specs);
   PoroPressureBased::set_valid_parameters_porofluid(specs);
   PoroPressureBased::set_valid_parameters_porofluid_elast_scatra(specs);
   PoroPressureBased::set_valid_parameters_porofluid_elast(specs);

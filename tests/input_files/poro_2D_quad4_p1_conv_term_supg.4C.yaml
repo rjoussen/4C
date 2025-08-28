@@ -25,7 +25,7 @@ IO:
   STRUCT_STRESS: "Cauchy"
   FLUID_STRESS: true
 POROELASTICITY DYNAMIC:
-  COUPALGO: "poro_monolithicfluidsplit"
+  COUPALGO: "Monolithic_fluidsplit"
   PHYSICAL_TYPE: "Poro_P1"
   RESTARTEVERY: 10
   NUMSTEP: 6

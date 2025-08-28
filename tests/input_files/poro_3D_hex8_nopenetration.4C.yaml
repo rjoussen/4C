@@ -17,7 +17,7 @@ FLUID DYNAMIC/POROUS-FLOW STABILIZATION:
   EVALUATION_TAU: "integration_point"
   EVALUATION_MAT: "integration_point"
 POROELASTICITY DYNAMIC:
-  COUPALGO: "poro_monolithicnopenetrationsplit"
+  COUPALGO: "Monolithic_nopenetrationsplit"
   RESTARTEVERY: 5
   NUMSTEP: 10
   MAXTIME: 8

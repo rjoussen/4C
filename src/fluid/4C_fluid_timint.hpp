@@ -602,7 +602,7 @@ namespace FLD
     }
     /// set initial porosity field
     void set_initial_porosity_field(
-        const Inpar::PoroElast::InitialField initfield, const int startfuncno) override
+        const PoroElast::InitialField initfield, const int startfuncno) override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return;

@@ -10,9 +10,9 @@
 
 #include "4C_config.hpp"
 
-#include "4C_inpar_poroelast.hpp"
 #include "4C_inpar_structure.hpp"
 #include "4C_poroelast_base.hpp"
+#include "4C_poroelast_input.hpp"
 #include "4C_poroelast_utils.hpp"
 
 namespace Teuchos
@@ -360,12 +360,11 @@ namespace PoroElast
 
     //! @name Iterative solution technique
 
-    enum Inpar::PoroElast::ConvNorm normtypeinc_;   //!< convergence check for residual temperatures
-    enum Inpar::PoroElast::ConvNorm normtypefres_;  //!< convergence check for residual forces
-    enum Inpar::PoroElast::BinaryOp
-        combincfres_;  //!< binary operator to combine temperatures and forces
-    enum Inpar::PoroElast::VectorNorm vectornormfres_;  //!< type of norm for residual
-    enum Inpar::PoroElast::VectorNorm vectornorminc_;   //!< type of norm for increments
+    enum PoroElast::ConvNorm normtypeinc_;   //!< convergence check for residual temperatures
+    enum PoroElast::ConvNorm normtypefres_;  //!< convergence check for residual forces
+    enum PoroElast::BinaryOp combincfres_;   //!< binary operator to combine temperatures and forces
+    enum PoroElast::VectorNorm vectornormfres_;  //!< type of norm for residual
+    enum PoroElast::VectorNorm vectornorminc_;   //!< type of norm for increments
 
     double tolinc_;   //!< tolerance residual increment
     double tolfres_;  //!< tolerance force residual

@@ -16,6 +16,7 @@
 #include "4C_mat_fluidporo.hpp"
 #include "4C_mat_structporo.hpp"
 #include "4C_poroelast_base.hpp"
+#include "4C_poroelast_input.hpp"
 #include "4C_poroelast_monolithic.hpp"
 #include "4C_poroelast_monolithicfluidsplit.hpp"
 #include "4C_poroelast_monolithicmeshtying.hpp"
@@ -66,48 +67,48 @@ std::shared_ptr<PoroElast::PoroBase> PoroElast::Utils::create_poro_algorithm(
   const Teuchos::ParameterList& poroelastdyn = problem->poroelast_dynamic_params();
 
   //  problem->mortar_coupling_params()
-  const auto coupling = Teuchos::getIntegralValue<Inpar::PoroElast::SolutionSchemeOverFields>(
-      poroelastdyn, "COUPALGO");
+  const auto coupling =
+      Teuchos::getIntegralValue<PoroElast::SolutionSchemeOverFields>(poroelastdyn, "COUPALGO");
 
   // create an empty Poroelast::Algorithm instance
   std::shared_ptr<PoroElast::PoroBase> poroalgo = nullptr;
 
   switch (coupling)
   {
-    case Inpar::PoroElast::Monolithic:
+    case PoroElast::SolutionSchemeOverFields::Monolithic:
     {
       // create an PoroElast::Monolithic instance
       poroalgo = std::make_shared<PoroElast::Monolithic>(comm, timeparams, porosity_splitter);
       break;
     }  // monolithic case
-    case Inpar::PoroElast::Monolithic_structuresplit:
+    case PoroElast::SolutionSchemeOverFields::Monolithic_structuresplit:
     {
       // create an PoroElast::MonolithicStructureSplit instance
       poroalgo = std::make_shared<PoroElast::MonolithicStructureSplit>(
           comm, timeparams, porosity_splitter);
       break;
     }
-    case Inpar::PoroElast::Monolithic_fluidsplit:
+    case PoroElast::SolutionSchemeOverFields::Monolithic_fluidsplit:
     {
       // create an PoroElast::MonolithicFluidSplit instance
       poroalgo =
           std::make_shared<PoroElast::MonolithicFluidSplit>(comm, timeparams, porosity_splitter);
       break;
     }
-    case Inpar::PoroElast::Monolithic_nopenetrationsplit:
+    case PoroElast::SolutionSchemeOverFields::Monolithic_nopenetrationsplit:
     {
       // create an PoroElast::MonolithicSplitNoPenetration instance
       poroalgo = std::make_shared<PoroElast::MonolithicSplitNoPenetration>(
           comm, timeparams, porosity_splitter);
       break;
     }
-    case Inpar::PoroElast::Partitioned:
+    case PoroElast::SolutionSchemeOverFields::Partitioned:
     {
       // create an PoroElast::Partitioned instance
       poroalgo = std::make_shared<PoroElast::Partitioned>(comm, timeparams, porosity_splitter);
       break;
     }
-    case Inpar::PoroElast::Monolithic_meshtying:
+    case PoroElast::SolutionSchemeOverFields::Monolithic_meshtying:
     {
       // create an PoroElast::MonolithicMeshtying instance
       poroalgo =
@@ -323,11 +324,11 @@ void PoroElast::print_logo()
 }
 
 double PoroElast::Utils::calculate_vector_norm(
-    const enum Inpar::PoroElast::VectorNorm norm, const Core::LinAlg::Vector<double>& vect)
+    const enum PoroElast::VectorNorm norm, const Core::LinAlg::Vector<double>& vect)
 {
   // L1 norm
   // norm = sum_0^i vect[i]
-  if (norm == Inpar::PoroElast::norm_l1)
+  if (norm == PoroElast::norm_l1)
   {
     double vectnorm;
     vect.norm_1(&vectnorm);
@@ -335,7 +336,7 @@ double PoroElast::Utils::calculate_vector_norm(
   }
   // L2/Euclidian norm
   // norm = sqrt{sum_0^i vect[i]^2 }
-  else if (norm == Inpar::PoroElast::norm_l2)
+  else if (norm == PoroElast::norm_l2)
   {
     double vectnorm;
     vect.norm_2(&vectnorm);
@@ -343,7 +344,7 @@ double PoroElast::Utils::calculate_vector_norm(
   }
   // RMS norm
   // norm = sqrt{sum_0^i vect[i]^2 }/ sqrt{length_vect}
-  else if (norm == Inpar::PoroElast::norm_rms)
+  else if (norm == PoroElast::norm_rms)
   {
     double vectnorm;
     vect.norm_2(&vectnorm);
@@ -351,14 +352,14 @@ double PoroElast::Utils::calculate_vector_norm(
   }
   // infinity/maximum norm
   // norm = max( vect[i] )
-  else if (norm == Inpar::PoroElast::norm_inf)
+  else if (norm == PoroElast::norm_inf)
   {
     double vectnorm;
     vect.norm_inf(&vectnorm);
     return vectnorm;
   }
   // norm = sum_0^i vect[i]/length_vect
-  else if (norm == Inpar::PoroElast::norm_l1_scaled)
+  else if (norm == PoroElast::norm_l1_scaled)
   {
     double vectnorm;
     vect.norm_1(&vectnorm);

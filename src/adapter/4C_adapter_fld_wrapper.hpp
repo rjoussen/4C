@@ -144,7 +144,7 @@ namespace Adapter
       return fluid_->set_initial_flow_field(initfield, startfuncno);
     }
     void set_initial_porosity_field(
-        const Inpar::PoroElast::InitialField initfield, const int startfuncno) override
+        const PoroElast::InitialField initfield, const int startfuncno) override
     {
       return fluid_->set_initial_porosity_field(initfield, startfuncno);
     };

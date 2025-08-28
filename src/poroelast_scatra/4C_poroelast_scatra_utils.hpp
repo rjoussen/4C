@@ -12,8 +12,8 @@
 
 #include "4C_coupling_volmortar_utils.hpp"
 #include "4C_fem_general_element.hpp"
-#include "4C_inpar_poroelast.hpp"
 #include "4C_linalg_vector.hpp"
+#include "4C_poroelast_input.hpp"
 #include "4C_poroelast_utils.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
@@ -110,8 +110,8 @@ namespace PoroElastScaTra
         Core::FE::Discretization& voldiscret, Core::FE::Discretization* voldiscret2 = nullptr);
 
     //! Determine norm of vector
-    double calculate_vector_norm(const enum Inpar::PoroElast::VectorNorm norm,  //!< norm to use
-        const std::shared_ptr<const Core::LinAlg::Vector<double>> vect  //!< the vector of interest
+    double calculate_vector_norm(const enum PoroElast::VectorNorm norm,  //!< norm to use
+        const std::shared_ptr<const Core::LinAlg::Vector<double>> vect   //!< the vector of interest
     );
 
     //! Set the slave and master elements of the face element

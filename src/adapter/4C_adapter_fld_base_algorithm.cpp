@@ -36,12 +36,12 @@
 #include "4C_global_data.hpp"
 #include "4C_inpar_fluid.hpp"
 #include "4C_inpar_fsi.hpp"
-#include "4C_inpar_poroelast.hpp"
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
 #include "4C_io_pstream.hpp"
 #include "4C_linear_solver_method.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
+#include "4C_poroelast_input.hpp"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_Time.hpp>
@@ -257,9 +257,8 @@ void Adapter::FluidBaseAlgorithm::setup_fluid(const Teuchos::ParameterList& prbd
           "Input parameter PHYSICAL_TYPE in section POROELASTICITY DYNAMIC needs to be 'Poro' or "
           "'Poro_P1' for poro-elasticity!");
 
-    fluidtimeparams->set<Inpar::PoroElast::TransientEquationsOfPoroFluid>(
-        "Transient Terms Poro Fluid",
-        Teuchos::getIntegralValue<Inpar::PoroElast::TransientEquationsOfPoroFluid>(
+    fluidtimeparams->set<PoroElast::TransientEquationsOfPoroFluid>("Transient Terms Poro Fluid",
+        Teuchos::getIntegralValue<PoroElast::TransientEquationsOfPoroFluid>(
             pedyn, "TRANSIENT_TERMS"));
   }
 
