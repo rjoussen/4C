@@ -191,15 +191,6 @@ namespace BeamInteraction
     }
 
     /**
-     * \brief Returns a const reference to the Lagrange Multiplier dof col map
-     * @return Reference to the lambda dof colmap.
-     */
-    const std::shared_ptr<Core::LinAlg::Map>& get_lambda_dof_col_map() const
-    {
-      return lambda_dof_colmap_;
-    }
-
-    /**
      * \brief Calculate the internal mortar penalty energy.
      * @return Global mortar energy.
      */

@@ -496,9 +496,11 @@ BeamInteraction::BeamToSolidMortarManager::get_global_lambda() const
   if (beam_to_solid_params_->get_constraint_enforcement() ==
       Inpar::BeamToSolid::BeamToSolidConstraintEnforcement::lagrange)
   {
-    auto global_lambda = std::make_shared<Core::LinAlg::Vector<double>>(*lambda_dof_colmap_);
+    auto global_lambda =
+        std::make_shared<Core::LinAlg::Vector<double>>(*lambda_dof_rowmap_);  // row map
 
     Core::LinAlg::export_to(*global_lambda_, *global_lambda);
+    return global_lambda;
   }
 
   auto penalty_regularization = get_penalty_regularization(false);

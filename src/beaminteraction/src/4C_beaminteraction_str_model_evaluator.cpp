@@ -729,7 +729,6 @@ bool Solid::ModelEvaluator::BeamInteraction::evaluate_force_stiff()
 
 bool Solid::ModelEvaluator::BeamInteraction::have_lagrange_dofs() const
 {
-  int beam_contact_model_count = 0;
   bool lagrange_flag = false;
   for (std::size_t i = 0; i < me_vec_ptr_->size(); ++i)
   {
@@ -738,17 +737,16 @@ bool Solid::ModelEvaluator::BeamInteraction::have_lagrange_dofs() const
             (*me_vec_ptr_)[i]);
     if (!beam_contact_model) continue;
 
-    ++beam_contact_model_count;
-
     auto params = beam_contact_model->beam_contact_params().beam_to_solid_volume_meshtying_params();
     if (params && params->get_constraint_enforcement() ==
                       Inpar::BeamToSolid::BeamToSolidConstraintEnforcement::lagrange)
     {
       lagrange_flag = true;
+      if (me_vec_ptr_->size() > 1) FOUR_C_THROW("Only one Beam Contact condition is supported");
     }
   }
 
-  if (beam_contact_model_count > 1) FOUR_C_THROW("Only one Beam Contact condition is supported");
+
   return lagrange_flag;
 }
 
@@ -882,8 +880,7 @@ void Solid::ModelEvaluator::BeamInteraction::run_pre_compute_x(
     const Core::LinAlg::Vector<double>& xold, Core::LinAlg::Vector<double>& dir_mutable,
     const NOX::Nln::Group& curr_grp)
 {
-  if (!have_lagrange_dofs()) return;
-  Core::LinAlg::export_to(dir_mutable, *ia_state_ptr_->get_lambda());
+  if (have_lagrange_dofs()) Core::LinAlg::export_to(dir_mutable, *ia_state_ptr_->get_lambda());
 }
 
 /*----------------------------------------------------------------------------*

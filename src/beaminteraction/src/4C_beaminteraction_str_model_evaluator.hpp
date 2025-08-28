@@ -38,7 +38,6 @@ namespace Core::Binstrategy
 
 namespace BeamInteraction
 {
-  class BeamToSolidParamsBase;
   class BeamInteractionParams;
 
   class BeamCrosslinkerHandler;
