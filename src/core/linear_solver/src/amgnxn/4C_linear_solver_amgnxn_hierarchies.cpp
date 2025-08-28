@@ -148,8 +148,7 @@ void Core::LinearSolver::AMGNxN::Hierarchies::setup()
   for (int block = 0; block < num_blocks_; block++)
   {
     int offsetFineLevel = a_->get_matrix(block, block)->row_map().min_all_gid();
-    Teuchos::RCP<Epetra_Operator> A_eop =
-        Teuchos::rcpFromRef(*a_->get_matrix(block, block)->epetra_operator());
+    auto A_eop = Teuchos::rcpFromRef(*a_->get_matrix(block, block)->epetra_matrix());
     h_block_[block] =
         build_mue_lu_hierarchy(muelu_params_[block], num_pdes_[block], null_spaces_dim_[block],
             null_spaces_data_[block], A_eop, block, num_blocks_, offsets, offsetFineLevel);
@@ -324,7 +323,7 @@ void Core::LinearSolver::AMGNxN::Hierarchies::setup()
 Teuchos::RCP<MueLu::Hierarchy<Scalar, LocalOrdinal, GlobalOrdinal, Node>>
 Core::LinearSolver::AMGNxN::Hierarchies::build_mue_lu_hierarchy(
     Teuchos::ParameterList paramListFromXml, int numdf, int dimns,
-    std::shared_ptr<std::vector<double>> nsdata, Teuchos::RCP<Epetra_Operator> A_eop, int block,
+    std::shared_ptr<std::vector<double>> nsdata, Teuchos::RCP<Epetra_CrsMatrix> A_eop, int block,
     int NumBlocks, std::vector<int>& offsets, int offsetFineLevel)
 {
   TEUCHOS_FUNC_TIME_MONITOR("Core::LinAlg::SOLVER::AMGNxN::Hierarchies::build_mue_lu_hierarchy");

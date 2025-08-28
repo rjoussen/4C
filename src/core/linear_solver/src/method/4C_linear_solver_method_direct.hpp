@@ -64,7 +64,7 @@ namespace Core::LinearSolver
     std::shared_ptr<Core::LinAlg::MultiVector<double>> b_;
 
     //! system of equations
-    std::shared_ptr<Core::LinAlg::SparseOperator> a_;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> a_;
 
 #if FOUR_C_TRILINOS_INTERNAL_VERSION_GE(2025, 3)
     //! an abstract Amesos2 solver that can be any of the concrete implementations
