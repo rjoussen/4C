@@ -122,7 +122,7 @@ void Solid::TimeInt::ImplicitBase::print_step()
   const int stepmax = data_sdyn().get_step_max();
   const int stepn = data_global_state().get_step_n();
   const double& timen = data_global_state().get_time_n();
-  const double& dt = (*data_global_state().get_delta_time())[0];
+  const double& dt = data_global_state().get_delta_time()[0];
   const int newtoniter = data_global_state().get_nln_iteration_number(stepn);
   double wct = data_global_state().get_timer()->totalElapsedTime(true);
 

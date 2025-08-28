@@ -185,7 +185,7 @@ void Solid::IMPLICIT::Statics::pre_update()
   if (impl_ptr == nullptr) return;
 
   // get the time step size
-  const double dt = (*global_state().get_delta_time())[0];
+  const double dt = global_state().get_delta_time()[0];
 
   const Inpar::Solid::PredEnum& pred_type = impl_ptr->predictor().get_type();
   std::shared_ptr<Core::LinAlg::Vector<double>>& accnp_ptr = global_state().get_acc_np();
@@ -264,7 +264,7 @@ bool Solid::IMPLICIT::Statics::predict_const_vel_consist_acc(Core::LinAlg::Vecto
   // Displacement increment over last time step
   std::shared_ptr<Core::LinAlg::Vector<double>> disp_inc =
       std::make_shared<Core::LinAlg::Vector<double>>(*global_state().dof_row_map_view(), true);
-  disp_inc->update((*global_state().get_delta_time())[0], *global_state().get_vel_n(), 0.);
+  disp_inc->update(global_state().get_delta_time()[0], *global_state().get_vel_n(), 0.);
   // apply the dbc on the auxiliary vector
   tim_int().get_dbc().apply_dirichlet_to_vector(*disp_inc);
   // update the solution variables
@@ -289,7 +289,7 @@ bool Solid::IMPLICIT::Statics::predict_const_acc(Core::LinAlg::Vector<double>& d
   // Displacement increment over last time step
   std::shared_ptr<Core::LinAlg::Vector<double>> disp_inc =
       std::make_shared<Core::LinAlg::Vector<double>>(*global_state().dof_row_map_view(), true);
-  const double& dt = (*global_state().get_delta_time())[0];
+  const double& dt = global_state().get_delta_time()[0];
   disp_inc->update(dt, *global_state().get_vel_n(), 0.);
   disp_inc->update(0.5 * dt * dt, *global_state().get_acc_n(), 1.0);
   // apply the dbc on the auxiliary vector

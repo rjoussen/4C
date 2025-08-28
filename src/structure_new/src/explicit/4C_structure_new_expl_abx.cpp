@@ -51,15 +51,15 @@ void Solid::EXPLICIT::AdamsBashforthX<t_order>::setup()
   // resizing of multi-step quantities
   // ---------------------------------------------------------------------------
   constexpr int nhist = t_order - 1;
-  global_state().get_multi_time()->resize(-nhist, 0, true);
-  global_state().get_delta_time()->resize(-nhist, 0, true);
-  global_state().get_multi_dis()->resize(-nhist, 0, global_state().dof_row_map_view(), true);
-  global_state().get_multi_vel()->resize(-nhist, 0, global_state().dof_row_map_view(), true);
-  global_state().get_multi_acc()->resize(-nhist, 0, global_state().dof_row_map_view(), true);
+  global_state().get_multi_time().resize(-nhist, 0, true);
+  global_state().get_delta_time().resize(-nhist, 0, true);
+  global_state().get_multi_dis().resize(-nhist, 0, global_state().dof_row_map_view(), true);
+  global_state().get_multi_vel().resize(-nhist, 0, global_state().dof_row_map_view(), true);
+  global_state().get_multi_acc().resize(-nhist, 0, global_state().dof_row_map_view(), true);
 
   // here we initialized the dt of previous steps in the database, since a resize is performed
-  const double dt = (*global_state().get_delta_time())[0];
-  for (int i = 0; i < nhist; ++i) global_state().get_delta_time()->update_steps(dt);
+  const double dt = global_state().get_delta_time()[0];
+  for (int i = 0; i < nhist; ++i) global_state().get_delta_time().update_steps(dt);
 
   // -------------------------------------------------------------------
   // set initial displacement
@@ -99,7 +99,7 @@ void Solid::EXPLICIT::AdamsBashforthX<t_order>::set_state(const Core::LinAlg::Ve
   global_state().get_acc_np()->scale(1.0, *accnp_ptr);
   if (compute_phase_ < t_order)
   {
-    const double dt = (*global_state().get_delta_time())[0];
+    const double dt = global_state().get_delta_time()[0];
 
     // ---------------------------------------------------------------------------
     // new end-point velocities
@@ -117,7 +117,7 @@ void Solid::EXPLICIT::AdamsBashforthX<t_order>::set_state(const Core::LinAlg::Ve
   {
     constexpr int nhist = t_order - 1;
 
-    const double dt = (*global_state().get_delta_time())[0];
+    const double dt = global_state().get_delta_time()[0];
 
     // At present, a variable step size for high order Adams-Bashforth is not supported due to a
     // good reference is not yet been found. The time coefficient shall be adapted for a variable
@@ -125,7 +125,7 @@ void Solid::EXPLICIT::AdamsBashforthX<t_order>::set_state(const Core::LinAlg::Ve
     double test = 0.0, dti = dt;
     for (int i = 0; i < nhist; ++i)
     {
-      const double dti1 = (*global_state().get_delta_time())[-i - 1];
+      const double dti1 = global_state().get_delta_time()[-i - 1];
       test += std::abs(dti - dti1);
       dti = dti1;
     }
@@ -136,21 +136,21 @@ void Solid::EXPLICIT::AdamsBashforthX<t_order>::set_state(const Core::LinAlg::Ve
     // ---------------------------------------------------------------------------
     // new end-point velocities
     // ---------------------------------------------------------------------------
-    global_state().get_vel_np()->update(1.0, (*(global_state().get_multi_vel()))[0], 0.0);
+    global_state().get_vel_np()->update(1.0, (global_state().get_multi_vel())[0], 0.0);
     for (int i = 0; i < t_order; ++i)
     {
       double c = AdamsBashforthHelper<t_order>::exc[i];
-      global_state().get_vel_np()->update(c * dt, (*(global_state().get_multi_acc()))[-i], 1.0);
+      global_state().get_vel_np()->update(c * dt, (global_state().get_multi_acc())[-i], 1.0);
     }
 
     // ---------------------------------------------------------------------------
     // new end-point displacements
     // ---------------------------------------------------------------------------
-    global_state().get_dis_np()->update(1.0, (*(global_state().get_multi_dis()))[0], 0.0);
+    global_state().get_dis_np()->update(1.0, (global_state().get_multi_dis())[0], 0.0);
     for (int i = 0; i < t_order; ++i)
     {
       double c = AdamsBashforthHelper<t_order>::exc[i];
-      global_state().get_dis_np()->update(c * dt, (*(global_state().get_multi_vel()))[-i], 1.0);
+      global_state().get_dis_np()->update(c * dt, (global_state().get_multi_vel())[-i], 1.0);
     }
   }
 
@@ -208,14 +208,14 @@ void Solid::EXPLICIT::AdamsBashforthX<t_order>::write_restart(
       velname << "histvel_" << i;
       std::shared_ptr<const Core::LinAlg::Vector<double>> vel_ptr_ =
           Core::Utils::shared_ptr_from_ref<const Core::LinAlg::Vector<double>>(
-              (*(global_state().get_multi_vel()))[-i]);
+              global_state().get_multi_vel()[-i]);
       iowriter.write_vector(velname.str(), vel_ptr_);
 
       std::stringstream accname;
       accname << "histacc_" << i;
       std::shared_ptr<const Core::LinAlg::Vector<double>> acc_ptr_ =
           Core::Utils::shared_ptr_from_ref<const Core::LinAlg::Vector<double>>(
-              (*(global_state().get_multi_acc()))[-i]);
+              global_state().get_multi_acc()[-i]);
       iowriter.write_vector(accname.str(), acc_ptr_);
     }
   }
@@ -254,14 +254,14 @@ void Solid::EXPLICIT::AdamsBashforthX<t_order>::read_restart(
       std::shared_ptr<Core::LinAlg::Vector<double>> vel_ptr =
           std::make_shared<Core::LinAlg::Vector<double>>(*global_state().get_vel_n());
       ioreader.read_vector(vel_ptr, velname.str());
-      global_state().get_multi_vel()->update_steps(*vel_ptr);
+      global_state().get_multi_vel().update_steps(*vel_ptr);
 
       std::stringstream accname;
       accname << "histacc_" << i;
       std::shared_ptr<Core::LinAlg::Vector<double>> acc_ptr =
           std::make_shared<Core::LinAlg::Vector<double>>(*global_state().get_acc_n());
       ioreader.read_vector(acc_ptr, accname.str());
-      global_state().get_multi_acc()->update_steps(*acc_ptr);
+      global_state().get_multi_acc().update_steps(*acc_ptr);
     }
   }
 

@@ -16,6 +16,7 @@
 #include "4C_fsi_monolithicinterface.hpp"
 #include "4C_inpar_fsi.hpp"
 #include "4C_linalg_mapextractor.hpp"
+#include "4C_timestepping_mstep.hpp"
 
 #include <NOX.H>
 #include <NOX_Epetra.H>
@@ -30,15 +31,6 @@ namespace Adapter
   class FSIStructureWrapper;
   class StructureFSITimIntAda;
 }  // namespace Adapter
-
-namespace Discret
-{
-  namespace Utils
-  {
-    template <typename>
-    class TimIntMStep;
-  }
-}  // namespace Discret
 
 namespace Core::Nodes
 {
@@ -875,7 +867,7 @@ namespace FSI
      *  The algorithm's marching time step size is still the one from
      *  Adapter::AlgorithmBase.
      */
-    std::shared_ptr<TimeStepping::TimIntMStep<double>> dt_;
+    TimeStepping::TimIntMStep<double> dt_;
 
     int adaptstep_;  ///< current number of adaption steps, i.e. repetitions of this time step
 

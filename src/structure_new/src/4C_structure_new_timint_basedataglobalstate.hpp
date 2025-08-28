@@ -330,11 +330,11 @@ namespace Solid
       const double& get_time_n() const
       {
         check_init();
-        return (*timen_)[0];
+        return timen_[0];
       };
 
       /// Return time vector \f$t_{n}, t_{n-1}, ...\f$ of last converged steps
-      std::shared_ptr<const TimeStepping::TimIntMStep<double>> get_multi_time() const
+      const TimeStepping::TimIntMStep<double>& get_multi_time() const
       {
         check_init();
         return timen_;
@@ -382,7 +382,7 @@ namespace Solid
       };
 
       /// Return time step size \f$\Delta t\f$
-      std::shared_ptr<const TimeStepping::TimIntMStep<double>> get_delta_time() const
+      const TimeStepping::TimIntMStep<double>& get_delta_time() const
       {
         check_init();
         return dt_;
@@ -417,7 +417,7 @@ namespace Solid
       std::shared_ptr<const Core::LinAlg::Vector<double>> get_dis_n() const
       {
         check_init_setup();
-        return (*dis_)(0);
+        return dis_(0);
       }
 
       /// Return velocities \f$V_{n+1}\f$
@@ -431,14 +431,14 @@ namespace Solid
       std::shared_ptr<const Core::LinAlg::Vector<double>> get_vel_n() const
       {
         check_init_setup();
-        return (*vel_)(0);
+        return vel_(0);
       }
 
       /// Return velocities \f$V_{n}\f$
       std::shared_ptr<const Core::LinAlg::Vector<double>> get_vel_nm() const
       {
         check_init_setup();
-        return (*vel_)(-1);
+        return vel_(-1);
       }
 
       /// Return accelerations \f$A_{n+1}\f$
@@ -452,7 +452,7 @@ namespace Solid
       std::shared_ptr<const Core::LinAlg::Vector<double>> get_acc_n() const
       {
         check_init_setup();
-        return (*acc_)(0);
+        return acc_(0);
       }
 
       /// Return internal force \f$fint_{n}\f$
@@ -637,11 +637,11 @@ namespace Solid
       double& get_time_n()
       {
         check_init();
-        return (*timen_)[0];
+        return timen_[0];
       };
 
       /// Return time \f$t_{n}, t_{n-1}, ...\f$ of last converged steps
-      std::shared_ptr<TimeStepping::TimIntMStep<double>>& get_multi_time()
+      TimeStepping::TimIntMStep<double>& get_multi_time()
       {
         check_init();
         return timen_;
@@ -679,7 +679,7 @@ namespace Solid
       };
 
       /// Return time step size \f$\Delta t\f$
-      std::shared_ptr<TimeStepping::TimIntMStep<double>>& get_delta_time()
+      TimeStepping::TimIntMStep<double>& get_delta_time()
       {
         check_init();
         return dt_;
@@ -707,11 +707,11 @@ namespace Solid
       std::shared_ptr<Core::LinAlg::Vector<double>> get_dis_n()
       {
         check_init_setup();
-        return (*dis_)(0);
+        return dis_(0);
       }
 
       /// Return multi-displacement vector \f$D_{n}, D_{n-1}, ...\f$
-      std::shared_ptr<TimeStepping::TimIntMStep<Core::LinAlg::Vector<double>>>& get_multi_dis()
+      TimeStepping::TimIntMStep<Core::LinAlg::Vector<double>>& get_multi_dis()
       {
         check_init_setup();
         return dis_;
@@ -728,19 +728,18 @@ namespace Solid
       std::shared_ptr<Core::LinAlg::Vector<double>> get_vel_n()
       {
         check_init_setup();
-        return (*vel_)(0);
+        return vel_(0);
       }
 
       /// Return multi-velocity vector \f$V_{n}, V_{n-1}, ...\f$
-      std::shared_ptr<TimeStepping::TimIntMStep<Core::LinAlg::Vector<double>>>& get_multi_vel()
+      TimeStepping::TimIntMStep<Core::LinAlg::Vector<double>>& get_multi_vel()
       {
         check_init_setup();
         return vel_;
       }
 
       /// Return multi-velocity vector \f$V_{n}, V_{n-1}, ...\f$
-      const std::shared_ptr<TimeStepping::TimIntMStep<Core::LinAlg::Vector<double>>>&
-      get_multi_vel() const
+      const TimeStepping::TimIntMStep<Core::LinAlg::Vector<double>>& get_multi_vel() const
       {
         check_init_setup();
         return vel_;
@@ -757,19 +756,18 @@ namespace Solid
       std::shared_ptr<Core::LinAlg::Vector<double>> get_acc_n()
       {
         check_init_setup();
-        return (*acc_)(0);
+        return acc_(0);
       }
 
       /// Return multi-acceleration vector \f$A_{n}, A_{n-1}, ...\f$
-      std::shared_ptr<TimeStepping::TimIntMStep<Core::LinAlg::Vector<double>>>& get_multi_acc()
+      TimeStepping::TimIntMStep<Core::LinAlg::Vector<double>>& get_multi_acc()
       {
         check_init_setup();
         return acc_;
       }
 
       /// Return multi-acceleration vector \f$A_{n}, A_{n-1}, ...\f$
-      const std::shared_ptr<TimeStepping::TimIntMStep<Core::LinAlg::Vector<double>>>&
-      get_multi_acc() const
+      const TimeStepping::TimIntMStep<Core::LinAlg::Vector<double>>& get_multi_acc() const
       {
         check_init_setup();
         return acc_;
@@ -931,10 +929,10 @@ namespace Solid
       double timenp_;
 
       /// time \f$t_{n}\f$ of last converged step
-      std::shared_ptr<TimeStepping::TimIntMStep<double>> timen_;
+      TimeStepping::TimIntMStep<double> timen_;
 
       /// time step size \f$\Delta t\f$
-      std::shared_ptr<TimeStepping::TimIntMStep<double>> dt_;
+      TimeStepping::TimIntMStep<double> dt_;
 
       /// time step index \f$n\f$
       int stepn_;
@@ -957,13 +955,13 @@ namespace Solid
       ///@{
 
       /// global displacements \f${D}_{n}, D_{n-1}, ...\f$
-      std::shared_ptr<TimeStepping::TimIntMStep<Core::LinAlg::Vector<double>>> dis_;
+      TimeStepping::TimIntMStep<Core::LinAlg::Vector<double>> dis_;
 
       /// global velocities \f${V}_{n}, V_{n-1}, ...\f$
-      std::shared_ptr<TimeStepping::TimIntMStep<Core::LinAlg::Vector<double>>> vel_;
+      TimeStepping::TimIntMStep<Core::LinAlg::Vector<double>> vel_;
 
       /// global accelerations \f${A}_{n}, A_{n-1}, ...\f$
-      std::shared_ptr<TimeStepping::TimIntMStep<Core::LinAlg::Vector<double>>> acc_;
+      TimeStepping::TimIntMStep<Core::LinAlg::Vector<double>> acc_;
 
       /// global displacements \f${D}_{n+1}\f$ at \f$t_{n+1}\f$
       std::shared_ptr<Core::LinAlg::Vector<double>> disnp_;

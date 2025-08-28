@@ -71,17 +71,17 @@ Thermo::TimIntOneStepTheta::TimIntOneStepTheta(const Teuchos::ParameterList& iop
   // stored force vector F_{transient;n+1} at new time
   fcapn_ = Core::LinAlg::create_vector(*discret_->dof_row_map(), true);
   // set initial internal force vector
-  apply_force_tang_internal((*time_)[0], (*dt_)[0], (*temp_)(0), zeros_, fcap_, fint_, tang_);
+  apply_force_tang_internal(time_[0], dt_[0], temp_(0), zeros_, fcap_, fint_, tang_);
 
   // external force vector F_ext at last times
   fext_ = Core::LinAlg::create_vector(*discret_->dof_row_map(), true);
   // external force vector F_{n+1} at new time
   fextn_ = Core::LinAlg::create_vector(*discret_->dof_row_map(), true);
   // set initial external force vector
-  apply_force_external((*time_)[0], (*temp_)(0), *fext_);
+  apply_force_external(time_[0], temp_(0), *fext_);
   // set initial external force vector of convective heat transfer boundary
   // conditions
-  apply_force_external_conv((*time_)[0], (*temp_)(0), (*temp_)(0), fext_, tang_);
+  apply_force_external_conv(time_[0], temp_(0), temp_(0), fext_, tang_);
 
   // have a nice day
   return;
@@ -96,15 +96,15 @@ Thermo::TimIntOneStepTheta::TimIntOneStepTheta(const Teuchos::ParameterList& iop
 void Thermo::TimIntOneStepTheta::predict_const_temp_consist_rate()
 {
   // time step size
-  const double dt = (*dt_)[0];
+  const double dt = dt_[0];
 
   // constant predictor : temperature in domain
-  tempn_->update(1.0, *(*temp_)(0), 0.0);
+  tempn_->update(1.0, *temp_(0), 0.0);
 
   // new end-point temperature rates
   // R_{n+1}^{i+1} = -(1 - theta)/theta . R_n + 1/(theta . dt) . (T_{n+1}^{i+1} - T_n)
-  raten_->update(1.0, *tempn_, -1.0, *(*temp_)(0), 0.0);
-  raten_->update(-(1.0 - theta_) / theta_, *(*rate_)(0), 1.0 / (theta_ * dt));
+  raten_->update(1.0, *tempn_, -1.0, *temp_(0), 0.0);
+  raten_->update(-(1.0 - theta_) / theta_, *rate_(0), 1.0 / (theta_ * dt));
 
   // watch out
   return;
@@ -135,17 +135,17 @@ void Thermo::TimIntOneStepTheta::evaluate_rhs_tang_residual()
   // --> use tempn_
 
   // if the old temperature T_n  is sufficient --> no linearisation needed!
-  // --> use (*temp_)(0)
-  apply_force_external_conv(timen_, (*temp_)(0), tempn_, fextn_, tang_);
+  // --> use temp_(0)
+  apply_force_external_conv(timen_, temp_(0), tempn_, fextn_, tang_);
 
-  apply_force_external(timen_, (*temp_)(0), *fextn_);
+  apply_force_external(timen_, temp_(0), *fextn_);
 
   // initialise internal forces
   fintn_->put_scalar(0.0);
   fcapn_->put_scalar(0.0);
 
   // ordinary internal force and tangent
-  apply_force_tang_internal(timen_, (*dt_)[0], tempn_, tempi_, fcapn_, fintn_, tang_);
+  apply_force_tang_internal(timen_, dt_[0], tempn_, tempi_, fcapn_, fintn_, tang_);
 
   // build residual  Res = R_{n+theta}
   //                     + F_{int;n+theta}
@@ -178,7 +178,7 @@ void Thermo::TimIntOneStepTheta::evaluate_mid_state()
 {
   // mid-temperatures T_{n+1-alpha_f} (tempm)
   //    T_{n+theta} := theta * T_{n+1} + (1-theta) * T_{n}
-  tempt_->update(theta_, *tempn_, 1.0 - theta_, *(*temp_)(0), 0.0);
+  tempt_->update(theta_, *tempn_, 1.0 - theta_, *temp_(0), 0.0);
 
   // jump
   return;
@@ -199,7 +199,7 @@ double Thermo::TimIntOneStepTheta::calc_ref_norm_temperature()
   // points within the timestep (end point, generalized midpoint).
 
   double charnormtemp = 0.0;
-  charnormtemp = Thermo::Aux::calculate_vector_norm(iternorm_, *(*temp_)(0));
+  charnormtemp = Thermo::Aux::calculate_vector_norm(iternorm_, *temp_(0));
 
   // rise your hat
   return charnormtemp;
@@ -260,8 +260,8 @@ void Thermo::TimIntOneStepTheta::update_iter_incrementally()
 
   // new end-point temperature rates
   // aux = - (1-theta)/theta R_n + 1/(theta . dt) (T_{n+1}^{i+1} - T_{n+1}^i)
-  aux->update(1.0, *tempn_, -1.0, *(*temp_)(0), 0.0);
-  aux->update(-(1.0 - theta_) / theta_, *(*rate_)(0), 1.0 / (theta_ * (*dt_)[0]));
+  aux->update(1.0, *tempn_, -1.0, *temp_(0), 0.0);
+  aux->update(-(1.0 - theta_) / theta_, *rate_(0), 1.0 / (theta_ * dt_[0]));
   // put only to free/non-DBC DOFs
   dbcmaps_->insert_other_vector(*dbcmaps_->extract_other_vector(*aux), *raten_);
 
@@ -282,7 +282,7 @@ void Thermo::TimIntOneStepTheta::update_iter_iteratively()
 
   // new end-point temperature rates
   // R_{n+1}^{<k+1>} := R_{n+1}^{<k>} + 1/(theta . dt)IncT_{n+1}^{<k>}
-  raten_->update(1.0 / (theta_ * (*dt_)[0]), *tempi_, 1.0);
+  raten_->update(1.0 / (theta_ * dt_[0]), *tempi_, 1.0);
 
   // bye
   return;
@@ -298,10 +298,10 @@ void Thermo::TimIntOneStepTheta::update_step_state()
   // update state
   // new temperatures at t_{n+1} -> t_n
   //    T_{n} := T_{n+1}
-  temp_->update_steps(*tempn_);
+  temp_.update_steps(*tempn_);
   // new temperature rates at t_{n+1} -> t_n
   //    R_{n} := R_{n+1}
-  rate_->update_steps(*raten_);
+  rate_.update_steps(*raten_);
 
   // update new external force
   //    F_{ext;n} := F_{ext;n+1}
@@ -332,7 +332,7 @@ void Thermo::TimIntOneStepTheta::update_step_element()
   Teuchos::ParameterList p;
   // other parameters that might be needed by the elements
   p.set("total time", timen_);
-  p.set("delta time", (*dt_)[0]);
+  p.set("delta time", dt_[0]);
   // action for elements
   p.set<Thermo::Action>("action", Thermo::calc_thermo_update_istep);
   // go to elements

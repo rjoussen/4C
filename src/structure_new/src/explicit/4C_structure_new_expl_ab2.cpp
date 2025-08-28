@@ -47,15 +47,15 @@ void Solid::EXPLICIT::AdamsBashforth2::setup()
   // ---------------------------------------------------------------------------
   // resizing of multi-step quantities
   // ---------------------------------------------------------------------------
-  global_state().get_multi_time()->resize(-1, 0, true);
-  global_state().get_delta_time()->resize(-1, 0, true);
-  global_state().get_multi_dis()->resize(-1, 0, global_state().dof_row_map_view(), true);
-  global_state().get_multi_vel()->resize(-1, 0, global_state().dof_row_map_view(), true);
-  global_state().get_multi_acc()->resize(-1, 0, global_state().dof_row_map_view(), true);
+  global_state().get_multi_time().resize(-1, 0, true);
+  global_state().get_delta_time().resize(-1, 0, true);
+  global_state().get_multi_dis().resize(-1, 0, global_state().dof_row_map_view(), true);
+  global_state().get_multi_vel().resize(-1, 0, global_state().dof_row_map_view(), true);
+  global_state().get_multi_acc().resize(-1, 0, global_state().dof_row_map_view(), true);
 
   // here we initialized the dt of previous steps in the database, since a resize is performed
-  const double dt = (*global_state().get_delta_time())[0];
-  global_state().get_delta_time()->update_steps(dt);
+  const double dt = global_state().get_delta_time()[0];
+  global_state().get_delta_time().update_steps(dt);
 
   // -------------------------------------------------------------------
   // set initial displacement
@@ -83,8 +83,8 @@ void Solid::EXPLICIT::AdamsBashforth2::set_state(const Core::LinAlg::Vector<doub
 {
   check_init_setup();
 
-  const double dt = (*global_state().get_delta_time())[0];
-  const double dto = (*global_state().get_delta_time())[-1];
+  const double dt = global_state().get_delta_time()[0];
+  const double dto = global_state().get_delta_time()[-1];
   const double dta = (2.0 * dt * dto + dt * dt) / (2.0 * dto);
   const double dtb = -(dt * dt) / (2.0 * dto);
 
@@ -97,16 +97,16 @@ void Solid::EXPLICIT::AdamsBashforth2::set_state(const Core::LinAlg::Vector<doub
   // ---------------------------------------------------------------------------
   // new end-point velocities
   // ---------------------------------------------------------------------------
-  global_state().get_vel_np()->update(1.0, (*(global_state().get_multi_vel()))[0], 0.0);
-  global_state().get_vel_np()->update(dta, (*(global_state().get_multi_acc()))[0], dtb,
-      (*(global_state().get_multi_acc()))[-1], 1.0);
+  global_state().get_vel_np()->update(1.0, global_state().get_multi_vel()[0], 0.0);
+  global_state().get_vel_np()->update(
+      dta, global_state().get_multi_acc()[0], dtb, global_state().get_multi_acc()[-1], 1.0);
 
   // ---------------------------------------------------------------------------
   // new end-point displacements
   // ---------------------------------------------------------------------------
-  global_state().get_dis_np()->update(1.0, (*(global_state().get_multi_dis()))[0], 0.0);
-  global_state().get_dis_np()->update(dta, (*(global_state().get_multi_vel()))[0], dtb,
-      (*(global_state().get_multi_vel()))[-1], 1.0);
+  global_state().get_dis_np()->update(1.0, global_state().get_multi_dis()[0], 0.0);
+  global_state().get_dis_np()->update(
+      dta, global_state().get_multi_vel()[0], dtb, global_state().get_multi_vel()[-1], 1.0);
 
   // ---------------------------------------------------------------------------
   // update the elemental state
@@ -188,8 +188,8 @@ void Solid::EXPLICIT::AdamsBashforth2::update_step_state()
  *----------------------------------------------------------------------------*/
 double Solid::EXPLICIT::AdamsBashforth2::method_lin_err_coeff_dis() const
 {
-  const double dt = (*global_state().get_delta_time())[0];
-  const double dto = (*global_state().get_delta_time())[-1];
+  const double dt = global_state().get_delta_time()[0];
+  const double dto = global_state().get_delta_time()[-1];
   return (2. * dt + 3. * dto) / (12. * dt);
 }
 

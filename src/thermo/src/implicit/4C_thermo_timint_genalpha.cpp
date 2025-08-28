@@ -130,7 +130,7 @@ Thermo::TimIntGenAlpha::TimIntGenAlpha(const Teuchos::ParameterList& ioparams,
   // stored force vector F_{transient;n+1} at new time
   fcapn_ = Core::LinAlg::create_vector(*discret_->dof_row_map(), true);
   // set initial internal force vector
-  apply_force_tang_internal((*time_)[0], (*dt_)[0], (*temp_)(0), zeros_, fcap_, fint_, tang_);
+  apply_force_tang_internal(time_[0], dt_[0], temp_(0), zeros_, fcap_, fint_, tang_);
 
   // external force vector F_ext at last times
   fext_ = Core::LinAlg::create_vector(*discret_->dof_row_map(), true);
@@ -139,10 +139,10 @@ Thermo::TimIntGenAlpha::TimIntGenAlpha(const Teuchos::ParameterList& ioparams,
   // external force vector F_{n+1} at new time
   fextn_ = Core::LinAlg::create_vector(*discret_->dof_row_map(), true);
   // set initial external force vector
-  apply_force_external((*time_)[0], (*temp_)(0), *fext_);
+  apply_force_external(time_[0], temp_(0), *fext_);
   // set initial external force vector of convective heat transfer boundary
   // conditions
-  apply_force_external_conv((*time_)[0], (*temp_)(0), (*temp_)(0), fext_, tang_);
+  apply_force_external_conv(time_[0], temp_(0), temp_(0), fext_, tang_);
 
   // have a nice day
   return;
@@ -157,15 +157,15 @@ Thermo::TimIntGenAlpha::TimIntGenAlpha(const Teuchos::ParameterList& ioparams,
 void Thermo::TimIntGenAlpha::predict_const_temp_consist_rate()
 {
   // time step size
-  const double dt = (*dt_)[0];
+  const double dt = dt_[0];
 
   // constant predictor : temperature in domain
-  tempn_->update(1.0, *(*temp_)(0), 0.0);
+  tempn_->update(1.0, *temp_(0), 0.0);
 
   // consistent temperature rates
   // R_{n+1}^{i+1} = (gamma - 1)/gamma . R_n + 1/(gamma . dt) . (T_{n+1}^{i+1} - T_n)
-  raten_->update(1.0, *tempn_, -1.0, *(*temp_)(0), 0.0);
-  raten_->update(-(1 - gamma_) / gamma_, *(*rate_)(0), (1 / (gamma_ * dt)));
+  raten_->update(1.0, *tempn_, -1.0, *temp_(0), 0.0);
+  raten_->update(-(1 - gamma_) / gamma_, *rate_(0), (1 / (gamma_ * dt)));
 
   // watch out
   return;
@@ -197,10 +197,10 @@ void Thermo::TimIntGenAlpha::evaluate_rhs_tang_residual()
   // --> use tempn_
 
   // if the old temperature T_n  is sufficient --> no linearisation needed!
-  // --> use (*temp_)(0)
-  apply_force_external_conv(timen_, (*temp_)(0), tempn_, fextn_, tang_);
+  // --> use temp_(0)
+  apply_force_external_conv(timen_, temp_(0), tempn_, fextn_, tang_);
 
-  apply_force_external(timen_, (*temp_)(0), *fextn_);
+  apply_force_external(timen_, temp_(0), *fextn_);
 
   // external mid-forces F_{ext;n+1-alpha_f} (fextm)
   //    F_{ext;n+alpha_f} := alpha_f * F_{ext;n+1} + (1. - alpha_f) * F_{ext;n}
@@ -213,7 +213,7 @@ void Thermo::TimIntGenAlpha::evaluate_rhs_tang_residual()
   fcapm_->put_scalar(0.0);
 
   // ordinary internal force and tangent
-  apply_force_tang_internal(timen_, (*dt_)[0], tempn_, tempi_, fcapm_, fintn_, tang_);
+  apply_force_tang_internal(timen_, dt_[0], tempn_, tempi_, fcapm_, fintn_, tang_);
 
   // total internal mid-forces F_{int;n+alpha_f} ----> TR-like
   // F_{int;n+alpha_f} := alpha_f . F_{int;n+1} + (1. - alpha_f) . F_{int;n}
@@ -253,12 +253,12 @@ void Thermo::TimIntGenAlpha::evaluate_mid_state()
   // (1-alpha) is used for OLD solution at t_n
   // mid-temperatures T_{n+1-alpha_f} (tempm)
   // T_{n+alpha_f} := alphaf * T_{n+1} + (1.-alphaf) * T_n
-  tempm_->update(alphaf_, *tempn_, (1. - alphaf_), (*temp_)[0], 0.0);
+  tempm_->update(alphaf_, *tempn_, (1. - alphaf_), temp_[0], 0.0);
 
   // mid-temperature rates R_{n+1-alpha_f} (ratem)
   // R_{n+alpha_m} := alpham * R_{n+1} + (1.-alpham) * R_{n}
   // pass ratem_ to the element to calculate fcapm_
-  ratem_->update(alpham_, *raten_, (1. - alpham_), (*rate_)[0], 0.0);
+  ratem_->update(alpham_, *raten_, (1. - alpham_), rate_[0], 0.0);
 
   // jump
   return;
@@ -279,7 +279,7 @@ double Thermo::TimIntGenAlpha::calc_ref_norm_temperature()
   // points within the timestep (end point, generalized midpoint).
 
   double charnormtemp = 0.0;
-  charnormtemp = Thermo::Aux::calculate_vector_norm(iternorm_, *(*temp_)(0));
+  charnormtemp = Thermo::Aux::calculate_vector_norm(iternorm_, *temp_(0));
 
   // rise your hat
   return charnormtemp;
@@ -336,7 +336,7 @@ void Thermo::TimIntGenAlpha::update_iter_incrementally()
 
   // further auxiliary variables
   // step size \f$\Delta t_{n}\f$
-  const double dt = (*dt_)[0];
+  const double dt = dt_[0];
 
   // new end-point temperatures
   // T_{n+1}^{i+1} := T_{n+1}^{i} + IncT_{n+1}^{i+1}
@@ -344,8 +344,8 @@ void Thermo::TimIntGenAlpha::update_iter_incrementally()
 
   // new end-point temperature rates
   // R_{n+1}^{i+1} = -(1- gamma)/gamma . R_n + 1/(gamma . dt) . (T_{n+1}^{i+1} - T_n)
-  aux->update(1.0, *tempn_, -1.0, *(*temp_)(0), 0.0);
-  aux->update(-(1.0 - gamma_) / gamma_, *(*rate_)(0), (1 / (gamma_ * dt)));
+  aux->update(1.0, *tempn_, -1.0, *temp_(0), 0.0);
+  aux->update(-(1.0 - gamma_) / gamma_, *rate_(0), (1 / (gamma_ * dt)));
   // put only to free/non-DBC DOFs
   dbcmaps_->insert_other_vector(*dbcmaps_->extract_other_vector(*aux), *raten_);
 
@@ -366,7 +366,7 @@ void Thermo::TimIntGenAlpha::update_iter_iteratively()
 
   // new end-point temperature rates
   // R_{n+1}^{i+1} := R_{n+1}^{i} + 1/(gamma . dt) IncT_{n+1}^{i+1}
-  raten_->update(1.0 / (gamma_ * (*dt_)[0]), *tempi_, 1.0);
+  raten_->update(1.0 / (gamma_ * dt_[0]), *tempi_, 1.0);
 
   // bye
   return;
@@ -383,10 +383,10 @@ void Thermo::TimIntGenAlpha::update_step_state()
   // important for step size adaptivity
   // new temperatures at t_{n+1} -> t_n
   //    T_{n} := T_{n+1}, etc
-  temp_->update_steps(*tempn_);
+  temp_.update_steps(*tempn_);
   // new temperature rates at t_{n+1} -> t_n
   //    R_{n} := R_{n+1}, etc
-  rate_->update_steps(*raten_);
+  rate_.update_steps(*raten_);
 
   // update new external force
   //    F_{ext;n} := F_{ext;n+1}
@@ -416,7 +416,7 @@ void Thermo::TimIntGenAlpha::update_step_element()
   Teuchos::ParameterList p;
   // other parameters that might be needed by the elements
   p.set("total time", timen_);
-  p.set("delta time", (*dt_)[0]);
+  p.set("delta time", dt_[0]);
   // action for elements
   p.set<Thermo::Action>("action", Thermo::calc_thermo_update_istep);
   // go to elements

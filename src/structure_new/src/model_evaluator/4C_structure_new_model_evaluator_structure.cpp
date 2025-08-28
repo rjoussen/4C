@@ -635,7 +635,7 @@ void Solid::ModelEvaluator::Structure::init_output_runtime_structure_gauss_point
               ->get_structure_params()
               ->gauss_point_data_output()));
   eval_data().set_total_time(global_state().get_time_np());
-  eval_data().set_delta_time((*global_state().get_delta_time())[0]);
+  eval_data().set_delta_time(global_state().get_delta_time()[0]);
 
   // Set vector values needed by elements.
   discret().clear_state();
@@ -984,7 +984,7 @@ void Solid::ModelEvaluator::Structure::output_runtime_structure_postprocess_stre
     // Set all parameters in the evaluation data container.
     eval_data().set_action_type(Core::Elements::struct_calc_stress);
     eval_data().set_total_time(global_state().get_time_np());
-    eval_data().set_delta_time((*global_state().get_delta_time())[0]);
+    eval_data().set_delta_time(global_state().get_delta_time()[0]);
     eval_data().set_stress_data(std::make_shared<std::vector<char>>());
     eval_data().set_coupling_stress_data(std::make_shared<std::vector<char>>());
     eval_data().set_strain_data(std::make_shared<std::vector<char>>());
@@ -1115,7 +1115,7 @@ void Solid::ModelEvaluator::Structure::output_runtime_structure_gauss_point_data
 
     eval_data().set_action_type(Core::Elements::struct_gauss_point_data_output);
     eval_data().set_total_time(global_state().get_time_np());
-    eval_data().set_delta_time((*global_state().get_delta_time())[0]);
+    eval_data().set_delta_time(global_state().get_delta_time()[0]);
 
     eval_data().gauss_point_data_output_manager_ptr()->prepare_data(
         *discret().node_col_map(), *discret().element_row_map());
@@ -1402,7 +1402,7 @@ void Solid::ModelEvaluator::Structure::read_restart(Core::IO::DiscretizationRead
   // read displacement field
   std::shared_ptr<Core::LinAlg::Vector<double>>& disnp = global_state().get_dis_np();
   ioreader.read_vector(disnp, "displacement");
-  global_state().get_multi_dis()->update_steps(*disnp);
+  global_state().get_multi_dis().update_steps(*disnp);
 }
 
 /*----------------------------------------------------------------------------*
@@ -1489,15 +1489,15 @@ void Solid::ModelEvaluator::Structure::update_step_state(const double& timefac_n
   // update state
   // new displacements at t_{n+1} -> t_n
   //    D_{n} := D_{n+1}
-  global_state().get_multi_dis()->update_steps(dis_np());
+  global_state().get_multi_dis().update_steps(dis_np());
 
   // new velocities at t_{n+1} -> t_{n}
   //    V_{n} := V_{n+1}
-  global_state().get_multi_vel()->update_steps(*global_state().get_vel_np());
+  global_state().get_multi_vel().update_steps(*global_state().get_vel_np());
 
   // new at t_{n+1} -> t_n
   //    A_{n} := A_{n+1}
-  global_state().get_multi_acc()->update_steps(*global_state().get_acc_np());
+  global_state().get_multi_acc().update_steps(*global_state().get_acc_np());
 
   // store the old external force
   global_state().get_fext_n()->scale(1.0, fext_np());
@@ -1557,7 +1557,7 @@ void Solid::ModelEvaluator::Structure::update_step_element()
   check_init_setup();
   // other parameters that might be needed by the elements
   eval_data().set_total_time(global_state().get_time_np());
-  eval_data().set_delta_time((*global_state().get_delta_time())[0]);
+  eval_data().set_delta_time(global_state().get_delta_time()[0]);
 
   const Inpar::Solid::PreStress prestress_type = tim_int().get_data_sdyn().get_pre_stress_type();
   const double prestress_time = tim_int().get_data_sdyn().get_pre_stress_time();
@@ -1613,7 +1613,7 @@ void Solid::ModelEvaluator::Structure::determine_stress_strain()
   // set all parameters in the evaluation data container
   eval_data().set_action_type(Core::Elements::struct_calc_stress);
   eval_data().set_total_time(global_state().get_time_np());
-  eval_data().set_delta_time((*global_state().get_delta_time())[0]);
+  eval_data().set_delta_time(global_state().get_delta_time()[0]);
   eval_data().set_stress_data(std::make_shared<std::vector<char>>());
   eval_data().set_coupling_stress_data(std::make_shared<std::vector<char>>());
   eval_data().set_strain_data(std::make_shared<std::vector<char>>());
@@ -1643,7 +1643,7 @@ void Solid::ModelEvaluator::Structure::determine_strain_energy(
   // set required parameters in the evaluation data container
   eval_data().set_action_type(Core::Elements::struct_calc_energy);
   eval_data().set_total_time(global_state().get_time_np());
-  eval_data().set_delta_time((*global_state().get_delta_time())[0]);
+  eval_data().set_delta_time(global_state().get_delta_time()[0]);
 
   // set state vector values needed by elements
   discret().clear_state();
@@ -1767,7 +1767,7 @@ void Solid::ModelEvaluator::Structure::reset_step_state()
 
   // other parameters that might be needed by the elements
   eval_data().set_total_time(global_state().get_time_np());
-  eval_data().set_delta_time((*global_state().get_delta_time())[0]);
+  eval_data().set_delta_time(global_state().get_delta_time()[0]);
   // action for elements
   eval_data().set_action_type(Core::Elements::struct_calc_reset_istep);
 

@@ -500,7 +500,7 @@ void BeamInteraction::SubmodelEvaluator::SphereBeamLinking::reset_step_state()
   check_init_setup();
 
   // in case time step is same as structure time step, update it
-  spherebeamlinking_params_ptr_->reset_time_step((*g_state().get_delta_time())[0]);
+  spherebeamlinking_params_ptr_->reset_time_step(g_state().get_delta_time()[0]);
 }
 
 /*-------------------------------------------------------------------------------*
@@ -1011,7 +1011,7 @@ void BeamInteraction::SubmodelEvaluator::SphereBeamLinking::unbind_sphere_beam_b
 
   // check if unbinding needs to be checked this problem time step
   int random_number_sphere_beam_linking_step =
-      static_cast<int>((g_state().get_time_np() - (*g_state().get_delta_time())[0]) /
+      static_cast<int>((g_state().get_time_np() - g_state().get_delta_time()[0]) /
                            spherebeamlinking_params_ptr_->delta_time() +
                        1.0e-8);
   if (random_number_sphere_beam_linking_step == random_number_sphere_beam_linking_step_)
@@ -1134,7 +1134,7 @@ void BeamInteraction::SubmodelEvaluator::SphereBeamLinking::update_linker_length
   // note: problem time step is used here
   double contraction_per_dt =
       spherebeamlinking_params_ptr_->contraction_rate(Inpar::BeamInteraction::linkertype_integrin) *
-      (*g_state().get_delta_time())[0];
+      g_state().get_delta_time()[0];
   double scalefac = 0.0;
   int unsigned const numrowsphereeles =
       ele_type_map_extractor_ptr()->sphere_map()->num_my_elements();

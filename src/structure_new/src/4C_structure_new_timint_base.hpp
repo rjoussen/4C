@@ -353,14 +353,14 @@ namespace Solid
       [[nodiscard]] double get_delta_time() const override
       {
         check_init();
-        return (*dataglobalstate_->get_delta_time())[0];
+        return dataglobalstate_->get_delta_time()[0];
       }
 
       /// Set time step size \f$\Delta t_n\f$
       void set_delta_time(const double dt) override
       {
         check_init();
-        (*dataglobalstate_->get_delta_time())[0] = dt;
+        dataglobalstate_->get_delta_time()[0] = dt;
       }
 
       /// Return time integration factor
