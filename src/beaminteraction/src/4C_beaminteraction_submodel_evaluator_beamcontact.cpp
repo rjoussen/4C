@@ -225,7 +225,14 @@ void BeamInteraction::SubmodelEvaluator::BeamContact::setup()
   // set flag
   issetup_ = true;
 }
-
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+std::shared_ptr<const BeamInteraction::SubmodelEvaluator::BeamContactAssemblyManagerInDirect>
+BeamInteraction::SubmodelEvaluator::BeamContact::get_lagrange_multiplier_assembly_manager() const
+{
+  if (assembly_managers_.size() != 1) FOUR_C_THROW("Only working for single assembly manager");
+  return std::dynamic_pointer_cast<BeamContactAssemblyManagerInDirect>(assembly_managers_[0]);
+}
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void BeamInteraction::SubmodelEvaluator::BeamContact::post_setup()
@@ -238,10 +245,15 @@ void BeamInteraction::SubmodelEvaluator::BeamContact::post_setup()
   find_and_store_neighboring_elements();
   create_beam_contact_element_pairs();
   beam_contact_params_ptr_->build_beam_to_solid_volume_meshtying_params();
-  if (beam_contact_params_ptr_->beam_to_solid_volume_meshtying_params()
-          ->get_constraint_enforcement() ==
-      Inpar::BeamToSolid::BeamToSolidConstraintEnforcement::lagrange)
-    set_lagrange_multiplier_vector();
+  if (beam_interaction_data_state().get_lambda() == nullptr &&
+      beam_contact_params_ptr()
+              ->beam_to_solid_volume_meshtying_params()
+              ->get_constraint_enforcement() ==
+          Inpar::BeamToSolid::BeamToSolidConstraintEnforcement::lagrange)
+    beam_interaction_data_state().get_lambda() = std::shared_ptr<Core::LinAlg::FEVector<double>>(
+        new Core::LinAlg::FEVector<double>(*get_lagrange_multiplier_assembly_manager()
+                ->get_mortar_manager()
+                ->get_lambda_dof_row_map()));
 }
 
 /*----------------------------------------------------------------------*
@@ -823,29 +835,20 @@ void BeamInteraction::SubmodelEvaluator::BeamContact::get_half_interaction_dista
 std::shared_ptr<const FourC::Core::LinAlg::Map>
 BeamInteraction::SubmodelEvaluator::BeamContact::get_lagrange_map() const
 {
-  if (assembly_managers_.size() != 1) FOUR_C_THROW("Only working for single assembly manager");
-  auto indirect_assembly_manager =
-      std::dynamic_pointer_cast<BeamContactAssemblyManagerInDirect>(assembly_managers_[0]);
-  return indirect_assembly_manager->get_mortar_manager()->get_lambda_dof_row_map();
+  return get_lagrange_multiplier_assembly_manager()->get_mortar_manager()->get_lambda_dof_row_map();
 }
 
 void BeamInteraction::SubmodelEvaluator::BeamContact::assemble_force(
     Core::LinAlg::Vector<double>& f) const
 {
-  if (assembly_managers_.size() != 1) FOUR_C_THROW("Only working for single assembly manager");
-  auto indirect_assembly_manager =
-      std::dynamic_pointer_cast<BeamContactAssemblyManagerInDirect>(assembly_managers_[0]);
-  indirect_assembly_manager->get_mortar_manager()->assemble_force(
+  get_lagrange_multiplier_assembly_manager()->get_mortar_manager()->assemble_force(
       g_state(), f, beam_interaction_data_state_ptr());
 };
 
 void BeamInteraction::SubmodelEvaluator::BeamContact::assemble_stiff(
     Core::LinAlg::SparseOperator& jac) const
 {
-  if (assembly_managers_.size() != 1) FOUR_C_THROW("Only working for single assembly manager");
-  auto indirect_assembly_manager =
-      std::dynamic_pointer_cast<BeamContactAssemblyManagerInDirect>(assembly_managers_[0]);
-  indirect_assembly_manager->get_mortar_manager()->assemble_stiff(
+  get_lagrange_multiplier_assembly_manager()->get_mortar_manager()->assemble_stiff(
       g_state(), jac, beam_interaction_data_state_ptr());
 }
 
@@ -1102,22 +1105,6 @@ void BeamInteraction::SubmodelEvaluator::BeamContact::create_beam_contact_elemen
       << "PID " << std::setw(2) << std::right << g_state().get_my_rank() << " currently monitors "
       << std::setw(5) << std::right << contact_elepairs_.size() << " beam contact pairs"
       << Core::IO::endl;
-}
-
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-void BeamInteraction::SubmodelEvaluator::BeamContact::set_lagrange_multiplier_vector()
-{
-  if (beam_interaction_data_state().get_lambda() == nullptr)
-  {
-    if (assembly_managers_.size() != 1) FOUR_C_THROW("Only working for single assembly manager");
-    auto indirect_assembly_manager =
-        std::dynamic_pointer_cast<BeamContactAssemblyManagerInDirect>(assembly_managers_[0]);
-    beam_interaction_data_state().get_lambda() =
-        std::shared_ptr<Core::LinAlg::FEVector<double>>(new Core::LinAlg::FEVector<double>(
-            *indirect_assembly_manager->get_mortar_manager()->get_lambda_dof_row_map()));
-  }
 }
 
 /*----------------------------------------------------------------------------*

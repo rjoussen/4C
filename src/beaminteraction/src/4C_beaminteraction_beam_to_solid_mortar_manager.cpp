@@ -609,9 +609,9 @@ void BeamInteraction::BeamToSolidMortarManager::add_global_force_stiffness_penal
   check_setup();
   check_global_maps();
 
-  if (beam_to_solid_params_->get_constraint_enforcement() ==
+  /*if (beam_to_solid_params_->get_constraint_enforcement() ==
       Inpar::BeamToSolid::BeamToSolidConstraintEnforcement::lagrange)
-    return;
+    return;*/
 
   // Get the penalty regularization
   const bool is_stiff = stiff != nullptr;

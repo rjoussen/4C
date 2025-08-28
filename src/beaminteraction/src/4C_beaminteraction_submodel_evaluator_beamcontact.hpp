@@ -38,6 +38,7 @@ namespace BeamInteraction
 
   namespace SubmodelEvaluator
   {
+    class BeamContactAssemblyManagerInDirect;
     class BeamContactAssemblyManager;
 
     class BeamContact : public Generic
@@ -146,6 +147,12 @@ namespace BeamInteraction
       {
         return assembly_managers_;
       }
+
+      /**
+       * \brief Lagrange Multiplier specific function returning the first assembly manager.
+       */
+      std::shared_ptr<const BeamInteraction::SubmodelEvaluator::BeamContactAssemblyManagerInDirect>
+      get_lagrange_multiplier_assembly_manager() const;
 
       /**
        * \brief Return the geometry pairs in this submodel evaluator.

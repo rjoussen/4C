@@ -22,7 +22,6 @@
 #include "4C_linear_solver_method_linalg.hpp"
 #include "4C_solver_nonlin_nox_group.hpp"
 #include "4C_solver_nonlin_nox_group_prepostoperator.hpp"
-#include "4C_structure_new_factory.hpp"
 #include "4C_structure_new_integrator.hpp"
 #include "4C_structure_new_model_evaluator_generic.hpp"
 #include "4C_structure_new_model_evaluator_manager.hpp"
@@ -395,6 +394,7 @@ int Solid::TimeInt::BaseDataGlobalState::setup_block_information(
     case Inpar::Solid::model_browniandyn:
     case Inpar::Solid::model_constraints:
     {
+      // structural block
       model_block_id_[mt] = 0;
       break;
     }
