@@ -29,7 +29,7 @@ The following list shows the most important ones:
 External solver and linear algebra:
 
 - :ref:`Trilinos <trilinos>` (supported versions are listed in ``dependencies/supported_version/Trilinos.txt``)
-- :ref:`SuiteSparse <suitesparse>` including Umfpack (recommended version: 5.4)
+- :ref:`SuiteSparse <suitesparse>`
 - :ref:`SuperLUDist <superludist>` (recommended version: 7.2.0)
 - BLAS
 - LAPACK
@@ -62,12 +62,10 @@ and warn you if it is not a supported version.
 
 **SuiteSparse**
 
-|FOURC| uses SuiteSparse indirectly via the Trilinos package Amesos/Amesos2 for directly solving linear systems of equations.
+|FOURC| uses SuiteSparse indirectly via the Trilinos package Amesos2 for directly solving linear systems of equations.
 See the `SuiteSparse repository <https://github.com/DrTimothyAldenDavis/SuiteSparse>`_ for details and downloads.
 
-After downloading the package, the configure file can be found in ``SuiteSparse-5.4.0/SuiteSparse_config/SuiteSparse_config.mk``.
-As |FOURC| uses BLAS/LAPACK in forms of libblas and liblapack, the respective linker flags need to be changed!
-
+On Linux based systems the package can be installed using ``sudo apt install libsuitesparse-dev``.
 
 .. _superludist:
 
