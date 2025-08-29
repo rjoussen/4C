@@ -151,7 +151,8 @@ namespace BeamInteraction
       /**
        * \brief Lagrange Multiplier specific function returning the first assembly manager.
        */
-      std::shared_ptr<const BeamInteraction::SubmodelEvaluator::BeamContactAssemblyManagerInDirect>
+      std::shared_ptr<
+          const BeamInteraction::SubmodelEvaluator::BeamContactAssemblyManagerInDirect> const
       get_lagrange_multiplier_assembly_manager() const;
 
       /**
@@ -286,7 +287,6 @@ namespace BeamInteraction
 
       //! data container holding all beam interactions defined by conditions
       std::shared_ptr<BeamInteraction::BeamInteractionConditions> beam_interaction_conditions_ptr_;
-
 
       //! data container holding all geometric search related parameters
       std::shared_ptr<Core::GeometricSearch::GeometricSearchParams> geometric_search_params_ptr_;

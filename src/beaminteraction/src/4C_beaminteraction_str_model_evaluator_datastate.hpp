@@ -195,7 +195,7 @@ namespace Solid
       }
 
       /// Return lagrange multiplier vector
-      std::shared_ptr<const Core::LinAlg::FEVector<double>> get_lambda() const
+      const std::shared_ptr<const Core::LinAlg::FEVector<double>> get_lambda() const
       {
         check_init_setup();
         return lambda_;
@@ -372,7 +372,7 @@ namespace Solid
       /// supposed to hold the entire jacobian (saddle point system if desired)
       std::shared_ptr<Core::LinAlg::SparseMatrix> stiff_;
 
-      /// holds the lagrange multipliers lambda
+      /// holds the global Lagrange multiplier values
       std::shared_ptr<Core::LinAlg::FEVector<double>> lambda_;
       ///@}
     };

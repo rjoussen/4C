@@ -742,7 +742,10 @@ bool Solid::ModelEvaluator::BeamInteraction::have_lagrange_dofs() const
                       Inpar::BeamToSolid::BeamToSolidConstraintEnforcement::lagrange)
     {
       lagrange_flag = true;
-      if (me_vec_ptr_->size() > 1) FOUR_C_THROW("Only one Beam Contact condition is supported");
+      if (me_vec_ptr_->size() > 1)
+        FOUR_C_THROW(
+            "Currently Lagrange multipliers within beam interaction are exclusively supported for "
+            "beam-to-solid interactions.");
     }
   }
 
@@ -1136,7 +1139,9 @@ Solid::ModelEvaluator::BeamInteraction::get_block_dof_row_map_ptr() const
     return (*me_vec_ptr_)[0]->get_lagrange_map();
   }
   else
+  {
     return global_state().dof_row_map();
+  }
 }
 
 /*----------------------------------------------------------------------------*

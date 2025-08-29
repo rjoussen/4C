@@ -23,7 +23,6 @@
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_linalg_vector.hpp"
-#include "4C_mortar_utils.hpp"
 #include "4C_structure_new_timint_base.hpp"
 #include "4C_structure_new_timint_basedataglobalstate.hpp"
 #include "4C_utils_exceptions.hpp"
@@ -492,6 +491,8 @@ void BeamInteraction::BeamToSolidMortarManager::evaluate_coupling_terms_lagrange
   // Evaluate the global coupling terms
   evaluate_and_assemble_global_coupling_contributions(data_state->get_dis_col_np());
 
+  // For now we need to set a link to the global Lagrange multiplier vector in the beam interaction
+  // data state.
   global_lambda_ = data_state->get_lambda();
 }
 
@@ -511,13 +512,13 @@ bool BeamInteraction::BeamToSolidMortarManager::have_lagrange_dofs() const
 std::shared_ptr<Core::LinAlg::Vector<double>>
 BeamInteraction::BeamToSolidMortarManager::get_global_lambda() const
 {
-  if (beam_to_solid_params_->get_constraint_enforcement() ==
-      Inpar::BeamToSolid::BeamToSolidConstraintEnforcement::lagrange)
+  if (have_lagrange_dofs())
   {
-    auto global_lambda = std::make_shared<Core::LinAlg::Vector<double>>(*lambda_dof_rowmap_);
+    auto global_lambda_current_rowmap =
+        std::make_shared<Core::LinAlg::Vector<double>>(*lambda_dof_rowmap_);
 
-    Core::LinAlg::export_to(*global_lambda_, *global_lambda);
-    return global_lambda;
+    Core::LinAlg::export_to(*global_lambda_, *global_lambda_current_rowmap);
+    return global_lambda_current_rowmap;
   }
 
   auto penalty_regularization = get_penalty_regularization(false);
@@ -786,26 +787,30 @@ BeamInteraction::BeamToSolidMortarManager::penalty_invert_kappa() const
   return kappa_inv;
 }
 
+/**
+ *
+ */
 void BeamInteraction::BeamToSolidMortarManager::assemble_force(
     const Solid::TimeInt::BaseDataGlobalState& gstate, Core::LinAlg::Vector<double>& f,
     const std::shared_ptr<const Solid::ModelEvaluator::BeamInteractionDataState>& data_state) const
 {
-  if (beam_to_solid_params_->get_constraint_enforcement() !=
-      Inpar::BeamToSolid::BeamToSolidConstraintEnforcement::lagrange)
-    FOUR_C_THROW("Does not use Langrange type of constraint enforcement ");
+  if (!have_lagrange_dofs())
+    FOUR_C_THROW("assemble_force only possible with Langrange multiplier constraint enforcement");
   auto constraint_rhs_map = Core::LinAlg::Vector<double>(f.get_map());
   Core::LinAlg::export_to(*constraint_, constraint_rhs_map);
 
   f.update(1., constraint_rhs_map, 1.);
 }
 
+/**
+ *
+ */
 void BeamInteraction::BeamToSolidMortarManager::assemble_stiff(
     const Solid::TimeInt::BaseDataGlobalState& gstate, Core::LinAlg::SparseOperator& jac,
     const std::shared_ptr<const Solid::ModelEvaluator::BeamInteractionDataState>& data_state) const
 {
-  if (beam_to_solid_params_->get_constraint_enforcement() !=
-      Inpar::BeamToSolid::BeamToSolidConstraintEnforcement::lagrange)
-    FOUR_C_THROW("Does not use Langrange type of constraint enforcement ");
+  if (!have_lagrange_dofs())
+    FOUR_C_THROW("assemble_stiff only possible with Langrange multiplier constraint enforcement");
   std::shared_ptr<const Core::LinAlg::SparseOperator> jac_ptr(
       &jac, [](Core::LinAlg::SparseOperator*) {});
   std::shared_ptr<const Core::LinAlg::BlockSparseMatrixBase> jac_block_sparse_matrix_base =

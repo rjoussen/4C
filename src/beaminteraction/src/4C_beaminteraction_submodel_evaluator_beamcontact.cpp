@@ -62,7 +62,6 @@ BeamInteraction::SubmodelEvaluator::BeamContact::BeamContact()
   nearby_elements_map_.clear();
 }
 
-
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void BeamInteraction::SubmodelEvaluator::BeamContact::setup()
@@ -225,11 +224,14 @@ void BeamInteraction::SubmodelEvaluator::BeamContact::setup()
   // set flag
   issetup_ = true;
 }
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-std::shared_ptr<const BeamInteraction::SubmodelEvaluator::BeamContactAssemblyManagerInDirect>
+std::shared_ptr<const BeamInteraction::SubmodelEvaluator::BeamContactAssemblyManagerInDirect> const
 BeamInteraction::SubmodelEvaluator::BeamContact::get_lagrange_multiplier_assembly_manager() const
 {
+  if (!std::dynamic_pointer_cast<BeamContactAssemblyManagerInDirect>(assembly_managers_[0]))
+    FOUR_C_THROW("Expected a BeamContact Assembly Manager");
   if (assembly_managers_.size() != 1) FOUR_C_THROW("Only working for single assembly manager");
   return std::dynamic_pointer_cast<BeamContactAssemblyManagerInDirect>(assembly_managers_[0]);
 }
@@ -245,16 +247,21 @@ void BeamInteraction::SubmodelEvaluator::BeamContact::post_setup()
   nearby_elements_map_.clear();
   find_and_store_neighboring_elements();
   create_beam_contact_element_pairs();
-  beam_contact_params_ptr_->build_beam_to_solid_volume_meshtying_params();
+
+  // The following section is specific to lagrange multiplier constraint enforcement
   if (beam_interaction_data_state().get_lambda() == nullptr &&
+      beam_contact_params_ptr()->beam_to_solid_volume_meshtying_params() &&
       beam_contact_params_ptr()
               ->beam_to_solid_volume_meshtying_params()
               ->get_constraint_enforcement() ==
           Inpar::BeamToSolid::BeamToSolidConstraintEnforcement::lagrange)
-    beam_interaction_data_state().get_lambda() = std::shared_ptr<Core::LinAlg::FEVector<double>>(
-        new Core::LinAlg::FEVector<double>(*get_lagrange_multiplier_assembly_manager()
-                ->get_mortar_manager()
-                ->get_lambda_dof_row_map()));
+  {
+    auto lambda_dof_row_map =
+        get_lagrange_multiplier_assembly_manager()->get_mortar_manager()->get_lambda_dof_row_map();
+
+    beam_interaction_data_state().get_lambda() =
+        std::make_shared<Core::LinAlg::FEVector<double>>(*lambda_dof_row_map);
+  }
 }
 
 /*----------------------------------------------------------------------*
@@ -265,7 +272,6 @@ void BeamInteraction::SubmodelEvaluator::BeamContact::init_submodel_dependencies
   check_init_setup();
   // no active influence on other submodels
 }
-
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
