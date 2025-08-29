@@ -223,28 +223,27 @@ BEAM INTERACTION/BEAM TO SOLID SURFACE CONTACT:
   MORTAR_SHAPE_FUNCTION: "line2"
   MORTAR_CONTACT_DEFINED_IN: "reference_configuration"
 STRUCTURE KNOTVECTORS:
-  - "NURBS_DIMENSION 2"
-  - "BEGIN NURBSPATCH"
-  - "ID 1"
-  - "NUMKNOTS 6"
-  - "DEGREE 2"
-  - "TYPE Interpolated"
-  - "0.0"
-  - "0.0"
-  - "0.0"
-  - "1.0"
-  - "1.0"
-  - "1.0"
-  - "NUMKNOTS 6"
-  - "DEGREE 2"
-  - "TYPE Interpolated"
-  - "0.0"
-  - "0.0"
-  - "0.0"
-  - "1.0"
-  - "1.0"
-  - "1.0"
-  - "END NURBSPATCH"
+  PATCHES:
+    - KNOT_VECTORS:
+        - DEGREE: 2
+          TYPE: Interpolated
+          KNOTS:
+            - 0.0
+            - 0.0
+            - 0.0
+            - 1.0
+            - 1.0
+            - 1.0
+        - DEGREE: 2
+          TYPE: Interpolated
+          KNOTS:
+            - 0.0
+            - 0.0
+            - 0.0
+            - 1.0
+            - 1.0
+            - 1.0
+      ID: 1
 DSURF-NODE TOPOLOGY:
   - "NODE 1 DSURFACE 1"
   - "NODE 2 DSURFACE 1"

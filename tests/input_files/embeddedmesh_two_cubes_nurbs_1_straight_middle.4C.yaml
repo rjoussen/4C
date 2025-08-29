@@ -78,37 +78,36 @@ DESIGN EMBEDDED MESH SOLID SURF COUPLING CONDITIONS:
   - E: 1
     COUPLINGID: 1
 STRUCTURE KNOTVECTORS:
-  - "NURBS_DIMENSION 3"
-  - "BEGIN NURBSPATCH"
-  - "ID 1"
-  - "NUMKNOTS 6"
-  - "DEGREE 2"
-  - "TYPE Interpolated"
-  - "0.0"
-  - "0.0"
-  - "0.0"
-  - "1.0"
-  - "1.0"
-  - "1.0"
-  - "NUMKNOTS 6"
-  - "DEGREE 2"
-  - "TYPE Interpolated"
-  - "0.0"
-  - "0.0"
-  - "0.0"
-  - "1.0"
-  - "1.0"
-  - "1.0"
-  - "NUMKNOTS 6"
-  - "DEGREE 2"
-  - "TYPE Interpolated"
-  - "0.0"
-  - "0.0"
-  - "0.0"
-  - "1.0"
-  - "1.0"
-  - "1.0"
-  - "END NURBSPATCH"
+  PATCHES:
+    - KNOT_VECTORS:
+        - DEGREE: 2
+          TYPE: Interpolated
+          KNOTS:
+            - 0.0
+            - 0.0
+            - 0.0
+            - 1.0
+            - 1.0
+            - 1.0
+        - DEGREE: 2
+          TYPE: Interpolated
+          KNOTS:
+            - 0.0
+            - 0.0
+            - 0.0
+            - 1.0
+            - 1.0
+            - 1.0
+        - DEGREE: 2
+          TYPE: Interpolated
+          KNOTS:
+            - 0.0
+            - 0.0
+            - 0.0
+            - 1.0
+            - 1.0
+            - 1.0
+      ID: 1
 DNODE-NODE TOPOLOGY:
   - "NODE 29 DNODE 1"
   - "NODE 30 DNODE 2"
