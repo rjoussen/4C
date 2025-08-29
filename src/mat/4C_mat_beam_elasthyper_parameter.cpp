@@ -68,7 +68,7 @@ double Mat::PAR::determine_default_interaction_radius(
 
   // determine default value for interaction radius if no value was given:
   // assume circular cross-section and compute from the area moment of inertia
-  if (radius == -1.0 and Iyy == Izz) radius = std::pow(4.0 * Iyy / M_PI, 0.25);
+  if (radius == -1.0 and Iyy == Izz) radius = std::pow(4.0 * Iyy / std::numbers::pi, 0.25);
 
   return radius;
 }
@@ -84,7 +84,7 @@ double Mat::PAR::determine_default_interaction_radius_isotropic(
 
   // determine default value for interaction radius if no value was given:
   // assume circular cross-section and compute from the area moment of inertia
-  if (radius == -1.0) radius = std::pow(4.0 * Iyy / M_PI, 0.25);
+  if (radius == -1.0) radius = std::pow(4.0 * Iyy / std::numbers::pi, 0.25);
 
   return radius;
 }

@@ -271,15 +271,15 @@ namespace ScaTra
 
               // remark on the literature:
               // Collis 2002: sqrt(energy/(2*PI*k))
-              const double fac = sqrt(energy / (2 * M_PI * k * k));
+              const double fac = sqrt(energy / (2 * std::numbers::pi * k * k));
               // Rogallo 1981: sqrt(energy/(4*PI*k*k))
               // the missing factor 1/2 of Collis version compared to Rogallo version
               // is related to the definition of E from phi
               // here, we have E = 1/2 * phi * phi (see statistics manager)
 
               // real part, imaginary part
-              std::complex<double> alpha(
-                  fac * cos(2 * M_PI * random_theta), fac * sin(2 * M_PI * random_theta));
+              std::complex<double> alpha(fac * cos(2 * std::numbers::pi * random_theta),
+                  fac * sin(2 * std::numbers::pi * random_theta));
               (phi_hat)[pos] = alpha;
             }
             else

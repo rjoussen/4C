@@ -140,7 +140,8 @@ void Discret::Elements::ScaTraEleCalcLS<distype>::smooth_heaviside_function(
   else if (phi > epsilon)
     smoothH = 1.0;
   else
-    smoothH = 0.5 * (1.0 + phi / epsilon + sin(phi * M_PI / epsilon) / M_PI);
+    smoothH =
+        0.5 * (1.0 + phi / epsilon + sin(phi * std::numbers::pi / epsilon) / std::numbers::pi);
 
   return;
 }

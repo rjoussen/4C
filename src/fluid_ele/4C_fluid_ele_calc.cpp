@@ -2257,7 +2257,8 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::get_material_params(
     if (abs(gpscaaf) <= epsilon)
     {
       heavyside_epsilon =
-          0.5 * (1.0 + gpscaaf / epsilon + 1.0 / M_PI * sin(M_PI * gpscaaf / epsilon));
+          0.5 * (1.0 + gpscaaf / epsilon +
+                    1.0 / std::numbers::pi * sin(std::numbers::pi * gpscaaf / epsilon));
 
       densaf = heavyside_epsilon * density[0] + (1.0 - heavyside_epsilon) * density[1];
       visc = heavyside_epsilon * viscosity[0] + (1.0 - heavyside_epsilon) * viscosity[1];
@@ -2274,7 +2275,8 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::get_material_params(
     if (abs(gpscaam) <= epsilon)
     {
       heavyside_epsilon =
-          0.5 * (1.0 + gpscaam / epsilon + 1.0 / M_PI * sin(M_PI * gpscaam / epsilon));
+          0.5 * (1.0 + gpscaam / epsilon +
+                    1.0 / std::numbers::pi * sin(std::numbers::pi * gpscaam / epsilon));
 
       densam = heavyside_epsilon * density[0] + (1.0 - heavyside_epsilon) * density[1];
       densn = densam;
@@ -3411,7 +3413,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::calc_char_ele_length(
     // b) volume-equivalent diameter (warning: 3-D formula!)
     case Inpar::FLUID::volume_equivalent_diameter_u:
     {
-      h_u = std::pow((6. * vol / M_PI), (1.0 / 3.0)) / sqrt(3.0);
+      h_u = std::pow((6. * vol / std::numbers::pi), (1.0 / 3.0)) / sqrt(3.0);
     }
     break;
 
@@ -3470,7 +3472,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::calc_char_ele_length(
     // b) volume-equivalent diameter (warning: 3-D formula!)
     case Inpar::FLUID::volume_equivalent_diameter_pc:
     {
-      h_p = std::pow((6. * vol / M_PI), (1.0 / 3.0)) / sqrt(3.0);
+      h_p = std::pow((6. * vol / std::numbers::pi), (1.0 / 3.0)) / sqrt(3.0);
     }
     break;
 
@@ -6497,8 +6499,8 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::evaluate_analytic_soluti
         else
           FOUR_C_THROW("Material is not Newtonian Fluid");
 
-        const double a = M_PI / 4.0;
-        const double d = M_PI / 2.0;
+        const double a = std::numbers::pi / 4.0;
+        const double d = std::numbers::pi / 2.0;
 
         // compute analytical pressure
         if (not isFullImplPressure)
@@ -7814,7 +7816,7 @@ int Discret::Elements::FluidEleCalc<distype, enrtype>::calc_dissipation(Fluid* e
     // reference length for stabilization parameters
     //---------------------------------------------------------------
     // volume based element size
-    double hk = std::pow((6. * vol / M_PI), (1.0 / 3.0)) / sqrt(3.0);
+    double hk = std::pow((6. * vol / std::numbers::pi), (1.0 / 3.0)) / sqrt(3.0);
     h += fac_ * hk;
 
     // streamlength based element size
@@ -14103,7 +14105,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::prepare_multifractal_sub
       case FLUID::sphere_diameter:
       {
         // b) volume-equivalent diameter
-        hk = std::pow((6. * vol / M_PI), (1.0 / 3.0)) / sqrt(3.0);
+        hk = std::pow((6. * vol / std::numbers::pi), (1.0 / 3.0)) / sqrt(3.0);
 
         break;
       }

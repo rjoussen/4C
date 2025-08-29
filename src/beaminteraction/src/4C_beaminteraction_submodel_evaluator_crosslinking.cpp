@@ -1868,7 +1868,7 @@ void BeamInteraction::SubmodelEvaluator::Crosslinking::diffuse_unbound_crosslink
   // get standard deviation and mean value for crosslinker that are free to
   // diffuse
   double standarddev = std::sqrt(2.0 * crosslinking_params_ptr_->kt() /
-                                 (3.0 * M_PI * crosslinking_params_ptr_->viscosity() *
+                                 (3.0 * std::numbers::pi * crosslinking_params_ptr_->viscosity() *
                                      crosslinker->get_material()->linking_length()) *
                                  crosslinking_params_ptr_->delta_time());
   double meanvalue = 0.0;

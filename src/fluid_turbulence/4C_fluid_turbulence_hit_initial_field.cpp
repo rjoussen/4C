@@ -311,19 +311,21 @@ namespace FLD
 
               // remark on the literature:
               // Collis 2002: sqrt(energy/(2*PI*k))
-              const double fac = sqrt(energy / (2 * M_PI * k * k));
+              const double fac = sqrt(energy / (2 * std::numbers::pi * k * k));
               // Rogallo 1981: sqrt(energy/(4*PI*k*k))
               // the missing factor 1/2 of Collis version compared to Rogallo version
               // is related to the definition of E from u_i
               // here, we have E = 1/2 * u_i *u_i (see statistics manager)
 
               // real part, imaginary part
-              std::complex<double> alpha(
-                  fac * cos(2 * M_PI * random_theta1) * cos(2 * M_PI * random_phi),
-                  fac * sin(2 * M_PI * random_theta1) * cos(2 * M_PI * random_phi));
-              std::complex<double> beta(
-                  fac * cos(2 * M_PI * random_theta2) * sin(2 * M_PI * random_phi),
-                  fac * sin(2 * M_PI * random_theta2) * sin(2 * M_PI * random_phi));
+              std::complex<double> alpha(fac * cos(2 * std::numbers::pi * random_theta1) *
+                                             cos(2 * std::numbers::pi * random_phi),
+                  fac * sin(2 * std::numbers::pi * random_theta1) *
+                      cos(2 * std::numbers::pi * random_phi));
+              std::complex<double> beta(fac * cos(2 * std::numbers::pi * random_theta2) *
+                                            sin(2 * std::numbers::pi * random_phi),
+                  fac * sin(2 * std::numbers::pi * random_theta2) *
+                      sin(2 * std::numbers::pi * random_phi));
 
               // construct velocity from alpha, beta and k
               if (k_12 > 1.0e-9)
@@ -574,7 +576,7 @@ namespace FLD
     // domain length
     const double L = 10.0 * M;
     // reference length
-    const double L_ref = L / (2.0 * M_PI);
+    const double L_ref = L / (2.0 * std::numbers::pi);
 
     for (std::size_t rr = 0; rr < k_exp_.size(); rr++) k_exp_[rr] *= (L_ref / 0.01);
 
@@ -989,19 +991,21 @@ namespace FLD
 
               // remark on the literature:
               // Collis 2002: sqrt(energy/(2*PI*k))
-              const double fac = sqrt(energy / (2 * M_PI * k * k));
+              const double fac = sqrt(energy / (2 * std::numbers::pi * k * k));
               // Rogallo 1981: sqrt(energy/(4*PI*k*k))
               // the missing factor 1/2 of Collis version compared to Rogallo version
               // is related to the definition of E from u_i
               // here, we have E = 1/2 * u_i *u_i (see statistics manager)
 
               // real part, imaginary part
-              std::complex<double> alpha(
-                  fac * cos(2 * M_PI * random_theta1) * cos(2 * M_PI * random_phi),
-                  fac * sin(2 * M_PI * random_theta1) * cos(2 * M_PI * random_phi));
-              std::complex<double> beta(
-                  fac * cos(2 * M_PI * random_theta2) * sin(2 * M_PI * random_phi),
-                  fac * sin(2 * M_PI * random_theta2) * sin(2 * M_PI * random_phi));
+              std::complex<double> alpha(fac * cos(2 * std::numbers::pi * random_theta1) *
+                                             cos(2 * std::numbers::pi * random_phi),
+                  fac * sin(2 * std::numbers::pi * random_theta1) *
+                      cos(2 * std::numbers::pi * random_phi));
+              std::complex<double> beta(fac * cos(2 * std::numbers::pi * random_theta2) *
+                                            sin(2 * std::numbers::pi * random_phi),
+                  fac * sin(2 * std::numbers::pi * random_theta2) *
+                      sin(2 * std::numbers::pi * random_phi));
 
               // construct velocity from alpha, beta and k
               if (k_12 > 1.0e-9)

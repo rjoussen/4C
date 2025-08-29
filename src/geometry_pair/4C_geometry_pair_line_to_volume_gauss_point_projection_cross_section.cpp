@@ -113,7 +113,7 @@ void GeometryPair::GeometryPairLineToVolumeGaussPointProjectionCrossSection<Scal
       if (line_projection_tracker[index_gp] == false)
       {
         // Coordinates in the cross section.
-        alpha = 2.0 * M_PI / double(n_integration_points_circ) * index_gp_circ;
+        alpha = 2.0 * std::numbers::pi / double(n_integration_points_circ) * index_gp_circ;
         eta_cross_section(0) = 0;
         eta_cross_section(1) = cos(alpha) * radius;
         eta_cross_section(2) = sin(alpha) * radius;

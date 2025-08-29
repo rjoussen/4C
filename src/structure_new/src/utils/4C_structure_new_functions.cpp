@@ -119,9 +119,11 @@ double Solid::WeaklyCompressibleEtienneFSIStructureFunction::evaluate(
   Core::LinAlg::Matrix<2, 1> u_ex;
 
   // evaluate variables
-  u_ex(0) = -((cos(2. * M_PI * t) * cos(2. * M_PI * x)) / 6. + 1.) * (y - 1.);
-  u_ex(1) =
-      -(sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) * (cos(2. * M_PI * x) - 1.)) / 20.;
+  u_ex(0) =
+      -((cos(2. * std::numbers::pi * t) * cos(2. * std::numbers::pi * x)) / 6. + 1.) * (y - 1.);
+  u_ex(1) = -(sin(2. * std::numbers::pi * x) * sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                (cos(2. * std::numbers::pi * x) - 1.)) /
+            20.;
 
   switch (component)
   {
@@ -157,9 +159,12 @@ std::vector<double> Solid::WeaklyCompressibleEtienneFSIStructureFunction::evalua
     Core::LinAlg::Matrix<2, 1> dudt_ex;
 
     // evaluate variables
-    dudt_ex(0) = (M_PI * cos(2. * M_PI * x) * sin(2. * M_PI * t) * (y - 1.)) / 3.;
+    dudt_ex(0) = (std::numbers::pi * cos(2. * std::numbers::pi * x) *
+                     sin(2. * std::numbers::pi * t) * (y - 1.)) /
+                 3.;
     dudt_ex(1) =
-        -(M_PI * sin(2. * M_PI * x) * cos(2. * M_PI * (t + 1. / 4.)) * (cos(2. * M_PI * x) - 1.)) /
+        -(std::numbers::pi * sin(2. * std::numbers::pi * x) *
+            cos(2. * std::numbers::pi * (t + 1. / 4.)) * (cos(2. * std::numbers::pi * x) - 1.)) /
         10.;
 
     switch (component)
@@ -218,22 +223,28 @@ double Solid::WeaklyCompressibleEtienneFSIStructureForceFunction::evaluate(
   Core::LinAlg::Matrix<2, 1> f_u_ex;
 
   // evaluate variables
-  f_u_ex(0) = (2. * (std::pow(M_PI, 2.)) * cos(2. * M_PI * t) * cos(2. * M_PI * x) * (y - 1.) *
+  f_u_ex(0) = (2. * (std::pow(std::numbers::pi, 2.)) * cos(2. * std::numbers::pi * t) *
+                  cos(2. * std::numbers::pi * x) * (y - 1.) *
                   (E - r - E * v + r * v + 2. * r * (std::pow(v, 2.)))) /
               (3. * (2. * (std::pow(v, 2.)) + v - 1.));
-  f_u_ex(1) = ((std::pow(M_PI, 2.)) * r * sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                  (cos(2. * M_PI * x) - 1.)) /
-                  5. -
-              (E * ((M_PI * sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.))) / 3. +
-                       (3. * (std::pow(M_PI, 2.)) * cos(2. * M_PI * x) * sin(2. * M_PI * x) *
-                           sin(2. * M_PI * (t + 1. / 4.))) /
-                           5. +
-                       ((std::pow(M_PI, 2.)) * sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                           (cos(2. * M_PI * x) - 1.)) /
-                           5.)) /
-                  (2. * v + 2.) +
-              (E * M_PI * v * sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.))) /
-                  (3. * (2. * v - 1.) * (v + 1.));
+  f_u_ex(1) =
+      ((std::pow(std::numbers::pi, 2.)) * r * sin(2. * std::numbers::pi * x) *
+          sin(2. * std::numbers::pi * (t + 1. / 4.)) * (cos(2. * std::numbers::pi * x) - 1.)) /
+          5. -
+      (E * ((std::numbers::pi * sin(2. * std::numbers::pi * x) *
+                sin(2. * std::numbers::pi * (t + 1. / 4.))) /
+                   3. +
+               (3. * (std::pow(std::numbers::pi, 2.)) * cos(2. * std::numbers::pi * x) *
+                   sin(2. * std::numbers::pi * x) * sin(2. * std::numbers::pi * (t + 1. / 4.))) /
+                   5. +
+               ((std::pow(std::numbers::pi, 2.)) * sin(2. * std::numbers::pi * x) *
+                   sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                   (cos(2. * std::numbers::pi * x) - 1.)) /
+                   5.)) /
+          (2. * v + 2.) +
+      (E * std::numbers::pi * v * sin(2. * std::numbers::pi * x) *
+          sin(2. * std::numbers::pi * (t + 1. / 4.))) /
+          (3. * (2. * v - 1.) * (v + 1.));
 
   switch (component)
   {

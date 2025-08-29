@@ -166,7 +166,7 @@ void Mat::Elastic::CoupAnisoPow::set_fiber_vecs(const double newgamma,
   if ((params_->gamma_ < -90) || (params_->gamma_ > 90))
     FOUR_C_THROW("Fiber angle not in [-90,90]");
   // convert
-  double gamma = (params_->gamma_ * M_PI) / 180.;
+  double gamma = (params_->gamma_ * std::numbers::pi) / 180.;
 
   if (params_->adapt_angle_ && newgamma != -1.0)
   {

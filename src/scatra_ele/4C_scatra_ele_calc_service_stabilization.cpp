@@ -546,7 +546,7 @@ double Discret::Elements::ScaTraEleCalc<distype, probdim>::calc_char_ele_length(
     // b) volume-equivalent diameter (warning: 3-D formula!)
     case Inpar::ScaTra::volume_equivalent_diameter:
     {
-      h = std::pow((6. * vol / M_PI), (1.0 / 3.0)) / sqrt(3.0);
+      h = std::pow((6. * vol / std::numbers::pi), (1.0 / 3.0)) / sqrt(3.0);
     }
     break;
 

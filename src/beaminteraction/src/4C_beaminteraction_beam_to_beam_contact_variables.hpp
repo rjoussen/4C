@@ -188,7 +188,7 @@ namespace BeamInteraction
       out << "\nInstance of BeamToBeamContactVariables (SegmentIds " << segids_.first << " & "
           << segids_.second << "):";
       out << "\ngap= " << Core::FADUtils::cast_to_double(gap_);
-      out << "\nangle= " << angle_ / M_PI * 180.0 << " degree";
+      out << "\nangle= " << angle_ / std::numbers::pi * 180.0 << " degree";
       out << "\nclosest point coords: " << Core::FADUtils::cast_to_double(closestpoint_.first)
           << " " << Core::FADUtils::cast_to_double(closestpoint_.second);
 
@@ -202,7 +202,7 @@ namespace BeamInteraction
     {
       out << std::setw(9) << std::left << std::setprecision(2) << closestpoint_.first
           << std::setw(9) << std::left << std::setprecision(2) << closestpoint_.second
-          << std::setw(9) << std::left << std::setprecision(3) << angle_ / M_PI * 180.0
+          << std::setw(9) << std::left << std::setprecision(3) << angle_ / std::numbers::pi * 180.0
           << std::setw(12) << std::left << std::scientific << gap_ << std::setw(12) << std::left
           << std::scientific << fp_ << std::setprecision(6)
           << std::resetiosflags(std::ios::scientific) << std::right;

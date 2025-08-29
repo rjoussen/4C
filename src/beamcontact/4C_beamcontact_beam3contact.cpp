@@ -154,8 +154,9 @@ CONTACT::Beam3contact<numnodes, numnodalvalues>::Beam3contact(
           BeamContact::pl_lpqp)
     FOUR_C_THROW("BEAMS_GAPSHIFTPARAM only possible for penalty law LinPosQuadPen!");
 
-  double perpshiftangle1 = bcparams_.get<double>("BEAMS_PERPSHIFTANGLE1") / 180.0 * M_PI;
-  double parshiftangle2 = bcparams_.get<double>("BEAMS_PARSHIFTANGLE2") / 180.0 * M_PI;
+  double perpshiftangle1 =
+      bcparams_.get<double>("BEAMS_PERPSHIFTANGLE1") / 180.0 * std::numbers::pi;
+  double parshiftangle2 = bcparams_.get<double>("BEAMS_PARSHIFTANGLE2") / 180.0 * std::numbers::pi;
 
   if (parshiftangle2 <= perpshiftangle1)
     FOUR_C_THROW("No angle overlap between large-angle and small-angle contact!");
@@ -168,7 +169,7 @@ CONTACT::Beam3contact<numnodes, numnodalvalues>::Beam3contact(
     FOUR_C_THROW(
         "Choose larger shifting angle BEAMS_PERPSHIFTANGLE1 in order to enable a unique CPP!");
 
-  double segangle = bcparams_.get<double>("BEAMS_SEGANGLE", -1.0) / 180.0 * M_PI;
+  double segangle = bcparams_.get<double>("BEAMS_SEGANGLE", -1.0) / 180.0 * std::numbers::pi;
 
   if (bcparams_.get<double>("BEAMS_SEGANGLE", -1.0) < 0.0)
     FOUR_C_THROW("Input variable BEAMS_SEGANGLE has to be defined!");
@@ -470,8 +471,10 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::evaluate_active_large_angl
     calc_penalty_law(*cpvariables_[numcp]);
 
     // get shift angles from input file
-    double perpshiftangle1 = bcparams_.get<double>("BEAMS_PERPSHIFTANGLE1") / 180.0 * M_PI;
-    double perpshiftangle2 = bcparams_.get<double>("BEAMS_PERPSHIFTANGLE2") / 180.0 * M_PI;
+    double perpshiftangle1 =
+        bcparams_.get<double>("BEAMS_PERPSHIFTANGLE1") / 180.0 * std::numbers::pi;
+    double perpshiftangle2 =
+        bcparams_.get<double>("BEAMS_PERPSHIFTANGLE2") / 180.0 * std::numbers::pi;
 
     // call function to compute scale factor of penalty parameter
     calc_perp_penalty_scale_fac(
@@ -967,8 +970,10 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::evaluate_active_small_angl
     calc_penalty_law(*gpvariables_[numgptot]);
 
     // get shift angles from input file
-    double parshiftangle1 = bcparams_.get<double>("BEAMS_PARSHIFTANGLE1") / 180.0 * M_PI;
-    double parshiftangle2 = bcparams_.get<double>("BEAMS_PARSHIFTANGLE2") / 180.0 * M_PI;
+    double parshiftangle1 =
+        bcparams_.get<double>("BEAMS_PARSHIFTANGLE1") / 180.0 * std::numbers::pi;
+    double parshiftangle2 =
+        bcparams_.get<double>("BEAMS_PARSHIFTANGLE2") / 180.0 * std::numbers::pi;
 
     // call function to compute scale factor of penalty parameter
     calc_par_penalty_scale_fac(
@@ -1627,7 +1632,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::calc_perp_penalty_scale_fa
   TYPE ppfac = 1.0;
   TYPE dppfac = 0.0;
 
-  if (shiftangle1 > M_PI / 2.0 and shiftangle2 > M_PI / 2.0)
+  if (shiftangle1 > std::numbers::pi / 2.0 and shiftangle2 > std::numbers::pi / 2.0)
   {
     ppfac = 0.0;
     dppfac = 0.0;
@@ -1639,8 +1644,8 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::calc_perp_penalty_scale_fa
     double s1 = cos(shiftangle1);
     double s2 = cos(shiftangle2);
 
-    if (shiftangle1 < 0.0 or shiftangle1 > M_PI / 2.0 or shiftangle2 < 0.0 or
-        shiftangle2 > M_PI / 2.0 or shiftangle1 >= shiftangle2)
+    if (shiftangle1 < 0.0 or shiftangle1 > std::numbers::pi / 2.0 or shiftangle2 < 0.0 or
+        shiftangle2 > std::numbers::pi / 2.0 or shiftangle1 >= shiftangle2)
       FOUR_C_THROW("Invalid choice of shift angles!");
 
     if (Core::FADUtils::cast_to_double(s) > s1)
@@ -1648,20 +1653,22 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::calc_perp_penalty_scale_fa
     else if (Core::FADUtils::cast_to_double(s) > s2)
     {
 #ifndef CONSISTENTTRANSITION
-      ppfac = 0.5 * (cos(M_PI * (s - s2) / (s1 - s2)) + 1.0);
-      dppfac = -0.5 * M_PI / (s1 - s2) * sin(M_PI * (s - s2) / (s1 - s2));
+      ppfac = 0.5 * (cos(std::numbers::pi * (s - s2) / (s1 - s2)) + 1.0);
+      dppfac = -0.5 * std::numbers::pi / (s1 - s2) * sin(std::numbers::pi * (s - s2) / (s1 - s2));
 #else
       if (CONSISTENTTRANSITION == 1)
       {
-        TYPE simple_fac = 0.5 * (cos(M_PI * (s - s2) / (s1 - s2)) + 1.0);
-        TYPE d_simple_fac = -0.5 * M_PI / (s1 - s2) * sin(M_PI * (s - s2) / (s1 - s2));
+        TYPE simple_fac = 0.5 * (cos(std::numbers::pi * (s - s2) / (s1 - s2)) + 1.0);
+        TYPE d_simple_fac =
+            -0.5 * std::numbers::pi / (s1 - s2) * sin(std::numbers::pi * (s - s2) / (s1 - s2));
         ppfac = simple_fac * simple_fac;
         dppfac = 2 * simple_fac * d_simple_fac;
       }
       else if (CONSISTENTTRANSITION == 2)
       {
-        TYPE simple_fac = 0.5 * (-cos(M_PI * (s - s2) / (s1 - s2)) + 1.0);
-        TYPE d_simple_fac = 0.5 * M_PI / (s1 - s2) * sin(M_PI * (s - s2) / (s1 - s2));
+        TYPE simple_fac = 0.5 * (-cos(std::numbers::pi * (s - s2) / (s1 - s2)) + 1.0);
+        TYPE d_simple_fac =
+            0.5 * std::numbers::pi / (s1 - s2) * sin(std::numbers::pi * (s - s2) / (s1 - s2));
         ppfac = 1 - simple_fac * simple_fac;
         dppfac = -2 * simple_fac * d_simple_fac;
       }
@@ -1695,7 +1702,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::calc_par_penalty_scale_fac
   TYPE ppfac = 1.0;
   TYPE dppfac = 0.0;
 
-  if (shiftangle1 > M_PI / 2.0 and shiftangle2 > M_PI / 2.0)
+  if (shiftangle1 > std::numbers::pi / 2.0 and shiftangle2 > std::numbers::pi / 2.0)
   {
     ppfac = 1.0;
     dppfac = 0.0;
@@ -1707,8 +1714,8 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::calc_par_penalty_scale_fac
     double s1 = cos(shiftangle1);
     double s2 = cos(shiftangle2);
 
-    if (shiftangle1 < 0.0 or shiftangle1 > M_PI / 2.0 or shiftangle2 < 0.0 or
-        shiftangle2 > M_PI / 2.0 or shiftangle1 >= shiftangle2)
+    if (shiftangle1 < 0.0 or shiftangle1 > std::numbers::pi / 2.0 or shiftangle2 < 0.0 or
+        shiftangle2 > std::numbers::pi / 2.0 or shiftangle1 >= shiftangle2)
       FOUR_C_THROW("Invalid choice of shift angles!");
 
     if (Core::FADUtils::cast_to_double(s) > s1)
@@ -1716,11 +1723,12 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::calc_par_penalty_scale_fac
     else if (Core::FADUtils::cast_to_double(s) > s2)
     {
 #ifndef CONSISTENTTRANSITION
-      ppfac = 0.5 * (-cos(M_PI * (s - s2) / (s1 - s2)) + 1.0);
-      dppfac = 0.5 * M_PI / (s1 - s2) * sin(M_PI * (s - s2) / (s1 - s2));
+      ppfac = 0.5 * (-cos(std::numbers::pi * (s - s2) / (s1 - s2)) + 1.0);
+      dppfac = 0.5 * std::numbers::pi / (s1 - s2) * sin(std::numbers::pi * (s - s2) / (s1 - s2));
 #else
-      TYPE simple_fac = 0.5 * (-cos(M_PI * (s - s2) / (s1 - s2)) + 1.0);
-      TYPE d_simple_fac = 0.5 * M_PI / (s1 - s2) * sin(M_PI * (s - s2) / (s1 - s2));
+      TYPE simple_fac = 0.5 * (-cos(std::numbers::pi * (s - s2) / (s1 - s2)) + 1.0);
+      TYPE d_simple_fac =
+          0.5 * std::numbers::pi / (s1 - s2) * sin(std::numbers::pi * (s - s2) / (s1 - s2));
       ppfac = simple_fac * simple_fac;
       dppfac = 2 * simple_fac * d_simple_fac;
 #endif
@@ -1750,7 +1758,7 @@ double CONTACT::Beam3contact<numnodes, numnodalvalues>::create_segments(
   // endpoints of the segments
   std::vector<Core::LinAlg::Matrix<3, 1, double>> endpoints(
       (int)MAXNUMSEG + 1, Core::LinAlg::Matrix<3, 1, double>(Core::LinAlg::Initialization::zero));
-  double segangle = bcparams_.get<double>("BEAMS_SEGANGLE") / 180.0 * M_PI;
+  double segangle = bcparams_.get<double>("BEAMS_SEGANGLE") / 180.0 * std::numbers::pi;
 
   numsegment = 1;
   double deltaxi = 2.0;
@@ -1915,7 +1923,7 @@ bool CONTACT::Beam3contact<numnodes, numnodalvalues>::check_segment(
   double angle1(0.0);
   double angle2(0.0);
   double dist(0.0);
-  double segangle = bcparams_.get<double>("BEAMS_SEGANGLE") / 180.0 * M_PI;
+  double segangle = bcparams_.get<double>("BEAMS_SEGANGLE") / 180.0 * std::numbers::pi;
 
   // Calculate tangent and midpint of linear nodal interpolation
   for (int i = 0; i < 3; i++)
@@ -2331,7 +2339,8 @@ bool CONTACT::Beam3contact<numnodes, numnodalvalues>::closest_point_projection(d
           eta1_min < (eta_left1 + l1 + 1.0e-10) and eta_left2 - XIETAITERATIVEDISPTOL <= eta2 and
           eta2 <= eta_right2 + XIETAITERATIVEDISPTOL)
       {
-        double perpshiftangle1 = bcparams_.get<double>("BEAMS_PERPSHIFTANGLE1") / 180.0 * M_PI;
+        double perpshiftangle1 =
+            bcparams_.get<double>("BEAMS_PERPSHIFTANGLE1") / 180.0 * std::numbers::pi;
         // Here, we apply the conservative estimate that the closest-point gap is by 0.1*R2_ smaller
         // than g_min
         double g_min_estimate = g_min - 0.1 * r2_;
@@ -2347,7 +2356,8 @@ bool CONTACT::Beam3contact<numnodes, numnodalvalues>::closest_point_projection(d
           std::cout << "element2_->Id(): " << element2_->id() << std::endl;
           std::cout << "R2_: " << r2_ << std::endl;
           std::cout << "g_min: " << g_min << std::endl;
-          std::cout << "alpha_g_min: " << alpha_g_min / M_PI * 180 << "degrees" << std::endl;
+          std::cout << "alpha_g_min: " << alpha_g_min / std::numbers::pi * 180 << "degrees"
+                    << std::endl;
           std::cout << "numstartpoint: " << numstartpoint << std::endl;
           std::cout << "iter: " << iter << std::endl;
           std::cout << "residual0: " << residual0 << std::endl;
@@ -2397,7 +2407,8 @@ bool CONTACT::Beam3contact<numnodes, numnodalvalues>::closest_point_projection(d
               fabs(eta2 + 1.0) < 1.1 * XIETAITERATIVEDISPTOL)
             FOUR_C_THROW("|eta1|=1 or |eta2|=1, danger of multiple gauss point evaluation!");
 
-          double perpshiftangle1 = bcparams_.get<double>("BEAMS_PERPSHIFTANGLE1") / 180.0 * M_PI;
+          double perpshiftangle1 =
+              bcparams_.get<double>("BEAMS_PERPSHIFTANGLE1") / 180.0 * std::numbers::pi;
 
           if ((check_contact_status(gap) or check_damping_status(gap)) and angle >= perpshiftangle1)
             validpairfound = true;
@@ -2445,7 +2456,8 @@ bool CONTACT::Beam3contact<numnodes, numnodalvalues>::closest_point_projection(d
             fabs(BeamInteraction::calc_angle(Core::FADUtils::cast_to_double<TYPE, 3, 1>(r1_xi),
                 Core::FADUtils::cast_to_double<TYPE, 3, 1>(r2_xi)));
 
-        double perpshiftangle1 = bcparams_.get<double>("BEAMS_PERPSHIFTANGLE1") / 180.0 * M_PI;
+        double perpshiftangle1 =
+            bcparams_.get<double>("BEAMS_PERPSHIFTANGLE1") / 180.0 * std::numbers::pi;
 
         if ((check_contact_status(gap) or check_damping_status(gap)) and angle >= perpshiftangle1)
           validpairfound = true;
@@ -2806,7 +2818,8 @@ bool CONTACT::Beam3contact<numnodes, numnodalvalues>::point_to_line_projection(d
                 Core::FADUtils::cast_to_double<TYPE, 3, 1>(r2_xi)));
         if (smallanglepair)
         {
-          double parshiftangle2 = bcparams_.get<double>("BEAMS_PARSHIFTANGLE2") / 180.0 * M_PI;
+          double parshiftangle2 =
+              bcparams_.get<double>("BEAMS_PARSHIFTANGLE2") / 180.0 * std::numbers::pi;
 
           if (angle > parshiftangle2) relevant_angle = false;
         }

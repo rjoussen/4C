@@ -846,7 +846,7 @@ void XFEM::MeshCouplingBC::evaluate_implementation(std::vector<double>& final_va
   double arg = 0.0;  // prescribe a time-dependent angle
 
   double T = 16.0;  // time period for 2*Pi
-  double angle_vel = 2. * M_PI / T;
+  double angle_vel = 2. * std::numbers::pi / T;
 
   if (time <= t_1)
   {
@@ -854,21 +854,23 @@ void XFEM::MeshCouplingBC::evaluate_implementation(std::vector<double>& final_va
   }
   else if (time > t_1 and time <= t_2)
   {
-    arg = angle_vel / 2.0 * (time - t_1) -
-          angle_vel * (t_2 - t_1) / (2.0 * M_PI) * sin(M_PI * (time - t_1) / (t_2 - t_1));
+    arg = angle_vel / 2.0 * (time - t_1) - angle_vel * (t_2 - t_1) / (2.0 * std::numbers::pi) *
+                                               sin(std::numbers::pi * (time - t_1) / (t_2 - t_1));
   }
   else if (time > t_2 and time <= t_3)
   {
-    arg = angle_vel * (time - t_2) + M_PI / T * (t_2 - t_1);
+    arg = angle_vel * (time - t_2) + std::numbers::pi / T * (t_2 - t_1);
   }
   else if (time > t_3 and time <= t_4)
   {
-    arg = angle_vel * (t_4 - t_3) / (M_PI)*sin(M_PI * (time - t_3) / (t_4 - t_3)) +
-          2.0 * M_PI / T * (t_3 - t_2) + M_PI / T * (t_2 - t_1);
+    arg = angle_vel * (t_4 - t_3) /
+              (std::numbers::pi)*sin(std::numbers::pi * (time - t_3) / (t_4 - t_3)) +
+          2.0 * std::numbers::pi / T * (t_3 - t_2) + std::numbers::pi / T * (t_2 - t_1);
   }
   else if (time > t_4)
   {
-    arg = -angle_vel * (time - t_4) + M_PI / T * (t_2 - t_1) + 2.0 * M_PI / T * (t_3 - t_2);
+    arg = -angle_vel * (time - t_4) + std::numbers::pi / T * (t_2 - t_1) +
+          2.0 * std::numbers::pi / T * (t_3 - t_2);
   }
   else
     FOUR_C_THROW("for that time we did not define an implemented rotation {}", time);

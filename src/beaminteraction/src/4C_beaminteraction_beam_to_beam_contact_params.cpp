@@ -107,14 +107,14 @@ void BeamInteraction::BeamToBeamContactParams::init()
     // Todo find more verbose and expressive naming
     // note: conversion from degrees (input parameter) to radians (class variable) done here!
     btb_perp_shifting_angle1_ =
-        beam_contact_params_list.get<double>("BEAMS_PERPSHIFTANGLE1") / 180.0 * M_PI;
+        beam_contact_params_list.get<double>("BEAMS_PERPSHIFTANGLE1") / 180.0 * std::numbers::pi;
     btb_perp_shifting_angle2_ =
-        beam_contact_params_list.get<double>("BEAMS_PERPSHIFTANGLE2") / 180.0 * M_PI;
+        beam_contact_params_list.get<double>("BEAMS_PERPSHIFTANGLE2") / 180.0 * std::numbers::pi;
 
     btb_parallel_shifting_angle1_ =
-        beam_contact_params_list.get<double>("BEAMS_PARSHIFTANGLE1") / 180.0 * M_PI;
+        beam_contact_params_list.get<double>("BEAMS_PARSHIFTANGLE1") / 180.0 * std::numbers::pi;
     btb_parallel_shifting_angle2_ =
-        beam_contact_params_list.get<double>("BEAMS_PARSHIFTANGLE2") / 180.0 * M_PI;
+        beam_contact_params_list.get<double>("BEAMS_PARSHIFTANGLE2") / 180.0 * std::numbers::pi;
 
     if (btb_perp_shifting_angle1_ < 0.0 or btb_perp_shifting_angle2_ < 0.0 or
         btb_parallel_shifting_angle1_ < 0.0 or btb_parallel_shifting_angle2_ < 0.0)
@@ -122,8 +122,10 @@ void BeamInteraction::BeamToBeamContactParams::init()
           "You chose all-angle-beam contact algorithm: thus, shifting angles for"
           " beam-to-beam contact fade must be >= 0 degrees");
 
-    if (btb_perp_shifting_angle1_ > 0.5 * M_PI or btb_perp_shifting_angle2_ > 0.5 * M_PI or
-        btb_parallel_shifting_angle1_ > 0.5 * M_PI or btb_parallel_shifting_angle2_ > 0.5 * M_PI)
+    if (btb_perp_shifting_angle1_ > 0.5 * std::numbers::pi or
+        btb_perp_shifting_angle2_ > 0.5 * std::numbers::pi or
+        btb_parallel_shifting_angle1_ > 0.5 * std::numbers::pi or
+        btb_parallel_shifting_angle2_ > 0.5 * std::numbers::pi)
       FOUR_C_THROW(
           "You chose all-angle-beam contact algorithm: thus, Shifting angles for"
           " beam-to-beam contact fade must be <= 90 degrees");
@@ -133,7 +135,7 @@ void BeamInteraction::BeamToBeamContactParams::init()
 
     /****************************************************************************/
     // note: conversion from degrees (input parameter) to radians (class variable) done here!
-    segangle_ = beam_contact_params_list.get<double>("BEAMS_SEGANGLE") / 180.0 * M_PI;
+    segangle_ = beam_contact_params_list.get<double>("BEAMS_SEGANGLE") / 180.0 * std::numbers::pi;
 
     if (segangle_ <= 0.0) FOUR_C_THROW("Segmentation angle must be greater than zero!");
 

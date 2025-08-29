@@ -144,8 +144,8 @@ void ParticleInteraction::DEMContactRollingCoulomb::setup(const double& k_normal
   if (e_ > 0.0)
   {
     const double lne = std::log(e_);
-    d_rolling_fac_ =
-        2.0 * std::abs(lne) * std::sqrt(k_normal / (Utils::pow<2>(lne) + Utils::pow<2>(M_PI)));
+    d_rolling_fac_ = 2.0 * std::abs(lne) *
+                     std::sqrt(k_normal / (Utils::pow<2>(lne) + Utils::pow<2>(std::numbers::pi)));
   }
   else
     d_rolling_fac_ = 2.0 * std::sqrt(k_normal);

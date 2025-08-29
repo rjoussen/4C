@@ -57,7 +57,8 @@ void ParticleInteraction::DEMContactNormalLinearSpring::setup(const double& dens
 
   // calculate normal stiffness from relative penetration and other input parameters
   if (c_ > 0.0)
-    k_normal_ = 2.0 / 3.0 * r_max_ * M_PI * dens_max * Utils::pow<2>(v_max_) / Utils::pow<2>(c_);
+    k_normal_ = 2.0 / 3.0 * r_max_ * std::numbers::pi * dens_max * Utils::pow<2>(v_max_) /
+                Utils::pow<2>(c_);
 
   // set critical normal contact stiffness to linear normal contact stiffness
   k_normal_crit_ = k_normal_;
@@ -105,8 +106,8 @@ void ParticleInteraction::DEMContactNormalLinearSpringDamp::setup(const double& 
   if (e_ > 0.0)
   {
     const double lne = std::log(e_);
-    d_normal_fac_ =
-        2.0 * std::abs(lne) * std::sqrt(k_normal_ / (Utils::pow<2>(lne) + Utils::pow<2>(M_PI)));
+    d_normal_fac_ = 2.0 * std::abs(lne) *
+                    std::sqrt(k_normal_ / (Utils::pow<2>(lne) + Utils::pow<2>(std::numbers::pi)));
   }
   else
     d_normal_fac_ = 2.0 * std::sqrt(k_normal_);
@@ -147,17 +148,18 @@ void ParticleInteraction::DEMContactNormalNonlinearBase::setup(const double& den
 
   // calculate normal stiffness from relative penetration and other input parameters if necessary
   if (c_ > 0.0)
-    k_normal_ = 10.0 / 3.0 * M_PI * dens_max * Utils::pow<2>(v_max_) * std::sqrt(r_max_) /
-                std::sqrt(Utils::pow<5>(2.0 * c_));
+    k_normal_ = 10.0 / 3.0 * std::numbers::pi * dens_max * Utils::pow<2>(v_max_) *
+                std::sqrt(r_max_) / std::sqrt(Utils::pow<5>(2.0 * c_));
 
   // set critical normal contact stiffness to linear normal contact stiffness
   if (c_ > 0.0)
-    k_normal_crit_ =
-        2.0 / 3.0 * r_max_ * M_PI * dens_max * Utils::pow<2>(v_max_) / Utils::pow<2>(c_);
+    k_normal_crit_ = 2.0 / 3.0 * r_max_ * std::numbers::pi * dens_max * Utils::pow<2>(v_max_) /
+                     Utils::pow<2>(c_);
   else
-    k_normal_crit_ = std::pow(2048.0 / 1875.0 * dens_max * Utils::pow<2>(v_max_) * M_PI *
-                                  Utils::pow<3>(r_max_) * Utils::pow<4>(k_normal_),
-        0.2);
+    k_normal_crit_ =
+        std::pow(2048.0 / 1875.0 * dens_max * Utils::pow<2>(v_max_) * std::numbers::pi *
+                     Utils::pow<3>(r_max_) * Utils::pow<4>(k_normal_),
+            0.2);
 }
 
 void ParticleInteraction::DEMContactNormalNonlinearBase::normal_potential_energy(

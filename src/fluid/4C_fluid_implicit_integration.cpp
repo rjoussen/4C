@@ -2888,7 +2888,7 @@ void FLD::FluidImplicitTimeInt::ale_update(std::string condName)
 
           // Obtain angles phi and theta for spherical coordinate system representation
           double phi = atan2(currPos[1], currPos[0]);
-          if (phi < 0) phi = phi + 2 * M_PI;
+          if (phi < 0) phi = phi + 2 * std::numbers::pi;
           const double theta = acos(currPos[2] / lengthCurrPos);
 
           // Precalculate some sin and cos
@@ -4423,8 +4423,8 @@ void FLD::FluidImplicitTimeInt::set_initial_flow_field(
     if (numdim_ != 3) FOUR_C_THROW("Beltrami flow is a three-dimensional flow!");
 
     // set constants for analytical solution
-    const double a = M_PI / 4.0;
-    const double d = M_PI / 2.0;
+    const double a = std::numbers::pi / 4.0;
+    const double d = std::numbers::pi / 2.0;
 
     // loop all nodes on the processor
     for (int lnodeid = 0; lnodeid < discret_->num_my_row_nodes(); lnodeid++)

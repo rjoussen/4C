@@ -451,7 +451,7 @@ void Discret::Elements::Beam3k::set_up_initial_rotations(const std::vector<doubl
     for (int j = 0; j < 3; j++) (theta0_[i])(j) = nodal_thetas[3 * i + j];
 
     // Shift angles by 2PI in case these angles are not in the interval [-PI,PI].
-    if (theta0_[i].norm2() > M_PI)
+    if (theta0_[i].norm2() > std::numbers::pi)
     {
       Core::LinAlg::Matrix<4, 1> Q(Core::LinAlg::Initialization::zero);
       Core::LargeRotations::angletoquaternion(theta0_[i], Q);

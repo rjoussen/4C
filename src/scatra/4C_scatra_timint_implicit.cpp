@@ -2171,14 +2171,14 @@ void ScaTra::ScaTraTimIntImpl::set_initial_field(
 
         // interface disturbance
         double x2_int = 0.0;
-        x2_int -= std::cos(4 * M_PI * x1);
-        x2_int -= std::cos(14 * M_PI * x1);
-        x2_int -= std::cos(23 * M_PI * x1);
-        x2_int -= std::cos(28 * M_PI * x1);
-        x2_int -= std::cos(33 * M_PI * x1);
-        x2_int -= std::cos(42 * M_PI * x1);
-        x2_int -= std::cos(51 * M_PI * x1);
-        x2_int -= std::cos(59 * M_PI * x1);
+        x2_int -= std::cos(4 * std::numbers::pi * x1);
+        x2_int -= std::cos(14 * std::numbers::pi * x1);
+        x2_int -= std::cos(23 * std::numbers::pi * x1);
+        x2_int -= std::cos(28 * std::numbers::pi * x1);
+        x2_int -= std::cos(33 * std::numbers::pi * x1);
+        x2_int -= std::cos(42 * std::numbers::pi * x1);
+        x2_int -= std::cos(51 * std::numbers::pi * x1);
+        x2_int -= std::cos(59 * std::numbers::pi * x1);
         x2_int *= alpha;
 
         const double value = (x2_int - x2) / (2.0 * delta);
@@ -3395,7 +3395,7 @@ void ScaTra::ScaTraTimIntImpl::evaluate_macro_micro_coupling()
           FOUR_C_THROW("Number of 1D elements adjacent to the boundary node must be 1!");
 
         // compute domain integration factor
-        constexpr double four_pi = 4.0 * M_PI;
+        constexpr double four_pi = 4.0 * std::numbers::pi;
         const double fac = params_->get<bool>("SPHERICALCOORDS")
                                ? *node->x().data() * *node->x().data() * four_pi
                                : 1.0;

@@ -499,7 +499,7 @@ namespace Core::Utils::SymbolicExpressionDetails
         std::string_view name(lexer.str_, lexer.integer_);
         if (name == "pi")
         {
-          lhs = create_node(NodeType::number, {.number = M_PI});
+          lhs = create_node(NodeType::number, {.number = std::numbers::pi});
           lexer.advance();
           break;
         }

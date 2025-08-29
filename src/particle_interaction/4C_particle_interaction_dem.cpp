@@ -445,7 +445,7 @@ void ParticleInteraction::ParticleInteractionDEM::set_initial_mass()
     double* mass = container->get_ptr_to_state(PARTICLEENGINE::Mass, 0);
 
     // compute mass via particle volume and initial density
-    const double fac = material->initDensity_ * 4.0 / 3.0 * M_PI;
+    const double fac = material->initDensity_ * 4.0 / 3.0 * std::numbers::pi;
     for (int i = 0; i < particlestored; ++i) mass[i] = fac * Utils::pow<3>(radius[i]);
   }
 }

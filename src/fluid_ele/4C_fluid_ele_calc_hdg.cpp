@@ -1242,8 +1242,8 @@ void Discret::Elements::FluidEleCalcHDG<distype>::evaluate_all(const int startfu
         if (nsd_ != 3) FOUR_C_THROW("Beltrami flow is a three-dimensional flow!");
 
         // set constants for analytical solution
-        const double a = M_PI / 4.0;
-        const double d = M_PI / 2.0;
+        const double a = std::numbers::pi / 4.0;
+        const double d = std::numbers::pi / 2.0;
         u(0) = -a * (std::exp(a * xyz(0)) * std::sin(a * xyz(1) + d * xyz(2)) +
                         std::exp(a * xyz(2)) * std::cos(a * xyz(0) + d * xyz(1)));
         u(1) = -a * (std::exp(a * xyz(1)) * std::sin(a * xyz(2) + d * xyz(0)) +

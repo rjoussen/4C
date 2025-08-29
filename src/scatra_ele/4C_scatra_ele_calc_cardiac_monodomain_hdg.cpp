@@ -811,7 +811,7 @@ void Discret::Elements::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::set
     const std::vector<double>& transverse = fibers.get_angle(Core::Nodes::AngleType::Transverse);
     f.resize(cir.size());
 
-    double deg2rad = M_PI / 180.;
+    double deg2rad = std::numbers::pi / 180.;
     for (unsigned int gp = 0; gp < cir.size(); ++gp)
     {
       Core::LinAlg::Matrix<3, 1> rad(Core::LinAlg::Initialization::uninitialized);

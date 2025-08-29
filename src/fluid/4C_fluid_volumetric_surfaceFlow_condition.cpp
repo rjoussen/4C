@@ -1063,7 +1063,7 @@ void FLD::Utils::FluidVolumetricSurfaceFlowBc::velocities(Core::FE::Discretizati
       const double Mk = sqrt(rl * rl + im * im);
       const double Phik = atan2(-imag((*Vn)[k]), real((*Vn)[k]));
 
-      Bn[k] = Mk * cos(2.0 * M_PI * double(k) - Phik);
+      Bn[k] = Mk * cos(2.0 * std::numbers::pi * double(k) - Phik);
     }
   }
 
@@ -1131,7 +1131,7 @@ void FLD::Utils::FluidVolumetricSurfaceFlowBc::velocities(Core::FE::Discretizati
             im = imag((*Vn)[k]);
             const double Mk = sqrt(rl * rl + im * im);
             const double Phik = atan2(-imag((*Vn)[k]), real((*Vn)[k]));
-            Bn[k] = Mk * cos(2.0 * M_PI * double(k) - Phik);
+            Bn[k] = Mk * cos(2.0 * std::numbers::pi * double(k) - Phik);
 
             velocity_wom += this->womersley_velocity(r, R, Mk, Phik, k, period);
           }
@@ -1411,7 +1411,7 @@ double FLD::Utils::FluidVolumetricSurfaceFlowBc::womersley_velocity(double r, do
   std::complex<double> i = std::complex<double>(0.0, 1.0);
 
   // exp^( i*w*t)
-  double constexp = 2.0 * M_PI * double(n) * time / period_ - Phi;
+  double constexp = 2.0 * std::numbers::pi * double(n) * time / period_ - Phi;
   double realpart = cos(constexp);
   double imagpart = sin(constexp);
   std::complex<double> eiwt_phi(realpart, imagpart);
@@ -1431,7 +1431,7 @@ double FLD::Utils::FluidVolumetricSurfaceFlowBc::womersley_velocity(double r, do
 
   // Womersley number
   //  double          alpha = R*sqrt(2.0*M_PI*double(n)/period_/viscosity_);
-  double alpha = R * sqrt(2.0 * M_PI * double(n) / period_ / (viscosity_ / density_));
+  double alpha = R * sqrt(2.0 * std::numbers::pi * double(n) / period_ / (viscosity_ / density_));
 
   // Bessel variable
   std::complex<double> z = alpha * pow(i, 1.5);
@@ -1642,8 +1642,10 @@ void FLD::Utils::FluidVolumetricSurfaceFlowBc::dft(std::shared_ptr<std::vector<d
         pos = fsize - (n - starting_pos);
       }
 
-      double rl = (*f)[pos] * 2.0 / N * (cos(2.0 * M_PI * double(k) * double(fsize - 1 - n) / N));
-      double im = (*f)[pos] * 2.0 / N * (-sin(2.0 * M_PI * double(k) * double(fsize - 1 - n) / N));
+      double rl = (*f)[pos] * 2.0 / N *
+                  (cos(2.0 * std::numbers::pi * double(k) * double(fsize - 1 - n) / N));
+      double im = (*f)[pos] * 2.0 / N *
+                  (-sin(2.0 * std::numbers::pi * double(k) * double(fsize - 1 - n) / N));
 
       (*F)[k] += std::complex<double>(rl, im);
     }

@@ -83,8 +83,8 @@ void Mat::Elastic::CoupAnisoNeoHookeVarProp::setup(
             "[-180, 180]");
       }
       // conversion to radian measure
-      theta = (theta * M_PI) / 180.0;
-      gamma = (gamma * M_PI) / 180.0;
+      theta = (theta * std::numbers::pi) / 180.0;
+      gamma = (gamma * std::numbers::pi) / 180.0;
       locsys(1, 1) = sin(theta);
       locsys(2, 1) = sin(gamma) * cos(theta);
       locsys(0, 2) = sin(theta);
@@ -166,7 +166,7 @@ void Mat::Elastic::CoupAnisoNeoHookeVarProp::set_fiber_vecs(const double newgamm
   if ((params_->gamma_ < -90) || (params_->gamma_ > 90))
     FOUR_C_THROW("Fiber angle not in [-90,90]");
   // convert
-  double gamma = (params_->gamma_ * M_PI) / 180.;
+  double gamma = (params_->gamma_ * std::numbers::pi) / 180.;
 
   if (params_->adapt_angle_ && newgamma != -1.0)
   {

@@ -263,10 +263,10 @@ void BeamInteraction::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
   switch (params()->type)
   {
     case BeamInteraction::Potential::Type::surface:
-      prefactor *= 4 * radius1_ * radius2_ * M_PI * M_PI;
+      prefactor *= 4 * radius1_ * radius2_ * std::numbers::pi * std::numbers::pi;
       break;
     case BeamInteraction::Potential::Type::volume:
-      prefactor *= radius1_ * radius1_ * radius2_ * radius2_ * M_PI * M_PI;
+      prefactor *= radius1_ * radius1_ * radius2_ * radius2_ * std::numbers::pi * std::numbers::pi;
       break;
     default:
       FOUR_C_THROW("No valid TYPE specified. Choose either `surface` or `volume` in input file!");
@@ -700,7 +700,7 @@ void BeamInteraction::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
   // auxiliary variables
   Core::LinAlg::Matrix<3, 1, T> fpot_tmp(Core::LinAlg::Initialization::zero);
 
-  double prefactor = k_ * 2 * M_PI * (m_ - 3.5) / (m_ - 2) / (m_ - 2) *
+  double prefactor = k_ * 2 * std::numbers::pi * (m_ - 3.5) / (m_ - 2) / (m_ - 2) *
                      std::sqrt(2 * radius1_ * radius2_ / (radius1_ + radius2_)) * C;
 
   for (unsigned int isegment1 = 0; isegment1 < n_integration_segments; ++isegment1)
@@ -1251,7 +1251,7 @@ void BeamInteraction::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 
 
   // constant prefactor of the disk-cylinder interaction potential
-  double prefactor = k_ * M_PI * M_PI;
+  double prefactor = k_ * std::numbers::pi * std::numbers::pi;
 
   switch ((int)m_)
   {
@@ -1405,7 +1405,7 @@ void BeamInteraction::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
       // mutual angle of tangent vectors at unilateral closest points
       BeamInteraction::Geo::calc_enclosed_angle(alpha, cos_alpha, r_xi_slave, r_xi_master);
 
-      if (alpha < 0.0 or alpha > M_PI_2)
+      if (alpha < 0.0 or alpha > std::numbers::pi / 2)
         FOUR_C_THROW("alpha={}, should be in [0,pi/2]", Core::FADUtils::cast_to_double(alpha));
 
       // Todo: maybe avoid this assembly of shape fcns into matrices
@@ -2561,7 +2561,7 @@ bool BeamInteraction::BeamToBeamPotentialPair<numnodes, numnodalvalues,
   sin_alpha = std::sin(alpha);
   sin_2alpha = std::sin(2 * alpha);
 
-  const double BEAMSCOLINEARANGLETHRESHOLD = 5.0 / 180.0 * M_PI;  // 5 works best so far
+  const double BEAMSCOLINEARANGLETHRESHOLD = 5.0 / 180.0 * std::numbers::pi;  // 5 works best so far
 
   if (Core::FADUtils::norm(alpha) < BEAMSCOLINEARANGLETHRESHOLD)
   {
@@ -2638,7 +2638,8 @@ bool BeamInteraction::BeamToBeamPotentialPair<numnodes, numnodalvalues,
     this->print(std::cout);
 
     std::cout << "\ngap_bl: " << Core::FADUtils::cast_to_double(gap_bl);
-    std::cout << "\nalpha: " << Core::FADUtils::cast_to_double(alpha * 180 / M_PI) << "degrees";
+    std::cout << "\nalpha: " << Core::FADUtils::cast_to_double(alpha * 180 / std::numbers::pi)
+              << "degrees";
     std::cout << "\nx: " << Core::FADUtils::cast_to_double(x) << std::endl;
 
     std::cout << "\nbeta: " << Core::FADUtils::cast_to_double(beta);
@@ -3241,7 +3242,8 @@ bool BeamInteraction::BeamToBeamPotentialPair<numnodes, numnodalvalues,
     this->print(std::cout);
 
     std::cout << "\ngap_ul: " << Core::FADUtils::cast_to_double(gap_ul);
-    std::cout << "\nalpha: " << Core::FADUtils::cast_to_double(alpha * 180 / M_PI) << "degrees";
+    std::cout << "\nalpha: " << Core::FADUtils::cast_to_double(alpha * 180 / std::numbers::pi)
+              << "degrees";
 
     FOUR_C_THROW(
         "gap_ul={} is negative or very close to zero! Fatal error. Use regularization to"
@@ -3358,14 +3360,14 @@ bool BeamInteraction::BeamToBeamPotentialPair<numnodes, numnodalvalues,
     // determine potential reduction factor (master beam can only consist of one element!)
     if (left_length_to_edge < potential_reduction_length.value())
     {
-      potential_reduction_factor_GP =
-          0.5 - 0.5 * std::cos(M_PI * left_length_to_edge / potential_reduction_length.value());
+      potential_reduction_factor_GP = 0.5 - 0.5 * std::cos(std::numbers::pi * left_length_to_edge /
+                                                           potential_reduction_length.value());
       length_to_edge = left_length_to_edge;
     }
     else if (right_length_to_edge < potential_reduction_length.value())
     {
-      potential_reduction_factor_GP =
-          0.5 - 0.5 * std::cos(M_PI * right_length_to_edge / potential_reduction_length.value());
+      potential_reduction_factor_GP = 0.5 - 0.5 * std::cos(std::numbers::pi * right_length_to_edge /
+                                                           potential_reduction_length.value());
       length_to_edge = right_length_to_edge;
       right_node = true;
     }
@@ -3373,12 +3375,12 @@ bool BeamInteraction::BeamToBeamPotentialPair<numnodes, numnodalvalues,
     if ((length_to_edge < potential_reduction_length.value()) && (length_to_edge != -1.0))
     {
       pot_red_fac_deriv_l_edge =
-          0.5 * M_PI / potential_reduction_length.value() *
-          std::sin(M_PI * length_to_edge / potential_reduction_length.value());
+          0.5 * std::numbers::pi / potential_reduction_length.value() *
+          std::sin(std::numbers::pi * length_to_edge / potential_reduction_length.value());
       pot_red_fac_2ndderiv_l_edge =
-          0.5 * M_PI * M_PI /
+          0.5 * std::numbers::pi * std::numbers::pi /
           (potential_reduction_length.value() * potential_reduction_length.value()) *
-          std::cos(M_PI * length_to_edge / potential_reduction_length.value());
+          std::cos(std::numbers::pi * length_to_edge / potential_reduction_length.value());
     }
 
     l_edge_deriv_xi_master = 0.5 * ele2length_;

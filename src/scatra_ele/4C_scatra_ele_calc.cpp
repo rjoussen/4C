@@ -1138,7 +1138,7 @@ Discret::Elements::ScaTraEleCalc<distype, probdim>::eval_shape_func_and_derivs_i
     xyzint.multiply(xyze_, funct_);
 
     // multiply standard Jacobian determinant by square of radial coordinate and 4 pi
-    constexpr double four_pi = 4.0 * M_PI;
+    constexpr double four_pi = 4.0 * std::numbers::pi;
     det *= xyzint(0) * xyzint(0) * four_pi;
   }
 

@@ -302,7 +302,7 @@ void Discret::Elements::ArteryEleCalcLinExp<distype>::initial(Artery* ele,
     if (myrank == nodes[0]->owner())
     {
       int gid = lm[0];
-      double val = M_PI * pow(actmat->diam() / 2, 2);
+      double val = std::numbers::pi * pow(actmat->diam() / 2, 2);
       qa0->replace_global_values(1, &val, &gid);
     }
     if (myrank == nodes[0]->owner())
@@ -314,7 +314,7 @@ void Discret::Elements::ArteryEleCalcLinExp<distype>::initial(Artery* ele,
     if (myrank == nodes[1]->owner())
     {
       int gid = lm[2];
-      double val = M_PI * pow(actmat->diam() / 2, 2);
+      double val = std::numbers::pi * pow(actmat->diam() / 2, 2);
       qa0->replace_global_values(1, &val, &gid);
     }
     if (myrank == nodes[1]->owner())
@@ -325,7 +325,7 @@ void Discret::Elements::ArteryEleCalcLinExp<distype>::initial(Artery* ele,
     }
     // Calculate Wfo and Wbo
     // Read in initial cross-sectional area at node 1
-    const double Ao1 = M_PI * pow(actmat->diam() / 2, 2);
+    const double Ao1 = std::numbers::pi * pow(actmat->diam() / 2, 2);
     // Read in initial cross-sectional area at node 2
     const double Ao2 = Ao1;
     // Read in blood density
@@ -342,10 +342,10 @@ void Discret::Elements::ArteryEleCalcLinExp<distype>::initial(Artery* ele,
     const double E2 = E1;
     // Read in artery's Poisson's ratio
     const double nue = actmat->nue();
-    const double co1 =
-        sqrt(sqrt(M_PI) * E1 * t1 / (1.0 - pow(nue, 2)) * sqrt(Ao1) / (2.0 * Ao1 * dens));
-    const double co2 =
-        sqrt(sqrt(M_PI) * E2 * t2 / (1.0 - pow(nue, 2)) * sqrt(Ao2) / (2.0 * Ao2 * dens));
+    const double co1 = sqrt(
+        sqrt(std::numbers::pi) * E1 * t1 / (1.0 - pow(nue, 2)) * sqrt(Ao1) / (2.0 * Ao1 * dens));
+    const double co2 = sqrt(
+        sqrt(std::numbers::pi) * E2 * t2 / (1.0 - pow(nue, 2)) * sqrt(Ao2) / (2.0 * Ao2 * dens));
 
     int gid = ele->nodes()[0]->id();
     double val = 4.0 * co1;
@@ -441,7 +441,7 @@ void Discret::Elements::ArteryEleCalcLinExp<distype>::sysmat(Artery* ele,
   {
     const Mat::Cnst1dArt* actmat = static_cast<const Mat::Cnst1dArt*>(material.get());
     // Read in initial cross-sectional area at node 1
-    Ao1 = M_PI * pow(actmat->diam() / 2, 2);
+    Ao1 = std::numbers::pi * pow(actmat->diam() / 2, 2);
     // Read in initial cross-sectional area at node 2
     Ao2 = Ao1;
     // Read in blood density
@@ -620,12 +620,12 @@ void Discret::Elements::ArteryEleCalcLinExp<distype>::sysmat(Artery* ele,
     // Calculating essential variables at the Gauss points
     th = my::funct_.dot(th_);
     Young = my::funct_.dot(young_);
-    beta = sqrt(M_PI) * Young * th / (1.0 - pow(nue, 2));
+    beta = sqrt(std::numbers::pi) * Young * th / (1.0 - pow(nue, 2));
     Q = my::funct_.dot(qn_);
     A = my::funct_.dot(an_);
     Ao = my::funct_.dot(area0_);
     // Calculating essential derivatives at the Gauss points
-    dbeta_dxi = sqrt(M_PI) / (1.0 - pow(nue, 2)) *
+    dbeta_dxi = sqrt(std::numbers::pi) / (1.0 - pow(nue, 2)) *
                 (th * my::tderiv_.dot(young_) + my::tderiv_.dot(th_) * Young);
     dAodxi = my::tderiv_.dot(area0_);
     dQdxi = my::tderiv_.dot(qn_);
@@ -780,7 +780,7 @@ void Discret::Elements::ArteryEleCalcLinExp<distype>::sysmat(Artery* ele,
 
     */
     // Calculate Kr
-    Kr = 8.0 * M_PI * visc / dens;
+    Kr = 8.0 * std::numbers::pi * visc / dens;
 
     // Calculate H
     H(0, 0) = 0.0;
@@ -938,7 +938,7 @@ bool Discret::Elements::ArteryEleCalcLinExp<distype>::solve_riemann(Artery* ele,
   {
     const Mat::Cnst1dArt* actmat = static_cast<const Mat::Cnst1dArt*>(material.get());
     // Read in initial cross-sectional area at node 1
-    Ao1 = M_PI * pow(actmat->diam() / 2, 2);
+    Ao1 = std::numbers::pi * pow(actmat->diam() / 2, 2);
     // Read in initial cross-sectional area at node 2
     Ao2 = Ao1;
     // Read in blood density
@@ -1027,10 +1027,10 @@ bool Discret::Elements::ArteryEleCalcLinExp<distype>::solve_riemann(Artery* ele,
 
   // check for the CFL number CFL = Max(abs(3/sqrt(3) * lambda2_i * dt/dx), abs(3/sqrt(3) *
   // lambda1_i * dt/dx))
-  double c_0 = sqrt(sqrt(M_PI) * young_(0) * th_(0) / (1.0 - pow(nue, 2)) * sqrt(earean(0)) /
-                    (2.0 * area0_(0) * dens));
-  double c_1 = sqrt(sqrt(M_PI) * young_(1) * th_(1) / (1.0 - pow(nue, 2)) * sqrt(earean(1)) /
-                    (2.0 * area0_(1) * dens));
+  double c_0 = sqrt(sqrt(std::numbers::pi) * young_(0) * th_(0) / (1.0 - pow(nue, 2)) *
+                    sqrt(earean(0)) / (2.0 * area0_(0) * dens));
+  double c_1 = sqrt(sqrt(std::numbers::pi) * young_(1) * th_(1) / (1.0 - pow(nue, 2)) *
+                    sqrt(earean(1)) / (2.0 * area0_(1) * dens));
   double lambda2_0 = eqn(0) / earean(0) - c_0;
   double lambda2_1 = eqn(1) / earean(1) - c_1;
   double lambda1_0 = eqn(0) / earean(0) + c_0;
@@ -1068,7 +1068,7 @@ bool Discret::Elements::ArteryEleCalcLinExp<distype>::solve_riemann(Artery* ele,
             "\"inlet\"");
 
       // sound speed at node 1 = sqrt(beta/(2*Ao*rho)) and Lambda2 = Q/A - c
-      const double c = sqrt(sqrt(M_PI) * young_(i) * th_(i) / (1.0 - pow(nue, 2)) *
+      const double c = sqrt(sqrt(std::numbers::pi) * young_(i) * th_(i) / (1.0 - pow(nue, 2)) *
                             sqrt(earean(i)) / (2.0 * area0_(i) * dens));
       const double lambda = eqn(i) / earean(i) + TermIO * c;
       //      const double N1     = (0.5*(-TermIO + 1.0)*L + dt*lambda)/L;
@@ -1079,7 +1079,7 @@ bool Discret::Elements::ArteryEleCalcLinExp<distype>::solve_riemann(Artery* ele,
       const double A_l = N1 * earean(i) + N2 * earean((i + 1) % 2);
       //      const double beta_l = sqrt(PI)*(young_(0)*N1 + young_(1)*N2)*(th_(0)*N1 +
       //      th_(1)*N2)/(1.0-pow(nue,2));
-      const double beta_l = sqrt(M_PI) * (young_(i) * N1 + young_((i + 1) % 2) * N2) *
+      const double beta_l = sqrt(std::numbers::pi) * (young_(i) * N1 + young_((i + 1) % 2) * N2) *
                             (th_(i) * N1 + th_((i + 1) % 2) * N2) / (1.0 - pow(nue, 2));
       //      const double Q_l    = N1*eqn(0)    + N2*eqn(1);
       const double Q_l = N1 * eqn(i) + N2 * eqn((i + 1) % 2);
@@ -1090,7 +1090,7 @@ bool Discret::Elements::ArteryEleCalcLinExp<distype>::solve_riemann(Artery* ele,
       // defining W2n at dt*lambda2
       const double Wn_l = Q_l / A_l + TermIO * 4.0 * c_l;
       const double Won_l = TermIO * 4.0 * sqrt(beta_l * sqrt(Ao_l) / (2.0 * Ao_l * dens));
-      const double co = sqrt(sqrt(M_PI) * young_(i) * th_(i) / (1.0 - pow(nue, 2)) *
+      const double co = sqrt(sqrt(std::numbers::pi) * young_(i) * th_(i) / (1.0 - pow(nue, 2)) *
                              sqrt(area0_(i)) / (2.0 * area0_(i) * dens));
 
       double Wnp = Wn_l - Won_l + TermIO * 4.0 * co;
@@ -1135,7 +1135,8 @@ bool Discret::Elements::ArteryEleCalcLinExp<distype>::solve_riemann(Artery* ele,
         (*junc_nodal_vals)[local_id]->Ao_ = area0_(i);
         (*junc_nodal_vals)[local_id]->rho_ = dens;
         (*junc_nodal_vals)[local_id]->Pext_ = pext_(i);
-        (*junc_nodal_vals)[local_id]->beta_ = sqrt(M_PI) * young_(i) * th_(i) / (1.0 - pow(nue, 2));
+        (*junc_nodal_vals)[local_id]->beta_ =
+            sqrt(std::numbers::pi) * young_(i) * th_(i) / (1.0 - pow(nue, 2));
       }
 
       BCnodes = true;
@@ -1183,7 +1184,7 @@ void Discret::Elements::ArteryEleCalcLinExp<distype>::evaluate_terminal_bc(Arter
   {
     const Mat::Cnst1dArt* actmat = static_cast<const Mat::Cnst1dArt*>(material.get());
     // Read in initial cross-sectional area at node 1
-    Ao1 = M_PI * pow(actmat->diam() / 2, 2);
+    Ao1 = std::numbers::pi * pow(actmat->diam() / 2, 2);
     // Read in initial cross-sectional area at node 2
     Ao2 = Ao1;
     // Read in blood density
@@ -1282,7 +1283,7 @@ void Discret::Elements::ArteryEleCalcLinExp<distype>::evaluate_terminal_bc(Arter
       th_(1, 0) = t2;
       young_(0, 0) = E1;
       young_(1, 0) = E2;
-      const double beta = sqrt(M_PI) * young_(i) * th_(i) / (1.0 - nue * nue);
+      const double beta = sqrt(std::numbers::pi) * young_(i) * th_(i) / (1.0 - nue * nue);
       double Wf, Wb;
 
       // -----------------------------------------------------------------------------
@@ -1574,7 +1575,7 @@ void Discret::Elements::ArteryEleCalcLinExp<distype>::calc_postprocessing_values
   {
     const Mat::Cnst1dArt* actmat = static_cast<const Mat::Cnst1dArt*>(material.get());
     // Read in initial cross-sectional area at node 1
-    Ao1 = M_PI * pow(actmat->diam() / 2, 2);
+    Ao1 = std::numbers::pi * pow(actmat->diam() / 2, 2);
     // Read in initial cross-sectional area at node 2
     Ao2 = Ao1;
     // Read in blood density
@@ -1650,7 +1651,7 @@ void Discret::Elements::ArteryEleCalcLinExp<distype>::calc_postprocessing_values
 
   for (int i = 0; i < 2; i++)
   {
-    const double beta = sqrt(M_PI) * young_(i) * th_(i) / (1.0 - nue * nue);
+    const double beta = sqrt(std::numbers::pi) * young_(i) * th_(i) / (1.0 - nue * nue);
 
     int myrank = Core::Communication::my_mpi_rank(discretization.get_comm());
     if (myrank == ele->nodes()[i]->owner())
@@ -1739,7 +1740,7 @@ void Discret::Elements::ArteryEleCalcLinExp<distype>::evaluate_wf_and_wb(Artery*
   {
     const Mat::Cnst1dArt* actmat = static_cast<const Mat::Cnst1dArt*>(material.get());
     // Read in initial cross-sectional area at node 1
-    Ao1 = M_PI * pow(actmat->diam() / 2, 2);
+    Ao1 = std::numbers::pi * pow(actmat->diam() / 2, 2);
     // Read in initial cross-sectional area at node 2
     Ao2 = Ao1;
     // Read in blood density
@@ -1830,8 +1831,8 @@ void Discret::Elements::ArteryEleCalcLinExp<distype>::evaluate_wf_and_wb(Artery*
   // lambda1_i * dt/dx))
   for (int i = 0; i < numnode; ++i)
   {
-    const double c = sqrt(sqrt(M_PI) * young_(i) * th_(i) / (1.0 - pow(nue, 2)) * sqrt(earean(i)) /
-                          (2.0 * area0_(i) * dens));
+    const double c = sqrt(sqrt(std::numbers::pi) * young_(i) * th_(i) / (1.0 - pow(nue, 2)) *
+                          sqrt(earean(i)) / (2.0 * area0_(i) * dens));
     double Wf = eqn(i) / earean(i) + 4.0 * c;
     double Wb = eqn(i) / earean(i) - 4.0 * c;
 

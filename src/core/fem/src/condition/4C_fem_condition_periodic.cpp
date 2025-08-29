@@ -328,7 +328,8 @@ void Core::Conditions::PeriodicBoundaryConditions::put_all_slaves_to_masters_pro
                       FOUR_C_THROW("Rotation of slave plane only implemented for xz and yz planes");
                     else
                     {
-                      rotangles[pbcid] = angle * M_PI / 180.0;  // convert from DEG to RAD!
+                      rotangles[pbcid] =
+                          angle * std::numbers::pi / 180.0;  // convert from DEG to RAD!
                       if (pbcid > 0)
                       {
                         if (rotangles[pbcid] != rotangles[pbcid - 1])

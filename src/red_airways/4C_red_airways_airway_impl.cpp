@@ -207,10 +207,10 @@ namespace
     if (l_branch < 0.0) l_branch = L;
 
     // evaluate Poiseuille resistance
-    double Rp = 2.0 * (2.0 + velPow) * M_PI * visc * L / (pow(A, 2));
+    double Rp = 2.0 * (2.0 + velPow) * std::numbers::pi * visc * L / (pow(A, 2));
 
     // evaluate the Reynolds number
-    const double Re = 2.0 * fabs(qout_np) / (visc / dens * sqrt(A * M_PI));
+    const double Re = 2.0 * fabs(qout_np) / (visc / dens * sqrt(A * std::numbers::pi));
 
     if (ele->resistance() == "Poiseuille")
     {
@@ -223,7 +223,7 @@ namespace
       // Pedley et al (1970)
       //-----------------------------------------------------------------
       double gamma = 0.327;
-      R = gamma * (sqrt(Re * 2.0 * sqrt(A / M_PI) / l_branch)) * Rp;
+      R = gamma * (sqrt(Re * 2.0 * sqrt(A / std::numbers::pi) / l_branch)) * Rp;
 
       //-----------------------------------------------------------------
       // Correct any resistance smaller than Poiseuille's one
@@ -232,7 +232,7 @@ namespace
       //    {
       //      R = Rp;
       //    }
-      double alfa = sqrt(2.0 * sqrt(A / M_PI) / l_branch);
+      double alfa = sqrt(2.0 * sqrt(A / std::numbers::pi) / l_branch);
 
       double Rep = 1.0 / ((gamma * alfa) * (gamma * alfa));
       double k = 0.50;
@@ -280,7 +280,7 @@ namespace
       // resistance evaluated using Pedley's model from :
       // Pedley et al (1970)
       //-----------------------------------------------------------------
-      R = gamma * (sqrt(Re * 2.0 * sqrt(A / M_PI) / l_branch)) * Rp;
+      R = gamma * (sqrt(Re * 2.0 * sqrt(A / std::numbers::pi) / l_branch)) * Rp;
 
       //-----------------------------------------------------------------
       // Correct any resistance smaller than Poiseuille's one
@@ -297,7 +297,7 @@ namespace
       // Pedley et al (1970)
       //-----------------------------------------------------------------
       double gamma = 0.327;
-      double D = sqrt(A / M_PI) * 2.0;
+      double D = sqrt(A / std::numbers::pi) * 2.0;
       double Rel = (l_branch / D) * (1.0 / (gamma * gamma));
       double lambda = 1.2;
       double Ret = lambda * Rel;
@@ -306,7 +306,7 @@ namespace
       // Correct any resistance smaller than Poiseuille's one
       //-----------------------------------------------------------------
       if (Re >= Ret)
-        R = gamma * (sqrt(Re * 2.0 * sqrt(A / M_PI) / l_branch)) * Rp;
+        R = gamma * (sqrt(Re * 2.0 * sqrt(A / std::numbers::pi) / l_branch)) * Rp;
       else
       {
         double St = gamma * sqrt((D / l_branch) * Ret);
@@ -355,7 +355,7 @@ namespace
       // resistance evaluated using Pedley's model from :
       // Pedley et al (1970)
       //-----------------------------------------------------------------
-      double D = sqrt(A / M_PI) * 2.0;
+      double D = sqrt(A / std::numbers::pi) * 2.0;
       double Rel = (l_branch / D) * (1.0 / (gamma * gamma));
       double lambda = 1.2;
       double Ret = lambda * Rel;
@@ -364,7 +364,7 @@ namespace
       // Correct any resistance smaller than Poiseuille's one
       //-----------------------------------------------------------------
       if (Re >= Ret)
-        R = gamma * (sqrt(Re * 2.0 * sqrt(A / M_PI) / l_branch)) * Rp;
+        R = gamma * (sqrt(Re * 2.0 * sqrt(A / std::numbers::pi) / l_branch)) * Rp;
       else
       {
         double St = gamma * sqrt((D / l_branch) * Ret);
@@ -407,7 +407,7 @@ namespace
     // Get element compliance
     double C = 0.0;
     double Ec = 0.0;
-    Ec = (Ew * tw * sqrt(M_PI)) / ((1.0 - nu * nu) * 2.0 * sqrt(A) * Ao * L);
+    Ec = (Ew * tw * sqrt(std::numbers::pi)) / ((1.0 - nu * nu) * 2.0 * sqrt(A) * Ao * L);
     if (Ec != 0.0)
     {
       C = 1.0 / Ec;
@@ -419,7 +419,8 @@ namespace
     const double Ts = airway_params.viscous_Ts;
     const double phis = airway_params.viscous_phase_shift;
     // define 0D airway components
-    double gammas = Ts * tan(phis) * (Ew * tw * sqrt(M_PI) / (1.0 - nu * nu)) / (4.0 * M_PI);
+    double gammas = Ts * tan(phis) * (Ew * tw * sqrt(std::numbers::pi) / (1.0 - nu * nu)) /
+                    (4.0 * std::numbers::pi);
     double Rvis = gammas / (Ao * sqrt(Ao) * L);
 
     //------------------------------------------------------------
@@ -431,7 +432,7 @@ namespace
     // get airway convective resistance
     //------------------------------------------------------------
     // get Poiseuille resistance with parabolic profile
-    double Rp2nd = 2.0 * (2.0 + 2.0) * M_PI * visc * L / (pow(A, 2));
+    double Rp2nd = 2.0 * (2.0 + 2.0) * std::numbers::pi * visc * L / (pow(A, 2));
     // get the power of velocity profile for the currently used resistance
     double gamma = 4.0 / (Rp2nd / R) - 2.0;
     // get the Coriolis coefficient
@@ -718,7 +719,7 @@ void Discret::Elements::AirwayImpl<distype>::initial(RedAirway* ele, Teuchos::Pa
 
     const double A = airway_params.area;
 
-    val = sqrt(A / M_PI);
+    val = sqrt(A / std::numbers::pi);
     radii_in(0) = val;
     radii_in(1) = 0.0;
     radii_out(0) = 0.0;

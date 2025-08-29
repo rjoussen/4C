@@ -313,7 +313,9 @@ double Discret::Elements::get_regularization_factor(const double thickness, cons
         if (thickness <= 0.0)
           regfac = 0.0;
         else if (thickness < thickness_regend)
-          regfac = 0.5 * std::cos(thickness / thickness_regend * M_PI - M_PI) + 0.5;
+          regfac =
+              0.5 * std::cos(thickness / thickness_regend * std::numbers::pi - std::numbers::pi) +
+              0.5;
 
         break;
       }
@@ -386,8 +388,8 @@ double Discret::Elements::get_regularization_factor_derivative(const double thic
         // compute derivative of regularization factor
         const double thickness_regend_inverse = 1.0 / thickness_regend;
         if (thickness < thickness_regend)
-          regfacderiv = 0.5 * std::sin(thickness * thickness_regend_inverse * M_PI) * M_PI *
-                        thickness_regend_inverse;
+          regfacderiv = 0.5 * std::sin(thickness * thickness_regend_inverse * std::numbers::pi) *
+                        std::numbers::pi * thickness_regend_inverse;
 
         break;
       }

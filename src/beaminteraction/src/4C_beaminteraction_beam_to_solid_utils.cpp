@@ -310,10 +310,10 @@ void BeamInteraction::get_solid_rotation_vector_deformation_gradient_3d_general(
 
   // Calculate angles between the projected basis vectors.
   ScalarType alpha_21 = std::acos(projected_basis[0].dot(projected_basis[1]));
-  ScalarType alpha_31 = 2.0 * M_PI - acos(projected_basis[0].dot(projected_basis[2]));
+  ScalarType alpha_31 = 2.0 * std::numbers::pi - acos(projected_basis[0].dot(projected_basis[2]));
 
   // Minimum relative angle.
-  ScalarType alpha = 1.0 / 3.0 * (alpha_21 + alpha_31 - 2.0 * M_PI);
+  ScalarType alpha = 1.0 / 3.0 * (alpha_21 + alpha_31 - 2.0 * std::numbers::pi);
 
   // Rotate up the first basis vector.
   Core::LinAlg::Matrix<3, 1, ScalarType> rot_vec;
@@ -322,8 +322,9 @@ void BeamInteraction::get_solid_rotation_vector_deformation_gradient_3d_general(
   Core::LinAlg::Matrix<3, 1, ScalarType> start_vec;
 
   rot_vec.cross_product(projected_basis[0], average_vector);
-  rot_vec.scale(0.5 * (M_PI - 2.0 * acos(1.0 / sqrt(3.0))));  // No need to normalize before, should
-                                                              // already be length one.
+  rot_vec.scale(
+      0.5 * (std::numbers::pi - 2.0 * acos(1.0 / sqrt(3.0))));  // No need to normalize before,
+                                                                // should already be length one.
   Core::LargeRotations::angletoquaternion(rot_vec, rot_quat);
   Core::LargeRotations::quaterniontotriad(rot_quat, rot_mat);
   start_vec.multiply(rot_mat, projected_basis[0]);
@@ -333,7 +334,7 @@ void BeamInteraction::get_solid_rotation_vector_deformation_gradient_3d_general(
   for (unsigned int i_basis = 0; i_basis < 3; i_basis++)
   {
     rot_vec = average_vector;
-    rot_vec.scale(alpha + i_basis * M_PI * 2.0 / 3.0);
+    rot_vec.scale(alpha + i_basis * std::numbers::pi * 2.0 / 3.0);
     Core::LargeRotations::angletoquaternion(rot_vec, rot_quat);
     Core::LargeRotations::quaterniontotriad(rot_quat, rot_mat);
 
@@ -432,7 +433,7 @@ void BeamInteraction::
   Core::LinAlg::Matrix<4, 1, ScalarType> rot_quat(Core::LinAlg::Initialization::zero);
   Core::LinAlg::Matrix<3, 3, ScalarType> solid_triad_rel(Core::LinAlg::Initialization::zero);
 
-  rot_vec(0) = -M_PI_4;
+  rot_vec(0) = -std::numbers::pi / 4;
   Core::LargeRotations::angletoquaternion(rot_vec, rot_quat);
   Core::LargeRotations::quaterniontotriad(rot_quat, solid_triad_rel);
 
@@ -494,7 +495,7 @@ void BeamInteraction::get_solid_rotation_vector_deformation_gradient_3d_base1(
   ScalarType alpha_32 = acos(projected_basis[0].dot(projected_basis[1]));
 
   // Rotation angle for base 2.
-  ScalarType alpha = 0.5 * (alpha_32 - 0.5 * M_PI);
+  ScalarType alpha = 0.5 * (alpha_32 - 0.5 * std::numbers::pi);
 
   // Construct the new basis.
   // Rotate to the new basis vectors.
@@ -507,7 +508,7 @@ void BeamInteraction::get_solid_rotation_vector_deformation_gradient_3d_base1(
   for (unsigned int i_basis = 0; i_basis < 2; i_basis++)
   {
     rot_vec = normalized_base_1;
-    rot_vec.scale(alpha + i_basis * M_PI * 0.5);
+    rot_vec.scale(alpha + i_basis * std::numbers::pi * 0.5);
     Core::LargeRotations::angletoquaternion(rot_vec, rot_quat);
     Core::LargeRotations::quaterniontotriad(rot_quat, rot_mat);
 
@@ -716,12 +717,13 @@ void BeamInteraction::get_solid_rotation_vector_deformation_gradient2_d(
       angle = atan2(deformation_gradient(2, 1), deformation_gradient(1, 1));
       break;
     case Inpar::BeamToSolid::BeamToSolidRotationCoupling::deformation_gradient_z_2d:
-      angle = atan2(deformation_gradient(2, 2), deformation_gradient(1, 2)) - M_PI * 0.5;
+      angle =
+          atan2(deformation_gradient(2, 2), deformation_gradient(1, 2)) - std::numbers::pi * 0.5;
       break;
     case Inpar::BeamToSolid::BeamToSolidRotationCoupling::deformation_gradient_average_2d:
       angle = 0.5 * (atan2(deformation_gradient(2, 1), deformation_gradient(1, 1)) +
                         atan2(deformation_gradient(2, 2), deformation_gradient(1, 2))) -
-              M_PI * 0.25;
+              std::numbers::pi * 0.25;
       break;
     default:
       FOUR_C_THROW("Unexpected coupling type for GetSolidRotationVectorDeformationGradient2D");

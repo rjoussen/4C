@@ -396,8 +396,8 @@ FLD::BeltramiFunction::BeltramiFunction(double c1) : c1_(c1) {}
 double FLD::BeltramiFunction::evaluate(
     const double* xp, const double t, const std::size_t component) const
 {
-  double a = M_PI / 4.0;
-  double d = M_PI / 2.0;
+  double a = std::numbers::pi / 4.0;
+  double d = std::numbers::pi / 2.0;
 
   int id = Global::Problem::instance()->materials()->first_id_by_type(Core::Materials::m_fluid);
   if (id == -1) FOUR_C_THROW("Newtonian fluid material could not be found");
@@ -445,8 +445,8 @@ double FLD::BeltramiFunction::evaluate(
 std::vector<double> FLD::BeltramiFunction::evaluate_time_derivative(
     const double* xp, const double t, const unsigned deg, const std::size_t component) const
 {
-  double a = M_PI / 4.0;
-  double d = M_PI / 2.0;
+  double a = std::numbers::pi / 4.0;
+  double d = std::numbers::pi / 2.0;
 
   int id = Global::Problem::instance()->materials()->first_id_by_type(Core::Materials::m_fluid);
   if (id == -1) FOUR_C_THROW("Newtonian fluid material could not be found");
@@ -1188,64 +1188,84 @@ double FLD::WeaklyCompressibleManufacturedFlowFunction::evaluate(
   L_ex(0) =
       -sqrt(2. * mu) / 2. *
       (+4. / 3. *
-              (M_PI * cos(M_PI * x) * sin(M_PI * t) * sin(M_PI * y) -
-                  epsilon *
-                      ((M_PI * (std::pow((sin(M_PI * t)), 2.)) *
-                           (2. * M_PI * cos(2. * M_PI * x) + 2. * M_PI * cos(2. * M_PI * y))) /
-                              (8. * r0) +
-                          ((std::pow(M_PI, 2.)) * cos(M_PI * t) * cos(M_PI * x) * sin(M_PI * y)) /
-                              (2. * r0))) -
+              (std::numbers::pi * cos(std::numbers::pi * x) * sin(std::numbers::pi * t) *
+                      sin(std::numbers::pi * y) -
+                  epsilon * ((std::numbers::pi * (std::pow((sin(std::numbers::pi * t)), 2.)) *
+                                 (2. * std::numbers::pi * cos(2. * std::numbers::pi * x) +
+                                     2. * std::numbers::pi * cos(2. * std::numbers::pi * y))) /
+                                    (8. * r0) +
+                                ((std::pow(std::numbers::pi, 2.)) * cos(std::numbers::pi * t) *
+                                    cos(std::numbers::pi * x) * sin(std::numbers::pi * y)) /
+                                    (2. * r0))) -
           2. / 3. *
-              (-epsilon *
-                      ((M_PI * (std::pow((sin(M_PI * t)), 2.)) *
-                           (2. * M_PI * cos(2. * M_PI * x) + 2. * M_PI * cos(2. * M_PI * y))) /
-                              (8. * r0) +
-                          ((std::pow(M_PI, 2.)) * cos(M_PI * t) * cos(M_PI * x) * sin(M_PI * y)) /
-                              (2. * r0)) -
-                  M_PI * cos(M_PI * x) * sin(M_PI * t) * sin(M_PI * y)));
+              (-epsilon * ((std::numbers::pi * (std::pow((sin(std::numbers::pi * t)), 2.)) *
+                               (2. * std::numbers::pi * cos(2. * std::numbers::pi * x) +
+                                   2. * std::numbers::pi * cos(2. * std::numbers::pi * y))) /
+                                  (8. * r0) +
+                              ((std::pow(std::numbers::pi, 2.)) * cos(std::numbers::pi * t) *
+                                  cos(std::numbers::pi * x) * sin(std::numbers::pi * y)) /
+                                  (2. * r0)) -
+                  std::numbers::pi * cos(std::numbers::pi * x) * sin(std::numbers::pi * t) *
+                      sin(std::numbers::pi * y)));
   L_ex(1) =
       -sqrt(2. * mu) / 2. *
       (-2. / 3. *
-              (M_PI * cos(M_PI * x) * sin(M_PI * t) * sin(M_PI * y) -
-                  epsilon *
-                      ((M_PI * (std::pow((sin(M_PI * t)), 2.)) *
-                           (2. * M_PI * cos(2. * M_PI * x) + 2. * M_PI * cos(2. * M_PI * y))) /
-                              (8. * r0) +
-                          ((std::pow(M_PI, 2.)) * cos(M_PI * t) * cos(M_PI * x) * sin(M_PI * y)) /
-                              (2. * r0))) +
+              (std::numbers::pi * cos(std::numbers::pi * x) * sin(std::numbers::pi * t) *
+                      sin(std::numbers::pi * y) -
+                  epsilon * ((std::numbers::pi * (std::pow((sin(std::numbers::pi * t)), 2.)) *
+                                 (2. * std::numbers::pi * cos(2. * std::numbers::pi * x) +
+                                     2. * std::numbers::pi * cos(2. * std::numbers::pi * y))) /
+                                    (8. * r0) +
+                                ((std::pow(std::numbers::pi, 2.)) * cos(std::numbers::pi * t) *
+                                    cos(std::numbers::pi * x) * sin(std::numbers::pi * y)) /
+                                    (2. * r0))) +
           4. / 3. *
-              (-epsilon *
-                      ((M_PI * (std::pow((sin(M_PI * t)), 2.)) *
-                           (2. * M_PI * cos(2. * M_PI * x) + 2. * M_PI * cos(2. * M_PI * y))) /
+              (-epsilon * ((std::numbers::pi * (std::pow((sin(std::numbers::pi * t)), 2.)) *
+                               (2. * std::numbers::pi * cos(2. * std::numbers::pi * x) +
+                                   2. * std::numbers::pi * cos(2. * std::numbers::pi * y))) /
+                                  (8. * r0) +
+                              ((std::pow(std::numbers::pi, 2.)) * cos(std::numbers::pi * t) *
+                                  cos(std::numbers::pi * x) * sin(std::numbers::pi * y)) /
+                                  (2. * r0)) -
+                  std::numbers::pi * cos(std::numbers::pi * x) * sin(std::numbers::pi * t) *
+                      sin(std::numbers::pi * y)));
+  L_ex(2) = -sqrt(1. * mu) *
+            ((std::numbers::pi * cos(std::numbers::pi * y) * sin(std::numbers::pi * t) *
+                     sin(std::numbers::pi * x) -
+                 epsilon * (((std::pow(std::numbers::pi, 2.)) * cos(std::numbers::pi * t) *
+                                cos(std::numbers::pi * y) * sin(std::numbers::pi * x)) /
+                                   (2. * r0) -
+                               ((std::pow(std::numbers::pi, 3.)) * x *
+                                   (std::pow((sin(std::numbers::pi * t)), 2.)) *
+                                   sin(2. * std::numbers::pi * y)) /
+                                   (2. * r0))) +
+                (-epsilon * (((std::pow(std::numbers::pi, 2.)) * cos(std::numbers::pi * t) *
+                                 cos(std::numbers::pi * y) * sin(std::numbers::pi * x)) /
+                                    (2. * r0) -
+                                ((std::pow(std::numbers::pi, 3.)) * y *
+                                    (std::pow((sin(std::numbers::pi * t)), 2.)) *
+                                    sin(2. * std::numbers::pi * x)) /
+                                    (2. * r0)) -
+                    std::numbers::pi * cos(std::numbers::pi * y) * sin(std::numbers::pi * t) *
+                        sin(std::numbers::pi * x)));
+  p_ex = std::numbers::pi * cos(std::numbers::pi * x) * sin(std::numbers::pi * t) *
+         sin(std::numbers::pi * y);
+  v_ex(0) = sin(std::numbers::pi * t) * sin(std::numbers::pi * x) * sin(std::numbers::pi * y) -
+            epsilon * ((std::numbers::pi * (std::pow((sin(std::numbers::pi * t)), 2.)) *
+                           (sin(2. * std::numbers::pi * x) +
+                               2. * std::numbers::pi * x * cos(2. * std::numbers::pi * y))) /
                               (8. * r0) +
-                          ((std::pow(M_PI, 2.)) * cos(M_PI * t) * cos(M_PI * x) * sin(M_PI * y)) /
-                              (2. * r0)) -
-                  M_PI * cos(M_PI * x) * sin(M_PI * t) * sin(M_PI * y)));
-  L_ex(2) =
-      -sqrt(1. * mu) *
-      ((M_PI * cos(M_PI * y) * sin(M_PI * t) * sin(M_PI * x) -
-           epsilon *
-               (((std::pow(M_PI, 2.)) * cos(M_PI * t) * cos(M_PI * y) * sin(M_PI * x)) / (2. * r0) -
-                   ((std::pow(M_PI, 3.)) * x * (std::pow((sin(M_PI * t)), 2.)) *
-                       sin(2. * M_PI * y)) /
-                       (2. * r0))) +
-          (-epsilon * (((std::pow(M_PI, 2.)) * cos(M_PI * t) * cos(M_PI * y) * sin(M_PI * x)) /
-                              (2. * r0) -
-                          ((std::pow(M_PI, 3.)) * y * (std::pow((sin(M_PI * t)), 2.)) *
-                              sin(2. * M_PI * x)) /
-                              (2. * r0)) -
-              M_PI * cos(M_PI * y) * sin(M_PI * t) * sin(M_PI * x)));
-  p_ex = M_PI * cos(M_PI * x) * sin(M_PI * t) * sin(M_PI * y);
-  v_ex(0) = sin(M_PI * t) * sin(M_PI * x) * sin(M_PI * y) -
-            epsilon * ((M_PI * (std::pow((sin(M_PI * t)), 2.)) *
-                           (sin(2. * M_PI * x) + 2. * M_PI * x * cos(2. * M_PI * y))) /
-                              (8. * r0) +
-                          (M_PI * cos(M_PI * t) * sin(M_PI * x) * sin(M_PI * y)) / (2. * r0));
-  v_ex(1) = cos(M_PI * x) * cos(M_PI * y) * sin(M_PI * t) -
-            epsilon * ((M_PI * (std::pow((sin(M_PI * t)), 2.)) *
-                           (sin(2. * M_PI * y) + 2. * M_PI * y * cos(2. * M_PI * x))) /
+                          (std::numbers::pi * cos(std::numbers::pi * t) *
+                              sin(std::numbers::pi * x) * sin(std::numbers::pi * y)) /
+                              (2. * r0));
+  v_ex(1) = cos(std::numbers::pi * x) * cos(std::numbers::pi * y) * sin(std::numbers::pi * t) -
+            epsilon * ((std::numbers::pi * (std::pow((sin(std::numbers::pi * t)), 2.)) *
+                           (sin(2. * std::numbers::pi * y) +
+                               2. * std::numbers::pi * y * cos(2. * std::numbers::pi * x))) /
                               (8. * r0) -
-                          (M_PI * cos(M_PI * t) * cos(M_PI * x) * cos(M_PI * y)) / (2. * r0));
+                          (std::numbers::pi * cos(std::numbers::pi * t) *
+                              cos(std::numbers::pi * x) * cos(std::numbers::pi * y)) /
+                              (2. * r0));
 
   // density - momentum formulation
   r_ex = r0 + epsilon * (p_ex - p0);
@@ -1332,211 +1352,327 @@ double FLD::WeaklyCompressibleManufacturedFlowForceFunction::evaluate(
   Core::LinAlg::Matrix<2, 1> f_w_ex;
 
   // evaluate variables
-  f_r_ex = (std::pow(M_PI, 2.)) * epsilon * cos(M_PI * t) * cos(M_PI * x) * sin(M_PI * y) -
-           (epsilon * ((M_PI * (std::pow((sin(M_PI * t)), 2.)) *
-                           (2. * M_PI * cos(2. * M_PI * x) + 2. * M_PI * cos(2. * M_PI * y))) /
-                              (8. * r0) +
-                          ((std::pow(M_PI, 2.)) * cos(M_PI * t) * cos(M_PI * x) * sin(M_PI * y)) /
-                              (2. * r0)) -
-               M_PI * cos(M_PI * x) * sin(M_PI * t) * sin(M_PI * y)) *
-               (r0 - epsilon * (p0 - M_PI * cos(M_PI * x) * sin(M_PI * t) * sin(M_PI * y))) -
-           (epsilon * ((M_PI * (std::pow((sin(M_PI * t)), 2.)) *
-                           (2. * M_PI * cos(2. * M_PI * x) + 2. * M_PI * cos(2. * M_PI * y))) /
-                              (8. * r0) +
-                          ((std::pow(M_PI, 2.)) * cos(M_PI * t) * cos(M_PI * x) * sin(M_PI * y)) /
-                              (2. * r0)) +
-               M_PI * cos(M_PI * x) * sin(M_PI * t) * sin(M_PI * y)) *
-               (r0 - epsilon * (p0 - M_PI * cos(M_PI * x) * sin(M_PI * t) * sin(M_PI * y))) +
-           (std::pow(M_PI, 2.)) * epsilon * sin(M_PI * t) * sin(M_PI * x) * sin(M_PI * y) *
-               (epsilon * ((M_PI * (std::pow((sin(M_PI * t)), 2.)) *
-                               (sin(2. * M_PI * x) + 2. * M_PI * x * cos(2. * M_PI * y))) /
-                                  (8. * r0) +
-                              (M_PI * cos(M_PI * t) * sin(M_PI * x) * sin(M_PI * y)) / (2. * r0)) -
-                   sin(M_PI * t) * sin(M_PI * x) * sin(M_PI * y)) -
-           (std::pow(M_PI, 2.)) * epsilon * cos(M_PI * x) * cos(M_PI * y) * sin(M_PI * t) *
-               (epsilon * ((M_PI * (std::pow((sin(M_PI * t)), 2.)) *
-                               (sin(2. * M_PI * y) + 2. * M_PI * y * cos(2. * M_PI * x))) /
-                                  (8. * r0) -
-                              (M_PI * cos(M_PI * t) * cos(M_PI * x) * cos(M_PI * y)) / (2. * r0)) -
-                   cos(M_PI * x) * cos(M_PI * y) * sin(M_PI * t));
-  f_w_ex(0) =
-      (epsilon * ((M_PI * (std::pow((sin(M_PI * t)), 2.)) *
-                      (sin(2. * M_PI * x) + 2. * M_PI * x * cos(2. * M_PI * y))) /
+  f_r_ex =
+      (std::pow(std::numbers::pi, 2.)) * epsilon * cos(std::numbers::pi * t) *
+          cos(std::numbers::pi * x) * sin(std::numbers::pi * y) -
+      (epsilon * ((std::numbers::pi * (std::pow((sin(std::numbers::pi * t)), 2.)) *
+                      (2. * std::numbers::pi * cos(2. * std::numbers::pi * x) +
+                          2. * std::numbers::pi * cos(2. * std::numbers::pi * y))) /
                          (8. * r0) +
-                     (M_PI * cos(M_PI * t) * sin(M_PI * x) * sin(M_PI * y)) / (2. * r0)) -
-          sin(M_PI * t) * sin(M_PI * x) * sin(M_PI * y)) *
-          (epsilon * ((M_PI * (std::pow((sin(M_PI * t)), 2.)) *
-                          (2. * M_PI * cos(2. * M_PI * x) + 2. * M_PI * cos(2. * M_PI * y))) /
-                             (8. * r0) +
-                         ((std::pow(M_PI, 2.)) * cos(M_PI * t) * cos(M_PI * x) * sin(M_PI * y)) /
-                             (2. * r0)) +
-              M_PI * cos(M_PI * x) * sin(M_PI * t) * sin(M_PI * y)) *
-          (r0 - epsilon * (p0 - M_PI * cos(M_PI * x) * sin(M_PI * t) * sin(M_PI * y))) -
-      mu * (epsilon *
-                   (((std::pow(M_PI, 3.)) * (std::pow((sin(M_PI * t)), 2.)) * sin(2. * M_PI * x)) /
-                           (2. * r0) +
-                       ((std::pow(M_PI, 3.)) * cos(M_PI * t) * sin(M_PI * x) * sin(M_PI * y)) /
-                           (2. * r0)) +
-               epsilon * (((std::pow(M_PI, 3.)) * cos(M_PI * t) * sin(M_PI * x) * sin(M_PI * y)) /
-                                 (2. * r0) +
-                             ((std::pow(M_PI, 4.)) * x * cos(2. * M_PI * y) *
-                                 (std::pow((sin(M_PI * t)), 2.))) /
-                                 r0) +
-               (2. * epsilon *
-                   (((std::pow(M_PI, 3.)) * cos(M_PI * t) * sin(M_PI * x) * sin(M_PI * y)) /
-                           (2. * r0) +
-                       ((std::pow(M_PI, 3.)) * cos(M_PI * x) * (std::pow((sin(M_PI * t)), 2.)) *
-                           sin(M_PI * x)) /
-                           r0)) /
-                   3. -
-               2. * (std::pow(M_PI, 2.)) * sin(M_PI * t) * sin(M_PI * x) * sin(M_PI * y)) -
-      (epsilon * (((std::pow(M_PI, 2.)) * cos(M_PI * t) * sin(M_PI * t) *
-                      (sin(2. * M_PI * x) + 2. * M_PI * x * cos(2. * M_PI * y))) /
-                         (4. * r0) -
-                     ((std::pow(M_PI, 2.)) * sin(M_PI * t) * sin(M_PI * x) * sin(M_PI * y)) /
+                     ((std::pow(std::numbers::pi, 2.)) * cos(std::numbers::pi * t) *
+                         cos(std::numbers::pi * x) * sin(std::numbers::pi * y)) /
                          (2. * r0)) -
-          M_PI * cos(M_PI * t) * sin(M_PI * x) * sin(M_PI * y)) *
-          (r0 - epsilon * (p0 - M_PI * cos(M_PI * x) * sin(M_PI * t) * sin(M_PI * y))) +
-      2. *
-          (epsilon * ((M_PI * (std::pow((sin(M_PI * t)), 2.)) *
-                          (sin(2. * M_PI * x) + 2. * M_PI * x * cos(2. * M_PI * y))) /
+          std::numbers::pi * cos(std::numbers::pi * x) * sin(std::numbers::pi * t) *
+              sin(std::numbers::pi * y)) *
+          (r0 - epsilon * (p0 - std::numbers::pi * cos(std::numbers::pi * x) *
+                                    sin(std::numbers::pi * t) * sin(std::numbers::pi * y))) -
+      (epsilon * ((std::numbers::pi * (std::pow((sin(std::numbers::pi * t)), 2.)) *
+                      (2. * std::numbers::pi * cos(2. * std::numbers::pi * x) +
+                          2. * std::numbers::pi * cos(2. * std::numbers::pi * y))) /
+                         (8. * r0) +
+                     ((std::pow(std::numbers::pi, 2.)) * cos(std::numbers::pi * t) *
+                         cos(std::numbers::pi * x) * sin(std::numbers::pi * y)) /
+                         (2. * r0)) +
+          std::numbers::pi * cos(std::numbers::pi * x) * sin(std::numbers::pi * t) *
+              sin(std::numbers::pi * y)) *
+          (r0 - epsilon * (p0 - std::numbers::pi * cos(std::numbers::pi * x) *
+                                    sin(std::numbers::pi * t) * sin(std::numbers::pi * y))) +
+      (std::pow(std::numbers::pi, 2.)) * epsilon * sin(std::numbers::pi * t) *
+          sin(std::numbers::pi * x) * sin(std::numbers::pi * y) *
+          (epsilon * ((std::numbers::pi * (std::pow((sin(std::numbers::pi * t)), 2.)) *
+                          (sin(2. * std::numbers::pi * x) +
+                              2. * std::numbers::pi * x * cos(2. * std::numbers::pi * y))) /
                              (8. * r0) +
-                         (M_PI * cos(M_PI * t) * sin(M_PI * x) * sin(M_PI * y)) / (2. * r0)) -
-              sin(M_PI * t) * sin(M_PI * x) * sin(M_PI * y)) *
-          (epsilon * ((M_PI * (std::pow((sin(M_PI * t)), 2.)) *
-                          (2. * M_PI * cos(2. * M_PI * x) + 2. * M_PI * cos(2. * M_PI * y))) /
-                             (8. * r0) +
-                         ((std::pow(M_PI, 2.)) * cos(M_PI * t) * cos(M_PI * x) * sin(M_PI * y)) /
+                         (std::numbers::pi * cos(std::numbers::pi * t) * sin(std::numbers::pi * x) *
+                             sin(std::numbers::pi * y)) /
                              (2. * r0)) -
-              M_PI * cos(M_PI * x) * sin(M_PI * t) * sin(M_PI * y)) *
-          (r0 - epsilon * (p0 - M_PI * cos(M_PI * x) * sin(M_PI * t) * sin(M_PI * y))) +
-      (epsilon *
-              (((std::pow(M_PI, 2.)) * cos(M_PI * t) * cos(M_PI * y) * sin(M_PI * x)) / (2. * r0) -
-                  ((std::pow(M_PI, 3.)) * x * (std::pow((sin(M_PI * t)), 2.)) *
-                      sin(2. * M_PI * y)) /
-                      (2. * r0)) -
-          M_PI * cos(M_PI * y) * sin(M_PI * t) * sin(M_PI * x)) *
-          (r0 - epsilon * (p0 - M_PI * cos(M_PI * x) * sin(M_PI * t) * sin(M_PI * y))) *
-          (epsilon * ((M_PI * (std::pow((sin(M_PI * t)), 2.)) *
-                          (sin(2. * M_PI * y) + 2. * M_PI * y * cos(2. * M_PI * x))) /
+              sin(std::numbers::pi * t) * sin(std::numbers::pi * x) * sin(std::numbers::pi * y)) -
+      (std::pow(std::numbers::pi, 2.)) * epsilon * cos(std::numbers::pi * x) *
+          cos(std::numbers::pi * y) * sin(std::numbers::pi * t) *
+          (epsilon * ((std::numbers::pi * (std::pow((sin(std::numbers::pi * t)), 2.)) *
+                          (sin(2. * std::numbers::pi * y) +
+                              2. * std::numbers::pi * y * cos(2. * std::numbers::pi * x))) /
                              (8. * r0) -
-                         (M_PI * cos(M_PI * t) * cos(M_PI * x) * cos(M_PI * y)) / (2. * r0)) -
-              cos(M_PI * x) * cos(M_PI * y) * sin(M_PI * t)) -
-      (std::pow(M_PI, 2.)) * sin(M_PI * t) * sin(M_PI * x) * sin(M_PI * y) -
-      (std::pow(M_PI, 2.)) * epsilon * cos(M_PI * t) * cos(M_PI * x) * sin(M_PI * y) *
-          (epsilon * ((M_PI * (std::pow((sin(M_PI * t)), 2.)) *
-                          (sin(2. * M_PI * x) + 2. * M_PI * x * cos(2. * M_PI * y))) /
-                             (8. * r0) +
-                         (M_PI * cos(M_PI * t) * sin(M_PI * x) * sin(M_PI * y)) / (2. * r0)) -
-              sin(M_PI * t) * sin(M_PI * x) * sin(M_PI * y)) -
-      (std::pow(M_PI, 2.)) * epsilon * sin(M_PI * t) * sin(M_PI * x) * sin(M_PI * y) *
-          (std::pow(
-              (epsilon * ((M_PI * (std::pow((sin(M_PI * t)), 2.)) *
-                              (sin(2. * M_PI * x) + 2. * M_PI * x * cos(2. * M_PI * y))) /
-                                 (8. * r0) +
-                             (M_PI * cos(M_PI * t) * sin(M_PI * x) * sin(M_PI * y)) / (2. * r0)) -
-                  sin(M_PI * t) * sin(M_PI * x) * sin(M_PI * y)),
-              2.)) +
-      (std::pow(M_PI, 2.)) * epsilon * cos(M_PI * x) * cos(M_PI * y) * sin(M_PI * t) *
-          (epsilon * ((M_PI * (std::pow((sin(M_PI * t)), 2.)) *
-                          (sin(2. * M_PI * x) + 2. * M_PI * x * cos(2. * M_PI * y))) /
-                             (8. * r0) +
-                         (M_PI * cos(M_PI * t) * sin(M_PI * x) * sin(M_PI * y)) / (2. * r0)) -
-              sin(M_PI * t) * sin(M_PI * x) * sin(M_PI * y)) *
-          (epsilon * ((M_PI * (std::pow((sin(M_PI * t)), 2.)) *
-                          (sin(2. * M_PI * y) + 2. * M_PI * y * cos(2. * M_PI * x))) /
-                             (8. * r0) -
-                         (M_PI * cos(M_PI * t) * cos(M_PI * x) * cos(M_PI * y)) / (2. * r0)) -
-              cos(M_PI * x) * cos(M_PI * y) * sin(M_PI * t));
-  f_w_ex(1) =
-      mu * (epsilon * (((std::pow(M_PI, 3.)) * cos(M_PI * t) * cos(M_PI * x) * cos(M_PI * y)) /
-                              (2. * r0) -
-                          ((std::pow(M_PI, 4.)) * y * cos(2. * M_PI * x) *
-                              (std::pow((sin(M_PI * t)), 2.))) /
-                              r0) -
-               epsilon *
-                   (((std::pow(M_PI, 3.)) * (std::pow((sin(M_PI * t)), 2.)) * sin(2. * M_PI * y)) /
-                           (2. * r0) -
-                       ((std::pow(M_PI, 3.)) * cos(M_PI * t) * cos(M_PI * x) * cos(M_PI * y)) /
-                           (2. * r0)) +
-               (2. * epsilon *
-                   (((std::pow(M_PI, 3.)) * cos(M_PI * t) * cos(M_PI * x) * cos(M_PI * y)) /
-                           (2. * r0) -
-                       ((std::pow(M_PI, 3.)) * cos(M_PI * y) * (std::pow((sin(M_PI * t)), 2.)) *
-                           sin(M_PI * y)) /
-                           r0)) /
-                   3. +
-               2. * (std::pow(M_PI, 2.)) * cos(M_PI * x) * cos(M_PI * y) * sin(M_PI * t)) -
-      (epsilon *
-              (((std::pow(M_PI, 2.)) * cos(M_PI * x) * cos(M_PI * y) * sin(M_PI * t)) / (2. * r0) +
-                  ((std::pow(M_PI, 2.)) * cos(M_PI * t) * sin(M_PI * t) *
-                      (sin(2. * M_PI * y) + 2. * M_PI * y * cos(2. * M_PI * x))) /
-                      (4. * r0)) -
-          M_PI * cos(M_PI * t) * cos(M_PI * x) * cos(M_PI * y)) *
-          (r0 - epsilon * (p0 - M_PI * cos(M_PI * x) * sin(M_PI * t) * sin(M_PI * y))) +
-      (epsilon * ((M_PI * (std::pow((sin(M_PI * t)), 2.)) *
-                      (sin(2. * M_PI * x) + 2. * M_PI * x * cos(2. * M_PI * y))) /
+                         (std::numbers::pi * cos(std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                             cos(std::numbers::pi * y)) /
+                             (2. * r0)) -
+              cos(std::numbers::pi * x) * cos(std::numbers::pi * y) * sin(std::numbers::pi * t));
+  f_w_ex(0) =
+      (epsilon * ((std::numbers::pi * (std::pow((sin(std::numbers::pi * t)), 2.)) *
+                      (sin(2. * std::numbers::pi * x) +
+                          2. * std::numbers::pi * x * cos(2. * std::numbers::pi * y))) /
                          (8. * r0) +
-                     (M_PI * cos(M_PI * t) * sin(M_PI * x) * sin(M_PI * y)) / (2. * r0)) -
-          sin(M_PI * t) * sin(M_PI * x) * sin(M_PI * y)) *
-          (epsilon * (((std::pow(M_PI, 2.)) * cos(M_PI * t) * cos(M_PI * y) * sin(M_PI * x)) /
-                             (2. * r0) -
-                         ((std::pow(M_PI, 3.)) * y * (std::pow((sin(M_PI * t)), 2.)) *
-                             sin(2. * M_PI * x)) /
-                             (2. * r0)) +
-              M_PI * cos(M_PI * y) * sin(M_PI * t) * sin(M_PI * x)) *
-          (r0 - epsilon * (p0 - M_PI * cos(M_PI * x) * sin(M_PI * t) * sin(M_PI * y))) +
-      2. *
-          (epsilon * ((M_PI * (std::pow((sin(M_PI * t)), 2.)) *
-                          (2. * M_PI * cos(2. * M_PI * x) + 2. * M_PI * cos(2. * M_PI * y))) /
-                             (8. * r0) +
-                         ((std::pow(M_PI, 2.)) * cos(M_PI * t) * cos(M_PI * x) * sin(M_PI * y)) /
-                             (2. * r0)) +
-              M_PI * cos(M_PI * x) * sin(M_PI * t) * sin(M_PI * y)) *
-          (r0 - epsilon * (p0 - M_PI * cos(M_PI * x) * sin(M_PI * t) * sin(M_PI * y))) *
-          (epsilon * ((M_PI * (std::pow((sin(M_PI * t)), 2.)) *
-                          (sin(2. * M_PI * y) + 2. * M_PI * y * cos(2. * M_PI * x))) /
-                             (8. * r0) -
-                         (M_PI * cos(M_PI * t) * cos(M_PI * x) * cos(M_PI * y)) / (2. * r0)) -
-              cos(M_PI * x) * cos(M_PI * y) * sin(M_PI * t)) +
-      (epsilon * ((M_PI * (std::pow((sin(M_PI * t)), 2.)) *
-                      (2. * M_PI * cos(2. * M_PI * x) + 2. * M_PI * cos(2. * M_PI * y))) /
-                         (8. * r0) +
-                     ((std::pow(M_PI, 2.)) * cos(M_PI * t) * cos(M_PI * x) * sin(M_PI * y)) /
+                     (std::numbers::pi * cos(std::numbers::pi * t) * sin(std::numbers::pi * x) *
+                         sin(std::numbers::pi * y)) /
                          (2. * r0)) -
-          M_PI * cos(M_PI * x) * sin(M_PI * t) * sin(M_PI * y)) *
-          (r0 - epsilon * (p0 - M_PI * cos(M_PI * x) * sin(M_PI * t) * sin(M_PI * y))) *
-          (epsilon * ((M_PI * (std::pow((sin(M_PI * t)), 2.)) *
-                          (sin(2. * M_PI * y) + 2. * M_PI * y * cos(2. * M_PI * x))) /
-                             (8. * r0) -
-                         (M_PI * cos(M_PI * t) * cos(M_PI * x) * cos(M_PI * y)) / (2. * r0)) -
-              cos(M_PI * x) * cos(M_PI * y) * sin(M_PI * t)) +
-      (std::pow(M_PI, 2.)) * cos(M_PI * x) * cos(M_PI * y) * sin(M_PI * t) +
-      (std::pow(M_PI, 2.)) * epsilon * cos(M_PI * x) * cos(M_PI * y) * sin(M_PI * t) *
-          (std::pow(
-              (epsilon * ((M_PI * (std::pow((sin(M_PI * t)), 2.)) *
-                              (sin(2. * M_PI * y) + 2. * M_PI * y * cos(2. * M_PI * x))) /
-                                 (8. * r0) -
-                             (M_PI * cos(M_PI * t) * cos(M_PI * x) * cos(M_PI * y)) / (2. * r0)) -
-                  cos(M_PI * x) * cos(M_PI * y) * sin(M_PI * t)),
-              2.)) -
-      (std::pow(M_PI, 2.)) * epsilon * cos(M_PI * t) * cos(M_PI * x) * sin(M_PI * y) *
-          (epsilon * ((M_PI * (std::pow((sin(M_PI * t)), 2.)) *
-                          (sin(2. * M_PI * y) + 2. * M_PI * y * cos(2. * M_PI * x))) /
-                             (8. * r0) -
-                         (M_PI * cos(M_PI * t) * cos(M_PI * x) * cos(M_PI * y)) / (2. * r0)) -
-              cos(M_PI * x) * cos(M_PI * y) * sin(M_PI * t)) -
-      (std::pow(M_PI, 2.)) * epsilon * sin(M_PI * t) * sin(M_PI * x) * sin(M_PI * y) *
-          (epsilon * ((M_PI * (std::pow((sin(M_PI * t)), 2.)) *
-                          (sin(2. * M_PI * x) + 2. * M_PI * x * cos(2. * M_PI * y))) /
+          sin(std::numbers::pi * t) * sin(std::numbers::pi * x) * sin(std::numbers::pi * y)) *
+          (epsilon * ((std::numbers::pi * (std::pow((sin(std::numbers::pi * t)), 2.)) *
+                          (2. * std::numbers::pi * cos(2. * std::numbers::pi * x) +
+                              2. * std::numbers::pi * cos(2. * std::numbers::pi * y))) /
                              (8. * r0) +
-                         (M_PI * cos(M_PI * t) * sin(M_PI * x) * sin(M_PI * y)) / (2. * r0)) -
-              sin(M_PI * t) * sin(M_PI * x) * sin(M_PI * y)) *
-          (epsilon * ((M_PI * (std::pow((sin(M_PI * t)), 2.)) *
-                          (sin(2. * M_PI * y) + 2. * M_PI * y * cos(2. * M_PI * x))) /
+                         ((std::pow(std::numbers::pi, 2.)) * cos(std::numbers::pi * t) *
+                             cos(std::numbers::pi * x) * sin(std::numbers::pi * y)) /
+                             (2. * r0)) +
+              std::numbers::pi * cos(std::numbers::pi * x) * sin(std::numbers::pi * t) *
+                  sin(std::numbers::pi * y)) *
+          (r0 - epsilon * (p0 - std::numbers::pi * cos(std::numbers::pi * x) *
+                                    sin(std::numbers::pi * t) * sin(std::numbers::pi * y))) -
+      mu *
+          (epsilon *
+                  (((std::pow(std::numbers::pi, 3.)) * (std::pow((sin(std::numbers::pi * t)), 2.)) *
+                       sin(2. * std::numbers::pi * x)) /
+                          (2. * r0) +
+                      ((std::pow(std::numbers::pi, 3.)) * cos(std::numbers::pi * t) *
+                          sin(std::numbers::pi * x) * sin(std::numbers::pi * y)) /
+                          (2. * r0)) +
+              epsilon * (((std::pow(std::numbers::pi, 3.)) * cos(std::numbers::pi * t) *
+                             sin(std::numbers::pi * x) * sin(std::numbers::pi * y)) /
+                                (2. * r0) +
+                            ((std::pow(std::numbers::pi, 4.)) * x * cos(2. * std::numbers::pi * y) *
+                                (std::pow((sin(std::numbers::pi * t)), 2.))) /
+                                r0) +
+              (2. * epsilon *
+                  (((std::pow(std::numbers::pi, 3.)) * cos(std::numbers::pi * t) *
+                       sin(std::numbers::pi * x) * sin(std::numbers::pi * y)) /
+                          (2. * r0) +
+                      ((std::pow(std::numbers::pi, 3.)) * cos(std::numbers::pi * x) *
+                          (std::pow((sin(std::numbers::pi * t)), 2.)) * sin(std::numbers::pi * x)) /
+                          r0)) /
+                  3. -
+              2. * (std::pow(std::numbers::pi, 2.)) * sin(std::numbers::pi * t) *
+                  sin(std::numbers::pi * x) * sin(std::numbers::pi * y)) -
+      (epsilon * (((std::pow(std::numbers::pi, 2.)) * cos(std::numbers::pi * t) *
+                      sin(std::numbers::pi * t) *
+                      (sin(2. * std::numbers::pi * x) +
+                          2. * std::numbers::pi * x * cos(2. * std::numbers::pi * y))) /
+                         (4. * r0) -
+                     ((std::pow(std::numbers::pi, 2.)) * sin(std::numbers::pi * t) *
+                         sin(std::numbers::pi * x) * sin(std::numbers::pi * y)) /
+                         (2. * r0)) -
+          std::numbers::pi * cos(std::numbers::pi * t) * sin(std::numbers::pi * x) *
+              sin(std::numbers::pi * y)) *
+          (r0 - epsilon * (p0 - std::numbers::pi * cos(std::numbers::pi * x) *
+                                    sin(std::numbers::pi * t) * sin(std::numbers::pi * y))) +
+      2. *
+          (epsilon * ((std::numbers::pi * (std::pow((sin(std::numbers::pi * t)), 2.)) *
+                          (sin(2. * std::numbers::pi * x) +
+                              2. * std::numbers::pi * x * cos(2. * std::numbers::pi * y))) /
+                             (8. * r0) +
+                         (std::numbers::pi * cos(std::numbers::pi * t) * sin(std::numbers::pi * x) *
+                             sin(std::numbers::pi * y)) /
+                             (2. * r0)) -
+              sin(std::numbers::pi * t) * sin(std::numbers::pi * x) * sin(std::numbers::pi * y)) *
+          (epsilon * ((std::numbers::pi * (std::pow((sin(std::numbers::pi * t)), 2.)) *
+                          (2. * std::numbers::pi * cos(2. * std::numbers::pi * x) +
+                              2. * std::numbers::pi * cos(2. * std::numbers::pi * y))) /
+                             (8. * r0) +
+                         ((std::pow(std::numbers::pi, 2.)) * cos(std::numbers::pi * t) *
+                             cos(std::numbers::pi * x) * sin(std::numbers::pi * y)) /
+                             (2. * r0)) -
+              std::numbers::pi * cos(std::numbers::pi * x) * sin(std::numbers::pi * t) *
+                  sin(std::numbers::pi * y)) *
+          (r0 - epsilon * (p0 - std::numbers::pi * cos(std::numbers::pi * x) *
+                                    sin(std::numbers::pi * t) * sin(std::numbers::pi * y))) +
+      (epsilon * (((std::pow(std::numbers::pi, 2.)) * cos(std::numbers::pi * t) *
+                      cos(std::numbers::pi * y) * sin(std::numbers::pi * x)) /
+                         (2. * r0) -
+                     ((std::pow(std::numbers::pi, 3.)) * x *
+                         (std::pow((sin(std::numbers::pi * t)), 2.)) *
+                         sin(2. * std::numbers::pi * y)) /
+                         (2. * r0)) -
+          std::numbers::pi * cos(std::numbers::pi * y) * sin(std::numbers::pi * t) *
+              sin(std::numbers::pi * x)) *
+          (r0 - epsilon * (p0 - std::numbers::pi * cos(std::numbers::pi * x) *
+                                    sin(std::numbers::pi * t) * sin(std::numbers::pi * y))) *
+          (epsilon * ((std::numbers::pi * (std::pow((sin(std::numbers::pi * t)), 2.)) *
+                          (sin(2. * std::numbers::pi * y) +
+                              2. * std::numbers::pi * y * cos(2. * std::numbers::pi * x))) /
                              (8. * r0) -
-                         (M_PI * cos(M_PI * t) * cos(M_PI * x) * cos(M_PI * y)) / (2. * r0)) -
-              cos(M_PI * x) * cos(M_PI * y) * sin(M_PI * t));
+                         (std::numbers::pi * cos(std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                             cos(std::numbers::pi * y)) /
+                             (2. * r0)) -
+              cos(std::numbers::pi * x) * cos(std::numbers::pi * y) * sin(std::numbers::pi * t)) -
+      (std::pow(std::numbers::pi, 2.)) * sin(std::numbers::pi * t) * sin(std::numbers::pi * x) *
+          sin(std::numbers::pi * y) -
+      (std::pow(std::numbers::pi, 2.)) * epsilon * cos(std::numbers::pi * t) *
+          cos(std::numbers::pi * x) * sin(std::numbers::pi * y) *
+          (epsilon * ((std::numbers::pi * (std::pow((sin(std::numbers::pi * t)), 2.)) *
+                          (sin(2. * std::numbers::pi * x) +
+                              2. * std::numbers::pi * x * cos(2. * std::numbers::pi * y))) /
+                             (8. * r0) +
+                         (std::numbers::pi * cos(std::numbers::pi * t) * sin(std::numbers::pi * x) *
+                             sin(std::numbers::pi * y)) /
+                             (2. * r0)) -
+              sin(std::numbers::pi * t) * sin(std::numbers::pi * x) * sin(std::numbers::pi * y)) -
+      (std::pow(std::numbers::pi, 2.)) * epsilon * sin(std::numbers::pi * t) *
+          sin(std::numbers::pi * x) * sin(std::numbers::pi * y) *
+          (std::pow(
+              (epsilon * ((std::numbers::pi * (std::pow((sin(std::numbers::pi * t)), 2.)) *
+                              (sin(2. * std::numbers::pi * x) +
+                                  2. * std::numbers::pi * x * cos(2. * std::numbers::pi * y))) /
+                                 (8. * r0) +
+                             (std::numbers::pi * cos(std::numbers::pi * t) *
+                                 sin(std::numbers::pi * x) * sin(std::numbers::pi * y)) /
+                                 (2. * r0)) -
+                  sin(std::numbers::pi * t) * sin(std::numbers::pi * x) *
+                      sin(std::numbers::pi * y)),
+              2.)) +
+      (std::pow(std::numbers::pi, 2.)) * epsilon * cos(std::numbers::pi * x) *
+          cos(std::numbers::pi * y) * sin(std::numbers::pi * t) *
+          (epsilon * ((std::numbers::pi * (std::pow((sin(std::numbers::pi * t)), 2.)) *
+                          (sin(2. * std::numbers::pi * x) +
+                              2. * std::numbers::pi * x * cos(2. * std::numbers::pi * y))) /
+                             (8. * r0) +
+                         (std::numbers::pi * cos(std::numbers::pi * t) * sin(std::numbers::pi * x) *
+                             sin(std::numbers::pi * y)) /
+                             (2. * r0)) -
+              sin(std::numbers::pi * t) * sin(std::numbers::pi * x) * sin(std::numbers::pi * y)) *
+          (epsilon * ((std::numbers::pi * (std::pow((sin(std::numbers::pi * t)), 2.)) *
+                          (sin(2. * std::numbers::pi * y) +
+                              2. * std::numbers::pi * y * cos(2. * std::numbers::pi * x))) /
+                             (8. * r0) -
+                         (std::numbers::pi * cos(std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                             cos(std::numbers::pi * y)) /
+                             (2. * r0)) -
+              cos(std::numbers::pi * x) * cos(std::numbers::pi * y) * sin(std::numbers::pi * t));
+  f_w_ex(1) =
+      mu *
+          (epsilon * (((std::pow(std::numbers::pi, 3.)) * cos(std::numbers::pi * t) *
+                          cos(std::numbers::pi * x) * cos(std::numbers::pi * y)) /
+                             (2. * r0) -
+                         ((std::pow(std::numbers::pi, 4.)) * y * cos(2. * std::numbers::pi * x) *
+                             (std::pow((sin(std::numbers::pi * t)), 2.))) /
+                             r0) -
+              epsilon *
+                  (((std::pow(std::numbers::pi, 3.)) * (std::pow((sin(std::numbers::pi * t)), 2.)) *
+                       sin(2. * std::numbers::pi * y)) /
+                          (2. * r0) -
+                      ((std::pow(std::numbers::pi, 3.)) * cos(std::numbers::pi * t) *
+                          cos(std::numbers::pi * x) * cos(std::numbers::pi * y)) /
+                          (2. * r0)) +
+              (2. * epsilon *
+                  (((std::pow(std::numbers::pi, 3.)) * cos(std::numbers::pi * t) *
+                       cos(std::numbers::pi * x) * cos(std::numbers::pi * y)) /
+                          (2. * r0) -
+                      ((std::pow(std::numbers::pi, 3.)) * cos(std::numbers::pi * y) *
+                          (std::pow((sin(std::numbers::pi * t)), 2.)) * sin(std::numbers::pi * y)) /
+                          r0)) /
+                  3. +
+              2. * (std::pow(std::numbers::pi, 2.)) * cos(std::numbers::pi * x) *
+                  cos(std::numbers::pi * y) * sin(std::numbers::pi * t)) -
+      (epsilon * (((std::pow(std::numbers::pi, 2.)) * cos(std::numbers::pi * x) *
+                      cos(std::numbers::pi * y) * sin(std::numbers::pi * t)) /
+                         (2. * r0) +
+                     ((std::pow(std::numbers::pi, 2.)) * cos(std::numbers::pi * t) *
+                         sin(std::numbers::pi * t) *
+                         (sin(2. * std::numbers::pi * y) +
+                             2. * std::numbers::pi * y * cos(2. * std::numbers::pi * x))) /
+                         (4. * r0)) -
+          std::numbers::pi * cos(std::numbers::pi * t) * cos(std::numbers::pi * x) *
+              cos(std::numbers::pi * y)) *
+          (r0 - epsilon * (p0 - std::numbers::pi * cos(std::numbers::pi * x) *
+                                    sin(std::numbers::pi * t) * sin(std::numbers::pi * y))) +
+      (epsilon * ((std::numbers::pi * (std::pow((sin(std::numbers::pi * t)), 2.)) *
+                      (sin(2. * std::numbers::pi * x) +
+                          2. * std::numbers::pi * x * cos(2. * std::numbers::pi * y))) /
+                         (8. * r0) +
+                     (std::numbers::pi * cos(std::numbers::pi * t) * sin(std::numbers::pi * x) *
+                         sin(std::numbers::pi * y)) /
+                         (2. * r0)) -
+          sin(std::numbers::pi * t) * sin(std::numbers::pi * x) * sin(std::numbers::pi * y)) *
+          (epsilon * (((std::pow(std::numbers::pi, 2.)) * cos(std::numbers::pi * t) *
+                          cos(std::numbers::pi * y) * sin(std::numbers::pi * x)) /
+                             (2. * r0) -
+                         ((std::pow(std::numbers::pi, 3.)) * y *
+                             (std::pow((sin(std::numbers::pi * t)), 2.)) *
+                             sin(2. * std::numbers::pi * x)) /
+                             (2. * r0)) +
+              std::numbers::pi * cos(std::numbers::pi * y) * sin(std::numbers::pi * t) *
+                  sin(std::numbers::pi * x)) *
+          (r0 - epsilon * (p0 - std::numbers::pi * cos(std::numbers::pi * x) *
+                                    sin(std::numbers::pi * t) * sin(std::numbers::pi * y))) +
+      2. *
+          (epsilon * ((std::numbers::pi * (std::pow((sin(std::numbers::pi * t)), 2.)) *
+                          (2. * std::numbers::pi * cos(2. * std::numbers::pi * x) +
+                              2. * std::numbers::pi * cos(2. * std::numbers::pi * y))) /
+                             (8. * r0) +
+                         ((std::pow(std::numbers::pi, 2.)) * cos(std::numbers::pi * t) *
+                             cos(std::numbers::pi * x) * sin(std::numbers::pi * y)) /
+                             (2. * r0)) +
+              std::numbers::pi * cos(std::numbers::pi * x) * sin(std::numbers::pi * t) *
+                  sin(std::numbers::pi * y)) *
+          (r0 - epsilon * (p0 - std::numbers::pi * cos(std::numbers::pi * x) *
+                                    sin(std::numbers::pi * t) * sin(std::numbers::pi * y))) *
+          (epsilon * ((std::numbers::pi * (std::pow((sin(std::numbers::pi * t)), 2.)) *
+                          (sin(2. * std::numbers::pi * y) +
+                              2. * std::numbers::pi * y * cos(2. * std::numbers::pi * x))) /
+                             (8. * r0) -
+                         (std::numbers::pi * cos(std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                             cos(std::numbers::pi * y)) /
+                             (2. * r0)) -
+              cos(std::numbers::pi * x) * cos(std::numbers::pi * y) * sin(std::numbers::pi * t)) +
+      (epsilon * ((std::numbers::pi * (std::pow((sin(std::numbers::pi * t)), 2.)) *
+                      (2. * std::numbers::pi * cos(2. * std::numbers::pi * x) +
+                          2. * std::numbers::pi * cos(2. * std::numbers::pi * y))) /
+                         (8. * r0) +
+                     ((std::pow(std::numbers::pi, 2.)) * cos(std::numbers::pi * t) *
+                         cos(std::numbers::pi * x) * sin(std::numbers::pi * y)) /
+                         (2. * r0)) -
+          std::numbers::pi * cos(std::numbers::pi * x) * sin(std::numbers::pi * t) *
+              sin(std::numbers::pi * y)) *
+          (r0 - epsilon * (p0 - std::numbers::pi * cos(std::numbers::pi * x) *
+                                    sin(std::numbers::pi * t) * sin(std::numbers::pi * y))) *
+          (epsilon * ((std::numbers::pi * (std::pow((sin(std::numbers::pi * t)), 2.)) *
+                          (sin(2. * std::numbers::pi * y) +
+                              2. * std::numbers::pi * y * cos(2. * std::numbers::pi * x))) /
+                             (8. * r0) -
+                         (std::numbers::pi * cos(std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                             cos(std::numbers::pi * y)) /
+                             (2. * r0)) -
+              cos(std::numbers::pi * x) * cos(std::numbers::pi * y) * sin(std::numbers::pi * t)) +
+      (std::pow(std::numbers::pi, 2.)) * cos(std::numbers::pi * x) * cos(std::numbers::pi * y) *
+          sin(std::numbers::pi * t) +
+      (std::pow(std::numbers::pi, 2.)) * epsilon * cos(std::numbers::pi * x) *
+          cos(std::numbers::pi * y) * sin(std::numbers::pi * t) *
+          (std::pow(
+              (epsilon * ((std::numbers::pi * (std::pow((sin(std::numbers::pi * t)), 2.)) *
+                              (sin(2. * std::numbers::pi * y) +
+                                  2. * std::numbers::pi * y * cos(2. * std::numbers::pi * x))) /
+                                 (8. * r0) -
+                             (std::numbers::pi * cos(std::numbers::pi * t) *
+                                 cos(std::numbers::pi * x) * cos(std::numbers::pi * y)) /
+                                 (2. * r0)) -
+                  cos(std::numbers::pi * x) * cos(std::numbers::pi * y) *
+                      sin(std::numbers::pi * t)),
+              2.)) -
+      (std::pow(std::numbers::pi, 2.)) * epsilon * cos(std::numbers::pi * t) *
+          cos(std::numbers::pi * x) * sin(std::numbers::pi * y) *
+          (epsilon * ((std::numbers::pi * (std::pow((sin(std::numbers::pi * t)), 2.)) *
+                          (sin(2. * std::numbers::pi * y) +
+                              2. * std::numbers::pi * y * cos(2. * std::numbers::pi * x))) /
+                             (8. * r0) -
+                         (std::numbers::pi * cos(std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                             cos(std::numbers::pi * y)) /
+                             (2. * r0)) -
+              cos(std::numbers::pi * x) * cos(std::numbers::pi * y) * sin(std::numbers::pi * t)) -
+      (std::pow(std::numbers::pi, 2.)) * epsilon * sin(std::numbers::pi * t) *
+          sin(std::numbers::pi * x) * sin(std::numbers::pi * y) *
+          (epsilon * ((std::numbers::pi * (std::pow((sin(std::numbers::pi * t)), 2.)) *
+                          (sin(2. * std::numbers::pi * x) +
+                              2. * std::numbers::pi * x * cos(2. * std::numbers::pi * y))) /
+                             (8. * r0) +
+                         (std::numbers::pi * cos(std::numbers::pi * t) * sin(std::numbers::pi * x) *
+                             sin(std::numbers::pi * y)) /
+                             (2. * r0)) -
+              sin(std::numbers::pi * t) * sin(std::numbers::pi * x) * sin(std::numbers::pi * y)) *
+          (epsilon * ((std::numbers::pi * (std::pow((sin(std::numbers::pi * t)), 2.)) *
+                          (sin(2. * std::numbers::pi * y) +
+                              2. * std::numbers::pi * y * cos(2. * std::numbers::pi * x))) /
+                             (8. * r0) -
+                         (std::numbers::pi * cos(std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                             cos(std::numbers::pi * y)) /
+                             (2. * r0)) -
+              cos(std::numbers::pi * x) * cos(std::numbers::pi * y) * sin(std::numbers::pi * t));
 
   switch (component)
   {
@@ -2258,258 +2394,354 @@ double FLD::WeaklyCompressibleEtienneFSIFluidFunction::evaluate(
   Core::LinAlg::Matrix<2, 1> w_ex;
 
   // evaluate variables
-  L_ex(0) = (M_PI * sin(2. * M_PI * (t + 1. / 4.)) * ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.) *
-                (cos(2. * M_PI * t) * sin(2. * M_PI * x) -
-                    cos(2. * M_PI * t) * cos(2. * M_PI * x) * sin(2. * M_PI * x) + 20.) *
-                (40. * y - cos(2. * M_PI * t) * sin(2. * M_PI * x) +
-                    cos(2. * M_PI * t) * cos(2. * M_PI * x) * sin(2. * M_PI * x) - 20.)) /
+  L_ex(0) = (std::numbers::pi * sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                (cos(2. * std::numbers::pi * x) -
+                    2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.) *
+                (cos(2. * std::numbers::pi * t) * sin(2. * std::numbers::pi * x) -
+                    cos(2. * std::numbers::pi * t) * cos(2. * std::numbers::pi * x) *
+                        sin(2. * std::numbers::pi * x) +
+                    20.) *
+                (40. * y - cos(2. * std::numbers::pi * t) * sin(2. * std::numbers::pi * x) +
+                    cos(2. * std::numbers::pi * t) * cos(2. * std::numbers::pi * x) *
+                        sin(2. * std::numbers::pi * x) -
+                    20.)) /
                 12000. -
-            (M_PI * sin(M_PI * x) * sin(3. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                (2. * cos(2. * M_PI * t) * cos(M_PI * x) * (std::pow((sin(M_PI * x)), 3.)) + 10.) *
-                (2. * cos(2. * M_PI * t) * cos(M_PI * x) * (std::pow((sin(M_PI * x)), 3.)) -
+            (std::numbers::pi * sin(std::numbers::pi * x) * sin(3. * std::numbers::pi * x) *
+                sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                (2. * cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                        (std::pow((sin(std::numbers::pi * x)), 3.)) +
+                    10.) *
+                (2. * cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                        (std::pow((sin(std::numbers::pi * x)), 3.)) -
                     20. * y + 10.)) /
                 750.;
-  L_ex(1) = (M_PI * sin(M_PI * x) * sin(3. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                (2. * cos(2. * M_PI * t) * cos(M_PI * x) * (std::pow((sin(M_PI * x)), 3.)) + 10.) *
-                (2. * cos(2. * M_PI * t) * cos(M_PI * x) * (std::pow((sin(M_PI * x)), 3.)) -
+  L_ex(1) = (std::numbers::pi * sin(std::numbers::pi * x) * sin(3. * std::numbers::pi * x) *
+                sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                (2. * cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                        (std::pow((sin(std::numbers::pi * x)), 3.)) +
+                    10.) *
+                (2. * cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                        (std::pow((sin(std::numbers::pi * x)), 3.)) -
                     20. * y + 10.)) /
                 1500. -
-            (M_PI * sin(2. * M_PI * (t + 1. / 4.)) * ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.) *
-                (cos(2. * M_PI * t) * sin(2. * M_PI * x) -
-                    cos(2. * M_PI * t) * cos(2. * M_PI * x) * sin(2. * M_PI * x) + 20.) *
-                (40. * y - cos(2. * M_PI * t) * sin(2. * M_PI * x) +
-                    cos(2. * M_PI * t) * cos(2. * M_PI * x) * sin(2. * M_PI * x) - 20.)) /
+            (std::numbers::pi * sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                (cos(2. * std::numbers::pi * x) -
+                    2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.) *
+                (cos(2. * std::numbers::pi * t) * sin(2. * std::numbers::pi * x) -
+                    cos(2. * std::numbers::pi * t) * cos(2. * std::numbers::pi * x) *
+                        sin(2. * std::numbers::pi * x) +
+                    20.) *
+                (40. * y - cos(2. * std::numbers::pi * t) * sin(2. * std::numbers::pi * x) +
+                    cos(2. * std::numbers::pi * t) * cos(2. * std::numbers::pi * x) *
+                        sin(2. * std::numbers::pi * x) -
+                    20.)) /
                 6000.;
   L_ex(2) =
-      (2. * ((7. * (std::pow((cos(2. * M_PI * t)), 2.))) / 2. - 4.) *
-          (std::pow(
-              (cos(2. * M_PI * t) * cos(M_PI * x) * (std::pow((sin(M_PI * x)), 3.)) + 5.), 2.))) /
+      (2. * ((7. * (std::pow((cos(2. * std::numbers::pi * t)), 2.))) / 2. - 4.) *
+          (std::pow((cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                            (std::pow((sin(std::numbers::pi * x)), 3.)) +
+                        5.),
+              2.))) /
           25. +
-      3. * (std::pow(y, 2.)) * ((7. * cos(4. * M_PI * t)) / 6. - 3. / 2.) -
-      6. * (std::pow(y, 2.)) * ((7. * cos(4. * M_PI * t)) / 4. - 9. / 4.) +
-      ((std::pow(M_PI, 2.)) * sin(2. * M_PI * t) * (std::pow((sin(2. * M_PI * x)), 2.))) / 5. +
-      ((std::pow(M_PI, 2.)) * cos(2. * M_PI * x) * cos(2. * M_PI * (t + 1. / 4.)) *
-          (cos(2. * M_PI * x) - 1.)) /
+      3. * (std::pow(y, 2.)) * ((7. * cos(4. * std::numbers::pi * t)) / 6. - 3. / 2.) -
+      6. * (std::pow(y, 2.)) * ((7. * cos(4. * std::numbers::pi * t)) / 4. - 9. / 4.) +
+      ((std::pow(std::numbers::pi, 2.)) * sin(2. * std::numbers::pi * t) *
+          (std::pow((sin(2. * std::numbers::pi * x)), 2.))) /
+          5. +
+      ((std::pow(std::numbers::pi, 2.)) * cos(2. * std::numbers::pi * x) *
+          cos(2. * std::numbers::pi * (t + 1. / 4.)) * (cos(2. * std::numbers::pi * x) - 1.)) /
           5. -
-      ((std::pow(M_PI, 2.)) * y * (std::pow((cos(2. * M_PI * t)), 2.)) *
-          ((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) * (cos(2. * M_PI * x) - 1.)) / 20. -
+      ((std::pow(std::numbers::pi, 2.)) * y * (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+          ((sin(2. * std::numbers::pi * x) * sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+               (cos(2. * std::numbers::pi * x) - 1.)) /
+                  20. -
               1.) *
-          ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-          (std::pow((cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.), 2.))) /
+          ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+          (std::pow((cos(2. * std::numbers::pi * x) -
+                        2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+              2.))) /
           100. -
-      ((std::pow(M_PI, 2.)) * y * (std::pow((cos(2. * M_PI * t)), 2.)) *
-          ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-          (std::pow((cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.), 2.)) *
+      ((std::pow(std::numbers::pi, 2.)) * y * (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+          ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+          (std::pow((cos(2. * std::numbers::pi * x) -
+                        2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+              2.)) *
           (y +
-              (sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) * (cos(2. * M_PI * x) - 1.)) /
+              (sin(2. * std::numbers::pi * x) * sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                  (cos(2. * std::numbers::pi * x) - 1.)) /
                   20. -
               1.)) /
           100. +
-      ((std::pow(M_PI, 2.)) * y * cos(2. * M_PI * t) * sin(2. * M_PI * x) *
-          ((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) * (cos(2. * M_PI * x) - 1.)) / 20. -
+      ((std::pow(std::numbers::pi, 2.)) * y * cos(2. * std::numbers::pi * t) *
+          sin(2. * std::numbers::pi * x) *
+          ((sin(2. * std::numbers::pi * x) * sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+               (cos(2. * std::numbers::pi * x) - 1.)) /
+                  20. -
               1.) *
-          ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) * (4. * cos(2. * M_PI * x) - 1.) *
+          ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+          (4. * cos(2. * std::numbers::pi * x) - 1.) *
           (y +
-              (sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) * (cos(2. * M_PI * x) - 1.)) /
+              (sin(2. * std::numbers::pi * x) * sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                  (cos(2. * std::numbers::pi * x) - 1.)) /
                   20. -
               1.)) /
           5.;
   p_ex =
-      -((E * M_PI * cos(2. * M_PI * t) *
-            (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.) *
-            (5. * cos(2. * M_PI * t) * cos(2. * M_PI * x) - 3. * M_PI * cos(2. * M_PI * t) +
-                6. * M_PI * cos(2. * M_PI * t) * (std::pow((cos(2. * M_PI * x)), 2.)) -
-                3. * M_PI * cos(2. * M_PI * t) * cos(2. * M_PI * x) + 30.) *
-            ((2. * ((7. * (std::pow((cos(2. * M_PI * t)), 2.))) / 2. - 4.) *
-                 (std::pow(
-                     (cos(2. * M_PI * t) * cos(M_PI * x) * (std::pow((sin(M_PI * x)), 3.)) + 5.),
+      -((E * std::numbers::pi * cos(2. * std::numbers::pi * t) *
+            (cos(2. * std::numbers::pi * x) -
+                2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.) *
+            (5. * cos(2. * std::numbers::pi * t) * cos(2. * std::numbers::pi * x) -
+                3. * std::numbers::pi * cos(2. * std::numbers::pi * t) +
+                6. * std::numbers::pi * cos(2. * std::numbers::pi * t) *
+                    (std::pow((cos(2. * std::numbers::pi * x)), 2.)) -
+                3. * std::numbers::pi * cos(2. * std::numbers::pi * t) *
+                    cos(2. * std::numbers::pi * x) +
+                30.) *
+            ((2. * ((7. * (std::pow((cos(2. * std::numbers::pi * t)), 2.))) / 2. - 4.) *
+                 (std::pow((cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                                   (std::pow((sin(std::numbers::pi * x)), 3.)) +
+                               5.),
                      2.))) /
                     25. +
                 (3. *
-                    (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                      (cos(2. * M_PI * x) - 1.) -
+                    (std::pow((sin(2. * std::numbers::pi * x) *
+                                      sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                      (cos(2. * std::numbers::pi * x) - 1.) -
                                   20.),
                         2.)) *
-                    ((7. * cos(4. * M_PI * t)) / 6. - 3. / 2.)) /
+                    ((7. * cos(4. * std::numbers::pi * t)) / 6. - 3. / 2.)) /
                     400. -
                 (3. *
-                    (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                      (cos(2. * M_PI * x) - 1.) -
+                    (std::pow((sin(2. * std::numbers::pi * x) *
+                                      sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                      (cos(2. * std::numbers::pi * x) - 1.) -
                                   20.),
                         2.)) *
-                    ((7. * cos(4. * M_PI * t)) / 4. - 9. / 4.)) /
+                    ((7. * cos(4. * std::numbers::pi * t)) / 4. - 9. / 4.)) /
                     200. +
-                ((std::pow(M_PI, 2.)) * sin(2. * M_PI * t) * (std::pow((sin(2. * M_PI * x)), 2.))) /
+                ((std::pow(std::numbers::pi, 2.)) * sin(2. * std::numbers::pi * t) *
+                    (std::pow((sin(2. * std::numbers::pi * x)), 2.))) /
                     5. +
-                ((std::pow(M_PI, 2.)) * cos(2. * M_PI * x) * cos(2. * M_PI * (t + 1. / 4.)) *
-                    (cos(2. * M_PI * x) - 1.)) /
+                ((std::pow(std::numbers::pi, 2.)) * cos(2. * std::numbers::pi * x) *
+                    cos(2. * std::numbers::pi * (t + 1. / 4.)) *
+                    (cos(2. * std::numbers::pi * x) - 1.)) /
                     5. +
-                ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                    (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                      (cos(2. * M_PI * x) - 1.) -
+                ((std::pow(std::numbers::pi, 2.)) *
+                    (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                    (std::pow((sin(2. * std::numbers::pi * x) *
+                                      sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                      (cos(2. * std::numbers::pi * x) - 1.) -
                                   20.),
                         2.)) *
-                    ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                    (std::pow((cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
+                    ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                    (std::pow((cos(2. * std::numbers::pi * x) -
+                                  2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
                         2.))) /
                     40000.)) /
               (6. * (v + 1.) *
-                  ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                          (std::pow(
-                              (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
+                  ((std::pow(std::numbers::pi, 2.)) *
+                          (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                          (std::pow((cos(2. * std::numbers::pi * x) -
+                                        2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
                               2.)) +
                       100.)) +
-          (E * M_PI * cos(2. * M_PI * t) *
+          (E * std::numbers::pi * cos(2. * std::numbers::pi * t) *
               (std::pow(
-                  (sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) * (cos(2. * M_PI * x) - 1.) -
+                  (sin(2. * std::numbers::pi * x) * sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                          (cos(2. * std::numbers::pi * x) - 1.) -
                       20.),
                   2.)) *
-              ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-              (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.) *
-              (5. * cos(2. * M_PI * t) * cos(2. * M_PI * x) - 3. * M_PI * cos(2. * M_PI * t) +
-                  6. * M_PI * cos(2. * M_PI * t) * (std::pow((cos(2. * M_PI * x)), 2.)) -
-                  3. * M_PI * cos(2. * M_PI * t) * cos(2. * M_PI * x) + 30.)) /
+              ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+              (cos(2. * std::numbers::pi * x) -
+                  2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.) *
+              (5. * cos(2. * std::numbers::pi * t) * cos(2. * std::numbers::pi * x) -
+                  3. * std::numbers::pi * cos(2. * std::numbers::pi * t) +
+                  6. * std::numbers::pi * cos(2. * std::numbers::pi * t) *
+                      (std::pow((cos(2. * std::numbers::pi * x)), 2.)) -
+                  3. * std::numbers::pi * cos(2. * std::numbers::pi * t) *
+                      cos(2. * std::numbers::pi * x) +
+                  30.)) /
               (1200. * (v + 1.) *
-                  ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                          (std::pow(
-                              (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
+                  ((std::pow(std::numbers::pi, 2.)) *
+                          (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                          (std::pow((cos(2. * std::numbers::pi * x) -
+                                        2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
                               2.)) +
                       100.))) /
-      (((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-           (std::pow((cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.), 2.)) *
-           ((2. * ((7. * (std::pow((cos(2. * M_PI * t)), 2.))) / 2. - 4.) *
-                (std::pow(
-                    (cos(2. * M_PI * t) * cos(M_PI * x) * (std::pow((sin(M_PI * x)), 3.)) + 5.),
+      (((std::pow(std::numbers::pi, 2.)) * (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+           (std::pow((cos(2. * std::numbers::pi * x) -
+                         2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+               2.)) *
+           ((2. * ((7. * (std::pow((cos(2. * std::numbers::pi * t)), 2.))) / 2. - 4.) *
+                (std::pow((cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                                  (std::pow((sin(std::numbers::pi * x)), 3.)) +
+                              5.),
                     2.))) /
                    25. +
                (3. *
-                   (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                     (cos(2. * M_PI * x) - 1.) -
+                   (std::pow((sin(2. * std::numbers::pi * x) *
+                                     sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                     (cos(2. * std::numbers::pi * x) - 1.) -
                                  20.),
                        2.)) *
-                   ((7. * cos(4. * M_PI * t)) / 6. - 3. / 2.)) /
+                   ((7. * cos(4. * std::numbers::pi * t)) / 6. - 3. / 2.)) /
                    400. -
                (3. *
-                   (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                     (cos(2. * M_PI * x) - 1.) -
+                   (std::pow((sin(2. * std::numbers::pi * x) *
+                                     sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                     (cos(2. * std::numbers::pi * x) - 1.) -
                                  20.),
                        2.)) *
-                   ((7. * cos(4. * M_PI * t)) / 4. - 9. / 4.)) /
+                   ((7. * cos(4. * std::numbers::pi * t)) / 4. - 9. / 4.)) /
                    200. +
-               ((std::pow(M_PI, 2.)) * sin(2. * M_PI * t) * (std::pow((sin(2. * M_PI * x)), 2.))) /
+               ((std::pow(std::numbers::pi, 2.)) * sin(2. * std::numbers::pi * t) *
+                   (std::pow((sin(2. * std::numbers::pi * x)), 2.))) /
                    5. +
-               ((std::pow(M_PI, 2.)) * cos(2. * M_PI * x) * cos(2. * M_PI * (t + 1. / 4.)) *
-                   (cos(2. * M_PI * x) - 1.)) /
+               ((std::pow(std::numbers::pi, 2.)) * cos(2. * std::numbers::pi * x) *
+                   cos(2. * std::numbers::pi * (t + 1. / 4.)) *
+                   (cos(2. * std::numbers::pi * x) - 1.)) /
                    5. +
-               ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                   (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                     (cos(2. * M_PI * x) - 1.) -
+               ((std::pow(std::numbers::pi, 2.)) *
+                   (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                   (std::pow((sin(2. * std::numbers::pi * x) *
+                                     sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                     (cos(2. * std::numbers::pi * x) - 1.) -
                                  20.),
                        2.)) *
-                   ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                   (std::pow((cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
+                   ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                   (std::pow((cos(2. * std::numbers::pi * x) -
+                                 2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
                        2.))) /
                    40000.)) /
-              ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                      (std::pow(
-                          (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
+              ((std::pow(std::numbers::pi, 2.)) * (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                      (std::pow((cos(2. * std::numbers::pi * x) -
+                                    2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
                           2.)) +
                   100.) -
-          (100. *
-              ((2. * ((7. * (std::pow((cos(2. * M_PI * t)), 2.))) / 2. - 4.) *
-                   (std::pow(
-                       (cos(2. * M_PI * t) * cos(M_PI * x) * (std::pow((sin(M_PI * x)), 3.)) + 5.),
-                       2.))) /
-                      25. +
-                  (3. *
-                      (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                        (cos(2. * M_PI * x) - 1.) -
-                                    20.),
-                          2.)) *
-                      ((7. * cos(4. * M_PI * t)) / 6. - 3. / 2.)) /
-                      400. -
-                  (3. *
-                      (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                        (cos(2. * M_PI * x) - 1.) -
-                                    20.),
-                          2.)) *
-                      ((7. * cos(4. * M_PI * t)) / 4. - 9. / 4.)) /
-                      200. +
-                  ((std::pow(M_PI, 2.)) * sin(2. * M_PI * t) *
-                      (std::pow((sin(2. * M_PI * x)), 2.))) /
-                      5. +
-                  ((std::pow(M_PI, 2.)) * cos(2. * M_PI * x) * cos(2. * M_PI * (t + 1. / 4.)) *
-                      (cos(2. * M_PI * x) - 1.)) /
-                      5. +
-                  ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                      (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                        (cos(2. * M_PI * x) - 1.) -
-                                    20.),
-                          2.)) *
-                      ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                      (std::pow(
-                          (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                          2.))) /
-                      40000.)) /
-              ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                      (std::pow(
-                          (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
+          (100. * ((2. * ((7. * (std::pow((cos(2. * std::numbers::pi * t)), 2.))) / 2. - 4.) *
+                       (std::pow((cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                                         (std::pow((sin(std::numbers::pi * x)), 3.)) +
+                                     5.),
+                           2.))) /
+                          25. +
+                      (3. *
+                          (std::pow((sin(2. * std::numbers::pi * x) *
+                                            sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                            (cos(2. * std::numbers::pi * x) - 1.) -
+                                        20.),
+                              2.)) *
+                          ((7. * cos(4. * std::numbers::pi * t)) / 6. - 3. / 2.)) /
+                          400. -
+                      (3. *
+                          (std::pow((sin(2. * std::numbers::pi * x) *
+                                            sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                            (cos(2. * std::numbers::pi * x) - 1.) -
+                                        20.),
+                              2.)) *
+                          ((7. * cos(4. * std::numbers::pi * t)) / 4. - 9. / 4.)) /
+                          200. +
+                      ((std::pow(std::numbers::pi, 2.)) * sin(2. * std::numbers::pi * t) *
+                          (std::pow((sin(2. * std::numbers::pi * x)), 2.))) /
+                          5. +
+                      ((std::pow(std::numbers::pi, 2.)) * cos(2. * std::numbers::pi * x) *
+                          cos(2. * std::numbers::pi * (t + 1. / 4.)) *
+                          (cos(2. * std::numbers::pi * x) - 1.)) /
+                          5. +
+                      ((std::pow(std::numbers::pi, 2.)) *
+                          (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                          (std::pow((sin(2. * std::numbers::pi * x) *
+                                            sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                            (cos(2. * std::numbers::pi * x) - 1.) -
+                                        20.),
+                              2.)) *
+                          ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                          (std::pow((cos(2. * std::numbers::pi * x) -
+                                        2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                              2.))) /
+                          40000.)) /
+              ((std::pow(std::numbers::pi, 2.)) * (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                      (std::pow((cos(2. * std::numbers::pi * x) -
+                                    2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
                           2.)) +
                   100.) +
-          ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
+          ((std::pow(std::numbers::pi, 2.)) * (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
               (std::pow(
-                  (sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) * (cos(2. * M_PI * x) - 1.) -
+                  (sin(2. * std::numbers::pi * x) * sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                          (cos(2. * std::numbers::pi * x) - 1.) -
                       20.),
                   2.)) *
-              ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-              (std::pow(
-                  (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.), 2.))) /
-              (200. * ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                              (std::pow((cos(2. * M_PI * x) -
-                                            2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                                  2.)) +
-                          100.)) +
-          ((std::pow(M_PI, 2.)) * cos(2. * M_PI * t) * sin(M_PI * x) * sin(3. * M_PI * x) *
-              sin(2. * M_PI * (t + 1. / 4.)) * ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-              (2. * cos(2. * M_PI * t) * cos(M_PI * x) * (std::pow((sin(M_PI * x)), 3.)) + 10.) *
-              (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.) *
-              (2. * cos(2. * M_PI * t) * cos(M_PI * x) * sin(M_PI * x) -
-                  2. * cos(2. * M_PI * t) * (std::pow((cos(M_PI * x)), 3.)) * sin(M_PI * x) +
+              ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+              (std::pow((cos(2. * std::numbers::pi * x) -
+                            2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                  2.))) /
+              (200. *
+                  ((std::pow(std::numbers::pi, 2.)) *
+                          (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                          (std::pow((cos(2. * std::numbers::pi * x) -
+                                        2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                              2.)) +
+                      100.)) +
+          ((std::pow(std::numbers::pi, 2.)) * cos(2. * std::numbers::pi * t) *
+              sin(std::numbers::pi * x) * sin(3. * std::numbers::pi * x) *
+              sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+              ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+              (2. * cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                      (std::pow((sin(std::numbers::pi * x)), 3.)) +
+                  10.) *
+              (cos(2. * std::numbers::pi * x) -
+                  2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.) *
+              (2. * cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                      sin(std::numbers::pi * x) -
+                  2. * cos(2. * std::numbers::pi * t) *
+                      (std::pow((cos(std::numbers::pi * x)), 3.)) * sin(std::numbers::pi * x) +
                   10.)) /
-              (25. * ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                             (std::pow((cos(2. * M_PI * x) -
-                                           2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                                 2.)) +
-                         100.)));
+              (25. *
+                  ((std::pow(std::numbers::pi, 2.)) *
+                          (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                          (std::pow((cos(2. * std::numbers::pi * x) -
+                                        2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                              2.)) +
+                      100.)));
   v_ex(0) =
-      (((7. * (std::pow((cos(2. * M_PI * t)), 2.))) / 3. - 8. / 3.) *
-          (std::pow(
-              (cos(2. * M_PI * t) * cos(M_PI * x) * (std::pow((sin(M_PI * x)), 3.)) + 5.), 3.))) /
+      (((7. * (std::pow((cos(2. * std::numbers::pi * t)), 2.))) / 3. - 8. / 3.) *
+          (std::pow((cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                            (std::pow((sin(std::numbers::pi * x)), 3.)) +
+                        5.),
+              3.))) /
           125. -
       2. * y *
-          ((((7. * (std::pow((cos(2. * M_PI * t)), 2.))) / 2. - 4.) *
-               (std::pow(
-                   (cos(2. * M_PI * t) * cos(M_PI * x) * (std::pow((sin(M_PI * x)), 3.)) + 5.),
+          ((((7. * (std::pow((cos(2. * std::numbers::pi * t)), 2.))) / 2. - 4.) *
+               (std::pow((cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                                 (std::pow((sin(std::numbers::pi * x)), 3.)) +
+                             5.),
                    2.))) /
                   25. -
-              (std::pow(y, 2.)) * ((7. * (std::pow((cos(2. * M_PI * t)), 2.))) / 2. - 4.)) -
-      (std::pow(y, 3.)) * ((7. * (std::pow((cos(2. * M_PI * t)), 2.))) / 3. - 8. / 3.);
+              (std::pow(y, 2.)) *
+                  ((7. * (std::pow((cos(2. * std::numbers::pi * t)), 2.))) / 2. - 4.)) -
+      (std::pow(y, 3.)) * ((7. * (std::pow((cos(2. * std::numbers::pi * t)), 2.))) / 3. - 8. / 3.);
   v_ex(1) =
-      -(M_PI * sin(2. * M_PI * x) * cos(2. * M_PI * (t + 1. / 4.)) * (cos(2. * M_PI * x) - 1.)) /
+      -(std::numbers::pi * sin(2. * std::numbers::pi * x) *
+          cos(2. * std::numbers::pi * (t + 1. / 4.)) * (cos(2. * std::numbers::pi * x) - 1.)) /
           10. -
-      y * (7. * (std::pow((sin(2. * M_PI * (t + 1. / 4.))), 2.)) - 8.) *
-          ((M_PI * (std::pow((sin(2. * M_PI * x)), 2.)) * sin(2. * M_PI * (t + 1. / 4.))) / 10. -
-              (M_PI * cos(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                  (cos(2. * M_PI * x) - 1.)) /
+      y * (7. * (std::pow((sin(2. * std::numbers::pi * (t + 1. / 4.))), 2.)) - 8.) *
+          ((std::numbers::pi * (std::pow((sin(2. * std::numbers::pi * x)), 2.)) *
+               sin(2. * std::numbers::pi * (t + 1. / 4.))) /
+                  10. -
+              (std::numbers::pi * cos(2. * std::numbers::pi * x) *
+                  sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                  (cos(2. * std::numbers::pi * x) - 1.)) /
                   10.) *
-          ((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) * (cos(2. * M_PI * x) - 1.)) / 20. -
+          ((sin(2. * std::numbers::pi * x) * sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+               (cos(2. * std::numbers::pi * x) - 1.)) /
+                  20. -
               1.) *
           (y +
-              (sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) * (cos(2. * M_PI * x) - 1.)) /
+              (sin(2. * std::numbers::pi * x) * sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                  (cos(2. * std::numbers::pi * x) - 1.)) /
                   20. -
               1.);
 
@@ -2610,3754 +2842,4959 @@ double FLD::WeaklyCompressibleEtienneFSIFluidForceFunction::evaluate(
   f_r_ex = 0.;
   f_w_ex(0) =
       (r0 * (2. * y *
-                    ((14. * M_PI * cos(2. * M_PI * t) * sin(2. * M_PI * t) *
-                         (std::pow(
-                             (cos(2. * M_PI * t) * cos(M_PI * x) * (std::pow((sin(M_PI * x)), 3.)) +
-                                 5.),
+                    ((14. * std::numbers::pi * cos(2. * std::numbers::pi * t) *
+                         sin(2. * std::numbers::pi * t) *
+                         (std::pow((cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                                           (std::pow((sin(std::numbers::pi * x)), 3.)) +
+                                       5.),
                              2.))) /
                             25. -
-                        14. * M_PI * (std::pow(y, 2.)) * cos(2. * M_PI * t) * sin(2. * M_PI * t) +
-                        (4. * M_PI * cos(M_PI * x) * sin(2. * M_PI * t) *
-                            (std::pow((sin(M_PI * x)), 3.)) *
-                            ((7. * (std::pow((cos(2. * M_PI * t)), 2.))) / 2. - 4.) *
-                            (cos(2. * M_PI * t) * cos(M_PI * x) * (std::pow((sin(M_PI * x)), 3.)) +
+                        14. * std::numbers::pi * (std::pow(y, 2.)) *
+                            cos(2. * std::numbers::pi * t) * sin(2. * std::numbers::pi * t) +
+                        (4. * std::numbers::pi * cos(std::numbers::pi * x) *
+                            sin(2. * std::numbers::pi * t) *
+                            (std::pow((sin(std::numbers::pi * x)), 3.)) *
+                            ((7. * (std::pow((cos(2. * std::numbers::pi * t)), 2.))) / 2. - 4.) *
+                            (cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                                    (std::pow((sin(std::numbers::pi * x)), 3.)) +
                                 5.)) /
                             25.) +
-                (28. * M_PI * (std::pow(y, 3.)) * cos(2. * M_PI * t) * sin(2. * M_PI * t)) / 3. -
-                (28. * M_PI * cos(2. * M_PI * t) * sin(2. * M_PI * t) *
-                    (std::pow(
-                        (cos(2. * M_PI * t) * cos(M_PI * x) * (std::pow((sin(M_PI * x)), 3.)) + 5.),
+                (28. * std::numbers::pi * (std::pow(y, 3.)) * cos(2. * std::numbers::pi * t) *
+                    sin(2. * std::numbers::pi * t)) /
+                    3. -
+                (28. * std::numbers::pi * cos(2. * std::numbers::pi * t) *
+                    sin(2. * std::numbers::pi * t) *
+                    (std::pow((cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                                      (std::pow((sin(std::numbers::pi * x)), 3.)) +
+                                  5.),
                         3.))) /
                     375. -
-                (6. * M_PI * cos(M_PI * x) * sin(2. * M_PI * t) * (std::pow((sin(M_PI * x)), 3.)) *
-                    ((7. * (std::pow((cos(2. * M_PI * t)), 2.))) / 3. - 8. / 3.) *
-                    (std::pow(
-                        (cos(2. * M_PI * t) * cos(M_PI * x) * (std::pow((sin(M_PI * x)), 3.)) + 5.),
+                (6. * std::numbers::pi * cos(std::numbers::pi * x) *
+                    sin(2. * std::numbers::pi * t) * (std::pow((sin(std::numbers::pi * x)), 3.)) *
+                    ((7. * (std::pow((cos(2. * std::numbers::pi * t)), 2.))) / 3. - 8. / 3.) *
+                    (std::pow((cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                                      (std::pow((sin(std::numbers::pi * x)), 3.)) +
+                                  5.),
                         2.))) /
                     125.) +
-          (r0 * ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-              ((M_PI * sin(2. * M_PI * x) * cos(2. * M_PI * (t + 1. / 4.)) *
-                   (cos(2. * M_PI * x) - 1.)) /
+          (r0 * ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+              ((std::numbers::pi * sin(2. * std::numbers::pi * x) *
+                   cos(2. * std::numbers::pi * (t + 1. / 4.)) *
+                   (cos(2. * std::numbers::pi * x) - 1.)) /
                       10. +
-                  (M_PI * y * cos(2. * M_PI * t) *
-                      ((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                           (cos(2. * M_PI * x) - 1.)) /
+                  (std::numbers::pi * y * cos(2. * std::numbers::pi * t) *
+                      ((sin(2. * std::numbers::pi * x) *
+                           sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                           (cos(2. * std::numbers::pi * x) - 1.)) /
                               20. -
                           1.) *
-                      ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                      (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.) *
+                      ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                      (cos(2. * std::numbers::pi * x) -
+                          2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.) *
                       (y +
-                          (sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                              (cos(2. * M_PI * x) - 1.)) /
+                          (sin(2. * std::numbers::pi * x) *
+                              sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                              (cos(2. * std::numbers::pi * x) - 1.)) /
                               20. -
                           1.)) /
                       10.) *
-              ((std::pow((cos(2. * M_PI * t)), 2.)) * (std::pow((cos(M_PI * x)), 2.)) *
-                      (std::pow((sin(M_PI * x)), 6.)) -
+              ((std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                      (std::pow((cos(std::numbers::pi * x)), 2.)) *
+                      (std::pow((sin(std::numbers::pi * x)), 6.)) -
                   50. * (std::pow(y, 2.)) +
-                  10. * cos(2. * M_PI * t) * cos(M_PI * x) * (std::pow((sin(M_PI * x)), 3.)) +
+                  10. * cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                      (std::pow((sin(std::numbers::pi * x)), 3.)) +
                   25.)) /
               25. -
-          (M_PI * r0 * cos(2. * M_PI * t) * (7. * cos(4. * M_PI * t) - 9.) *
-              (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.) *
+          (std::numbers::pi * r0 * cos(2. * std::numbers::pi * t) *
+              (7. * cos(4. * std::numbers::pi * t) - 9.) *
+              (cos(2. * std::numbers::pi * x) -
+                  2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.) *
               (2. * y *
-                      ((((7. * (std::pow((cos(2. * M_PI * t)), 2.))) / 2. - 4.) *
-                           (std::pow((cos(2. * M_PI * t) * cos(M_PI * x) *
-                                             (std::pow((sin(M_PI * x)), 3.)) +
+                      ((((7. * (std::pow((cos(2. * std::numbers::pi * t)), 2.))) / 2. - 4.) *
+                           (std::pow((cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                                             (std::pow((sin(std::numbers::pi * x)), 3.)) +
                                          5.),
                                2.))) /
                               25. -
                           (std::pow(y, 2.)) *
-                              ((7. * (std::pow((cos(2. * M_PI * t)), 2.))) / 2. - 4.)) -
-                  (((7. * (std::pow((cos(2. * M_PI * t)), 2.))) / 3. - 8. / 3.) *
-                      (std::pow(
-                          (cos(2. * M_PI * t) * cos(M_PI * x) * (std::pow((sin(M_PI * x)), 3.)) +
-                              5.),
+                              ((7. * (std::pow((cos(2. * std::numbers::pi * t)), 2.))) / 2. - 4.)) -
+                  (((7. * (std::pow((cos(2. * std::numbers::pi * t)), 2.))) / 3. - 8. / 3.) *
+                      (std::pow((cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                                        (std::pow((sin(std::numbers::pi * x)), 3.)) +
+                                    5.),
                           3.))) /
                       125. +
                   (std::pow(y, 3.)) *
-                      ((7. * (std::pow((cos(2. * M_PI * t)), 2.))) / 3. - 8. / 3.)) *
-              (cos(2. * M_PI * t) * sin(2. * M_PI * x) -
-                  cos(2. * M_PI * t) * cos(2. * M_PI * x) * sin(2. * M_PI * x) + 20.) *
-              (40. * y - cos(2. * M_PI * t) * sin(2. * M_PI * x) +
-                  cos(2. * M_PI * t) * cos(2. * M_PI * x) * sin(2. * M_PI * x) - 20.)) /
+                      ((7. * (std::pow((cos(2. * std::numbers::pi * t)), 2.))) / 3. - 8. / 3.)) *
+              (cos(2. * std::numbers::pi * t) * sin(2. * std::numbers::pi * x) -
+                  cos(2. * std::numbers::pi * t) * cos(2. * std::numbers::pi * x) *
+                      sin(2. * std::numbers::pi * x) +
+                  20.) *
+              (40. * y - cos(2. * std::numbers::pi * t) * sin(2. * std::numbers::pi * x) +
+                  cos(2. * std::numbers::pi * t) * cos(2. * std::numbers::pi * x) *
+                      sin(2. * std::numbers::pi * x) -
+                  20.)) /
               8000. -
-          (2. * M_PI * r0 * cos(2. * M_PI * t) * (std::pow((sin(M_PI * x)), 2.)) *
-              (7. * (std::pow((cos(2. * M_PI * t)), 2.)) - 8.) *
-              (4. * (std::pow((cos(M_PI * x)), 2.)) - 1.) *
-              (cos(2. * M_PI * t) * cos(M_PI * x) * (std::pow((sin(M_PI * x)), 3.)) + 5.) *
-              (cos(2. * M_PI * t) * cos(M_PI * x) * (std::pow((sin(M_PI * x)), 3.)) - 10. * y +
+          (2. * std::numbers::pi * r0 * cos(2. * std::numbers::pi * t) *
+              (std::pow((sin(std::numbers::pi * x)), 2.)) *
+              (7. * (std::pow((cos(2. * std::numbers::pi * t)), 2.)) - 8.) *
+              (4. * (std::pow((cos(std::numbers::pi * x)), 2.)) - 1.) *
+              (cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                      (std::pow((sin(std::numbers::pi * x)), 3.)) +
                   5.) *
+              (cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                      (std::pow((sin(std::numbers::pi * x)), 3.)) -
+                  10. * y + 5.) *
               (2. * y *
-                      ((((7. * (std::pow((cos(2. * M_PI * t)), 2.))) / 2. - 4.) *
-                           (std::pow((cos(2. * M_PI * t) * cos(M_PI * x) *
-                                             (std::pow((sin(M_PI * x)), 3.)) +
+                      ((((7. * (std::pow((cos(2. * std::numbers::pi * t)), 2.))) / 2. - 4.) *
+                           (std::pow((cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                                             (std::pow((sin(std::numbers::pi * x)), 3.)) +
                                          5.),
                                2.))) /
                               25. -
                           (std::pow(y, 2.)) *
-                              ((7. * (std::pow((cos(2. * M_PI * t)), 2.))) / 2. - 4.)) -
-                  (((7. * (std::pow((cos(2. * M_PI * t)), 2.))) / 3. - 8. / 3.) *
-                      (std::pow(
-                          (cos(2. * M_PI * t) * cos(M_PI * x) * (std::pow((sin(M_PI * x)), 3.)) +
-                              5.),
+                              ((7. * (std::pow((cos(2. * std::numbers::pi * t)), 2.))) / 2. - 4.)) -
+                  (((7. * (std::pow((cos(2. * std::numbers::pi * t)), 2.))) / 3. - 8. / 3.) *
+                      (std::pow((cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                                        (std::pow((sin(std::numbers::pi * x)), 3.)) +
+                                    5.),
                           3.))) /
                       125. +
                   (std::pow(y, 3.)) *
-                      ((7. * (std::pow((cos(2. * M_PI * t)), 2.))) / 3. - 8. / 3.))) /
+                      ((7. * (std::pow((cos(2. * std::numbers::pi * t)), 2.))) / 3. - 8. / 3.))) /
               125.) +
       ((5. * E *
-           (5. * cos(2. * M_PI * t) * cos(2. * M_PI * x) - 3. * M_PI * cos(2. * M_PI * t) +
-               6. * M_PI * cos(2. * M_PI * t) * (std::pow((cos(2. * M_PI * x)), 2.)) -
-               3. * M_PI * cos(2. * M_PI * t) * cos(2. * M_PI * x) + 30.) *
-           (12. * y * ((7. * (std::pow((cos(2. * M_PI * t)), 2.))) / 2. - 4.) -
-               6. * y * ((7. * (std::pow((cos(2. * M_PI * t)), 2.))) / 3. - 8. / 3.) +
-               ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                   ((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                        (cos(2. * M_PI * x) - 1.)) /
+           (5. * cos(2. * std::numbers::pi * t) * cos(2. * std::numbers::pi * x) -
+               3. * std::numbers::pi * cos(2. * std::numbers::pi * t) +
+               6. * std::numbers::pi * cos(2. * std::numbers::pi * t) *
+                   (std::pow((cos(2. * std::numbers::pi * x)), 2.)) -
+               3. * std::numbers::pi * cos(2. * std::numbers::pi * t) *
+                   cos(2. * std::numbers::pi * x) +
+               30.) *
+           (12. * y * ((7. * (std::pow((cos(2. * std::numbers::pi * t)), 2.))) / 2. - 4.) -
+               6. * y * ((7. * (std::pow((cos(2. * std::numbers::pi * t)), 2.))) / 3. - 8. / 3.) +
+               ((std::pow(std::numbers::pi, 2.)) *
+                   (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                   ((sin(2. * std::numbers::pi * x) * sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                        (cos(2. * std::numbers::pi * x) - 1.)) /
                            20. -
                        1.) *
-                   ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                   (std::pow((cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
+                   ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                   (std::pow((cos(2. * std::numbers::pi * x) -
+                                 2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
                        2.))) /
                    100. +
-               ((std::pow(M_PI, 2.)) * y * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                   ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                   (std::pow((cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
+               ((std::pow(std::numbers::pi, 2.)) * y *
+                   (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                   ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                   (std::pow((cos(2. * std::numbers::pi * x) -
+                                 2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
                        2.))) /
                    100. +
-               ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                   ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                   (std::pow(
-                       (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.), 2.)) *
+               ((std::pow(std::numbers::pi, 2.)) *
+                   (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                   ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                   (std::pow((cos(2. * std::numbers::pi * x) -
+                                 2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                       2.)) *
                    (y +
-                       (sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                           (cos(2. * M_PI * x) - 1.)) /
+                       (sin(2. * std::numbers::pi * x) *
+                           sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                           (cos(2. * std::numbers::pi * x) - 1.)) /
                            20. -
                        1.)) /
                    100. -
-               ((std::pow(M_PI, 2.)) * y * cos(2. * M_PI * t) * sin(2. * M_PI * x) *
-                   ((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                        (cos(2. * M_PI * x) - 1.)) /
+               ((std::pow(std::numbers::pi, 2.)) * y * cos(2. * std::numbers::pi * t) *
+                   sin(2. * std::numbers::pi * x) *
+                   ((sin(2. * std::numbers::pi * x) * sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                        (cos(2. * std::numbers::pi * x) - 1.)) /
                            20. -
                        1.) *
-                   ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) * (4. * cos(2. * M_PI * x) - 1.)) /
+                   ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                   (4. * cos(2. * std::numbers::pi * x) - 1.)) /
                    5. -
-               ((std::pow(M_PI, 2.)) * cos(2. * M_PI * t) * sin(2. * M_PI * x) *
-                   ((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                        (cos(2. * M_PI * x) - 1.)) /
+               ((std::pow(std::numbers::pi, 2.)) * cos(2. * std::numbers::pi * t) *
+                   sin(2. * std::numbers::pi * x) *
+                   ((sin(2. * std::numbers::pi * x) * sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                        (cos(2. * std::numbers::pi * x) - 1.)) /
                            20. -
                        1.) *
-                   ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) * (4. * cos(2. * M_PI * x) - 1.) *
+                   ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                   (4. * cos(2. * std::numbers::pi * x) - 1.) *
                    (y +
-                       (sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                           (cos(2. * M_PI * x) - 1.)) /
+                       (sin(2. * std::numbers::pi * x) *
+                           sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                           (cos(2. * std::numbers::pi * x) - 1.)) /
                            20. -
                        1.)) /
                    5.)) /
               (3. * (v + 1.) *
-                  ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                          (std::pow(
-                              (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
+                  ((std::pow(std::numbers::pi, 2.)) *
+                          (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                          (std::pow((cos(2. * std::numbers::pi * x) -
+                                        2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
                               2.)) +
                       100.) *
-                  (((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                       (std::pow(
-                           (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
+                  (((std::pow(std::numbers::pi, 2.)) *
+                       (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                       (std::pow((cos(2. * std::numbers::pi * x) -
+                                     2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
                            2.)) *
-                       ((2. * ((7. * (std::pow((cos(2. * M_PI * t)), 2.))) / 2. - 4.) *
-                            (std::pow((cos(2. * M_PI * t) * cos(M_PI * x) *
-                                              (std::pow((sin(M_PI * x)), 3.)) +
+                       ((2. * ((7. * (std::pow((cos(2. * std::numbers::pi * t)), 2.))) / 2. - 4.) *
+                            (std::pow((cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                                              (std::pow((sin(std::numbers::pi * x)), 3.)) +
                                           5.),
                                 2.))) /
                                25. +
                            (3. *
-                               (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                                 (cos(2. * M_PI * x) - 1.) -
+                               (std::pow((sin(2. * std::numbers::pi * x) *
+                                                 sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                                 (cos(2. * std::numbers::pi * x) - 1.) -
                                              20.),
                                    2.)) *
-                               ((7. * cos(4. * M_PI * t)) / 6. - 3. / 2.)) /
+                               ((7. * cos(4. * std::numbers::pi * t)) / 6. - 3. / 2.)) /
                                400. -
                            (3. *
-                               (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                                 (cos(2. * M_PI * x) - 1.) -
+                               (std::pow((sin(2. * std::numbers::pi * x) *
+                                                 sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                                 (cos(2. * std::numbers::pi * x) - 1.) -
                                              20.),
                                    2.)) *
-                               ((7. * cos(4. * M_PI * t)) / 4. - 9. / 4.)) /
+                               ((7. * cos(4. * std::numbers::pi * t)) / 4. - 9. / 4.)) /
                                200. +
-                           ((std::pow(M_PI, 2.)) * sin(2. * M_PI * t) *
-                               (std::pow((sin(2. * M_PI * x)), 2.))) /
+                           ((std::pow(std::numbers::pi, 2.)) * sin(2. * std::numbers::pi * t) *
+                               (std::pow((sin(2. * std::numbers::pi * x)), 2.))) /
                                5. +
-                           ((std::pow(M_PI, 2.)) * cos(2. * M_PI * x) *
-                               cos(2. * M_PI * (t + 1. / 4.)) * (cos(2. * M_PI * x) - 1.)) /
+                           ((std::pow(std::numbers::pi, 2.)) * cos(2. * std::numbers::pi * x) *
+                               cos(2. * std::numbers::pi * (t + 1. / 4.)) *
+                               (cos(2. * std::numbers::pi * x) - 1.)) /
                                5. +
-                           ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                               (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                                 (cos(2. * M_PI * x) - 1.) -
+                           ((std::pow(std::numbers::pi, 2.)) *
+                               (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                               (std::pow((sin(2. * std::numbers::pi * x) *
+                                                 sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                                 (cos(2. * std::numbers::pi * x) - 1.) -
                                              20.),
                                    2.)) *
-                               ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                               (std::pow((cos(2. * M_PI * x) -
-                                             2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
+                               ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                               (std::pow(
+                                   (cos(2. * std::numbers::pi * x) -
+                                       2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
                                    2.))) /
                                40000.)) /
-                          ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                                  (std::pow((cos(2. * M_PI * x) -
-                                                2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                                      2.)) +
-                              100.) -
-                      (100. *
-                          ((2. * ((7. * (std::pow((cos(2. * M_PI * t)), 2.))) / 2. - 4.) *
-                               (std::pow((cos(2. * M_PI * t) * cos(M_PI * x) *
-                                                 (std::pow((sin(M_PI * x)), 3.)) +
-                                             5.),
-                                   2.))) /
-                                  25. +
-                              (3. *
-                                  (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                                    (cos(2. * M_PI * x) - 1.) -
-                                                20.),
-                                      2.)) *
-                                  ((7. * cos(4. * M_PI * t)) / 6. - 3. / 2.)) /
-                                  400. -
-                              (3. *
-                                  (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                                    (cos(2. * M_PI * x) - 1.) -
-                                                20.),
-                                      2.)) *
-                                  ((7. * cos(4. * M_PI * t)) / 4. - 9. / 4.)) /
-                                  200. +
-                              ((std::pow(M_PI, 2.)) * sin(2. * M_PI * t) *
-                                  (std::pow((sin(2. * M_PI * x)), 2.))) /
-                                  5. +
-                              ((std::pow(M_PI, 2.)) * cos(2. * M_PI * x) *
-                                  cos(2. * M_PI * (t + 1. / 4.)) * (cos(2. * M_PI * x) - 1.)) /
-                                  5. +
-                              ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                                  (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                                    (cos(2. * M_PI * x) - 1.) -
-                                                20.),
-                                      2.)) *
-                                  ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                                  (std::pow((cos(2. * M_PI * x) -
-                                                2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                                      2.))) /
-                                  40000.)) /
-                          ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                                  (std::pow((cos(2. * M_PI * x) -
-                                                2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                                      2.)) +
-                              100.) +
-                      ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                          (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                            (cos(2. * M_PI * x) - 1.) -
-                                        20.),
-                              2.)) *
-                          ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                          (std::pow(
-                              (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                              2.))) /
-                          (200. *
-                              ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                                      (std::pow((cos(2. * M_PI * x) -
-                                                    2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                                          2.)) +
-                                  100.)) +
-                      ((std::pow(M_PI, 2.)) * cos(2. * M_PI * t) * sin(M_PI * x) *
-                          sin(3. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                          ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                          (2. * cos(2. * M_PI * t) * cos(M_PI * x) *
-                                  (std::pow((sin(M_PI * x)), 3.)) +
-                              10.) *
-                          (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.) *
-                          (2. * cos(2. * M_PI * t) * cos(M_PI * x) * sin(M_PI * x) -
-                              2. * cos(2. * M_PI * t) * (std::pow((cos(M_PI * x)), 3.)) *
-                                  sin(M_PI * x) +
-                              10.)) /
-                          (25. *
-                              ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                                      (std::pow((cos(2. * M_PI * x) -
-                                                    2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                                          2.)) +
-                                  100.)))) +
-          (5. * E *
-              ((M_PI * sin(2. * M_PI * (t + 1. / 4.)) *
-                   (7. * (std::pow((sin(2. * M_PI * (t + 1. / 4.))), 2.)) - 8.) *
-                   (cos(2. * M_PI * x) - (std::pow((cos(2. * M_PI * x)), 2.)) +
-                       (std::pow((sin(2. * M_PI * x)), 2.))) *
-                   (sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) -
-                       cos(2. * M_PI * x) * sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) +
-                       20.) *
-                   (40. * y - sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) +
-                       cos(2. * M_PI * x) * sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) -
-                       20.)) /
-                      6000. -
-                  (M_PI * sin(M_PI * x) * sin(3. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                      ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                      (2. * cos(2. * M_PI * t) * cos(M_PI * x) * (std::pow((sin(M_PI * x)), 3.)) +
-                          10.) *
-                      (2. * cos(2. * M_PI * t) * cos(M_PI * x) * (std::pow((sin(M_PI * x)), 3.)) -
-                          20. * y + 10.)) /
-                      375.) *
-              (10. * M_PI * cos(2. * M_PI * t) * sin(2. * M_PI * x) -
-                  6. * (std::pow(M_PI, 2.)) * cos(2. * M_PI * t) * sin(2. * M_PI * x) +
-                  24. * (std::pow(M_PI, 2.)) * cos(2. * M_PI * t) * cos(2. * M_PI * x) *
-                      sin(2. * M_PI * x))) /
-              (3. * (v + 1.) *
-                  ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                          (std::pow(
-                              (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                              2.)) +
-                      100.) *
-                  (((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                       (std::pow(
-                           (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                           2.)) *
-                       ((2. * ((7. * (std::pow((cos(2. * M_PI * t)), 2.))) / 2. - 4.) *
-                            (std::pow((cos(2. * M_PI * t) * cos(M_PI * x) *
-                                              (std::pow((sin(M_PI * x)), 3.)) +
-                                          5.),
-                                2.))) /
-                               25. +
-                           (3. *
-                               (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                                 (cos(2. * M_PI * x) - 1.) -
-                                             20.),
-                                   2.)) *
-                               ((7. * cos(4. * M_PI * t)) / 6. - 3. / 2.)) /
-                               400. -
-                           (3. *
-                               (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                                 (cos(2. * M_PI * x) - 1.) -
-                                             20.),
-                                   2.)) *
-                               ((7. * cos(4. * M_PI * t)) / 4. - 9. / 4.)) /
-                               200. +
-                           ((std::pow(M_PI, 2.)) * sin(2. * M_PI * t) *
-                               (std::pow((sin(2. * M_PI * x)), 2.))) /
-                               5. +
-                           ((std::pow(M_PI, 2.)) * cos(2. * M_PI * x) *
-                               cos(2. * M_PI * (t + 1. / 4.)) * (cos(2. * M_PI * x) - 1.)) /
-                               5. +
-                           ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                               (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                                 (cos(2. * M_PI * x) - 1.) -
-                                             20.),
-                                   2.)) *
-                               ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                               (std::pow((cos(2. * M_PI * x) -
-                                             2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                                   2.))) /
-                               40000.)) /
-                          ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                                  (std::pow((cos(2. * M_PI * x) -
-                                                2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                                      2.)) +
-                              100.) -
-                      (100. *
-                          ((2. * ((7. * (std::pow((cos(2. * M_PI * t)), 2.))) / 2. - 4.) *
-                               (std::pow((cos(2. * M_PI * t) * cos(M_PI * x) *
-                                                 (std::pow((sin(M_PI * x)), 3.)) +
-                                             5.),
-                                   2.))) /
-                                  25. +
-                              (3. *
-                                  (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                                    (cos(2. * M_PI * x) - 1.) -
-                                                20.),
-                                      2.)) *
-                                  ((7. * cos(4. * M_PI * t)) / 6. - 3. / 2.)) /
-                                  400. -
-                              (3. *
-                                  (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                                    (cos(2. * M_PI * x) - 1.) -
-                                                20.),
-                                      2.)) *
-                                  ((7. * cos(4. * M_PI * t)) / 4. - 9. / 4.)) /
-                                  200. +
-                              ((std::pow(M_PI, 2.)) * sin(2. * M_PI * t) *
-                                  (std::pow((sin(2. * M_PI * x)), 2.))) /
-                                  5. +
-                              ((std::pow(M_PI, 2.)) * cos(2. * M_PI * x) *
-                                  cos(2. * M_PI * (t + 1. / 4.)) * (cos(2. * M_PI * x) - 1.)) /
-                                  5. +
-                              ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                                  (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                                    (cos(2. * M_PI * x) - 1.) -
-                                                20.),
-                                      2.)) *
-                                  ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                                  (std::pow((cos(2. * M_PI * x) -
-                                                2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                                      2.))) /
-                                  40000.)) /
-                          ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                                  (std::pow((cos(2. * M_PI * x) -
-                                                2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                                      2.)) +
-                              100.) +
-                      ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                          (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                            (cos(2. * M_PI * x) - 1.) -
-                                        20.),
-                              2.)) *
-                          ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                          (std::pow(
-                              (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                              2.))) /
-                          (200. *
-                              ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                                      (std::pow((cos(2. * M_PI * x) -
-                                                    2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                                          2.)) +
-                                  100.)) +
-                      ((std::pow(M_PI, 2.)) * cos(2. * M_PI * t) * sin(M_PI * x) *
-                          sin(3. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                          ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                          (2. * cos(2. * M_PI * t) * cos(M_PI * x) *
-                                  (std::pow((sin(M_PI * x)), 3.)) +
-                              10.) *
-                          (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.) *
-                          (2. * cos(2. * M_PI * t) * cos(M_PI * x) * sin(M_PI * x) -
-                              2. * cos(2. * M_PI * t) * (std::pow((cos(M_PI * x)), 3.)) *
-                                  sin(M_PI * x) +
-                              10.)) /
-                          (25. *
-                              ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                                      (std::pow((cos(2. * M_PI * x) -
-                                                    2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                                          2.)) +
-                                  100.)))) +
-          (5. * E *
-              (5. * cos(2. * M_PI * t) * cos(2. * M_PI * x) - 3. * M_PI * cos(2. * M_PI * t) +
-                  6. * M_PI * cos(2. * M_PI * t) * (std::pow((cos(2. * M_PI * x)), 2.)) -
-                  3. * M_PI * cos(2. * M_PI * t) * cos(2. * M_PI * x) + 30.) *
-              ((M_PI * sin(2. * M_PI * (t + 1. / 4.)) *
-                   (7. * (std::pow((sin(2. * M_PI * (t + 1. / 4.))), 2.)) - 8.) *
-                   (cos(2. * M_PI * x) - (std::pow((cos(2. * M_PI * x)), 2.)) +
-                       (std::pow((sin(2. * M_PI * x)), 2.))) *
-                   (2. * M_PI * cos(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) -
-                       2. * M_PI * (std::pow((cos(2. * M_PI * x)), 2.)) *
-                           sin(2. * M_PI * (t + 1. / 4.)) +
-                       2. * M_PI * (std::pow((sin(2. * M_PI * x)), 2.)) *
-                           sin(2. * M_PI * (t + 1. / 4.))) *
-                   (sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) -
-                       cos(2. * M_PI * x) * sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) +
-                       20.)) /
-                      6000. -
-                  (M_PI * sin(2. * M_PI * (t + 1. / 4.)) *
-                      (7. * (std::pow((sin(2. * M_PI * (t + 1. / 4.))), 2.)) - 8.) *
-                      (cos(2. * M_PI * x) - (std::pow((cos(2. * M_PI * x)), 2.)) +
-                          (std::pow((sin(2. * M_PI * x)), 2.))) *
-                      (2. * M_PI * cos(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) -
-                          2. * M_PI * (std::pow((cos(2. * M_PI * x)), 2.)) *
-                              sin(2. * M_PI * (t + 1. / 4.)) +
-                          2. * M_PI * (std::pow((sin(2. * M_PI * x)), 2.)) *
-                              sin(2. * M_PI * (t + 1. / 4.))) *
-                      (40. * y - sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) +
-                          cos(2. * M_PI * x) * sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) -
-                          20.)) /
-                      6000. +
-                  (M_PI * sin(2. * M_PI * (t + 1. / 4.)) *
-                      (7. * (std::pow((sin(2. * M_PI * (t + 1. / 4.))), 2.)) - 8.) *
-                      (2. * M_PI * sin(2. * M_PI * x) -
-                          8. * M_PI * cos(2. * M_PI * x) * sin(2. * M_PI * x)) *
-                      (sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) -
-                          cos(2. * M_PI * x) * sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) +
-                          20.) *
-                      (40. * y - sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) +
-                          cos(2. * M_PI * x) * sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) -
-                          20.)) /
-                      6000. -
-                  (M_PI * sin(M_PI * x) * sin(3. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                      ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                      (2. * M_PI * cos(2. * M_PI * t) * (std::pow((sin(M_PI * x)), 4.)) -
-                          6. * M_PI * cos(2. * M_PI * t) * (std::pow((cos(M_PI * x)), 2.)) *
-                              (std::pow((sin(M_PI * x)), 2.))) *
-                      (2. * cos(2. * M_PI * t) * cos(M_PI * x) * (std::pow((sin(M_PI * x)), 3.)) -
-                          20. * y + 10.)) /
-                      375. -
-                  (M_PI * sin(M_PI * x) * sin(3. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                      ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                      (2. * M_PI * cos(2. * M_PI * t) * (std::pow((sin(M_PI * x)), 4.)) -
-                          6. * M_PI * cos(2. * M_PI * t) * (std::pow((cos(M_PI * x)), 2.)) *
-                              (std::pow((sin(M_PI * x)), 2.))) *
-                      (2. * cos(2. * M_PI * t) * cos(M_PI * x) * (std::pow((sin(M_PI * x)), 3.)) +
-                          10.)) /
-                      375. +
-                  ((std::pow(M_PI, 2.)) * cos(M_PI * x) * sin(3. * M_PI * x) *
-                      sin(2. * M_PI * (t + 1. / 4.)) * ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                      (2. * cos(2. * M_PI * t) * cos(M_PI * x) * (std::pow((sin(M_PI * x)), 3.)) +
-                          10.) *
-                      (2. * cos(2. * M_PI * t) * cos(M_PI * x) * (std::pow((sin(M_PI * x)), 3.)) -
-                          20. * y + 10.)) /
-                      375. +
-                  ((std::pow(M_PI, 2.)) * cos(3. * M_PI * x) * sin(M_PI * x) *
-                      sin(2. * M_PI * (t + 1. / 4.)) * ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                      (2. * cos(2. * M_PI * t) * cos(M_PI * x) * (std::pow((sin(M_PI * x)), 3.)) +
-                          10.) *
-                      (2. * cos(2. * M_PI * t) * cos(M_PI * x) * (std::pow((sin(M_PI * x)), 3.)) -
-                          20. * y + 10.)) /
-                      125.)) /
-              (3. * (v + 1.) *
-                  ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                          (std::pow(
-                              (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                              2.)) +
-                      100.) *
-                  (((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                       (std::pow(
-                           (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                           2.)) *
-                       ((2. * ((7. * (std::pow((cos(2. * M_PI * t)), 2.))) / 2. - 4.) *
-                            (std::pow((cos(2. * M_PI * t) * cos(M_PI * x) *
-                                              (std::pow((sin(M_PI * x)), 3.)) +
-                                          5.),
-                                2.))) /
-                               25. +
-                           (3. *
-                               (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                                 (cos(2. * M_PI * x) - 1.) -
-                                             20.),
-                                   2.)) *
-                               ((7. * cos(4. * M_PI * t)) / 6. - 3. / 2.)) /
-                               400. -
-                           (3. *
-                               (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                                 (cos(2. * M_PI * x) - 1.) -
-                                             20.),
-                                   2.)) *
-                               ((7. * cos(4. * M_PI * t)) / 4. - 9. / 4.)) /
-                               200. +
-                           ((std::pow(M_PI, 2.)) * sin(2. * M_PI * t) *
-                               (std::pow((sin(2. * M_PI * x)), 2.))) /
-                               5. +
-                           ((std::pow(M_PI, 2.)) * cos(2. * M_PI * x) *
-                               cos(2. * M_PI * (t + 1. / 4.)) * (cos(2. * M_PI * x) - 1.)) /
-                               5. +
-                           ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                               (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                                 (cos(2. * M_PI * x) - 1.) -
-                                             20.),
-                                   2.)) *
-                               ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                               (std::pow((cos(2. * M_PI * x) -
-                                             2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                                   2.))) /
-                               40000.)) /
-                          ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                                  (std::pow((cos(2. * M_PI * x) -
-                                                2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                                      2.)) +
-                              100.) -
-                      (100. *
-                          ((2. * ((7. * (std::pow((cos(2. * M_PI * t)), 2.))) / 2. - 4.) *
-                               (std::pow((cos(2. * M_PI * t) * cos(M_PI * x) *
-                                                 (std::pow((sin(M_PI * x)), 3.)) +
-                                             5.),
-                                   2.))) /
-                                  25. +
-                              (3. *
-                                  (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                                    (cos(2. * M_PI * x) - 1.) -
-                                                20.),
-                                      2.)) *
-                                  ((7. * cos(4. * M_PI * t)) / 6. - 3. / 2.)) /
-                                  400. -
-                              (3. *
-                                  (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                                    (cos(2. * M_PI * x) - 1.) -
-                                                20.),
-                                      2.)) *
-                                  ((7. * cos(4. * M_PI * t)) / 4. - 9. / 4.)) /
-                                  200. +
-                              ((std::pow(M_PI, 2.)) * sin(2. * M_PI * t) *
-                                  (std::pow((sin(2. * M_PI * x)), 2.))) /
-                                  5. +
-                              ((std::pow(M_PI, 2.)) * cos(2. * M_PI * x) *
-                                  cos(2. * M_PI * (t + 1. / 4.)) * (cos(2. * M_PI * x) - 1.)) /
-                                  5. +
-                              ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                                  (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                                    (cos(2. * M_PI * x) - 1.) -
-                                                20.),
-                                      2.)) *
-                                  ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                                  (std::pow((cos(2. * M_PI * x) -
-                                                2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                                      2.))) /
-                                  40000.)) /
-                          ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                                  (std::pow((cos(2. * M_PI * x) -
-                                                2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                                      2.)) +
-                              100.) +
-                      ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                          (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                            (cos(2. * M_PI * x) - 1.) -
-                                        20.),
-                              2.)) *
-                          ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                          (std::pow(
-                              (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                              2.))) /
-                          (200. *
-                              ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                                      (std::pow((cos(2. * M_PI * x) -
-                                                    2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                                          2.)) +
-                                  100.)) +
-                      ((std::pow(M_PI, 2.)) * cos(2. * M_PI * t) * sin(M_PI * x) *
-                          sin(3. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                          ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                          (2. * cos(2. * M_PI * t) * cos(M_PI * x) *
-                                  (std::pow((sin(M_PI * x)), 3.)) +
-                              10.) *
-                          (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.) *
-                          (2. * cos(2. * M_PI * t) * cos(M_PI * x) * sin(M_PI * x) -
-                              2. * cos(2. * M_PI * t) * (std::pow((cos(M_PI * x)), 3.)) *
-                                  sin(M_PI * x) +
-                              10.)) /
-                          (25. *
-                              ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                                      (std::pow((cos(2. * M_PI * x) -
-                                                    2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                                          2.)) +
-                                  100.)))) +
-          (5. * E *
-              ((M_PI * sin(2. * M_PI * (t + 1. / 4.)) *
-                   (7. * (std::pow((sin(2. * M_PI * (t + 1. / 4.))), 2.)) - 8.) *
-                   (cos(2. * M_PI * x) - (std::pow((cos(2. * M_PI * x)), 2.)) +
-                       (std::pow((sin(2. * M_PI * x)), 2.))) *
-                   (sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) -
-                       cos(2. * M_PI * x) * sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) +
-                       20.) *
-                   (40. * y - sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) +
-                       cos(2. * M_PI * x) * sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) -
-                       20.)) /
-                      6000. -
-                  (M_PI * sin(M_PI * x) * sin(3. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                      ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                      (2. * cos(2. * M_PI * t) * cos(M_PI * x) * (std::pow((sin(M_PI * x)), 3.)) +
-                          10.) *
-                      (2. * cos(2. * M_PI * t) * cos(M_PI * x) * (std::pow((sin(M_PI * x)), 3.)) -
-                          20. * y + 10.)) /
-                      375.) *
-              (5. * cos(2. * M_PI * t) * cos(2. * M_PI * x) - 3. * M_PI * cos(2. * M_PI * t) +
-                  6. * M_PI * cos(2. * M_PI * t) * (std::pow((cos(2. * M_PI * x)), 2.)) -
-                  3. * M_PI * cos(2. * M_PI * t) * cos(2. * M_PI * x) + 30.) *
-              ((100. *
-                   ((4. * ((7. * (std::pow((cos(2. * M_PI * t)), 2.))) / 2. - 4.) *
-                        (M_PI * cos(2. * M_PI * t) * (std::pow((sin(M_PI * x)), 4.)) -
-                            3. * M_PI * cos(2. * M_PI * t) * (std::pow((cos(M_PI * x)), 2.)) *
-                                (std::pow((sin(M_PI * x)), 2.))) *
-                        (cos(2. * M_PI * t) * cos(M_PI * x) * (std::pow((sin(M_PI * x)), 3.)) +
-                            5.)) /
-                           25. +
-                       (3. *
-                           (2. * M_PI * (std::pow((sin(2. * M_PI * x)), 2.)) *
-                                   sin(2. * M_PI * (t + 1. / 4.)) -
-                               2. * M_PI * cos(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                   (cos(2. * M_PI * x) - 1.)) *
-                           (sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                   (cos(2. * M_PI * x) - 1.) -
-                               20.) *
-                           ((7. * cos(4. * M_PI * t)) / 6. - 3. / 2.)) /
-                           200. -
-                       (3. *
-                           (2. * M_PI * (std::pow((sin(2. * M_PI * x)), 2.)) *
-                                   sin(2. * M_PI * (t + 1. / 4.)) -
-                               2. * M_PI * cos(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                   (cos(2. * M_PI * x) - 1.)) *
-                           (sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                   (cos(2. * M_PI * x) - 1.) -
-                               20.) *
-                           ((7. * cos(4. * M_PI * t)) / 4. - 9. / 4.)) /
-                           100. +
-                       (2. * (std::pow(M_PI, 3.)) * cos(2. * M_PI * x) * sin(2. * M_PI * x) *
-                           cos(2. * M_PI * (t + 1. / 4.))) /
-                           5. +
-                       (2. * (std::pow(M_PI, 3.)) * sin(2. * M_PI * x) *
-                           cos(2. * M_PI * (t + 1. / 4.)) * (cos(2. * M_PI * x) - 1.)) /
-                           5. -
-                       (4. * (std::pow(M_PI, 3.)) * cos(2. * M_PI * x) * sin(2. * M_PI * t) *
-                           sin(2. * M_PI * x)) /
-                           5. +
-                       ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                           (2. * M_PI * (std::pow((sin(2. * M_PI * x)), 2.)) *
-                                   sin(2. * M_PI * (t + 1. / 4.)) -
-                               2. * M_PI * cos(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                   (cos(2. * M_PI * x) - 1.)) *
-                           (sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                   (cos(2. * M_PI * x) - 1.) -
-                               20.) *
-                           ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                           (std::pow((cos(2. * M_PI * x) -
-                                         2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                               2.))) /
-                           20000. +
-                       ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                           (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                             (cos(2. * M_PI * x) - 1.) -
-                                         20.),
-                               2.)) *
-                           ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                           (2. * M_PI * sin(2. * M_PI * x) -
-                               8. * M_PI * cos(2. * M_PI * x) * sin(2. * M_PI * x)) *
-                           (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.)) /
-                           20000.)) /
-                      ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                              (std::pow((cos(2. * M_PI * x) -
-                                            2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                                  2.)) +
-                          100.) -
-                  ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                      (std::pow(
-                          (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                          2.)) *
-                      ((4. * ((7. * (std::pow((cos(2. * M_PI * t)), 2.))) / 2. - 4.) *
-                           (M_PI * cos(2. * M_PI * t) * (std::pow((sin(M_PI * x)), 4.)) -
-                               3. * M_PI * cos(2. * M_PI * t) * (std::pow((cos(M_PI * x)), 2.)) *
-                                   (std::pow((sin(M_PI * x)), 2.))) *
-                           (cos(2. * M_PI * t) * cos(M_PI * x) * (std::pow((sin(M_PI * x)), 3.)) +
-                               5.)) /
-                              25. +
-                          (3. *
-                              (2. * M_PI * (std::pow((sin(2. * M_PI * x)), 2.)) *
-                                      sin(2. * M_PI * (t + 1. / 4.)) -
-                                  2. * M_PI * cos(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                      (cos(2. * M_PI * x) - 1.)) *
-                              (sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                      (cos(2. * M_PI * x) - 1.) -
-                                  20.) *
-                              ((7. * cos(4. * M_PI * t)) / 6. - 3. / 2.)) /
-                              200. -
-                          (3. *
-                              (2. * M_PI * (std::pow((sin(2. * M_PI * x)), 2.)) *
-                                      sin(2. * M_PI * (t + 1. / 4.)) -
-                                  2. * M_PI * cos(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                      (cos(2. * M_PI * x) - 1.)) *
-                              (sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                      (cos(2. * M_PI * x) - 1.) -
-                                  20.) *
-                              ((7. * cos(4. * M_PI * t)) / 4. - 9. / 4.)) /
-                              100. +
-                          (2. * (std::pow(M_PI, 3.)) * cos(2. * M_PI * x) * sin(2. * M_PI * x) *
-                              cos(2. * M_PI * (t + 1. / 4.))) /
-                              5. +
-                          (2. * (std::pow(M_PI, 3.)) * sin(2. * M_PI * x) *
-                              cos(2. * M_PI * (t + 1. / 4.)) * (cos(2. * M_PI * x) - 1.)) /
-                              5. -
-                          (4. * (std::pow(M_PI, 3.)) * cos(2. * M_PI * x) * sin(2. * M_PI * t) *
-                              sin(2. * M_PI * x)) /
-                              5. +
-                          ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                              (2. * M_PI * (std::pow((sin(2. * M_PI * x)), 2.)) *
-                                      sin(2. * M_PI * (t + 1. / 4.)) -
-                                  2. * M_PI * cos(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                      (cos(2. * M_PI * x) - 1.)) *
-                              (sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                      (cos(2. * M_PI * x) - 1.) -
-                                  20.) *
-                              ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                              (std::pow((cos(2. * M_PI * x) -
-                                            2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                                  2.))) /
-                              20000. +
-                          ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                              (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                                (cos(2. * M_PI * x) - 1.) -
-                                            20.),
-                                  2.)) *
-                              ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                              (2. * M_PI * sin(2. * M_PI * x) -
-                                  8. * M_PI * cos(2. * M_PI * x) * sin(2. * M_PI * x)) *
-                              (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) +
-                                  1.)) /
-                              20000.)) /
-                      ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                              (std::pow((cos(2. * M_PI * x) -
-                                            2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                                  2.)) +
-                          100.) -
-                  (2. * (std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                      (2. * M_PI * sin(2. * M_PI * x) -
-                          8. * M_PI * cos(2. * M_PI * x) * sin(2. * M_PI * x)) *
-                      (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.) *
-                      ((2. * ((7. * (std::pow((cos(2. * M_PI * t)), 2.))) / 2. - 4.) *
-                           (std::pow((cos(2. * M_PI * t) * cos(M_PI * x) *
-                                             (std::pow((sin(M_PI * x)), 3.)) +
-                                         5.),
-                               2.))) /
-                              25. +
-                          (3. *
-                              (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                                (cos(2. * M_PI * x) - 1.) -
-                                            20.),
-                                  2.)) *
-                              ((7. * cos(4. * M_PI * t)) / 6. - 3. / 2.)) /
-                              400. -
-                          (3. *
-                              (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                                (cos(2. * M_PI * x) - 1.) -
-                                            20.),
-                                  2.)) *
-                              ((7. * cos(4. * M_PI * t)) / 4. - 9. / 4.)) /
-                              200. +
-                          ((std::pow(M_PI, 2.)) * sin(2. * M_PI * t) *
-                              (std::pow((sin(2. * M_PI * x)), 2.))) /
-                              5. +
-                          ((std::pow(M_PI, 2.)) * cos(2. * M_PI * x) *
-                              cos(2. * M_PI * (t + 1. / 4.)) * (cos(2. * M_PI * x) - 1.)) /
-                              5. +
-                          ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                              (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                                (cos(2. * M_PI * x) - 1.) -
-                                            20.),
-                                  2.)) *
-                              ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                              (std::pow((cos(2. * M_PI * x) -
-                                            2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                                  2.))) /
-                              40000.)) /
-                      ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                              (std::pow((cos(2. * M_PI * x) -
-                                            2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                                  2.)) +
-                          100.) -
-                  (200. * (std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                      (2. * M_PI * sin(2. * M_PI * x) -
-                          8. * M_PI * cos(2. * M_PI * x) * sin(2. * M_PI * x)) *
-                      (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.) *
-                      ((2. * ((7. * (std::pow((cos(2. * M_PI * t)), 2.))) / 2. - 4.) *
-                           (std::pow((cos(2. * M_PI * t) * cos(M_PI * x) *
-                                             (std::pow((sin(M_PI * x)), 3.)) +
-                                         5.),
-                               2.))) /
-                              25. +
-                          (3. *
-                              (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                                (cos(2. * M_PI * x) - 1.) -
-                                            20.),
-                                  2.)) *
-                              ((7. * cos(4. * M_PI * t)) / 6. - 3. / 2.)) /
-                              400. -
-                          (3. *
-                              (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                                (cos(2. * M_PI * x) - 1.) -
-                                            20.),
-                                  2.)) *
-                              ((7. * cos(4. * M_PI * t)) / 4. - 9. / 4.)) /
-                              200. +
-                          ((std::pow(M_PI, 2.)) * sin(2. * M_PI * t) *
-                              (std::pow((sin(2. * M_PI * x)), 2.))) /
-                              5. +
-                          ((std::pow(M_PI, 2.)) * cos(2. * M_PI * x) *
-                              cos(2. * M_PI * (t + 1. / 4.)) * (cos(2. * M_PI * x) - 1.)) /
-                              5. +
-                          ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                              (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                                (cos(2. * M_PI * x) - 1.) -
-                                            20.),
-                                  2.)) *
-                              ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                              (std::pow((cos(2. * M_PI * x) -
-                                            2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                                  2.))) /
-                              40000.)) /
-                      (std::pow(
-                          ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                                  (std::pow((cos(2. * M_PI * x) -
-                                                2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                                      2.)) +
-                              100.),
-                          2.)) +
-                  (2. * (std::pow(M_PI, 4.)) * (std::pow((cos(2. * M_PI * t)), 4.)) *
-                      (2. * M_PI * sin(2. * M_PI * x) -
-                          8. * M_PI * cos(2. * M_PI * x) * sin(2. * M_PI * x)) *
-                      (std::pow(
-                          (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                          3.)) *
-                      ((2. * ((7. * (std::pow((cos(2. * M_PI * t)), 2.))) / 2. - 4.) *
-                           (std::pow((cos(2. * M_PI * t) * cos(M_PI * x) *
-                                             (std::pow((sin(M_PI * x)), 3.)) +
-                                         5.),
-                               2.))) /
-                              25. +
-                          (3. *
-                              (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                                (cos(2. * M_PI * x) - 1.) -
-                                            20.),
-                                  2.)) *
-                              ((7. * cos(4. * M_PI * t)) / 6. - 3. / 2.)) /
-                              400. -
-                          (3. *
-                              (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                                (cos(2. * M_PI * x) - 1.) -
-                                            20.),
-                                  2.)) *
-                              ((7. * cos(4. * M_PI * t)) / 4. - 9. / 4.)) /
-                              200. +
-                          ((std::pow(M_PI, 2.)) * sin(2. * M_PI * t) *
-                              (std::pow((sin(2. * M_PI * x)), 2.))) /
-                              5. +
-                          ((std::pow(M_PI, 2.)) * cos(2. * M_PI * x) *
-                              cos(2. * M_PI * (t + 1. / 4.)) * (cos(2. * M_PI * x) - 1.)) /
-                              5. +
-                          ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                              (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                                (cos(2. * M_PI * x) - 1.) -
-                                            20.),
-                                  2.)) *
-                              ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                              (std::pow((cos(2. * M_PI * x) -
-                                            2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                                  2.))) /
-                              40000.)) /
-                      (std::pow(
-                          ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                                  (std::pow((cos(2. * M_PI * x) -
-                                                2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                                      2.)) +
-                              100.),
-                          2.)) +
-                  ((std::pow(M_PI, 4.)) * (std::pow((cos(2. * M_PI * t)), 4.)) *
-                      (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                        (cos(2. * M_PI * x) - 1.) -
-                                    20.),
-                          2.)) *
-                      ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                      (2. * M_PI * sin(2. * M_PI * x) -
-                          8. * M_PI * cos(2. * M_PI * x) * sin(2. * M_PI * x)) *
-                      (std::pow(
-                          (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                          3.))) /
-                      (100. *
-                          (std::pow(
-                              ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                                      (std::pow((cos(2. * M_PI * x) -
-                                                    2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                                          2.)) +
-                                  100.),
-                              2.))) -
-                  ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                      (2. * M_PI * (std::pow((sin(2. * M_PI * x)), 2.)) *
-                              sin(2. * M_PI * (t + 1. / 4.)) -
-                          2. * M_PI * cos(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                              (cos(2. * M_PI * x) - 1.)) *
-                      (sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                              (cos(2. * M_PI * x) - 1.) -
-                          20.) *
-                      ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                      (std::pow(
-                          (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                          2.))) /
-                      (100. * ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                                      (std::pow((cos(2. * M_PI * x) -
-                                                    2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                                          2.)) +
-                                  100.)) -
-                  ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                      (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                        (cos(2. * M_PI * x) - 1.) -
-                                    20.),
-                          2.)) *
-                      ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                      (2. * M_PI * sin(2. * M_PI * x) -
-                          8. * M_PI * cos(2. * M_PI * x) * sin(2. * M_PI * x)) *
-                      (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.)) /
-                      (100. * ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                                      (std::pow((cos(2. * M_PI * x) -
-                                                    2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                                          2.)) +
-                                  100.)) -
-                  ((std::pow(M_PI, 2.)) * cos(2. * M_PI * t) * sin(M_PI * x) * sin(3. * M_PI * x) *
-                      sin(2. * M_PI * (t + 1. / 4.)) * ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                      (2. * M_PI * cos(2. * M_PI * t) * (std::pow((sin(M_PI * x)), 4.)) -
-                          6. * M_PI * cos(2. * M_PI * t) * (std::pow((cos(M_PI * x)), 2.)) *
-                              (std::pow((sin(M_PI * x)), 2.))) *
-                      (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.) *
-                      (2. * cos(2. * M_PI * t) * cos(M_PI * x) * sin(M_PI * x) -
-                          2. * cos(2. * M_PI * t) * (std::pow((cos(M_PI * x)), 3.)) *
-                              sin(M_PI * x) +
-                          10.)) /
-                      (25. * ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                                     (std::pow((cos(2. * M_PI * x) -
-                                                   2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                                         2.)) +
-                                 100.)) +
-                  ((std::pow(M_PI, 3.)) * cos(2. * M_PI * t) * cos(M_PI * x) * sin(3. * M_PI * x) *
-                      sin(2. * M_PI * (t + 1. / 4.)) * ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                      (2. * cos(2. * M_PI * t) * cos(M_PI * x) * (std::pow((sin(M_PI * x)), 3.)) +
-                          10.) *
-                      (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.) *
-                      (2. * cos(2. * M_PI * t) * cos(M_PI * x) * sin(M_PI * x) -
-                          2. * cos(2. * M_PI * t) * (std::pow((cos(M_PI * x)), 3.)) *
-                              sin(M_PI * x) +
-                          10.)) /
-                      (25. * ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                                     (std::pow((cos(2. * M_PI * x) -
-                                                   2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                                         2.)) +
-                                 100.)) +
-                  (3. * (std::pow(M_PI, 3.)) * cos(2. * M_PI * t) * cos(3. * M_PI * x) *
-                      sin(M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                      ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                      (2. * cos(2. * M_PI * t) * cos(M_PI * x) * (std::pow((sin(M_PI * x)), 3.)) +
-                          10.) *
-                      (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.) *
-                      (2. * cos(2. * M_PI * t) * cos(M_PI * x) * sin(M_PI * x) -
-                          2. * cos(2. * M_PI * t) * (std::pow((cos(M_PI * x)), 3.)) *
-                              sin(M_PI * x) +
-                          10.)) /
-                      (25. * ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                                     (std::pow((cos(2. * M_PI * x) -
-                                                   2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                                         2.)) +
-                                 100.)) +
-                  ((std::pow(M_PI, 2.)) * cos(2. * M_PI * t) * sin(M_PI * x) * sin(3. * M_PI * x) *
-                      sin(2. * M_PI * (t + 1. / 4.)) * ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                      (2. * cos(2. * M_PI * t) * cos(M_PI * x) * (std::pow((sin(M_PI * x)), 3.)) +
-                          10.) *
-                      (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.) *
-                      (2. * M_PI * cos(2. * M_PI * t) * (std::pow((cos(M_PI * x)), 2.)) -
-                          2. * M_PI * cos(2. * M_PI * t) * (std::pow((cos(M_PI * x)), 4.)) -
-                          2. * M_PI * cos(2. * M_PI * t) * (std::pow((sin(M_PI * x)), 2.)) +
-                          6. * M_PI * cos(2. * M_PI * t) * (std::pow((cos(M_PI * x)), 2.)) *
-                              (std::pow((sin(M_PI * x)), 2.)))) /
-                      (25. * ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                                     (std::pow((cos(2. * M_PI * x) -
-                                                   2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                                         2.)) +
-                                 100.)) -
-                  ((std::pow(M_PI, 2.)) * cos(2. * M_PI * t) * sin(M_PI * x) * sin(3. * M_PI * x) *
-                      sin(2. * M_PI * (t + 1. / 4.)) * ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                      (2. * M_PI * sin(2. * M_PI * x) -
-                          8. * M_PI * cos(2. * M_PI * x) * sin(2. * M_PI * x)) *
-                      (2. * cos(2. * M_PI * t) * cos(M_PI * x) * (std::pow((sin(M_PI * x)), 3.)) +
-                          10.) *
-                      (2. * cos(2. * M_PI * t) * cos(M_PI * x) * sin(M_PI * x) -
-                          2. * cos(2. * M_PI * t) * (std::pow((cos(M_PI * x)), 3.)) *
-                              sin(M_PI * x) +
-                          10.)) /
-                      (25. * ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                                     (std::pow((cos(2. * M_PI * x) -
-                                                   2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                                         2.)) +
-                                 100.)) +
-                  (2. * (std::pow(M_PI, 4.)) * (std::pow((cos(2. * M_PI * t)), 3.)) *
-                      sin(M_PI * x) * sin(3. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                      ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                      (2. * M_PI * sin(2. * M_PI * x) -
-                          8. * M_PI * cos(2. * M_PI * x) * sin(2. * M_PI * x)) *
-                      (2. * cos(2. * M_PI * t) * cos(M_PI * x) * (std::pow((sin(M_PI * x)), 3.)) +
-                          10.) *
-                      (std::pow(
-                          (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                          2.)) *
-                      (2. * cos(2. * M_PI * t) * cos(M_PI * x) * sin(M_PI * x) -
-                          2. * cos(2. * M_PI * t) * (std::pow((cos(M_PI * x)), 3.)) *
-                              sin(M_PI * x) +
-                          10.)) /
-                      (25. *
-                          (std::pow(
-                              ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                                      (std::pow((cos(2. * M_PI * x) -
-                                                    2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                                          2.)) +
-                                  100.),
-                              2.))))) /
-              (3. * (v + 1.) *
-                  ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                          (std::pow(
-                              (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                              2.)) +
-                      100.) *
-                  (std::pow(
-                      (((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                           (std::pow((cos(2. * M_PI * x) -
-                                         2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                               2.)) *
-                           ((2. *
-                                (std::pow((cos(2. * M_PI * t) * cos(M_PI * x) *
-                                                  (std::pow((sin(M_PI * x)), 3.)) +
-                                              5.),
-                                    2.)) *
-                                ((7. * (std::pow((cos(2. * M_PI * t)), 2.))) / 2. - 4.)) /
-                                   25. +
-                               (3. * ((7. * cos(4. * M_PI * t)) / 6. - 3. / 2.) *
-                                   (std::pow((sin(2. * M_PI * (t + 1. / 4.)) * sin(2. * M_PI * x) *
-                                                     (cos(2. * M_PI * x) - 1.) -
-                                                 20.),
-                                       2.))) /
-                                   400. -
-                               (3. * ((7. * cos(4. * M_PI * t)) / 4. - 9. / 4.) *
-                                   (std::pow((sin(2. * M_PI * (t + 1. / 4.)) * sin(2. * M_PI * x) *
-                                                     (cos(2. * M_PI * x) - 1.) -
-                                                 20.),
-                                       2.))) /
-                                   200. +
-                               ((std::pow(M_PI, 2.)) * sin(2. * M_PI * t) *
-                                   (std::pow((sin(2. * M_PI * x)), 2.))) /
-                                   5. +
-                               ((std::pow(M_PI, 2.)) * cos(2. * M_PI * (t + 1. / 4.)) *
-                                   cos(2. * M_PI * x) * (cos(2. * M_PI * x) - 1.)) /
-                                   5. +
-                               ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                                   ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                                   (std::pow((sin(2. * M_PI * (t + 1. / 4.)) * sin(2. * M_PI * x) *
-                                                     (cos(2. * M_PI * x) - 1.) -
-                                                 20.),
-                                       2.)) *
-                                   (std::pow((cos(2. * M_PI * x) -
-                                                 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                                       2.))) /
-                                   40000.)) /
-                              ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                                      (std::pow((cos(2. * M_PI * x) -
-                                                    2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                                          2.)) +
-                                  100.) -
-                          (100. *
-                              ((2. *
-                                   (std::pow((cos(2. * M_PI * t) * cos(M_PI * x) *
-                                                     (std::pow((sin(M_PI * x)), 3.)) +
-                                                 5.),
-                                       2.)) *
-                                   ((7. * (std::pow((cos(2. * M_PI * t)), 2.))) / 2. - 4.)) /
-                                      25. +
-                                  (3. * ((7. * cos(4. * M_PI * t)) / 6. - 3. / 2.) *
-                                      (std::pow(
-                                          (sin(2. * M_PI * (t + 1. / 4.)) * sin(2. * M_PI * x) *
-                                                  (cos(2. * M_PI * x) - 1.) -
-                                              20.),
-                                          2.))) /
-                                      400. -
-                                  (3. * ((7. * cos(4. * M_PI * t)) / 4. - 9. / 4.) *
-                                      (std::pow(
-                                          (sin(2. * M_PI * (t + 1. / 4.)) * sin(2. * M_PI * x) *
-                                                  (cos(2. * M_PI * x) - 1.) -
-                                              20.),
-                                          2.))) /
-                                      200. +
-                                  ((std::pow(M_PI, 2.)) * sin(2. * M_PI * t) *
-                                      (std::pow((sin(2. * M_PI * x)), 2.))) /
-                                      5. +
-                                  ((std::pow(M_PI, 2.)) * cos(2. * M_PI * (t + 1. / 4.)) *
-                                      cos(2. * M_PI * x) * (cos(2. * M_PI * x) - 1.)) /
-                                      5. +
-                                  ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                                      ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                                      (std::pow(
-                                          (sin(2. * M_PI * (t + 1. / 4.)) * sin(2. * M_PI * x) *
-                                                  (cos(2. * M_PI * x) - 1.) -
-                                              20.),
-                                          2.)) *
-                                      (std::pow((cos(2. * M_PI * x) -
-                                                    2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                                          2.))) /
-                                      40000.)) /
-                              ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                                      (std::pow((cos(2. * M_PI * x) -
-                                                    2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                                          2.)) +
-                                  100.) +
-                          ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                              ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                              (std::pow((sin(2. * M_PI * (t + 1. / 4.)) * sin(2. * M_PI * x) *
-                                                (cos(2. * M_PI * x) - 1.) -
-                                            20.),
-                                  2.)) *
-                              (std::pow((cos(2. * M_PI * x) -
-                                            2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                                  2.))) /
-                              (200. *
-                                  ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                                          (std::pow(
-                                              (cos(2. * M_PI * x) -
-                                                  2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                                              2.)) +
-                                      100.)) +
-                          ((std::pow(M_PI, 2.)) * sin(2. * M_PI * (t + 1. / 4.)) *
-                              cos(2. * M_PI * t) * sin(M_PI * x) * sin(3. * M_PI * x) *
-                              (2. * cos(2. * M_PI * t) * cos(M_PI * x) *
-                                      (std::pow((sin(M_PI * x)), 3.)) +
-                                  10.) *
-                              ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                              (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) +
-                                  1.) *
-                              (2. * cos(2. * M_PI * t) * cos(M_PI * x) * sin(M_PI * x) -
-                                  2. * cos(2. * M_PI * t) * (std::pow((cos(M_PI * x)), 3.)) *
-                                      sin(M_PI * x) +
-                                  10.)) /
-                              (25. *
-                                  ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                                          (std::pow(
-                                              (cos(2. * M_PI * x) -
-                                                  2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                                              2.)) +
-                                      100.))),
-                      2.))) -
-          (10. * E * (std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-              ((M_PI * sin(2. * M_PI * (t + 1. / 4.)) *
-                   (7. * (std::pow((sin(2. * M_PI * (t + 1. / 4.))), 2.)) - 8.) *
-                   (cos(2. * M_PI * x) - (std::pow((cos(2. * M_PI * x)), 2.)) +
-                       (std::pow((sin(2. * M_PI * x)), 2.))) *
-                   (sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) -
-                       cos(2. * M_PI * x) * sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) +
-                       20.) *
-                   (40. * y - sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) +
-                       cos(2. * M_PI * x) * sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) -
-                       20.)) /
-                      6000. -
-                  (M_PI * sin(M_PI * x) * sin(3. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                      ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                      (2. * cos(2. * M_PI * t) * cos(M_PI * x) * (std::pow((sin(M_PI * x)), 3.)) +
-                          10.) *
-                      (2. * cos(2. * M_PI * t) * cos(M_PI * x) * (std::pow((sin(M_PI * x)), 3.)) -
-                          20. * y + 10.)) /
-                      375.) *
-              (2. * M_PI * sin(2. * M_PI * x) -
-                  8. * M_PI * cos(2. * M_PI * x) * sin(2. * M_PI * x)) *
-              (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.) *
-              (5. * cos(2. * M_PI * t) * cos(2. * M_PI * x) - 3. * M_PI * cos(2. * M_PI * t) +
-                  6. * M_PI * cos(2. * M_PI * t) * (std::pow((cos(2. * M_PI * x)), 2.)) -
-                  3. * M_PI * cos(2. * M_PI * t) * cos(2. * M_PI * x) + 30.)) /
-              (3. * (v + 1.) *
-                  (std::pow(((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                                    (std::pow((cos(2. * M_PI * x) -
-                                                  2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                                        2.)) +
-                                100.),
-                      2.)) *
-                  (((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                       (std::pow(
-                           (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                           2.)) *
-                       ((2. * ((7. * (std::pow((cos(2. * M_PI * t)), 2.))) / 2. - 4.) *
-                            (std::pow((cos(2. * M_PI * t) * cos(M_PI * x) *
-                                              (std::pow((sin(M_PI * x)), 3.)) +
-                                          5.),
-                                2.))) /
-                               25. +
-                           (3. *
-                               (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                                 (cos(2. * M_PI * x) - 1.) -
-                                             20.),
-                                   2.)) *
-                               ((7. * cos(4. * M_PI * t)) / 6. - 3. / 2.)) /
-                               400. -
-                           (3. *
-                               (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                                 (cos(2. * M_PI * x) - 1.) -
-                                             20.),
-                                   2.)) *
-                               ((7. * cos(4. * M_PI * t)) / 4. - 9. / 4.)) /
-                               200. +
-                           ((std::pow(M_PI, 2.)) * sin(2. * M_PI * t) *
-                               (std::pow((sin(2. * M_PI * x)), 2.))) /
-                               5. +
-                           ((std::pow(M_PI, 2.)) * cos(2. * M_PI * x) *
-                               cos(2. * M_PI * (t + 1. / 4.)) * (cos(2. * M_PI * x) - 1.)) /
-                               5. +
-                           ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                               (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                                 (cos(2. * M_PI * x) - 1.) -
-                                             20.),
-                                   2.)) *
-                               ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                               (std::pow((cos(2. * M_PI * x) -
-                                             2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                                   2.))) /
-                               40000.)) /
-                          ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                                  (std::pow((cos(2. * M_PI * x) -
-                                                2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                                      2.)) +
-                              100.) -
-                      (100. *
-                          ((2. * ((7. * (std::pow((cos(2. * M_PI * t)), 2.))) / 2. - 4.) *
-                               (std::pow((cos(2. * M_PI * t) * cos(M_PI * x) *
-                                                 (std::pow((sin(M_PI * x)), 3.)) +
-                                             5.),
-                                   2.))) /
-                                  25. +
-                              (3. *
-                                  (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                                    (cos(2. * M_PI * x) - 1.) -
-                                                20.),
-                                      2.)) *
-                                  ((7. * cos(4. * M_PI * t)) / 6. - 3. / 2.)) /
-                                  400. -
-                              (3. *
-                                  (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                                    (cos(2. * M_PI * x) - 1.) -
-                                                20.),
-                                      2.)) *
-                                  ((7. * cos(4. * M_PI * t)) / 4. - 9. / 4.)) /
-                                  200. +
-                              ((std::pow(M_PI, 2.)) * sin(2. * M_PI * t) *
-                                  (std::pow((sin(2. * M_PI * x)), 2.))) /
-                                  5. +
-                              ((std::pow(M_PI, 2.)) * cos(2. * M_PI * x) *
-                                  cos(2. * M_PI * (t + 1. / 4.)) * (cos(2. * M_PI * x) - 1.)) /
-                                  5. +
-                              ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                                  (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                                    (cos(2. * M_PI * x) - 1.) -
-                                                20.),
-                                      2.)) *
-                                  ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                                  (std::pow((cos(2. * M_PI * x) -
-                                                2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                                      2.))) /
-                                  40000.)) /
-                          ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                                  (std::pow((cos(2. * M_PI * x) -
-                                                2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                                      2.)) +
-                              100.) +
-                      ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                          (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                            (cos(2. * M_PI * x) - 1.) -
-                                        20.),
-                              2.)) *
-                          ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                          (std::pow(
-                              (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                              2.))) /
-                          (200. *
-                              ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                                      (std::pow((cos(2. * M_PI * x) -
-                                                    2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                                          2.)) +
-                                  100.)) +
-                      ((std::pow(M_PI, 2.)) * cos(2. * M_PI * t) * sin(M_PI * x) *
-                          sin(3. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                          ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                          (2. * cos(2. * M_PI * t) * cos(M_PI * x) *
-                                  (std::pow((sin(M_PI * x)), 3.)) +
-                              10.) *
-                          (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.) *
-                          (2. * cos(2. * M_PI * t) * cos(M_PI * x) * sin(M_PI * x) -
-                              2. * cos(2. * M_PI * t) * (std::pow((cos(M_PI * x)), 3.)) *
-                                  sin(M_PI * x) +
-                              10.)) /
-                          (25. *
-                              ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                                      (std::pow((cos(2. * M_PI * x) -
-                                                    2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                                          2.)) +
-                                  100.))))) +
-      (((E * M_PI * cos(2. * M_PI * t) *
-            (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.) *
-            (5. * cos(2. * M_PI * t) * cos(2. * M_PI * x) - 3. * M_PI * cos(2. * M_PI * t) +
-                6. * M_PI * cos(2. * M_PI * t) * (std::pow((cos(2. * M_PI * x)), 2.)) -
-                3. * M_PI * cos(2. * M_PI * t) * cos(2. * M_PI * x) + 30.) *
-            ((4. * ((7. * (std::pow((cos(2. * M_PI * t)), 2.))) / 2. - 4.) *
-                 (M_PI * cos(2. * M_PI * t) * (std::pow((sin(M_PI * x)), 4.)) -
-                     3. * M_PI * cos(2. * M_PI * t) * (std::pow((cos(M_PI * x)), 2.)) *
-                         (std::pow((sin(M_PI * x)), 2.))) *
-                 (cos(2. * M_PI * t) * cos(M_PI * x) * (std::pow((sin(M_PI * x)), 3.)) + 5.)) /
-                    25. +
-                (3. *
-                    (2. * M_PI * (std::pow((sin(2. * M_PI * x)), 2.)) *
-                            sin(2. * M_PI * (t + 1. / 4.)) -
-                        2. * M_PI * cos(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                            (cos(2. * M_PI * x) - 1.)) *
-                    (sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                            (cos(2. * M_PI * x) - 1.) -
-                        20.) *
-                    ((7. * cos(4. * M_PI * t)) / 6. - 3. / 2.)) /
-                    200. -
-                (3. *
-                    (2. * M_PI * (std::pow((sin(2. * M_PI * x)), 2.)) *
-                            sin(2. * M_PI * (t + 1. / 4.)) -
-                        2. * M_PI * cos(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                            (cos(2. * M_PI * x) - 1.)) *
-                    (sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                            (cos(2. * M_PI * x) - 1.) -
-                        20.) *
-                    ((7. * cos(4. * M_PI * t)) / 4. - 9. / 4.)) /
-                    100. +
-                (2. * (std::pow(M_PI, 3.)) * cos(2. * M_PI * x) * sin(2. * M_PI * x) *
-                    cos(2. * M_PI * (t + 1. / 4.))) /
-                    5. +
-                (2. * (std::pow(M_PI, 3.)) * sin(2. * M_PI * x) * cos(2. * M_PI * (t + 1. / 4.)) *
-                    (cos(2. * M_PI * x) - 1.)) /
-                    5. -
-                (4. * (std::pow(M_PI, 3.)) * cos(2. * M_PI * x) * sin(2. * M_PI * t) *
-                    sin(2. * M_PI * x)) /
-                    5. +
-                ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                    (2. * M_PI * (std::pow((sin(2. * M_PI * x)), 2.)) *
-                            sin(2. * M_PI * (t + 1. / 4.)) -
-                        2. * M_PI * cos(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                            (cos(2. * M_PI * x) - 1.)) *
-                    (sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                            (cos(2. * M_PI * x) - 1.) -
-                        20.) *
-                    ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                    (std::pow((cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                        2.))) /
-                    20000. +
-                ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                    (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                      (cos(2. * M_PI * x) - 1.) -
-                                  20.),
-                        2.)) *
-                    ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                    (2. * M_PI * sin(2. * M_PI * x) -
-                        8. * M_PI * cos(2. * M_PI * x) * sin(2. * M_PI * x)) *
-                    (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.)) /
-                    20000.)) /
-               (6. * (v + 1.) *
-                   ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                           (std::pow((cos(2. * M_PI * x) -
-                                         2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                               2.)) +
-                       100.)) +
-           (E * M_PI * cos(2. * M_PI * t) *
-               (10. * M_PI * cos(2. * M_PI * t) * sin(2. * M_PI * x) -
-                   6. * (std::pow(M_PI, 2.)) * cos(2. * M_PI * t) * sin(2. * M_PI * x) +
-                   24. * (std::pow(M_PI, 2.)) * cos(2. * M_PI * t) * cos(2. * M_PI * x) *
-                       sin(2. * M_PI * x)) *
-               (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.) *
-               ((2. * ((7. * (std::pow((cos(2. * M_PI * t)), 2.))) / 2. - 4.) *
-                    (std::pow(
-                        (cos(2. * M_PI * t) * cos(M_PI * x) * (std::pow((sin(M_PI * x)), 3.)) + 5.),
-                        2.))) /
-                       25. +
-                   (3. *
-                       (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                         (cos(2. * M_PI * x) - 1.) -
-                                     20.),
-                           2.)) *
-                       ((7. * cos(4. * M_PI * t)) / 6. - 3. / 2.)) /
-                       400. -
-                   (3. *
-                       (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                         (cos(2. * M_PI * x) - 1.) -
-                                     20.),
-                           2.)) *
-                       ((7. * cos(4. * M_PI * t)) / 4. - 9. / 4.)) /
-                       200. +
-                   ((std::pow(M_PI, 2.)) * sin(2. * M_PI * t) *
-                       (std::pow((sin(2. * M_PI * x)), 2.))) /
-                       5. +
-                   ((std::pow(M_PI, 2.)) * cos(2. * M_PI * x) * cos(2. * M_PI * (t + 1. / 4.)) *
-                       (cos(2. * M_PI * x) - 1.)) /
-                       5. +
-                   ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                       (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                         (cos(2. * M_PI * x) - 1.) -
-                                     20.),
-                           2.)) *
-                       ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                       (std::pow(
-                           (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                           2.))) /
-                       40000.)) /
-               (6. * (v + 1.) *
-                   ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                           (std::pow((cos(2. * M_PI * x) -
-                                         2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                               2.)) +
-                       100.)) +
-           (E * M_PI * cos(2. * M_PI * t) *
-               (2. * M_PI * sin(2. * M_PI * x) -
-                   8. * M_PI * cos(2. * M_PI * x) * sin(2. * M_PI * x)) *
-               (5. * cos(2. * M_PI * t) * cos(2. * M_PI * x) - 3. * M_PI * cos(2. * M_PI * t) +
-                   6. * M_PI * cos(2. * M_PI * t) * (std::pow((cos(2. * M_PI * x)), 2.)) -
-                   3. * M_PI * cos(2. * M_PI * t) * cos(2. * M_PI * x) + 30.) *
-               ((2. * ((7. * (std::pow((cos(2. * M_PI * t)), 2.))) / 2. - 4.) *
-                    (std::pow(
-                        (cos(2. * M_PI * t) * cos(M_PI * x) * (std::pow((sin(M_PI * x)), 3.)) + 5.),
-                        2.))) /
-                       25. +
-                   (3. *
-                       (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                         (cos(2. * M_PI * x) - 1.) -
-                                     20.),
-                           2.)) *
-                       ((7. * cos(4. * M_PI * t)) / 6. - 3. / 2.)) /
-                       400. -
-                   (3. *
-                       (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                         (cos(2. * M_PI * x) - 1.) -
-                                     20.),
-                           2.)) *
-                       ((7. * cos(4. * M_PI * t)) / 4. - 9. / 4.)) /
-                       200. +
-                   ((std::pow(M_PI, 2.)) * sin(2. * M_PI * t) *
-                       (std::pow((sin(2. * M_PI * x)), 2.))) /
-                       5. +
-                   ((std::pow(M_PI, 2.)) * cos(2. * M_PI * x) * cos(2. * M_PI * (t + 1. / 4.)) *
-                       (cos(2. * M_PI * x) - 1.)) /
-                       5. +
-                   ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                       (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                         (cos(2. * M_PI * x) - 1.) -
-                                     20.),
-                           2.)) *
-                       ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                       (std::pow(
-                           (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                           2.))) /
-                       40000.)) /
-               (6. * (v + 1.) *
-                   ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                           (std::pow((cos(2. * M_PI * x) -
-                                         2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                               2.)) +
-                       100.)) +
-           (E * M_PI * cos(2. * M_PI * t) *
-               (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                 (cos(2. * M_PI * x) - 1.) -
-                             20.),
-                   2.)) *
-               ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-               (10. * M_PI * cos(2. * M_PI * t) * sin(2. * M_PI * x) -
-                   6. * (std::pow(M_PI, 2.)) * cos(2. * M_PI * t) * sin(2. * M_PI * x) +
-                   24. * (std::pow(M_PI, 2.)) * cos(2. * M_PI * t) * cos(2. * M_PI * x) *
-                       sin(2. * M_PI * x)) *
-               (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.)) /
-               (1200. * (v + 1.) *
-                   ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                           (std::pow((cos(2. * M_PI * x) -
-                                         2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                               2.)) +
-                       100.)) -
-           (E * (std::pow(M_PI, 3.)) * (std::pow((cos(2. * M_PI * t)), 3.)) *
-               (2. * M_PI * sin(2. * M_PI * x) -
-                   8. * M_PI * cos(2. * M_PI * x) * sin(2. * M_PI * x)) *
-               (std::pow(
-                   (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.), 2.)) *
-               (5. * cos(2. * M_PI * t) * cos(2. * M_PI * x) - 3. * M_PI * cos(2. * M_PI * t) +
-                   6. * M_PI * cos(2. * M_PI * t) * (std::pow((cos(2. * M_PI * x)), 2.)) -
-                   3. * M_PI * cos(2. * M_PI * t) * cos(2. * M_PI * x) + 30.) *
-               ((2. * ((7. * (std::pow((cos(2. * M_PI * t)), 2.))) / 2. - 4.) *
-                    (std::pow(
-                        (cos(2. * M_PI * t) * cos(M_PI * x) * (std::pow((sin(M_PI * x)), 3.)) + 5.),
-                        2.))) /
-                       25. +
-                   (3. *
-                       (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                         (cos(2. * M_PI * x) - 1.) -
-                                     20.),
-                           2.)) *
-                       ((7. * cos(4. * M_PI * t)) / 6. - 3. / 2.)) /
-                       400. -
-                   (3. *
-                       (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                         (cos(2. * M_PI * x) - 1.) -
-                                     20.),
-                           2.)) *
-                       ((7. * cos(4. * M_PI * t)) / 4. - 9. / 4.)) /
-                       200. +
-                   ((std::pow(M_PI, 2.)) * sin(2. * M_PI * t) *
-                       (std::pow((sin(2. * M_PI * x)), 2.))) /
-                       5. +
-                   ((std::pow(M_PI, 2.)) * cos(2. * M_PI * x) * cos(2. * M_PI * (t + 1. / 4.)) *
-                       (cos(2. * M_PI * x) - 1.)) /
-                       5. +
-                   ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                       (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                         (cos(2. * M_PI * x) - 1.) -
-                                     20.),
-                           2.)) *
-                       ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                       (std::pow(
-                           (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                           2.))) /
-                       40000.)) /
-               (3. * (v + 1.) *
-                   (std::pow(((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                                     (std::pow((cos(2. * M_PI * x) -
-                                                   2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                                         2.)) +
-                                 100.),
-                       2.))) +
-           (E * M_PI * cos(2. * M_PI * t) *
-               (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                 (cos(2. * M_PI * x) - 1.) -
-                             20.),
-                   2.)) *
-               ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-               (2. * M_PI * sin(2. * M_PI * x) -
-                   8. * M_PI * cos(2. * M_PI * x) * sin(2. * M_PI * x)) *
-               (5. * cos(2. * M_PI * t) * cos(2. * M_PI * x) - 3. * M_PI * cos(2. * M_PI * t) +
-                   6. * M_PI * cos(2. * M_PI * t) * (std::pow((cos(2. * M_PI * x)), 2.)) -
-                   3. * M_PI * cos(2. * M_PI * t) * cos(2. * M_PI * x) + 30.)) /
-               (1200. * (v + 1.) *
-                   ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                           (std::pow((cos(2. * M_PI * x) -
-                                         2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                               2.)) +
-                       100.)) -
-           (E * (std::pow(M_PI, 3.)) * (std::pow((cos(2. * M_PI * t)), 3.)) *
-               (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                 (cos(2. * M_PI * x) - 1.) -
-                             20.),
-                   2.)) *
-               ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-               (2. * M_PI * sin(2. * M_PI * x) -
-                   8. * M_PI * cos(2. * M_PI * x) * sin(2. * M_PI * x)) *
-               (std::pow(
-                   (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.), 2.)) *
-               (5. * cos(2. * M_PI * t) * cos(2. * M_PI * x) - 3. * M_PI * cos(2. * M_PI * t) +
-                   6. * M_PI * cos(2. * M_PI * t) * (std::pow((cos(2. * M_PI * x)), 2.)) -
-                   3. * M_PI * cos(2. * M_PI * t) * cos(2. * M_PI * x) + 30.)) /
-               (600. * (v + 1.) *
-                   (std::pow(((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                                     (std::pow((cos(2. * M_PI * x) -
-                                                   2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                                         2.)) +
-                                 100.),
-                       2.))) +
-           (E * M_PI * cos(2. * M_PI * t) *
-               (2. * M_PI * (std::pow((sin(2. * M_PI * x)), 2.)) * sin(2. * M_PI * (t + 1. / 4.)) -
-                   2. * M_PI * cos(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                       (cos(2. * M_PI * x) - 1.)) *
-               (sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) * (cos(2. * M_PI * x) - 1.) -
-                   20.) *
-               ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-               (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.) *
-               (5. * cos(2. * M_PI * t) * cos(2. * M_PI * x) - 3. * M_PI * cos(2. * M_PI * t) +
-                   6. * M_PI * cos(2. * M_PI * t) * (std::pow((cos(2. * M_PI * x)), 2.)) -
-                   3. * M_PI * cos(2. * M_PI * t) * cos(2. * M_PI * x) + 30.)) /
-               (600. * (v + 1.) *
-                   ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                           (std::pow((cos(2. * M_PI * x) -
-                                         2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                               2.)) +
-                       100.))) /
-              (((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                   (std::pow(
-                       (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.), 2.)) *
-                   ((2. * ((7. * (std::pow((cos(2. * M_PI * t)), 2.))) / 2. - 4.) *
-                        (std::pow(
-                            (cos(2. * M_PI * t) * cos(M_PI * x) * (std::pow((sin(M_PI * x)), 3.)) +
-                                5.),
-                            2.))) /
-                           25. +
-                       (3. *
-                           (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                             (cos(2. * M_PI * x) - 1.) -
-                                         20.),
-                               2.)) *
-                           ((7. * cos(4. * M_PI * t)) / 6. - 3. / 2.)) /
-                           400. -
-                       (3. *
-                           (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                             (cos(2. * M_PI * x) - 1.) -
-                                         20.),
-                               2.)) *
-                           ((7. * cos(4. * M_PI * t)) / 4. - 9. / 4.)) /
-                           200. +
-                       ((std::pow(M_PI, 2.)) * sin(2. * M_PI * t) *
-                           (std::pow((sin(2. * M_PI * x)), 2.))) /
-                           5. +
-                       ((std::pow(M_PI, 2.)) * cos(2. * M_PI * x) * cos(2. * M_PI * (t + 1. / 4.)) *
-                           (cos(2. * M_PI * x) - 1.)) /
-                           5. +
-                       ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                           (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                             (cos(2. * M_PI * x) - 1.) -
-                                         20.),
-                               2.)) *
-                           ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                           (std::pow((cos(2. * M_PI * x) -
-                                         2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                               2.))) /
-                           40000.)) /
-                      ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                              (std::pow((cos(2. * M_PI * x) -
-                                            2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                                  2.)) +
-                          100.) -
-                  (100. * ((2. * ((7. * (std::pow((cos(2. * M_PI * t)), 2.))) / 2. - 4.) *
-                               (std::pow((cos(2. * M_PI * t) * cos(M_PI * x) *
-                                                 (std::pow((sin(M_PI * x)), 3.)) +
-                                             5.),
-                                   2.))) /
-                                  25. +
-                              (3. *
-                                  (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                                    (cos(2. * M_PI * x) - 1.) -
-                                                20.),
-                                      2.)) *
-                                  ((7. * cos(4. * M_PI * t)) / 6. - 3. / 2.)) /
-                                  400. -
-                              (3. *
-                                  (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                                    (cos(2. * M_PI * x) - 1.) -
-                                                20.),
-                                      2.)) *
-                                  ((7. * cos(4. * M_PI * t)) / 4. - 9. / 4.)) /
-                                  200. +
-                              ((std::pow(M_PI, 2.)) * sin(2. * M_PI * t) *
-                                  (std::pow((sin(2. * M_PI * x)), 2.))) /
-                                  5. +
-                              ((std::pow(M_PI, 2.)) * cos(2. * M_PI * x) *
-                                  cos(2. * M_PI * (t + 1. / 4.)) * (cos(2. * M_PI * x) - 1.)) /
-                                  5. +
-                              ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                                  (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                                    (cos(2. * M_PI * x) - 1.) -
-                                                20.),
-                                      2.)) *
-                                  ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                                  (std::pow((cos(2. * M_PI * x) -
-                                                2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                                      2.))) /
-                                  40000.)) /
-                      ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                              (std::pow((cos(2. * M_PI * x) -
-                                            2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                                  2.)) +
-                          100.) +
-                  ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                      (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                        (cos(2. * M_PI * x) - 1.) -
-                                    20.),
-                          2.)) *
-                      ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                      (std::pow(
-                          (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                          2.))) /
-                      (200. * ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                                      (std::pow((cos(2. * M_PI * x) -
-                                                    2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                                          2.)) +
-                                  100.)) +
-                  ((std::pow(M_PI, 2.)) * cos(2. * M_PI * t) * sin(M_PI * x) * sin(3. * M_PI * x) *
-                      sin(2. * M_PI * (t + 1. / 4.)) * ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                      (2. * cos(2. * M_PI * t) * cos(M_PI * x) * (std::pow((sin(M_PI * x)), 3.)) +
-                          10.) *
-                      (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.) *
-                      (2. * cos(2. * M_PI * t) * cos(M_PI * x) * sin(M_PI * x) -
-                          2. * cos(2. * M_PI * t) * (std::pow((cos(M_PI * x)), 3.)) *
-                              sin(M_PI * x) +
-                          10.)) /
-                      (25. * ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                                     (std::pow((cos(2. * M_PI * x) -
-                                                   2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                                         2.)) +
-                                 100.))) +
-          (((E * M_PI * cos(2. * M_PI * t) *
-                (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.) *
-                (5. * cos(2. * M_PI * t) * cos(2. * M_PI * x) - 3. * M_PI * cos(2. * M_PI * t) +
-                    6. * M_PI * cos(2. * M_PI * t) * (std::pow((cos(2. * M_PI * x)), 2.)) -
-                    3. * M_PI * cos(2. * M_PI * t) * cos(2. * M_PI * x) + 30.) *
-                ((2. * ((7. * (std::pow((cos(2. * M_PI * t)), 2.))) / 2. - 4.) *
-                     (std::pow(
-                         (cos(2. * M_PI * t) * cos(M_PI * x) * (std::pow((sin(M_PI * x)), 3.)) +
-                             5.),
-                         2.))) /
-                        25. +
-                    (3. *
-                        (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                          (cos(2. * M_PI * x) - 1.) -
-                                      20.),
-                            2.)) *
-                        ((7. * cos(4. * M_PI * t)) / 6. - 3. / 2.)) /
-                        400. -
-                    (3. *
-                        (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                          (cos(2. * M_PI * x) - 1.) -
-                                      20.),
-                            2.)) *
-                        ((7. * cos(4. * M_PI * t)) / 4. - 9. / 4.)) /
-                        200. +
-                    ((std::pow(M_PI, 2.)) * sin(2. * M_PI * t) *
-                        (std::pow((sin(2. * M_PI * x)), 2.))) /
-                        5. +
-                    ((std::pow(M_PI, 2.)) * cos(2. * M_PI * x) * cos(2. * M_PI * (t + 1. / 4.)) *
-                        (cos(2. * M_PI * x) - 1.)) /
-                        5. +
-                    ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                        (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                          (cos(2. * M_PI * x) - 1.) -
-                                      20.),
-                            2.)) *
-                        ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                        (std::pow(
-                            (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                            2.))) /
-                        40000.)) /
-                   (6. * (v + 1.) *
-                       ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                               (std::pow((cos(2. * M_PI * x) -
-                                             2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                                   2.)) +
-                           100.)) +
-               (E * M_PI * cos(2. * M_PI * t) *
-                   (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                     (cos(2. * M_PI * x) - 1.) -
-                                 20.),
-                       2.)) *
-                   ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                   (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.) *
-                   (5. * cos(2. * M_PI * t) * cos(2. * M_PI * x) - 3. * M_PI * cos(2. * M_PI * t) +
-                       6. * M_PI * cos(2. * M_PI * t) * (std::pow((cos(2. * M_PI * x)), 2.)) -
-                       3. * M_PI * cos(2. * M_PI * t) * cos(2. * M_PI * x) + 30.)) /
-                   (1200. * (v + 1.) *
-                       ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                               (std::pow((cos(2. * M_PI * x) -
-                                             2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                                   2.)) +
-                           100.))) *
-              ((100. *
-                   ((4. * ((7. * (std::pow((cos(2. * M_PI * t)), 2.))) / 2. - 4.) *
-                        (M_PI * cos(2. * M_PI * t) * (std::pow((sin(M_PI * x)), 4.)) -
-                            3. * M_PI * cos(2. * M_PI * t) * (std::pow((cos(M_PI * x)), 2.)) *
-                                (std::pow((sin(M_PI * x)), 2.))) *
-                        (cos(2. * M_PI * t) * cos(M_PI * x) * (std::pow((sin(M_PI * x)), 3.)) +
-                            5.)) /
-                           25. +
-                       (3. *
-                           (2. * M_PI * (std::pow((sin(2. * M_PI * x)), 2.)) *
-                                   sin(2. * M_PI * (t + 1. / 4.)) -
-                               2. * M_PI * cos(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                   (cos(2. * M_PI * x) - 1.)) *
-                           (sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                   (cos(2. * M_PI * x) - 1.) -
-                               20.) *
-                           ((7. * cos(4. * M_PI * t)) / 6. - 3. / 2.)) /
-                           200. -
-                       (3. *
-                           (2. * M_PI * (std::pow((sin(2. * M_PI * x)), 2.)) *
-                                   sin(2. * M_PI * (t + 1. / 4.)) -
-                               2. * M_PI * cos(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                   (cos(2. * M_PI * x) - 1.)) *
-                           (sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                   (cos(2. * M_PI * x) - 1.) -
-                               20.) *
-                           ((7. * cos(4. * M_PI * t)) / 4. - 9. / 4.)) /
-                           100. +
-                       (2. * (std::pow(M_PI, 3.)) * cos(2. * M_PI * x) * sin(2. * M_PI * x) *
-                           cos(2. * M_PI * (t + 1. / 4.))) /
-                           5. +
-                       (2. * (std::pow(M_PI, 3.)) * sin(2. * M_PI * x) *
-                           cos(2. * M_PI * (t + 1. / 4.)) * (cos(2. * M_PI * x) - 1.)) /
-                           5. -
-                       (4. * (std::pow(M_PI, 3.)) * cos(2. * M_PI * x) * sin(2. * M_PI * t) *
-                           sin(2. * M_PI * x)) /
-                           5. +
-                       ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                           (2. * M_PI * (std::pow((sin(2. * M_PI * x)), 2.)) *
-                                   sin(2. * M_PI * (t + 1. / 4.)) -
-                               2. * M_PI * cos(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                   (cos(2. * M_PI * x) - 1.)) *
-                           (sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                   (cos(2. * M_PI * x) - 1.) -
-                               20.) *
-                           ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                           (std::pow((cos(2. * M_PI * x) -
-                                         2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                               2.))) /
-                           20000. +
-                       ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                           (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                             (cos(2. * M_PI * x) - 1.) -
-                                         20.),
-                               2.)) *
-                           ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                           (2. * M_PI * sin(2. * M_PI * x) -
-                               8. * M_PI * cos(2. * M_PI * x) * sin(2. * M_PI * x)) *
-                           (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.)) /
-                           20000.)) /
-                      ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                              (std::pow((cos(2. * M_PI * x) -
-                                            2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                                  2.)) +
-                          100.) -
-                  ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                      (std::pow(
-                          (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                          2.)) *
-                      ((4. * ((7. * (std::pow((cos(2. * M_PI * t)), 2.))) / 2. - 4.) *
-                           (M_PI * cos(2. * M_PI * t) * (std::pow((sin(M_PI * x)), 4.)) -
-                               3. * M_PI * cos(2. * M_PI * t) * (std::pow((cos(M_PI * x)), 2.)) *
-                                   (std::pow((sin(M_PI * x)), 2.))) *
-                           (cos(2. * M_PI * t) * cos(M_PI * x) * (std::pow((sin(M_PI * x)), 3.)) +
-                               5.)) /
-                              25. +
-                          (3. *
-                              (2. * M_PI * (std::pow((sin(2. * M_PI * x)), 2.)) *
-                                      sin(2. * M_PI * (t + 1. / 4.)) -
-                                  2. * M_PI * cos(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                      (cos(2. * M_PI * x) - 1.)) *
-                              (sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                      (cos(2. * M_PI * x) - 1.) -
-                                  20.) *
-                              ((7. * cos(4. * M_PI * t)) / 6. - 3. / 2.)) /
-                              200. -
-                          (3. *
-                              (2. * M_PI * (std::pow((sin(2. * M_PI * x)), 2.)) *
-                                      sin(2. * M_PI * (t + 1. / 4.)) -
-                                  2. * M_PI * cos(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                      (cos(2. * M_PI * x) - 1.)) *
-                              (sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                      (cos(2. * M_PI * x) - 1.) -
-                                  20.) *
-                              ((7. * cos(4. * M_PI * t)) / 4. - 9. / 4.)) /
-                              100. +
-                          (2. * (std::pow(M_PI, 3.)) * cos(2. * M_PI * x) * sin(2. * M_PI * x) *
-                              cos(2. * M_PI * (t + 1. / 4.))) /
-                              5. +
-                          (2. * (std::pow(M_PI, 3.)) * sin(2. * M_PI * x) *
-                              cos(2. * M_PI * (t + 1. / 4.)) * (cos(2. * M_PI * x) - 1.)) /
-                              5. -
-                          (4. * (std::pow(M_PI, 3.)) * cos(2. * M_PI * x) * sin(2. * M_PI * t) *
-                              sin(2. * M_PI * x)) /
-                              5. +
-                          ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                              (2. * M_PI * (std::pow((sin(2. * M_PI * x)), 2.)) *
-                                      sin(2. * M_PI * (t + 1. / 4.)) -
-                                  2. * M_PI * cos(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                      (cos(2. * M_PI * x) - 1.)) *
-                              (sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                      (cos(2. * M_PI * x) - 1.) -
-                                  20.) *
-                              ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                              (std::pow((cos(2. * M_PI * x) -
-                                            2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                                  2.))) /
-                              20000. +
-                          ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                              (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                                (cos(2. * M_PI * x) - 1.) -
-                                            20.),
-                                  2.)) *
-                              ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                              (2. * M_PI * sin(2. * M_PI * x) -
-                                  8. * M_PI * cos(2. * M_PI * x) * sin(2. * M_PI * x)) *
-                              (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) +
-                                  1.)) /
-                              20000.)) /
-                      ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                              (std::pow((cos(2. * M_PI * x) -
-                                            2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                                  2.)) +
-                          100.) -
-                  (2. * (std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                      (2. * M_PI * sin(2. * M_PI * x) -
-                          8. * M_PI * cos(2. * M_PI * x) * sin(2. * M_PI * x)) *
-                      (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.) *
-                      ((2. * ((7. * (std::pow((cos(2. * M_PI * t)), 2.))) / 2. - 4.) *
-                           (std::pow((cos(2. * M_PI * t) * cos(M_PI * x) *
-                                             (std::pow((sin(M_PI * x)), 3.)) +
-                                         5.),
-                               2.))) /
-                              25. +
-                          (3. *
-                              (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                                (cos(2. * M_PI * x) - 1.) -
-                                            20.),
-                                  2.)) *
-                              ((7. * cos(4. * M_PI * t)) / 6. - 3. / 2.)) /
-                              400. -
-                          (3. *
-                              (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                                (cos(2. * M_PI * x) - 1.) -
-                                            20.),
-                                  2.)) *
-                              ((7. * cos(4. * M_PI * t)) / 4. - 9. / 4.)) /
-                              200. +
-                          ((std::pow(M_PI, 2.)) * sin(2. * M_PI * t) *
-                              (std::pow((sin(2. * M_PI * x)), 2.))) /
-                              5. +
-                          ((std::pow(M_PI, 2.)) * cos(2. * M_PI * x) *
-                              cos(2. * M_PI * (t + 1. / 4.)) * (cos(2. * M_PI * x) - 1.)) /
-                              5. +
-                          ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                              (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                                (cos(2. * M_PI * x) - 1.) -
-                                            20.),
-                                  2.)) *
-                              ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                              (std::pow((cos(2. * M_PI * x) -
-                                            2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                                  2.))) /
-                              40000.)) /
-                      ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                              (std::pow((cos(2. * M_PI * x) -
-                                            2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                                  2.)) +
-                          100.) -
-                  (200. * (std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                      (2. * M_PI * sin(2. * M_PI * x) -
-                          8. * M_PI * cos(2. * M_PI * x) * sin(2. * M_PI * x)) *
-                      (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.) *
-                      ((2. * ((7. * (std::pow((cos(2. * M_PI * t)), 2.))) / 2. - 4.) *
-                           (std::pow((cos(2. * M_PI * t) * cos(M_PI * x) *
-                                             (std::pow((sin(M_PI * x)), 3.)) +
-                                         5.),
-                               2.))) /
-                              25. +
-                          (3. *
-                              (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                                (cos(2. * M_PI * x) - 1.) -
-                                            20.),
-                                  2.)) *
-                              ((7. * cos(4. * M_PI * t)) / 6. - 3. / 2.)) /
-                              400. -
-                          (3. *
-                              (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                                (cos(2. * M_PI * x) - 1.) -
-                                            20.),
-                                  2.)) *
-                              ((7. * cos(4. * M_PI * t)) / 4. - 9. / 4.)) /
-                              200. +
-                          ((std::pow(M_PI, 2.)) * sin(2. * M_PI * t) *
-                              (std::pow((sin(2. * M_PI * x)), 2.))) /
-                              5. +
-                          ((std::pow(M_PI, 2.)) * cos(2. * M_PI * x) *
-                              cos(2. * M_PI * (t + 1. / 4.)) * (cos(2. * M_PI * x) - 1.)) /
-                              5. +
-                          ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                              (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                                (cos(2. * M_PI * x) - 1.) -
-                                            20.),
-                                  2.)) *
-                              ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                              (std::pow((cos(2. * M_PI * x) -
-                                            2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                                  2.))) /
-                              40000.)) /
-                      (std::pow(
-                          ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                                  (std::pow((cos(2. * M_PI * x) -
-                                                2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                                      2.)) +
-                              100.),
-                          2.)) +
-                  (2. * (std::pow(M_PI, 4.)) * (std::pow((cos(2. * M_PI * t)), 4.)) *
-                      (2. * M_PI * sin(2. * M_PI * x) -
-                          8. * M_PI * cos(2. * M_PI * x) * sin(2. * M_PI * x)) *
-                      (std::pow(
-                          (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                          3.)) *
-                      ((2. * ((7. * (std::pow((cos(2. * M_PI * t)), 2.))) / 2. - 4.) *
-                           (std::pow((cos(2. * M_PI * t) * cos(M_PI * x) *
-                                             (std::pow((sin(M_PI * x)), 3.)) +
-                                         5.),
-                               2.))) /
-                              25. +
-                          (3. *
-                              (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                                (cos(2. * M_PI * x) - 1.) -
-                                            20.),
-                                  2.)) *
-                              ((7. * cos(4. * M_PI * t)) / 6. - 3. / 2.)) /
-                              400. -
-                          (3. *
-                              (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                                (cos(2. * M_PI * x) - 1.) -
-                                            20.),
-                                  2.)) *
-                              ((7. * cos(4. * M_PI * t)) / 4. - 9. / 4.)) /
-                              200. +
-                          ((std::pow(M_PI, 2.)) * sin(2. * M_PI * t) *
-                              (std::pow((sin(2. * M_PI * x)), 2.))) /
-                              5. +
-                          ((std::pow(M_PI, 2.)) * cos(2. * M_PI * x) *
-                              cos(2. * M_PI * (t + 1. / 4.)) * (cos(2. * M_PI * x) - 1.)) /
-                              5. +
-                          ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                              (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                                (cos(2. * M_PI * x) - 1.) -
-                                            20.),
-                                  2.)) *
-                              ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                              (std::pow((cos(2. * M_PI * x) -
-                                            2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                                  2.))) /
-                              40000.)) /
-                      (std::pow(
-                          ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                                  (std::pow((cos(2. * M_PI * x) -
-                                                2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                                      2.)) +
-                              100.),
-                          2.)) +
-                  ((std::pow(M_PI, 4.)) * (std::pow((cos(2. * M_PI * t)), 4.)) *
-                      (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                        (cos(2. * M_PI * x) - 1.) -
-                                    20.),
-                          2.)) *
-                      ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                      (2. * M_PI * sin(2. * M_PI * x) -
-                          8. * M_PI * cos(2. * M_PI * x) * sin(2. * M_PI * x)) *
-                      (std::pow(
-                          (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                          3.))) /
-                      (100. *
-                          (std::pow(
-                              ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                                      (std::pow((cos(2. * M_PI * x) -
-                                                    2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                                          2.)) +
-                                  100.),
-                              2.))) -
-                  ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                      (2. * M_PI * (std::pow((sin(2. * M_PI * x)), 2.)) *
-                              sin(2. * M_PI * (t + 1. / 4.)) -
-                          2. * M_PI * cos(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                              (cos(2. * M_PI * x) - 1.)) *
-                      (sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                              (cos(2. * M_PI * x) - 1.) -
-                          20.) *
-                      ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                      (std::pow(
-                          (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                          2.))) /
-                      (100. * ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                                      (std::pow((cos(2. * M_PI * x) -
-                                                    2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                                          2.)) +
-                                  100.)) -
-                  ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                      (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                        (cos(2. * M_PI * x) - 1.) -
-                                    20.),
-                          2.)) *
-                      ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                      (2. * M_PI * sin(2. * M_PI * x) -
-                          8. * M_PI * cos(2. * M_PI * x) * sin(2. * M_PI * x)) *
-                      (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.)) /
-                      (100. * ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                                      (std::pow((cos(2. * M_PI * x) -
-                                                    2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                                          2.)) +
-                                  100.)) -
-                  ((std::pow(M_PI, 2.)) * cos(2. * M_PI * t) * sin(M_PI * x) * sin(3. * M_PI * x) *
-                      sin(2. * M_PI * (t + 1. / 4.)) * ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                      (2. * M_PI * cos(2. * M_PI * t) * (std::pow((sin(M_PI * x)), 4.)) -
-                          6. * M_PI * cos(2. * M_PI * t) * (std::pow((cos(M_PI * x)), 2.)) *
-                              (std::pow((sin(M_PI * x)), 2.))) *
-                      (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.) *
-                      (2. * cos(2. * M_PI * t) * cos(M_PI * x) * sin(M_PI * x) -
-                          2. * cos(2. * M_PI * t) * (std::pow((cos(M_PI * x)), 3.)) *
-                              sin(M_PI * x) +
-                          10.)) /
-                      (25. * ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                                     (std::pow((cos(2. * M_PI * x) -
-                                                   2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                                         2.)) +
-                                 100.)) +
-                  ((std::pow(M_PI, 3.)) * cos(2. * M_PI * t) * cos(M_PI * x) * sin(3. * M_PI * x) *
-                      sin(2. * M_PI * (t + 1. / 4.)) * ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                      (2. * cos(2. * M_PI * t) * cos(M_PI * x) * (std::pow((sin(M_PI * x)), 3.)) +
-                          10.) *
-                      (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.) *
-                      (2. * cos(2. * M_PI * t) * cos(M_PI * x) * sin(M_PI * x) -
-                          2. * cos(2. * M_PI * t) * (std::pow((cos(M_PI * x)), 3.)) *
-                              sin(M_PI * x) +
-                          10.)) /
-                      (25. * ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                                     (std::pow((cos(2. * M_PI * x) -
-                                                   2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                                         2.)) +
-                                 100.)) +
-                  (3. * (std::pow(M_PI, 3.)) * cos(2. * M_PI * t) * cos(3. * M_PI * x) *
-                      sin(M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                      ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                      (2. * cos(2. * M_PI * t) * cos(M_PI * x) * (std::pow((sin(M_PI * x)), 3.)) +
-                          10.) *
-                      (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.) *
-                      (2. * cos(2. * M_PI * t) * cos(M_PI * x) * sin(M_PI * x) -
-                          2. * cos(2. * M_PI * t) * (std::pow((cos(M_PI * x)), 3.)) *
-                              sin(M_PI * x) +
-                          10.)) /
-                      (25. * ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                                     (std::pow((cos(2. * M_PI * x) -
-                                                   2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                                         2.)) +
-                                 100.)) +
-                  ((std::pow(M_PI, 2.)) * cos(2. * M_PI * t) * sin(M_PI * x) * sin(3. * M_PI * x) *
-                      sin(2. * M_PI * (t + 1. / 4.)) * ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                      (2. * cos(2. * M_PI * t) * cos(M_PI * x) * (std::pow((sin(M_PI * x)), 3.)) +
-                          10.) *
-                      (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.) *
-                      (2. * M_PI * cos(2. * M_PI * t) * (std::pow((cos(M_PI * x)), 2.)) -
-                          2. * M_PI * cos(2. * M_PI * t) * (std::pow((cos(M_PI * x)), 4.)) -
-                          2. * M_PI * cos(2. * M_PI * t) * (std::pow((sin(M_PI * x)), 2.)) +
-                          6. * M_PI * cos(2. * M_PI * t) * (std::pow((cos(M_PI * x)), 2.)) *
-                              (std::pow((sin(M_PI * x)), 2.)))) /
-                      (25. * ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                                     (std::pow((cos(2. * M_PI * x) -
-                                                   2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                                         2.)) +
-                                 100.)) -
-                  ((std::pow(M_PI, 2.)) * cos(2. * M_PI * t) * sin(M_PI * x) * sin(3. * M_PI * x) *
-                      sin(2. * M_PI * (t + 1. / 4.)) * ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                      (2. * M_PI * sin(2. * M_PI * x) -
-                          8. * M_PI * cos(2. * M_PI * x) * sin(2. * M_PI * x)) *
-                      (2. * cos(2. * M_PI * t) * cos(M_PI * x) * (std::pow((sin(M_PI * x)), 3.)) +
-                          10.) *
-                      (2. * cos(2. * M_PI * t) * cos(M_PI * x) * sin(M_PI * x) -
-                          2. * cos(2. * M_PI * t) * (std::pow((cos(M_PI * x)), 3.)) *
-                              sin(M_PI * x) +
-                          10.)) /
-                      (25. * ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                                     (std::pow((cos(2. * M_PI * x) -
-                                                   2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                                         2.)) +
-                                 100.)) +
-                  (2. * (std::pow(M_PI, 4.)) * (std::pow((cos(2. * M_PI * t)), 3.)) *
-                      sin(M_PI * x) * sin(3. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                      ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                      (2. * M_PI * sin(2. * M_PI * x) -
-                          8. * M_PI * cos(2. * M_PI * x) * sin(2. * M_PI * x)) *
-                      (2. * cos(2. * M_PI * t) * cos(M_PI * x) * (std::pow((sin(M_PI * x)), 3.)) +
-                          10.) *
-                      (std::pow(
-                          (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                          2.)) *
-                      (2. * cos(2. * M_PI * t) * cos(M_PI * x) * sin(M_PI * x) -
-                          2. * cos(2. * M_PI * t) * (std::pow((cos(M_PI * x)), 3.)) *
-                              sin(M_PI * x) +
-                          10.)) /
-                      (25. *
-                          (std::pow(
-                              ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                                      (std::pow((cos(2. * M_PI * x) -
-                                                    2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                                          2.)) +
-                                  100.),
-                              2.))))) /
-              (std::pow(
-                  (((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                       (std::pow(
-                           (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                           2.)) *
-                       ((2. *
-                            (std::pow((cos(2. * M_PI * t) * cos(M_PI * x) *
-                                              (std::pow((sin(M_PI * x)), 3.)) +
-                                          5.),
-                                2.)) *
-                            ((7. * (std::pow((cos(2. * M_PI * t)), 2.))) / 2. - 4.)) /
-                               25. +
-                           (3. * ((7. * cos(4. * M_PI * t)) / 6. - 3. / 2.) *
-                               (std::pow((sin(2. * M_PI * (t + 1. / 4.)) * sin(2. * M_PI * x) *
-                                                 (cos(2. * M_PI * x) - 1.) -
-                                             20.),
-                                   2.))) /
-                               400. -
-                           (3. * ((7. * cos(4. * M_PI * t)) / 4. - 9. / 4.) *
-                               (std::pow((sin(2. * M_PI * (t + 1. / 4.)) * sin(2. * M_PI * x) *
-                                                 (cos(2. * M_PI * x) - 1.) -
-                                             20.),
-                                   2.))) /
-                               200. +
-                           ((std::pow(M_PI, 2.)) * sin(2. * M_PI * t) *
-                               (std::pow((sin(2. * M_PI * x)), 2.))) /
-                               5. +
-                           ((std::pow(M_PI, 2.)) * cos(2. * M_PI * (t + 1. / 4.)) *
-                               cos(2. * M_PI * x) * (cos(2. * M_PI * x) - 1.)) /
-                               5. +
-                           ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                               ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                               (std::pow((sin(2. * M_PI * (t + 1. / 4.)) * sin(2. * M_PI * x) *
-                                                 (cos(2. * M_PI * x) - 1.) -
-                                             20.),
-                                   2.)) *
-                               (std::pow((cos(2. * M_PI * x) -
-                                             2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                                   2.))) /
-                               40000.)) /
-                          ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                                  (std::pow((cos(2. * M_PI * x) -
-                                                2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
+                          ((std::pow(std::numbers::pi, 2.)) *
+                                  (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                                  (std::pow(
+                                      (cos(2. * std::numbers::pi * x) -
+                                          2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) +
+                                          1.),
                                       2.)) +
                               100.) -
                       (100. *
                           ((2. *
-                               (std::pow((cos(2. * M_PI * t) * cos(M_PI * x) *
-                                                 (std::pow((sin(M_PI * x)), 3.)) +
-                                             5.),
-                                   2.)) *
-                               ((7. * (std::pow((cos(2. * M_PI * t)), 2.))) / 2. - 4.)) /
+                               ((7. * (std::pow((cos(2. * std::numbers::pi * t)), 2.))) / 2. - 4.) *
+                               (std::pow(
+                                   (cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                                           (std::pow((sin(std::numbers::pi * x)), 3.)) +
+                                       5.),
+                                   2.))) /
                                   25. +
-                              (3. * ((7. * cos(4. * M_PI * t)) / 6. - 3. / 2.) *
-                                  (std::pow((sin(2. * M_PI * (t + 1. / 4.)) * sin(2. * M_PI * x) *
-                                                    (cos(2. * M_PI * x) - 1.) -
+                              (3. *
+                                  (std::pow((sin(2. * std::numbers::pi * x) *
+                                                    sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                                    (cos(2. * std::numbers::pi * x) - 1.) -
+                                                20.),
+                                      2.)) *
+                                  ((7. * cos(4. * std::numbers::pi * t)) / 6. - 3. / 2.)) /
+                                  400. -
+                              (3. *
+                                  (std::pow((sin(2. * std::numbers::pi * x) *
+                                                    sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                                    (cos(2. * std::numbers::pi * x) - 1.) -
+                                                20.),
+                                      2.)) *
+                                  ((7. * cos(4. * std::numbers::pi * t)) / 4. - 9. / 4.)) /
+                                  200. +
+                              ((std::pow(std::numbers::pi, 2.)) * sin(2. * std::numbers::pi * t) *
+                                  (std::pow((sin(2. * std::numbers::pi * x)), 2.))) /
+                                  5. +
+                              ((std::pow(std::numbers::pi, 2.)) * cos(2. * std::numbers::pi * x) *
+                                  cos(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                  (cos(2. * std::numbers::pi * x) - 1.)) /
+                                  5. +
+                              ((std::pow(std::numbers::pi, 2.)) *
+                                  (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                                  (std::pow((sin(2. * std::numbers::pi * x) *
+                                                    sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                                    (cos(2. * std::numbers::pi * x) - 1.) -
+                                                20.),
+                                      2.)) *
+                                  ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                                  (std::pow(
+                                      (cos(2. * std::numbers::pi * x) -
+                                          2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) +
+                                          1.),
+                                      2.))) /
+                                  40000.)) /
+                          ((std::pow(std::numbers::pi, 2.)) *
+                                  (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                                  (std::pow(
+                                      (cos(2. * std::numbers::pi * x) -
+                                          2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) +
+                                          1.),
+                                      2.)) +
+                              100.) +
+                      ((std::pow(std::numbers::pi, 2.)) *
+                          (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                          (std::pow((sin(2. * std::numbers::pi * x) *
+                                            sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                            (cos(2. * std::numbers::pi * x) - 1.) -
+                                        20.),
+                              2.)) *
+                          ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                          (std::pow((cos(2. * std::numbers::pi * x) -
+                                        2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                              2.))) /
+                          (200. *
+                              ((std::pow(std::numbers::pi, 2.)) *
+                                      (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                                      (std::pow((cos(2. * std::numbers::pi * x) -
+                                                    2. * (std::pow((cos(2. * std::numbers::pi * x)),
+                                                             2.)) +
+                                                    1.),
+                                          2.)) +
+                                  100.)) +
+                      ((std::pow(std::numbers::pi, 2.)) * cos(2. * std::numbers::pi * t) *
+                          sin(std::numbers::pi * x) * sin(3. * std::numbers::pi * x) *
+                          sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                          ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                          (2. * cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                                  (std::pow((sin(std::numbers::pi * x)), 3.)) +
+                              10.) *
+                          (cos(2. * std::numbers::pi * x) -
+                              2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.) *
+                          (2. * cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                                  sin(std::numbers::pi * x) -
+                              2. * cos(2. * std::numbers::pi * t) *
+                                  (std::pow((cos(std::numbers::pi * x)), 3.)) *
+                                  sin(std::numbers::pi * x) +
+                              10.)) /
+                          (25. *
+                              ((std::pow(std::numbers::pi, 2.)) *
+                                      (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                                      (std::pow((cos(2. * std::numbers::pi * x) -
+                                                    2. * (std::pow((cos(2. * std::numbers::pi * x)),
+                                                             2.)) +
+                                                    1.),
+                                          2.)) +
+                                  100.)))) +
+          (5. * E *
+              ((std::numbers::pi * sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                   (7. * (std::pow((sin(2. * std::numbers::pi * (t + 1. / 4.))), 2.)) - 8.) *
+                   (cos(2. * std::numbers::pi * x) -
+                       (std::pow((cos(2. * std::numbers::pi * x)), 2.)) +
+                       (std::pow((sin(2. * std::numbers::pi * x)), 2.))) *
+                   (sin(2. * std::numbers::pi * x) * sin(2. * std::numbers::pi * (t + 1. / 4.)) -
+                       cos(2. * std::numbers::pi * x) * sin(2. * std::numbers::pi * x) *
+                           sin(2. * std::numbers::pi * (t + 1. / 4.)) +
+                       20.) *
+                   (40. * y -
+                       sin(2. * std::numbers::pi * x) * sin(2. * std::numbers::pi * (t + 1. / 4.)) +
+                       cos(2. * std::numbers::pi * x) * sin(2. * std::numbers::pi * x) *
+                           sin(2. * std::numbers::pi * (t + 1. / 4.)) -
+                       20.)) /
+                      6000. -
+                  (std::numbers::pi * sin(std::numbers::pi * x) * sin(3. * std::numbers::pi * x) *
+                      sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                      ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                      (2. * cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                              (std::pow((sin(std::numbers::pi * x)), 3.)) +
+                          10.) *
+                      (2. * cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                              (std::pow((sin(std::numbers::pi * x)), 3.)) -
+                          20. * y + 10.)) /
+                      375.) *
+              (10. * std::numbers::pi * cos(2. * std::numbers::pi * t) *
+                      sin(2. * std::numbers::pi * x) -
+                  6. * (std::pow(std::numbers::pi, 2.)) * cos(2. * std::numbers::pi * t) *
+                      sin(2. * std::numbers::pi * x) +
+                  24. * (std::pow(std::numbers::pi, 2.)) * cos(2. * std::numbers::pi * t) *
+                      cos(2. * std::numbers::pi * x) * sin(2. * std::numbers::pi * x))) /
+              (3. * (v + 1.) *
+                  ((std::pow(std::numbers::pi, 2.)) *
+                          (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                          (std::pow((cos(2. * std::numbers::pi * x) -
+                                        2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                              2.)) +
+                      100.) *
+                  (((std::pow(std::numbers::pi, 2.)) *
+                       (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                       (std::pow((cos(2. * std::numbers::pi * x) -
+                                     2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                           2.)) *
+                       ((2. * ((7. * (std::pow((cos(2. * std::numbers::pi * t)), 2.))) / 2. - 4.) *
+                            (std::pow((cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                                              (std::pow((sin(std::numbers::pi * x)), 3.)) +
+                                          5.),
+                                2.))) /
+                               25. +
+                           (3. *
+                               (std::pow((sin(2. * std::numbers::pi * x) *
+                                                 sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                                 (cos(2. * std::numbers::pi * x) - 1.) -
+                                             20.),
+                                   2.)) *
+                               ((7. * cos(4. * std::numbers::pi * t)) / 6. - 3. / 2.)) /
+                               400. -
+                           (3. *
+                               (std::pow((sin(2. * std::numbers::pi * x) *
+                                                 sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                                 (cos(2. * std::numbers::pi * x) - 1.) -
+                                             20.),
+                                   2.)) *
+                               ((7. * cos(4. * std::numbers::pi * t)) / 4. - 9. / 4.)) /
+                               200. +
+                           ((std::pow(std::numbers::pi, 2.)) * sin(2. * std::numbers::pi * t) *
+                               (std::pow((sin(2. * std::numbers::pi * x)), 2.))) /
+                               5. +
+                           ((std::pow(std::numbers::pi, 2.)) * cos(2. * std::numbers::pi * x) *
+                               cos(2. * std::numbers::pi * (t + 1. / 4.)) *
+                               (cos(2. * std::numbers::pi * x) - 1.)) /
+                               5. +
+                           ((std::pow(std::numbers::pi, 2.)) *
+                               (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                               (std::pow((sin(2. * std::numbers::pi * x) *
+                                                 sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                                 (cos(2. * std::numbers::pi * x) - 1.) -
+                                             20.),
+                                   2.)) *
+                               ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                               (std::pow(
+                                   (cos(2. * std::numbers::pi * x) -
+                                       2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                                   2.))) /
+                               40000.)) /
+                          ((std::pow(std::numbers::pi, 2.)) *
+                                  (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                                  (std::pow(
+                                      (cos(2. * std::numbers::pi * x) -
+                                          2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) +
+                                          1.),
+                                      2.)) +
+                              100.) -
+                      (100. *
+                          ((2. *
+                               ((7. * (std::pow((cos(2. * std::numbers::pi * t)), 2.))) / 2. - 4.) *
+                               (std::pow(
+                                   (cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                                           (std::pow((sin(std::numbers::pi * x)), 3.)) +
+                                       5.),
+                                   2.))) /
+                                  25. +
+                              (3. *
+                                  (std::pow((sin(2. * std::numbers::pi * x) *
+                                                    sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                                    (cos(2. * std::numbers::pi * x) - 1.) -
+                                                20.),
+                                      2.)) *
+                                  ((7. * cos(4. * std::numbers::pi * t)) / 6. - 3. / 2.)) /
+                                  400. -
+                              (3. *
+                                  (std::pow((sin(2. * std::numbers::pi * x) *
+                                                    sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                                    (cos(2. * std::numbers::pi * x) - 1.) -
+                                                20.),
+                                      2.)) *
+                                  ((7. * cos(4. * std::numbers::pi * t)) / 4. - 9. / 4.)) /
+                                  200. +
+                              ((std::pow(std::numbers::pi, 2.)) * sin(2. * std::numbers::pi * t) *
+                                  (std::pow((sin(2. * std::numbers::pi * x)), 2.))) /
+                                  5. +
+                              ((std::pow(std::numbers::pi, 2.)) * cos(2. * std::numbers::pi * x) *
+                                  cos(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                  (cos(2. * std::numbers::pi * x) - 1.)) /
+                                  5. +
+                              ((std::pow(std::numbers::pi, 2.)) *
+                                  (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                                  (std::pow((sin(2. * std::numbers::pi * x) *
+                                                    sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                                    (cos(2. * std::numbers::pi * x) - 1.) -
+                                                20.),
+                                      2.)) *
+                                  ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                                  (std::pow(
+                                      (cos(2. * std::numbers::pi * x) -
+                                          2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) +
+                                          1.),
+                                      2.))) /
+                                  40000.)) /
+                          ((std::pow(std::numbers::pi, 2.)) *
+                                  (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                                  (std::pow(
+                                      (cos(2. * std::numbers::pi * x) -
+                                          2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) +
+                                          1.),
+                                      2.)) +
+                              100.) +
+                      ((std::pow(std::numbers::pi, 2.)) *
+                          (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                          (std::pow((sin(2. * std::numbers::pi * x) *
+                                            sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                            (cos(2. * std::numbers::pi * x) - 1.) -
+                                        20.),
+                              2.)) *
+                          ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                          (std::pow((cos(2. * std::numbers::pi * x) -
+                                        2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                              2.))) /
+                          (200. *
+                              ((std::pow(std::numbers::pi, 2.)) *
+                                      (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                                      (std::pow((cos(2. * std::numbers::pi * x) -
+                                                    2. * (std::pow((cos(2. * std::numbers::pi * x)),
+                                                             2.)) +
+                                                    1.),
+                                          2.)) +
+                                  100.)) +
+                      ((std::pow(std::numbers::pi, 2.)) * cos(2. * std::numbers::pi * t) *
+                          sin(std::numbers::pi * x) * sin(3. * std::numbers::pi * x) *
+                          sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                          ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                          (2. * cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                                  (std::pow((sin(std::numbers::pi * x)), 3.)) +
+                              10.) *
+                          (cos(2. * std::numbers::pi * x) -
+                              2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.) *
+                          (2. * cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                                  sin(std::numbers::pi * x) -
+                              2. * cos(2. * std::numbers::pi * t) *
+                                  (std::pow((cos(std::numbers::pi * x)), 3.)) *
+                                  sin(std::numbers::pi * x) +
+                              10.)) /
+                          (25. *
+                              ((std::pow(std::numbers::pi, 2.)) *
+                                      (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                                      (std::pow((cos(2. * std::numbers::pi * x) -
+                                                    2. * (std::pow((cos(2. * std::numbers::pi * x)),
+                                                             2.)) +
+                                                    1.),
+                                          2.)) +
+                                  100.)))) +
+          (5. * E *
+              (5. * cos(2. * std::numbers::pi * t) * cos(2. * std::numbers::pi * x) -
+                  3. * std::numbers::pi * cos(2. * std::numbers::pi * t) +
+                  6. * std::numbers::pi * cos(2. * std::numbers::pi * t) *
+                      (std::pow((cos(2. * std::numbers::pi * x)), 2.)) -
+                  3. * std::numbers::pi * cos(2. * std::numbers::pi * t) *
+                      cos(2. * std::numbers::pi * x) +
+                  30.) *
+              ((std::numbers::pi * sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                   (7. * (std::pow((sin(2. * std::numbers::pi * (t + 1. / 4.))), 2.)) - 8.) *
+                   (cos(2. * std::numbers::pi * x) -
+                       (std::pow((cos(2. * std::numbers::pi * x)), 2.)) +
+                       (std::pow((sin(2. * std::numbers::pi * x)), 2.))) *
+                   (2. * std::numbers::pi * cos(2. * std::numbers::pi * x) *
+                           sin(2. * std::numbers::pi * (t + 1. / 4.)) -
+                       2. * std::numbers::pi * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) *
+                           sin(2. * std::numbers::pi * (t + 1. / 4.)) +
+                       2. * std::numbers::pi * (std::pow((sin(2. * std::numbers::pi * x)), 2.)) *
+                           sin(2. * std::numbers::pi * (t + 1. / 4.))) *
+                   (sin(2. * std::numbers::pi * x) * sin(2. * std::numbers::pi * (t + 1. / 4.)) -
+                       cos(2. * std::numbers::pi * x) * sin(2. * std::numbers::pi * x) *
+                           sin(2. * std::numbers::pi * (t + 1. / 4.)) +
+                       20.)) /
+                      6000. -
+                  (std::numbers::pi * sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                      (7. * (std::pow((sin(2. * std::numbers::pi * (t + 1. / 4.))), 2.)) - 8.) *
+                      (cos(2. * std::numbers::pi * x) -
+                          (std::pow((cos(2. * std::numbers::pi * x)), 2.)) +
+                          (std::pow((sin(2. * std::numbers::pi * x)), 2.))) *
+                      (2. * std::numbers::pi * cos(2. * std::numbers::pi * x) *
+                              sin(2. * std::numbers::pi * (t + 1. / 4.)) -
+                          2. * std::numbers::pi * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) *
+                              sin(2. * std::numbers::pi * (t + 1. / 4.)) +
+                          2. * std::numbers::pi * (std::pow((sin(2. * std::numbers::pi * x)), 2.)) *
+                              sin(2. * std::numbers::pi * (t + 1. / 4.))) *
+                      (40. * y -
+                          sin(2. * std::numbers::pi * x) *
+                              sin(2. * std::numbers::pi * (t + 1. / 4.)) +
+                          cos(2. * std::numbers::pi * x) * sin(2. * std::numbers::pi * x) *
+                              sin(2. * std::numbers::pi * (t + 1. / 4.)) -
+                          20.)) /
+                      6000. +
+                  (std::numbers::pi * sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                      (7. * (std::pow((sin(2. * std::numbers::pi * (t + 1. / 4.))), 2.)) - 8.) *
+                      (2. * std::numbers::pi * sin(2. * std::numbers::pi * x) -
+                          8. * std::numbers::pi * cos(2. * std::numbers::pi * x) *
+                              sin(2. * std::numbers::pi * x)) *
+                      (sin(2. * std::numbers::pi * x) * sin(2. * std::numbers::pi * (t + 1. / 4.)) -
+                          cos(2. * std::numbers::pi * x) * sin(2. * std::numbers::pi * x) *
+                              sin(2. * std::numbers::pi * (t + 1. / 4.)) +
+                          20.) *
+                      (40. * y -
+                          sin(2. * std::numbers::pi * x) *
+                              sin(2. * std::numbers::pi * (t + 1. / 4.)) +
+                          cos(2. * std::numbers::pi * x) * sin(2. * std::numbers::pi * x) *
+                              sin(2. * std::numbers::pi * (t + 1. / 4.)) -
+                          20.)) /
+                      6000. -
+                  (std::numbers::pi * sin(std::numbers::pi * x) * sin(3. * std::numbers::pi * x) *
+                      sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                      ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                      (2. * std::numbers::pi * cos(2. * std::numbers::pi * t) *
+                              (std::pow((sin(std::numbers::pi * x)), 4.)) -
+                          6. * std::numbers::pi * cos(2. * std::numbers::pi * t) *
+                              (std::pow((cos(std::numbers::pi * x)), 2.)) *
+                              (std::pow((sin(std::numbers::pi * x)), 2.))) *
+                      (2. * cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                              (std::pow((sin(std::numbers::pi * x)), 3.)) -
+                          20. * y + 10.)) /
+                      375. -
+                  (std::numbers::pi * sin(std::numbers::pi * x) * sin(3. * std::numbers::pi * x) *
+                      sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                      ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                      (2. * std::numbers::pi * cos(2. * std::numbers::pi * t) *
+                              (std::pow((sin(std::numbers::pi * x)), 4.)) -
+                          6. * std::numbers::pi * cos(2. * std::numbers::pi * t) *
+                              (std::pow((cos(std::numbers::pi * x)), 2.)) *
+                              (std::pow((sin(std::numbers::pi * x)), 2.))) *
+                      (2. * cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                              (std::pow((sin(std::numbers::pi * x)), 3.)) +
+                          10.)) /
+                      375. +
+                  ((std::pow(std::numbers::pi, 2.)) * cos(std::numbers::pi * x) *
+                      sin(3. * std::numbers::pi * x) * sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                      ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                      (2. * cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                              (std::pow((sin(std::numbers::pi * x)), 3.)) +
+                          10.) *
+                      (2. * cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                              (std::pow((sin(std::numbers::pi * x)), 3.)) -
+                          20. * y + 10.)) /
+                      375. +
+                  ((std::pow(std::numbers::pi, 2.)) * cos(3. * std::numbers::pi * x) *
+                      sin(std::numbers::pi * x) * sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                      ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                      (2. * cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                              (std::pow((sin(std::numbers::pi * x)), 3.)) +
+                          10.) *
+                      (2. * cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                              (std::pow((sin(std::numbers::pi * x)), 3.)) -
+                          20. * y + 10.)) /
+                      125.)) /
+              (3. * (v + 1.) *
+                  ((std::pow(std::numbers::pi, 2.)) *
+                          (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                          (std::pow((cos(2. * std::numbers::pi * x) -
+                                        2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                              2.)) +
+                      100.) *
+                  (((std::pow(std::numbers::pi, 2.)) *
+                       (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                       (std::pow((cos(2. * std::numbers::pi * x) -
+                                     2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                           2.)) *
+                       ((2. * ((7. * (std::pow((cos(2. * std::numbers::pi * t)), 2.))) / 2. - 4.) *
+                            (std::pow((cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                                              (std::pow((sin(std::numbers::pi * x)), 3.)) +
+                                          5.),
+                                2.))) /
+                               25. +
+                           (3. *
+                               (std::pow((sin(2. * std::numbers::pi * x) *
+                                                 sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                                 (cos(2. * std::numbers::pi * x) - 1.) -
+                                             20.),
+                                   2.)) *
+                               ((7. * cos(4. * std::numbers::pi * t)) / 6. - 3. / 2.)) /
+                               400. -
+                           (3. *
+                               (std::pow((sin(2. * std::numbers::pi * x) *
+                                                 sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                                 (cos(2. * std::numbers::pi * x) - 1.) -
+                                             20.),
+                                   2.)) *
+                               ((7. * cos(4. * std::numbers::pi * t)) / 4. - 9. / 4.)) /
+                               200. +
+                           ((std::pow(std::numbers::pi, 2.)) * sin(2. * std::numbers::pi * t) *
+                               (std::pow((sin(2. * std::numbers::pi * x)), 2.))) /
+                               5. +
+                           ((std::pow(std::numbers::pi, 2.)) * cos(2. * std::numbers::pi * x) *
+                               cos(2. * std::numbers::pi * (t + 1. / 4.)) *
+                               (cos(2. * std::numbers::pi * x) - 1.)) /
+                               5. +
+                           ((std::pow(std::numbers::pi, 2.)) *
+                               (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                               (std::pow((sin(2. * std::numbers::pi * x) *
+                                                 sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                                 (cos(2. * std::numbers::pi * x) - 1.) -
+                                             20.),
+                                   2.)) *
+                               ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                               (std::pow(
+                                   (cos(2. * std::numbers::pi * x) -
+                                       2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                                   2.))) /
+                               40000.)) /
+                          ((std::pow(std::numbers::pi, 2.)) *
+                                  (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                                  (std::pow(
+                                      (cos(2. * std::numbers::pi * x) -
+                                          2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) +
+                                          1.),
+                                      2.)) +
+                              100.) -
+                      (100. *
+                          ((2. *
+                               ((7. * (std::pow((cos(2. * std::numbers::pi * t)), 2.))) / 2. - 4.) *
+                               (std::pow(
+                                   (cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                                           (std::pow((sin(std::numbers::pi * x)), 3.)) +
+                                       5.),
+                                   2.))) /
+                                  25. +
+                              (3. *
+                                  (std::pow((sin(2. * std::numbers::pi * x) *
+                                                    sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                                    (cos(2. * std::numbers::pi * x) - 1.) -
+                                                20.),
+                                      2.)) *
+                                  ((7. * cos(4. * std::numbers::pi * t)) / 6. - 3. / 2.)) /
+                                  400. -
+                              (3. *
+                                  (std::pow((sin(2. * std::numbers::pi * x) *
+                                                    sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                                    (cos(2. * std::numbers::pi * x) - 1.) -
+                                                20.),
+                                      2.)) *
+                                  ((7. * cos(4. * std::numbers::pi * t)) / 4. - 9. / 4.)) /
+                                  200. +
+                              ((std::pow(std::numbers::pi, 2.)) * sin(2. * std::numbers::pi * t) *
+                                  (std::pow((sin(2. * std::numbers::pi * x)), 2.))) /
+                                  5. +
+                              ((std::pow(std::numbers::pi, 2.)) * cos(2. * std::numbers::pi * x) *
+                                  cos(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                  (cos(2. * std::numbers::pi * x) - 1.)) /
+                                  5. +
+                              ((std::pow(std::numbers::pi, 2.)) *
+                                  (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                                  (std::pow((sin(2. * std::numbers::pi * x) *
+                                                    sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                                    (cos(2. * std::numbers::pi * x) - 1.) -
+                                                20.),
+                                      2.)) *
+                                  ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                                  (std::pow(
+                                      (cos(2. * std::numbers::pi * x) -
+                                          2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) +
+                                          1.),
+                                      2.))) /
+                                  40000.)) /
+                          ((std::pow(std::numbers::pi, 2.)) *
+                                  (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                                  (std::pow(
+                                      (cos(2. * std::numbers::pi * x) -
+                                          2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) +
+                                          1.),
+                                      2.)) +
+                              100.) +
+                      ((std::pow(std::numbers::pi, 2.)) *
+                          (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                          (std::pow((sin(2. * std::numbers::pi * x) *
+                                            sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                            (cos(2. * std::numbers::pi * x) - 1.) -
+                                        20.),
+                              2.)) *
+                          ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                          (std::pow((cos(2. * std::numbers::pi * x) -
+                                        2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                              2.))) /
+                          (200. *
+                              ((std::pow(std::numbers::pi, 2.)) *
+                                      (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                                      (std::pow((cos(2. * std::numbers::pi * x) -
+                                                    2. * (std::pow((cos(2. * std::numbers::pi * x)),
+                                                             2.)) +
+                                                    1.),
+                                          2.)) +
+                                  100.)) +
+                      ((std::pow(std::numbers::pi, 2.)) * cos(2. * std::numbers::pi * t) *
+                          sin(std::numbers::pi * x) * sin(3. * std::numbers::pi * x) *
+                          sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                          ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                          (2. * cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                                  (std::pow((sin(std::numbers::pi * x)), 3.)) +
+                              10.) *
+                          (cos(2. * std::numbers::pi * x) -
+                              2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.) *
+                          (2. * cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                                  sin(std::numbers::pi * x) -
+                              2. * cos(2. * std::numbers::pi * t) *
+                                  (std::pow((cos(std::numbers::pi * x)), 3.)) *
+                                  sin(std::numbers::pi * x) +
+                              10.)) /
+                          (25. *
+                              ((std::pow(std::numbers::pi, 2.)) *
+                                      (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                                      (std::pow((cos(2. * std::numbers::pi * x) -
+                                                    2. * (std::pow((cos(2. * std::numbers::pi * x)),
+                                                             2.)) +
+                                                    1.),
+                                          2.)) +
+                                  100.)))) +
+          (5. * E *
+              ((std::numbers::pi * sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                   (7. * (std::pow((sin(2. * std::numbers::pi * (t + 1. / 4.))), 2.)) - 8.) *
+                   (cos(2. * std::numbers::pi * x) -
+                       (std::pow((cos(2. * std::numbers::pi * x)), 2.)) +
+                       (std::pow((sin(2. * std::numbers::pi * x)), 2.))) *
+                   (sin(2. * std::numbers::pi * x) * sin(2. * std::numbers::pi * (t + 1. / 4.)) -
+                       cos(2. * std::numbers::pi * x) * sin(2. * std::numbers::pi * x) *
+                           sin(2. * std::numbers::pi * (t + 1. / 4.)) +
+                       20.) *
+                   (40. * y -
+                       sin(2. * std::numbers::pi * x) * sin(2. * std::numbers::pi * (t + 1. / 4.)) +
+                       cos(2. * std::numbers::pi * x) * sin(2. * std::numbers::pi * x) *
+                           sin(2. * std::numbers::pi * (t + 1. / 4.)) -
+                       20.)) /
+                      6000. -
+                  (std::numbers::pi * sin(std::numbers::pi * x) * sin(3. * std::numbers::pi * x) *
+                      sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                      ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                      (2. * cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                              (std::pow((sin(std::numbers::pi * x)), 3.)) +
+                          10.) *
+                      (2. * cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                              (std::pow((sin(std::numbers::pi * x)), 3.)) -
+                          20. * y + 10.)) /
+                      375.) *
+              (5. * cos(2. * std::numbers::pi * t) * cos(2. * std::numbers::pi * x) -
+                  3. * std::numbers::pi * cos(2. * std::numbers::pi * t) +
+                  6. * std::numbers::pi * cos(2. * std::numbers::pi * t) *
+                      (std::pow((cos(2. * std::numbers::pi * x)), 2.)) -
+                  3. * std::numbers::pi * cos(2. * std::numbers::pi * t) *
+                      cos(2. * std::numbers::pi * x) +
+                  30.) *
+              ((100. * ((4. * ((7. * (std::pow((cos(2. * std::numbers::pi * t)), 2.))) / 2. - 4.) *
+                            (std::numbers::pi * cos(2. * std::numbers::pi * t) *
+                                    (std::pow((sin(std::numbers::pi * x)), 4.)) -
+                                3. * std::numbers::pi * cos(2. * std::numbers::pi * t) *
+                                    (std::pow((cos(std::numbers::pi * x)), 2.)) *
+                                    (std::pow((sin(std::numbers::pi * x)), 2.))) *
+                            (cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                                    (std::pow((sin(std::numbers::pi * x)), 3.)) +
+                                5.)) /
+                               25. +
+                           (3. *
+                               (2. * std::numbers::pi *
+                                       (std::pow((sin(2. * std::numbers::pi * x)), 2.)) *
+                                       sin(2. * std::numbers::pi * (t + 1. / 4.)) -
+                                   2. * std::numbers::pi * cos(2. * std::numbers::pi * x) *
+                                       sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                       (cos(2. * std::numbers::pi * x) - 1.)) *
+                               (sin(2. * std::numbers::pi * x) *
+                                       sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                       (cos(2. * std::numbers::pi * x) - 1.) -
+                                   20.) *
+                               ((7. * cos(4. * std::numbers::pi * t)) / 6. - 3. / 2.)) /
+                               200. -
+                           (3. *
+                               (2. * std::numbers::pi *
+                                       (std::pow((sin(2. * std::numbers::pi * x)), 2.)) *
+                                       sin(2. * std::numbers::pi * (t + 1. / 4.)) -
+                                   2. * std::numbers::pi * cos(2. * std::numbers::pi * x) *
+                                       sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                       (cos(2. * std::numbers::pi * x) - 1.)) *
+                               (sin(2. * std::numbers::pi * x) *
+                                       sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                       (cos(2. * std::numbers::pi * x) - 1.) -
+                                   20.) *
+                               ((7. * cos(4. * std::numbers::pi * t)) / 4. - 9. / 4.)) /
+                               100. +
+                           (2. * (std::pow(std::numbers::pi, 3.)) * cos(2. * std::numbers::pi * x) *
+                               sin(2. * std::numbers::pi * x) *
+                               cos(2. * std::numbers::pi * (t + 1. / 4.))) /
+                               5. +
+                           (2. * (std::pow(std::numbers::pi, 3.)) * sin(2. * std::numbers::pi * x) *
+                               cos(2. * std::numbers::pi * (t + 1. / 4.)) *
+                               (cos(2. * std::numbers::pi * x) - 1.)) /
+                               5. -
+                           (4. * (std::pow(std::numbers::pi, 3.)) * cos(2. * std::numbers::pi * x) *
+                               sin(2. * std::numbers::pi * t) * sin(2. * std::numbers::pi * x)) /
+                               5. +
+                           ((std::pow(std::numbers::pi, 2.)) *
+                               (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                               (2. * std::numbers::pi *
+                                       (std::pow((sin(2. * std::numbers::pi * x)), 2.)) *
+                                       sin(2. * std::numbers::pi * (t + 1. / 4.)) -
+                                   2. * std::numbers::pi * cos(2. * std::numbers::pi * x) *
+                                       sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                       (cos(2. * std::numbers::pi * x) - 1.)) *
+                               (sin(2. * std::numbers::pi * x) *
+                                       sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                       (cos(2. * std::numbers::pi * x) - 1.) -
+                                   20.) *
+                               ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                               (std::pow(
+                                   (cos(2. * std::numbers::pi * x) -
+                                       2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                                   2.))) /
+                               20000. +
+                           ((std::pow(std::numbers::pi, 2.)) *
+                               (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                               (std::pow((sin(2. * std::numbers::pi * x) *
+                                                 sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                                 (cos(2. * std::numbers::pi * x) - 1.) -
+                                             20.),
+                                   2.)) *
+                               ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                               (2. * std::numbers::pi * sin(2. * std::numbers::pi * x) -
+                                   8. * std::numbers::pi * cos(2. * std::numbers::pi * x) *
+                                       sin(2. * std::numbers::pi * x)) *
+                               (cos(2. * std::numbers::pi * x) -
+                                   2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.)) /
+                               20000.)) /
+                      ((std::pow(std::numbers::pi, 2.)) *
+                              (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                              (std::pow(
+                                  (cos(2. * std::numbers::pi * x) -
+                                      2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                                  2.)) +
+                          100.) -
+                  ((std::pow(std::numbers::pi, 2.)) *
+                      (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                      (std::pow((cos(2. * std::numbers::pi * x) -
+                                    2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                          2.)) *
+                      ((4. * ((7. * (std::pow((cos(2. * std::numbers::pi * t)), 2.))) / 2. - 4.) *
+                           (std::numbers::pi * cos(2. * std::numbers::pi * t) *
+                                   (std::pow((sin(std::numbers::pi * x)), 4.)) -
+                               3. * std::numbers::pi * cos(2. * std::numbers::pi * t) *
+                                   (std::pow((cos(std::numbers::pi * x)), 2.)) *
+                                   (std::pow((sin(std::numbers::pi * x)), 2.))) *
+                           (cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                                   (std::pow((sin(std::numbers::pi * x)), 3.)) +
+                               5.)) /
+                              25. +
+                          (3. *
+                              (2. * std::numbers::pi *
+                                      (std::pow((sin(2. * std::numbers::pi * x)), 2.)) *
+                                      sin(2. * std::numbers::pi * (t + 1. / 4.)) -
+                                  2. * std::numbers::pi * cos(2. * std::numbers::pi * x) *
+                                      sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                      (cos(2. * std::numbers::pi * x) - 1.)) *
+                              (sin(2. * std::numbers::pi * x) *
+                                      sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                      (cos(2. * std::numbers::pi * x) - 1.) -
+                                  20.) *
+                              ((7. * cos(4. * std::numbers::pi * t)) / 6. - 3. / 2.)) /
+                              200. -
+                          (3. *
+                              (2. * std::numbers::pi *
+                                      (std::pow((sin(2. * std::numbers::pi * x)), 2.)) *
+                                      sin(2. * std::numbers::pi * (t + 1. / 4.)) -
+                                  2. * std::numbers::pi * cos(2. * std::numbers::pi * x) *
+                                      sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                      (cos(2. * std::numbers::pi * x) - 1.)) *
+                              (sin(2. * std::numbers::pi * x) *
+                                      sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                      (cos(2. * std::numbers::pi * x) - 1.) -
+                                  20.) *
+                              ((7. * cos(4. * std::numbers::pi * t)) / 4. - 9. / 4.)) /
+                              100. +
+                          (2. * (std::pow(std::numbers::pi, 3.)) * cos(2. * std::numbers::pi * x) *
+                              sin(2. * std::numbers::pi * x) *
+                              cos(2. * std::numbers::pi * (t + 1. / 4.))) /
+                              5. +
+                          (2. * (std::pow(std::numbers::pi, 3.)) * sin(2. * std::numbers::pi * x) *
+                              cos(2. * std::numbers::pi * (t + 1. / 4.)) *
+                              (cos(2. * std::numbers::pi * x) - 1.)) /
+                              5. -
+                          (4. * (std::pow(std::numbers::pi, 3.)) * cos(2. * std::numbers::pi * x) *
+                              sin(2. * std::numbers::pi * t) * sin(2. * std::numbers::pi * x)) /
+                              5. +
+                          ((std::pow(std::numbers::pi, 2.)) *
+                              (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                              (2. * std::numbers::pi *
+                                      (std::pow((sin(2. * std::numbers::pi * x)), 2.)) *
+                                      sin(2. * std::numbers::pi * (t + 1. / 4.)) -
+                                  2. * std::numbers::pi * cos(2. * std::numbers::pi * x) *
+                                      sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                      (cos(2. * std::numbers::pi * x) - 1.)) *
+                              (sin(2. * std::numbers::pi * x) *
+                                      sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                      (cos(2. * std::numbers::pi * x) - 1.) -
+                                  20.) *
+                              ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                              (std::pow(
+                                  (cos(2. * std::numbers::pi * x) -
+                                      2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                                  2.))) /
+                              20000. +
+                          ((std::pow(std::numbers::pi, 2.)) *
+                              (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                              (std::pow((sin(2. * std::numbers::pi * x) *
+                                                sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                                (cos(2. * std::numbers::pi * x) - 1.) -
+                                            20.),
+                                  2.)) *
+                              ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                              (2. * std::numbers::pi * sin(2. * std::numbers::pi * x) -
+                                  8. * std::numbers::pi * cos(2. * std::numbers::pi * x) *
+                                      sin(2. * std::numbers::pi * x)) *
+                              (cos(2. * std::numbers::pi * x) -
+                                  2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.)) /
+                              20000.)) /
+                      ((std::pow(std::numbers::pi, 2.)) *
+                              (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                              (std::pow(
+                                  (cos(2. * std::numbers::pi * x) -
+                                      2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                                  2.)) +
+                          100.) -
+                  (2. * (std::pow(std::numbers::pi, 2.)) *
+                      (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                      (2. * std::numbers::pi * sin(2. * std::numbers::pi * x) -
+                          8. * std::numbers::pi * cos(2. * std::numbers::pi * x) *
+                              sin(2. * std::numbers::pi * x)) *
+                      (cos(2. * std::numbers::pi * x) -
+                          2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.) *
+                      ((2. * ((7. * (std::pow((cos(2. * std::numbers::pi * t)), 2.))) / 2. - 4.) *
+                           (std::pow((cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                                             (std::pow((sin(std::numbers::pi * x)), 3.)) +
+                                         5.),
+                               2.))) /
+                              25. +
+                          (3. *
+                              (std::pow((sin(2. * std::numbers::pi * x) *
+                                                sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                                (cos(2. * std::numbers::pi * x) - 1.) -
+                                            20.),
+                                  2.)) *
+                              ((7. * cos(4. * std::numbers::pi * t)) / 6. - 3. / 2.)) /
+                              400. -
+                          (3. *
+                              (std::pow((sin(2. * std::numbers::pi * x) *
+                                                sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                                (cos(2. * std::numbers::pi * x) - 1.) -
+                                            20.),
+                                  2.)) *
+                              ((7. * cos(4. * std::numbers::pi * t)) / 4. - 9. / 4.)) /
+                              200. +
+                          ((std::pow(std::numbers::pi, 2.)) * sin(2. * std::numbers::pi * t) *
+                              (std::pow((sin(2. * std::numbers::pi * x)), 2.))) /
+                              5. +
+                          ((std::pow(std::numbers::pi, 2.)) * cos(2. * std::numbers::pi * x) *
+                              cos(2. * std::numbers::pi * (t + 1. / 4.)) *
+                              (cos(2. * std::numbers::pi * x) - 1.)) /
+                              5. +
+                          ((std::pow(std::numbers::pi, 2.)) *
+                              (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                              (std::pow((sin(2. * std::numbers::pi * x) *
+                                                sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                                (cos(2. * std::numbers::pi * x) - 1.) -
+                                            20.),
+                                  2.)) *
+                              ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                              (std::pow(
+                                  (cos(2. * std::numbers::pi * x) -
+                                      2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                                  2.))) /
+                              40000.)) /
+                      ((std::pow(std::numbers::pi, 2.)) *
+                              (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                              (std::pow(
+                                  (cos(2. * std::numbers::pi * x) -
+                                      2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                                  2.)) +
+                          100.) -
+                  (200. * (std::pow(std::numbers::pi, 2.)) *
+                      (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                      (2. * std::numbers::pi * sin(2. * std::numbers::pi * x) -
+                          8. * std::numbers::pi * cos(2. * std::numbers::pi * x) *
+                              sin(2. * std::numbers::pi * x)) *
+                      (cos(2. * std::numbers::pi * x) -
+                          2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.) *
+                      ((2. * ((7. * (std::pow((cos(2. * std::numbers::pi * t)), 2.))) / 2. - 4.) *
+                           (std::pow((cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                                             (std::pow((sin(std::numbers::pi * x)), 3.)) +
+                                         5.),
+                               2.))) /
+                              25. +
+                          (3. *
+                              (std::pow((sin(2. * std::numbers::pi * x) *
+                                                sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                                (cos(2. * std::numbers::pi * x) - 1.) -
+                                            20.),
+                                  2.)) *
+                              ((7. * cos(4. * std::numbers::pi * t)) / 6. - 3. / 2.)) /
+                              400. -
+                          (3. *
+                              (std::pow((sin(2. * std::numbers::pi * x) *
+                                                sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                                (cos(2. * std::numbers::pi * x) - 1.) -
+                                            20.),
+                                  2.)) *
+                              ((7. * cos(4. * std::numbers::pi * t)) / 4. - 9. / 4.)) /
+                              200. +
+                          ((std::pow(std::numbers::pi, 2.)) * sin(2. * std::numbers::pi * t) *
+                              (std::pow((sin(2. * std::numbers::pi * x)), 2.))) /
+                              5. +
+                          ((std::pow(std::numbers::pi, 2.)) * cos(2. * std::numbers::pi * x) *
+                              cos(2. * std::numbers::pi * (t + 1. / 4.)) *
+                              (cos(2. * std::numbers::pi * x) - 1.)) /
+                              5. +
+                          ((std::pow(std::numbers::pi, 2.)) *
+                              (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                              (std::pow((sin(2. * std::numbers::pi * x) *
+                                                sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                                (cos(2. * std::numbers::pi * x) - 1.) -
+                                            20.),
+                                  2.)) *
+                              ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                              (std::pow(
+                                  (cos(2. * std::numbers::pi * x) -
+                                      2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                                  2.))) /
+                              40000.)) /
+                      (std::pow(
+                          ((std::pow(std::numbers::pi, 2.)) *
+                                  (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                                  (std::pow(
+                                      (cos(2. * std::numbers::pi * x) -
+                                          2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) +
+                                          1.),
+                                      2.)) +
+                              100.),
+                          2.)) +
+                  (2. * (std::pow(std::numbers::pi, 4.)) *
+                      (std::pow((cos(2. * std::numbers::pi * t)), 4.)) *
+                      (2. * std::numbers::pi * sin(2. * std::numbers::pi * x) -
+                          8. * std::numbers::pi * cos(2. * std::numbers::pi * x) *
+                              sin(2. * std::numbers::pi * x)) *
+                      (std::pow((cos(2. * std::numbers::pi * x) -
+                                    2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                          3.)) *
+                      ((2. * ((7. * (std::pow((cos(2. * std::numbers::pi * t)), 2.))) / 2. - 4.) *
+                           (std::pow((cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                                             (std::pow((sin(std::numbers::pi * x)), 3.)) +
+                                         5.),
+                               2.))) /
+                              25. +
+                          (3. *
+                              (std::pow((sin(2. * std::numbers::pi * x) *
+                                                sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                                (cos(2. * std::numbers::pi * x) - 1.) -
+                                            20.),
+                                  2.)) *
+                              ((7. * cos(4. * std::numbers::pi * t)) / 6. - 3. / 2.)) /
+                              400. -
+                          (3. *
+                              (std::pow((sin(2. * std::numbers::pi * x) *
+                                                sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                                (cos(2. * std::numbers::pi * x) - 1.) -
+                                            20.),
+                                  2.)) *
+                              ((7. * cos(4. * std::numbers::pi * t)) / 4. - 9. / 4.)) /
+                              200. +
+                          ((std::pow(std::numbers::pi, 2.)) * sin(2. * std::numbers::pi * t) *
+                              (std::pow((sin(2. * std::numbers::pi * x)), 2.))) /
+                              5. +
+                          ((std::pow(std::numbers::pi, 2.)) * cos(2. * std::numbers::pi * x) *
+                              cos(2. * std::numbers::pi * (t + 1. / 4.)) *
+                              (cos(2. * std::numbers::pi * x) - 1.)) /
+                              5. +
+                          ((std::pow(std::numbers::pi, 2.)) *
+                              (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                              (std::pow((sin(2. * std::numbers::pi * x) *
+                                                sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                                (cos(2. * std::numbers::pi * x) - 1.) -
+                                            20.),
+                                  2.)) *
+                              ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                              (std::pow(
+                                  (cos(2. * std::numbers::pi * x) -
+                                      2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                                  2.))) /
+                              40000.)) /
+                      (std::pow(
+                          ((std::pow(std::numbers::pi, 2.)) *
+                                  (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                                  (std::pow(
+                                      (cos(2. * std::numbers::pi * x) -
+                                          2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) +
+                                          1.),
+                                      2.)) +
+                              100.),
+                          2.)) +
+                  ((std::pow(std::numbers::pi, 4.)) *
+                      (std::pow((cos(2. * std::numbers::pi * t)), 4.)) *
+                      (std::pow((sin(2. * std::numbers::pi * x) *
+                                        sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                        (cos(2. * std::numbers::pi * x) - 1.) -
+                                    20.),
+                          2.)) *
+                      ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                      (2. * std::numbers::pi * sin(2. * std::numbers::pi * x) -
+                          8. * std::numbers::pi * cos(2. * std::numbers::pi * x) *
+                              sin(2. * std::numbers::pi * x)) *
+                      (std::pow((cos(2. * std::numbers::pi * x) -
+                                    2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                          3.))) /
+                      (100. *
+                          (std::pow(
+                              ((std::pow(std::numbers::pi, 2.)) *
+                                      (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                                      (std::pow((cos(2. * std::numbers::pi * x) -
+                                                    2. * (std::pow((cos(2. * std::numbers::pi * x)),
+                                                             2.)) +
+                                                    1.),
+                                          2.)) +
+                                  100.),
+                              2.))) -
+                  ((std::pow(std::numbers::pi, 2.)) *
+                      (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                      (2. * std::numbers::pi * (std::pow((sin(2. * std::numbers::pi * x)), 2.)) *
+                              sin(2. * std::numbers::pi * (t + 1. / 4.)) -
+                          2. * std::numbers::pi * cos(2. * std::numbers::pi * x) *
+                              sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                              (cos(2. * std::numbers::pi * x) - 1.)) *
+                      (sin(2. * std::numbers::pi * x) * sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                              (cos(2. * std::numbers::pi * x) - 1.) -
+                          20.) *
+                      ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                      (std::pow((cos(2. * std::numbers::pi * x) -
+                                    2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                          2.))) /
+                      (100. * ((std::pow(std::numbers::pi, 2.)) *
+                                      (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                                      (std::pow((cos(2. * std::numbers::pi * x) -
+                                                    2. * (std::pow((cos(2. * std::numbers::pi * x)),
+                                                             2.)) +
+                                                    1.),
+                                          2.)) +
+                                  100.)) -
+                  ((std::pow(std::numbers::pi, 2.)) *
+                      (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                      (std::pow((sin(2. * std::numbers::pi * x) *
+                                        sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                        (cos(2. * std::numbers::pi * x) - 1.) -
+                                    20.),
+                          2.)) *
+                      ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                      (2. * std::numbers::pi * sin(2. * std::numbers::pi * x) -
+                          8. * std::numbers::pi * cos(2. * std::numbers::pi * x) *
+                              sin(2. * std::numbers::pi * x)) *
+                      (cos(2. * std::numbers::pi * x) -
+                          2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.)) /
+                      (100. * ((std::pow(std::numbers::pi, 2.)) *
+                                      (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                                      (std::pow((cos(2. * std::numbers::pi * x) -
+                                                    2. * (std::pow((cos(2. * std::numbers::pi * x)),
+                                                             2.)) +
+                                                    1.),
+                                          2.)) +
+                                  100.)) -
+                  ((std::pow(std::numbers::pi, 2.)) * cos(2. * std::numbers::pi * t) *
+                      sin(std::numbers::pi * x) * sin(3. * std::numbers::pi * x) *
+                      sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                      ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                      (2. * std::numbers::pi * cos(2. * std::numbers::pi * t) *
+                              (std::pow((sin(std::numbers::pi * x)), 4.)) -
+                          6. * std::numbers::pi * cos(2. * std::numbers::pi * t) *
+                              (std::pow((cos(std::numbers::pi * x)), 2.)) *
+                              (std::pow((sin(std::numbers::pi * x)), 2.))) *
+                      (cos(2. * std::numbers::pi * x) -
+                          2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.) *
+                      (2. * cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                              sin(std::numbers::pi * x) -
+                          2. * cos(2. * std::numbers::pi * t) *
+                              (std::pow((cos(std::numbers::pi * x)), 3.)) *
+                              sin(std::numbers::pi * x) +
+                          10.)) /
+                      (25. * ((std::pow(std::numbers::pi, 2.)) *
+                                     (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                                     (std::pow(
+                                         (cos(2. * std::numbers::pi * x) -
+                                             2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) +
+                                             1.),
+                                         2.)) +
+                                 100.)) +
+                  ((std::pow(std::numbers::pi, 3.)) * cos(2. * std::numbers::pi * t) *
+                      cos(std::numbers::pi * x) * sin(3. * std::numbers::pi * x) *
+                      sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                      ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                      (2. * cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                              (std::pow((sin(std::numbers::pi * x)), 3.)) +
+                          10.) *
+                      (cos(2. * std::numbers::pi * x) -
+                          2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.) *
+                      (2. * cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                              sin(std::numbers::pi * x) -
+                          2. * cos(2. * std::numbers::pi * t) *
+                              (std::pow((cos(std::numbers::pi * x)), 3.)) *
+                              sin(std::numbers::pi * x) +
+                          10.)) /
+                      (25. * ((std::pow(std::numbers::pi, 2.)) *
+                                     (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                                     (std::pow(
+                                         (cos(2. * std::numbers::pi * x) -
+                                             2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) +
+                                             1.),
+                                         2.)) +
+                                 100.)) +
+                  (3. * (std::pow(std::numbers::pi, 3.)) * cos(2. * std::numbers::pi * t) *
+                      cos(3. * std::numbers::pi * x) * sin(std::numbers::pi * x) *
+                      sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                      ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                      (2. * cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                              (std::pow((sin(std::numbers::pi * x)), 3.)) +
+                          10.) *
+                      (cos(2. * std::numbers::pi * x) -
+                          2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.) *
+                      (2. * cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                              sin(std::numbers::pi * x) -
+                          2. * cos(2. * std::numbers::pi * t) *
+                              (std::pow((cos(std::numbers::pi * x)), 3.)) *
+                              sin(std::numbers::pi * x) +
+                          10.)) /
+                      (25. * ((std::pow(std::numbers::pi, 2.)) *
+                                     (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                                     (std::pow(
+                                         (cos(2. * std::numbers::pi * x) -
+                                             2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) +
+                                             1.),
+                                         2.)) +
+                                 100.)) +
+                  ((std::pow(std::numbers::pi, 2.)) * cos(2. * std::numbers::pi * t) *
+                      sin(std::numbers::pi * x) * sin(3. * std::numbers::pi * x) *
+                      sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                      ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                      (2. * cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                              (std::pow((sin(std::numbers::pi * x)), 3.)) +
+                          10.) *
+                      (cos(2. * std::numbers::pi * x) -
+                          2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.) *
+                      (2. * std::numbers::pi * cos(2. * std::numbers::pi * t) *
+                              (std::pow((cos(std::numbers::pi * x)), 2.)) -
+                          2. * std::numbers::pi * cos(2. * std::numbers::pi * t) *
+                              (std::pow((cos(std::numbers::pi * x)), 4.)) -
+                          2. * std::numbers::pi * cos(2. * std::numbers::pi * t) *
+                              (std::pow((sin(std::numbers::pi * x)), 2.)) +
+                          6. * std::numbers::pi * cos(2. * std::numbers::pi * t) *
+                              (std::pow((cos(std::numbers::pi * x)), 2.)) *
+                              (std::pow((sin(std::numbers::pi * x)), 2.)))) /
+                      (25. * ((std::pow(std::numbers::pi, 2.)) *
+                                     (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                                     (std::pow(
+                                         (cos(2. * std::numbers::pi * x) -
+                                             2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) +
+                                             1.),
+                                         2.)) +
+                                 100.)) -
+                  ((std::pow(std::numbers::pi, 2.)) * cos(2. * std::numbers::pi * t) *
+                      sin(std::numbers::pi * x) * sin(3. * std::numbers::pi * x) *
+                      sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                      ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                      (2. * std::numbers::pi * sin(2. * std::numbers::pi * x) -
+                          8. * std::numbers::pi * cos(2. * std::numbers::pi * x) *
+                              sin(2. * std::numbers::pi * x)) *
+                      (2. * cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                              (std::pow((sin(std::numbers::pi * x)), 3.)) +
+                          10.) *
+                      (2. * cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                              sin(std::numbers::pi * x) -
+                          2. * cos(2. * std::numbers::pi * t) *
+                              (std::pow((cos(std::numbers::pi * x)), 3.)) *
+                              sin(std::numbers::pi * x) +
+                          10.)) /
+                      (25. * ((std::pow(std::numbers::pi, 2.)) *
+                                     (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                                     (std::pow(
+                                         (cos(2. * std::numbers::pi * x) -
+                                             2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) +
+                                             1.),
+                                         2.)) +
+                                 100.)) +
+                  (2. * (std::pow(std::numbers::pi, 4.)) *
+                      (std::pow((cos(2. * std::numbers::pi * t)), 3.)) * sin(std::numbers::pi * x) *
+                      sin(3. * std::numbers::pi * x) * sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                      ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                      (2. * std::numbers::pi * sin(2. * std::numbers::pi * x) -
+                          8. * std::numbers::pi * cos(2. * std::numbers::pi * x) *
+                              sin(2. * std::numbers::pi * x)) *
+                      (2. * cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                              (std::pow((sin(std::numbers::pi * x)), 3.)) +
+                          10.) *
+                      (std::pow((cos(2. * std::numbers::pi * x) -
+                                    2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                          2.)) *
+                      (2. * cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                              sin(std::numbers::pi * x) -
+                          2. * cos(2. * std::numbers::pi * t) *
+                              (std::pow((cos(std::numbers::pi * x)), 3.)) *
+                              sin(std::numbers::pi * x) +
+                          10.)) /
+                      (25. *
+                          (std::pow(
+                              ((std::pow(std::numbers::pi, 2.)) *
+                                      (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                                      (std::pow((cos(2. * std::numbers::pi * x) -
+                                                    2. * (std::pow((cos(2. * std::numbers::pi * x)),
+                                                             2.)) +
+                                                    1.),
+                                          2.)) +
+                                  100.),
+                              2.))))) /
+              (3. * (v + 1.) *
+                  ((std::pow(std::numbers::pi, 2.)) *
+                          (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                          (std::pow((cos(2. * std::numbers::pi * x) -
+                                        2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                              2.)) +
+                      100.) *
+                  (std::pow(
+                      (((std::pow(std::numbers::pi, 2.)) *
+                           (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                           (std::pow(
+                               (cos(2. * std::numbers::pi * x) -
+                                   2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                               2.)) *
+                           ((2. *
+                                (std::pow(
+                                    (cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                                            (std::pow((sin(std::numbers::pi * x)), 3.)) +
+                                        5.),
+                                    2.)) *
+                                ((7. * (std::pow((cos(2. * std::numbers::pi * t)), 2.))) / 2. -
+                                    4.)) /
+                                   25. +
+                               (3. * ((7. * cos(4. * std::numbers::pi * t)) / 6. - 3. / 2.) *
+                                   (std::pow((sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                                     sin(2. * std::numbers::pi * x) *
+                                                     (cos(2. * std::numbers::pi * x) - 1.) -
+                                                 20.),
+                                       2.))) /
+                                   400. -
+                               (3. * ((7. * cos(4. * std::numbers::pi * t)) / 4. - 9. / 4.) *
+                                   (std::pow((sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                                     sin(2. * std::numbers::pi * x) *
+                                                     (cos(2. * std::numbers::pi * x) - 1.) -
+                                                 20.),
+                                       2.))) /
+                                   200. +
+                               ((std::pow(std::numbers::pi, 2.)) * sin(2. * std::numbers::pi * t) *
+                                   (std::pow((sin(2. * std::numbers::pi * x)), 2.))) /
+                                   5. +
+                               ((std::pow(std::numbers::pi, 2.)) *
+                                   cos(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                   cos(2. * std::numbers::pi * x) *
+                                   (cos(2. * std::numbers::pi * x) - 1.)) /
+                                   5. +
+                               ((std::pow(std::numbers::pi, 2.)) *
+                                   (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                                   ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                                   (std::pow((sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                                     sin(2. * std::numbers::pi * x) *
+                                                     (cos(2. * std::numbers::pi * x) - 1.) -
+                                                 20.),
+                                       2.)) *
+                                   (std::pow(
+                                       (cos(2. * std::numbers::pi * x) -
+                                           2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) +
+                                           1.),
+                                       2.))) /
+                                   40000.)) /
+                              ((std::pow(std::numbers::pi, 2.)) *
+                                      (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                                      (std::pow((cos(2. * std::numbers::pi * x) -
+                                                    2. * (std::pow((cos(2. * std::numbers::pi * x)),
+                                                             2.)) +
+                                                    1.),
+                                          2.)) +
+                                  100.) -
+                          (100. *
+                              ((2. *
+                                   (std::pow(
+                                       (cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                                               (std::pow((sin(std::numbers::pi * x)), 3.)) +
+                                           5.),
+                                       2.)) *
+                                   ((7. * (std::pow((cos(2. * std::numbers::pi * t)), 2.))) / 2. -
+                                       4.)) /
+                                      25. +
+                                  (3. * ((7. * cos(4. * std::numbers::pi * t)) / 6. - 3. / 2.) *
+                                      (std::pow((sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                                        sin(2. * std::numbers::pi * x) *
+                                                        (cos(2. * std::numbers::pi * x) - 1.) -
+                                                    20.),
+                                          2.))) /
+                                      400. -
+                                  (3. * ((7. * cos(4. * std::numbers::pi * t)) / 4. - 9. / 4.) *
+                                      (std::pow((sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                                        sin(2. * std::numbers::pi * x) *
+                                                        (cos(2. * std::numbers::pi * x) - 1.) -
+                                                    20.),
+                                          2.))) /
+                                      200. +
+                                  ((std::pow(std::numbers::pi, 2.)) *
+                                      sin(2. * std::numbers::pi * t) *
+                                      (std::pow((sin(2. * std::numbers::pi * x)), 2.))) /
+                                      5. +
+                                  ((std::pow(std::numbers::pi, 2.)) *
+                                      cos(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                      cos(2. * std::numbers::pi * x) *
+                                      (cos(2. * std::numbers::pi * x) - 1.)) /
+                                      5. +
+                                  ((std::pow(std::numbers::pi, 2.)) *
+                                      (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                                      ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                                      (std::pow((sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                                        sin(2. * std::numbers::pi * x) *
+                                                        (cos(2. * std::numbers::pi * x) - 1.) -
+                                                    20.),
+                                          2.)) *
+                                      (std::pow((cos(2. * std::numbers::pi * x) -
+                                                    2. * (std::pow((cos(2. * std::numbers::pi * x)),
+                                                             2.)) +
+                                                    1.),
+                                          2.))) /
+                                      40000.)) /
+                              ((std::pow(std::numbers::pi, 2.)) *
+                                      (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                                      (std::pow((cos(2. * std::numbers::pi * x) -
+                                                    2. * (std::pow((cos(2. * std::numbers::pi * x)),
+                                                             2.)) +
+                                                    1.),
+                                          2.)) +
+                                  100.) +
+                          ((std::pow(std::numbers::pi, 2.)) *
+                              (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                              ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                              (std::pow((sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                                sin(2. * std::numbers::pi * x) *
+                                                (cos(2. * std::numbers::pi * x) - 1.) -
+                                            20.),
+                                  2.)) *
+                              (std::pow(
+                                  (cos(2. * std::numbers::pi * x) -
+                                      2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                                  2.))) /
+                              (200. *
+                                  ((std::pow(std::numbers::pi, 2.)) *
+                                          (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                                          (std::pow(
+                                              (cos(2. * std::numbers::pi * x) -
+                                                  2. * (std::pow(
+                                                           (cos(2. * std::numbers::pi * x)), 2.)) +
+                                                  1.),
+                                              2.)) +
+                                      100.)) +
+                          ((std::pow(std::numbers::pi, 2.)) *
+                              sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                              cos(2. * std::numbers::pi * t) * sin(std::numbers::pi * x) *
+                              sin(3. * std::numbers::pi * x) *
+                              (2. * cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                                      (std::pow((sin(std::numbers::pi * x)), 3.)) +
+                                  10.) *
+                              ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                              (cos(2. * std::numbers::pi * x) -
+                                  2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.) *
+                              (2. * cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                                      sin(std::numbers::pi * x) -
+                                  2. * cos(2. * std::numbers::pi * t) *
+                                      (std::pow((cos(std::numbers::pi * x)), 3.)) *
+                                      sin(std::numbers::pi * x) +
+                                  10.)) /
+                              (25. *
+                                  ((std::pow(std::numbers::pi, 2.)) *
+                                          (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                                          (std::pow(
+                                              (cos(2. * std::numbers::pi * x) -
+                                                  2. * (std::pow(
+                                                           (cos(2. * std::numbers::pi * x)), 2.)) +
+                                                  1.),
+                                              2.)) +
+                                      100.))),
+                      2.))) -
+          (10. * E * (std::pow(std::numbers::pi, 2.)) *
+              (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+              ((std::numbers::pi * sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                   (7. * (std::pow((sin(2. * std::numbers::pi * (t + 1. / 4.))), 2.)) - 8.) *
+                   (cos(2. * std::numbers::pi * x) -
+                       (std::pow((cos(2. * std::numbers::pi * x)), 2.)) +
+                       (std::pow((sin(2. * std::numbers::pi * x)), 2.))) *
+                   (sin(2. * std::numbers::pi * x) * sin(2. * std::numbers::pi * (t + 1. / 4.)) -
+                       cos(2. * std::numbers::pi * x) * sin(2. * std::numbers::pi * x) *
+                           sin(2. * std::numbers::pi * (t + 1. / 4.)) +
+                       20.) *
+                   (40. * y -
+                       sin(2. * std::numbers::pi * x) * sin(2. * std::numbers::pi * (t + 1. / 4.)) +
+                       cos(2. * std::numbers::pi * x) * sin(2. * std::numbers::pi * x) *
+                           sin(2. * std::numbers::pi * (t + 1. / 4.)) -
+                       20.)) /
+                      6000. -
+                  (std::numbers::pi * sin(std::numbers::pi * x) * sin(3. * std::numbers::pi * x) *
+                      sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                      ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                      (2. * cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                              (std::pow((sin(std::numbers::pi * x)), 3.)) +
+                          10.) *
+                      (2. * cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                              (std::pow((sin(std::numbers::pi * x)), 3.)) -
+                          20. * y + 10.)) /
+                      375.) *
+              (2. * std::numbers::pi * sin(2. * std::numbers::pi * x) -
+                  8. * std::numbers::pi * cos(2. * std::numbers::pi * x) *
+                      sin(2. * std::numbers::pi * x)) *
+              (cos(2. * std::numbers::pi * x) -
+                  2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.) *
+              (5. * cos(2. * std::numbers::pi * t) * cos(2. * std::numbers::pi * x) -
+                  3. * std::numbers::pi * cos(2. * std::numbers::pi * t) +
+                  6. * std::numbers::pi * cos(2. * std::numbers::pi * t) *
+                      (std::pow((cos(2. * std::numbers::pi * x)), 2.)) -
+                  3. * std::numbers::pi * cos(2. * std::numbers::pi * t) *
+                      cos(2. * std::numbers::pi * x) +
+                  30.)) /
+              (3. * (v + 1.) *
+                  (std::pow(
+                      ((std::pow(std::numbers::pi, 2.)) *
+                              (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                              (std::pow(
+                                  (cos(2. * std::numbers::pi * x) -
+                                      2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                                  2.)) +
+                          100.),
+                      2.)) *
+                  (((std::pow(std::numbers::pi, 2.)) *
+                       (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                       (std::pow((cos(2. * std::numbers::pi * x) -
+                                     2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                           2.)) *
+                       ((2. * ((7. * (std::pow((cos(2. * std::numbers::pi * t)), 2.))) / 2. - 4.) *
+                            (std::pow((cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                                              (std::pow((sin(std::numbers::pi * x)), 3.)) +
+                                          5.),
+                                2.))) /
+                               25. +
+                           (3. *
+                               (std::pow((sin(2. * std::numbers::pi * x) *
+                                                 sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                                 (cos(2. * std::numbers::pi * x) - 1.) -
+                                             20.),
+                                   2.)) *
+                               ((7. * cos(4. * std::numbers::pi * t)) / 6. - 3. / 2.)) /
+                               400. -
+                           (3. *
+                               (std::pow((sin(2. * std::numbers::pi * x) *
+                                                 sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                                 (cos(2. * std::numbers::pi * x) - 1.) -
+                                             20.),
+                                   2.)) *
+                               ((7. * cos(4. * std::numbers::pi * t)) / 4. - 9. / 4.)) /
+                               200. +
+                           ((std::pow(std::numbers::pi, 2.)) * sin(2. * std::numbers::pi * t) *
+                               (std::pow((sin(2. * std::numbers::pi * x)), 2.))) /
+                               5. +
+                           ((std::pow(std::numbers::pi, 2.)) * cos(2. * std::numbers::pi * x) *
+                               cos(2. * std::numbers::pi * (t + 1. / 4.)) *
+                               (cos(2. * std::numbers::pi * x) - 1.)) /
+                               5. +
+                           ((std::pow(std::numbers::pi, 2.)) *
+                               (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                               (std::pow((sin(2. * std::numbers::pi * x) *
+                                                 sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                                 (cos(2. * std::numbers::pi * x) - 1.) -
+                                             20.),
+                                   2.)) *
+                               ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                               (std::pow(
+                                   (cos(2. * std::numbers::pi * x) -
+                                       2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                                   2.))) /
+                               40000.)) /
+                          ((std::pow(std::numbers::pi, 2.)) *
+                                  (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                                  (std::pow(
+                                      (cos(2. * std::numbers::pi * x) -
+                                          2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) +
+                                          1.),
+                                      2.)) +
+                              100.) -
+                      (100. *
+                          ((2. *
+                               ((7. * (std::pow((cos(2. * std::numbers::pi * t)), 2.))) / 2. - 4.) *
+                               (std::pow(
+                                   (cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                                           (std::pow((sin(std::numbers::pi * x)), 3.)) +
+                                       5.),
+                                   2.))) /
+                                  25. +
+                              (3. *
+                                  (std::pow((sin(2. * std::numbers::pi * x) *
+                                                    sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                                    (cos(2. * std::numbers::pi * x) - 1.) -
+                                                20.),
+                                      2.)) *
+                                  ((7. * cos(4. * std::numbers::pi * t)) / 6. - 3. / 2.)) /
+                                  400. -
+                              (3. *
+                                  (std::pow((sin(2. * std::numbers::pi * x) *
+                                                    sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                                    (cos(2. * std::numbers::pi * x) - 1.) -
+                                                20.),
+                                      2.)) *
+                                  ((7. * cos(4. * std::numbers::pi * t)) / 4. - 9. / 4.)) /
+                                  200. +
+                              ((std::pow(std::numbers::pi, 2.)) * sin(2. * std::numbers::pi * t) *
+                                  (std::pow((sin(2. * std::numbers::pi * x)), 2.))) /
+                                  5. +
+                              ((std::pow(std::numbers::pi, 2.)) * cos(2. * std::numbers::pi * x) *
+                                  cos(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                  (cos(2. * std::numbers::pi * x) - 1.)) /
+                                  5. +
+                              ((std::pow(std::numbers::pi, 2.)) *
+                                  (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                                  (std::pow((sin(2. * std::numbers::pi * x) *
+                                                    sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                                    (cos(2. * std::numbers::pi * x) - 1.) -
+                                                20.),
+                                      2.)) *
+                                  ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                                  (std::pow(
+                                      (cos(2. * std::numbers::pi * x) -
+                                          2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) +
+                                          1.),
+                                      2.))) /
+                                  40000.)) /
+                          ((std::pow(std::numbers::pi, 2.)) *
+                                  (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                                  (std::pow(
+                                      (cos(2. * std::numbers::pi * x) -
+                                          2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) +
+                                          1.),
+                                      2.)) +
+                              100.) +
+                      ((std::pow(std::numbers::pi, 2.)) *
+                          (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                          (std::pow((sin(2. * std::numbers::pi * x) *
+                                            sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                            (cos(2. * std::numbers::pi * x) - 1.) -
+                                        20.),
+                              2.)) *
+                          ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                          (std::pow((cos(2. * std::numbers::pi * x) -
+                                        2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                              2.))) /
+                          (200. *
+                              ((std::pow(std::numbers::pi, 2.)) *
+                                      (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                                      (std::pow((cos(2. * std::numbers::pi * x) -
+                                                    2. * (std::pow((cos(2. * std::numbers::pi * x)),
+                                                             2.)) +
+                                                    1.),
+                                          2.)) +
+                                  100.)) +
+                      ((std::pow(std::numbers::pi, 2.)) * cos(2. * std::numbers::pi * t) *
+                          sin(std::numbers::pi * x) * sin(3. * std::numbers::pi * x) *
+                          sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                          ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                          (2. * cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                                  (std::pow((sin(std::numbers::pi * x)), 3.)) +
+                              10.) *
+                          (cos(2. * std::numbers::pi * x) -
+                              2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.) *
+                          (2. * cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                                  sin(std::numbers::pi * x) -
+                              2. * cos(2. * std::numbers::pi * t) *
+                                  (std::pow((cos(std::numbers::pi * x)), 3.)) *
+                                  sin(std::numbers::pi * x) +
+                              10.)) /
+                          (25. *
+                              ((std::pow(std::numbers::pi, 2.)) *
+                                      (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                                      (std::pow((cos(2. * std::numbers::pi * x) -
+                                                    2. * (std::pow((cos(2. * std::numbers::pi * x)),
+                                                             2.)) +
+                                                    1.),
+                                          2.)) +
+                                  100.))))) +
+      (((E * std::numbers::pi * cos(2. * std::numbers::pi * t) *
+            (cos(2. * std::numbers::pi * x) -
+                2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.) *
+            (5. * cos(2. * std::numbers::pi * t) * cos(2. * std::numbers::pi * x) -
+                3. * std::numbers::pi * cos(2. * std::numbers::pi * t) +
+                6. * std::numbers::pi * cos(2. * std::numbers::pi * t) *
+                    (std::pow((cos(2. * std::numbers::pi * x)), 2.)) -
+                3. * std::numbers::pi * cos(2. * std::numbers::pi * t) *
+                    cos(2. * std::numbers::pi * x) +
+                30.) *
+            ((4. * ((7. * (std::pow((cos(2. * std::numbers::pi * t)), 2.))) / 2. - 4.) *
+                 (std::numbers::pi * cos(2. * std::numbers::pi * t) *
+                         (std::pow((sin(std::numbers::pi * x)), 4.)) -
+                     3. * std::numbers::pi * cos(2. * std::numbers::pi * t) *
+                         (std::pow((cos(std::numbers::pi * x)), 2.)) *
+                         (std::pow((sin(std::numbers::pi * x)), 2.))) *
+                 (cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                         (std::pow((sin(std::numbers::pi * x)), 3.)) +
+                     5.)) /
+                    25. +
+                (3. *
+                    (2. * std::numbers::pi * (std::pow((sin(2. * std::numbers::pi * x)), 2.)) *
+                            sin(2. * std::numbers::pi * (t + 1. / 4.)) -
+                        2. * std::numbers::pi * cos(2. * std::numbers::pi * x) *
+                            sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                            (cos(2. * std::numbers::pi * x) - 1.)) *
+                    (sin(2. * std::numbers::pi * x) * sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                            (cos(2. * std::numbers::pi * x) - 1.) -
+                        20.) *
+                    ((7. * cos(4. * std::numbers::pi * t)) / 6. - 3. / 2.)) /
+                    200. -
+                (3. *
+                    (2. * std::numbers::pi * (std::pow((sin(2. * std::numbers::pi * x)), 2.)) *
+                            sin(2. * std::numbers::pi * (t + 1. / 4.)) -
+                        2. * std::numbers::pi * cos(2. * std::numbers::pi * x) *
+                            sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                            (cos(2. * std::numbers::pi * x) - 1.)) *
+                    (sin(2. * std::numbers::pi * x) * sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                            (cos(2. * std::numbers::pi * x) - 1.) -
+                        20.) *
+                    ((7. * cos(4. * std::numbers::pi * t)) / 4. - 9. / 4.)) /
+                    100. +
+                (2. * (std::pow(std::numbers::pi, 3.)) * cos(2. * std::numbers::pi * x) *
+                    sin(2. * std::numbers::pi * x) * cos(2. * std::numbers::pi * (t + 1. / 4.))) /
+                    5. +
+                (2. * (std::pow(std::numbers::pi, 3.)) * sin(2. * std::numbers::pi * x) *
+                    cos(2. * std::numbers::pi * (t + 1. / 4.)) *
+                    (cos(2. * std::numbers::pi * x) - 1.)) /
+                    5. -
+                (4. * (std::pow(std::numbers::pi, 3.)) * cos(2. * std::numbers::pi * x) *
+                    sin(2. * std::numbers::pi * t) * sin(2. * std::numbers::pi * x)) /
+                    5. +
+                ((std::pow(std::numbers::pi, 2.)) *
+                    (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                    (2. * std::numbers::pi * (std::pow((sin(2. * std::numbers::pi * x)), 2.)) *
+                            sin(2. * std::numbers::pi * (t + 1. / 4.)) -
+                        2. * std::numbers::pi * cos(2. * std::numbers::pi * x) *
+                            sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                            (cos(2. * std::numbers::pi * x) - 1.)) *
+                    (sin(2. * std::numbers::pi * x) * sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                            (cos(2. * std::numbers::pi * x) - 1.) -
+                        20.) *
+                    ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                    (std::pow((cos(2. * std::numbers::pi * x) -
+                                  2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                        2.))) /
+                    20000. +
+                ((std::pow(std::numbers::pi, 2.)) *
+                    (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                    (std::pow((sin(2. * std::numbers::pi * x) *
+                                      sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                      (cos(2. * std::numbers::pi * x) - 1.) -
+                                  20.),
+                        2.)) *
+                    ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                    (2. * std::numbers::pi * sin(2. * std::numbers::pi * x) -
+                        8. * std::numbers::pi * cos(2. * std::numbers::pi * x) *
+                            sin(2. * std::numbers::pi * x)) *
+                    (cos(2. * std::numbers::pi * x) -
+                        2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.)) /
+                    20000.)) /
+               (6. * (v + 1.) *
+                   ((std::pow(std::numbers::pi, 2.)) *
+                           (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                           (std::pow(
+                               (cos(2. * std::numbers::pi * x) -
+                                   2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                               2.)) +
+                       100.)) +
+           (E * std::numbers::pi * cos(2. * std::numbers::pi * t) *
+               (10. * std::numbers::pi * cos(2. * std::numbers::pi * t) *
+                       sin(2. * std::numbers::pi * x) -
+                   6. * (std::pow(std::numbers::pi, 2.)) * cos(2. * std::numbers::pi * t) *
+                       sin(2. * std::numbers::pi * x) +
+                   24. * (std::pow(std::numbers::pi, 2.)) * cos(2. * std::numbers::pi * t) *
+                       cos(2. * std::numbers::pi * x) * sin(2. * std::numbers::pi * x)) *
+               (cos(2. * std::numbers::pi * x) -
+                   2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.) *
+               ((2. * ((7. * (std::pow((cos(2. * std::numbers::pi * t)), 2.))) / 2. - 4.) *
+                    (std::pow((cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                                      (std::pow((sin(std::numbers::pi * x)), 3.)) +
+                                  5.),
+                        2.))) /
+                       25. +
+                   (3. *
+                       (std::pow((sin(2. * std::numbers::pi * x) *
+                                         sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                         (cos(2. * std::numbers::pi * x) - 1.) -
+                                     20.),
+                           2.)) *
+                       ((7. * cos(4. * std::numbers::pi * t)) / 6. - 3. / 2.)) /
+                       400. -
+                   (3. *
+                       (std::pow((sin(2. * std::numbers::pi * x) *
+                                         sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                         (cos(2. * std::numbers::pi * x) - 1.) -
+                                     20.),
+                           2.)) *
+                       ((7. * cos(4. * std::numbers::pi * t)) / 4. - 9. / 4.)) /
+                       200. +
+                   ((std::pow(std::numbers::pi, 2.)) * sin(2. * std::numbers::pi * t) *
+                       (std::pow((sin(2. * std::numbers::pi * x)), 2.))) /
+                       5. +
+                   ((std::pow(std::numbers::pi, 2.)) * cos(2. * std::numbers::pi * x) *
+                       cos(2. * std::numbers::pi * (t + 1. / 4.)) *
+                       (cos(2. * std::numbers::pi * x) - 1.)) /
+                       5. +
+                   ((std::pow(std::numbers::pi, 2.)) *
+                       (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                       (std::pow((sin(2. * std::numbers::pi * x) *
+                                         sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                         (cos(2. * std::numbers::pi * x) - 1.) -
+                                     20.),
+                           2.)) *
+                       ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                       (std::pow((cos(2. * std::numbers::pi * x) -
+                                     2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                           2.))) /
+                       40000.)) /
+               (6. * (v + 1.) *
+                   ((std::pow(std::numbers::pi, 2.)) *
+                           (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                           (std::pow(
+                               (cos(2. * std::numbers::pi * x) -
+                                   2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                               2.)) +
+                       100.)) +
+           (E * std::numbers::pi * cos(2. * std::numbers::pi * t) *
+               (2. * std::numbers::pi * sin(2. * std::numbers::pi * x) -
+                   8. * std::numbers::pi * cos(2. * std::numbers::pi * x) *
+                       sin(2. * std::numbers::pi * x)) *
+               (5. * cos(2. * std::numbers::pi * t) * cos(2. * std::numbers::pi * x) -
+                   3. * std::numbers::pi * cos(2. * std::numbers::pi * t) +
+                   6. * std::numbers::pi * cos(2. * std::numbers::pi * t) *
+                       (std::pow((cos(2. * std::numbers::pi * x)), 2.)) -
+                   3. * std::numbers::pi * cos(2. * std::numbers::pi * t) *
+                       cos(2. * std::numbers::pi * x) +
+                   30.) *
+               ((2. * ((7. * (std::pow((cos(2. * std::numbers::pi * t)), 2.))) / 2. - 4.) *
+                    (std::pow((cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                                      (std::pow((sin(std::numbers::pi * x)), 3.)) +
+                                  5.),
+                        2.))) /
+                       25. +
+                   (3. *
+                       (std::pow((sin(2. * std::numbers::pi * x) *
+                                         sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                         (cos(2. * std::numbers::pi * x) - 1.) -
+                                     20.),
+                           2.)) *
+                       ((7. * cos(4. * std::numbers::pi * t)) / 6. - 3. / 2.)) /
+                       400. -
+                   (3. *
+                       (std::pow((sin(2. * std::numbers::pi * x) *
+                                         sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                         (cos(2. * std::numbers::pi * x) - 1.) -
+                                     20.),
+                           2.)) *
+                       ((7. * cos(4. * std::numbers::pi * t)) / 4. - 9. / 4.)) /
+                       200. +
+                   ((std::pow(std::numbers::pi, 2.)) * sin(2. * std::numbers::pi * t) *
+                       (std::pow((sin(2. * std::numbers::pi * x)), 2.))) /
+                       5. +
+                   ((std::pow(std::numbers::pi, 2.)) * cos(2. * std::numbers::pi * x) *
+                       cos(2. * std::numbers::pi * (t + 1. / 4.)) *
+                       (cos(2. * std::numbers::pi * x) - 1.)) /
+                       5. +
+                   ((std::pow(std::numbers::pi, 2.)) *
+                       (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                       (std::pow((sin(2. * std::numbers::pi * x) *
+                                         sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                         (cos(2. * std::numbers::pi * x) - 1.) -
+                                     20.),
+                           2.)) *
+                       ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                       (std::pow((cos(2. * std::numbers::pi * x) -
+                                     2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                           2.))) /
+                       40000.)) /
+               (6. * (v + 1.) *
+                   ((std::pow(std::numbers::pi, 2.)) *
+                           (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                           (std::pow(
+                               (cos(2. * std::numbers::pi * x) -
+                                   2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                               2.)) +
+                       100.)) +
+           (E * std::numbers::pi * cos(2. * std::numbers::pi * t) *
+               (std::pow(
+                   (sin(2. * std::numbers::pi * x) * sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                           (cos(2. * std::numbers::pi * x) - 1.) -
+                       20.),
+                   2.)) *
+               ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+               (10. * std::numbers::pi * cos(2. * std::numbers::pi * t) *
+                       sin(2. * std::numbers::pi * x) -
+                   6. * (std::pow(std::numbers::pi, 2.)) * cos(2. * std::numbers::pi * t) *
+                       sin(2. * std::numbers::pi * x) +
+                   24. * (std::pow(std::numbers::pi, 2.)) * cos(2. * std::numbers::pi * t) *
+                       cos(2. * std::numbers::pi * x) * sin(2. * std::numbers::pi * x)) *
+               (cos(2. * std::numbers::pi * x) -
+                   2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.)) /
+               (1200. * (v + 1.) *
+                   ((std::pow(std::numbers::pi, 2.)) *
+                           (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                           (std::pow(
+                               (cos(2. * std::numbers::pi * x) -
+                                   2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                               2.)) +
+                       100.)) -
+           (E * (std::pow(std::numbers::pi, 3.)) *
+               (std::pow((cos(2. * std::numbers::pi * t)), 3.)) *
+               (2. * std::numbers::pi * sin(2. * std::numbers::pi * x) -
+                   8. * std::numbers::pi * cos(2. * std::numbers::pi * x) *
+                       sin(2. * std::numbers::pi * x)) *
+               (std::pow((cos(2. * std::numbers::pi * x) -
+                             2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                   2.)) *
+               (5. * cos(2. * std::numbers::pi * t) * cos(2. * std::numbers::pi * x) -
+                   3. * std::numbers::pi * cos(2. * std::numbers::pi * t) +
+                   6. * std::numbers::pi * cos(2. * std::numbers::pi * t) *
+                       (std::pow((cos(2. * std::numbers::pi * x)), 2.)) -
+                   3. * std::numbers::pi * cos(2. * std::numbers::pi * t) *
+                       cos(2. * std::numbers::pi * x) +
+                   30.) *
+               ((2. * ((7. * (std::pow((cos(2. * std::numbers::pi * t)), 2.))) / 2. - 4.) *
+                    (std::pow((cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                                      (std::pow((sin(std::numbers::pi * x)), 3.)) +
+                                  5.),
+                        2.))) /
+                       25. +
+                   (3. *
+                       (std::pow((sin(2. * std::numbers::pi * x) *
+                                         sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                         (cos(2. * std::numbers::pi * x) - 1.) -
+                                     20.),
+                           2.)) *
+                       ((7. * cos(4. * std::numbers::pi * t)) / 6. - 3. / 2.)) /
+                       400. -
+                   (3. *
+                       (std::pow((sin(2. * std::numbers::pi * x) *
+                                         sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                         (cos(2. * std::numbers::pi * x) - 1.) -
+                                     20.),
+                           2.)) *
+                       ((7. * cos(4. * std::numbers::pi * t)) / 4. - 9. / 4.)) /
+                       200. +
+                   ((std::pow(std::numbers::pi, 2.)) * sin(2. * std::numbers::pi * t) *
+                       (std::pow((sin(2. * std::numbers::pi * x)), 2.))) /
+                       5. +
+                   ((std::pow(std::numbers::pi, 2.)) * cos(2. * std::numbers::pi * x) *
+                       cos(2. * std::numbers::pi * (t + 1. / 4.)) *
+                       (cos(2. * std::numbers::pi * x) - 1.)) /
+                       5. +
+                   ((std::pow(std::numbers::pi, 2.)) *
+                       (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                       (std::pow((sin(2. * std::numbers::pi * x) *
+                                         sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                         (cos(2. * std::numbers::pi * x) - 1.) -
+                                     20.),
+                           2.)) *
+                       ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                       (std::pow((cos(2. * std::numbers::pi * x) -
+                                     2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                           2.))) /
+                       40000.)) /
+               (3. * (v + 1.) *
+                   (std::pow(
+                       ((std::pow(std::numbers::pi, 2.)) *
+                               (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                               (std::pow(
+                                   (cos(2. * std::numbers::pi * x) -
+                                       2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                                   2.)) +
+                           100.),
+                       2.))) +
+           (E * std::numbers::pi * cos(2. * std::numbers::pi * t) *
+               (std::pow(
+                   (sin(2. * std::numbers::pi * x) * sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                           (cos(2. * std::numbers::pi * x) - 1.) -
+                       20.),
+                   2.)) *
+               ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+               (2. * std::numbers::pi * sin(2. * std::numbers::pi * x) -
+                   8. * std::numbers::pi * cos(2. * std::numbers::pi * x) *
+                       sin(2. * std::numbers::pi * x)) *
+               (5. * cos(2. * std::numbers::pi * t) * cos(2. * std::numbers::pi * x) -
+                   3. * std::numbers::pi * cos(2. * std::numbers::pi * t) +
+                   6. * std::numbers::pi * cos(2. * std::numbers::pi * t) *
+                       (std::pow((cos(2. * std::numbers::pi * x)), 2.)) -
+                   3. * std::numbers::pi * cos(2. * std::numbers::pi * t) *
+                       cos(2. * std::numbers::pi * x) +
+                   30.)) /
+               (1200. * (v + 1.) *
+                   ((std::pow(std::numbers::pi, 2.)) *
+                           (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                           (std::pow(
+                               (cos(2. * std::numbers::pi * x) -
+                                   2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                               2.)) +
+                       100.)) -
+           (E * (std::pow(std::numbers::pi, 3.)) *
+               (std::pow((cos(2. * std::numbers::pi * t)), 3.)) *
+               (std::pow(
+                   (sin(2. * std::numbers::pi * x) * sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                           (cos(2. * std::numbers::pi * x) - 1.) -
+                       20.),
+                   2.)) *
+               ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+               (2. * std::numbers::pi * sin(2. * std::numbers::pi * x) -
+                   8. * std::numbers::pi * cos(2. * std::numbers::pi * x) *
+                       sin(2. * std::numbers::pi * x)) *
+               (std::pow((cos(2. * std::numbers::pi * x) -
+                             2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                   2.)) *
+               (5. * cos(2. * std::numbers::pi * t) * cos(2. * std::numbers::pi * x) -
+                   3. * std::numbers::pi * cos(2. * std::numbers::pi * t) +
+                   6. * std::numbers::pi * cos(2. * std::numbers::pi * t) *
+                       (std::pow((cos(2. * std::numbers::pi * x)), 2.)) -
+                   3. * std::numbers::pi * cos(2. * std::numbers::pi * t) *
+                       cos(2. * std::numbers::pi * x) +
+                   30.)) /
+               (600. * (v + 1.) *
+                   (std::pow(
+                       ((std::pow(std::numbers::pi, 2.)) *
+                               (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                               (std::pow(
+                                   (cos(2. * std::numbers::pi * x) -
+                                       2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                                   2.)) +
+                           100.),
+                       2.))) +
+           (E * std::numbers::pi * cos(2. * std::numbers::pi * t) *
+               (2. * std::numbers::pi * (std::pow((sin(2. * std::numbers::pi * x)), 2.)) *
+                       sin(2. * std::numbers::pi * (t + 1. / 4.)) -
+                   2. * std::numbers::pi * cos(2. * std::numbers::pi * x) *
+                       sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                       (cos(2. * std::numbers::pi * x) - 1.)) *
+               (sin(2. * std::numbers::pi * x) * sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                       (cos(2. * std::numbers::pi * x) - 1.) -
+                   20.) *
+               ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+               (cos(2. * std::numbers::pi * x) -
+                   2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.) *
+               (5. * cos(2. * std::numbers::pi * t) * cos(2. * std::numbers::pi * x) -
+                   3. * std::numbers::pi * cos(2. * std::numbers::pi * t) +
+                   6. * std::numbers::pi * cos(2. * std::numbers::pi * t) *
+                       (std::pow((cos(2. * std::numbers::pi * x)), 2.)) -
+                   3. * std::numbers::pi * cos(2. * std::numbers::pi * t) *
+                       cos(2. * std::numbers::pi * x) +
+                   30.)) /
+               (600. * (v + 1.) *
+                   ((std::pow(std::numbers::pi, 2.)) *
+                           (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                           (std::pow(
+                               (cos(2. * std::numbers::pi * x) -
+                                   2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                               2.)) +
+                       100.))) /
+              (((std::pow(std::numbers::pi, 2.)) *
+                   (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                   (std::pow((cos(2. * std::numbers::pi * x) -
+                                 2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                       2.)) *
+                   ((2. * ((7. * (std::pow((cos(2. * std::numbers::pi * t)), 2.))) / 2. - 4.) *
+                        (std::pow((cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                                          (std::pow((sin(std::numbers::pi * x)), 3.)) +
+                                      5.),
+                            2.))) /
+                           25. +
+                       (3. *
+                           (std::pow((sin(2. * std::numbers::pi * x) *
+                                             sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                             (cos(2. * std::numbers::pi * x) - 1.) -
+                                         20.),
+                               2.)) *
+                           ((7. * cos(4. * std::numbers::pi * t)) / 6. - 3. / 2.)) /
+                           400. -
+                       (3. *
+                           (std::pow((sin(2. * std::numbers::pi * x) *
+                                             sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                             (cos(2. * std::numbers::pi * x) - 1.) -
+                                         20.),
+                               2.)) *
+                           ((7. * cos(4. * std::numbers::pi * t)) / 4. - 9. / 4.)) /
+                           200. +
+                       ((std::pow(std::numbers::pi, 2.)) * sin(2. * std::numbers::pi * t) *
+                           (std::pow((sin(2. * std::numbers::pi * x)), 2.))) /
+                           5. +
+                       ((std::pow(std::numbers::pi, 2.)) * cos(2. * std::numbers::pi * x) *
+                           cos(2. * std::numbers::pi * (t + 1. / 4.)) *
+                           (cos(2. * std::numbers::pi * x) - 1.)) /
+                           5. +
+                       ((std::pow(std::numbers::pi, 2.)) *
+                           (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                           (std::pow((sin(2. * std::numbers::pi * x) *
+                                             sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                             (cos(2. * std::numbers::pi * x) - 1.) -
+                                         20.),
+                               2.)) *
+                           ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                           (std::pow(
+                               (cos(2. * std::numbers::pi * x) -
+                                   2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                               2.))) /
+                           40000.)) /
+                      ((std::pow(std::numbers::pi, 2.)) *
+                              (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                              (std::pow(
+                                  (cos(2. * std::numbers::pi * x) -
+                                      2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                                  2.)) +
+                          100.) -
+                  (100. *
+                      ((2. * ((7. * (std::pow((cos(2. * std::numbers::pi * t)), 2.))) / 2. - 4.) *
+                           (std::pow((cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                                             (std::pow((sin(std::numbers::pi * x)), 3.)) +
+                                         5.),
+                               2.))) /
+                              25. +
+                          (3. *
+                              (std::pow((sin(2. * std::numbers::pi * x) *
+                                                sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                                (cos(2. * std::numbers::pi * x) - 1.) -
+                                            20.),
+                                  2.)) *
+                              ((7. * cos(4. * std::numbers::pi * t)) / 6. - 3. / 2.)) /
+                              400. -
+                          (3. *
+                              (std::pow((sin(2. * std::numbers::pi * x) *
+                                                sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                                (cos(2. * std::numbers::pi * x) - 1.) -
+                                            20.),
+                                  2.)) *
+                              ((7. * cos(4. * std::numbers::pi * t)) / 4. - 9. / 4.)) /
+                              200. +
+                          ((std::pow(std::numbers::pi, 2.)) * sin(2. * std::numbers::pi * t) *
+                              (std::pow((sin(2. * std::numbers::pi * x)), 2.))) /
+                              5. +
+                          ((std::pow(std::numbers::pi, 2.)) * cos(2. * std::numbers::pi * x) *
+                              cos(2. * std::numbers::pi * (t + 1. / 4.)) *
+                              (cos(2. * std::numbers::pi * x) - 1.)) /
+                              5. +
+                          ((std::pow(std::numbers::pi, 2.)) *
+                              (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                              (std::pow((sin(2. * std::numbers::pi * x) *
+                                                sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                                (cos(2. * std::numbers::pi * x) - 1.) -
+                                            20.),
+                                  2.)) *
+                              ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                              (std::pow(
+                                  (cos(2. * std::numbers::pi * x) -
+                                      2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                                  2.))) /
+                              40000.)) /
+                      ((std::pow(std::numbers::pi, 2.)) *
+                              (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                              (std::pow(
+                                  (cos(2. * std::numbers::pi * x) -
+                                      2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                                  2.)) +
+                          100.) +
+                  ((std::pow(std::numbers::pi, 2.)) *
+                      (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                      (std::pow((sin(2. * std::numbers::pi * x) *
+                                        sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                        (cos(2. * std::numbers::pi * x) - 1.) -
+                                    20.),
+                          2.)) *
+                      ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                      (std::pow((cos(2. * std::numbers::pi * x) -
+                                    2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                          2.))) /
+                      (200. * ((std::pow(std::numbers::pi, 2.)) *
+                                      (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                                      (std::pow((cos(2. * std::numbers::pi * x) -
+                                                    2. * (std::pow((cos(2. * std::numbers::pi * x)),
+                                                             2.)) +
+                                                    1.),
+                                          2.)) +
+                                  100.)) +
+                  ((std::pow(std::numbers::pi, 2.)) * cos(2. * std::numbers::pi * t) *
+                      sin(std::numbers::pi * x) * sin(3. * std::numbers::pi * x) *
+                      sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                      ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                      (2. * cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                              (std::pow((sin(std::numbers::pi * x)), 3.)) +
+                          10.) *
+                      (cos(2. * std::numbers::pi * x) -
+                          2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.) *
+                      (2. * cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                              sin(std::numbers::pi * x) -
+                          2. * cos(2. * std::numbers::pi * t) *
+                              (std::pow((cos(std::numbers::pi * x)), 3.)) *
+                              sin(std::numbers::pi * x) +
+                          10.)) /
+                      (25. * ((std::pow(std::numbers::pi, 2.)) *
+                                     (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                                     (std::pow(
+                                         (cos(2. * std::numbers::pi * x) -
+                                             2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) +
+                                             1.),
+                                         2.)) +
+                                 100.))) +
+          (((E * std::numbers::pi * cos(2. * std::numbers::pi * t) *
+                (cos(2. * std::numbers::pi * x) -
+                    2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.) *
+                (5. * cos(2. * std::numbers::pi * t) * cos(2. * std::numbers::pi * x) -
+                    3. * std::numbers::pi * cos(2. * std::numbers::pi * t) +
+                    6. * std::numbers::pi * cos(2. * std::numbers::pi * t) *
+                        (std::pow((cos(2. * std::numbers::pi * x)), 2.)) -
+                    3. * std::numbers::pi * cos(2. * std::numbers::pi * t) *
+                        cos(2. * std::numbers::pi * x) +
+                    30.) *
+                ((2. * ((7. * (std::pow((cos(2. * std::numbers::pi * t)), 2.))) / 2. - 4.) *
+                     (std::pow((cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                                       (std::pow((sin(std::numbers::pi * x)), 3.)) +
+                                   5.),
+                         2.))) /
+                        25. +
+                    (3. *
+                        (std::pow((sin(2. * std::numbers::pi * x) *
+                                          sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                          (cos(2. * std::numbers::pi * x) - 1.) -
+                                      20.),
+                            2.)) *
+                        ((7. * cos(4. * std::numbers::pi * t)) / 6. - 3. / 2.)) /
+                        400. -
+                    (3. *
+                        (std::pow((sin(2. * std::numbers::pi * x) *
+                                          sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                          (cos(2. * std::numbers::pi * x) - 1.) -
+                                      20.),
+                            2.)) *
+                        ((7. * cos(4. * std::numbers::pi * t)) / 4. - 9. / 4.)) /
+                        200. +
+                    ((std::pow(std::numbers::pi, 2.)) * sin(2. * std::numbers::pi * t) *
+                        (std::pow((sin(2. * std::numbers::pi * x)), 2.))) /
+                        5. +
+                    ((std::pow(std::numbers::pi, 2.)) * cos(2. * std::numbers::pi * x) *
+                        cos(2. * std::numbers::pi * (t + 1. / 4.)) *
+                        (cos(2. * std::numbers::pi * x) - 1.)) /
+                        5. +
+                    ((std::pow(std::numbers::pi, 2.)) *
+                        (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                        (std::pow((sin(2. * std::numbers::pi * x) *
+                                          sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                          (cos(2. * std::numbers::pi * x) - 1.) -
+                                      20.),
+                            2.)) *
+                        ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                        (std::pow((cos(2. * std::numbers::pi * x) -
+                                      2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                            2.))) /
+                        40000.)) /
+                   (6. * (v + 1.) *
+                       ((std::pow(std::numbers::pi, 2.)) *
+                               (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                               (std::pow(
+                                   (cos(2. * std::numbers::pi * x) -
+                                       2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                                   2.)) +
+                           100.)) +
+               (E * std::numbers::pi * cos(2. * std::numbers::pi * t) *
+                   (std::pow((sin(2. * std::numbers::pi * x) *
+                                     sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                     (cos(2. * std::numbers::pi * x) - 1.) -
+                                 20.),
+                       2.)) *
+                   ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                   (cos(2. * std::numbers::pi * x) -
+                       2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.) *
+                   (5. * cos(2. * std::numbers::pi * t) * cos(2. * std::numbers::pi * x) -
+                       3. * std::numbers::pi * cos(2. * std::numbers::pi * t) +
+                       6. * std::numbers::pi * cos(2. * std::numbers::pi * t) *
+                           (std::pow((cos(2. * std::numbers::pi * x)), 2.)) -
+                       3. * std::numbers::pi * cos(2. * std::numbers::pi * t) *
+                           cos(2. * std::numbers::pi * x) +
+                       30.)) /
+                   (1200. * (v + 1.) *
+                       ((std::pow(std::numbers::pi, 2.)) *
+                               (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                               (std::pow(
+                                   (cos(2. * std::numbers::pi * x) -
+                                       2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                                   2.)) +
+                           100.))) *
+              ((100. * ((4. * ((7. * (std::pow((cos(2. * std::numbers::pi * t)), 2.))) / 2. - 4.) *
+                            (std::numbers::pi * cos(2. * std::numbers::pi * t) *
+                                    (std::pow((sin(std::numbers::pi * x)), 4.)) -
+                                3. * std::numbers::pi * cos(2. * std::numbers::pi * t) *
+                                    (std::pow((cos(std::numbers::pi * x)), 2.)) *
+                                    (std::pow((sin(std::numbers::pi * x)), 2.))) *
+                            (cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                                    (std::pow((sin(std::numbers::pi * x)), 3.)) +
+                                5.)) /
+                               25. +
+                           (3. *
+                               (2. * std::numbers::pi *
+                                       (std::pow((sin(2. * std::numbers::pi * x)), 2.)) *
+                                       sin(2. * std::numbers::pi * (t + 1. / 4.)) -
+                                   2. * std::numbers::pi * cos(2. * std::numbers::pi * x) *
+                                       sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                       (cos(2. * std::numbers::pi * x) - 1.)) *
+                               (sin(2. * std::numbers::pi * x) *
+                                       sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                       (cos(2. * std::numbers::pi * x) - 1.) -
+                                   20.) *
+                               ((7. * cos(4. * std::numbers::pi * t)) / 6. - 3. / 2.)) /
+                               200. -
+                           (3. *
+                               (2. * std::numbers::pi *
+                                       (std::pow((sin(2. * std::numbers::pi * x)), 2.)) *
+                                       sin(2. * std::numbers::pi * (t + 1. / 4.)) -
+                                   2. * std::numbers::pi * cos(2. * std::numbers::pi * x) *
+                                       sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                       (cos(2. * std::numbers::pi * x) - 1.)) *
+                               (sin(2. * std::numbers::pi * x) *
+                                       sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                       (cos(2. * std::numbers::pi * x) - 1.) -
+                                   20.) *
+                               ((7. * cos(4. * std::numbers::pi * t)) / 4. - 9. / 4.)) /
+                               100. +
+                           (2. * (std::pow(std::numbers::pi, 3.)) * cos(2. * std::numbers::pi * x) *
+                               sin(2. * std::numbers::pi * x) *
+                               cos(2. * std::numbers::pi * (t + 1. / 4.))) /
+                               5. +
+                           (2. * (std::pow(std::numbers::pi, 3.)) * sin(2. * std::numbers::pi * x) *
+                               cos(2. * std::numbers::pi * (t + 1. / 4.)) *
+                               (cos(2. * std::numbers::pi * x) - 1.)) /
+                               5. -
+                           (4. * (std::pow(std::numbers::pi, 3.)) * cos(2. * std::numbers::pi * x) *
+                               sin(2. * std::numbers::pi * t) * sin(2. * std::numbers::pi * x)) /
+                               5. +
+                           ((std::pow(std::numbers::pi, 2.)) *
+                               (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                               (2. * std::numbers::pi *
+                                       (std::pow((sin(2. * std::numbers::pi * x)), 2.)) *
+                                       sin(2. * std::numbers::pi * (t + 1. / 4.)) -
+                                   2. * std::numbers::pi * cos(2. * std::numbers::pi * x) *
+                                       sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                       (cos(2. * std::numbers::pi * x) - 1.)) *
+                               (sin(2. * std::numbers::pi * x) *
+                                       sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                       (cos(2. * std::numbers::pi * x) - 1.) -
+                                   20.) *
+                               ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                               (std::pow(
+                                   (cos(2. * std::numbers::pi * x) -
+                                       2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                                   2.))) /
+                               20000. +
+                           ((std::pow(std::numbers::pi, 2.)) *
+                               (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                               (std::pow((sin(2. * std::numbers::pi * x) *
+                                                 sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                                 (cos(2. * std::numbers::pi * x) - 1.) -
+                                             20.),
+                                   2.)) *
+                               ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                               (2. * std::numbers::pi * sin(2. * std::numbers::pi * x) -
+                                   8. * std::numbers::pi * cos(2. * std::numbers::pi * x) *
+                                       sin(2. * std::numbers::pi * x)) *
+                               (cos(2. * std::numbers::pi * x) -
+                                   2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.)) /
+                               20000.)) /
+                      ((std::pow(std::numbers::pi, 2.)) *
+                              (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                              (std::pow(
+                                  (cos(2. * std::numbers::pi * x) -
+                                      2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                                  2.)) +
+                          100.) -
+                  ((std::pow(std::numbers::pi, 2.)) *
+                      (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                      (std::pow((cos(2. * std::numbers::pi * x) -
+                                    2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                          2.)) *
+                      ((4. * ((7. * (std::pow((cos(2. * std::numbers::pi * t)), 2.))) / 2. - 4.) *
+                           (std::numbers::pi * cos(2. * std::numbers::pi * t) *
+                                   (std::pow((sin(std::numbers::pi * x)), 4.)) -
+                               3. * std::numbers::pi * cos(2. * std::numbers::pi * t) *
+                                   (std::pow((cos(std::numbers::pi * x)), 2.)) *
+                                   (std::pow((sin(std::numbers::pi * x)), 2.))) *
+                           (cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                                   (std::pow((sin(std::numbers::pi * x)), 3.)) +
+                               5.)) /
+                              25. +
+                          (3. *
+                              (2. * std::numbers::pi *
+                                      (std::pow((sin(2. * std::numbers::pi * x)), 2.)) *
+                                      sin(2. * std::numbers::pi * (t + 1. / 4.)) -
+                                  2. * std::numbers::pi * cos(2. * std::numbers::pi * x) *
+                                      sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                      (cos(2. * std::numbers::pi * x) - 1.)) *
+                              (sin(2. * std::numbers::pi * x) *
+                                      sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                      (cos(2. * std::numbers::pi * x) - 1.) -
+                                  20.) *
+                              ((7. * cos(4. * std::numbers::pi * t)) / 6. - 3. / 2.)) /
+                              200. -
+                          (3. *
+                              (2. * std::numbers::pi *
+                                      (std::pow((sin(2. * std::numbers::pi * x)), 2.)) *
+                                      sin(2. * std::numbers::pi * (t + 1. / 4.)) -
+                                  2. * std::numbers::pi * cos(2. * std::numbers::pi * x) *
+                                      sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                      (cos(2. * std::numbers::pi * x) - 1.)) *
+                              (sin(2. * std::numbers::pi * x) *
+                                      sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                      (cos(2. * std::numbers::pi * x) - 1.) -
+                                  20.) *
+                              ((7. * cos(4. * std::numbers::pi * t)) / 4. - 9. / 4.)) /
+                              100. +
+                          (2. * (std::pow(std::numbers::pi, 3.)) * cos(2. * std::numbers::pi * x) *
+                              sin(2. * std::numbers::pi * x) *
+                              cos(2. * std::numbers::pi * (t + 1. / 4.))) /
+                              5. +
+                          (2. * (std::pow(std::numbers::pi, 3.)) * sin(2. * std::numbers::pi * x) *
+                              cos(2. * std::numbers::pi * (t + 1. / 4.)) *
+                              (cos(2. * std::numbers::pi * x) - 1.)) /
+                              5. -
+                          (4. * (std::pow(std::numbers::pi, 3.)) * cos(2. * std::numbers::pi * x) *
+                              sin(2. * std::numbers::pi * t) * sin(2. * std::numbers::pi * x)) /
+                              5. +
+                          ((std::pow(std::numbers::pi, 2.)) *
+                              (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                              (2. * std::numbers::pi *
+                                      (std::pow((sin(2. * std::numbers::pi * x)), 2.)) *
+                                      sin(2. * std::numbers::pi * (t + 1. / 4.)) -
+                                  2. * std::numbers::pi * cos(2. * std::numbers::pi * x) *
+                                      sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                      (cos(2. * std::numbers::pi * x) - 1.)) *
+                              (sin(2. * std::numbers::pi * x) *
+                                      sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                      (cos(2. * std::numbers::pi * x) - 1.) -
+                                  20.) *
+                              ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                              (std::pow(
+                                  (cos(2. * std::numbers::pi * x) -
+                                      2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                                  2.))) /
+                              20000. +
+                          ((std::pow(std::numbers::pi, 2.)) *
+                              (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                              (std::pow((sin(2. * std::numbers::pi * x) *
+                                                sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                                (cos(2. * std::numbers::pi * x) - 1.) -
+                                            20.),
+                                  2.)) *
+                              ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                              (2. * std::numbers::pi * sin(2. * std::numbers::pi * x) -
+                                  8. * std::numbers::pi * cos(2. * std::numbers::pi * x) *
+                                      sin(2. * std::numbers::pi * x)) *
+                              (cos(2. * std::numbers::pi * x) -
+                                  2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.)) /
+                              20000.)) /
+                      ((std::pow(std::numbers::pi, 2.)) *
+                              (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                              (std::pow(
+                                  (cos(2. * std::numbers::pi * x) -
+                                      2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                                  2.)) +
+                          100.) -
+                  (2. * (std::pow(std::numbers::pi, 2.)) *
+                      (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                      (2. * std::numbers::pi * sin(2. * std::numbers::pi * x) -
+                          8. * std::numbers::pi * cos(2. * std::numbers::pi * x) *
+                              sin(2. * std::numbers::pi * x)) *
+                      (cos(2. * std::numbers::pi * x) -
+                          2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.) *
+                      ((2. * ((7. * (std::pow((cos(2. * std::numbers::pi * t)), 2.))) / 2. - 4.) *
+                           (std::pow((cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                                             (std::pow((sin(std::numbers::pi * x)), 3.)) +
+                                         5.),
+                               2.))) /
+                              25. +
+                          (3. *
+                              (std::pow((sin(2. * std::numbers::pi * x) *
+                                                sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                                (cos(2. * std::numbers::pi * x) - 1.) -
+                                            20.),
+                                  2.)) *
+                              ((7. * cos(4. * std::numbers::pi * t)) / 6. - 3. / 2.)) /
+                              400. -
+                          (3. *
+                              (std::pow((sin(2. * std::numbers::pi * x) *
+                                                sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                                (cos(2. * std::numbers::pi * x) - 1.) -
+                                            20.),
+                                  2.)) *
+                              ((7. * cos(4. * std::numbers::pi * t)) / 4. - 9. / 4.)) /
+                              200. +
+                          ((std::pow(std::numbers::pi, 2.)) * sin(2. * std::numbers::pi * t) *
+                              (std::pow((sin(2. * std::numbers::pi * x)), 2.))) /
+                              5. +
+                          ((std::pow(std::numbers::pi, 2.)) * cos(2. * std::numbers::pi * x) *
+                              cos(2. * std::numbers::pi * (t + 1. / 4.)) *
+                              (cos(2. * std::numbers::pi * x) - 1.)) /
+                              5. +
+                          ((std::pow(std::numbers::pi, 2.)) *
+                              (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                              (std::pow((sin(2. * std::numbers::pi * x) *
+                                                sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                                (cos(2. * std::numbers::pi * x) - 1.) -
+                                            20.),
+                                  2.)) *
+                              ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                              (std::pow(
+                                  (cos(2. * std::numbers::pi * x) -
+                                      2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                                  2.))) /
+                              40000.)) /
+                      ((std::pow(std::numbers::pi, 2.)) *
+                              (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                              (std::pow(
+                                  (cos(2. * std::numbers::pi * x) -
+                                      2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                                  2.)) +
+                          100.) -
+                  (200. * (std::pow(std::numbers::pi, 2.)) *
+                      (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                      (2. * std::numbers::pi * sin(2. * std::numbers::pi * x) -
+                          8. * std::numbers::pi * cos(2. * std::numbers::pi * x) *
+                              sin(2. * std::numbers::pi * x)) *
+                      (cos(2. * std::numbers::pi * x) -
+                          2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.) *
+                      ((2. * ((7. * (std::pow((cos(2. * std::numbers::pi * t)), 2.))) / 2. - 4.) *
+                           (std::pow((cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                                             (std::pow((sin(std::numbers::pi * x)), 3.)) +
+                                         5.),
+                               2.))) /
+                              25. +
+                          (3. *
+                              (std::pow((sin(2. * std::numbers::pi * x) *
+                                                sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                                (cos(2. * std::numbers::pi * x) - 1.) -
+                                            20.),
+                                  2.)) *
+                              ((7. * cos(4. * std::numbers::pi * t)) / 6. - 3. / 2.)) /
+                              400. -
+                          (3. *
+                              (std::pow((sin(2. * std::numbers::pi * x) *
+                                                sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                                (cos(2. * std::numbers::pi * x) - 1.) -
+                                            20.),
+                                  2.)) *
+                              ((7. * cos(4. * std::numbers::pi * t)) / 4. - 9. / 4.)) /
+                              200. +
+                          ((std::pow(std::numbers::pi, 2.)) * sin(2. * std::numbers::pi * t) *
+                              (std::pow((sin(2. * std::numbers::pi * x)), 2.))) /
+                              5. +
+                          ((std::pow(std::numbers::pi, 2.)) * cos(2. * std::numbers::pi * x) *
+                              cos(2. * std::numbers::pi * (t + 1. / 4.)) *
+                              (cos(2. * std::numbers::pi * x) - 1.)) /
+                              5. +
+                          ((std::pow(std::numbers::pi, 2.)) *
+                              (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                              (std::pow((sin(2. * std::numbers::pi * x) *
+                                                sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                                (cos(2. * std::numbers::pi * x) - 1.) -
+                                            20.),
+                                  2.)) *
+                              ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                              (std::pow(
+                                  (cos(2. * std::numbers::pi * x) -
+                                      2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                                  2.))) /
+                              40000.)) /
+                      (std::pow(
+                          ((std::pow(std::numbers::pi, 2.)) *
+                                  (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                                  (std::pow(
+                                      (cos(2. * std::numbers::pi * x) -
+                                          2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) +
+                                          1.),
+                                      2.)) +
+                              100.),
+                          2.)) +
+                  (2. * (std::pow(std::numbers::pi, 4.)) *
+                      (std::pow((cos(2. * std::numbers::pi * t)), 4.)) *
+                      (2. * std::numbers::pi * sin(2. * std::numbers::pi * x) -
+                          8. * std::numbers::pi * cos(2. * std::numbers::pi * x) *
+                              sin(2. * std::numbers::pi * x)) *
+                      (std::pow((cos(2. * std::numbers::pi * x) -
+                                    2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                          3.)) *
+                      ((2. * ((7. * (std::pow((cos(2. * std::numbers::pi * t)), 2.))) / 2. - 4.) *
+                           (std::pow((cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                                             (std::pow((sin(std::numbers::pi * x)), 3.)) +
+                                         5.),
+                               2.))) /
+                              25. +
+                          (3. *
+                              (std::pow((sin(2. * std::numbers::pi * x) *
+                                                sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                                (cos(2. * std::numbers::pi * x) - 1.) -
+                                            20.),
+                                  2.)) *
+                              ((7. * cos(4. * std::numbers::pi * t)) / 6. - 3. / 2.)) /
+                              400. -
+                          (3. *
+                              (std::pow((sin(2. * std::numbers::pi * x) *
+                                                sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                                (cos(2. * std::numbers::pi * x) - 1.) -
+                                            20.),
+                                  2.)) *
+                              ((7. * cos(4. * std::numbers::pi * t)) / 4. - 9. / 4.)) /
+                              200. +
+                          ((std::pow(std::numbers::pi, 2.)) * sin(2. * std::numbers::pi * t) *
+                              (std::pow((sin(2. * std::numbers::pi * x)), 2.))) /
+                              5. +
+                          ((std::pow(std::numbers::pi, 2.)) * cos(2. * std::numbers::pi * x) *
+                              cos(2. * std::numbers::pi * (t + 1. / 4.)) *
+                              (cos(2. * std::numbers::pi * x) - 1.)) /
+                              5. +
+                          ((std::pow(std::numbers::pi, 2.)) *
+                              (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                              (std::pow((sin(2. * std::numbers::pi * x) *
+                                                sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                                (cos(2. * std::numbers::pi * x) - 1.) -
+                                            20.),
+                                  2.)) *
+                              ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                              (std::pow(
+                                  (cos(2. * std::numbers::pi * x) -
+                                      2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                                  2.))) /
+                              40000.)) /
+                      (std::pow(
+                          ((std::pow(std::numbers::pi, 2.)) *
+                                  (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                                  (std::pow(
+                                      (cos(2. * std::numbers::pi * x) -
+                                          2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) +
+                                          1.),
+                                      2.)) +
+                              100.),
+                          2.)) +
+                  ((std::pow(std::numbers::pi, 4.)) *
+                      (std::pow((cos(2. * std::numbers::pi * t)), 4.)) *
+                      (std::pow((sin(2. * std::numbers::pi * x) *
+                                        sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                        (cos(2. * std::numbers::pi * x) - 1.) -
+                                    20.),
+                          2.)) *
+                      ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                      (2. * std::numbers::pi * sin(2. * std::numbers::pi * x) -
+                          8. * std::numbers::pi * cos(2. * std::numbers::pi * x) *
+                              sin(2. * std::numbers::pi * x)) *
+                      (std::pow((cos(2. * std::numbers::pi * x) -
+                                    2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                          3.))) /
+                      (100. *
+                          (std::pow(
+                              ((std::pow(std::numbers::pi, 2.)) *
+                                      (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                                      (std::pow((cos(2. * std::numbers::pi * x) -
+                                                    2. * (std::pow((cos(2. * std::numbers::pi * x)),
+                                                             2.)) +
+                                                    1.),
+                                          2.)) +
+                                  100.),
+                              2.))) -
+                  ((std::pow(std::numbers::pi, 2.)) *
+                      (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                      (2. * std::numbers::pi * (std::pow((sin(2. * std::numbers::pi * x)), 2.)) *
+                              sin(2. * std::numbers::pi * (t + 1. / 4.)) -
+                          2. * std::numbers::pi * cos(2. * std::numbers::pi * x) *
+                              sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                              (cos(2. * std::numbers::pi * x) - 1.)) *
+                      (sin(2. * std::numbers::pi * x) * sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                              (cos(2. * std::numbers::pi * x) - 1.) -
+                          20.) *
+                      ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                      (std::pow((cos(2. * std::numbers::pi * x) -
+                                    2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                          2.))) /
+                      (100. * ((std::pow(std::numbers::pi, 2.)) *
+                                      (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                                      (std::pow((cos(2. * std::numbers::pi * x) -
+                                                    2. * (std::pow((cos(2. * std::numbers::pi * x)),
+                                                             2.)) +
+                                                    1.),
+                                          2.)) +
+                                  100.)) -
+                  ((std::pow(std::numbers::pi, 2.)) *
+                      (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                      (std::pow((sin(2. * std::numbers::pi * x) *
+                                        sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                        (cos(2. * std::numbers::pi * x) - 1.) -
+                                    20.),
+                          2.)) *
+                      ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                      (2. * std::numbers::pi * sin(2. * std::numbers::pi * x) -
+                          8. * std::numbers::pi * cos(2. * std::numbers::pi * x) *
+                              sin(2. * std::numbers::pi * x)) *
+                      (cos(2. * std::numbers::pi * x) -
+                          2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.)) /
+                      (100. * ((std::pow(std::numbers::pi, 2.)) *
+                                      (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                                      (std::pow((cos(2. * std::numbers::pi * x) -
+                                                    2. * (std::pow((cos(2. * std::numbers::pi * x)),
+                                                             2.)) +
+                                                    1.),
+                                          2.)) +
+                                  100.)) -
+                  ((std::pow(std::numbers::pi, 2.)) * cos(2. * std::numbers::pi * t) *
+                      sin(std::numbers::pi * x) * sin(3. * std::numbers::pi * x) *
+                      sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                      ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                      (2. * std::numbers::pi * cos(2. * std::numbers::pi * t) *
+                              (std::pow((sin(std::numbers::pi * x)), 4.)) -
+                          6. * std::numbers::pi * cos(2. * std::numbers::pi * t) *
+                              (std::pow((cos(std::numbers::pi * x)), 2.)) *
+                              (std::pow((sin(std::numbers::pi * x)), 2.))) *
+                      (cos(2. * std::numbers::pi * x) -
+                          2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.) *
+                      (2. * cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                              sin(std::numbers::pi * x) -
+                          2. * cos(2. * std::numbers::pi * t) *
+                              (std::pow((cos(std::numbers::pi * x)), 3.)) *
+                              sin(std::numbers::pi * x) +
+                          10.)) /
+                      (25. * ((std::pow(std::numbers::pi, 2.)) *
+                                     (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                                     (std::pow(
+                                         (cos(2. * std::numbers::pi * x) -
+                                             2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) +
+                                             1.),
+                                         2.)) +
+                                 100.)) +
+                  ((std::pow(std::numbers::pi, 3.)) * cos(2. * std::numbers::pi * t) *
+                      cos(std::numbers::pi * x) * sin(3. * std::numbers::pi * x) *
+                      sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                      ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                      (2. * cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                              (std::pow((sin(std::numbers::pi * x)), 3.)) +
+                          10.) *
+                      (cos(2. * std::numbers::pi * x) -
+                          2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.) *
+                      (2. * cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                              sin(std::numbers::pi * x) -
+                          2. * cos(2. * std::numbers::pi * t) *
+                              (std::pow((cos(std::numbers::pi * x)), 3.)) *
+                              sin(std::numbers::pi * x) +
+                          10.)) /
+                      (25. * ((std::pow(std::numbers::pi, 2.)) *
+                                     (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                                     (std::pow(
+                                         (cos(2. * std::numbers::pi * x) -
+                                             2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) +
+                                             1.),
+                                         2.)) +
+                                 100.)) +
+                  (3. * (std::pow(std::numbers::pi, 3.)) * cos(2. * std::numbers::pi * t) *
+                      cos(3. * std::numbers::pi * x) * sin(std::numbers::pi * x) *
+                      sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                      ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                      (2. * cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                              (std::pow((sin(std::numbers::pi * x)), 3.)) +
+                          10.) *
+                      (cos(2. * std::numbers::pi * x) -
+                          2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.) *
+                      (2. * cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                              sin(std::numbers::pi * x) -
+                          2. * cos(2. * std::numbers::pi * t) *
+                              (std::pow((cos(std::numbers::pi * x)), 3.)) *
+                              sin(std::numbers::pi * x) +
+                          10.)) /
+                      (25. * ((std::pow(std::numbers::pi, 2.)) *
+                                     (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                                     (std::pow(
+                                         (cos(2. * std::numbers::pi * x) -
+                                             2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) +
+                                             1.),
+                                         2.)) +
+                                 100.)) +
+                  ((std::pow(std::numbers::pi, 2.)) * cos(2. * std::numbers::pi * t) *
+                      sin(std::numbers::pi * x) * sin(3. * std::numbers::pi * x) *
+                      sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                      ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                      (2. * cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                              (std::pow((sin(std::numbers::pi * x)), 3.)) +
+                          10.) *
+                      (cos(2. * std::numbers::pi * x) -
+                          2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.) *
+                      (2. * std::numbers::pi * cos(2. * std::numbers::pi * t) *
+                              (std::pow((cos(std::numbers::pi * x)), 2.)) -
+                          2. * std::numbers::pi * cos(2. * std::numbers::pi * t) *
+                              (std::pow((cos(std::numbers::pi * x)), 4.)) -
+                          2. * std::numbers::pi * cos(2. * std::numbers::pi * t) *
+                              (std::pow((sin(std::numbers::pi * x)), 2.)) +
+                          6. * std::numbers::pi * cos(2. * std::numbers::pi * t) *
+                              (std::pow((cos(std::numbers::pi * x)), 2.)) *
+                              (std::pow((sin(std::numbers::pi * x)), 2.)))) /
+                      (25. * ((std::pow(std::numbers::pi, 2.)) *
+                                     (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                                     (std::pow(
+                                         (cos(2. * std::numbers::pi * x) -
+                                             2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) +
+                                             1.),
+                                         2.)) +
+                                 100.)) -
+                  ((std::pow(std::numbers::pi, 2.)) * cos(2. * std::numbers::pi * t) *
+                      sin(std::numbers::pi * x) * sin(3. * std::numbers::pi * x) *
+                      sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                      ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                      (2. * std::numbers::pi * sin(2. * std::numbers::pi * x) -
+                          8. * std::numbers::pi * cos(2. * std::numbers::pi * x) *
+                              sin(2. * std::numbers::pi * x)) *
+                      (2. * cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                              (std::pow((sin(std::numbers::pi * x)), 3.)) +
+                          10.) *
+                      (2. * cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                              sin(std::numbers::pi * x) -
+                          2. * cos(2. * std::numbers::pi * t) *
+                              (std::pow((cos(std::numbers::pi * x)), 3.)) *
+                              sin(std::numbers::pi * x) +
+                          10.)) /
+                      (25. * ((std::pow(std::numbers::pi, 2.)) *
+                                     (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                                     (std::pow(
+                                         (cos(2. * std::numbers::pi * x) -
+                                             2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) +
+                                             1.),
+                                         2.)) +
+                                 100.)) +
+                  (2. * (std::pow(std::numbers::pi, 4.)) *
+                      (std::pow((cos(2. * std::numbers::pi * t)), 3.)) * sin(std::numbers::pi * x) *
+                      sin(3. * std::numbers::pi * x) * sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                      ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                      (2. * std::numbers::pi * sin(2. * std::numbers::pi * x) -
+                          8. * std::numbers::pi * cos(2. * std::numbers::pi * x) *
+                              sin(2. * std::numbers::pi * x)) *
+                      (2. * cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                              (std::pow((sin(std::numbers::pi * x)), 3.)) +
+                          10.) *
+                      (std::pow((cos(2. * std::numbers::pi * x) -
+                                    2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                          2.)) *
+                      (2. * cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                              sin(std::numbers::pi * x) -
+                          2. * cos(2. * std::numbers::pi * t) *
+                              (std::pow((cos(std::numbers::pi * x)), 3.)) *
+                              sin(std::numbers::pi * x) +
+                          10.)) /
+                      (25. *
+                          (std::pow(
+                              ((std::pow(std::numbers::pi, 2.)) *
+                                      (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                                      (std::pow((cos(2. * std::numbers::pi * x) -
+                                                    2. * (std::pow((cos(2. * std::numbers::pi * x)),
+                                                             2.)) +
+                                                    1.),
+                                          2.)) +
+                                  100.),
+                              2.))))) /
+              (std::pow(
+                  (((std::pow(std::numbers::pi, 2.)) *
+                       (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                       (std::pow((cos(2. * std::numbers::pi * x) -
+                                     2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                           2.)) *
+                       ((2. *
+                            (std::pow((cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                                              (std::pow((sin(std::numbers::pi * x)), 3.)) +
+                                          5.),
+                                2.)) *
+                            ((7. * (std::pow((cos(2. * std::numbers::pi * t)), 2.))) / 2. - 4.)) /
+                               25. +
+                           (3. * ((7. * cos(4. * std::numbers::pi * t)) / 6. - 3. / 2.) *
+                               (std::pow((sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                                 sin(2. * std::numbers::pi * x) *
+                                                 (cos(2. * std::numbers::pi * x) - 1.) -
+                                             20.),
+                                   2.))) /
+                               400. -
+                           (3. * ((7. * cos(4. * std::numbers::pi * t)) / 4. - 9. / 4.) *
+                               (std::pow((sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                                 sin(2. * std::numbers::pi * x) *
+                                                 (cos(2. * std::numbers::pi * x) - 1.) -
+                                             20.),
+                                   2.))) /
+                               200. +
+                           ((std::pow(std::numbers::pi, 2.)) * sin(2. * std::numbers::pi * t) *
+                               (std::pow((sin(2. * std::numbers::pi * x)), 2.))) /
+                               5. +
+                           ((std::pow(std::numbers::pi, 2.)) *
+                               cos(2. * std::numbers::pi * (t + 1. / 4.)) *
+                               cos(2. * std::numbers::pi * x) *
+                               (cos(2. * std::numbers::pi * x) - 1.)) /
+                               5. +
+                           ((std::pow(std::numbers::pi, 2.)) *
+                               (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                               ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                               (std::pow((sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                                 sin(2. * std::numbers::pi * x) *
+                                                 (cos(2. * std::numbers::pi * x) - 1.) -
+                                             20.),
+                                   2.)) *
+                               (std::pow(
+                                   (cos(2. * std::numbers::pi * x) -
+                                       2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                                   2.))) /
+                               40000.)) /
+                          ((std::pow(std::numbers::pi, 2.)) *
+                                  (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                                  (std::pow(
+                                      (cos(2. * std::numbers::pi * x) -
+                                          2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) +
+                                          1.),
+                                      2.)) +
+                              100.) -
+                      (100. *
+                          ((2. *
+                               (std::pow(
+                                   (cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                                           (std::pow((sin(std::numbers::pi * x)), 3.)) +
+                                       5.),
+                                   2.)) *
+                               ((7. * (std::pow((cos(2. * std::numbers::pi * t)), 2.))) / 2. -
+                                   4.)) /
+                                  25. +
+                              (3. * ((7. * cos(4. * std::numbers::pi * t)) / 6. - 3. / 2.) *
+                                  (std::pow((sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                                    sin(2. * std::numbers::pi * x) *
+                                                    (cos(2. * std::numbers::pi * x) - 1.) -
                                                 20.),
                                       2.))) /
                                   400. -
-                              (3. * ((7. * cos(4. * M_PI * t)) / 4. - 9. / 4.) *
-                                  (std::pow((sin(2. * M_PI * (t + 1. / 4.)) * sin(2. * M_PI * x) *
-                                                    (cos(2. * M_PI * x) - 1.) -
+                              (3. * ((7. * cos(4. * std::numbers::pi * t)) / 4. - 9. / 4.) *
+                                  (std::pow((sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                                    sin(2. * std::numbers::pi * x) *
+                                                    (cos(2. * std::numbers::pi * x) - 1.) -
                                                 20.),
                                       2.))) /
                                   200. +
-                              ((std::pow(M_PI, 2.)) * sin(2. * M_PI * t) *
-                                  (std::pow((sin(2. * M_PI * x)), 2.))) /
+                              ((std::pow(std::numbers::pi, 2.)) * sin(2. * std::numbers::pi * t) *
+                                  (std::pow((sin(2. * std::numbers::pi * x)), 2.))) /
                                   5. +
-                              ((std::pow(M_PI, 2.)) * cos(2. * M_PI * (t + 1. / 4.)) *
-                                  cos(2. * M_PI * x) * (cos(2. * M_PI * x) - 1.)) /
+                              ((std::pow(std::numbers::pi, 2.)) *
+                                  cos(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                  cos(2. * std::numbers::pi * x) *
+                                  (cos(2. * std::numbers::pi * x) - 1.)) /
                                   5. +
-                              ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                                  ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                                  (std::pow((sin(2. * M_PI * (t + 1. / 4.)) * sin(2. * M_PI * x) *
-                                                    (cos(2. * M_PI * x) - 1.) -
+                              ((std::pow(std::numbers::pi, 2.)) *
+                                  (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                                  ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                                  (std::pow((sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                                    sin(2. * std::numbers::pi * x) *
+                                                    (cos(2. * std::numbers::pi * x) - 1.) -
                                                 20.),
                                       2.)) *
-                                  (std::pow((cos(2. * M_PI * x) -
-                                                2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
+                                  (std::pow(
+                                      (cos(2. * std::numbers::pi * x) -
+                                          2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) +
+                                          1.),
                                       2.))) /
                                   40000.)) /
-                          ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                                  (std::pow((cos(2. * M_PI * x) -
-                                                2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
+                          ((std::pow(std::numbers::pi, 2.)) *
+                                  (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                                  (std::pow(
+                                      (cos(2. * std::numbers::pi * x) -
+                                          2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) +
+                                          1.),
                                       2.)) +
                               100.) +
-                      ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                          ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                          (std::pow((sin(2. * M_PI * (t + 1. / 4.)) * sin(2. * M_PI * x) *
-                                            (cos(2. * M_PI * x) - 1.) -
+                      ((std::pow(std::numbers::pi, 2.)) *
+                          (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                          ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                          (std::pow((sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                            sin(2. * std::numbers::pi * x) *
+                                            (cos(2. * std::numbers::pi * x) - 1.) -
                                         20.),
                               2.)) *
-                          (std::pow(
-                              (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
+                          (std::pow((cos(2. * std::numbers::pi * x) -
+                                        2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
                               2.))) /
                           (200. *
-                              ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                                      (std::pow((cos(2. * M_PI * x) -
-                                                    2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
+                              ((std::pow(std::numbers::pi, 2.)) *
+                                      (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                                      (std::pow((cos(2. * std::numbers::pi * x) -
+                                                    2. * (std::pow((cos(2. * std::numbers::pi * x)),
+                                                             2.)) +
+                                                    1.),
                                           2.)) +
                                   100.)) +
-                      ((std::pow(M_PI, 2.)) * sin(2. * M_PI * (t + 1. / 4.)) * cos(2. * M_PI * t) *
-                          sin(M_PI * x) * sin(3. * M_PI * x) *
-                          (2. * cos(2. * M_PI * t) * cos(M_PI * x) *
-                                  (std::pow((sin(M_PI * x)), 3.)) +
+                      ((std::pow(std::numbers::pi, 2.)) *
+                          sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                          cos(2. * std::numbers::pi * t) * sin(std::numbers::pi * x) *
+                          sin(3. * std::numbers::pi * x) *
+                          (2. * cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                                  (std::pow((sin(std::numbers::pi * x)), 3.)) +
                               10.) *
-                          ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                          (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.) *
-                          (2. * cos(2. * M_PI * t) * cos(M_PI * x) * sin(M_PI * x) -
-                              2. * cos(2. * M_PI * t) * (std::pow((cos(M_PI * x)), 3.)) *
-                                  sin(M_PI * x) +
+                          ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                          (cos(2. * std::numbers::pi * x) -
+                              2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.) *
+                          (2. * cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                                  sin(std::numbers::pi * x) -
+                              2. * cos(2. * std::numbers::pi * t) *
+                                  (std::pow((cos(std::numbers::pi * x)), 3.)) *
+                                  sin(std::numbers::pi * x) +
                               10.)) /
                           (25. *
-                              ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                                      (std::pow((cos(2. * M_PI * x) -
-                                                    2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
+                              ((std::pow(std::numbers::pi, 2.)) *
+                                      (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                                      (std::pow((cos(2. * std::numbers::pi * x) -
+                                                    2. * (std::pow((cos(2. * std::numbers::pi * x)),
+                                                             2.)) +
+                                                    1.),
                                           2.)) +
                                   100.))),
                   2.)));
   f_w_ex(1) =
       (5. * E *
-          ((M_PI * sin(2. * M_PI * (t + 1. / 4.)) *
-               (7. * (std::pow((sin(2. * M_PI * (t + 1. / 4.))), 2.)) - 8.) *
-               (cos(2. * M_PI * x) - (std::pow((cos(2. * M_PI * x)), 2.)) +
-                   (std::pow((sin(2. * M_PI * x)), 2.))) *
-               (sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) -
-                   cos(2. * M_PI * x) * sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) +
+          ((std::numbers::pi * sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+               (7. * (std::pow((sin(2. * std::numbers::pi * (t + 1. / 4.))), 2.)) - 8.) *
+               (cos(2. * std::numbers::pi * x) - (std::pow((cos(2. * std::numbers::pi * x)), 2.)) +
+                   (std::pow((sin(2. * std::numbers::pi * x)), 2.))) *
+               (sin(2. * std::numbers::pi * x) * sin(2. * std::numbers::pi * (t + 1. / 4.)) -
+                   cos(2. * std::numbers::pi * x) * sin(2. * std::numbers::pi * x) *
+                       sin(2. * std::numbers::pi * (t + 1. / 4.)) +
                    20.)) /
                   75. +
-              (2. * M_PI * sin(M_PI * x) * sin(3. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                  ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                  (2. * cos(2. * M_PI * t) * cos(M_PI * x) * (std::pow((sin(M_PI * x)), 3.)) +
+              (2. * std::numbers::pi * sin(std::numbers::pi * x) * sin(3. * std::numbers::pi * x) *
+                  sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                  ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                  (2. * cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                          (std::pow((sin(std::numbers::pi * x)), 3.)) +
                       10.)) /
                   75.) *
-          (5. * cos(2. * M_PI * t) * cos(2. * M_PI * x) - 3. * M_PI * cos(2. * M_PI * t) +
-              6. * M_PI * cos(2. * M_PI * t) * (std::pow((cos(2. * M_PI * x)), 2.)) -
-              3. * M_PI * cos(2. * M_PI * t) * cos(2. * M_PI * x) + 30.)) /
+          (5. * cos(2. * std::numbers::pi * t) * cos(2. * std::numbers::pi * x) -
+              3. * std::numbers::pi * cos(2. * std::numbers::pi * t) +
+              6. * std::numbers::pi * cos(2. * std::numbers::pi * t) *
+                  (std::pow((cos(2. * std::numbers::pi * x)), 2.)) -
+              3. * std::numbers::pi * cos(2. * std::numbers::pi * t) *
+                  cos(2. * std::numbers::pi * x) +
+              30.)) /
           (3. * (v + 1.) *
-              ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                      (std::pow(
-                          (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
+              ((std::pow(std::numbers::pi, 2.)) * (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                      (std::pow((cos(2. * std::numbers::pi * x) -
+                                    2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
                           2.)) +
                   100.) *
-              (((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                   (std::pow(
-                       (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.), 2.)) *
-                   ((2. * ((7. * (std::pow((cos(2. * M_PI * t)), 2.))) / 2. - 4.) *
-                        (std::pow(
-                            (cos(2. * M_PI * t) * cos(M_PI * x) * (std::pow((sin(M_PI * x)), 3.)) +
-                                5.),
+              (((std::pow(std::numbers::pi, 2.)) *
+                   (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                   (std::pow((cos(2. * std::numbers::pi * x) -
+                                 2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                       2.)) *
+                   ((2. * ((7. * (std::pow((cos(2. * std::numbers::pi * t)), 2.))) / 2. - 4.) *
+                        (std::pow((cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                                          (std::pow((sin(std::numbers::pi * x)), 3.)) +
+                                      5.),
                             2.))) /
                            25. +
                        (3. *
-                           (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                             (cos(2. * M_PI * x) - 1.) -
+                           (std::pow((sin(2. * std::numbers::pi * x) *
+                                             sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                             (cos(2. * std::numbers::pi * x) - 1.) -
                                          20.),
                                2.)) *
-                           ((7. * cos(4. * M_PI * t)) / 6. - 3. / 2.)) /
+                           ((7. * cos(4. * std::numbers::pi * t)) / 6. - 3. / 2.)) /
                            400. -
                        (3. *
-                           (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                             (cos(2. * M_PI * x) - 1.) -
+                           (std::pow((sin(2. * std::numbers::pi * x) *
+                                             sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                             (cos(2. * std::numbers::pi * x) - 1.) -
                                          20.),
                                2.)) *
-                           ((7. * cos(4. * M_PI * t)) / 4. - 9. / 4.)) /
+                           ((7. * cos(4. * std::numbers::pi * t)) / 4. - 9. / 4.)) /
                            200. +
-                       ((std::pow(M_PI, 2.)) * sin(2. * M_PI * t) *
-                           (std::pow((sin(2. * M_PI * x)), 2.))) /
+                       ((std::pow(std::numbers::pi, 2.)) * sin(2. * std::numbers::pi * t) *
+                           (std::pow((sin(2. * std::numbers::pi * x)), 2.))) /
                            5. +
-                       ((std::pow(M_PI, 2.)) * cos(2. * M_PI * x) * cos(2. * M_PI * (t + 1. / 4.)) *
-                           (cos(2. * M_PI * x) - 1.)) /
+                       ((std::pow(std::numbers::pi, 2.)) * cos(2. * std::numbers::pi * x) *
+                           cos(2. * std::numbers::pi * (t + 1. / 4.)) *
+                           (cos(2. * std::numbers::pi * x) - 1.)) /
                            5. +
-                       ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                           (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                             (cos(2. * M_PI * x) - 1.) -
+                       ((std::pow(std::numbers::pi, 2.)) *
+                           (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                           (std::pow((sin(2. * std::numbers::pi * x) *
+                                             sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                             (cos(2. * std::numbers::pi * x) - 1.) -
                                          20.),
                                2.)) *
-                           ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                           (std::pow((cos(2. * M_PI * x) -
-                                         2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
+                           ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                           (std::pow(
+                               (cos(2. * std::numbers::pi * x) -
+                                   2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
                                2.))) /
                            40000.)) /
-                      ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                              (std::pow((cos(2. * M_PI * x) -
-                                            2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
+                      ((std::pow(std::numbers::pi, 2.)) *
+                              (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                              (std::pow(
+                                  (cos(2. * std::numbers::pi * x) -
+                                      2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
                                   2.)) +
                           100.) -
-                  (100. * ((2. * ((7. * (std::pow((cos(2. * M_PI * t)), 2.))) / 2. - 4.) *
-                               (std::pow((cos(2. * M_PI * t) * cos(M_PI * x) *
-                                                 (std::pow((sin(M_PI * x)), 3.)) +
-                                             5.),
-                                   2.))) /
-                                  25. +
-                              (3. *
-                                  (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                                    (cos(2. * M_PI * x) - 1.) -
-                                                20.),
-                                      2.)) *
-                                  ((7. * cos(4. * M_PI * t)) / 6. - 3. / 2.)) /
-                                  400. -
-                              (3. *
-                                  (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                                    (cos(2. * M_PI * x) - 1.) -
-                                                20.),
-                                      2.)) *
-                                  ((7. * cos(4. * M_PI * t)) / 4. - 9. / 4.)) /
-                                  200. +
-                              ((std::pow(M_PI, 2.)) * sin(2. * M_PI * t) *
-                                  (std::pow((sin(2. * M_PI * x)), 2.))) /
-                                  5. +
-                              ((std::pow(M_PI, 2.)) * cos(2. * M_PI * x) *
-                                  cos(2. * M_PI * (t + 1. / 4.)) * (cos(2. * M_PI * x) - 1.)) /
-                                  5. +
-                              ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                                  (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                                    (cos(2. * M_PI * x) - 1.) -
-                                                20.),
-                                      2.)) *
-                                  ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                                  (std::pow((cos(2. * M_PI * x) -
-                                                2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                                      2.))) /
-                                  40000.)) /
-                      ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                              (std::pow((cos(2. * M_PI * x) -
-                                            2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
+                  (100. *
+                      ((2. * ((7. * (std::pow((cos(2. * std::numbers::pi * t)), 2.))) / 2. - 4.) *
+                           (std::pow((cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                                             (std::pow((sin(std::numbers::pi * x)), 3.)) +
+                                         5.),
+                               2.))) /
+                              25. +
+                          (3. *
+                              (std::pow((sin(2. * std::numbers::pi * x) *
+                                                sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                                (cos(2. * std::numbers::pi * x) - 1.) -
+                                            20.),
+                                  2.)) *
+                              ((7. * cos(4. * std::numbers::pi * t)) / 6. - 3. / 2.)) /
+                              400. -
+                          (3. *
+                              (std::pow((sin(2. * std::numbers::pi * x) *
+                                                sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                                (cos(2. * std::numbers::pi * x) - 1.) -
+                                            20.),
+                                  2.)) *
+                              ((7. * cos(4. * std::numbers::pi * t)) / 4. - 9. / 4.)) /
+                              200. +
+                          ((std::pow(std::numbers::pi, 2.)) * sin(2. * std::numbers::pi * t) *
+                              (std::pow((sin(2. * std::numbers::pi * x)), 2.))) /
+                              5. +
+                          ((std::pow(std::numbers::pi, 2.)) * cos(2. * std::numbers::pi * x) *
+                              cos(2. * std::numbers::pi * (t + 1. / 4.)) *
+                              (cos(2. * std::numbers::pi * x) - 1.)) /
+                              5. +
+                          ((std::pow(std::numbers::pi, 2.)) *
+                              (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                              (std::pow((sin(2. * std::numbers::pi * x) *
+                                                sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                                (cos(2. * std::numbers::pi * x) - 1.) -
+                                            20.),
+                                  2.)) *
+                              ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                              (std::pow(
+                                  (cos(2. * std::numbers::pi * x) -
+                                      2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                                  2.))) /
+                              40000.)) /
+                      ((std::pow(std::numbers::pi, 2.)) *
+                              (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                              (std::pow(
+                                  (cos(2. * std::numbers::pi * x) -
+                                      2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
                                   2.)) +
                           100.) +
-                  ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                      (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                        (cos(2. * M_PI * x) - 1.) -
+                  ((std::pow(std::numbers::pi, 2.)) *
+                      (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                      (std::pow((sin(2. * std::numbers::pi * x) *
+                                        sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                        (cos(2. * std::numbers::pi * x) - 1.) -
                                     20.),
                           2.)) *
-                      ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                      (std::pow(
-                          (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
+                      ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                      (std::pow((cos(2. * std::numbers::pi * x) -
+                                    2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
                           2.))) /
-                      (200. * ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                                      (std::pow((cos(2. * M_PI * x) -
-                                                    2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
+                      (200. * ((std::pow(std::numbers::pi, 2.)) *
+                                      (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                                      (std::pow((cos(2. * std::numbers::pi * x) -
+                                                    2. * (std::pow((cos(2. * std::numbers::pi * x)),
+                                                             2.)) +
+                                                    1.),
                                           2.)) +
                                   100.)) +
-                  ((std::pow(M_PI, 2.)) * cos(2. * M_PI * t) * sin(M_PI * x) * sin(3. * M_PI * x) *
-                      sin(2. * M_PI * (t + 1. / 4.)) * ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                      (2. * cos(2. * M_PI * t) * cos(M_PI * x) * (std::pow((sin(M_PI * x)), 3.)) +
+                  ((std::pow(std::numbers::pi, 2.)) * cos(2. * std::numbers::pi * t) *
+                      sin(std::numbers::pi * x) * sin(3. * std::numbers::pi * x) *
+                      sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                      ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                      (2. * cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                              (std::pow((sin(std::numbers::pi * x)), 3.)) +
                           10.) *
-                      (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.) *
-                      (2. * cos(2. * M_PI * t) * cos(M_PI * x) * sin(M_PI * x) -
-                          2. * cos(2. * M_PI * t) * (std::pow((cos(M_PI * x)), 3.)) *
-                              sin(M_PI * x) +
+                      (cos(2. * std::numbers::pi * x) -
+                          2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.) *
+                      (2. * cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                              sin(std::numbers::pi * x) -
+                          2. * cos(2. * std::numbers::pi * t) *
+                              (std::pow((cos(std::numbers::pi * x)), 3.)) *
+                              sin(std::numbers::pi * x) +
                           10.)) /
-                      (25. * ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                                     (std::pow((cos(2. * M_PI * x) -
-                                                   2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
+                      (25. * ((std::pow(std::numbers::pi, 2.)) *
+                                     (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                                     (std::pow(
+                                         (cos(2. * std::numbers::pi * x) -
+                                             2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) +
+                                             1.),
                                          2.)) +
                                  100.)))) -
       r0 *
           (2. * y *
-                  ((((7. * (std::pow((cos(2. * M_PI * t)), 2.))) / 2. - 4.) *
-                       (std::pow(
-                           (cos(2. * M_PI * t) * cos(M_PI * x) * (std::pow((sin(M_PI * x)), 3.)) +
-                               5.),
+                  ((((7. * (std::pow((cos(2. * std::numbers::pi * t)), 2.))) / 2. - 4.) *
+                       (std::pow((cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                                         (std::pow((sin(std::numbers::pi * x)), 3.)) +
+                                     5.),
                            2.))) /
                           25. -
-                      (std::pow(y, 2.)) * ((7. * (std::pow((cos(2. * M_PI * t)), 2.))) / 2. - 4.)) -
-              (((7. * (std::pow((cos(2. * M_PI * t)), 2.))) / 3. - 8. / 3.) *
-                  (std::pow(
-                      (cos(2. * M_PI * t) * cos(M_PI * x) * (std::pow((sin(M_PI * x)), 3.)) + 5.),
+                      (std::pow(y, 2.)) *
+                          ((7. * (std::pow((cos(2. * std::numbers::pi * t)), 2.))) / 2. - 4.)) -
+              (((7. * (std::pow((cos(2. * std::numbers::pi * t)), 2.))) / 3. - 8. / 3.) *
+                  (std::pow((cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                                    (std::pow((sin(std::numbers::pi * x)), 3.)) +
+                                5.),
                       3.))) /
                   125. +
-              (std::pow(y, 3.)) * ((7. * (std::pow((cos(2. * M_PI * t)), 2.))) / 3. - 8. / 3.)) *
-          (((std::pow(M_PI, 2.)) * y * (std::pow((cos(2. * M_PI * t)), 2.)) *
-               ((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) * (cos(2. * M_PI * x) - 1.)) /
+              (std::pow(y, 3.)) *
+                  ((7. * (std::pow((cos(2. * std::numbers::pi * t)), 2.))) / 3. - 8. / 3.)) *
+          (((std::pow(std::numbers::pi, 2.)) * y *
+               (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+               ((sin(2. * std::numbers::pi * x) * sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                    (cos(2. * std::numbers::pi * x) - 1.)) /
                        20. -
                    1.) *
-               ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-               (std::pow(
-                   (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.), 2.))) /
+               ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+               (std::pow((cos(2. * std::numbers::pi * x) -
+                             2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                   2.))) /
                   100. -
-              ((std::pow(M_PI, 2.)) * cos(2. * M_PI * x) * cos(2. * M_PI * (t + 1. / 4.)) *
-                  (cos(2. * M_PI * x) - 1.)) /
+              ((std::pow(std::numbers::pi, 2.)) * cos(2. * std::numbers::pi * x) *
+                  cos(2. * std::numbers::pi * (t + 1. / 4.)) *
+                  (cos(2. * std::numbers::pi * x) - 1.)) /
                   5. -
-              ((std::pow(M_PI, 2.)) * sin(2. * M_PI * t) * (std::pow((sin(2. * M_PI * x)), 2.))) /
+              ((std::pow(std::numbers::pi, 2.)) * sin(2. * std::numbers::pi * t) *
+                  (std::pow((sin(2. * std::numbers::pi * x)), 2.))) /
                   5. +
-              ((std::pow(M_PI, 2.)) * y * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                  ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                  (std::pow(
-                      (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.), 2.)) *
+              ((std::pow(std::numbers::pi, 2.)) * y *
+                  (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                  ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                  (std::pow((cos(2. * std::numbers::pi * x) -
+                                2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                      2.)) *
                   (y +
-                      (sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                          (cos(2. * M_PI * x) - 1.)) /
+                      (sin(2. * std::numbers::pi * x) * sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                          (cos(2. * std::numbers::pi * x) - 1.)) /
                           20. -
                       1.)) /
                   100. +
-              ((std::pow(M_PI, 2.)) * y * cos(2. * M_PI * t) *
-                  ((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                       (cos(2. * M_PI * x) - 1.)) /
+              ((std::pow(std::numbers::pi, 2.)) * y * cos(2. * std::numbers::pi * t) *
+                  ((sin(2. * std::numbers::pi * x) * sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                       (cos(2. * std::numbers::pi * x) - 1.)) /
                           20. -
                       1.) *
-                  ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                  (sin(2. * M_PI * x) - 2. * sin(4. * M_PI * x)) *
+                  ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                  (sin(2. * std::numbers::pi * x) - 2. * sin(4. * std::numbers::pi * x)) *
                   (y +
-                      (sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                          (cos(2. * M_PI * x) - 1.)) /
+                      (sin(2. * std::numbers::pi * x) * sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                          (cos(2. * std::numbers::pi * x) - 1.)) /
                           20. -
                       1.)) /
                   5.) -
-      r0 * ((14. * (std::pow(M_PI, 2.)) * y * cos(2. * M_PI * t) * cos(2. * M_PI * (t + 1. / 4.)) *
-                sin(2. * M_PI * (t + 1. / 4.)) *
-                ((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) * (cos(2. * M_PI * x) - 1.)) /
-                        20. -
-                    1.) *
-                (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.) *
-                (y +
-                    (sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                        (cos(2. * M_PI * x) - 1.)) /
-                        20. -
-                    1.)) /
-                   5. -
-               ((std::pow(M_PI, 2.)) * y * sin(2. * M_PI * t) *
-                   ((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                        (cos(2. * M_PI * x) - 1.)) /
-                           20. -
-                       1.) *
-                   ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                   (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.) *
-                   (y +
-                       (sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                           (cos(2. * M_PI * x) - 1.)) /
-                           20. -
-                       1.)) /
-                   5. -
-               ((std::pow(M_PI, 2.)) * sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                   (cos(2. * M_PI * x) - 1.)) /
-                   5. +
-               ((std::pow(M_PI, 2.)) * y * cos(2. * M_PI * t) * sin(2. * M_PI * x) *
-                   cos(2. * M_PI * (t + 1. / 4.)) *
-                   ((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                        (cos(2. * M_PI * x) - 1.)) /
-                           20. -
-                       1.) *
-                   ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) * (cos(2. * M_PI * x) - 1.) *
-                   (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.)) /
-                   100. +
-               ((std::pow(M_PI, 2.)) * y * cos(2. * M_PI * t) * sin(2. * M_PI * x) *
-                   cos(2. * M_PI * (t + 1. / 4.)) * ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                   (cos(2. * M_PI * x) - 1.) *
-                   (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.) *
-                   (y +
-                       (sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                           (cos(2. * M_PI * x) - 1.)) /
-                           20. -
-                       1.)) /
-                   100.) +
-      (5. * E *
-          (10. * M_PI * cos(2. * M_PI * t) * sin(2. * M_PI * x) -
-              6. * (std::pow(M_PI, 2.)) * cos(2. * M_PI * t) * sin(2. * M_PI * x) +
-              24. * (std::pow(M_PI, 2.)) * cos(2. * M_PI * t) * cos(2. * M_PI * x) *
-                  sin(2. * M_PI * x)) *
-          ((2. * ((7. * (std::pow((cos(2. * M_PI * t)), 2.))) / 2. - 4.) *
-               (std::pow(
-                   (cos(2. * M_PI * t) * cos(M_PI * x) * (std::pow((sin(M_PI * x)), 3.)) + 5.),
-                   2.))) /
-                  25. -
-              6. * (std::pow(y, 2.)) * ((7. * (std::pow((cos(2. * M_PI * t)), 2.))) / 2. - 4.) +
-              3. * (std::pow(y, 2.)) *
-                  ((7. * (std::pow((cos(2. * M_PI * t)), 2.))) / 3. - 8. / 3.) +
-              ((std::pow(M_PI, 2.)) * sin(2. * M_PI * t) * (std::pow((sin(2. * M_PI * x)), 2.))) /
-                  5. +
-              ((std::pow(M_PI, 2.)) * cos(2. * M_PI * x) * cos(2. * M_PI * (t + 1. / 4.)) *
-                  (cos(2. * M_PI * x) - 1.)) /
+      r0 *
+          ((14. * (std::pow(std::numbers::pi, 2.)) * y * cos(2. * std::numbers::pi * t) *
+               cos(2. * std::numbers::pi * (t + 1. / 4.)) *
+               sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+               ((sin(2. * std::numbers::pi * x) * sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                    (cos(2. * std::numbers::pi * x) - 1.)) /
+                       20. -
+                   1.) *
+               (cos(2. * std::numbers::pi * x) -
+                   2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.) *
+               (y +
+                   (sin(2. * std::numbers::pi * x) * sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                       (cos(2. * std::numbers::pi * x) - 1.)) /
+                       20. -
+                   1.)) /
                   5. -
-              ((std::pow(M_PI, 2.)) * y * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                  ((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                       (cos(2. * M_PI * x) - 1.)) /
+              ((std::pow(std::numbers::pi, 2.)) * y * sin(2. * std::numbers::pi * t) *
+                  ((sin(2. * std::numbers::pi * x) * sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                       (cos(2. * std::numbers::pi * x) - 1.)) /
                           20. -
                       1.) *
-                  ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                  (std::pow(
-                      (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.), 2.))) /
-                  100. -
-              ((std::pow(M_PI, 2.)) * y * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                  ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                  (std::pow(
-                      (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.), 2.)) *
+                  ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                  (cos(2. * std::numbers::pi * x) -
+                      2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.) *
                   (y +
-                      (sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                          (cos(2. * M_PI * x) - 1.)) /
+                      (sin(2. * std::numbers::pi * x) * sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                          (cos(2. * std::numbers::pi * x) - 1.)) /
+                          20. -
+                      1.)) /
+                  5. -
+              ((std::pow(std::numbers::pi, 2.)) * sin(2. * std::numbers::pi * x) *
+                  sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                  (cos(2. * std::numbers::pi * x) - 1.)) /
+                  5. +
+              ((std::pow(std::numbers::pi, 2.)) * y * cos(2. * std::numbers::pi * t) *
+                  sin(2. * std::numbers::pi * x) * cos(2. * std::numbers::pi * (t + 1. / 4.)) *
+                  ((sin(2. * std::numbers::pi * x) * sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                       (cos(2. * std::numbers::pi * x) - 1.)) /
+                          20. -
+                      1.) *
+                  ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                  (cos(2. * std::numbers::pi * x) - 1.) *
+                  (cos(2. * std::numbers::pi * x) -
+                      2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.)) /
+                  100. +
+              ((std::pow(std::numbers::pi, 2.)) * y * cos(2. * std::numbers::pi * t) *
+                  sin(2. * std::numbers::pi * x) * cos(2. * std::numbers::pi * (t + 1. / 4.)) *
+                  ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                  (cos(2. * std::numbers::pi * x) - 1.) *
+                  (cos(2. * std::numbers::pi * x) -
+                      2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.) *
+                  (y +
+                      (sin(2. * std::numbers::pi * x) * sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                          (cos(2. * std::numbers::pi * x) - 1.)) /
+                          20. -
+                      1.)) /
+                  100.) +
+      (5. * E *
+          (10. * std::numbers::pi * cos(2. * std::numbers::pi * t) *
+                  sin(2. * std::numbers::pi * x) -
+              6. * (std::pow(std::numbers::pi, 2.)) * cos(2. * std::numbers::pi * t) *
+                  sin(2. * std::numbers::pi * x) +
+              24. * (std::pow(std::numbers::pi, 2.)) * cos(2. * std::numbers::pi * t) *
+                  cos(2. * std::numbers::pi * x) * sin(2. * std::numbers::pi * x)) *
+          ((2. * ((7. * (std::pow((cos(2. * std::numbers::pi * t)), 2.))) / 2. - 4.) *
+               (std::pow((cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                                 (std::pow((sin(std::numbers::pi * x)), 3.)) +
+                             5.),
+                   2.))) /
+                  25. -
+              6. * (std::pow(y, 2.)) *
+                  ((7. * (std::pow((cos(2. * std::numbers::pi * t)), 2.))) / 2. - 4.) +
+              3. * (std::pow(y, 2.)) *
+                  ((7. * (std::pow((cos(2. * std::numbers::pi * t)), 2.))) / 3. - 8. / 3.) +
+              ((std::pow(std::numbers::pi, 2.)) * sin(2. * std::numbers::pi * t) *
+                  (std::pow((sin(2. * std::numbers::pi * x)), 2.))) /
+                  5. +
+              ((std::pow(std::numbers::pi, 2.)) * cos(2. * std::numbers::pi * x) *
+                  cos(2. * std::numbers::pi * (t + 1. / 4.)) *
+                  (cos(2. * std::numbers::pi * x) - 1.)) /
+                  5. -
+              ((std::pow(std::numbers::pi, 2.)) * y *
+                  (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                  ((sin(2. * std::numbers::pi * x) * sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                       (cos(2. * std::numbers::pi * x) - 1.)) /
+                          20. -
+                      1.) *
+                  ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                  (std::pow((cos(2. * std::numbers::pi * x) -
+                                2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                      2.))) /
+                  100. -
+              ((std::pow(std::numbers::pi, 2.)) * y *
+                  (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                  ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                  (std::pow((cos(2. * std::numbers::pi * x) -
+                                2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                      2.)) *
+                  (y +
+                      (sin(2. * std::numbers::pi * x) * sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                          (cos(2. * std::numbers::pi * x) - 1.)) /
                           20. -
                       1.)) /
                   100. +
-              ((std::pow(M_PI, 2.)) * y * cos(2. * M_PI * t) * sin(2. * M_PI * x) *
-                  ((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                       (cos(2. * M_PI * x) - 1.)) /
+              ((std::pow(std::numbers::pi, 2.)) * y * cos(2. * std::numbers::pi * t) *
+                  sin(2. * std::numbers::pi * x) *
+                  ((sin(2. * std::numbers::pi * x) * sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                       (cos(2. * std::numbers::pi * x) - 1.)) /
                           20. -
                       1.) *
-                  ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) * (4. * cos(2. * M_PI * x) - 1.) *
+                  ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                  (4. * cos(2. * std::numbers::pi * x) - 1.) *
                   (y +
-                      (sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                          (cos(2. * M_PI * x) - 1.)) /
+                      (sin(2. * std::numbers::pi * x) * sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                          (cos(2. * std::numbers::pi * x) - 1.)) /
                           20. -
                       1.)) /
                   5.)) /
           (3. * (v + 1.) *
-              ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                      (std::pow(
-                          (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
+              ((std::pow(std::numbers::pi, 2.)) * (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                      (std::pow((cos(2. * std::numbers::pi * x) -
+                                    2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
                           2.)) +
                   100.) *
-              (((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                   (std::pow(
-                       (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.), 2.)) *
-                   ((2. * ((7. * (std::pow((cos(2. * M_PI * t)), 2.))) / 2. - 4.) *
-                        (std::pow(
-                            (cos(2. * M_PI * t) * cos(M_PI * x) * (std::pow((sin(M_PI * x)), 3.)) +
-                                5.),
+              (((std::pow(std::numbers::pi, 2.)) *
+                   (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                   (std::pow((cos(2. * std::numbers::pi * x) -
+                                 2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                       2.)) *
+                   ((2. * ((7. * (std::pow((cos(2. * std::numbers::pi * t)), 2.))) / 2. - 4.) *
+                        (std::pow((cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                                          (std::pow((sin(std::numbers::pi * x)), 3.)) +
+                                      5.),
                             2.))) /
                            25. +
                        (3. *
-                           (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                             (cos(2. * M_PI * x) - 1.) -
+                           (std::pow((sin(2. * std::numbers::pi * x) *
+                                             sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                             (cos(2. * std::numbers::pi * x) - 1.) -
                                          20.),
                                2.)) *
-                           ((7. * cos(4. * M_PI * t)) / 6. - 3. / 2.)) /
+                           ((7. * cos(4. * std::numbers::pi * t)) / 6. - 3. / 2.)) /
                            400. -
                        (3. *
-                           (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                             (cos(2. * M_PI * x) - 1.) -
+                           (std::pow((sin(2. * std::numbers::pi * x) *
+                                             sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                             (cos(2. * std::numbers::pi * x) - 1.) -
                                          20.),
                                2.)) *
-                           ((7. * cos(4. * M_PI * t)) / 4. - 9. / 4.)) /
+                           ((7. * cos(4. * std::numbers::pi * t)) / 4. - 9. / 4.)) /
                            200. +
-                       ((std::pow(M_PI, 2.)) * sin(2. * M_PI * t) *
-                           (std::pow((sin(2. * M_PI * x)), 2.))) /
+                       ((std::pow(std::numbers::pi, 2.)) * sin(2. * std::numbers::pi * t) *
+                           (std::pow((sin(2. * std::numbers::pi * x)), 2.))) /
                            5. +
-                       ((std::pow(M_PI, 2.)) * cos(2. * M_PI * x) * cos(2. * M_PI * (t + 1. / 4.)) *
-                           (cos(2. * M_PI * x) - 1.)) /
+                       ((std::pow(std::numbers::pi, 2.)) * cos(2. * std::numbers::pi * x) *
+                           cos(2. * std::numbers::pi * (t + 1. / 4.)) *
+                           (cos(2. * std::numbers::pi * x) - 1.)) /
                            5. +
-                       ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                           (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                             (cos(2. * M_PI * x) - 1.) -
+                       ((std::pow(std::numbers::pi, 2.)) *
+                           (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                           (std::pow((sin(2. * std::numbers::pi * x) *
+                                             sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                             (cos(2. * std::numbers::pi * x) - 1.) -
                                          20.),
                                2.)) *
-                           ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                           (std::pow((cos(2. * M_PI * x) -
-                                         2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
+                           ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                           (std::pow(
+                               (cos(2. * std::numbers::pi * x) -
+                                   2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
                                2.))) /
                            40000.)) /
-                      ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                              (std::pow((cos(2. * M_PI * x) -
-                                            2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
+                      ((std::pow(std::numbers::pi, 2.)) *
+                              (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                              (std::pow(
+                                  (cos(2. * std::numbers::pi * x) -
+                                      2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
                                   2.)) +
                           100.) -
-                  (100. * ((2. * ((7. * (std::pow((cos(2. * M_PI * t)), 2.))) / 2. - 4.) *
-                               (std::pow((cos(2. * M_PI * t) * cos(M_PI * x) *
-                                                 (std::pow((sin(M_PI * x)), 3.)) +
-                                             5.),
-                                   2.))) /
-                                  25. +
-                              (3. *
-                                  (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                                    (cos(2. * M_PI * x) - 1.) -
-                                                20.),
-                                      2.)) *
-                                  ((7. * cos(4. * M_PI * t)) / 6. - 3. / 2.)) /
-                                  400. -
-                              (3. *
-                                  (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                                    (cos(2. * M_PI * x) - 1.) -
-                                                20.),
-                                      2.)) *
-                                  ((7. * cos(4. * M_PI * t)) / 4. - 9. / 4.)) /
-                                  200. +
-                              ((std::pow(M_PI, 2.)) * sin(2. * M_PI * t) *
-                                  (std::pow((sin(2. * M_PI * x)), 2.))) /
-                                  5. +
-                              ((std::pow(M_PI, 2.)) * cos(2. * M_PI * x) *
-                                  cos(2. * M_PI * (t + 1. / 4.)) * (cos(2. * M_PI * x) - 1.)) /
-                                  5. +
-                              ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                                  (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                                    (cos(2. * M_PI * x) - 1.) -
-                                                20.),
-                                      2.)) *
-                                  ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                                  (std::pow((cos(2. * M_PI * x) -
-                                                2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                                      2.))) /
-                                  40000.)) /
-                      ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                              (std::pow((cos(2. * M_PI * x) -
-                                            2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
+                  (100. *
+                      ((2. * ((7. * (std::pow((cos(2. * std::numbers::pi * t)), 2.))) / 2. - 4.) *
+                           (std::pow((cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                                             (std::pow((sin(std::numbers::pi * x)), 3.)) +
+                                         5.),
+                               2.))) /
+                              25. +
+                          (3. *
+                              (std::pow((sin(2. * std::numbers::pi * x) *
+                                                sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                                (cos(2. * std::numbers::pi * x) - 1.) -
+                                            20.),
+                                  2.)) *
+                              ((7. * cos(4. * std::numbers::pi * t)) / 6. - 3. / 2.)) /
+                              400. -
+                          (3. *
+                              (std::pow((sin(2. * std::numbers::pi * x) *
+                                                sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                                (cos(2. * std::numbers::pi * x) - 1.) -
+                                            20.),
+                                  2.)) *
+                              ((7. * cos(4. * std::numbers::pi * t)) / 4. - 9. / 4.)) /
+                              200. +
+                          ((std::pow(std::numbers::pi, 2.)) * sin(2. * std::numbers::pi * t) *
+                              (std::pow((sin(2. * std::numbers::pi * x)), 2.))) /
+                              5. +
+                          ((std::pow(std::numbers::pi, 2.)) * cos(2. * std::numbers::pi * x) *
+                              cos(2. * std::numbers::pi * (t + 1. / 4.)) *
+                              (cos(2. * std::numbers::pi * x) - 1.)) /
+                              5. +
+                          ((std::pow(std::numbers::pi, 2.)) *
+                              (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                              (std::pow((sin(2. * std::numbers::pi * x) *
+                                                sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                                (cos(2. * std::numbers::pi * x) - 1.) -
+                                            20.),
+                                  2.)) *
+                              ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                              (std::pow(
+                                  (cos(2. * std::numbers::pi * x) -
+                                      2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                                  2.))) /
+                              40000.)) /
+                      ((std::pow(std::numbers::pi, 2.)) *
+                              (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                              (std::pow(
+                                  (cos(2. * std::numbers::pi * x) -
+                                      2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
                                   2.)) +
                           100.) +
-                  ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                      (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                        (cos(2. * M_PI * x) - 1.) -
+                  ((std::pow(std::numbers::pi, 2.)) *
+                      (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                      (std::pow((sin(2. * std::numbers::pi * x) *
+                                        sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                        (cos(2. * std::numbers::pi * x) - 1.) -
                                     20.),
                           2.)) *
-                      ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                      (std::pow(
-                          (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
+                      ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                      (std::pow((cos(2. * std::numbers::pi * x) -
+                                    2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
                           2.))) /
-                      (200. * ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                                      (std::pow((cos(2. * M_PI * x) -
-                                                    2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
+                      (200. * ((std::pow(std::numbers::pi, 2.)) *
+                                      (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                                      (std::pow((cos(2. * std::numbers::pi * x) -
+                                                    2. * (std::pow((cos(2. * std::numbers::pi * x)),
+                                                             2.)) +
+                                                    1.),
                                           2.)) +
                                   100.)) +
-                  ((std::pow(M_PI, 2.)) * cos(2. * M_PI * t) * sin(M_PI * x) * sin(3. * M_PI * x) *
-                      sin(2. * M_PI * (t + 1. / 4.)) * ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                      (2. * cos(2. * M_PI * t) * cos(M_PI * x) * (std::pow((sin(M_PI * x)), 3.)) +
+                  ((std::pow(std::numbers::pi, 2.)) * cos(2. * std::numbers::pi * t) *
+                      sin(std::numbers::pi * x) * sin(3. * std::numbers::pi * x) *
+                      sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                      ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                      (2. * cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                              (std::pow((sin(std::numbers::pi * x)), 3.)) +
                           10.) *
-                      (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.) *
-                      (2. * cos(2. * M_PI * t) * cos(M_PI * x) * sin(M_PI * x) -
-                          2. * cos(2. * M_PI * t) * (std::pow((cos(M_PI * x)), 3.)) *
-                              sin(M_PI * x) +
+                      (cos(2. * std::numbers::pi * x) -
+                          2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.) *
+                      (2. * cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                              sin(std::numbers::pi * x) -
+                          2. * cos(2. * std::numbers::pi * t) *
+                              (std::pow((cos(std::numbers::pi * x)), 3.)) *
+                              sin(std::numbers::pi * x) +
                           10.)) /
-                      (25. * ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                                     (std::pow((cos(2. * M_PI * x) -
-                                                   2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
+                      (25. * ((std::pow(std::numbers::pi, 2.)) *
+                                     (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                                     (std::pow(
+                                         (cos(2. * std::numbers::pi * x) -
+                                             2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) +
+                                             1.),
                                          2.)) +
                                  100.)))) +
       (5. * E *
-          (5. * cos(2. * M_PI * t) * cos(2. * M_PI * x) - 3. * M_PI * cos(2. * M_PI * t) +
-              6. * M_PI * cos(2. * M_PI * t) * (std::pow((cos(2. * M_PI * x)), 2.)) -
-              3. * M_PI * cos(2. * M_PI * t) * cos(2. * M_PI * x) + 30.) *
-          ((4. * ((7. * (std::pow((cos(2. * M_PI * t)), 2.))) / 2. - 4.) *
-               (M_PI * cos(2. * M_PI * t) * (std::pow((sin(M_PI * x)), 4.)) -
-                   3. * M_PI * cos(2. * M_PI * t) * (std::pow((cos(M_PI * x)), 2.)) *
-                       (std::pow((sin(M_PI * x)), 2.))) *
-               (cos(2. * M_PI * t) * cos(M_PI * x) * (std::pow((sin(M_PI * x)), 3.)) + 5.)) /
+          (5. * cos(2. * std::numbers::pi * t) * cos(2. * std::numbers::pi * x) -
+              3. * std::numbers::pi * cos(2. * std::numbers::pi * t) +
+              6. * std::numbers::pi * cos(2. * std::numbers::pi * t) *
+                  (std::pow((cos(2. * std::numbers::pi * x)), 2.)) -
+              3. * std::numbers::pi * cos(2. * std::numbers::pi * t) *
+                  cos(2. * std::numbers::pi * x) +
+              30.) *
+          ((4. * ((7. * (std::pow((cos(2. * std::numbers::pi * t)), 2.))) / 2. - 4.) *
+               (std::numbers::pi * cos(2. * std::numbers::pi * t) *
+                       (std::pow((sin(std::numbers::pi * x)), 4.)) -
+                   3. * std::numbers::pi * cos(2. * std::numbers::pi * t) *
+                       (std::pow((cos(std::numbers::pi * x)), 2.)) *
+                       (std::pow((sin(std::numbers::pi * x)), 2.))) *
+               (cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                       (std::pow((sin(std::numbers::pi * x)), 3.)) +
+                   5.)) /
                   25. +
-              (2. * (std::pow(M_PI, 3.)) * cos(2. * M_PI * x) * sin(2. * M_PI * x) *
-                  cos(2. * M_PI * (t + 1. / 4.))) /
+              (2. * (std::pow(std::numbers::pi, 3.)) * cos(2. * std::numbers::pi * x) *
+                  sin(2. * std::numbers::pi * x) * cos(2. * std::numbers::pi * (t + 1. / 4.))) /
                   5. +
-              (2. * (std::pow(M_PI, 3.)) * sin(2. * M_PI * x) * cos(2. * M_PI * (t + 1. / 4.)) *
-                  (cos(2. * M_PI * x) - 1.)) /
+              (2. * (std::pow(std::numbers::pi, 3.)) * sin(2. * std::numbers::pi * x) *
+                  cos(2. * std::numbers::pi * (t + 1. / 4.)) *
+                  (cos(2. * std::numbers::pi * x) - 1.)) /
                   5. -
-              (4. * (std::pow(M_PI, 3.)) * cos(2. * M_PI * x) * sin(2. * M_PI * t) *
-                  sin(2. * M_PI * x)) /
+              (4. * (std::pow(std::numbers::pi, 3.)) * cos(2. * std::numbers::pi * x) *
+                  sin(2. * std::numbers::pi * t) * sin(2. * std::numbers::pi * x)) /
                   5. -
-              ((std::pow(M_PI, 2.)) * y * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                  ((M_PI * (std::pow((sin(2. * M_PI * x)), 2.)) * sin(2. * M_PI * (t + 1. / 4.))) /
+              ((std::pow(std::numbers::pi, 2.)) * y *
+                  (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                  ((std::numbers::pi * (std::pow((sin(2. * std::numbers::pi * x)), 2.)) *
+                       sin(2. * std::numbers::pi * (t + 1. / 4.))) /
                           10. -
-                      (M_PI * cos(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                          (cos(2. * M_PI * x) - 1.)) /
+                      (std::numbers::pi * cos(2. * std::numbers::pi * x) *
+                          sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                          (cos(2. * std::numbers::pi * x) - 1.)) /
                           10.) *
-                  ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                  (std::pow(
-                      (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.), 2.))) /
+                  ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                  (std::pow((cos(2. * std::numbers::pi * x) -
+                                2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                      2.))) /
                   50. -
-              ((std::pow(M_PI, 2.)) * y * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                  ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                  (2. * M_PI * sin(2. * M_PI * x) -
-                      8. * M_PI * cos(2. * M_PI * x) * sin(2. * M_PI * x)) *
-                  (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.) *
+              ((std::pow(std::numbers::pi, 2.)) * y *
+                  (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                  ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                  (2. * std::numbers::pi * sin(2. * std::numbers::pi * x) -
+                      8. * std::numbers::pi * cos(2. * std::numbers::pi * x) *
+                          sin(2. * std::numbers::pi * x)) *
+                  (cos(2. * std::numbers::pi * x) -
+                      2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.) *
                   (y +
-                      (sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                          (cos(2. * M_PI * x) - 1.)) /
+                      (sin(2. * std::numbers::pi * x) * sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                          (cos(2. * std::numbers::pi * x) - 1.)) /
                           20. -
                       1.)) /
                   50. +
-              (8. * (std::pow(M_PI, 3.)) * y * cos(2. * M_PI * t) *
-                  (std::pow((sin(2. * M_PI * x)), 2.)) *
-                  ((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                       (cos(2. * M_PI * x) - 1.)) /
+              (8. * (std::pow(std::numbers::pi, 3.)) * y * cos(2. * std::numbers::pi * t) *
+                  (std::pow((sin(2. * std::numbers::pi * x)), 2.)) *
+                  ((sin(2. * std::numbers::pi * x) * sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                       (cos(2. * std::numbers::pi * x) - 1.)) /
                           20. -
                       1.) *
-                  ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
+                  ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
                   (y +
-                      (sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                          (cos(2. * M_PI * x) - 1.)) /
+                      (sin(2. * std::numbers::pi * x) * sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                          (cos(2. * std::numbers::pi * x) - 1.)) /
                           20. -
                       1.)) /
                   5. -
-              ((std::pow(M_PI, 2.)) * y * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                  ((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                       (cos(2. * M_PI * x) - 1.)) /
+              ((std::pow(std::numbers::pi, 2.)) * y *
+                  (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                  ((sin(2. * std::numbers::pi * x) * sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                       (cos(2. * std::numbers::pi * x) - 1.)) /
                           20. -
                       1.) *
-                  ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                  (2. * M_PI * sin(2. * M_PI * x) -
-                      8. * M_PI * cos(2. * M_PI * x) * sin(2. * M_PI * x)) *
-                  (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.)) /
+                  ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                  (2. * std::numbers::pi * sin(2. * std::numbers::pi * x) -
+                      8. * std::numbers::pi * cos(2. * std::numbers::pi * x) *
+                          sin(2. * std::numbers::pi * x)) *
+                  (cos(2. * std::numbers::pi * x) -
+                      2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.)) /
                   50. +
-              ((std::pow(M_PI, 2.)) * y * cos(2. * M_PI * t) * sin(2. * M_PI * x) *
-                  ((M_PI * (std::pow((sin(2. * M_PI * x)), 2.)) * sin(2. * M_PI * (t + 1. / 4.))) /
+              ((std::pow(std::numbers::pi, 2.)) * y * cos(2. * std::numbers::pi * t) *
+                  sin(2. * std::numbers::pi * x) *
+                  ((std::numbers::pi * (std::pow((sin(2. * std::numbers::pi * x)), 2.)) *
+                       sin(2. * std::numbers::pi * (t + 1. / 4.))) /
                           10. -
-                      (M_PI * cos(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                          (cos(2. * M_PI * x) - 1.)) /
+                      (std::numbers::pi * cos(2. * std::numbers::pi * x) *
+                          sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                          (cos(2. * std::numbers::pi * x) - 1.)) /
                           10.) *
-                  ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) * (4. * cos(2. * M_PI * x) - 1.) *
+                  ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                  (4. * cos(2. * std::numbers::pi * x) - 1.) *
                   (y +
-                      (sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                          (cos(2. * M_PI * x) - 1.)) /
+                      (sin(2. * std::numbers::pi * x) * sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                          (cos(2. * std::numbers::pi * x) - 1.)) /
                           20. -
                       1.)) /
                   5. -
-              (2. * (std::pow(M_PI, 3.)) * y * cos(2. * M_PI * t) * cos(2. * M_PI * x) *
-                  ((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                       (cos(2. * M_PI * x) - 1.)) /
+              (2. * (std::pow(std::numbers::pi, 3.)) * y * cos(2. * std::numbers::pi * t) *
+                  cos(2. * std::numbers::pi * x) *
+                  ((sin(2. * std::numbers::pi * x) * sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                       (cos(2. * std::numbers::pi * x) - 1.)) /
                           20. -
                       1.) *
-                  ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) * (4. * cos(2. * M_PI * x) - 1.) *
+                  ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                  (4. * cos(2. * std::numbers::pi * x) - 1.) *
                   (y +
-                      (sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                          (cos(2. * M_PI * x) - 1.)) /
+                      (sin(2. * std::numbers::pi * x) * sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                          (cos(2. * std::numbers::pi * x) - 1.)) /
                           20. -
                       1.)) /
                   5. +
-              ((std::pow(M_PI, 2.)) * y * cos(2. * M_PI * t) * sin(2. * M_PI * x) *
-                  ((M_PI * (std::pow((sin(2. * M_PI * x)), 2.)) * sin(2. * M_PI * (t + 1. / 4.))) /
+              ((std::pow(std::numbers::pi, 2.)) * y * cos(2. * std::numbers::pi * t) *
+                  sin(2. * std::numbers::pi * x) *
+                  ((std::numbers::pi * (std::pow((sin(2. * std::numbers::pi * x)), 2.)) *
+                       sin(2. * std::numbers::pi * (t + 1. / 4.))) /
                           10. -
-                      (M_PI * cos(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                          (cos(2. * M_PI * x) - 1.)) /
+                      (std::numbers::pi * cos(2. * std::numbers::pi * x) *
+                          sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                          (cos(2. * std::numbers::pi * x) - 1.)) /
                           10.) *
-                  ((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                       (cos(2. * M_PI * x) - 1.)) /
+                  ((sin(2. * std::numbers::pi * x) * sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                       (cos(2. * std::numbers::pi * x) - 1.)) /
                           20. -
                       1.) *
-                  ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) * (4. * cos(2. * M_PI * x) - 1.)) /
+                  ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                  (4. * cos(2. * std::numbers::pi * x) - 1.)) /
                   5.)) /
           (3. * (v + 1.) *
-              ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                      (std::pow(
-                          (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
+              ((std::pow(std::numbers::pi, 2.)) * (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                      (std::pow((cos(2. * std::numbers::pi * x) -
+                                    2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
                           2.)) +
                   100.) *
-              (((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                   (std::pow(
-                       (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.), 2.)) *
-                   ((2. * ((7. * (std::pow((cos(2. * M_PI * t)), 2.))) / 2. - 4.) *
-                        (std::pow(
-                            (cos(2. * M_PI * t) * cos(M_PI * x) * (std::pow((sin(M_PI * x)), 3.)) +
-                                5.),
+              (((std::pow(std::numbers::pi, 2.)) *
+                   (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                   (std::pow((cos(2. * std::numbers::pi * x) -
+                                 2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                       2.)) *
+                   ((2. * ((7. * (std::pow((cos(2. * std::numbers::pi * t)), 2.))) / 2. - 4.) *
+                        (std::pow((cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                                          (std::pow((sin(std::numbers::pi * x)), 3.)) +
+                                      5.),
                             2.))) /
                            25. +
                        (3. *
-                           (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                             (cos(2. * M_PI * x) - 1.) -
+                           (std::pow((sin(2. * std::numbers::pi * x) *
+                                             sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                             (cos(2. * std::numbers::pi * x) - 1.) -
                                          20.),
                                2.)) *
-                           ((7. * cos(4. * M_PI * t)) / 6. - 3. / 2.)) /
+                           ((7. * cos(4. * std::numbers::pi * t)) / 6. - 3. / 2.)) /
                            400. -
                        (3. *
-                           (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                             (cos(2. * M_PI * x) - 1.) -
+                           (std::pow((sin(2. * std::numbers::pi * x) *
+                                             sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                             (cos(2. * std::numbers::pi * x) - 1.) -
                                          20.),
                                2.)) *
-                           ((7. * cos(4. * M_PI * t)) / 4. - 9. / 4.)) /
+                           ((7. * cos(4. * std::numbers::pi * t)) / 4. - 9. / 4.)) /
                            200. +
-                       ((std::pow(M_PI, 2.)) * sin(2. * M_PI * t) *
-                           (std::pow((sin(2. * M_PI * x)), 2.))) /
+                       ((std::pow(std::numbers::pi, 2.)) * sin(2. * std::numbers::pi * t) *
+                           (std::pow((sin(2. * std::numbers::pi * x)), 2.))) /
                            5. +
-                       ((std::pow(M_PI, 2.)) * cos(2. * M_PI * x) * cos(2. * M_PI * (t + 1. / 4.)) *
-                           (cos(2. * M_PI * x) - 1.)) /
+                       ((std::pow(std::numbers::pi, 2.)) * cos(2. * std::numbers::pi * x) *
+                           cos(2. * std::numbers::pi * (t + 1. / 4.)) *
+                           (cos(2. * std::numbers::pi * x) - 1.)) /
                            5. +
-                       ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                           (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                             (cos(2. * M_PI * x) - 1.) -
+                       ((std::pow(std::numbers::pi, 2.)) *
+                           (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                           (std::pow((sin(2. * std::numbers::pi * x) *
+                                             sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                             (cos(2. * std::numbers::pi * x) - 1.) -
                                          20.),
                                2.)) *
-                           ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                           (std::pow((cos(2. * M_PI * x) -
-                                         2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
+                           ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                           (std::pow(
+                               (cos(2. * std::numbers::pi * x) -
+                                   2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
                                2.))) /
                            40000.)) /
-                      ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                              (std::pow((cos(2. * M_PI * x) -
-                                            2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
+                      ((std::pow(std::numbers::pi, 2.)) *
+                              (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                              (std::pow(
+                                  (cos(2. * std::numbers::pi * x) -
+                                      2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
                                   2.)) +
                           100.) -
-                  (100. * ((2. * ((7. * (std::pow((cos(2. * M_PI * t)), 2.))) / 2. - 4.) *
-                               (std::pow((cos(2. * M_PI * t) * cos(M_PI * x) *
-                                                 (std::pow((sin(M_PI * x)), 3.)) +
-                                             5.),
-                                   2.))) /
-                                  25. +
-                              (3. *
-                                  (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                                    (cos(2. * M_PI * x) - 1.) -
-                                                20.),
-                                      2.)) *
-                                  ((7. * cos(4. * M_PI * t)) / 6. - 3. / 2.)) /
-                                  400. -
-                              (3. *
-                                  (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                                    (cos(2. * M_PI * x) - 1.) -
-                                                20.),
-                                      2.)) *
-                                  ((7. * cos(4. * M_PI * t)) / 4. - 9. / 4.)) /
-                                  200. +
-                              ((std::pow(M_PI, 2.)) * sin(2. * M_PI * t) *
-                                  (std::pow((sin(2. * M_PI * x)), 2.))) /
-                                  5. +
-                              ((std::pow(M_PI, 2.)) * cos(2. * M_PI * x) *
-                                  cos(2. * M_PI * (t + 1. / 4.)) * (cos(2. * M_PI * x) - 1.)) /
-                                  5. +
-                              ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                                  (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                                    (cos(2. * M_PI * x) - 1.) -
-                                                20.),
-                                      2.)) *
-                                  ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                                  (std::pow((cos(2. * M_PI * x) -
-                                                2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                                      2.))) /
-                                  40000.)) /
-                      ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                              (std::pow((cos(2. * M_PI * x) -
-                                            2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
+                  (100. *
+                      ((2. * ((7. * (std::pow((cos(2. * std::numbers::pi * t)), 2.))) / 2. - 4.) *
+                           (std::pow((cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                                             (std::pow((sin(std::numbers::pi * x)), 3.)) +
+                                         5.),
+                               2.))) /
+                              25. +
+                          (3. *
+                              (std::pow((sin(2. * std::numbers::pi * x) *
+                                                sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                                (cos(2. * std::numbers::pi * x) - 1.) -
+                                            20.),
+                                  2.)) *
+                              ((7. * cos(4. * std::numbers::pi * t)) / 6. - 3. / 2.)) /
+                              400. -
+                          (3. *
+                              (std::pow((sin(2. * std::numbers::pi * x) *
+                                                sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                                (cos(2. * std::numbers::pi * x) - 1.) -
+                                            20.),
+                                  2.)) *
+                              ((7. * cos(4. * std::numbers::pi * t)) / 4. - 9. / 4.)) /
+                              200. +
+                          ((std::pow(std::numbers::pi, 2.)) * sin(2. * std::numbers::pi * t) *
+                              (std::pow((sin(2. * std::numbers::pi * x)), 2.))) /
+                              5. +
+                          ((std::pow(std::numbers::pi, 2.)) * cos(2. * std::numbers::pi * x) *
+                              cos(2. * std::numbers::pi * (t + 1. / 4.)) *
+                              (cos(2. * std::numbers::pi * x) - 1.)) /
+                              5. +
+                          ((std::pow(std::numbers::pi, 2.)) *
+                              (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                              (std::pow((sin(2. * std::numbers::pi * x) *
+                                                sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                                (cos(2. * std::numbers::pi * x) - 1.) -
+                                            20.),
+                                  2.)) *
+                              ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                              (std::pow(
+                                  (cos(2. * std::numbers::pi * x) -
+                                      2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                                  2.))) /
+                              40000.)) /
+                      ((std::pow(std::numbers::pi, 2.)) *
+                              (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                              (std::pow(
+                                  (cos(2. * std::numbers::pi * x) -
+                                      2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
                                   2.)) +
                           100.) +
-                  ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                      (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                        (cos(2. * M_PI * x) - 1.) -
+                  ((std::pow(std::numbers::pi, 2.)) *
+                      (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                      (std::pow((sin(2. * std::numbers::pi * x) *
+                                        sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                        (cos(2. * std::numbers::pi * x) - 1.) -
                                     20.),
                           2.)) *
-                      ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                      (std::pow(
-                          (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
+                      ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                      (std::pow((cos(2. * std::numbers::pi * x) -
+                                    2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
                           2.))) /
-                      (200. * ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                                      (std::pow((cos(2. * M_PI * x) -
-                                                    2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
+                      (200. * ((std::pow(std::numbers::pi, 2.)) *
+                                      (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                                      (std::pow((cos(2. * std::numbers::pi * x) -
+                                                    2. * (std::pow((cos(2. * std::numbers::pi * x)),
+                                                             2.)) +
+                                                    1.),
                                           2.)) +
                                   100.)) +
-                  ((std::pow(M_PI, 2.)) * cos(2. * M_PI * t) * sin(M_PI * x) * sin(3. * M_PI * x) *
-                      sin(2. * M_PI * (t + 1. / 4.)) * ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                      (2. * cos(2. * M_PI * t) * cos(M_PI * x) * (std::pow((sin(M_PI * x)), 3.)) +
+                  ((std::pow(std::numbers::pi, 2.)) * cos(2. * std::numbers::pi * t) *
+                      sin(std::numbers::pi * x) * sin(3. * std::numbers::pi * x) *
+                      sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                      ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                      (2. * cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                              (std::pow((sin(std::numbers::pi * x)), 3.)) +
                           10.) *
-                      (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.) *
-                      (2. * cos(2. * M_PI * t) * cos(M_PI * x) * sin(M_PI * x) -
-                          2. * cos(2. * M_PI * t) * (std::pow((cos(M_PI * x)), 3.)) *
-                              sin(M_PI * x) +
+                      (cos(2. * std::numbers::pi * x) -
+                          2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.) *
+                      (2. * cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                              sin(std::numbers::pi * x) -
+                          2. * cos(2. * std::numbers::pi * t) *
+                              (std::pow((cos(std::numbers::pi * x)), 3.)) *
+                              sin(std::numbers::pi * x) +
                           10.)) /
-                      (25. * ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                                     (std::pow((cos(2. * M_PI * x) -
-                                                   2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
+                      (25. * ((std::pow(std::numbers::pi, 2.)) *
+                                     (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                                     (std::pow(
+                                         (cos(2. * std::numbers::pi * x) -
+                                             2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) +
+                                             1.),
                                          2.)) +
                                  100.)))) +
       (5. * E *
-          (5. * cos(2. * M_PI * t) * cos(2. * M_PI * x) - 3. * M_PI * cos(2. * M_PI * t) +
-              6. * M_PI * cos(2. * M_PI * t) * (std::pow((cos(2. * M_PI * x)), 2.)) -
-              3. * M_PI * cos(2. * M_PI * t) * cos(2. * M_PI * x) + 30.) *
-          ((2. * ((7. * (std::pow((cos(2. * M_PI * t)), 2.))) / 2. - 4.) *
-               (std::pow(
-                   (cos(2. * M_PI * t) * cos(M_PI * x) * (std::pow((sin(M_PI * x)), 3.)) + 5.),
+          (5. * cos(2. * std::numbers::pi * t) * cos(2. * std::numbers::pi * x) -
+              3. * std::numbers::pi * cos(2. * std::numbers::pi * t) +
+              6. * std::numbers::pi * cos(2. * std::numbers::pi * t) *
+                  (std::pow((cos(2. * std::numbers::pi * x)), 2.)) -
+              3. * std::numbers::pi * cos(2. * std::numbers::pi * t) *
+                  cos(2. * std::numbers::pi * x) +
+              30.) *
+          ((2. * ((7. * (std::pow((cos(2. * std::numbers::pi * t)), 2.))) / 2. - 4.) *
+               (std::pow((cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                                 (std::pow((sin(std::numbers::pi * x)), 3.)) +
+                             5.),
                    2.))) /
                   25. -
-              6. * (std::pow(y, 2.)) * ((7. * (std::pow((cos(2. * M_PI * t)), 2.))) / 2. - 4.) +
+              6. * (std::pow(y, 2.)) *
+                  ((7. * (std::pow((cos(2. * std::numbers::pi * t)), 2.))) / 2. - 4.) +
               3. * (std::pow(y, 2.)) *
-                  ((7. * (std::pow((cos(2. * M_PI * t)), 2.))) / 3. - 8. / 3.) +
-              ((std::pow(M_PI, 2.)) * sin(2. * M_PI * t) * (std::pow((sin(2. * M_PI * x)), 2.))) /
+                  ((7. * (std::pow((cos(2. * std::numbers::pi * t)), 2.))) / 3. - 8. / 3.) +
+              ((std::pow(std::numbers::pi, 2.)) * sin(2. * std::numbers::pi * t) *
+                  (std::pow((sin(2. * std::numbers::pi * x)), 2.))) /
                   5. +
-              ((std::pow(M_PI, 2.)) * cos(2. * M_PI * x) * cos(2. * M_PI * (t + 1. / 4.)) *
-                  (cos(2. * M_PI * x) - 1.)) /
+              ((std::pow(std::numbers::pi, 2.)) * cos(2. * std::numbers::pi * x) *
+                  cos(2. * std::numbers::pi * (t + 1. / 4.)) *
+                  (cos(2. * std::numbers::pi * x) - 1.)) /
                   5. -
-              ((std::pow(M_PI, 2.)) * y * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                  ((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                       (cos(2. * M_PI * x) - 1.)) /
+              ((std::pow(std::numbers::pi, 2.)) * y *
+                  (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                  ((sin(2. * std::numbers::pi * x) * sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                       (cos(2. * std::numbers::pi * x) - 1.)) /
                           20. -
                       1.) *
-                  ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                  (std::pow(
-                      (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.), 2.))) /
+                  ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                  (std::pow((cos(2. * std::numbers::pi * x) -
+                                2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                      2.))) /
                   100. -
-              ((std::pow(M_PI, 2.)) * y * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                  ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                  (std::pow(
-                      (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.), 2.)) *
+              ((std::pow(std::numbers::pi, 2.)) * y *
+                  (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                  ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                  (std::pow((cos(2. * std::numbers::pi * x) -
+                                2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                      2.)) *
                   (y +
-                      (sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                          (cos(2. * M_PI * x) - 1.)) /
+                      (sin(2. * std::numbers::pi * x) * sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                          (cos(2. * std::numbers::pi * x) - 1.)) /
                           20. -
                       1.)) /
                   100. +
-              ((std::pow(M_PI, 2.)) * y * cos(2. * M_PI * t) * sin(2. * M_PI * x) *
-                  ((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                       (cos(2. * M_PI * x) - 1.)) /
+              ((std::pow(std::numbers::pi, 2.)) * y * cos(2. * std::numbers::pi * t) *
+                  sin(2. * std::numbers::pi * x) *
+                  ((sin(2. * std::numbers::pi * x) * sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                       (cos(2. * std::numbers::pi * x) - 1.)) /
                           20. -
                       1.) *
-                  ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) * (4. * cos(2. * M_PI * x) - 1.) *
+                  ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                  (4. * cos(2. * std::numbers::pi * x) - 1.) *
                   (y +
-                      (sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                          (cos(2. * M_PI * x) - 1.)) /
+                      (sin(2. * std::numbers::pi * x) * sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                          (cos(2. * std::numbers::pi * x) - 1.)) /
                           20. -
                       1.)) /
                   5.) *
           ((100. *
-               ((4. * ((7. * (std::pow((cos(2. * M_PI * t)), 2.))) / 2. - 4.) *
-                    (M_PI * cos(2. * M_PI * t) * (std::pow((sin(M_PI * x)), 4.)) -
-                        3. * M_PI * cos(2. * M_PI * t) * (std::pow((cos(M_PI * x)), 2.)) *
-                            (std::pow((sin(M_PI * x)), 2.))) *
-                    (cos(2. * M_PI * t) * cos(M_PI * x) * (std::pow((sin(M_PI * x)), 3.)) + 5.)) /
+               ((4. * ((7. * (std::pow((cos(2. * std::numbers::pi * t)), 2.))) / 2. - 4.) *
+                    (std::numbers::pi * cos(2. * std::numbers::pi * t) *
+                            (std::pow((sin(std::numbers::pi * x)), 4.)) -
+                        3. * std::numbers::pi * cos(2. * std::numbers::pi * t) *
+                            (std::pow((cos(std::numbers::pi * x)), 2.)) *
+                            (std::pow((sin(std::numbers::pi * x)), 2.))) *
+                    (cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                            (std::pow((sin(std::numbers::pi * x)), 3.)) +
+                        5.)) /
                        25. +
                    (3. *
-                       (2. * M_PI * (std::pow((sin(2. * M_PI * x)), 2.)) *
-                               sin(2. * M_PI * (t + 1. / 4.)) -
-                           2. * M_PI * cos(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                               (cos(2. * M_PI * x) - 1.)) *
-                       (sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                               (cos(2. * M_PI * x) - 1.) -
+                       (2. * std::numbers::pi * (std::pow((sin(2. * std::numbers::pi * x)), 2.)) *
+                               sin(2. * std::numbers::pi * (t + 1. / 4.)) -
+                           2. * std::numbers::pi * cos(2. * std::numbers::pi * x) *
+                               sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                               (cos(2. * std::numbers::pi * x) - 1.)) *
+                       (sin(2. * std::numbers::pi * x) *
+                               sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                               (cos(2. * std::numbers::pi * x) - 1.) -
                            20.) *
-                       ((7. * cos(4. * M_PI * t)) / 6. - 3. / 2.)) /
+                       ((7. * cos(4. * std::numbers::pi * t)) / 6. - 3. / 2.)) /
                        200. -
                    (3. *
-                       (2. * M_PI * (std::pow((sin(2. * M_PI * x)), 2.)) *
-                               sin(2. * M_PI * (t + 1. / 4.)) -
-                           2. * M_PI * cos(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                               (cos(2. * M_PI * x) - 1.)) *
-                       (sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                               (cos(2. * M_PI * x) - 1.) -
+                       (2. * std::numbers::pi * (std::pow((sin(2. * std::numbers::pi * x)), 2.)) *
+                               sin(2. * std::numbers::pi * (t + 1. / 4.)) -
+                           2. * std::numbers::pi * cos(2. * std::numbers::pi * x) *
+                               sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                               (cos(2. * std::numbers::pi * x) - 1.)) *
+                       (sin(2. * std::numbers::pi * x) *
+                               sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                               (cos(2. * std::numbers::pi * x) - 1.) -
                            20.) *
-                       ((7. * cos(4. * M_PI * t)) / 4. - 9. / 4.)) /
+                       ((7. * cos(4. * std::numbers::pi * t)) / 4. - 9. / 4.)) /
                        100. +
-                   (2. * (std::pow(M_PI, 3.)) * cos(2. * M_PI * x) * sin(2. * M_PI * x) *
-                       cos(2. * M_PI * (t + 1. / 4.))) /
+                   (2. * (std::pow(std::numbers::pi, 3.)) * cos(2. * std::numbers::pi * x) *
+                       sin(2. * std::numbers::pi * x) *
+                       cos(2. * std::numbers::pi * (t + 1. / 4.))) /
                        5. +
-                   (2. * (std::pow(M_PI, 3.)) * sin(2. * M_PI * x) *
-                       cos(2. * M_PI * (t + 1. / 4.)) * (cos(2. * M_PI * x) - 1.)) /
+                   (2. * (std::pow(std::numbers::pi, 3.)) * sin(2. * std::numbers::pi * x) *
+                       cos(2. * std::numbers::pi * (t + 1. / 4.)) *
+                       (cos(2. * std::numbers::pi * x) - 1.)) /
                        5. -
-                   (4. * (std::pow(M_PI, 3.)) * cos(2. * M_PI * x) * sin(2. * M_PI * t) *
-                       sin(2. * M_PI * x)) /
+                   (4. * (std::pow(std::numbers::pi, 3.)) * cos(2. * std::numbers::pi * x) *
+                       sin(2. * std::numbers::pi * t) * sin(2. * std::numbers::pi * x)) /
                        5. +
-                   ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                       (2. * M_PI * (std::pow((sin(2. * M_PI * x)), 2.)) *
-                               sin(2. * M_PI * (t + 1. / 4.)) -
-                           2. * M_PI * cos(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                               (cos(2. * M_PI * x) - 1.)) *
-                       (sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                               (cos(2. * M_PI * x) - 1.) -
+                   ((std::pow(std::numbers::pi, 2.)) *
+                       (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                       (2. * std::numbers::pi * (std::pow((sin(2. * std::numbers::pi * x)), 2.)) *
+                               sin(2. * std::numbers::pi * (t + 1. / 4.)) -
+                           2. * std::numbers::pi * cos(2. * std::numbers::pi * x) *
+                               sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                               (cos(2. * std::numbers::pi * x) - 1.)) *
+                       (sin(2. * std::numbers::pi * x) *
+                               sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                               (cos(2. * std::numbers::pi * x) - 1.) -
                            20.) *
-                       ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                       (std::pow(
-                           (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
+                       ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                       (std::pow((cos(2. * std::numbers::pi * x) -
+                                     2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
                            2.))) /
                        20000. +
-                   ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                       (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                         (cos(2. * M_PI * x) - 1.) -
+                   ((std::pow(std::numbers::pi, 2.)) *
+                       (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                       (std::pow((sin(2. * std::numbers::pi * x) *
+                                         sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                         (cos(2. * std::numbers::pi * x) - 1.) -
                                      20.),
                            2.)) *
-                       ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                       (2. * M_PI * sin(2. * M_PI * x) -
-                           8. * M_PI * cos(2. * M_PI * x) * sin(2. * M_PI * x)) *
-                       (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.)) /
+                       ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                       (2. * std::numbers::pi * sin(2. * std::numbers::pi * x) -
+                           8. * std::numbers::pi * cos(2. * std::numbers::pi * x) *
+                               sin(2. * std::numbers::pi * x)) *
+                       (cos(2. * std::numbers::pi * x) -
+                           2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.)) /
                        20000.)) /
-                  ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                          (std::pow(
-                              (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
+                  ((std::pow(std::numbers::pi, 2.)) *
+                          (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                          (std::pow((cos(2. * std::numbers::pi * x) -
+                                        2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
                               2.)) +
                       100.) -
-              ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                  (std::pow(
-                      (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.), 2.)) *
-                  ((4. * ((7. * (std::pow((cos(2. * M_PI * t)), 2.))) / 2. - 4.) *
-                       (M_PI * cos(2. * M_PI * t) * (std::pow((sin(M_PI * x)), 4.)) -
-                           3. * M_PI * cos(2. * M_PI * t) * (std::pow((cos(M_PI * x)), 2.)) *
-                               (std::pow((sin(M_PI * x)), 2.))) *
-                       (cos(2. * M_PI * t) * cos(M_PI * x) * (std::pow((sin(M_PI * x)), 3.)) +
+              ((std::pow(std::numbers::pi, 2.)) * (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                  (std::pow((cos(2. * std::numbers::pi * x) -
+                                2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                      2.)) *
+                  ((4. * ((7. * (std::pow((cos(2. * std::numbers::pi * t)), 2.))) / 2. - 4.) *
+                       (std::numbers::pi * cos(2. * std::numbers::pi * t) *
+                               (std::pow((sin(std::numbers::pi * x)), 4.)) -
+                           3. * std::numbers::pi * cos(2. * std::numbers::pi * t) *
+                               (std::pow((cos(std::numbers::pi * x)), 2.)) *
+                               (std::pow((sin(std::numbers::pi * x)), 2.))) *
+                       (cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                               (std::pow((sin(std::numbers::pi * x)), 3.)) +
                            5.)) /
                           25. +
                       (3. *
-                          (2. * M_PI * (std::pow((sin(2. * M_PI * x)), 2.)) *
-                                  sin(2. * M_PI * (t + 1. / 4.)) -
-                              2. * M_PI * cos(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                  (cos(2. * M_PI * x) - 1.)) *
-                          (sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                  (cos(2. * M_PI * x) - 1.) -
+                          (2. * std::numbers::pi *
+                                  (std::pow((sin(2. * std::numbers::pi * x)), 2.)) *
+                                  sin(2. * std::numbers::pi * (t + 1. / 4.)) -
+                              2. * std::numbers::pi * cos(2. * std::numbers::pi * x) *
+                                  sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                  (cos(2. * std::numbers::pi * x) - 1.)) *
+                          (sin(2. * std::numbers::pi * x) *
+                                  sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                  (cos(2. * std::numbers::pi * x) - 1.) -
                               20.) *
-                          ((7. * cos(4. * M_PI * t)) / 6. - 3. / 2.)) /
+                          ((7. * cos(4. * std::numbers::pi * t)) / 6. - 3. / 2.)) /
                           200. -
                       (3. *
-                          (2. * M_PI * (std::pow((sin(2. * M_PI * x)), 2.)) *
-                                  sin(2. * M_PI * (t + 1. / 4.)) -
-                              2. * M_PI * cos(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                  (cos(2. * M_PI * x) - 1.)) *
-                          (sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                  (cos(2. * M_PI * x) - 1.) -
+                          (2. * std::numbers::pi *
+                                  (std::pow((sin(2. * std::numbers::pi * x)), 2.)) *
+                                  sin(2. * std::numbers::pi * (t + 1. / 4.)) -
+                              2. * std::numbers::pi * cos(2. * std::numbers::pi * x) *
+                                  sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                  (cos(2. * std::numbers::pi * x) - 1.)) *
+                          (sin(2. * std::numbers::pi * x) *
+                                  sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                  (cos(2. * std::numbers::pi * x) - 1.) -
                               20.) *
-                          ((7. * cos(4. * M_PI * t)) / 4. - 9. / 4.)) /
+                          ((7. * cos(4. * std::numbers::pi * t)) / 4. - 9. / 4.)) /
                           100. +
-                      (2. * (std::pow(M_PI, 3.)) * cos(2. * M_PI * x) * sin(2. * M_PI * x) *
-                          cos(2. * M_PI * (t + 1. / 4.))) /
+                      (2. * (std::pow(std::numbers::pi, 3.)) * cos(2. * std::numbers::pi * x) *
+                          sin(2. * std::numbers::pi * x) *
+                          cos(2. * std::numbers::pi * (t + 1. / 4.))) /
                           5. +
-                      (2. * (std::pow(M_PI, 3.)) * sin(2. * M_PI * x) *
-                          cos(2. * M_PI * (t + 1. / 4.)) * (cos(2. * M_PI * x) - 1.)) /
+                      (2. * (std::pow(std::numbers::pi, 3.)) * sin(2. * std::numbers::pi * x) *
+                          cos(2. * std::numbers::pi * (t + 1. / 4.)) *
+                          (cos(2. * std::numbers::pi * x) - 1.)) /
                           5. -
-                      (4. * (std::pow(M_PI, 3.)) * cos(2. * M_PI * x) * sin(2. * M_PI * t) *
-                          sin(2. * M_PI * x)) /
+                      (4. * (std::pow(std::numbers::pi, 3.)) * cos(2. * std::numbers::pi * x) *
+                          sin(2. * std::numbers::pi * t) * sin(2. * std::numbers::pi * x)) /
                           5. +
-                      ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                          (2. * M_PI * (std::pow((sin(2. * M_PI * x)), 2.)) *
-                                  sin(2. * M_PI * (t + 1. / 4.)) -
-                              2. * M_PI * cos(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                  (cos(2. * M_PI * x) - 1.)) *
-                          (sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                  (cos(2. * M_PI * x) - 1.) -
+                      ((std::pow(std::numbers::pi, 2.)) *
+                          (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                          (2. * std::numbers::pi *
+                                  (std::pow((sin(2. * std::numbers::pi * x)), 2.)) *
+                                  sin(2. * std::numbers::pi * (t + 1. / 4.)) -
+                              2. * std::numbers::pi * cos(2. * std::numbers::pi * x) *
+                                  sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                  (cos(2. * std::numbers::pi * x) - 1.)) *
+                          (sin(2. * std::numbers::pi * x) *
+                                  sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                  (cos(2. * std::numbers::pi * x) - 1.) -
                               20.) *
-                          ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                          (std::pow(
-                              (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
+                          ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                          (std::pow((cos(2. * std::numbers::pi * x) -
+                                        2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
                               2.))) /
                           20000. +
-                      ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                          (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                            (cos(2. * M_PI * x) - 1.) -
+                      ((std::pow(std::numbers::pi, 2.)) *
+                          (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                          (std::pow((sin(2. * std::numbers::pi * x) *
+                                            sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                            (cos(2. * std::numbers::pi * x) - 1.) -
                                         20.),
                               2.)) *
-                          ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                          (2. * M_PI * sin(2. * M_PI * x) -
-                              8. * M_PI * cos(2. * M_PI * x) * sin(2. * M_PI * x)) *
-                          (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.)) /
+                          ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                          (2. * std::numbers::pi * sin(2. * std::numbers::pi * x) -
+                              8. * std::numbers::pi * cos(2. * std::numbers::pi * x) *
+                                  sin(2. * std::numbers::pi * x)) *
+                          (cos(2. * std::numbers::pi * x) -
+                              2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.)) /
                           20000.)) /
-                  ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                          (std::pow(
-                              (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
+                  ((std::pow(std::numbers::pi, 2.)) *
+                          (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                          (std::pow((cos(2. * std::numbers::pi * x) -
+                                        2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
                               2.)) +
                       100.) -
-              (2. * (std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                  (2. * M_PI * sin(2. * M_PI * x) -
-                      8. * M_PI * cos(2. * M_PI * x) * sin(2. * M_PI * x)) *
-                  (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.) *
-                  ((2. * ((7. * (std::pow((cos(2. * M_PI * t)), 2.))) / 2. - 4.) *
-                       (std::pow(
-                           (cos(2. * M_PI * t) * cos(M_PI * x) * (std::pow((sin(M_PI * x)), 3.)) +
-                               5.),
+              (2. * (std::pow(std::numbers::pi, 2.)) *
+                  (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                  (2. * std::numbers::pi * sin(2. * std::numbers::pi * x) -
+                      8. * std::numbers::pi * cos(2. * std::numbers::pi * x) *
+                          sin(2. * std::numbers::pi * x)) *
+                  (cos(2. * std::numbers::pi * x) -
+                      2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.) *
+                  ((2. * ((7. * (std::pow((cos(2. * std::numbers::pi * t)), 2.))) / 2. - 4.) *
+                       (std::pow((cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                                         (std::pow((sin(std::numbers::pi * x)), 3.)) +
+                                     5.),
                            2.))) /
                           25. +
                       (3. *
-                          (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                            (cos(2. * M_PI * x) - 1.) -
+                          (std::pow((sin(2. * std::numbers::pi * x) *
+                                            sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                            (cos(2. * std::numbers::pi * x) - 1.) -
                                         20.),
                               2.)) *
-                          ((7. * cos(4. * M_PI * t)) / 6. - 3. / 2.)) /
+                          ((7. * cos(4. * std::numbers::pi * t)) / 6. - 3. / 2.)) /
                           400. -
                       (3. *
-                          (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                            (cos(2. * M_PI * x) - 1.) -
+                          (std::pow((sin(2. * std::numbers::pi * x) *
+                                            sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                            (cos(2. * std::numbers::pi * x) - 1.) -
                                         20.),
                               2.)) *
-                          ((7. * cos(4. * M_PI * t)) / 4. - 9. / 4.)) /
+                          ((7. * cos(4. * std::numbers::pi * t)) / 4. - 9. / 4.)) /
                           200. +
-                      ((std::pow(M_PI, 2.)) * sin(2. * M_PI * t) *
-                          (std::pow((sin(2. * M_PI * x)), 2.))) /
+                      ((std::pow(std::numbers::pi, 2.)) * sin(2. * std::numbers::pi * t) *
+                          (std::pow((sin(2. * std::numbers::pi * x)), 2.))) /
                           5. +
-                      ((std::pow(M_PI, 2.)) * cos(2. * M_PI * x) * cos(2. * M_PI * (t + 1. / 4.)) *
-                          (cos(2. * M_PI * x) - 1.)) /
+                      ((std::pow(std::numbers::pi, 2.)) * cos(2. * std::numbers::pi * x) *
+                          cos(2. * std::numbers::pi * (t + 1. / 4.)) *
+                          (cos(2. * std::numbers::pi * x) - 1.)) /
                           5. +
-                      ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                          (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                            (cos(2. * M_PI * x) - 1.) -
+                      ((std::pow(std::numbers::pi, 2.)) *
+                          (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                          (std::pow((sin(2. * std::numbers::pi * x) *
+                                            sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                            (cos(2. * std::numbers::pi * x) - 1.) -
                                         20.),
                               2.)) *
-                          ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                          (std::pow(
-                              (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
+                          ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                          (std::pow((cos(2. * std::numbers::pi * x) -
+                                        2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
                               2.))) /
                           40000.)) /
-                  ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                          (std::pow(
-                              (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
+                  ((std::pow(std::numbers::pi, 2.)) *
+                          (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                          (std::pow((cos(2. * std::numbers::pi * x) -
+                                        2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
                               2.)) +
                       100.) -
-              (200. * (std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                  (2. * M_PI * sin(2. * M_PI * x) -
-                      8. * M_PI * cos(2. * M_PI * x) * sin(2. * M_PI * x)) *
-                  (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.) *
-                  ((2. * ((7. * (std::pow((cos(2. * M_PI * t)), 2.))) / 2. - 4.) *
-                       (std::pow(
-                           (cos(2. * M_PI * t) * cos(M_PI * x) * (std::pow((sin(M_PI * x)), 3.)) +
-                               5.),
+              (200. * (std::pow(std::numbers::pi, 2.)) *
+                  (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                  (2. * std::numbers::pi * sin(2. * std::numbers::pi * x) -
+                      8. * std::numbers::pi * cos(2. * std::numbers::pi * x) *
+                          sin(2. * std::numbers::pi * x)) *
+                  (cos(2. * std::numbers::pi * x) -
+                      2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.) *
+                  ((2. * ((7. * (std::pow((cos(2. * std::numbers::pi * t)), 2.))) / 2. - 4.) *
+                       (std::pow((cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                                         (std::pow((sin(std::numbers::pi * x)), 3.)) +
+                                     5.),
                            2.))) /
                           25. +
                       (3. *
-                          (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                            (cos(2. * M_PI * x) - 1.) -
+                          (std::pow((sin(2. * std::numbers::pi * x) *
+                                            sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                            (cos(2. * std::numbers::pi * x) - 1.) -
                                         20.),
                               2.)) *
-                          ((7. * cos(4. * M_PI * t)) / 6. - 3. / 2.)) /
+                          ((7. * cos(4. * std::numbers::pi * t)) / 6. - 3. / 2.)) /
                           400. -
                       (3. *
-                          (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                            (cos(2. * M_PI * x) - 1.) -
+                          (std::pow((sin(2. * std::numbers::pi * x) *
+                                            sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                            (cos(2. * std::numbers::pi * x) - 1.) -
                                         20.),
                               2.)) *
-                          ((7. * cos(4. * M_PI * t)) / 4. - 9. / 4.)) /
+                          ((7. * cos(4. * std::numbers::pi * t)) / 4. - 9. / 4.)) /
                           200. +
-                      ((std::pow(M_PI, 2.)) * sin(2. * M_PI * t) *
-                          (std::pow((sin(2. * M_PI * x)), 2.))) /
+                      ((std::pow(std::numbers::pi, 2.)) * sin(2. * std::numbers::pi * t) *
+                          (std::pow((sin(2. * std::numbers::pi * x)), 2.))) /
                           5. +
-                      ((std::pow(M_PI, 2.)) * cos(2. * M_PI * x) * cos(2. * M_PI * (t + 1. / 4.)) *
-                          (cos(2. * M_PI * x) - 1.)) /
+                      ((std::pow(std::numbers::pi, 2.)) * cos(2. * std::numbers::pi * x) *
+                          cos(2. * std::numbers::pi * (t + 1. / 4.)) *
+                          (cos(2. * std::numbers::pi * x) - 1.)) /
                           5. +
-                      ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                          (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                            (cos(2. * M_PI * x) - 1.) -
+                      ((std::pow(std::numbers::pi, 2.)) *
+                          (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                          (std::pow((sin(2. * std::numbers::pi * x) *
+                                            sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                            (cos(2. * std::numbers::pi * x) - 1.) -
                                         20.),
                               2.)) *
-                          ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                          (std::pow(
-                              (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
+                          ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                          (std::pow((cos(2. * std::numbers::pi * x) -
+                                        2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
                               2.))) /
                           40000.)) /
-                  (std::pow(((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                                    (std::pow((cos(2. * M_PI * x) -
-                                                  2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                                        2.)) +
-                                100.),
-                      2.)) +
-              (2. * (std::pow(M_PI, 4.)) * (std::pow((cos(2. * M_PI * t)), 4.)) *
-                  (2. * M_PI * sin(2. * M_PI * x) -
-                      8. * M_PI * cos(2. * M_PI * x) * sin(2. * M_PI * x)) *
                   (std::pow(
-                      (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.), 3.)) *
-                  ((2. * ((7. * (std::pow((cos(2. * M_PI * t)), 2.))) / 2. - 4.) *
-                       (std::pow(
-                           (cos(2. * M_PI * t) * cos(M_PI * x) * (std::pow((sin(M_PI * x)), 3.)) +
-                               5.),
+                      ((std::pow(std::numbers::pi, 2.)) *
+                              (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                              (std::pow(
+                                  (cos(2. * std::numbers::pi * x) -
+                                      2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                                  2.)) +
+                          100.),
+                      2.)) +
+              (2. * (std::pow(std::numbers::pi, 4.)) *
+                  (std::pow((cos(2. * std::numbers::pi * t)), 4.)) *
+                  (2. * std::numbers::pi * sin(2. * std::numbers::pi * x) -
+                      8. * std::numbers::pi * cos(2. * std::numbers::pi * x) *
+                          sin(2. * std::numbers::pi * x)) *
+                  (std::pow((cos(2. * std::numbers::pi * x) -
+                                2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                      3.)) *
+                  ((2. * ((7. * (std::pow((cos(2. * std::numbers::pi * t)), 2.))) / 2. - 4.) *
+                       (std::pow((cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                                         (std::pow((sin(std::numbers::pi * x)), 3.)) +
+                                     5.),
                            2.))) /
                           25. +
                       (3. *
-                          (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                            (cos(2. * M_PI * x) - 1.) -
+                          (std::pow((sin(2. * std::numbers::pi * x) *
+                                            sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                            (cos(2. * std::numbers::pi * x) - 1.) -
                                         20.),
                               2.)) *
-                          ((7. * cos(4. * M_PI * t)) / 6. - 3. / 2.)) /
+                          ((7. * cos(4. * std::numbers::pi * t)) / 6. - 3. / 2.)) /
                           400. -
                       (3. *
-                          (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                            (cos(2. * M_PI * x) - 1.) -
+                          (std::pow((sin(2. * std::numbers::pi * x) *
+                                            sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                            (cos(2. * std::numbers::pi * x) - 1.) -
                                         20.),
                               2.)) *
-                          ((7. * cos(4. * M_PI * t)) / 4. - 9. / 4.)) /
+                          ((7. * cos(4. * std::numbers::pi * t)) / 4. - 9. / 4.)) /
                           200. +
-                      ((std::pow(M_PI, 2.)) * sin(2. * M_PI * t) *
-                          (std::pow((sin(2. * M_PI * x)), 2.))) /
+                      ((std::pow(std::numbers::pi, 2.)) * sin(2. * std::numbers::pi * t) *
+                          (std::pow((sin(2. * std::numbers::pi * x)), 2.))) /
                           5. +
-                      ((std::pow(M_PI, 2.)) * cos(2. * M_PI * x) * cos(2. * M_PI * (t + 1. / 4.)) *
-                          (cos(2. * M_PI * x) - 1.)) /
+                      ((std::pow(std::numbers::pi, 2.)) * cos(2. * std::numbers::pi * x) *
+                          cos(2. * std::numbers::pi * (t + 1. / 4.)) *
+                          (cos(2. * std::numbers::pi * x) - 1.)) /
                           5. +
-                      ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                          (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                            (cos(2. * M_PI * x) - 1.) -
+                      ((std::pow(std::numbers::pi, 2.)) *
+                          (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                          (std::pow((sin(2. * std::numbers::pi * x) *
+                                            sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                            (cos(2. * std::numbers::pi * x) - 1.) -
                                         20.),
                               2.)) *
-                          ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                          (std::pow(
-                              (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
+                          ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                          (std::pow((cos(2. * std::numbers::pi * x) -
+                                        2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
                               2.))) /
                           40000.)) /
-                  (std::pow(((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                                    (std::pow((cos(2. * M_PI * x) -
-                                                  2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                                        2.)) +
-                                100.),
+                  (std::pow(
+                      ((std::pow(std::numbers::pi, 2.)) *
+                              (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                              (std::pow(
+                                  (cos(2. * std::numbers::pi * x) -
+                                      2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                                  2.)) +
+                          100.),
                       2.)) +
-              ((std::pow(M_PI, 4.)) * (std::pow((cos(2. * M_PI * t)), 4.)) *
-                  (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                    (cos(2. * M_PI * x) - 1.) -
-                                20.),
+              ((std::pow(std::numbers::pi, 4.)) * (std::pow((cos(2. * std::numbers::pi * t)), 4.)) *
+                  (std::pow(
+                      (sin(2. * std::numbers::pi * x) * sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                              (cos(2. * std::numbers::pi * x) - 1.) -
+                          20.),
                       2.)) *
-                  ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                  (2. * M_PI * sin(2. * M_PI * x) -
-                      8. * M_PI * cos(2. * M_PI * x) * sin(2. * M_PI * x)) *
-                  (std::pow(
-                      (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.), 3.))) /
+                  ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                  (2. * std::numbers::pi * sin(2. * std::numbers::pi * x) -
+                      8. * std::numbers::pi * cos(2. * std::numbers::pi * x) *
+                          sin(2. * std::numbers::pi * x)) *
+                  (std::pow((cos(2. * std::numbers::pi * x) -
+                                2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                      3.))) /
                   (100. * (std::pow(
-                              ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                                      (std::pow((cos(2. * M_PI * x) -
-                                                    2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
+                              ((std::pow(std::numbers::pi, 2.)) *
+                                      (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                                      (std::pow((cos(2. * std::numbers::pi * x) -
+                                                    2. * (std::pow((cos(2. * std::numbers::pi * x)),
+                                                             2.)) +
+                                                    1.),
                                           2.)) +
                                   100.),
                               2.))) -
-              ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                  (2. * M_PI * (std::pow((sin(2. * M_PI * x)), 2.)) *
-                          sin(2. * M_PI * (t + 1. / 4.)) -
-                      2. * M_PI * cos(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                          (cos(2. * M_PI * x) - 1.)) *
-                  (sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) * (cos(2. * M_PI * x) - 1.) -
+              ((std::pow(std::numbers::pi, 2.)) * (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                  (2. * std::numbers::pi * (std::pow((sin(2. * std::numbers::pi * x)), 2.)) *
+                          sin(2. * std::numbers::pi * (t + 1. / 4.)) -
+                      2. * std::numbers::pi * cos(2. * std::numbers::pi * x) *
+                          sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                          (cos(2. * std::numbers::pi * x) - 1.)) *
+                  (sin(2. * std::numbers::pi * x) * sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                          (cos(2. * std::numbers::pi * x) - 1.) -
                       20.) *
-                  ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
+                  ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                  (std::pow((cos(2. * std::numbers::pi * x) -
+                                2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                      2.))) /
+                  (100. *
+                      ((std::pow(std::numbers::pi, 2.)) *
+                              (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                              (std::pow(
+                                  (cos(2. * std::numbers::pi * x) -
+                                      2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                                  2.)) +
+                          100.)) -
+              ((std::pow(std::numbers::pi, 2.)) * (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
                   (std::pow(
-                      (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.), 2.))) /
-                  (100. * ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                                  (std::pow((cos(2. * M_PI * x) -
-                                                2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                                      2.)) +
-                              100.)) -
-              ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                  (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                    (cos(2. * M_PI * x) - 1.) -
-                                20.),
+                      (sin(2. * std::numbers::pi * x) * sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                              (cos(2. * std::numbers::pi * x) - 1.) -
+                          20.),
                       2.)) *
-                  ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                  (2. * M_PI * sin(2. * M_PI * x) -
-                      8. * M_PI * cos(2. * M_PI * x) * sin(2. * M_PI * x)) *
-                  (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.)) /
-                  (100. * ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                                  (std::pow((cos(2. * M_PI * x) -
-                                                2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                                      2.)) +
-                              100.)) -
-              ((std::pow(M_PI, 2.)) * cos(2. * M_PI * t) * sin(M_PI * x) * sin(3. * M_PI * x) *
-                  sin(2. * M_PI * (t + 1. / 4.)) * ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                  (2. * M_PI * cos(2. * M_PI * t) * (std::pow((sin(M_PI * x)), 4.)) -
-                      6. * M_PI * cos(2. * M_PI * t) * (std::pow((cos(M_PI * x)), 2.)) *
-                          (std::pow((sin(M_PI * x)), 2.))) *
-                  (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.) *
-                  (2. * cos(2. * M_PI * t) * cos(M_PI * x) * sin(M_PI * x) -
-                      2. * cos(2. * M_PI * t) * (std::pow((cos(M_PI * x)), 3.)) * sin(M_PI * x) +
+                  ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                  (2. * std::numbers::pi * sin(2. * std::numbers::pi * x) -
+                      8. * std::numbers::pi * cos(2. * std::numbers::pi * x) *
+                          sin(2. * std::numbers::pi * x)) *
+                  (cos(2. * std::numbers::pi * x) -
+                      2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.)) /
+                  (100. *
+                      ((std::pow(std::numbers::pi, 2.)) *
+                              (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                              (std::pow(
+                                  (cos(2. * std::numbers::pi * x) -
+                                      2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                                  2.)) +
+                          100.)) -
+              ((std::pow(std::numbers::pi, 2.)) * cos(2. * std::numbers::pi * t) *
+                  sin(std::numbers::pi * x) * sin(3. * std::numbers::pi * x) *
+                  sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                  ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                  (2. * std::numbers::pi * cos(2. * std::numbers::pi * t) *
+                          (std::pow((sin(std::numbers::pi * x)), 4.)) -
+                      6. * std::numbers::pi * cos(2. * std::numbers::pi * t) *
+                          (std::pow((cos(std::numbers::pi * x)), 2.)) *
+                          (std::pow((sin(std::numbers::pi * x)), 2.))) *
+                  (cos(2. * std::numbers::pi * x) -
+                      2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.) *
+                  (2. * cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                          sin(std::numbers::pi * x) -
+                      2. * cos(2. * std::numbers::pi * t) *
+                          (std::pow((cos(std::numbers::pi * x)), 3.)) * sin(std::numbers::pi * x) +
                       10.)) /
-                  (25. * ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                                 (std::pow((cos(2. * M_PI * x) -
-                                               2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                                     2.)) +
-                             100.)) +
-              ((std::pow(M_PI, 3.)) * cos(2. * M_PI * t) * cos(M_PI * x) * sin(3. * M_PI * x) *
-                  sin(2. * M_PI * (t + 1. / 4.)) * ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                  (2. * cos(2. * M_PI * t) * cos(M_PI * x) * (std::pow((sin(M_PI * x)), 3.)) +
+                  (25. *
+                      ((std::pow(std::numbers::pi, 2.)) *
+                              (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                              (std::pow(
+                                  (cos(2. * std::numbers::pi * x) -
+                                      2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                                  2.)) +
+                          100.)) +
+              ((std::pow(std::numbers::pi, 3.)) * cos(2. * std::numbers::pi * t) *
+                  cos(std::numbers::pi * x) * sin(3. * std::numbers::pi * x) *
+                  sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                  ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                  (2. * cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                          (std::pow((sin(std::numbers::pi * x)), 3.)) +
                       10.) *
-                  (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.) *
-                  (2. * cos(2. * M_PI * t) * cos(M_PI * x) * sin(M_PI * x) -
-                      2. * cos(2. * M_PI * t) * (std::pow((cos(M_PI * x)), 3.)) * sin(M_PI * x) +
+                  (cos(2. * std::numbers::pi * x) -
+                      2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.) *
+                  (2. * cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                          sin(std::numbers::pi * x) -
+                      2. * cos(2. * std::numbers::pi * t) *
+                          (std::pow((cos(std::numbers::pi * x)), 3.)) * sin(std::numbers::pi * x) +
                       10.)) /
-                  (25. * ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                                 (std::pow((cos(2. * M_PI * x) -
-                                               2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                                     2.)) +
-                             100.)) +
-              (3. * (std::pow(M_PI, 3.)) * cos(2. * M_PI * t) * cos(3. * M_PI * x) * sin(M_PI * x) *
-                  sin(2. * M_PI * (t + 1. / 4.)) * ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                  (2. * cos(2. * M_PI * t) * cos(M_PI * x) * (std::pow((sin(M_PI * x)), 3.)) +
+                  (25. *
+                      ((std::pow(std::numbers::pi, 2.)) *
+                              (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                              (std::pow(
+                                  (cos(2. * std::numbers::pi * x) -
+                                      2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                                  2.)) +
+                          100.)) +
+              (3. * (std::pow(std::numbers::pi, 3.)) * cos(2. * std::numbers::pi * t) *
+                  cos(3. * std::numbers::pi * x) * sin(std::numbers::pi * x) *
+                  sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                  ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                  (2. * cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                          (std::pow((sin(std::numbers::pi * x)), 3.)) +
                       10.) *
-                  (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.) *
-                  (2. * cos(2. * M_PI * t) * cos(M_PI * x) * sin(M_PI * x) -
-                      2. * cos(2. * M_PI * t) * (std::pow((cos(M_PI * x)), 3.)) * sin(M_PI * x) +
+                  (cos(2. * std::numbers::pi * x) -
+                      2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.) *
+                  (2. * cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                          sin(std::numbers::pi * x) -
+                      2. * cos(2. * std::numbers::pi * t) *
+                          (std::pow((cos(std::numbers::pi * x)), 3.)) * sin(std::numbers::pi * x) +
                       10.)) /
-                  (25. * ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                                 (std::pow((cos(2. * M_PI * x) -
-                                               2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                                     2.)) +
-                             100.)) +
-              ((std::pow(M_PI, 2.)) * cos(2. * M_PI * t) * sin(M_PI * x) * sin(3. * M_PI * x) *
-                  sin(2. * M_PI * (t + 1. / 4.)) * ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                  (2. * cos(2. * M_PI * t) * cos(M_PI * x) * (std::pow((sin(M_PI * x)), 3.)) +
+                  (25. *
+                      ((std::pow(std::numbers::pi, 2.)) *
+                              (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                              (std::pow(
+                                  (cos(2. * std::numbers::pi * x) -
+                                      2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                                  2.)) +
+                          100.)) +
+              ((std::pow(std::numbers::pi, 2.)) * cos(2. * std::numbers::pi * t) *
+                  sin(std::numbers::pi * x) * sin(3. * std::numbers::pi * x) *
+                  sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                  ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                  (2. * cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                          (std::pow((sin(std::numbers::pi * x)), 3.)) +
                       10.) *
-                  (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.) *
-                  (2. * M_PI * cos(2. * M_PI * t) * (std::pow((cos(M_PI * x)), 2.)) -
-                      2. * M_PI * cos(2. * M_PI * t) * (std::pow((cos(M_PI * x)), 4.)) -
-                      2. * M_PI * cos(2. * M_PI * t) * (std::pow((sin(M_PI * x)), 2.)) +
-                      6. * M_PI * cos(2. * M_PI * t) * (std::pow((cos(M_PI * x)), 2.)) *
-                          (std::pow((sin(M_PI * x)), 2.)))) /
-                  (25. * ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                                 (std::pow((cos(2. * M_PI * x) -
-                                               2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                                     2.)) +
-                             100.)) -
-              ((std::pow(M_PI, 2.)) * cos(2. * M_PI * t) * sin(M_PI * x) * sin(3. * M_PI * x) *
-                  sin(2. * M_PI * (t + 1. / 4.)) * ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                  (2. * M_PI * sin(2. * M_PI * x) -
-                      8. * M_PI * cos(2. * M_PI * x) * sin(2. * M_PI * x)) *
-                  (2. * cos(2. * M_PI * t) * cos(M_PI * x) * (std::pow((sin(M_PI * x)), 3.)) +
+                  (cos(2. * std::numbers::pi * x) -
+                      2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.) *
+                  (2. * std::numbers::pi * cos(2. * std::numbers::pi * t) *
+                          (std::pow((cos(std::numbers::pi * x)), 2.)) -
+                      2. * std::numbers::pi * cos(2. * std::numbers::pi * t) *
+                          (std::pow((cos(std::numbers::pi * x)), 4.)) -
+                      2. * std::numbers::pi * cos(2. * std::numbers::pi * t) *
+                          (std::pow((sin(std::numbers::pi * x)), 2.)) +
+                      6. * std::numbers::pi * cos(2. * std::numbers::pi * t) *
+                          (std::pow((cos(std::numbers::pi * x)), 2.)) *
+                          (std::pow((sin(std::numbers::pi * x)), 2.)))) /
+                  (25. *
+                      ((std::pow(std::numbers::pi, 2.)) *
+                              (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                              (std::pow(
+                                  (cos(2. * std::numbers::pi * x) -
+                                      2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                                  2.)) +
+                          100.)) -
+              ((std::pow(std::numbers::pi, 2.)) * cos(2. * std::numbers::pi * t) *
+                  sin(std::numbers::pi * x) * sin(3. * std::numbers::pi * x) *
+                  sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                  ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                  (2. * std::numbers::pi * sin(2. * std::numbers::pi * x) -
+                      8. * std::numbers::pi * cos(2. * std::numbers::pi * x) *
+                          sin(2. * std::numbers::pi * x)) *
+                  (2. * cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                          (std::pow((sin(std::numbers::pi * x)), 3.)) +
                       10.) *
-                  (2. * cos(2. * M_PI * t) * cos(M_PI * x) * sin(M_PI * x) -
-                      2. * cos(2. * M_PI * t) * (std::pow((cos(M_PI * x)), 3.)) * sin(M_PI * x) +
+                  (2. * cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                          sin(std::numbers::pi * x) -
+                      2. * cos(2. * std::numbers::pi * t) *
+                          (std::pow((cos(std::numbers::pi * x)), 3.)) * sin(std::numbers::pi * x) +
                       10.)) /
-                  (25. * ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                                 (std::pow((cos(2. * M_PI * x) -
-                                               2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                                     2.)) +
-                             100.)) +
-              (2. * (std::pow(M_PI, 4.)) * (std::pow((cos(2. * M_PI * t)), 3.)) * sin(M_PI * x) *
-                  sin(3. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                  ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                  (2. * M_PI * sin(2. * M_PI * x) -
-                      8. * M_PI * cos(2. * M_PI * x) * sin(2. * M_PI * x)) *
-                  (2. * cos(2. * M_PI * t) * cos(M_PI * x) * (std::pow((sin(M_PI * x)), 3.)) +
+                  (25. *
+                      ((std::pow(std::numbers::pi, 2.)) *
+                              (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                              (std::pow(
+                                  (cos(2. * std::numbers::pi * x) -
+                                      2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                                  2.)) +
+                          100.)) +
+              (2. * (std::pow(std::numbers::pi, 4.)) *
+                  (std::pow((cos(2. * std::numbers::pi * t)), 3.)) * sin(std::numbers::pi * x) *
+                  sin(3. * std::numbers::pi * x) * sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                  ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                  (2. * std::numbers::pi * sin(2. * std::numbers::pi * x) -
+                      8. * std::numbers::pi * cos(2. * std::numbers::pi * x) *
+                          sin(2. * std::numbers::pi * x)) *
+                  (2. * cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                          (std::pow((sin(std::numbers::pi * x)), 3.)) +
                       10.) *
-                  (std::pow(
-                      (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.), 2.)) *
-                  (2. * cos(2. * M_PI * t) * cos(M_PI * x) * sin(M_PI * x) -
-                      2. * cos(2. * M_PI * t) * (std::pow((cos(M_PI * x)), 3.)) * sin(M_PI * x) +
+                  (std::pow((cos(2. * std::numbers::pi * x) -
+                                2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                      2.)) *
+                  (2. * cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                          sin(std::numbers::pi * x) -
+                      2. * cos(2. * std::numbers::pi * t) *
+                          (std::pow((cos(std::numbers::pi * x)), 3.)) * sin(std::numbers::pi * x) +
                       10.)) /
                   (25. * (std::pow(
-                             ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                                     (std::pow((cos(2. * M_PI * x) -
-                                                   2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
+                             ((std::pow(std::numbers::pi, 2.)) *
+                                     (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                                     (std::pow(
+                                         (cos(2. * std::numbers::pi * x) -
+                                             2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) +
+                                             1.),
                                          2.)) +
                                  100.),
                              2.))))) /
           (3. * (v + 1.) *
-              ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                      (std::pow(
-                          (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
+              ((std::pow(std::numbers::pi, 2.)) * (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                      (std::pow((cos(2. * std::numbers::pi * x) -
+                                    2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
                           2.)) +
                   100.) *
               (std::pow(
-                  (((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                       (std::pow(
-                           (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
+                  (((std::pow(std::numbers::pi, 2.)) *
+                       (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                       (std::pow((cos(2. * std::numbers::pi * x) -
+                                     2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
                            2.)) *
                        ((2. *
-                            (std::pow((cos(2. * M_PI * t) * cos(M_PI * x) *
-                                              (std::pow((sin(M_PI * x)), 3.)) +
+                            (std::pow((cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                                              (std::pow((sin(std::numbers::pi * x)), 3.)) +
                                           5.),
                                 2.)) *
-                            ((7. * (std::pow((cos(2. * M_PI * t)), 2.))) / 2. - 4.)) /
+                            ((7. * (std::pow((cos(2. * std::numbers::pi * t)), 2.))) / 2. - 4.)) /
                                25. +
-                           (3. * ((7. * cos(4. * M_PI * t)) / 6. - 3. / 2.) *
-                               (std::pow((sin(2. * M_PI * (t + 1. / 4.)) * sin(2. * M_PI * x) *
-                                                 (cos(2. * M_PI * x) - 1.) -
+                           (3. * ((7. * cos(4. * std::numbers::pi * t)) / 6. - 3. / 2.) *
+                               (std::pow((sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                                 sin(2. * std::numbers::pi * x) *
+                                                 (cos(2. * std::numbers::pi * x) - 1.) -
                                              20.),
                                    2.))) /
                                400. -
-                           (3. * ((7. * cos(4. * M_PI * t)) / 4. - 9. / 4.) *
-                               (std::pow((sin(2. * M_PI * (t + 1. / 4.)) * sin(2. * M_PI * x) *
-                                                 (cos(2. * M_PI * x) - 1.) -
+                           (3. * ((7. * cos(4. * std::numbers::pi * t)) / 4. - 9. / 4.) *
+                               (std::pow((sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                                 sin(2. * std::numbers::pi * x) *
+                                                 (cos(2. * std::numbers::pi * x) - 1.) -
                                              20.),
                                    2.))) /
                                200. +
-                           ((std::pow(M_PI, 2.)) * sin(2. * M_PI * t) *
-                               (std::pow((sin(2. * M_PI * x)), 2.))) /
+                           ((std::pow(std::numbers::pi, 2.)) * sin(2. * std::numbers::pi * t) *
+                               (std::pow((sin(2. * std::numbers::pi * x)), 2.))) /
                                5. +
-                           ((std::pow(M_PI, 2.)) * cos(2. * M_PI * (t + 1. / 4.)) *
-                               cos(2. * M_PI * x) * (cos(2. * M_PI * x) - 1.)) /
+                           ((std::pow(std::numbers::pi, 2.)) *
+                               cos(2. * std::numbers::pi * (t + 1. / 4.)) *
+                               cos(2. * std::numbers::pi * x) *
+                               (cos(2. * std::numbers::pi * x) - 1.)) /
                                5. +
-                           ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                               ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                               (std::pow((sin(2. * M_PI * (t + 1. / 4.)) * sin(2. * M_PI * x) *
-                                                 (cos(2. * M_PI * x) - 1.) -
+                           ((std::pow(std::numbers::pi, 2.)) *
+                               (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                               ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                               (std::pow((sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                                 sin(2. * std::numbers::pi * x) *
+                                                 (cos(2. * std::numbers::pi * x) - 1.) -
                                              20.),
                                    2.)) *
-                               (std::pow((cos(2. * M_PI * x) -
-                                             2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
+                               (std::pow(
+                                   (cos(2. * std::numbers::pi * x) -
+                                       2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
                                    2.))) /
                                40000.)) /
-                          ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                                  (std::pow((cos(2. * M_PI * x) -
-                                                2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
+                          ((std::pow(std::numbers::pi, 2.)) *
+                                  (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                                  (std::pow(
+                                      (cos(2. * std::numbers::pi * x) -
+                                          2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) +
+                                          1.),
                                       2.)) +
                               100.) -
                       (100. *
                           ((2. *
-                               (std::pow((cos(2. * M_PI * t) * cos(M_PI * x) *
-                                                 (std::pow((sin(M_PI * x)), 3.)) +
-                                             5.),
+                               (std::pow(
+                                   (cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                                           (std::pow((sin(std::numbers::pi * x)), 3.)) +
+                                       5.),
                                    2.)) *
-                               ((7. * (std::pow((cos(2. * M_PI * t)), 2.))) / 2. - 4.)) /
+                               ((7. * (std::pow((cos(2. * std::numbers::pi * t)), 2.))) / 2. -
+                                   4.)) /
                                   25. +
-                              (3. * ((7. * cos(4. * M_PI * t)) / 6. - 3. / 2.) *
-                                  (std::pow((sin(2. * M_PI * (t + 1. / 4.)) * sin(2. * M_PI * x) *
-                                                    (cos(2. * M_PI * x) - 1.) -
+                              (3. * ((7. * cos(4. * std::numbers::pi * t)) / 6. - 3. / 2.) *
+                                  (std::pow((sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                                    sin(2. * std::numbers::pi * x) *
+                                                    (cos(2. * std::numbers::pi * x) - 1.) -
                                                 20.),
                                       2.))) /
                                   400. -
-                              (3. * ((7. * cos(4. * M_PI * t)) / 4. - 9. / 4.) *
-                                  (std::pow((sin(2. * M_PI * (t + 1. / 4.)) * sin(2. * M_PI * x) *
-                                                    (cos(2. * M_PI * x) - 1.) -
+                              (3. * ((7. * cos(4. * std::numbers::pi * t)) / 4. - 9. / 4.) *
+                                  (std::pow((sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                                    sin(2. * std::numbers::pi * x) *
+                                                    (cos(2. * std::numbers::pi * x) - 1.) -
                                                 20.),
                                       2.))) /
                                   200. +
-                              ((std::pow(M_PI, 2.)) * sin(2. * M_PI * t) *
-                                  (std::pow((sin(2. * M_PI * x)), 2.))) /
+                              ((std::pow(std::numbers::pi, 2.)) * sin(2. * std::numbers::pi * t) *
+                                  (std::pow((sin(2. * std::numbers::pi * x)), 2.))) /
                                   5. +
-                              ((std::pow(M_PI, 2.)) * cos(2. * M_PI * (t + 1. / 4.)) *
-                                  cos(2. * M_PI * x) * (cos(2. * M_PI * x) - 1.)) /
+                              ((std::pow(std::numbers::pi, 2.)) *
+                                  cos(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                  cos(2. * std::numbers::pi * x) *
+                                  (cos(2. * std::numbers::pi * x) - 1.)) /
                                   5. +
-                              ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                                  ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                                  (std::pow((sin(2. * M_PI * (t + 1. / 4.)) * sin(2. * M_PI * x) *
-                                                    (cos(2. * M_PI * x) - 1.) -
+                              ((std::pow(std::numbers::pi, 2.)) *
+                                  (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                                  ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                                  (std::pow((sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                                    sin(2. * std::numbers::pi * x) *
+                                                    (cos(2. * std::numbers::pi * x) - 1.) -
                                                 20.),
                                       2.)) *
-                                  (std::pow((cos(2. * M_PI * x) -
-                                                2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
+                                  (std::pow(
+                                      (cos(2. * std::numbers::pi * x) -
+                                          2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) +
+                                          1.),
                                       2.))) /
                                   40000.)) /
-                          ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                                  (std::pow((cos(2. * M_PI * x) -
-                                                2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
+                          ((std::pow(std::numbers::pi, 2.)) *
+                                  (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                                  (std::pow(
+                                      (cos(2. * std::numbers::pi * x) -
+                                          2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) +
+                                          1.),
                                       2.)) +
                               100.) +
-                      ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                          ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                          (std::pow((sin(2. * M_PI * (t + 1. / 4.)) * sin(2. * M_PI * x) *
-                                            (cos(2. * M_PI * x) - 1.) -
+                      ((std::pow(std::numbers::pi, 2.)) *
+                          (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                          ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                          (std::pow((sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                            sin(2. * std::numbers::pi * x) *
+                                            (cos(2. * std::numbers::pi * x) - 1.) -
                                         20.),
                               2.)) *
-                          (std::pow(
-                              (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
+                          (std::pow((cos(2. * std::numbers::pi * x) -
+                                        2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
                               2.))) /
                           (200. *
-                              ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                                      (std::pow((cos(2. * M_PI * x) -
-                                                    2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
+                              ((std::pow(std::numbers::pi, 2.)) *
+                                      (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                                      (std::pow((cos(2. * std::numbers::pi * x) -
+                                                    2. * (std::pow((cos(2. * std::numbers::pi * x)),
+                                                             2.)) +
+                                                    1.),
                                           2.)) +
                                   100.)) +
-                      ((std::pow(M_PI, 2.)) * sin(2. * M_PI * (t + 1. / 4.)) * cos(2. * M_PI * t) *
-                          sin(M_PI * x) * sin(3. * M_PI * x) *
-                          (2. * cos(2. * M_PI * t) * cos(M_PI * x) *
-                                  (std::pow((sin(M_PI * x)), 3.)) +
+                      ((std::pow(std::numbers::pi, 2.)) *
+                          sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                          cos(2. * std::numbers::pi * t) * sin(std::numbers::pi * x) *
+                          sin(3. * std::numbers::pi * x) *
+                          (2. * cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                                  (std::pow((sin(std::numbers::pi * x)), 3.)) +
                               10.) *
-                          ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                          (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.) *
-                          (2. * cos(2. * M_PI * t) * cos(M_PI * x) * sin(M_PI * x) -
-                              2. * cos(2. * M_PI * t) * (std::pow((cos(M_PI * x)), 3.)) *
-                                  sin(M_PI * x) +
+                          ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                          (cos(2. * std::numbers::pi * x) -
+                              2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.) *
+                          (2. * cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                                  sin(std::numbers::pi * x) -
+                              2. * cos(2. * std::numbers::pi * t) *
+                                  (std::pow((cos(std::numbers::pi * x)), 3.)) *
+                                  sin(std::numbers::pi * x) +
                               10.)) /
                           (25. *
-                              ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                                      (std::pow((cos(2. * M_PI * x) -
-                                                    2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
+                              ((std::pow(std::numbers::pi, 2.)) *
+                                      (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                                      (std::pow((cos(2. * std::numbers::pi * x) -
+                                                    2. * (std::pow((cos(2. * std::numbers::pi * x)),
+                                                             2.)) +
+                                                    1.),
                                           2.)) +
                                   100.))),
                   2.))) -
-      (M_PI * r0 * sin(2. * M_PI * (t + 1. / 4.)) * ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-          ((M_PI * sin(2. * M_PI * x) * cos(2. * M_PI * (t + 1. / 4.)) *
-               (cos(2. * M_PI * x) - 1.)) /
+      (std::numbers::pi * r0 * sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+          ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+          ((std::numbers::pi * sin(2. * std::numbers::pi * x) *
+               cos(2. * std::numbers::pi * (t + 1. / 4.)) * (cos(2. * std::numbers::pi * x) - 1.)) /
                   10. +
-              (M_PI * y * cos(2. * M_PI * t) *
-                  ((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                       (cos(2. * M_PI * x) - 1.)) /
+              (std::numbers::pi * y * cos(2. * std::numbers::pi * t) *
+                  ((sin(2. * std::numbers::pi * x) * sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                       (cos(2. * std::numbers::pi * x) - 1.)) /
                           20. -
                       1.) *
-                  ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                  (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.) *
+                  ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                  (cos(2. * std::numbers::pi * x) -
+                      2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.) *
                   (y +
-                      (sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                          (cos(2. * M_PI * x) - 1.)) /
+                      (sin(2. * std::numbers::pi * x) * sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                          (cos(2. * std::numbers::pi * x) - 1.)) /
                           20. -
                       1.)) /
                   10.) *
-          (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.) *
-          (cos(2. * M_PI * t) * sin(2. * M_PI * x) -
-              cos(2. * M_PI * t) * cos(2. * M_PI * x) * sin(2. * M_PI * x) + 20.) *
-          (40. * y - cos(2. * M_PI * t) * sin(2. * M_PI * x) +
-              cos(2. * M_PI * t) * cos(2. * M_PI * x) * sin(2. * M_PI * x) - 20.)) /
+          (cos(2. * std::numbers::pi * x) - 2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) +
+              1.) *
+          (cos(2. * std::numbers::pi * t) * sin(2. * std::numbers::pi * x) -
+              cos(2. * std::numbers::pi * t) * cos(2. * std::numbers::pi * x) *
+                  sin(2. * std::numbers::pi * x) +
+              20.) *
+          (40. * y - cos(2. * std::numbers::pi * t) * sin(2. * std::numbers::pi * x) +
+              cos(2. * std::numbers::pi * t) * cos(2. * std::numbers::pi * x) *
+                  sin(2. * std::numbers::pi * x) -
+              20.)) /
           2000. -
-      (M_PI * r0 * cos(2. * M_PI * t) * (std::pow((sin(M_PI * x)), 2.)) *
-          ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) * (2. * cos(2. * M_PI * x) + 1.) *
-          ((M_PI * sin(2. * M_PI * x) * cos(2. * M_PI * (t + 1. / 4.)) *
-               (cos(2. * M_PI * x) - 1.)) /
+      (std::numbers::pi * r0 * cos(2. * std::numbers::pi * t) *
+          (std::pow((sin(std::numbers::pi * x)), 2.)) *
+          ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+          (2. * cos(2. * std::numbers::pi * x) + 1.) *
+          ((std::numbers::pi * sin(2. * std::numbers::pi * x) *
+               cos(2. * std::numbers::pi * (t + 1. / 4.)) * (cos(2. * std::numbers::pi * x) - 1.)) /
                   10. +
-              (M_PI * y * cos(2. * M_PI * t) *
-                  ((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                       (cos(2. * M_PI * x) - 1.)) /
+              (std::numbers::pi * y * cos(2. * std::numbers::pi * t) *
+                  ((sin(2. * std::numbers::pi * x) * sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                       (cos(2. * std::numbers::pi * x) - 1.)) /
                           20. -
                       1.) *
-                  ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                  (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.) *
+                  ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                  (cos(2. * std::numbers::pi * x) -
+                      2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.) *
                   (y +
-                      (sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                          (cos(2. * M_PI * x) - 1.)) /
+                      (sin(2. * std::numbers::pi * x) * sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                          (cos(2. * std::numbers::pi * x) - 1.)) /
                           20. -
                       1.)) /
                   10.) *
-          (cos(2. * M_PI * t) * cos(M_PI * x) * (std::pow((sin(M_PI * x)), 3.)) + 5.) *
-          (cos(2. * M_PI * t) * cos(M_PI * x) * (std::pow((sin(M_PI * x)), 3.)) - 10. * y + 5.)) /
+          (cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                  (std::pow((sin(std::numbers::pi * x)), 3.)) +
+              5.) *
+          (cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                  (std::pow((sin(std::numbers::pi * x)), 3.)) -
+              10. * y + 5.)) /
           125. -
-      (10. * E * (std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-          (2. * M_PI * sin(2. * M_PI * x) - 8. * M_PI * cos(2. * M_PI * x) * sin(2. * M_PI * x)) *
-          (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.) *
-          (5. * cos(2. * M_PI * t) * cos(2. * M_PI * x) - 3. * M_PI * cos(2. * M_PI * t) +
-              6. * M_PI * cos(2. * M_PI * t) * (std::pow((cos(2. * M_PI * x)), 2.)) -
-              3. * M_PI * cos(2. * M_PI * t) * cos(2. * M_PI * x) + 30.) *
-          ((2. * ((7. * (std::pow((cos(2. * M_PI * t)), 2.))) / 2. - 4.) *
-               (std::pow(
-                   (cos(2. * M_PI * t) * cos(M_PI * x) * (std::pow((sin(M_PI * x)), 3.)) + 5.),
+      (10. * E * (std::pow(std::numbers::pi, 2.)) *
+          (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+          (2. * std::numbers::pi * sin(2. * std::numbers::pi * x) -
+              8. * std::numbers::pi * cos(2. * std::numbers::pi * x) *
+                  sin(2. * std::numbers::pi * x)) *
+          (cos(2. * std::numbers::pi * x) - 2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) +
+              1.) *
+          (5. * cos(2. * std::numbers::pi * t) * cos(2. * std::numbers::pi * x) -
+              3. * std::numbers::pi * cos(2. * std::numbers::pi * t) +
+              6. * std::numbers::pi * cos(2. * std::numbers::pi * t) *
+                  (std::pow((cos(2. * std::numbers::pi * x)), 2.)) -
+              3. * std::numbers::pi * cos(2. * std::numbers::pi * t) *
+                  cos(2. * std::numbers::pi * x) +
+              30.) *
+          ((2. * ((7. * (std::pow((cos(2. * std::numbers::pi * t)), 2.))) / 2. - 4.) *
+               (std::pow((cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                                 (std::pow((sin(std::numbers::pi * x)), 3.)) +
+                             5.),
                    2.))) /
                   25. -
-              6. * (std::pow(y, 2.)) * ((7. * (std::pow((cos(2. * M_PI * t)), 2.))) / 2. - 4.) +
+              6. * (std::pow(y, 2.)) *
+                  ((7. * (std::pow((cos(2. * std::numbers::pi * t)), 2.))) / 2. - 4.) +
               3. * (std::pow(y, 2.)) *
-                  ((7. * (std::pow((cos(2. * M_PI * t)), 2.))) / 3. - 8. / 3.) +
-              ((std::pow(M_PI, 2.)) * sin(2. * M_PI * t) * (std::pow((sin(2. * M_PI * x)), 2.))) /
+                  ((7. * (std::pow((cos(2. * std::numbers::pi * t)), 2.))) / 3. - 8. / 3.) +
+              ((std::pow(std::numbers::pi, 2.)) * sin(2. * std::numbers::pi * t) *
+                  (std::pow((sin(2. * std::numbers::pi * x)), 2.))) /
                   5. +
-              ((std::pow(M_PI, 2.)) * cos(2. * M_PI * x) * cos(2. * M_PI * (t + 1. / 4.)) *
-                  (cos(2. * M_PI * x) - 1.)) /
+              ((std::pow(std::numbers::pi, 2.)) * cos(2. * std::numbers::pi * x) *
+                  cos(2. * std::numbers::pi * (t + 1. / 4.)) *
+                  (cos(2. * std::numbers::pi * x) - 1.)) /
                   5. -
-              ((std::pow(M_PI, 2.)) * y * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                  ((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                       (cos(2. * M_PI * x) - 1.)) /
+              ((std::pow(std::numbers::pi, 2.)) * y *
+                  (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                  ((sin(2. * std::numbers::pi * x) * sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                       (cos(2. * std::numbers::pi * x) - 1.)) /
                           20. -
                       1.) *
-                  ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                  (std::pow(
-                      (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.), 2.))) /
+                  ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                  (std::pow((cos(2. * std::numbers::pi * x) -
+                                2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                      2.))) /
                   100. -
-              ((std::pow(M_PI, 2.)) * y * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                  ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                  (std::pow(
-                      (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.), 2.)) *
+              ((std::pow(std::numbers::pi, 2.)) * y *
+                  (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                  ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                  (std::pow((cos(2. * std::numbers::pi * x) -
+                                2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                      2.)) *
                   (y +
-                      (sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                          (cos(2. * M_PI * x) - 1.)) /
+                      (sin(2. * std::numbers::pi * x) * sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                          (cos(2. * std::numbers::pi * x) - 1.)) /
                           20. -
                       1.)) /
                   100. +
-              ((std::pow(M_PI, 2.)) * y * cos(2. * M_PI * t) * sin(2. * M_PI * x) *
-                  ((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                       (cos(2. * M_PI * x) - 1.)) /
+              ((std::pow(std::numbers::pi, 2.)) * y * cos(2. * std::numbers::pi * t) *
+                  sin(2. * std::numbers::pi * x) *
+                  ((sin(2. * std::numbers::pi * x) * sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                       (cos(2. * std::numbers::pi * x) - 1.)) /
                           20. -
                       1.) *
-                  ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) * (4. * cos(2. * M_PI * x) - 1.) *
+                  ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                  (4. * cos(2. * std::numbers::pi * x) - 1.) *
                   (y +
-                      (sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                          (cos(2. * M_PI * x) - 1.)) /
+                      (sin(2. * std::numbers::pi * x) * sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                          (cos(2. * std::numbers::pi * x) - 1.)) /
                           20. -
                       1.)) /
                   5.)) /
           (3. * (v + 1.) *
-              (std::pow(((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                                (std::pow((cos(2. * M_PI * x) -
-                                              2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                                    2.)) +
-                            100.),
+              (std::pow(
+                  ((std::pow(std::numbers::pi, 2.)) *
+                          (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                          (std::pow((cos(2. * std::numbers::pi * x) -
+                                        2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                              2.)) +
+                      100.),
                   2.)) *
-              (((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                   (std::pow(
-                       (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.), 2.)) *
-                   ((2. * ((7. * (std::pow((cos(2. * M_PI * t)), 2.))) / 2. - 4.) *
-                        (std::pow(
-                            (cos(2. * M_PI * t) * cos(M_PI * x) * (std::pow((sin(M_PI * x)), 3.)) +
-                                5.),
+              (((std::pow(std::numbers::pi, 2.)) *
+                   (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                   (std::pow((cos(2. * std::numbers::pi * x) -
+                                 2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                       2.)) *
+                   ((2. * ((7. * (std::pow((cos(2. * std::numbers::pi * t)), 2.))) / 2. - 4.) *
+                        (std::pow((cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                                          (std::pow((sin(std::numbers::pi * x)), 3.)) +
+                                      5.),
                             2.))) /
                            25. +
                        (3. *
-                           (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                             (cos(2. * M_PI * x) - 1.) -
+                           (std::pow((sin(2. * std::numbers::pi * x) *
+                                             sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                             (cos(2. * std::numbers::pi * x) - 1.) -
                                          20.),
                                2.)) *
-                           ((7. * cos(4. * M_PI * t)) / 6. - 3. / 2.)) /
+                           ((7. * cos(4. * std::numbers::pi * t)) / 6. - 3. / 2.)) /
                            400. -
                        (3. *
-                           (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                             (cos(2. * M_PI * x) - 1.) -
+                           (std::pow((sin(2. * std::numbers::pi * x) *
+                                             sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                             (cos(2. * std::numbers::pi * x) - 1.) -
                                          20.),
                                2.)) *
-                           ((7. * cos(4. * M_PI * t)) / 4. - 9. / 4.)) /
+                           ((7. * cos(4. * std::numbers::pi * t)) / 4. - 9. / 4.)) /
                            200. +
-                       ((std::pow(M_PI, 2.)) * sin(2. * M_PI * t) *
-                           (std::pow((sin(2. * M_PI * x)), 2.))) /
+                       ((std::pow(std::numbers::pi, 2.)) * sin(2. * std::numbers::pi * t) *
+                           (std::pow((sin(2. * std::numbers::pi * x)), 2.))) /
                            5. +
-                       ((std::pow(M_PI, 2.)) * cos(2. * M_PI * x) * cos(2. * M_PI * (t + 1. / 4.)) *
-                           (cos(2. * M_PI * x) - 1.)) /
+                       ((std::pow(std::numbers::pi, 2.)) * cos(2. * std::numbers::pi * x) *
+                           cos(2. * std::numbers::pi * (t + 1. / 4.)) *
+                           (cos(2. * std::numbers::pi * x) - 1.)) /
                            5. +
-                       ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                           (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                             (cos(2. * M_PI * x) - 1.) -
+                       ((std::pow(std::numbers::pi, 2.)) *
+                           (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                           (std::pow((sin(2. * std::numbers::pi * x) *
+                                             sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                             (cos(2. * std::numbers::pi * x) - 1.) -
                                          20.),
                                2.)) *
-                           ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                           (std::pow((cos(2. * M_PI * x) -
-                                         2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
+                           ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                           (std::pow(
+                               (cos(2. * std::numbers::pi * x) -
+                                   2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
                                2.))) /
                            40000.)) /
-                      ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                              (std::pow((cos(2. * M_PI * x) -
-                                            2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
+                      ((std::pow(std::numbers::pi, 2.)) *
+                              (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                              (std::pow(
+                                  (cos(2. * std::numbers::pi * x) -
+                                      2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
                                   2.)) +
                           100.) -
-                  (100. * ((2. * ((7. * (std::pow((cos(2. * M_PI * t)), 2.))) / 2. - 4.) *
-                               (std::pow((cos(2. * M_PI * t) * cos(M_PI * x) *
-                                                 (std::pow((sin(M_PI * x)), 3.)) +
-                                             5.),
-                                   2.))) /
-                                  25. +
-                              (3. *
-                                  (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                                    (cos(2. * M_PI * x) - 1.) -
-                                                20.),
-                                      2.)) *
-                                  ((7. * cos(4. * M_PI * t)) / 6. - 3. / 2.)) /
-                                  400. -
-                              (3. *
-                                  (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                                    (cos(2. * M_PI * x) - 1.) -
-                                                20.),
-                                      2.)) *
-                                  ((7. * cos(4. * M_PI * t)) / 4. - 9. / 4.)) /
-                                  200. +
-                              ((std::pow(M_PI, 2.)) * sin(2. * M_PI * t) *
-                                  (std::pow((sin(2. * M_PI * x)), 2.))) /
-                                  5. +
-                              ((std::pow(M_PI, 2.)) * cos(2. * M_PI * x) *
-                                  cos(2. * M_PI * (t + 1. / 4.)) * (cos(2. * M_PI * x) - 1.)) /
-                                  5. +
-                              ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                                  (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                                    (cos(2. * M_PI * x) - 1.) -
-                                                20.),
-                                      2.)) *
-                                  ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                                  (std::pow((cos(2. * M_PI * x) -
-                                                2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                                      2.))) /
-                                  40000.)) /
-                      ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                              (std::pow((cos(2. * M_PI * x) -
-                                            2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
+                  (100. *
+                      ((2. * ((7. * (std::pow((cos(2. * std::numbers::pi * t)), 2.))) / 2. - 4.) *
+                           (std::pow((cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                                             (std::pow((sin(std::numbers::pi * x)), 3.)) +
+                                         5.),
+                               2.))) /
+                              25. +
+                          (3. *
+                              (std::pow((sin(2. * std::numbers::pi * x) *
+                                                sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                                (cos(2. * std::numbers::pi * x) - 1.) -
+                                            20.),
+                                  2.)) *
+                              ((7. * cos(4. * std::numbers::pi * t)) / 6. - 3. / 2.)) /
+                              400. -
+                          (3. *
+                              (std::pow((sin(2. * std::numbers::pi * x) *
+                                                sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                                (cos(2. * std::numbers::pi * x) - 1.) -
+                                            20.),
+                                  2.)) *
+                              ((7. * cos(4. * std::numbers::pi * t)) / 4. - 9. / 4.)) /
+                              200. +
+                          ((std::pow(std::numbers::pi, 2.)) * sin(2. * std::numbers::pi * t) *
+                              (std::pow((sin(2. * std::numbers::pi * x)), 2.))) /
+                              5. +
+                          ((std::pow(std::numbers::pi, 2.)) * cos(2. * std::numbers::pi * x) *
+                              cos(2. * std::numbers::pi * (t + 1. / 4.)) *
+                              (cos(2. * std::numbers::pi * x) - 1.)) /
+                              5. +
+                          ((std::pow(std::numbers::pi, 2.)) *
+                              (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                              (std::pow((sin(2. * std::numbers::pi * x) *
+                                                sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                                (cos(2. * std::numbers::pi * x) - 1.) -
+                                            20.),
+                                  2.)) *
+                              ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                              (std::pow(
+                                  (cos(2. * std::numbers::pi * x) -
+                                      2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                                  2.))) /
+                              40000.)) /
+                      ((std::pow(std::numbers::pi, 2.)) *
+                              (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                              (std::pow(
+                                  (cos(2. * std::numbers::pi * x) -
+                                      2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
                                   2.)) +
                           100.) +
-                  ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                      (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                        (cos(2. * M_PI * x) - 1.) -
+                  ((std::pow(std::numbers::pi, 2.)) *
+                      (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                      (std::pow((sin(2. * std::numbers::pi * x) *
+                                        sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                        (cos(2. * std::numbers::pi * x) - 1.) -
                                     20.),
                           2.)) *
-                      ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                      (std::pow(
-                          (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
+                      ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                      (std::pow((cos(2. * std::numbers::pi * x) -
+                                    2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
                           2.))) /
-                      (200. * ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                                      (std::pow((cos(2. * M_PI * x) -
-                                                    2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
+                      (200. * ((std::pow(std::numbers::pi, 2.)) *
+                                      (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                                      (std::pow((cos(2. * std::numbers::pi * x) -
+                                                    2. * (std::pow((cos(2. * std::numbers::pi * x)),
+                                                             2.)) +
+                                                    1.),
                                           2.)) +
                                   100.)) +
-                  ((std::pow(M_PI, 2.)) * cos(2. * M_PI * t) * sin(M_PI * x) * sin(3. * M_PI * x) *
-                      sin(2. * M_PI * (t + 1. / 4.)) * ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                      (2. * cos(2. * M_PI * t) * cos(M_PI * x) * (std::pow((sin(M_PI * x)), 3.)) +
+                  ((std::pow(std::numbers::pi, 2.)) * cos(2. * std::numbers::pi * t) *
+                      sin(std::numbers::pi * x) * sin(3. * std::numbers::pi * x) *
+                      sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                      ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                      (2. * cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                              (std::pow((sin(std::numbers::pi * x)), 3.)) +
                           10.) *
-                      (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.) *
-                      (2. * cos(2. * M_PI * t) * cos(M_PI * x) * sin(M_PI * x) -
-                          2. * cos(2. * M_PI * t) * (std::pow((cos(M_PI * x)), 3.)) *
-                              sin(M_PI * x) +
+                      (cos(2. * std::numbers::pi * x) -
+                          2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.) *
+                      (2. * cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                              sin(std::numbers::pi * x) -
+                          2. * cos(2. * std::numbers::pi * t) *
+                              (std::pow((cos(std::numbers::pi * x)), 3.)) *
+                              sin(std::numbers::pi * x) +
                           10.)) /
-                      (25. * ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                                     (std::pow((cos(2. * M_PI * x) -
-                                                   2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
+                      (25. * ((std::pow(std::numbers::pi, 2.)) *
+                                     (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                                     (std::pow(
+                                         (cos(2. * std::numbers::pi * x) -
+                                             2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) +
+                                             1.),
                                          2.)) +
                                  100.))));
 
@@ -6444,124 +7881,158 @@ double FLD::WeaklyCompressibleEtienneFSIFluidViscosityFunction::evaluate(
   // evaluate variables
   mu_ex =
       -(5. * E *
-          (5. * cos(2. * M_PI * t) * cos(2. * M_PI * x) - 3. * M_PI * cos(2. * M_PI * t) +
-              6. * M_PI * cos(2. * M_PI * t) * (std::pow((cos(2. * M_PI * x)), 2.)) -
-              3. * M_PI * cos(2. * M_PI * t) * cos(2. * M_PI * x) + 30.)) /
+          (5. * cos(2. * std::numbers::pi * t) * cos(2. * std::numbers::pi * x) -
+              3. * std::numbers::pi * cos(2. * std::numbers::pi * t) +
+              6. * std::numbers::pi * cos(2. * std::numbers::pi * t) *
+                  (std::pow((cos(2. * std::numbers::pi * x)), 2.)) -
+              3. * std::numbers::pi * cos(2. * std::numbers::pi * t) *
+                  cos(2. * std::numbers::pi * x) +
+              30.)) /
       (3. * (v + 1.) *
-          ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                  (std::pow(
-                      (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.), 2.)) +
+          ((std::pow(std::numbers::pi, 2.)) * (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                  (std::pow((cos(2. * std::numbers::pi * x) -
+                                2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                      2.)) +
               100.) *
-          (((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-               (std::pow(
-                   (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.), 2.)) *
-               ((2. * ((7. * (std::pow((cos(2. * M_PI * t)), 2.))) / 2. - 4.) *
-                    (std::pow(
-                        (cos(2. * M_PI * t) * cos(M_PI * x) * (std::pow((sin(M_PI * x)), 3.)) + 5.),
+          (((std::pow(std::numbers::pi, 2.)) * (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+               (std::pow((cos(2. * std::numbers::pi * x) -
+                             2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                   2.)) *
+               ((2. * ((7. * (std::pow((cos(2. * std::numbers::pi * t)), 2.))) / 2. - 4.) *
+                    (std::pow((cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                                      (std::pow((sin(std::numbers::pi * x)), 3.)) +
+                                  5.),
                         2.))) /
                        25. +
                    (3. *
-                       (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                         (cos(2. * M_PI * x) - 1.) -
+                       (std::pow((sin(2. * std::numbers::pi * x) *
+                                         sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                         (cos(2. * std::numbers::pi * x) - 1.) -
                                      20.),
                            2.)) *
-                       ((7. * cos(4. * M_PI * t)) / 6. - 3. / 2.)) /
+                       ((7. * cos(4. * std::numbers::pi * t)) / 6. - 3. / 2.)) /
                        400. -
                    (3. *
-                       (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                         (cos(2. * M_PI * x) - 1.) -
+                       (std::pow((sin(2. * std::numbers::pi * x) *
+                                         sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                         (cos(2. * std::numbers::pi * x) - 1.) -
                                      20.),
                            2.)) *
-                       ((7. * cos(4. * M_PI * t)) / 4. - 9. / 4.)) /
+                       ((7. * cos(4. * std::numbers::pi * t)) / 4. - 9. / 4.)) /
                        200. +
-                   ((std::pow(M_PI, 2.)) * sin(2. * M_PI * t) *
-                       (std::pow((sin(2. * M_PI * x)), 2.))) /
+                   ((std::pow(std::numbers::pi, 2.)) * sin(2. * std::numbers::pi * t) *
+                       (std::pow((sin(2. * std::numbers::pi * x)), 2.))) /
                        5. +
-                   ((std::pow(M_PI, 2.)) * cos(2. * M_PI * x) * cos(2. * M_PI * (t + 1. / 4.)) *
-                       (cos(2. * M_PI * x) - 1.)) /
+                   ((std::pow(std::numbers::pi, 2.)) * cos(2. * std::numbers::pi * x) *
+                       cos(2. * std::numbers::pi * (t + 1. / 4.)) *
+                       (cos(2. * std::numbers::pi * x) - 1.)) /
                        5. +
-                   ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                       (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                         (cos(2. * M_PI * x) - 1.) -
+                   ((std::pow(std::numbers::pi, 2.)) *
+                       (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                       (std::pow((sin(2. * std::numbers::pi * x) *
+                                         sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                         (cos(2. * std::numbers::pi * x) - 1.) -
                                      20.),
                            2.)) *
-                       ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                       (std::pow(
-                           (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
+                       ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                       (std::pow((cos(2. * std::numbers::pi * x) -
+                                     2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
                            2.))) /
                        40000.)) /
-                  ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                          (std::pow(
-                              (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
+                  ((std::pow(std::numbers::pi, 2.)) *
+                          (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                          (std::pow((cos(2. * std::numbers::pi * x) -
+                                        2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
                               2.)) +
                       100.) -
-              (100. * ((2. * ((7. * (std::pow((cos(2. * M_PI * t)), 2.))) / 2. - 4.) *
-                           (std::pow((cos(2. * M_PI * t) * cos(M_PI * x) *
-                                             (std::pow((sin(M_PI * x)), 3.)) +
-                                         5.),
-                               2.))) /
-                              25. +
-                          (3. *
-                              (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                                (cos(2. * M_PI * x) - 1.) -
-                                            20.),
-                                  2.)) *
-                              ((7. * cos(4. * M_PI * t)) / 6. - 3. / 2.)) /
-                              400. -
-                          (3. *
-                              (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                                (cos(2. * M_PI * x) - 1.) -
-                                            20.),
-                                  2.)) *
-                              ((7. * cos(4. * M_PI * t)) / 4. - 9. / 4.)) /
-                              200. +
-                          ((std::pow(M_PI, 2.)) * sin(2. * M_PI * t) *
-                              (std::pow((sin(2. * M_PI * x)), 2.))) /
-                              5. +
-                          ((std::pow(M_PI, 2.)) * cos(2. * M_PI * x) *
-                              cos(2. * M_PI * (t + 1. / 4.)) * (cos(2. * M_PI * x) - 1.)) /
-                              5. +
-                          ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                              (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                                (cos(2. * M_PI * x) - 1.) -
-                                            20.),
-                                  2.)) *
-                              ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                              (std::pow((cos(2. * M_PI * x) -
-                                            2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                                  2.))) /
-                              40000.)) /
-                  ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                          (std::pow(
-                              (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
+              (100. *
+                  ((2. * ((7. * (std::pow((cos(2. * std::numbers::pi * t)), 2.))) / 2. - 4.) *
+                       (std::pow((cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                                         (std::pow((sin(std::numbers::pi * x)), 3.)) +
+                                     5.),
+                           2.))) /
+                          25. +
+                      (3. *
+                          (std::pow((sin(2. * std::numbers::pi * x) *
+                                            sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                            (cos(2. * std::numbers::pi * x) - 1.) -
+                                        20.),
+                              2.)) *
+                          ((7. * cos(4. * std::numbers::pi * t)) / 6. - 3. / 2.)) /
+                          400. -
+                      (3. *
+                          (std::pow((sin(2. * std::numbers::pi * x) *
+                                            sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                            (cos(2. * std::numbers::pi * x) - 1.) -
+                                        20.),
+                              2.)) *
+                          ((7. * cos(4. * std::numbers::pi * t)) / 4. - 9. / 4.)) /
+                          200. +
+                      ((std::pow(std::numbers::pi, 2.)) * sin(2. * std::numbers::pi * t) *
+                          (std::pow((sin(2. * std::numbers::pi * x)), 2.))) /
+                          5. +
+                      ((std::pow(std::numbers::pi, 2.)) * cos(2. * std::numbers::pi * x) *
+                          cos(2. * std::numbers::pi * (t + 1. / 4.)) *
+                          (cos(2. * std::numbers::pi * x) - 1.)) /
+                          5. +
+                      ((std::pow(std::numbers::pi, 2.)) *
+                          (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                          (std::pow((sin(2. * std::numbers::pi * x) *
+                                            sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                                            (cos(2. * std::numbers::pi * x) - 1.) -
+                                        20.),
+                              2.)) *
+                          ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                          (std::pow((cos(2. * std::numbers::pi * x) -
+                                        2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                              2.))) /
+                          40000.)) /
+                  ((std::pow(std::numbers::pi, 2.)) *
+                          (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                          (std::pow((cos(2. * std::numbers::pi * x) -
+                                        2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
                               2.)) +
                       100.) +
-              ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                  (std::pow((sin(2. * M_PI * x) * sin(2. * M_PI * (t + 1. / 4.)) *
-                                    (cos(2. * M_PI * x) - 1.) -
-                                20.),
-                      2.)) *
-                  ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
+              ((std::pow(std::numbers::pi, 2.)) * (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
                   (std::pow(
-                      (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.), 2.))) /
-                  (200. * ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                                  (std::pow((cos(2. * M_PI * x) -
-                                                2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                                      2.)) +
-                              100.)) +
-              ((std::pow(M_PI, 2.)) * cos(2. * M_PI * t) * sin(M_PI * x) * sin(3. * M_PI * x) *
-                  sin(2. * M_PI * (t + 1. / 4.)) * ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
-                  (2. * cos(2. * M_PI * t) * cos(M_PI * x) * (std::pow((sin(M_PI * x)), 3.)) +
+                      (sin(2. * std::numbers::pi * x) * sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                              (cos(2. * std::numbers::pi * x) - 1.) -
+                          20.),
+                      2.)) *
+                  ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                  (std::pow((cos(2. * std::numbers::pi * x) -
+                                2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                      2.))) /
+                  (200. *
+                      ((std::pow(std::numbers::pi, 2.)) *
+                              (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                              (std::pow(
+                                  (cos(2. * std::numbers::pi * x) -
+                                      2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                                  2.)) +
+                          100.)) +
+              ((std::pow(std::numbers::pi, 2.)) * cos(2. * std::numbers::pi * t) *
+                  sin(std::numbers::pi * x) * sin(3. * std::numbers::pi * x) *
+                  sin(2. * std::numbers::pi * (t + 1. / 4.)) *
+                  ((7. * cos(4. * std::numbers::pi * t)) / 2. - 9. / 2.) *
+                  (2. * cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                          (std::pow((sin(std::numbers::pi * x)), 3.)) +
                       10.) *
-                  (cos(2. * M_PI * x) - 2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.) *
-                  (2. * cos(2. * M_PI * t) * cos(M_PI * x) * sin(M_PI * x) -
-                      2. * cos(2. * M_PI * t) * (std::pow((cos(M_PI * x)), 3.)) * sin(M_PI * x) +
+                  (cos(2. * std::numbers::pi * x) -
+                      2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.) *
+                  (2. * cos(2. * std::numbers::pi * t) * cos(std::numbers::pi * x) *
+                          sin(std::numbers::pi * x) -
+                      2. * cos(2. * std::numbers::pi * t) *
+                          (std::pow((cos(std::numbers::pi * x)), 3.)) * sin(std::numbers::pi * x) +
                       10.)) /
-                  (25. * ((std::pow(M_PI, 2.)) * (std::pow((cos(2. * M_PI * t)), 2.)) *
-                                 (std::pow((cos(2. * M_PI * x) -
-                                               2. * (std::pow((cos(2. * M_PI * x)), 2.)) + 1.),
-                                     2.)) +
-                             100.))));
+                  (25. *
+                      ((std::pow(std::numbers::pi, 2.)) *
+                              (std::pow((cos(2. * std::numbers::pi * t)), 2.)) *
+                              (std::pow(
+                                  (cos(2. * std::numbers::pi * x) -
+                                      2. * (std::pow((cos(2. * std::numbers::pi * x)), 2.)) + 1.),
+                                  2.)) +
+                          100.))));
 
   switch (component)
   {
@@ -6617,8 +8088,8 @@ double FLD::BeltramiUP::evaluate(
   double y = xp[1];
   double z = xp[2];
 
-  double a = M_PI / 4.0;
-  double b = M_PI / 4.0;
+  double a = std::numbers::pi / 4.0;
+  double b = std::numbers::pi / 4.0;
   double c = a * a + b * b + a * b;
 
   double K1 = exp(a * (x - z) + b * (y - z));  // =K4
@@ -6709,8 +8180,8 @@ double FLD::BeltramiGradU::evaluate(
   double y = xp[1];
   double z = xp[2];
 
-  double a = M_PI / 4.0;
-  double b = M_PI / 4.0;
+  double a = std::numbers::pi / 4.0;
+  double b = std::numbers::pi / 4.0;
 
   double K1 = exp(a * (x - z) + b * (y - z));  // =K4
   double K2 = exp(a * (z - y) + b * (x - y));  // =K5
@@ -6823,8 +8294,8 @@ double FLD::BeltramiRHS::evaluate(
   double y = xp[1];
   double z = xp[2];
 
-  double a = M_PI / 4.0;
-  double b = M_PI / 4.0;
+  double a = std::numbers::pi / 4.0;
+  double b = std::numbers::pi / 4.0;
   double c = a * a + b * b + a * b;
 
   double K1 = exp(a * (x - z) + b * (y - z));  // =K4
@@ -6936,8 +8407,8 @@ double FLD::KimMoinUP::evaluate(const double* xp, const double t, const std::siz
 
   double a = 2.0;
 
-  double a_pi_x = a * M_PI * x;
-  double a_pi_y = a * M_PI * y;
+  double a_pi_x = a * std::numbers::pi * x;
+  double a_pi_y = a * std::numbers::pi * y;
 
   // time factors
   double gu = 1.0;
@@ -6945,8 +8416,8 @@ double FLD::KimMoinUP::evaluate(const double* xp, const double t, const std::siz
 
   if (!is_stationary_)
   {
-    gu = exp(-2.0 * a * a * M_PI * M_PI * t * kinviscosity_);
-    gp = exp(-4.0 * a * a * M_PI * M_PI * t * kinviscosity_);
+    gu = exp(-2.0 * a * a * std::numbers::pi * std::numbers::pi * t * kinviscosity_);
+    gp = exp(-4.0 * a * a * std::numbers::pi * std::numbers::pi * t * kinviscosity_);
   }
 
   switch (component)
@@ -6977,8 +8448,8 @@ std::vector<double> FLD::KimMoinUP::evaluate_time_derivative(
 
   double a = 2.0;
 
-  double a_pi_x = a * M_PI * x;
-  double a_pi_y = a * M_PI * y;
+  double a_pi_x = a * std::numbers::pi * x;
+  double a_pi_y = a * std::numbers::pi * y;
 
   // resulting vector holding
   std::vector<double> res(deg + 1);
@@ -6995,10 +8466,10 @@ std::vector<double> FLD::KimMoinUP::evaluate_time_derivative(
 
     if (!is_stationary_)
     {
-      gu = (-2.0 * a * a * M_PI * M_PI * kinviscosity_) *
-           exp(-2.0 * a * a * M_PI * M_PI * t * kinviscosity_);
-      gp = (-4.0 * a * a * M_PI * M_PI * kinviscosity_) *
-           exp(-4.0 * a * a * M_PI * M_PI * t * kinviscosity_);
+      gu = (-2.0 * a * a * std::numbers::pi * std::numbers::pi * kinviscosity_) *
+           exp(-2.0 * a * a * std::numbers::pi * std::numbers::pi * t * kinviscosity_);
+      gp = (-4.0 * a * a * std::numbers::pi * std::numbers::pi * kinviscosity_) *
+           exp(-4.0 * a * a * std::numbers::pi * std::numbers::pi * t * kinviscosity_);
     }
 
     switch (component)
@@ -7030,12 +8501,12 @@ std::vector<double> FLD::KimMoinUP::evaluate_time_derivative(
 
     if (!is_stationary_)
     {
-      gu = (-2.0 * a * a * M_PI * M_PI * kinviscosity_) *
-           (-2.0 * a * a * M_PI * M_PI * kinviscosity_) *
-           exp(-2.0 * a * a * M_PI * M_PI * t * kinviscosity_);
-      gp = (-4.0 * a * a * M_PI * M_PI * kinviscosity_) *
-           (-4.0 * a * a * M_PI * M_PI * kinviscosity_) *
-           exp(-4.0 * a * a * M_PI * M_PI * t * kinviscosity_);
+      gu = (-2.0 * a * a * std::numbers::pi * std::numbers::pi * kinviscosity_) *
+           (-2.0 * a * a * std::numbers::pi * std::numbers::pi * kinviscosity_) *
+           exp(-2.0 * a * a * std::numbers::pi * std::numbers::pi * t * kinviscosity_);
+      gp = (-4.0 * a * a * std::numbers::pi * std::numbers::pi * kinviscosity_) *
+           (-4.0 * a * a * std::numbers::pi * std::numbers::pi * kinviscosity_) *
+           exp(-4.0 * a * a * std::numbers::pi * std::numbers::pi * t * kinviscosity_);
     }
 
     switch (component)
@@ -7086,30 +8557,30 @@ double FLD::KimMoinGradU::evaluate(
 
   double a = 2.0;
 
-  double a_pi_x = a * M_PI * x;
-  double a_pi_y = a * M_PI * y;
+  double a_pi_x = a * std::numbers::pi * x;
+  double a_pi_y = a * std::numbers::pi * y;
 
   // time factors
   double gu = 1.0;
 
   if (!is_stationary_)
   {
-    gu = exp(-2.0 * a * a * M_PI * M_PI * t * kinviscosity_);
+    gu = exp(-2.0 * a * a * std::numbers::pi * std::numbers::pi * t * kinviscosity_);
   }
 
 
   switch (component)
   {
     case 0:  // u,x
-      return sin(a_pi_x) * sin(a_pi_y) * a * M_PI * gu;
+      return sin(a_pi_x) * sin(a_pi_y) * a * std::numbers::pi * gu;
     case 1:  // u,y
-      return -cos(a_pi_x) * cos(a_pi_y) * a * M_PI * gu;
+      return -cos(a_pi_x) * cos(a_pi_y) * a * std::numbers::pi * gu;
     case 2:  // u,z
       return 0.0;
     case 3:  // v,x
-      return cos(a_pi_x) * cos(a_pi_y) * a * M_PI * gu;
+      return cos(a_pi_x) * cos(a_pi_y) * a * std::numbers::pi * gu;
     case 4:  // v,y
-      return -sin(a_pi_x) * sin(a_pi_y) * a * M_PI * gu;
+      return -sin(a_pi_x) * sin(a_pi_y) * a * std::numbers::pi * gu;
     case 5:  // v,z
       return 0.0;
     case 6:  // w,x
@@ -7138,8 +8609,8 @@ std::vector<double> FLD::KimMoinGradU::evaluate_time_derivative(
 
   double a = 2.0;
 
-  double a_pi_x = a * M_PI * x;
-  double a_pi_y = a * M_PI * y;
+  double a_pi_x = a * std::numbers::pi * x;
+  double a_pi_y = a * std::numbers::pi * y;
 
   // resulting vector holding
   std::vector<double> res(deg + 1);
@@ -7155,8 +8626,8 @@ std::vector<double> FLD::KimMoinGradU::evaluate_time_derivative(
 
     if (!is_stationary_)
     {
-      gu = (-2.0 * a * a * M_PI * M_PI * kinviscosity_) *
-           exp(-2.0 * a * a * M_PI * M_PI * t * kinviscosity_);
+      gu = (-2.0 * a * a * std::numbers::pi * std::numbers::pi * kinviscosity_) *
+           exp(-2.0 * a * a * std::numbers::pi * std::numbers::pi * t * kinviscosity_);
     }
 
     // NOTE: the implementation is likely wrong given that we fall through the switch statements
@@ -7164,19 +8635,19 @@ std::vector<double> FLD::KimMoinGradU::evaluate_time_derivative(
     switch (component)
     {
       case 0:  // u,x
-        res[1] = sin(a_pi_x) * sin(a_pi_y) * a * M_PI * gu;
+        res[1] = sin(a_pi_x) * sin(a_pi_y) * a * std::numbers::pi * gu;
         [[fallthrough]];
       case 1:  // u,y
-        res[1] = -cos(a_pi_x) * cos(a_pi_y) * a * M_PI * gu;
+        res[1] = -cos(a_pi_x) * cos(a_pi_y) * a * std::numbers::pi * gu;
         [[fallthrough]];
       case 2:  // u,z
         res[1] = 0.0;
         [[fallthrough]];
       case 3:  // v,x
-        res[1] = cos(a_pi_x) * cos(a_pi_y) * a * M_PI * gu;
+        res[1] = cos(a_pi_x) * cos(a_pi_y) * a * std::numbers::pi * gu;
         [[fallthrough]];
       case 4:  // v,y
-        res[1] = -sin(a_pi_x) * sin(a_pi_y) * a * M_PI * gu;
+        res[1] = -sin(a_pi_x) * sin(a_pi_y) * a * std::numbers::pi * gu;
         [[fallthrough]];
       case 5:  // v,z
         res[1] = 0.0;
@@ -7204,27 +8675,27 @@ std::vector<double> FLD::KimMoinGradU::evaluate_time_derivative(
 
     if (!is_stationary_)
     {
-      gu = (-2.0 * a * a * M_PI * M_PI * kinviscosity_) *
-           (-2.0 * a * a * M_PI * M_PI * kinviscosity_) *
-           exp(-2.0 * a * a * M_PI * M_PI * t * kinviscosity_);
+      gu = (-2.0 * a * a * std::numbers::pi * std::numbers::pi * kinviscosity_) *
+           (-2.0 * a * a * std::numbers::pi * std::numbers::pi * kinviscosity_) *
+           exp(-2.0 * a * a * std::numbers::pi * std::numbers::pi * t * kinviscosity_);
     }
 
     switch (component)
     {
       case 0:  // u,x
-        res[2] = sin(a_pi_x) * sin(a_pi_y) * a * M_PI * gu;
+        res[2] = sin(a_pi_x) * sin(a_pi_y) * a * std::numbers::pi * gu;
         [[fallthrough]];
       case 1:  // u,y
-        res[2] = -cos(a_pi_x) * cos(a_pi_y) * a * M_PI * gu;
+        res[2] = -cos(a_pi_x) * cos(a_pi_y) * a * std::numbers::pi * gu;
         [[fallthrough]];
       case 2:  // u,z
         res[2] = 0.0;
         [[fallthrough]];
       case 3:  // v,x
-        res[2] = cos(a_pi_x) * cos(a_pi_y) * a * M_PI * gu;
+        res[2] = cos(a_pi_x) * cos(a_pi_y) * a * std::numbers::pi * gu;
         [[fallthrough]];
       case 4:  // v,y
-        res[2] = -sin(a_pi_x) * sin(a_pi_y) * a * M_PI * gu;
+        res[2] = -sin(a_pi_x) * sin(a_pi_y) * a * std::numbers::pi * gu;
         [[fallthrough]];
       case 5:  // v,z
         res[2] = 0.0;
@@ -7279,13 +8750,13 @@ double FLD::KimMoinRHS::evaluate(
 
   if (!is_stationary_)
   {
-    gu = exp(-2.0 * a * a * M_PI * M_PI * t * kinviscosity_);
-    gp = exp(-4.0 * a * a * M_PI * M_PI * t * kinviscosity_);
+    gu = exp(-2.0 * a * a * std::numbers::pi * std::numbers::pi * t * kinviscosity_);
+    gp = exp(-4.0 * a * a * std::numbers::pi * std::numbers::pi * t * kinviscosity_);
   }
 
 
-  double a_pi_x = a * M_PI * x;
-  double a_pi_y = a * M_PI * y;
+  double a_pi_x = a * std::numbers::pi * x;
+  double a_pi_y = a * std::numbers::pi * y;
 
   double conv_x = 0.0;
   double conv_y = 0.0;
@@ -7293,8 +8764,8 @@ double FLD::KimMoinRHS::evaluate(
 
   if (!is_stokes_)
   {
-    conv_x = -a * M_PI * sin(a_pi_x) * cos(a_pi_x);
-    conv_y = -a * M_PI * sin(a_pi_y) * cos(a_pi_y);
+    conv_x = -a * std::numbers::pi * sin(a_pi_x) * cos(a_pi_x);
+    conv_y = -a * std::numbers::pi * sin(a_pi_y) * cos(a_pi_y);
   }
 
   double visc_x = 0.0;
@@ -7302,9 +8773,9 @@ double FLD::KimMoinRHS::evaluate(
 
   if (is_stationary_)
   {
-    visc_x = kinviscosity_ * 2. * a * a * M_PI * M_PI *
+    visc_x = kinviscosity_ * 2. * a * a * std::numbers::pi * std::numbers::pi *
              (-cos(a_pi_x) * sin(a_pi_y));  // * (gu = 1) for stationary
-    visc_y = kinviscosity_ * 2. * a * a * M_PI * M_PI *
+    visc_y = kinviscosity_ * 2. * a * a * std::numbers::pi * std::numbers::pi *
              (sin(a_pi_x) * cos(a_pi_y));  // * (gu = 1) for stationary
   }
 
@@ -7313,9 +8784,9 @@ double FLD::KimMoinRHS::evaluate(
   switch (component)
   {
     case 0:
-      return 0.5 * a * M_PI * sin(2. * a_pi_x) * gp + visc_x + conv_x * gu * gu;
+      return 0.5 * a * std::numbers::pi * sin(2. * a_pi_x) * gp + visc_x + conv_x * gu * gu;
     case 1:
-      return 0.5 * a * M_PI * sin(2. * a_pi_y) * gp + visc_y + conv_y * gu * gu;
+      return 0.5 * a * std::numbers::pi * sin(2. * a_pi_y) * gp + visc_y + conv_y * gu * gu;
     case 2:
       return 0.0;
     default:
@@ -7351,14 +8822,14 @@ std::vector<double> FLD::KimMoinRHS::evaluate_time_derivative(
 
     if (!is_stationary_)
     {
-      gu = (-4.0 * a * a * M_PI * M_PI * kinviscosity_) *
-           exp(-4.0 * a * a * M_PI * M_PI * t * kinviscosity_);
-      gp = (-4.0 * a * a * M_PI * M_PI * kinviscosity_) *
-           exp(-4.0 * a * a * M_PI * M_PI * t * kinviscosity_);
+      gu = (-4.0 * a * a * std::numbers::pi * std::numbers::pi * kinviscosity_) *
+           exp(-4.0 * a * a * std::numbers::pi * std::numbers::pi * t * kinviscosity_);
+      gp = (-4.0 * a * a * std::numbers::pi * std::numbers::pi * kinviscosity_) *
+           exp(-4.0 * a * a * std::numbers::pi * std::numbers::pi * t * kinviscosity_);
     }
 
-    double a_pi_x = a * M_PI * x;
-    double a_pi_y = a * M_PI * y;
+    double a_pi_x = a * std::numbers::pi * x;
+    double a_pi_y = a * std::numbers::pi * y;
 
     double conv_x = 0.0;
     double conv_y = 0.0;
@@ -7366,8 +8837,8 @@ std::vector<double> FLD::KimMoinRHS::evaluate_time_derivative(
 
     if (!is_stokes_)
     {
-      conv_x = -a * M_PI * sin(a_pi_x) * cos(a_pi_x);
-      conv_y = -a * M_PI * sin(a_pi_y) * cos(a_pi_y);
+      conv_x = -a * std::numbers::pi * sin(a_pi_x) * cos(a_pi_x);
+      conv_y = -a * std::numbers::pi * sin(a_pi_y) * cos(a_pi_y);
     }
 
     // in case of instationary: du/dt - \nu \laplacian(u) = 0
@@ -7376,10 +8847,10 @@ std::vector<double> FLD::KimMoinRHS::evaluate_time_derivative(
     switch (component)
     {
       case 0:
-        res[1] = 0.5 * a * M_PI * sin(2. * a_pi_x) * gp + conv_x * gu;
+        res[1] = 0.5 * a * std::numbers::pi * sin(2. * a_pi_x) * gp + conv_x * gu;
         [[fallthrough]];
       case 1:
-        res[1] = 0.5 * a * M_PI * sin(2. * a_pi_y) * gp + conv_y * gu;
+        res[1] = 0.5 * a * std::numbers::pi * sin(2. * a_pi_y) * gp + conv_y * gu;
         [[fallthrough]];
       case 2:
         res[1] = 0.0;
@@ -7399,16 +8870,16 @@ std::vector<double> FLD::KimMoinRHS::evaluate_time_derivative(
 
     if (!is_stationary_)
     {
-      gu = (-4.0 * a * a * M_PI * M_PI * kinviscosity_) *
-           (-4.0 * a * a * M_PI * M_PI * kinviscosity_) *
-           exp(-4.0 * a * a * M_PI * M_PI * t * kinviscosity_);
-      gp = (-4.0 * a * a * M_PI * M_PI * kinviscosity_) *
-           (-4.0 * a * a * M_PI * M_PI * kinviscosity_) *
-           exp(-4.0 * a * a * M_PI * M_PI * t * kinviscosity_);
+      gu = (-4.0 * a * a * std::numbers::pi * std::numbers::pi * kinviscosity_) *
+           (-4.0 * a * a * std::numbers::pi * std::numbers::pi * kinviscosity_) *
+           exp(-4.0 * a * a * std::numbers::pi * std::numbers::pi * t * kinviscosity_);
+      gp = (-4.0 * a * a * std::numbers::pi * std::numbers::pi * kinviscosity_) *
+           (-4.0 * a * a * std::numbers::pi * std::numbers::pi * kinviscosity_) *
+           exp(-4.0 * a * a * std::numbers::pi * std::numbers::pi * t * kinviscosity_);
     }
 
-    double a_pi_x = a * M_PI * x;
-    double a_pi_y = a * M_PI * y;
+    double a_pi_x = a * std::numbers::pi * x;
+    double a_pi_y = a * std::numbers::pi * y;
 
     double conv_x = 0.0;
     double conv_y = 0.0;
@@ -7416,8 +8887,8 @@ std::vector<double> FLD::KimMoinRHS::evaluate_time_derivative(
 
     if (!is_stokes_)
     {
-      conv_x = -a * M_PI * sin(a_pi_x) * cos(a_pi_x);
-      conv_y = -a * M_PI * sin(a_pi_y) * cos(a_pi_y);
+      conv_x = -a * std::numbers::pi * sin(a_pi_x) * cos(a_pi_x);
+      conv_y = -a * std::numbers::pi * sin(a_pi_y) * cos(a_pi_y);
     }
 
     // in case of instationary: du/dt - \nu \laplacian(u) = 0
@@ -7426,10 +8897,10 @@ std::vector<double> FLD::KimMoinRHS::evaluate_time_derivative(
     switch (component)
     {
       case 0:
-        res[2] = 0.5 * a * M_PI * sin(2. * a_pi_x) * gp + conv_x * gu;
+        res[2] = 0.5 * a * std::numbers::pi * sin(2. * a_pi_x) * gp + conv_x * gu;
         [[fallthrough]];
       case 1:
-        res[2] = 0.5 * a * M_PI * sin(2. * a_pi_y) * gp + conv_y * gu;
+        res[2] = 0.5 * a * std::numbers::pi * sin(2. * a_pi_y) * gp + conv_y * gu;
         [[fallthrough]];
       case 2:
         res[2] = 0.0;
@@ -7477,8 +8948,8 @@ double FLD::KimMoinStress::evaluate(
   const double a = 2;  // in general does not need to be equal ... PARAM_A;
   const double b = 2;  // in general does not need to be equal ... PARAM_B;
 
-  double a_pi_x = a * M_PI * x;
-  double a_pi_y = a * M_PI * y;
+  double a_pi_x = a * std::numbers::pi * x;
+  double a_pi_y = a * std::numbers::pi * y;
 
   // time factors
   double gu = 1.0;
@@ -7486,12 +8957,12 @@ double FLD::KimMoinStress::evaluate(
 
   if (!is_stationary_)
   {
-    gu = exp(-2.0 * b * b * M_PI * M_PI * t * kinviscosity_);
-    gp = exp(-4.0 * b * b * M_PI * M_PI * t * kinviscosity_);
+    gu = exp(-2.0 * b * b * std::numbers::pi * std::numbers::pi * t * kinviscosity_);
+    gp = exp(-4.0 * b * b * std::numbers::pi * std::numbers::pi * t * kinviscosity_);
   }
 
-  double fac =
-      2 * kinviscosity_ * density_ * gu * M_PI * a * sin(a_pi_x) * sin(a_pi_y) * amplitude_;
+  double fac = 2 * kinviscosity_ * density_ * gu * std::numbers::pi * a * sin(a_pi_x) *
+               sin(a_pi_y) * amplitude_;
   double p = -1. / 4. * (cos(2.0 * a_pi_x) + cos(2.0 * a_pi_y)) * gp * density_;
 
 
