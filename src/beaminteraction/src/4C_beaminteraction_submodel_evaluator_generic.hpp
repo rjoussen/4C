@@ -249,7 +249,7 @@ namespace BeamInteraction
       //! \brief Method used to assemble the force vector while using Lagrange Multipliers
       virtual void assemble_force(Core::LinAlg::Vector<double>& f) const {};
 
-      //! Method used to assemble the stiffness matrix while using Lagrange Multipliers
+      //! \brief Method used to assemble the stiffness matrix while using Lagrange Multipliers
       virtual void assemble_stiff(Core::LinAlg::SparseOperator& jac) const {};
 
       //! @}
