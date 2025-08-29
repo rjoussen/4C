@@ -14538,17 +14538,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::calc_multi_frac_subgrid_
   else
   {
     FOUR_C_THROW("Special option for passive scalars only!");
-    //    double gamma1 = 4.0/3.0;
-    //    double gamma2 = 2.0;
-    //    kappa_phi = 1.0/(1.0-pow(alpha,-gamma1));
-    //    D_mfs = Csgs * sqrt(kappa_phi) * pow(2.0,-gamma2*Nphi/2.0) *
-    //    sqrt((pow(2.0,gamma1*Nvel[0])-1)+4.0/3.0*(M_PI/hk)*(pow(2.0,gamma2*Nphi)-pow(2.0,gamma2*Nvel[0])));
   }
-
-  //  if (eid_ == 100){
-  //    std::cout << "D  " << std::setprecision(10) << D_mfs << std::endl;
-  //    std::cout << "CsgsD  " << std::setprecision(10) << Csgs << std::endl;
-  //  }
 
   return;
 }

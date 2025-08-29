@@ -507,18 +507,6 @@ void BeamInteraction::BeamToBeamContactPair<numnodes,
     double lengthspec_energy = Core::FADUtils::cast_to_double(cpvariables_[numcp]->get_energy());
     cpvariables_[numcp]->set_integrated_energy(lengthspec_energy);
 
-    //    std::cout << "cpvariables_[numcp]->GetNormal(): " << cpvariables_[numcp]->GetNormal() <<
-    //    std::endl; std::cout << "numcp: " << numcp << std::endl; std::cout << "xi: " <<
-    //    cpvariables_[numcp]->GetCP().first.val() << std::endl; std::cout << "eta: " <<
-    //    cpvariables_[numcp]->GetCP().second.val() << std::endl; std::cout << "gap: " <<
-    //    cpvariables_[numcp]->GetGap().val() << std::endl; std::cout << "angle: " <<
-    //    cpvariables_[numcp]->get_angle()/M_PI*180.0 << std::endl; std::cout << "r1_xi: " << r1_xi
-    //    << std::endl; std::cout << "r2_xi: " << r2_xi << std::endl; std::cout << "|r1_xi|: " <<
-    //    r1_xi.Norm2() << std::endl; std::cout << "|r2_xi|: " << r2_xi.Norm2() << std::endl;
-    //    std::cout << "r1_xi*r2_xi: " << Core::FADUtils::ScalarProduct(r1_xi,r2_xi) << std::endl;
-    //    std::cout << "cpvariables_[numcp]->Getfp(): " << cpvariables_[numcp]->Getfp() <<
-    //    std::endl;
-
     // call function to compute contact contribution to residual vector
     if (forcevec1 != nullptr and forcevec2 != nullptr)
       evaluate_fc_contact(*forcevec1, *forcevec2, r1, r2, r1_xi, r2_xi, r1_xixi, r2_xixi, N1, N2,
@@ -1437,18 +1425,6 @@ void BeamInteraction::BeamToBeamContactPair<numnodes,
     // In case of endpoint-contact, the length specific energy and the 'real' energy are identical
     double lengthspec_energy = Core::FADUtils::cast_to_double(epvariables_[numep]->get_energy());
     epvariables_[numep]->set_integrated_energy(lengthspec_energy);
-
-    //    std::cout << "epvariables_[numep]->GetNormal(): " << epvariables_[numep]->GetNormal() <<
-    //    std::endl; std::cout << "numep: " << numep << std::endl; std::cout << "xi: " <<
-    //    epvariables_[numep]->GetCP().first.val() << std::endl; std::cout << "eta: " <<
-    //    epvariables_[numep]->GetCP().second.val() << std::endl; std::cout << "gap: " <<
-    //    epvariables_[numep]->GetGap().val() << std::endl; std::cout << "angle: " <<
-    //    epvariables_[numep]->get_angle()/M_PI*180.0 << std::endl; std::cout << "r1_xi: " << r1_xi
-    //    << std::endl; std::cout << "r2_xi: " << r2_xi << std::endl; std::cout << "|r1_xi|: " <<
-    //    r1_xi.Norm2() << std::endl; std::cout << "|r2_xi|: " << r2_xi.Norm2() << std::endl;
-    //    std::cout << "r1_xi*r2_xi: " << Core::FADUtils::ScalarProduct(r1_xi,r2_xi) << std::endl;
-    //    std::cout << "epvariables_[numep]->Getfp(): " << epvariables_[numep]->Getfp() <<
-    //    std::endl;
 
     bool fixedendpointxi = epvariables_[numep]->get_int_ids().first;
     bool fixedendpointeta = epvariables_[numep]->get_int_ids().second;
@@ -2748,22 +2724,6 @@ bool BeamInteraction::BeamToBeamContactPair<numnodes, numnodalvalues>::point_to_
       // compute the scalar residuum
       // The residual is scaled with 1/element_length since r_xi scales with the element_length
       residual = fabs((double)Core::FADUtils::cast_to_double((TYPE)(f / jacobi)));
-
-      //      std::cout << "iter: " << iter << std::endl;
-      //      std::cout << "residual: " << residual << std::endl;
-      //      std::cout << "eta1: " << eta1.val() << std::endl;
-      //      std::cout << "eta2: " << eta2.val() << std::endl;
-      //      std::cout << "r1: " << r1 << std::endl;
-      //      std::cout << "r2: " << r2 << std::endl;
-      //      std::cout << "r1_xi: " << r1_xi << std::endl;
-      //      std::cout << "r2_xi: " << r2_xi << std::endl;
-      //      std::cout << "r1_xixi: " << r1_xixi << std::endl;
-      //      std::cout << "r2_xixi: " << r2_xixi << std::endl;
-      //      std::cout << "ele1pos_: " << ele1pos_ << std::endl;
-      //      std::cout << "ele2pos_: " << ele2pos_ << std::endl;
-      //      std::cout << "angle: " <<
-      //      BeamContact::CalcAngle(Core::FADUtils::cast_to_double<TYPE,3,1>(r1_xi),Core::FADUtils::cast_to_double<TYPE,3,1>(r2_xi))/M_PI*180.0
-      //      << std::endl;
 
       if (iter == 1) residual0 = residual;
 
