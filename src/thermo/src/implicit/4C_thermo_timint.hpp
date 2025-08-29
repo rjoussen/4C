@@ -87,7 +87,7 @@ namespace Thermo
     /// tests if there are more time steps to do
     bool not_finished() const override
     {
-      return timen_ <= timemax_ + 1.0e-8 * (*dt_)[0] and stepn_ <= stepmax_;
+      return timen_ <= timemax_ + 1.0e-8 * dt_[0] and stepn_ <= stepmax_;
     }
 
     //! non-linear solve
@@ -297,13 +297,13 @@ namespace Thermo
     std::shared_ptr<const Core::LinAlg::Vector<double>> initial_guess() override = 0;
 
     //! Return temperatures \f$T_{n}\f$
-    std::shared_ptr<Core::LinAlg::Vector<double>> tempn() override { return (*temp_)(0); }
+    std::shared_ptr<Core::LinAlg::Vector<double>> tempn() override { return temp_(0); }
 
     //! Return temperatures \f$T_{n+1}\f$
     std::shared_ptr<Core::LinAlg::Vector<double>> tempnp() override { return tempn_; }
 
     //! Return temperature rates \f$R_{n}\f$
-    std::shared_ptr<Core::LinAlg::Vector<double>> raten() { return (*rate_)(0); }
+    std::shared_ptr<Core::LinAlg::Vector<double>> raten() { return rate_(0); }
 
     //! Return external force \f$F_{ext,n}\f$
     virtual std::shared_ptr<Core::LinAlg::Vector<double>> fext() = 0;
@@ -319,7 +319,7 @@ namespace Thermo
     std::shared_ptr<Core::LinAlg::SparseMatrix> system_matrix() override { return tang_; }
 
     //! Return current time \f$t_{n}\f$
-    double time_old() const override { return (*time_)[0]; }
+    double time_old() const override { return time_[0]; }
 
     //! Return target time \f$t_{n+1}\f$
     double time() const override { return timen_; }
@@ -328,10 +328,10 @@ namespace Thermo
     double get_time_end() const override { return timemax_; }
 
     //! Get time step size \f$\Delta t_n\f$
-    double dt() const override { return (*dt_)[0]; }
+    double dt() const override { return dt_[0]; }
 
     //! Set time step size \f$\Delta t_n\f$
-    void set_dt(double timestepsize) override { (*dt_)[0] = timestepsize; }
+    void set_dt(double timestepsize) override { dt_[0] = timestepsize; }
 
     //! Sets the target time \f$t_{n+1}\f$ of this time step
     void set_timen(const double time) override { timen_ = time; }
@@ -429,14 +429,13 @@ namespace Thermo
     //! @name General time integration control parameters
     //@{
 
-    std::shared_ptr<TimeStepping::TimIntMStep<double>>
-        time_;      //!< time \f$t_{n}\f$ of last converged step
-    double timen_;  //!< target time \f$t_{n+1}\f$
-    std::shared_ptr<TimeStepping::TimIntMStep<double>> dt_;  //!< time step size \f$\Delta t\f$
-    double timemax_;                                         //!< final time \f$t_\text{fin}\f$
-    int stepmax_;                                            //!< final step \f$N\f$
-    int step_;                                               //!< time step index \f$n\f$
-    int stepn_;                                              //!< time step index \f$n+1\f$
+    TimeStepping::TimIntMStep<double> time_;  //!< time \f$t_{n}\f$ of last converged step
+    double timen_;                            //!< target time \f$t_{n+1}\f$
+    TimeStepping::TimIntMStep<double> dt_;    //!< time step size \f$\Delta t\f$
+    double timemax_;                          //!< final time \f$t_\text{fin}\f$
+    int stepmax_;                             //!< final step \f$N\f$
+    int step_;                                //!< time step index \f$n\f$
+    int stepn_;                               //!< time step index \f$n+1\f$
     bool firstoutputofrun_;  //!< flag whether this output step is the first one (restarted or not)
     bool lumpcapa_;          //!< flag for lumping the capacity matrix, default: false
 
@@ -454,10 +453,10 @@ namespace Thermo
     //@{
 
     //! global temperatures \f${T}_{n}, T_{n-1}, ...\f$
-    std::shared_ptr<TimeStepping::TimIntMStep<Core::LinAlg::Vector<double>>> temp_;
+    TimeStepping::TimIntMStep<Core::LinAlg::Vector<double>> temp_;
 
     //! global temperature rates \f${R}_{n}, R_{n-1}, ...\f$
-    std::shared_ptr<TimeStepping::TimIntMStep<Core::LinAlg::Vector<double>>> rate_;
+    TimeStepping::TimIntMStep<Core::LinAlg::Vector<double>> rate_;
 
     //! global temperatures \f${T}_{n+1}\f$ at \f$t_{n+1}\f$
     std::shared_ptr<Core::LinAlg::Vector<double>> tempn_;

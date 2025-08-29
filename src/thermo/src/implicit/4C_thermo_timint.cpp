@@ -48,9 +48,7 @@ Thermo::TimInt::TimInt(const Teuchos::ParameterList& ioparams,
       writetempgrad_(Teuchos::getIntegralValue<Thermo::TempGradType>(ioparams, "THERM_TEMPGRAD")),
       calcerror_(Teuchos::getIntegralValue<Thermo::CalcError>(tdynparams, "CALCERROR")),
       errorfunctno_(tdynparams.get<int>("CALCERRORFUNCNO")),
-      time_(nullptr),
       timen_(0.0),
-      dt_(nullptr),
       timemax_(tdynparams.get<double>("MAXTIME")),
       stepmax_(tdynparams.get<int>("NUMSTEP")),
       step_(0),
@@ -58,8 +56,6 @@ Thermo::TimInt::TimInt(const Teuchos::ParameterList& ioparams,
       firstoutputofrun_(true),
       lumpcapa_(tdynparams.get<bool>("LUMPCAPA")),
       zeros_(nullptr),
-      temp_(nullptr),
-      rate_(nullptr),
       tempn_(nullptr),
       raten_(nullptr),
       tang_(nullptr)
@@ -79,12 +75,11 @@ Thermo::TimInt::TimInt(const Teuchos::ParameterList& ioparams,
   }
 
   // time state
-  time_ = std::make_shared<TimeStepping::TimIntMStep<double>>(0, 0, 0.0);
+  time_ = TimeStepping::TimIntMStep<double>(0, 0, 0.0);
   // HERE SHOULD BE SOMETHING LIKE (tdynparams.get<double>("TIMEINIT"))
-  dt_ =
-      std::make_shared<TimeStepping::TimIntMStep<double>>(0, 0, tdynparams.get<double>("TIMESTEP"));
+  dt_ = TimeStepping::TimIntMStep(0, 0, tdynparams.get<double>("TIMESTEP"));
   step_ = 0;
-  timen_ = (*time_)[0] + (*dt_)[0];  // set target time to initial time plus step size
+  timen_ = time_[0] + dt_[0];  // set target time to initial time plus step size
   stepn_ = step_ + 1;
 
   // a zero vector of full length
@@ -101,11 +96,11 @@ Thermo::TimInt::TimInt(const Teuchos::ParameterList& ioparams,
   }
 
   // temperatures T_{n}
-  temp_ = std::make_shared<TimeStepping::TimIntMStep<Core::LinAlg::Vector<double>>>(
-      0, 0, discret_->dof_row_map(), true);
+  temp_ =
+      TimeStepping::TimIntMStep<Core::LinAlg::Vector<double>>(0, 0, discret_->dof_row_map(), true);
   // temperature rates R_{n}
-  rate_ = std::make_shared<TimeStepping::TimIntMStep<Core::LinAlg::Vector<double>>>(
-      0, 0, discret_->dof_row_map(), true);
+  rate_ =
+      TimeStepping::TimIntMStep<Core::LinAlg::Vector<double>>(0, 0, discret_->dof_row_map(), true);
 
   // temperatures T_{n+1} at t_{n+1}
   tempn_ = Core::LinAlg::create_vector(*discret_->dof_row_map(), true);
@@ -151,7 +146,7 @@ Thermo::TimInt::TimInt(const Teuchos::ParameterList& ioparams,
       runtime_vtk_writer_ = Core::IO::DiscretizationVisualizationWriterMesh(
           discret_, Core::IO::visualization_parameters_factory(
                         Global::Problem::instance()->io_params().sublist("RUNTIME VTK OUTPUT"),
-                        *Global::Problem::instance()->output_control_file(), (*time_)[0]));
+                        *Global::Problem::instance()->output_control_file(), time_[0]));
     }
   }
 
@@ -193,10 +188,10 @@ void Thermo::TimInt::determine_capa_consist_temp_rate()
       Core::LinAlg::create_vector(*discret_->dof_row_map(), true);  //!< internal force
 
   // overwrite initial state vectors with DirichletBCs
-  apply_dirichlet_bc((*time_)[0], (*temp_)(0), (*rate_)(0), false);
+  apply_dirichlet_bc(time_[0], temp_(0), rate_(0), false);
 
   // get external force
-  apply_force_external((*time_)[0], (*temp_)(0), *fext);
+  apply_force_external(time_[0], temp_(0), *fext);
   // apply_force_external_conv is applied in the derived classes!
 
   // initialise matrices
@@ -213,13 +208,13 @@ void Thermo::TimInt::determine_capa_consist_temp_rate()
     p.set<Thermo::DynamicType>("time integrator", method_name());
     p.set<bool>("lump capa matrix", lumpcapa_);
     // other parameters that might be needed by the elements
-    p.set("total time", (*time_)[0]);
-    p.set("delta time", (*dt_)[0]);
+    p.set("total time", time_[0]);
+    p.set("delta time", dt_[0]);
     // set vector values needed by elements
     discret_->clear_state();
     // set_state(0,...) in case of multiple dofsets (e.g. TSI)
     discret_->set_state(0, "residual temperature", *zeros_);
-    discret_->set_state(0, "temperature", *(*temp_)(0));
+    discret_->set_state(0, "temperature", *temp_(0));
 
     // calculate the capacity matrix onto tang_, instead of buildung 2 matrices
     discret_->evaluate(p, nullptr, tang_, fint, nullptr, nullptr);
@@ -247,7 +242,7 @@ void Thermo::TimInt::determine_capa_consist_temp_rate()
     Core::LinAlg::SolverParams solver_params;
     solver_params.refactor = true;
     solver_params.reset = true;
-    solver_->solve(tang_, (*rate_)(0), rhs, solver_params);
+    solver_->solve(tang_, rate_(0), rhs, solver_params);
   }
 
   // We need to reset the tangent matrix because its graph (topology)
@@ -296,10 +291,10 @@ void Thermo::TimInt::apply_dirichlet_bc(const double time,
 void Thermo::TimInt::update_step_time()
 {
   // update time and step
-  time_->update_steps(timen_);  // t_{n} := t_{n+1}, etc
-  step_ = stepn_;               // n := n+1
+  time_.update_steps(timen_);  // t_{n} := t_{n+1}, etc
+  step_ = stepn_;              // n := n+1
 
-  timen_ += (*dt_)[0];
+  timen_ += dt_[0];
   stepn_ += 1;
 
   // new deal
@@ -314,8 +309,8 @@ void Thermo::TimInt::update_step_time()
 void Thermo::TimInt::reset_step()
 {
   // reset state vectors
-  tempn_->update(1.0, (*temp_)[0], 0.0);
-  raten_->update(1.0, (*rate_)[0], 0.0);
+  tempn_->update(1.0, temp_[0], 0.0);
+  raten_->update(1.0, rate_[0], 0.0);
 
   // reset anything that needs to be reset at the element level
   {
@@ -346,8 +341,8 @@ void Thermo::TimInt::read_restart(const int step)
 
   step_ = step;
   stepn_ = step_ + 1;
-  time_ = std::make_shared<TimeStepping::TimIntMStep<double>>(0, 0, reader.read_double("time"));
-  timen_ = (*time_)[0] + (*dt_)[0];
+  time_ = TimeStepping::TimIntMStep<double>(0, 0, reader.read_double("time"));
+  timen_ = time_[0] + dt_[0];
 
   read_restart_state();
   read_restart_force();
@@ -363,9 +358,9 @@ void Thermo::TimInt::read_restart_state()
   Core::IO::DiscretizationReader reader(
       discret_, Global::Problem::instance()->input_control_file(), step_);
   reader.read_vector(tempn_, "temperature");
-  temp_->update_steps(*tempn_);
+  temp_.update_steps(*tempn_);
   reader.read_vector(raten_, "rate");
-  rate_->update_steps(*raten_);
+  rate_.update_steps(*raten_);
   reader.read_history_data(step_);
   return;
 
@@ -413,7 +408,7 @@ void Thermo::TimInt::write_runtime_output()
     if (runtime_vtk_params_.output_node_gid) runtime_vtk_writer_->append_node_gid("node_gid");
 
     // finalize everything and write all required files to filesystem
-    runtime_vtk_writer_->write_to_disk((*time_)[0], step_);
+    runtime_vtk_writer_->write_to_disk(time_[0], step_);
   }
 
   // write csv runtime output
@@ -427,7 +422,7 @@ void Thermo::TimInt::write_runtime_output()
       p.set<Thermo::Action>("action", Thermo::calc_thermo_energy);
 
       discret_->clear_state();
-      discret_->set_state(0, "temperature", *(*temp_)(0));
+      discret_->set_state(0, "temperature", *temp_(0));
 
       std::shared_ptr<Core::LinAlg::SerialDenseVector> energies =
           std::make_shared<Core::LinAlg::SerialDenseVector>(1);
@@ -437,7 +432,7 @@ void Thermo::TimInt::write_runtime_output()
 
       std::map<std::string, std::vector<double>> output_energy;
       output_energy["energy"] = {energy};
-      runtime_csv_writer_->write_data_to_file((*time_)[0], step_, output_energy);
+      runtime_csv_writer_->write_data_to_file(time_[0], step_, output_energy);
     }
   }
 }
@@ -505,10 +500,10 @@ void Thermo::TimInt::output_restart(bool& datawritten)
   datawritten = true;
 
   // write restart output, please
-  output_->write_mesh(step_, (*time_)[0]);
-  output_->new_step(step_, (*time_)[0]);
-  output_->write_vector("temperature", (*temp_)(0));
-  output_->write_vector("rate", (*rate_)(0));
+  output_->write_mesh(step_, time_[0]);
+  output_->new_step(step_, time_[0]);
+  output_->write_vector("temperature", temp_(0));
+  output_->write_vector("rate", rate_(0));
   // write all force vectors which are later read in restart
   write_restart_force(output_);
   // owner of elements is just written once because it does not change during simulation (so far)
@@ -540,9 +535,9 @@ void Thermo::TimInt::output_state(bool& datawritten)
   datawritten = true;
 
   // write now
-  output_->new_step(step_, (*time_)[0]);
-  output_->write_vector("temperature", (*temp_)(0));
-  output_->write_vector("rate", (*rate_)(0));
+  output_->new_step(step_, time_[0]);
+  output_->write_vector("temperature", temp_(0));
+  output_->write_vector("rate", rate_(0));
   // owner of elements is just written once because it does not change during simulation (so far)
   output_->write_element_data(firstoutputofrun_);
   firstoutputofrun_ = false;
@@ -562,7 +557,7 @@ void Thermo::TimInt::add_restart_to_output_state()
   write_restart_force(output_);
 
   // finally add the missing mesh information, order is important here
-  output_->write_mesh(step_, (*time_)[0]);
+  output_->write_mesh(step_, time_[0]);
 
   // info dedicated to user's eyes staring at standard out
   if ((Core::Communication::my_mpi_rank(discret_->get_comm()) == 0) and printscreen_ and
@@ -589,8 +584,8 @@ void Thermo::TimInt::output_heatflux_tempgrad(bool& datawritten)
   // action for elements
   p.set<Thermo::Action>("action", Thermo::calc_thermo_heatflux);
   // other parameters that might be needed by the elements
-  p.set("total time", (*time_)[0]);
-  p.set("delta time", (*dt_)[0]);
+  p.set("total time", time_[0]);
+  p.set("delta time", dt_[0]);
 
   std::shared_ptr<std::vector<char>> heatfluxdata = std::make_shared<std::vector<char>>();
   p.set("heatflux", heatfluxdata);
@@ -604,7 +599,7 @@ void Thermo::TimInt::output_heatflux_tempgrad(bool& datawritten)
   discret_->clear_state();
   // set_state(0,...) in case of multiple dofsets (e.g. TSI)
   discret_->set_state(0, "residual temperature", *zeros_);
-  discret_->set_state(0, "temperature", *(*temp_)(0));
+  discret_->set_state(0, "temperature", *temp_(0));
 
   auto heatflux = std::make_shared<Core::LinAlg::Vector<double>>(*discret_->dof_row_map(), true);
 
@@ -614,7 +609,7 @@ void Thermo::TimInt::output_heatflux_tempgrad(bool& datawritten)
   // Make new step
   if (not datawritten)
   {
-    output_->new_step(step_, (*time_)[0]);
+    output_->new_step(step_, time_[0]);
   }
   datawritten = true;
 
@@ -809,7 +804,7 @@ void Thermo::TimInt::apply_force_tang_internal(
   discret_->set_state(0, "residual temperature", *tempi);
   discret_->set_state(0, "temperature", *temp);
   // required for linearization of T-dependent capacity
-  discret_->set_state(0, "last temperature", *(*temp_)(0));
+  discret_->set_state(0, "last temperature", *temp_(0));
 
   // in case of genalpha extract midpoint temperature rate R_{n+alpha_m}
   // extract it after ClearState() is called.
@@ -872,7 +867,7 @@ void Thermo::TimInt::set_initial_field(const Thermo::InitialField init, const in
     {
       // extract temperature vector at time t_n (temp_ contains various vectors of
       // old(er) temperatures and is of type TimIntMStep<Core::LinAlg::Vector<double>>)
-      (*temp_)(0)->put_scalar(0.0);
+      temp_(0)->put_scalar(0.0);
       tempn_->put_scalar(0.0);
       break;
     }  // initfield_zero_field
@@ -900,7 +895,7 @@ void Thermo::TimInt::set_initial_field(const Thermo::InitialField init, const in
                                   .evaluate(lnode->x().data(), 0.0, k);
           // extract temperature vector at time t_n (temp_ contains various vectors of
           // old(er) temperatures and is of type TimIntMStep<Core::LinAlg::Vector<double>>)
-          int err1 = (*temp_)(0)->replace_local_value(doflid, initialval);
+          int err1 = temp_(0)->replace_local_value(doflid, initialval);
           if (err1 != 0) FOUR_C_THROW("dof not on proc");
           // initialise also the solution vector. These values are a pretty good
           // guess for the solution after the first time step (much better than
@@ -917,7 +912,7 @@ void Thermo::TimInt::set_initial_field(const Thermo::InitialField init, const in
       std::vector<int> localdofs;
       localdofs.push_back(0);
       discret_->evaluate_initial_field(
-          Global::Problem::instance()->function_manager(), "Temperature", *(*temp_)(0), localdofs);
+          Global::Problem::instance()->function_manager(), "Temperature", *temp_(0), localdofs);
       discret_->evaluate_initial_field(
           Global::Problem::instance()->function_manager(), "Temperature", *tempn_, localdofs);
 
@@ -1002,7 +997,7 @@ std::shared_ptr<std::vector<double>> Thermo::TimInt::evaluate_error_compared_to_
         // print last error in a separate file
 
         // append error of the last time step to the error file
-        if ((step_ == stepmax_) or ((*time_)[0] == timemax_))  // write results to file
+        if ((step_ == stepmax_) or (time_[0] == timemax_))  // write results to file
         {
           std::ostringstream temp;
           const std::string simulation =
@@ -1013,8 +1008,7 @@ std::shared_ptr<std::vector<double>> Thermo::TimInt::evaluate_error_compared_to_
           f.open(fname.c_str(), std::fstream::ate | std::fstream::app);
           f << "#| " << simulation << "\n";
           f << "#| Step | Time | rel. L2-error temperature  |  rel. H1-error temperature  |\n";
-          f << step_ << " " << (*time_)[0] << " " << (*relerror)[0] << " " << (*relerror)[1]
-            << "\n";
+          f << step_ << " " << time_[0] << " " << (*relerror)[0] << " " << (*relerror)[1] << "\n";
           f.flush();
           f.close();
         }
@@ -1029,7 +1023,7 @@ std::shared_ptr<std::vector<double>> Thermo::TimInt::evaluate_error_compared_to_
           f.open(fname.c_str());
           f << "#| Step | Time | rel. L2-error temperature  |  rel. H1-error temperature  |\n";
           f << std::setprecision(10) << step_ << " " << std::setw(1) << std::setprecision(5)
-            << (*time_)[0] << std::setw(1) << std::setprecision(6) << " " << (*relerror)[0]
+            << time_[0] << std::setw(1) << std::setprecision(6) << " " << (*relerror)[0]
             << std::setw(1) << std::setprecision(6) << " " << (*relerror)[1] << "\n";
 
           f.flush();
@@ -1040,7 +1034,7 @@ std::shared_ptr<std::vector<double>> Thermo::TimInt::evaluate_error_compared_to_
           std::ofstream f;
           f.open(fname.c_str(), std::fstream::ate | std::fstream::app);
           f << std::setprecision(10) << step_ << " " << std::setw(3) << std::setprecision(5)
-            << (*time_)[0] << std::setw(1) << std::setprecision(6) << " " << (*relerror)[0]
+            << time_[0] << std::setw(1) << std::setprecision(6) << " " << (*relerror)[0]
             << std::setw(1) << std::setprecision(6) << " " << (*relerror)[1] << "\n";
 
           f.flush();

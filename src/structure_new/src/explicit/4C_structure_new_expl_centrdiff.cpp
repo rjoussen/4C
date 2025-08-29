@@ -71,7 +71,7 @@ void Solid::EXPLICIT::CentrDiff::set_state(const Core::LinAlg::Vector<double>& x
 {
   check_init_setup();
 
-  const double dt = (*global_state().get_delta_time())[0];
+  const double dt = global_state().get_delta_time()[0];
   const double dthalf = dt / 2.0;
 
   // ---------------------------------------------------------------------------
@@ -151,7 +151,7 @@ void Solid::EXPLICIT::CentrDiff::update_step_state()
 {
   check_init_setup();
 
-  const double dt = (*global_state().get_delta_time())[0];
+  const double dt = global_state().get_delta_time()[0];
   const double dthalf = dt / 2.0;
 
   // ---------------------------------------------------------------------------

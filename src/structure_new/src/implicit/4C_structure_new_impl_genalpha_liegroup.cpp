@@ -98,7 +98,7 @@ void Solid::IMPLICIT::GenAlphaLieGroup::set_state(const Core::LinAlg::Vector<dou
 
   update_constant_state_contributions();
 
-  const double& dt = (*global_state().get_delta_time())[0];
+  const double& dt = global_state().get_delta_time()[0];
   // ---------------------------------------------------------------------------
   // new end-point displacements
   // ---------------------------------------------------------------------------
@@ -167,7 +167,7 @@ void Solid::IMPLICIT::GenAlphaLieGroup::update_step_state()
  *----------------------------------------------------------------------------*/
 void Solid::IMPLICIT::GenAlphaLieGroup::update_constant_state_contributions()
 {
-  const double& dt = (*global_state().get_delta_time())[0];
+  const double& dt = global_state().get_delta_time()[0];
 
   /* ToDo in case we want to handle rotation vector DoFs correctly on time
    *      integrator level, the update procedure needs to be adapted here;
@@ -225,7 +225,7 @@ void Solid::IMPLICIT::GenAlphaLieGroup::add_visco_mass_contributions(
     Core::LinAlg::SparseOperator& jac) const
 {
   std::shared_ptr<Core::LinAlg::SparseMatrix> stiff_ptr = global_state().extract_displ_block(jac);
-  const double& dt = (*global_state().get_delta_time())[0];
+  const double& dt = global_state().get_delta_time()[0];
   // add inertial contributions to structural stiffness block
   stiff_ptr->add(*global_state().get_mass_matrix(), false,
       (1.0 - alpham_) / (beta_ * dt * dt * (1.0 - alphaf_)), 1.0);
@@ -244,7 +244,7 @@ void Solid::IMPLICIT::GenAlphaLieGroup::predict_const_dis_consist_vel_acc(
   std::shared_ptr<const Core::LinAlg::Vector<double>> disn = global_state().get_dis_n();
   std::shared_ptr<const Core::LinAlg::Vector<double>> veln = global_state().get_vel_n();
   std::shared_ptr<const Core::LinAlg::Vector<double>> accn = global_state().get_acc_n();
-  const double& dt = (*global_state().get_delta_time())[0];
+  const double& dt = global_state().get_delta_time()[0];
 
   // constant predictor: displacement in domain
   disnp.update(1.0, *disn, 0.0);

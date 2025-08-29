@@ -177,7 +177,7 @@ namespace Solid
       std::shared_ptr<const Core::LinAlg::Vector<double>> get_dis_n() const
       {
         check_init_setup();
-        return (*dis_)(0);
+        return dis_(0);
       }
 
       /// Return internal force \f$fint_{n}\f$
@@ -239,11 +239,11 @@ namespace Solid
       std::shared_ptr<Core::LinAlg::Vector<double>> get_dis_n()
       {
         check_init_setup();
-        return (*dis_)(0);
+        return dis_(0);
       }
 
       /// Return multi-displacement vector \f$D_{n}, D_{n-1}, ...\f$
-      std::shared_ptr<TimeStepping::TimIntMStep<Core::LinAlg::Vector<double>>> get_multi_dis()
+      const TimeStepping::TimIntMStep<Core::LinAlg::Vector<double>>& get_multi_dis()
       {
         check_init_setup();
         return dis_;
@@ -326,7 +326,7 @@ namespace Solid
       ///@{
 
       /// global displacements \f${D}_{n}, D_{n-1}, ...\f$
-      std::shared_ptr<TimeStepping::TimIntMStep<Core::LinAlg::Vector<double>>> dis_;
+      TimeStepping::TimIntMStep<Core::LinAlg::Vector<double>> dis_;
 
       /// global displacements at the restart step \f${D}_{restart}\f$ at \f$t_{restart}\f$
       std::shared_ptr<Core::LinAlg::Vector<double>> dis_restart_;

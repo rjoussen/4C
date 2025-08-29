@@ -44,15 +44,10 @@ Solid::TimeInt::BaseDataGlobalState::BaseDataGlobalState()
       comm_(MPI_COMM_NULL),
       my_rank_(-1),
       timenp_(0.0),
-      timen_(nullptr),
-      dt_(nullptr),
       stepn_(0),
       stepnp_(0),
       restartstep_(0),
       ispredict_(false),
-      dis_(nullptr),
-      vel_(nullptr),
-      acc_(nullptr),
       disnp_(nullptr),
       velnp_(nullptr),
       accnp_(nullptr),
@@ -131,13 +126,11 @@ void Solid::TimeInt::BaseDataGlobalState::init(
   // control parameters
   // --------------------------------------
   {
-    timen_ = std::make_shared<TimeStepping::TimIntMStep<double>>(
-        0, 0, sdynparams.get<double>("TIMEINIT"));
-    dt_ = std::make_shared<TimeStepping::TimIntMStep<double>>(
-        0, 0, sdynparams.get<double>("TIMESTEP"));
+    timen_ = TimeStepping::TimIntMStep<double>(0, 0, sdynparams.get<double>("TIMEINIT"));
+    dt_ = TimeStepping::TimIntMStep<double>(0, 0, sdynparams.get<double>("TIMESTEP"));
 
     // initialize target time to initial time plus step size
-    timenp_ = (*timen_)[0] + (*dt_)[0];
+    timenp_ = timen_[0] + dt_[0];
     stepnp_ = stepn_ + 1;
 
     // initialize restart step
@@ -166,14 +159,11 @@ void Solid::TimeInt::BaseDataGlobalState::setup()
   // vectors
   // --------------------------------------
   // displacements D_{n}
-  dis_ = std::make_shared<TimeStepping::TimIntMStep<Core::LinAlg::Vector<double>>>(
-      0, 0, dof_row_map_view(), true);
+  dis_ = TimeStepping::TimIntMStep<Core::LinAlg::Vector<double>>(0, 0, dof_row_map_view(), true);
   // velocities V_{n}
-  vel_ = std::make_shared<TimeStepping::TimIntMStep<Core::LinAlg::Vector<double>>>(
-      0, 0, dof_row_map_view(), true);
+  vel_ = TimeStepping::TimIntMStep<Core::LinAlg::Vector<double>>(0, 0, dof_row_map_view(), true);
   // accelerations A_{n}
-  acc_ = std::make_shared<TimeStepping::TimIntMStep<Core::LinAlg::Vector<double>>>(
-      0, 0, dof_row_map_view(), true);
+  acc_ = TimeStepping::TimIntMStep<Core::LinAlg::Vector<double>>(0, 0, dof_row_map_view(), true);
 
   // displacements D_{n+1} at t_{n+1}
   disnp_ = Core::LinAlg::create_vector(*dof_row_map_view(), true);
@@ -249,7 +239,7 @@ void Solid::TimeInt::BaseDataGlobalState::set_initial_fields()
   porositylocaldofs.push_back(Global::Problem::instance()->n_dim());
 
   Core::FE::evaluate_initial_field(Global::Problem::instance()->function_manager(), *discret_,
-      porosityfield, *(*dis_)(0), porositylocaldofs);
+      porosityfield, *dis_(0), porositylocaldofs);
 }
 
 /*----------------------------------------------------------------------------*

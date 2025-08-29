@@ -37,7 +37,7 @@ Thermo::TimIntStatics::TimIntStatics(const Teuchos::ParameterList& ioparams,
   //! internal force vector F_{int;n+1} at new time
   fintn_ = Core::LinAlg::create_vector(*discret_->dof_row_map(), true);
   //! set initial internal force vector
-  apply_force_tang_internal((*time_)[0], (*dt_)[0], (*temp_)(0), zeros_, fint_, tang_);
+  apply_force_tang_internal(time_[0], dt_[0], temp_(0), zeros_, fint_, tang_);
   //! external force vector F_ext at last times
   fext_ = Core::LinAlg::create_vector(*discret_->dof_row_map(), true);
   //! external force vector F_{n+1} at new time
@@ -45,10 +45,10 @@ Thermo::TimIntStatics::TimIntStatics(const Teuchos::ParameterList& ioparams,
 
   // set initial external force vector of convective heat transfer boundary
   // conditions
-  apply_force_external_conv((*time_)[0], (*temp_)(0), (*temp_)(0), fext_, tang_);
+  apply_force_external_conv(time_[0], temp_(0), temp_(0), fext_, tang_);
 
   //! set initial external force vector
-  apply_force_external((*time_)[0], (*temp_)(0), *fext_);
+  apply_force_external(time_[0], temp_(0), *fext_);
 
   //! have a nice day
   return;
@@ -63,7 +63,7 @@ void Thermo::TimIntStatics::predict_const_temp_consist_rate()
 {
   //! constant predictor : temperature in domain
   // T_n+1,p = T_n
-  tempn_->update(1.0, *(*temp_)(0), 0.0);
+  tempn_->update(1.0, *temp_(0), 0.0);
 
   //! new end-point temperature rates, these stay zero in static calculation
   raten_->put_scalar(0.0);
@@ -89,15 +89,15 @@ void Thermo::TimIntStatics::evaluate_rhs_tang_residual()
   // conditions
   // Warning: do not use convection boundary condition with T_n and statics
   // --> always use T_n+1 for statics!
-  apply_force_external_conv(timen_, (*temp_)(0), tempn_, fextn_, tang_);
+  apply_force_external_conv(timen_, temp_(0), tempn_, fextn_, tang_);
 
-  apply_force_external(timen_, (*temp_)(0), *fextn_);
+  apply_force_external(timen_, temp_(0), *fextn_);
 
   //! initialise internal forces
   fintn_->put_scalar(0.0);
 
   //! ordinary internal force and tangent
-  apply_force_tang_internal(timen_, (*dt_)[0], tempn_, tempi_, fintn_, tang_);
+  apply_force_tang_internal(timen_, dt_[0], tempn_, tempi_, fintn_, tang_);
 
   //! build residual  Res = F_{int;n+1} - F_{ext;n+1}
   fres_->update(-1.0, *fextn_, 0.0);
@@ -127,7 +127,7 @@ double Thermo::TimIntStatics::calc_ref_norm_temperature()
   //! points within the timestep (end point, generalized midpoint).
 
   double charnormtemp = 0.0;
-  charnormtemp = Thermo::Aux::calculate_vector_norm(iternorm_, *(*temp_)(0));
+  charnormtemp = Thermo::Aux::calculate_vector_norm(iternorm_, *temp_(0));
 
   //! rise your hat
   return charnormtemp;
@@ -199,10 +199,10 @@ void Thermo::TimIntStatics::update_step_state()
   //! update state
   //! new temperatures at t_{n+1} -> t_n
   //!    T_{n} := T_{n+1}
-  temp_->update_steps(*tempn_);
+  temp_.update_steps(*tempn_);
   //! new temperature rates at t_{n+1} -> t_n
   //!    T'_{n} := T'_{n+1}
-  rate_->update_steps(*raten_);  // this simply copies zero vectors
+  rate_.update_steps(*raten_);  // this simply copies zero vectors
 
   //! update new external force
   //!    F_{ext;n} := F_{ext;n+1}
@@ -227,7 +227,7 @@ void Thermo::TimIntStatics::update_step_element()
   Teuchos::ParameterList p;
   // other parameters that might be needed by the elements
   p.set("total time", timen_);
-  p.set("delta time", (*dt_)[0]);
+  p.set("delta time", dt_[0]);
   // action for elements
   p.set<Thermo::Action>("action", Thermo::calc_thermo_update_istep);
   // go to elements

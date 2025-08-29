@@ -210,12 +210,12 @@ void Adapter::StructureTimeAdaJoint::update_auxiliary()
   gstate_a.get_dis_np()->update(1.0, (*gstate_i.get_dis_n()), 0.0);
   gstate_a.get_vel_np()->update(1.0, (*gstate_i.get_vel_n()), 0.0);
   gstate_a.get_acc_np()->update(1.0, (*gstate_i.get_acc_n()), 0.0);
-  gstate_a.get_multi_dis()->update_steps((*gstate_i.get_dis_n()));
-  gstate_a.get_multi_vel()->update_steps((*gstate_i.get_vel_n()));
-  gstate_a.get_multi_acc()->update_steps((*gstate_i.get_acc_n()));
+  gstate_a.get_multi_dis().update_steps((*gstate_i.get_dis_n()));
+  gstate_a.get_multi_vel().update_steps((*gstate_i.get_vel_n()));
+  gstate_a.get_multi_acc().update_steps((*gstate_i.get_acc_n()));
 
   gstate_a.get_time_np() = gstate_i.get_time_np();
-  gstate_a.get_delta_time()->update_steps((*gstate_i.get_delta_time())[0]);
+  gstate_a.get_delta_time().update_steps((gstate_i.get_delta_time())[0]);
   gstate_a.get_fvisco_np()->update(1.0, (*gstate_i.get_fvisco_n()), 0.0);
   gstate_a.get_fvisco_n()->update(1.0, (*gstate_i.get_fvisco_n()), 0.0);
   gstate_a.get_finertial_np()->update(1.0, (*gstate_i.get_finertial_n()), 0.0);

@@ -188,7 +188,7 @@ void Solid::Integrator::compute_mass_matrix_and_init_acc()
 
   // overwrite initial state vectors with Dirichlet BCs
   // note that we get accelerations resulting from inhomogeneous Dirichlet conditions here
-  const double& timen = (*global_state().get_multi_time())[0];
+  const double& timen = global_state().get_multi_time()[0];
   std::shared_ptr<Core::LinAlg::Vector<double>> disnp_ptr = global_state().get_dis_np();
   std::shared_ptr<Core::LinAlg::Vector<double>> velnp_ptr = global_state().get_vel_np();
   std::shared_ptr<Core::LinAlg::Vector<double>> accnp_ptr = global_state().get_acc_np();
@@ -319,7 +319,7 @@ bool Solid::Integrator::current_state_is_equilibrium(const double& tol)
   Core::LinAlg::Vector<double> rhs_ptr(*global_state().dof_row_map_view(), true);
 
   // overwrite initial state vectors with Dirichlet BCs
-  const double& timen = (*global_state().get_multi_time())[0];
+  const double& timen = global_state().get_multi_time()[0];
   std::shared_ptr<Core::LinAlg::Vector<double>> disnp_ptr = global_state().get_dis_np();
   std::shared_ptr<Core::LinAlg::Vector<double>> velnp_ptr = global_state().get_vel_np();
   std::shared_ptr<Core::LinAlg::Vector<double>> accnp_ptr = global_state().get_acc_np();

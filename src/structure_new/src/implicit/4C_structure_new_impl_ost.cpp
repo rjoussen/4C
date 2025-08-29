@@ -142,7 +142,7 @@ void Solid::IMPLICIT::OneStepTheta::set_state(const Core::LinAlg::Vector<double>
 
   update_constant_state_contributions();
 
-  const double& dt = (*global_state().get_delta_time())[0];
+  const double& dt = global_state().get_delta_time()[0];
   // ---------------------------------------------------------------------------
   // new end-point displacements
   // ---------------------------------------------------------------------------
@@ -166,7 +166,7 @@ void Solid::IMPLICIT::OneStepTheta::set_state(const Core::LinAlg::Vector<double>
  *----------------------------------------------------------------------------*/
 void Solid::IMPLICIT::OneStepTheta::update_constant_state_contributions()
 {
-  const double& dt = (*global_state().get_delta_time())[0];
+  const double& dt = global_state().get_delta_time()[0];
 
   // ---------------------------------------------------------------------------
   // velocity
@@ -275,7 +275,7 @@ void Solid::IMPLICIT::OneStepTheta::add_visco_mass_contributions(
     Core::LinAlg::SparseOperator& jac) const
 {
   std::shared_ptr<Core::LinAlg::SparseMatrix> stiff_ptr = global_state().extract_displ_block(jac);
-  const double& dt = (*global_state().get_delta_time())[0];
+  const double& dt = global_state().get_delta_time()[0];
   // add inertial contributions and scale the structural stiffness block
   stiff_ptr->add(*global_state().get_mass_matrix(), false, 1.0 / (theta_ * dt * dt), 1.0);
   // add damping contributions
@@ -364,7 +364,7 @@ void Solid::IMPLICIT::OneStepTheta::predict_const_dis_consist_vel_acc(
   std::shared_ptr<const Core::LinAlg::Vector<double>> disn = global_state().get_dis_n();
   std::shared_ptr<const Core::LinAlg::Vector<double>> veln = global_state().get_vel_n();
   std::shared_ptr<const Core::LinAlg::Vector<double>> accn = global_state().get_acc_n();
-  const double& dt = (*global_state().get_delta_time())[0];
+  const double& dt = global_state().get_delta_time()[0];
 
   // constant predictor: displacement in domain
   disnp.scale(1.0, *disn);
@@ -393,7 +393,7 @@ bool Solid::IMPLICIT::OneStepTheta::predict_const_vel_consist_acc(
   std::shared_ptr<const Core::LinAlg::Vector<double>> disn = global_state().get_dis_n();
   std::shared_ptr<const Core::LinAlg::Vector<double>> veln = global_state().get_vel_n();
   std::shared_ptr<const Core::LinAlg::Vector<double>> accn = global_state().get_acc_n();
-  const double& dt = (*global_state().get_delta_time())[0];
+  const double& dt = global_state().get_delta_time()[0];
 
   /* extrapolated displacements based upon constant velocities
    * d_{n+1} = d_{n} + dt * v_{n} */
@@ -421,7 +421,7 @@ bool Solid::IMPLICIT::OneStepTheta::predict_const_acc(Core::LinAlg::Vector<doubl
   std::shared_ptr<const Core::LinAlg::Vector<double>> disn = global_state().get_dis_n();
   std::shared_ptr<const Core::LinAlg::Vector<double>> veln = global_state().get_vel_n();
   std::shared_ptr<const Core::LinAlg::Vector<double>> accn = global_state().get_acc_n();
-  const double& dt = (*global_state().get_delta_time())[0];
+  const double& dt = global_state().get_delta_time()[0];
 
   /* extrapolated displacements based upon constant accelerations
    * d_{n+1} = d_{n} + dt * v_{n} + dt^2 / 2 * a_{n} */
@@ -448,7 +448,7 @@ void Solid::IMPLICIT::OneStepTheta::reset_eval_params()
   Solid::IMPLICIT::Generic::reset_eval_params();
 
   // set the time step dependent parameters for the element evaluation
-  const double& dt = (*global_state().get_delta_time())[0];
+  const double& dt = global_state().get_delta_time()[0];
   double timeintfac_dis = theta_ * theta_ * dt * dt;
   double timeintfac_vel = theta_ * dt;
 

@@ -178,7 +178,7 @@ void Solid::EXPLICIT::Generic::reset_eval_params()
 {
   // set the time step dependent parameters for the element evaluation
   eval_data().set_total_time(global_state().get_time_np());
-  eval_data().set_delta_time((*global_state().get_delta_time())[0]);
+  eval_data().set_delta_time(global_state().get_delta_time()[0]);
   eval_data().set_is_tolerate_error(true);
   eval_data().set_function_manager(Global::Problem::instance()->function_manager());
 }

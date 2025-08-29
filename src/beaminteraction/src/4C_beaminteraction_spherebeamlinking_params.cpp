@@ -52,10 +52,10 @@ void BeamInteraction::SphereBeamLinkingParams::init(
   if (deltatime_ < 0.0)
   {
     own_deltatime_ = false;
-    deltatime_ = (*gstate.get_delta_time())[0];
+    deltatime_ = gstate.get_delta_time()[0];
     if (gstate.get_my_rank() == 0)
     {
-      std::cout << " Time step " << (*gstate.get_delta_time())[0]
+      std::cout << " Time step " << gstate.get_delta_time()[0]
                 << " from Structural Dynamic section "
                    "used for sphere beam link.\n"
                    "Force dependent unbinding of beam-sphere linker is activated for dt > 0"

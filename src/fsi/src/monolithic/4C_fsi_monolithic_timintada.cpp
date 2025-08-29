@@ -92,8 +92,8 @@ void FSI::Monolithic::init_tim_int_ada(const Teuchos::ParameterList& fsidyn)
     }
   }
 
-  dt_ = std::make_shared<TimeStepping::TimIntMStep<double>>(-avgweights_.size(), 1, 0.0);
-  dt_->set_step(1, dt());
+  dt_ = TimeStepping::TimIntMStep(-avgweights_.size(), 1, 0.0);
+  dt_.set_step(1, dt());
 
   //----------------------------------------------------------------------------
   // write adaptivity file
@@ -716,7 +716,7 @@ void FSI::Monolithic::set_dt(const double dtnew)
 
   // FSI algorithm
   if (is_ada_structure() or is_ada_fluid() or is_ada_solver())
-    dt_->set_step(1, dt());  // save step size of previous run of this time step for reset_time()
+    dt_.set_step(1, dt());  // save step size of previous run of this time step for reset_time()
 
   Adapter::AlgorithmBase::set_dt(dtnew);
 
@@ -798,10 +798,10 @@ bool FSI::Monolithic::check_if_dts_same()
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-double FSI::Monolithic::dt_past(const int step) const { return (*dt_)[step]; }
+double FSI::Monolithic::dt_past(const int step) const { return dt_[step]; }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void FSI::Monolithic::update_dt_past(const double dtnew) { dt_->update_steps(dtnew); }
+void FSI::Monolithic::update_dt_past(const double dtnew) { dt_.update_steps(dtnew); }
 
 FOUR_C_NAMESPACE_CLOSE

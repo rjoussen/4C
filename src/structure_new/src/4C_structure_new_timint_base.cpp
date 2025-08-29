@@ -161,7 +161,7 @@ bool Solid::TimeInt::Base::not_finished() const
   // check the current time
   const double timenp = dataglobalstate_->get_time_np();
   const double timemax = datasdyn_->get_time_max();
-  const double dt = (*dataglobalstate_->get_delta_time())[0];
+  const double dt = dataglobalstate_->get_delta_time()[0];
   // check the step counter
   const int stepnp = dataglobalstate_->get_step_np();
   const int stepmax = datasdyn_->get_step_max();
@@ -245,16 +245,16 @@ void Solid::TimeInt::Base::resize_m_step_tim_ada()
   check_init_setup();
   // resize time and stepsize fields
   const double& timen = dataglobalstate_->get_time_n();
-  dataglobalstate_->get_multi_time()->resize(-1, 0, timen);
-  const double& dtn = (*dataglobalstate_->get_delta_time())[0];
-  dataglobalstate_->get_delta_time()->resize(-1, 0, dtn);
+  dataglobalstate_->get_multi_time().resize(-1, 0, timen);
+  const double& dtn = dataglobalstate_->get_delta_time()[0];
+  dataglobalstate_->get_delta_time().resize(-1, 0, dtn);
 
   // resize state vectors, AB2 is a 2-step method, thus we need two
   // past steps at t_{n} and t_{n-1}
   const Core::LinAlg::Map* dofrowmap_ptr = dataglobalstate_->dof_row_map_view();
-  dataglobalstate_->get_multi_dis()->resize(-1, 0, dofrowmap_ptr, true);
-  dataglobalstate_->get_multi_vel()->resize(-1, 0, dofrowmap_ptr, true);
-  dataglobalstate_->get_multi_acc()->resize(-1, 0, dofrowmap_ptr, true);
+  dataglobalstate_->get_multi_dis().resize(-1, 0, dofrowmap_ptr, true);
+  dataglobalstate_->get_multi_vel().resize(-1, 0, dofrowmap_ptr, true);
+  dataglobalstate_->get_multi_acc().resize(-1, 0, dofrowmap_ptr, true);
 }
 
 /*----------------------------------------------------------------------------*
@@ -283,15 +283,15 @@ void Solid::TimeInt::Base::update_step_time()
   // --------------------------------------------------------------------------
   // update old time and step variables
   // --------------------------------------------------------------------------
-  dataglobalstate_->get_multi_time()->update_steps(timenp);
+  dataglobalstate_->get_multi_time().update_steps(timenp);
   stepn = stepnp;
 
   // --------------------------------------------------------------------------
   // update the new time and step variables
   // --------------------------------------------------------------------------
   // get current time step size
-  const double& dtn = (*dataglobalstate_->get_delta_time())[0];
-  dataglobalstate_->get_delta_time()->update_steps(dtn);
+  const double& dtn = dataglobalstate_->get_delta_time()[0];
+  dataglobalstate_->get_delta_time().update_steps(dtn);
   timenp += dtn;
   stepnp += 1;
 }
@@ -857,9 +857,9 @@ void Solid::TimeInt::Base::read_restart(const int stepn)
   dataglobalstate_->get_step_n() = stepn;
   dataglobalstate_->get_step_np() = stepn + 1;
   dataglobalstate_->get_multi_time() =
-      std::make_shared<TimeStepping::TimIntMStep<double>>(0, 0, ioreader.read_double("time"));
+      TimeStepping::TimIntMStep(0, 0, ioreader.read_double("time"));
   const double& timen = dataglobalstate_->get_time_n();
-  const double& dt = (*dataglobalstate_->get_delta_time())[0];
+  const double& dt = dataglobalstate_->get_delta_time()[0];
   dataglobalstate_->get_time_np() = timen + dt;
 
   // ---------------------------------------------------------------------------
@@ -881,10 +881,10 @@ void Solid::TimeInt::Base::read_restart(const int stepn)
   // (2) read (or overwrite) the general dynamic state
   std::shared_ptr<Core::LinAlg::Vector<double>>& velnp = dataglobalstate_->get_vel_np();
   ioreader.read_vector(velnp, "velocity");
-  dataglobalstate_->get_multi_vel()->update_steps(*velnp);
+  dataglobalstate_->get_multi_vel().update_steps(*velnp);
   std::shared_ptr<Core::LinAlg::Vector<double>>& accnp = dataglobalstate_->get_acc_np();
   ioreader.read_vector(accnp, "acceleration");
-  dataglobalstate_->get_multi_acc()->update_steps(*accnp);
+  dataglobalstate_->get_multi_acc().update_steps(*accnp);
 
   // (3) read specific time integrator (forces, etc.) and model evaluator data
   int_ptr_->read_restart(ioreader);

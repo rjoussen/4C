@@ -61,9 +61,9 @@ void Solid::ModelEvaluator::BrownianDyn::setup()
   // todo: maybe make input of time step obligatory
   if (brown_dyn_state_data_.browndyn_dt < 0.0)
   {
-    brown_dyn_state_data_.browndyn_dt = (*global_state().get_delta_time())[0];
+    brown_dyn_state_data_.browndyn_dt = global_state().get_delta_time()[0];
     if (global_state().get_my_rank() == 0)
-      std::cout << " Time step " << (*global_state().get_delta_time())[0]
+      std::cout << " Time step " << global_state().get_delta_time()[0]
                 << " form Structural Dynamic section used for stochastic forces.\n"
                 << std::endl;
   }
@@ -649,7 +649,7 @@ void Solid::ModelEvaluator::BrownianDyn::generate_gaussian_random_numbers()
   // note: in case of a restart, first stochastic time step can be smaller than
   // brown_dyn_state_data_.browndyn_dt, this is intended
   int browndyn_step =
-      static_cast<int>((global_state().get_time_np() - (*global_state_ptr()->get_delta_time())[0]) /
+      static_cast<int>((global_state().get_time_np() - global_state_ptr()->get_delta_time()[0]) /
                            brown_dyn_state_data_.browndyn_dt +
                        1.0e-8);
 

@@ -93,7 +93,7 @@ bool Solid::ModelEvaluator::Cardiovascular0D::evaluate_force()
 
   double time_np = global_state().get_time_np();
   Teuchos::ParameterList pcardvasc0d;
-  pcardvasc0d.set("time_step_size", (*global_state().get_delta_time())[0]);
+  pcardvasc0d.set("time_step_size", global_state().get_delta_time()[0]);
 
   // only forces are evaluated!
   cardvasc0dman_->evaluate_force_stiff(
@@ -110,7 +110,7 @@ bool Solid::ModelEvaluator::Cardiovascular0D::evaluate_stiff()
 
   double time_np = global_state().get_time_np();
   Teuchos::ParameterList pcardvasc0d;
-  pcardvasc0d.set("time_step_size", (*global_state().get_delta_time())[0]);
+  pcardvasc0d.set("time_step_size", global_state().get_delta_time()[0]);
 
   // only stiffnesses are evaluated!
   cardvasc0dman_->evaluate_force_stiff(
@@ -129,7 +129,7 @@ bool Solid::ModelEvaluator::Cardiovascular0D::evaluate_force_stiff()
 
   double time_np = global_state().get_time_np();
   Teuchos::ParameterList pcardvasc0d;
-  pcardvasc0d.set("time_step_size", (*global_state().get_delta_time())[0]);
+  pcardvasc0d.set("time_step_size", global_state().get_delta_time()[0]);
 
   cardvasc0dman_->evaluate_force_stiff(
       time_np, disnp_ptr_, fstructcardio_np_ptr_, stiff_cardio_ptr_, pcardvasc0d);

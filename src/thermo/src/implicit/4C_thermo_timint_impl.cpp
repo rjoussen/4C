@@ -228,8 +228,8 @@ void Thermo::TimIntImpl::prepare_step()
 void Thermo::TimIntImpl::predict_const_temp_rate()
 {
   // constant predictor
-  tempn_->update(1.0, *(*temp_)(0), 0.0);
-  raten_->update(1.0, *(*rate_)(0), 0.0);
+  tempn_->update(1.0, *temp_(0), 0.0);
+  raten_->update(1.0, *rate_(0), 0.0);
 }
 
 
@@ -238,8 +238,8 @@ void Thermo::TimIntImpl::predict_const_temp_rate()
 void Thermo::TimIntImpl::predict_tang_temp_consist_rate()
 {
   // initialise
-  tempn_->update(1.0, *(*temp_)(0), 0.0);
-  raten_->update(1.0, *(*rate_)(0), 0.0);
+  tempn_->update(1.0, *temp_(0), 0.0);
+  raten_->update(1.0, *rate_(0), 0.0);
   tempi_->put_scalar(0.0);
 
   // for temperature increments on Dirichlet boundary
@@ -247,7 +247,7 @@ void Thermo::TimIntImpl::predict_tang_temp_consist_rate()
       Core::LinAlg::create_vector(*discret_->dof_row_map(), true);
 
   // copy last converged temperatures
-  dbcinc->update(1.0, *(*temp_)(0), 0.0);
+  dbcinc->update(1.0, *temp_(0), 0.0);
 
   // get Dirichlet values at t_{n+1}
   apply_dirichlet_bc(timen_, dbcinc, nullptr, false);
@@ -255,7 +255,7 @@ void Thermo::TimIntImpl::predict_tang_temp_consist_rate()
   // subtract the temperatures of the last converged step
   // DBC-DOFs hold increments of current step
   // free-DOFs hold zeros
-  dbcinc->update(-1.0, *(*temp_)(0), 1.0);
+  dbcinc->update(-1.0, *temp_(0), 1.0);
 
   // compute residual forces fres_ and tangent tang_
   // at tempn_, etc which are unchanged
@@ -320,7 +320,7 @@ void Thermo::TimIntImpl::predict_tang_temp_consist_rate()
     Teuchos::ParameterList p;
     p.set<Thermo::Action>("action", Thermo::calc_thermo_reset_istep);
     // set the total time
-    p.set("total time", (*time_)[0]);
+    p.set("total time", time_[0]);
     // go to elements
     discret_->evaluate(p, nullptr, nullptr, nullptr, nullptr, nullptr);
     discret_->clear_state();
@@ -932,8 +932,8 @@ void Thermo::TimIntImpl::print_step()
   if ((Core::Communication::my_mpi_rank(discret_->get_comm()) == 0) and printscreen_ and
       (step_old() % printscreen_ == 0))
   {
-    std::cout << "Finalised: step " << step_ << " | nstep " << stepmax_ << " | time " << (*time_)[0]
-              << " | dt " << (*dt_)[0] << " | numiter " << iter_ + resetiter_ << std::endl;
+    std::cout << "Finalised: step " << step_ << " | nstep " << stepmax_ << " | time " << time_[0]
+              << " | dt " << dt_[0] << " | numiter " << iter_ + resetiter_ << std::endl;
     std::cout << "------------------------------------------------------------------------------\n";
   }
 }

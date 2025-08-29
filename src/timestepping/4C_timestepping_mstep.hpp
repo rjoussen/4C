@@ -74,6 +74,13 @@ namespace TimeStepping
       return Core::Utils::shared_ptr_from_ref(state_[index_by_step(step)]);
     }
 
+    std::shared_ptr<const STATE> operator()(const int step  //!< inquiry step
+    ) const
+    {
+      if (not step_exists(step)) FOUR_C_THROW("Step {} is not admissible", step);
+      return Core::Utils::shared_ptr_from_ref(state_[index_by_step(step)]);
+    }
+
     //@}
 
     //! @name Query functions
@@ -192,6 +199,8 @@ namespace TimeStepping
    public:
     //! @name Life
     //@{
+
+    TimIntMStep() = default;
 
     //! Constructor
     TimIntMStep(const int steppast,  //!< lower index bound

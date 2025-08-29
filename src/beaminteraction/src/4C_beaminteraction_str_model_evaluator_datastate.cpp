@@ -24,7 +24,6 @@ Solid::ModelEvaluator::BeamInteractionDataState::BeamInteractionDataState()
     : isinit_(false),
       issetup_(false),
       myrank_(0),
-      dis_(nullptr),
       dis_restart_(nullptr),
       dis_restart_col_(nullptr),
       is_restart_coupling_(false),
@@ -65,7 +64,7 @@ void Solid::ModelEvaluator::BeamInteractionDataState::setup(
   myrank_ = Core::Communication::my_mpi_rank(ia_discret->get_comm());
 
   // displacements
-  dis_ = std::make_shared<TimeStepping::TimIntMStep<Core::LinAlg::Vector<double>>>(
+  dis_ = TimeStepping::TimIntMStep<Core::LinAlg::Vector<double>>(
       0, 0, ia_discret->dof_row_map(), true);
   disnp_ = std::make_shared<Core::LinAlg::Vector<double>>(*ia_discret->dof_col_map());
   discolnp_ = std::make_shared<Core::LinAlg::Vector<double>>(*ia_discret->dof_col_map());

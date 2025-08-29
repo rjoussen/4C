@@ -105,10 +105,10 @@ void BeamInteraction::CrosslinkingParams::init(Solid::TimeInt::BaseDataGlobalSta
   // todo: maybe make input of time step obligatory
   if (deltatime_ < 0.0)
   {
-    deltatime_ = (*gstate.get_delta_time())[0];
+    deltatime_ = gstate.get_delta_time()[0];
     if (gstate.get_my_rank() == 0)
     {
-      std::cout << " Time step " << (*gstate.get_delta_time())[0]
+      std::cout << " Time step " << gstate.get_delta_time()[0]
                 << " form Structural Dynamic section "
                    "used for crosslinking.\n"
                 << std::endl;
