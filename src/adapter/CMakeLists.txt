@@ -38,6 +38,7 @@ set(_dependencies
     solid_3D_ele
     solver_nonlin_nox
     ssi
+    ssti
     structure
     structure_new
     thermo

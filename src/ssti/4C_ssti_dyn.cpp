@@ -9,9 +9,9 @@
 
 #include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
-#include "4C_inpar_ssti.hpp"
 #include "4C_io_control.hpp"
 #include "4C_ssti_algorithm.hpp"
+#include "4C_ssti_input.hpp"
 #include "4C_ssti_monolithic.hpp"
 #include "4C_ssti_utils.hpp"
 
@@ -28,8 +28,8 @@ void ssti_drt()
 
   MPI_Comm comm = problem->get_dis("structure")->get_comm();
 
-  auto ssti = SSTI::build_ssti(Teuchos::getIntegralValue<Inpar::SSTI::SolutionScheme>(
-                                   problem->ssti_control_params(), "COUPALGO"),
+  auto ssti = SSTI::build_ssti(
+      Teuchos::getIntegralValue<SSTI::SolutionScheme>(problem->ssti_control_params(), "COUPALGO"),
       comm, problem->ssti_control_params());
 
   ssti->init(comm, problem->ssti_control_params(), problem->scalar_transport_dynamic_params(),

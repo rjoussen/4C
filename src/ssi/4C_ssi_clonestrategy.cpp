@@ -11,10 +11,10 @@
 #include "4C_fem_condition.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
-#include "4C_inpar_ssi.hpp"
 #include "4C_mat_par_bundle.hpp"
 #include "4C_material_parameter_base.hpp"
 #include "4C_scatra_ele.hpp"
+#include "4C_ssi_input.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 

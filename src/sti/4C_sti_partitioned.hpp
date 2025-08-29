@@ -10,8 +10,8 @@
 
 #include "4C_config.hpp"
 
-#include "4C_inpar_sti.hpp"
 #include "4C_sti_algorithm.hpp"
+#include "4C_sti_input.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -46,7 +46,7 @@ namespace STI
     void solve_two_way();
 
     //! type of coupling between scatra and thermo fields
-    const Inpar::STI::CouplingType couplingtype_;
+    const STI::CouplingType couplingtype_;
 
     //! maximum value of Aitken relaxation parameter
     const double omegamax_;

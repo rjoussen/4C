@@ -17,7 +17,6 @@
 #include "4C_fem_general_utils_createdis.hpp"
 #include "4C_global_data.hpp"
 #include "4C_global_data_read.hpp"
-#include "4C_inpar_ssi.hpp"
 #include "4C_io_control.hpp"
 #include "4C_io_input_file.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
@@ -29,6 +28,7 @@
 #include "4C_solid_3D_ele.hpp"
 #include "4C_ssi_clonestrategy.hpp"
 #include "4C_ssi_coupling.hpp"
+#include "4C_ssi_input.hpp"
 #include "4C_ssi_resulttest.hpp"
 #include "4C_ssi_str_model_evaluator_partitioned.hpp"
 #include "4C_ssi_utils.hpp"
@@ -45,7 +45,7 @@ FOUR_C_NAMESPACE_OPEN
 SSI::SSIBase::SSIBase(MPI_Comm comm, const Teuchos::ParameterList& globaltimeparams)
     : AlgorithmBase(comm, globaltimeparams),
       diff_time_step_size_(globaltimeparams.get<bool>("DIFFTIMESTEPSIZE")),
-      fieldcoupling_(Teuchos::getIntegralValue<Inpar::SSI::FieldCoupling>(
+      fieldcoupling_(Teuchos::getIntegralValue<SSI::FieldCoupling>(
           Global::Problem::instance()->ssi_control_params(), "FIELDCOUPLING")),
       is_scatra_manifold_(globaltimeparams.sublist("MANIFOLD").get<bool>("ADD_MANIFOLD")),
       is_manifold_meshtying_(globaltimeparams.sublist("MANIFOLD").get<bool>("MESHTYING_MANIFOLD")),
@@ -130,9 +130,9 @@ void SSI::SSIBase::setup()
 
     // pass initial scalar field to structural discretization to correctly compute initial
     // accelerations
-    if (Teuchos::getIntegralValue<Inpar::SSI::SolutionSchemeOverFields>(
+    if (Teuchos::getIntegralValue<SSI::SolutionSchemeOverFields>(
             Global::Problem::instance()->ssi_control_params(), "COUPALGO") !=
-        Inpar::SSI::SolutionSchemeOverFields::ssi_OneWay_SolidToScatra)
+        SSI::SolutionSchemeOverFields::ssi_OneWay_SolidToScatra)
       ssicoupling_->set_scalar_field(
           *Global::Problem::instance()->get_dis("structure"), scatra_field()->phinp(), 1);
 
@@ -227,9 +227,9 @@ void SSI::SSIBase::post_setup() const
   check_is_setup();
 
   // communicate scatra states to structure if necessary
-  if (Teuchos::getIntegralValue<Inpar::SSI::SolutionSchemeOverFields>(
+  if (Teuchos::getIntegralValue<SSI::SolutionSchemeOverFields>(
           Global::Problem::instance()->ssi_control_params(), "COUPALGO") !=
-      Inpar::SSI::SolutionSchemeOverFields::ssi_OneWay_SolidToScatra)
+      SSI::SolutionSchemeOverFields::ssi_OneWay_SolidToScatra)
   {
     set_scatra_solution(scatra_field()->phinp());
   }
@@ -259,8 +259,8 @@ void SSI::SSIBase::init_discretizations(MPI_Comm comm, const std::string& struct
 
   if (scatradis->num_global_nodes() == 0)
   {
-    if (fieldcoupling_ != Inpar::SSI::FieldCoupling::volume_match and
-        fieldcoupling_ != Inpar::SSI::FieldCoupling::volumeboundary_match)
+    if (fieldcoupling_ != SSI::FieldCoupling::volume_match and
+        fieldcoupling_ != SSI::FieldCoupling::volumeboundary_match)
     {
       FOUR_C_THROW(
           "If 'FIELDCOUPLING' is NOT 'volume_matching' or 'volumeboundary_matching' in the SSI "
@@ -355,7 +355,7 @@ void SSI::SSIBase::init_discretizations(MPI_Comm comm, const std::string& struct
   }
   else
   {
-    if (fieldcoupling_ == Inpar::SSI::FieldCoupling::volume_match)
+    if (fieldcoupling_ == SSI::FieldCoupling::volume_match)
     {
       FOUR_C_THROW(
           "Reading a TRANSPORT discretization from the input file for the input parameter "
@@ -415,15 +415,15 @@ SSI::RedistributionType SSI::SSIBase::init_field_coupling(const std::string& str
     scatra_integrator->discretization()->get_condition("SSICoupling", ssicoupling);
     const bool havessicoupling = (ssicoupling.size() > 0);
 
-    if (havessicoupling and (fieldcoupling_ != Inpar::SSI::FieldCoupling::boundary_nonmatch and
-                                fieldcoupling_ != Inpar::SSI::FieldCoupling::volumeboundary_match))
+    if (havessicoupling and (fieldcoupling_ != SSI::FieldCoupling::boundary_nonmatch and
+                                fieldcoupling_ != SSI::FieldCoupling::volumeboundary_match))
     {
       FOUR_C_THROW(
           "SSICoupling condition only valid in combination with FIELDCOUPLING set to "
           "'boundary_nonmatching' or 'volumeboundary_matching' in SSI DYNAMIC section. ");
     }
 
-    if (fieldcoupling_ == Inpar::SSI::FieldCoupling::volume_nonmatch)
+    if (fieldcoupling_ == SSI::FieldCoupling::volume_nonmatch)
     {
       const Teuchos::ParameterList& volmortarparams =
           Global::Problem::instance()->volmortar_params();
@@ -435,25 +435,25 @@ SSI::RedistributionType SSI::SSIBase::init_field_coupling(const std::string& str
             "coninter' in VOLMORTAR COUPLING section. Try other couplings at own risk.");
       }
     }
-    if (is_scatra_manifold() and fieldcoupling_ != Inpar::SSI::FieldCoupling::volumeboundary_match)
+    if (is_scatra_manifold() and fieldcoupling_ != SSI::FieldCoupling::volumeboundary_match)
       FOUR_C_THROW("Solving manifolds only in combination with matching volumes and boundaries");
   }
 
   // build SSI coupling class
   switch (fieldcoupling_)
   {
-    case Inpar::SSI::FieldCoupling::volume_match:
+    case SSI::FieldCoupling::volume_match:
       ssicoupling_ = std::make_shared<SSICouplingMatchingVolume>();
       break;
-    case Inpar::SSI::FieldCoupling::volume_nonmatch:
+    case SSI::FieldCoupling::volume_nonmatch:
       ssicoupling_ = std::make_shared<SSICouplingNonMatchingVolume>();
       // redistribution is still performed inside
       redistribution_required = RedistributionType::binning;
       break;
-    case Inpar::SSI::FieldCoupling::boundary_nonmatch:
+    case SSI::FieldCoupling::boundary_nonmatch:
       ssicoupling_ = std::make_shared<SSICouplingNonMatchingBoundary>();
       break;
-    case Inpar::SSI::FieldCoupling::volumeboundary_match:
+    case SSI::FieldCoupling::volumeboundary_match:
       ssicoupling_ = std::make_shared<SSICouplingMatchingVolumeAndBoundary>();
       redistribution_required = RedistributionType::match;
       break;
@@ -829,9 +829,9 @@ bool SSI::SSIBase::is_elch_scatra_time_int_type() const
 {
   const auto ssi_params = Global::Problem::instance()->ssi_control_params();
   const auto scatra_type =
-      Teuchos::getIntegralValue<Inpar::SSI::ScaTraTimIntType>(ssi_params, "SCATRATIMINTTYPE");
+      Teuchos::getIntegralValue<SSI::ScaTraTimIntType>(ssi_params, "SCATRATIMINTTYPE");
 
-  return scatra_type == Inpar::SSI::ScaTraTimIntType::elch;
+  return scatra_type == SSI::ScaTraTimIntType::elch;
 }
 
 /*----------------------------------------------------------------------*/

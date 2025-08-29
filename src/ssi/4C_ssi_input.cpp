@@ -5,7 +5,7 @@
 //
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
-#include "4C_inpar_ssi.hpp"
+#include "4C_ssi_input.hpp"
 
 #include "4C_fem_condition_definition.hpp"
 #include "4C_inpar_s2i.hpp"
@@ -15,7 +15,7 @@
 #include "4C_linalg_sparseoperator.hpp"
 FOUR_C_NAMESPACE_OPEN
 
-void Inpar::SSI::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
+void SSI::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
 {
   using namespace Core::IO::InputSpecBuilders;
 
@@ -237,7 +237,7 @@ void Inpar::SSI::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>
 
 /*--------------------------------------------------------------------
 --------------------------------------------------------------------*/
-void Inpar::SSI::set_valid_conditions(std::vector<Core::Conditions::ConditionDefinition>& condlist)
+void SSI::set_valid_conditions(std::vector<Core::Conditions::ConditionDefinition>& condlist)
 {
   using namespace Core::IO::InputSpecBuilders;
 
@@ -339,7 +339,7 @@ void Inpar::SSI::set_valid_conditions(std::vector<Core::Conditions::ConditionDef
   const auto make_ssiinterfacemeshtying = [&condlist](Core::Conditions::ConditionDefinition& cond)
   {
     cond.add_component(parameter<int>("ConditionID"));
-    cond.add_component(deprecated_selection<S2I::InterfaceSides>("INTERFACE_SIDE",
+    cond.add_component(deprecated_selection<Inpar::S2I::InterfaceSides>("INTERFACE_SIDE",
         {{"Undefined", Inpar::S2I::side_undefined}, {"Slave", Inpar::S2I::side_slave},
             {"Master", Inpar::S2I::side_master}},
         {.description = "interface_side"}));
@@ -414,7 +414,7 @@ void Inpar::SSI::set_valid_conditions(std::vector<Core::Conditions::ConditionDef
             parameter<double>("ALPHA_A"),
             parameter<double>("ALPHA_C"),
         }),
-        deprecated_selection<S2I::KineticModels>(
+        deprecated_selection<Inpar::S2I::KineticModels>(
             "KINETIC_MODEL", {{"NoInterfaceFlux", Inpar::S2I::kinetics_nointerfaceflux}}),
     }));
   }
@@ -475,7 +475,7 @@ void Inpar::SSI::set_valid_conditions(std::vector<Core::Conditions::ConditionDef
   const auto make_ssiinterfacecontact = [&condlist](Core::Conditions::ConditionDefinition& cond)
   {
     cond.add_component(parameter<int>("ConditionID"));
-    cond.add_component(deprecated_selection<S2I::InterfaceSides>("INTERFACE_SIDE",
+    cond.add_component(deprecated_selection<Inpar::S2I::InterfaceSides>("INTERFACE_SIDE",
         {{"Undefined", Inpar::S2I::side_undefined}, {"Slave", Inpar::S2I::side_slave},
             {"Master", Inpar::S2I::side_master}},
         {.description = "interface_side"}));

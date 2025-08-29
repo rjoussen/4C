@@ -117,10 +117,10 @@ void sti_dyn(const int& restartstep  //! time step for restart
   // instantiate coupling algorithm for scatra-thermo interaction
   std::shared_ptr<STI::Algorithm> sti_algorithm(nullptr);
 
-  switch (Teuchos::getIntegralValue<Inpar::STI::CouplingType>(stidyn, "COUPLINGTYPE"))
+  switch (Teuchos::getIntegralValue<STI::CouplingType>(stidyn, "COUPLINGTYPE"))
   {
     // monolithic algorithm
-    case Inpar::STI::CouplingType::monolithic:
+    case STI::CouplingType::monolithic:
     {
       // extract and check ID of monolithic linear solver
       const int solver_id = stidyn.sublist("MONOLITHIC").get<int>("LINEAR_SOLVER");
@@ -138,13 +138,13 @@ void sti_dyn(const int& restartstep  //! time step for restart
     }
 
     // partitioned algorithm
-    case Inpar::STI::CouplingType::oneway_scatratothermo:
-    case Inpar::STI::CouplingType::oneway_thermotoscatra:
-    case Inpar::STI::CouplingType::twoway_scatratothermo:
-    case Inpar::STI::CouplingType::twoway_scatratothermo_aitken:
-    case Inpar::STI::CouplingType::twoway_scatratothermo_aitken_dofsplit:
-    case Inpar::STI::CouplingType::twoway_thermotoscatra:
-    case Inpar::STI::CouplingType::twoway_thermotoscatra_aitken:
+    case STI::CouplingType::oneway_scatratothermo:
+    case STI::CouplingType::oneway_thermotoscatra:
+    case STI::CouplingType::twoway_scatratothermo:
+    case STI::CouplingType::twoway_scatratothermo_aitken:
+    case STI::CouplingType::twoway_scatratothermo_aitken_dofsplit:
+    case STI::CouplingType::twoway_thermotoscatra:
+    case STI::CouplingType::twoway_thermotoscatra_aitken:
     {
       sti_algorithm = std::make_shared<STI::Partitioned>(comm, stidyn, scatradyn,
           Global::Problem::instance()->solver_params(solver_id_scatra),
@@ -176,8 +176,8 @@ void sti_dyn(const int& restartstep  //! time step for restart
   // perform result tests
   problem->add_field_test(
       std::shared_ptr<Core::Utils::ResultTest>(new STI::STIResultTest(sti_algorithm)));
-  if (Teuchos::getIntegralValue<Inpar::STI::ScaTraTimIntType>(
-          problem->sti_dynamic_params(), "SCATRATIMINTTYPE") == Inpar::STI::ScaTraTimIntType::elch)
+  if (Teuchos::getIntegralValue<STI::ScaTraTimIntType>(
+          problem->sti_dynamic_params(), "SCATRATIMINTTYPE") == STI::ScaTraTimIntType::elch)
     problem->add_field_test(std::shared_ptr<Core::Utils::ResultTest>(new ScaTra::ElchResultTest(
         std::dynamic_pointer_cast<ScaTra::ScaTraTimIntElch>(sti_algorithm->scatra_field()))));
   else

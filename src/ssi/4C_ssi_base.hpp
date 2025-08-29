@@ -33,10 +33,10 @@ namespace CONTACT
   class NitscheStrategySsi;
 }
 
-namespace Inpar::SSI
+namespace SSI
 {
   enum class FieldCoupling;
-}  // namespace Inpar::SSI
+}  // namespace SSI
 
 namespace Core::LinAlg
 {
@@ -386,7 +386,7 @@ namespace SSI
     const bool diff_time_step_size_;
 
     //! Type of coupling strategy between the two fields of the SSI problems
-    const Inpar::SSI::FieldCoupling fieldcoupling_;
+    const SSI::FieldCoupling fieldcoupling_;
 
     //! flag indicating if class is initialized
     bool isinit_ = false;

@@ -12,7 +12,6 @@
 #include "4C_coupling_adapter_converter.hpp"
 #include "4C_fem_general_assemblestrategy.hpp"
 #include "4C_global_data.hpp"
-#include "4C_inpar_sti.hpp"
 #include "4C_io_control.hpp"
 #include "4C_linalg_equilibrate.hpp"
 #include "4C_linalg_mapextractor.hpp"
@@ -24,6 +23,7 @@
 #include "4C_linear_solver_method_parameters.hpp"
 #include "4C_scatra_timint_implicit.hpp"
 #include "4C_scatra_timint_meshtying_strategy_s2i.hpp"
+#include "4C_sti_input.hpp"
 #include "4C_sti_monolithic_evaluate_OffDiag.hpp"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
@@ -1320,10 +1320,9 @@ bool STI::Monolithic::exit_newton_raphson()
   bool is_converged(false);
 
   // perform Newton-Raphson convergence check depending on type of scalar transport
-  switch (
-      Teuchos::getIntegralValue<Inpar::STI::ScaTraTimIntType>(*stiparameters_, "SCATRATIMINTTYPE"))
+  switch (Teuchos::getIntegralValue<STI::ScaTraTimIntType>(*stiparameters_, "SCATRATIMINTTYPE"))
   {
-    case Inpar::STI::ScaTraTimIntType::elch:
+    case STI::ScaTraTimIntType::elch:
     {
       // compute L2 norm of concentration state vector
       double concdofnorm(0.);

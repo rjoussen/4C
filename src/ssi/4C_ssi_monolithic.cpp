@@ -14,7 +14,6 @@
 #include "4C_fem_condition_locsys.hpp"
 #include "4C_fem_general_assemblestrategy.hpp"
 #include "4C_global_data.hpp"
-#include "4C_inpar_ssi.hpp"
 #include "4C_io_control.hpp"
 #include "4C_linalg_equilibrate.hpp"
 #include "4C_linalg_mapextractor.hpp"
@@ -27,6 +26,7 @@
 #include "4C_scatra_timint_meshtying_strategy_s2i.hpp"
 #include "4C_ssi_contact_strategy.hpp"
 #include "4C_ssi_coupling.hpp"
+#include "4C_ssi_input.hpp"
 #include "4C_ssi_manifold_utils.hpp"
 #include "4C_ssi_monolithic_assemble_strategy.hpp"
 #include "4C_ssi_monolithic_convcheck_strategies.hpp"
@@ -496,10 +496,9 @@ void SSI::SsiMono::init(MPI_Comm comm, const Teuchos::ParameterList& globaltimep
   }
 
   // initialize strategy for Newton-Raphson convergence check
-  switch (
-      Teuchos::getIntegralValue<Inpar::SSI::ScaTraTimIntType>(globaltimeparams, "SCATRATIMINTTYPE"))
+  switch (Teuchos::getIntegralValue<SSI::ScaTraTimIntType>(globaltimeparams, "SCATRATIMINTTYPE"))
   {
-    case Inpar::SSI::ScaTraTimIntType::elch:
+    case SSI::ScaTraTimIntType::elch:
     {
       if (is_scatra_manifold())
       {
@@ -513,7 +512,7 @@ void SSI::SsiMono::init(MPI_Comm comm, const Teuchos::ParameterList& globaltimep
       break;
     }
 
-    case Inpar::SSI::ScaTraTimIntType::standard:
+    case SSI::ScaTraTimIntType::standard:
     {
       strategy_convcheck_ = std::make_shared<ConvCheckStrategyStd>(globaltimeparams);
       break;
@@ -685,8 +684,8 @@ void SSI::SsiMono::setup()
 
   if (calc_initial_pot_elch)
     FOUR_C_THROW("Initial potential is calculated by SSI. Disable in Elch section.");
-  if (calc_initial_pot_ssi and Teuchos::getIntegralValue<Inpar::SSI::ScaTraTimIntType>(ssi_params,
-                                   "SCATRATIMINTTYPE") != Inpar::SSI::ScaTraTimIntType::elch)
+  if (calc_initial_pot_ssi and Teuchos::getIntegralValue<SSI::ScaTraTimIntType>(
+                                   ssi_params, "SCATRATIMINTTYPE") != SSI::ScaTraTimIntType::elch)
     FOUR_C_THROW("Calculation of initial potential only in case of Elch");
 
   if (!scatra_field()->is_incremental())

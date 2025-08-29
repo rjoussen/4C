@@ -9,7 +9,6 @@
 
 #include "4C_comm_pack_helpers.hpp"
 #include "4C_global_data.hpp"
-#include "4C_inpar_ssi.hpp"
 #include "4C_legacy_enum_definitions_materials.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_linalg_fixedsizematrix_tensor_products.hpp"
@@ -24,6 +23,7 @@
 #include "4C_mat_multiplicative_split_defgrad_elasthyper_service.hpp"
 #include "4C_mat_par_bundle.hpp"
 #include "4C_mat_service.hpp"
+#include "4C_ssi_input.hpp"
 #include "4C_structure_new_enum_lists.hpp"
 #include "4C_utils_enum.hpp"
 
@@ -1096,8 +1096,8 @@ void Mat::InelasticFactorsHandler::assign_to_source(
   // safety checks
   // get the scatra structure control parameter list
   const auto& ssicontrol = Global::Problem::instance()->ssi_control_params();
-  if (Teuchos::getIntegralValue<Inpar::SSI::SolutionSchemeOverFields>(ssicontrol, "COUPALGO") ==
-      Inpar::SSI::SolutionSchemeOverFields::ssi_Monolithic)
+  if (Teuchos::getIntegralValue<SSI::SolutionSchemeOverFields>(ssicontrol, "COUPALGO") ==
+      SSI::SolutionSchemeOverFields::ssi_Monolithic)
   {
     for (const auto& inelasitc_factor : facdefgradin_)
     {

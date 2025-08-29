@@ -5,7 +5,7 @@
 //
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
-#include "4C_inpar_ssti.hpp"
+#include "4C_ssti_input.hpp"
 
 #include "4C_fem_condition_definition.hpp"
 #include "4C_inpar_s2i.hpp"
@@ -13,9 +13,10 @@
 #include "4C_io_input_spec_builders.hpp"
 #include "4C_linalg_equilibrate.hpp"
 #include "4C_linalg_sparseoperator.hpp"
+
 FOUR_C_NAMESPACE_OPEN
 
-void Inpar::SSTI::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
+void SSTI::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
 {
   using namespace Core::IO::InputSpecBuilders;
 
@@ -134,7 +135,7 @@ void Inpar::SSTI::set_valid_parameters(std::map<std::string, Core::IO::InputSpec
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Inpar::SSTI::set_valid_conditions(std::vector<Core::Conditions::ConditionDefinition>& condlist)
+void SSTI::set_valid_conditions(std::vector<Core::Conditions::ConditionDefinition>& condlist)
 {
   using namespace Core::IO::InputSpecBuilders;
 
@@ -152,7 +153,7 @@ void Inpar::SSTI::set_valid_conditions(std::vector<Core::Conditions::ConditionDe
   const auto make_sstiinterfacemeshtying = [&condlist](Core::Conditions::ConditionDefinition& cond)
   {
     cond.add_component(parameter<int>("ConditionID"));
-    cond.add_component(deprecated_selection<S2I::InterfaceSides>("INTERFACE_SIDE",
+    cond.add_component(deprecated_selection<Inpar::S2I::InterfaceSides>("INTERFACE_SIDE",
         {{"Undefined", Inpar::S2I::side_undefined}, {"Slave", Inpar::S2I::side_slave},
             {"Master", Inpar::S2I::side_master}},
         {.description = "interface side"}));
