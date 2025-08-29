@@ -10,7 +10,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_inpar_ssi.hpp"
+#include "4C_ssi_input.hpp"
 #include "4C_ssi_partitioned.hpp"
 
 FOUR_C_NAMESPACE_OPEN

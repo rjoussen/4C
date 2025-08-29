@@ -28,12 +28,12 @@
 #include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_s2i.hpp"
-#include "4C_inpar_ssi.hpp"
 #include "4C_inpar_wear.hpp"
 #include "4C_io.hpp"
 #include "4C_io_pstream.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_scatra_timint_meshtying_strategy_s2i.hpp"
+#include "4C_ssi_input.hpp"
 #include "4C_structure_new_timint_basedataglobalstate.hpp"
 #include "4C_structure_new_utils.hpp"
 
@@ -569,9 +569,9 @@ void CONTACT::STRATEGY::Factory::read_and_check_input(Teuchos::ParameterList& pa
   }
   else if (problemtype == Core::ProblemType::ssi)
   {
-    if (Teuchos::getIntegralValue<Inpar::SSI::ScaTraTimIntType>(
+    if (Teuchos::getIntegralValue<SSI::ScaTraTimIntType>(
             Global::Problem::instance()->ssi_control_params(), "SCATRATIMINTTYPE") ==
-        Inpar::SSI::ScaTraTimIntType::elch)
+        SSI::ScaTraTimIntType::elch)
     {
       params.set<CONTACT::Problemtype>("PROBTYPE", CONTACT::Problemtype::ssi_elch);
     }

@@ -17,10 +17,10 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace Inpar::SSI
+namespace SSI
 {
   enum class ScaTraTimIntType;
-}  // namespace Inpar::SSI
+}  // namespace SSI
 
 namespace Core::LinAlg
 {

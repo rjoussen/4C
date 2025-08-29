@@ -8,13 +8,13 @@
 #include <gtest/gtest.h>
 
 #include "4C_global_data.hpp"
-#include "4C_inpar_ssi.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_mat_elasthyper_service.hpp"
 #include "4C_mat_material_factory.hpp"
 #include "4C_mat_multiplicative_split_defgrad_elasthyper.hpp"
 #include "4C_mat_par_bundle.hpp"
 #include "4C_material_parameter_base.hpp"
+#include "4C_ssi_input.hpp"
 #include "4C_unittest_utils_assertions_test.hpp"
 #include "4C_utils_singleton_owner.hpp"
 
@@ -105,7 +105,7 @@ namespace
       parameter_list_pointer->sublist("STRUCTURAL DYNAMIC", false)
           .set("MASSLIN", Inpar::Solid::MassLin::ml_none);
       parameter_list_pointer->sublist("SSI CONTROL")
-          .set("COUPALGO", Inpar::SSI::SolutionSchemeOverFields::ssi_IterStagg);
+          .set("COUPALGO", SSI::SolutionSchemeOverFields::ssi_IterStagg);
 
       // set the parameter list in the global problem
       problem.set_parameter_list(parameter_list_pointer);

@@ -50,7 +50,7 @@ void ssi_drt()
     SSI::Utils::change_time_parameter(comm, ssiparams, scatradyn, sdyn);
 
     const auto coupling =
-        Teuchos::getIntegralValue<Inpar::SSI::SolutionSchemeOverFields>(ssiparams, "COUPALGO");
+        Teuchos::getIntegralValue<SSI::SolutionSchemeOverFields>(ssiparams, "COUPALGO");
 
 
     // 3.- Creation of Structure + Scalar_Transport problem.
@@ -60,31 +60,31 @@ void ssi_drt()
     // 3.1 choose algorithm depending on solution type
     switch (coupling)
     {
-      case Inpar::SSI::SolutionSchemeOverFields::ssi_OneWay_ScatraToSolid:
+      case SSI::SolutionSchemeOverFields::ssi_OneWay_ScatraToSolid:
       {
         ssi = std::make_shared<SSI::SSIPart1WCScatraToSolid>(comm, ssiparams);
         isale = false;
       }
       break;
-      case Inpar::SSI::SolutionSchemeOverFields::ssi_OneWay_SolidToScatra:
+      case SSI::SolutionSchemeOverFields::ssi_OneWay_SolidToScatra:
         ssi = std::make_shared<SSI::SSIPart1WCSolidToScatra>(comm, ssiparams);
         break;
-      case Inpar::SSI::SolutionSchemeOverFields::ssi_IterStagg:
+      case SSI::SolutionSchemeOverFields::ssi_IterStagg:
         ssi = std::make_shared<SSI::SSIPart2WC>(comm, ssiparams);
         break;
-      case Inpar::SSI::SolutionSchemeOverFields::ssi_IterStaggFixedRel_ScatraToSolid:
+      case SSI::SolutionSchemeOverFields::ssi_IterStaggFixedRel_ScatraToSolid:
         ssi = std::make_shared<SSI::SSIPart2WCScatraToSolidRelax>(comm, ssiparams);
         break;
-      case Inpar::SSI::SolutionSchemeOverFields::ssi_IterStaggFixedRel_SolidToScatra:
+      case SSI::SolutionSchemeOverFields::ssi_IterStaggFixedRel_SolidToScatra:
         ssi = std::make_shared<SSI::SSIPart2WCSolidToScatraRelax>(comm, ssiparams);
         break;
-      case Inpar::SSI::SolutionSchemeOverFields::ssi_IterStaggAitken_ScatraToSolid:
+      case SSI::SolutionSchemeOverFields::ssi_IterStaggAitken_ScatraToSolid:
         ssi = std::make_shared<SSI::SSIPart2WCScatraToSolidRelaxAitken>(comm, ssiparams);
         break;
-      case Inpar::SSI::SolutionSchemeOverFields::ssi_IterStaggAitken_SolidToScatra:
+      case SSI::SolutionSchemeOverFields::ssi_IterStaggAitken_SolidToScatra:
         ssi = std::make_shared<SSI::SSIPart2WCSolidToScatraRelaxAitken>(comm, ssiparams);
         break;
-      case Inpar::SSI::SolutionSchemeOverFields::ssi_Monolithic:
+      case SSI::SolutionSchemeOverFields::ssi_Monolithic:
         ssi = std::make_shared<SSI::SsiMono>(comm, ssiparams);
         break;
       default:
@@ -131,8 +131,7 @@ void ssi_drt()
     // 3.3 AFTER restart: reset input filename of the problem so that results from other runs can be
     // read
     bool flag_readscatra = ssiparams.get<bool>("SCATRA_FROM_RESTART_FILE");
-    if (coupling == Inpar::SSI::SolutionSchemeOverFields::ssi_OneWay_ScatraToSolid and
-        flag_readscatra)
+    if (coupling == SSI::SolutionSchemeOverFields::ssi_OneWay_ScatraToSolid and flag_readscatra)
     {
       std::string filename = Teuchos::getNumericStringParameter(ssiparams, "SCATRA_FILENAME");
       auto inputscatra = std::make_shared<Core::IO::InputControl>(filename, comm);

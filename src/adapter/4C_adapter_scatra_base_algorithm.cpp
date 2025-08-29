@@ -8,7 +8,6 @@
 #include "4C_adapter_scatra_base_algorithm.hpp"
 
 #include "4C_global_data.hpp"
-#include "4C_inpar_ssi.hpp"
 #include "4C_inpar_ssti.hpp"
 #include "4C_inpar_sti.hpp"
 #include "4C_io.hpp"
@@ -27,6 +26,7 @@
 #include "4C_scatra_timint_poromulti.hpp"
 #include "4C_scatra_timint_stat.hpp"
 #include "4C_scatra_timint_stat_hdg.hpp"
+#include "4C_ssi_input.hpp"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
@@ -190,9 +190,9 @@ Adapter::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
   // electrochemistry
   else if (probtype == Core::ProblemType::elch or
            ((probtype == Core::ProblemType::ssi and
-                Teuchos::getIntegralValue<Inpar::SSI::ScaTraTimIntType>(
+                Teuchos::getIntegralValue<SSI::ScaTraTimIntType>(
                     Global::Problem::instance()->ssi_control_params(), "SCATRATIMINTTYPE") ==
-                    Inpar::SSI::ScaTraTimIntType::elch) or
+                    SSI::ScaTraTimIntType::elch) or
                (disname == "scatra" and
                    ((probtype == Core::ProblemType::ssti and
                         Teuchos::getIntegralValue<Inpar::SSTI::ScaTraTimIntType>(
@@ -281,9 +281,9 @@ Adapter::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
   // cardiac monodomain
   else if (probtype == Core::ProblemType::cardiac_monodomain or
            (probtype == Core::ProblemType::ssi and
-               Teuchos::getIntegralValue<Inpar::SSI::ScaTraTimIntType>(
+               Teuchos::getIntegralValue<SSI::ScaTraTimIntType>(
                    Global::Problem::instance()->ssi_control_params(), "SCATRATIMINTTYPE") ==
-                   Inpar::SSI::ScaTraTimIntType::cardiac_monodomain))
+                   SSI::ScaTraTimIntType::cardiac_monodomain))
   {
     auto cmonoparams =
         std::make_shared<Teuchos::ParameterList>(Global::Problem::instance()->ep_control_params());
