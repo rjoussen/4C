@@ -270,9 +270,6 @@ namespace BeamInteraction
       ///  to get force and stiffness contributions from beam interactions
       void create_beam_contact_element_pairs();
 
-      /// sets the lagrange multiplier vector in the datastate vector
-      void set_lagrange_multiplier_vector();
-
       /// Add the restart displacement to the pairs, if the coupling should be evaluated with
       /// respect to the restart state.
       void set_restart_displacement_in_pairs();
