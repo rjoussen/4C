@@ -36,7 +36,7 @@ namespace Mat
       {
         function_of_space_time,  ///< analytical activation prescription via a symbolic function of
                                  ///< space and time
-        map  ///< discrete elementwise-defined activation prescription via an input pattern file
+        map  ///< discrete elementwise-defined activation prescription via an input json input file
       };
 
       /// constructor
@@ -69,16 +69,14 @@ namespace Mat
 
       //! @name time-/space-dependent activation
 
-      //! type of activation prescription
-      const ActivationType activationType_;
-
       /*!
        * @brief type-dependent parameters for activation
        *
        * Depending on the type of activation prescription this is one of the options below:
        * - Id of the function in the input file specifying an analytical function
-       * - Map retrieved from the pattern file path in the input file specifying a discrete values.
-       *   The integer key refers to the element ids, the vector bundles time-activation pairs.
+       * - Map retrieved from the json input file path in the input file specifying a discrete
+       * values. The integer key refers to the element ids, the vector bundles time-activation
+       * pairs.
        */
       using ActivationParameterVariant = std::variant<std::monostate, const int,
           const Core::IO::InputField<std::vector<std::pair<double, double>>>>;

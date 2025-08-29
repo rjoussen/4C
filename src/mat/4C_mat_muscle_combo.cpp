@@ -32,18 +32,17 @@ namespace
   using ActivationFieldType = Core::IO::InputField<std::vector<std::pair<double, double>>>;
 
   Mat::PAR::MuscleCombo::ActivationParameterVariant get_activation_params(
-      const Core::Mat::PAR::Parameter::Data& matdata,
-      const Mat::PAR::MuscleCombo::ActivationType& activation_type)
+      const Core::Mat::PAR::Parameter::Data& matdata)
   {
-    if (activation_type == Mat::PAR::MuscleCombo::ActivationType::function_of_space_time)
+    if (matdata.parameters.get_if<int>("ACTIVATION_FUNCTION_ID"))
     {
-      auto actFunctId = matdata.parameters.get<int>("FUNCTID");
+      auto actFunctId = matdata.parameters.get<int>("ACTIVATION_FUNCTION_ID");
       if (actFunctId <= 0) FOUR_C_THROW("Function id must be positive");
       return actFunctId;
     }
-    else if (activation_type == Mat::PAR::MuscleCombo::ActivationType::map)
+    else if (matdata.parameters.get_if<ActivationFieldType>("ACTIVATION_VALUES"))
     {
-      return matdata.parameters.get<ActivationFieldType>("MAPFILE_CONTENT");
+      return matdata.parameters.get<ActivationFieldType>("ACTIVATION_VALUES");
     }
     else
       return std::monostate{};
@@ -74,7 +73,8 @@ namespace
   {
     double operator()(const ActivationFieldType* map) const
     {
-      // use one-based element ids in the pattern file (corresponding to the ones in the input file)
+      // use one-based element ids in the json input file (corresponding to the ones in the input
+      // file)
       return Mat::Utils::Muscle::evaluate_time_space_dependent_active_stress_by_map(
           Popt_, *map, t_tot_, eleGID_);
     }
@@ -109,8 +109,7 @@ Mat::PAR::MuscleCombo::MuscleCombo(const Core::Mat::PAR::Parameter::Data& matdat
       Popt_(matdata.parameters.get<double>("POPT")),
       lambdaMin_(matdata.parameters.get<double>("LAMBDAMIN")),
       lambdaOpt_(matdata.parameters.get<double>("LAMBDAOPT")),
-      activationType_(matdata.parameters.get<ActivationType>("ACTEVALTYPE")),
-      activationParams_(get_activation_params(matdata, activationType_)),
+      activationParams_(get_activation_params(matdata)),
       density_(matdata.parameters.get<double>("DENS"))
 {
   // error handling for parameter ranges
