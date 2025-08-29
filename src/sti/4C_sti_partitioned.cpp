@@ -28,7 +28,7 @@ STI::Partitioned::Partitioned(MPI_Comm comm,  //! communicator
     )
     :  // instantiate base class
       Algorithm(comm, stidyn, scatradyn, solverparams_scatra, solverparams_thermo),
-      couplingtype_(Teuchos::getIntegralValue<Inpar::STI::CouplingType>(stidyn, "COUPLINGTYPE")),
+      couplingtype_(Teuchos::getIntegralValue<STI::CouplingType>(stidyn, "COUPLINGTYPE")),
       omegamax_(stidyn.sublist("PARTITIONED").get<double>("OMEGAMAX"))
 {
   // set control parameters for outer coupling iteration loop
@@ -38,16 +38,16 @@ STI::Partitioned::Partitioned(MPI_Comm comm,  //! communicator
   // initialize vectors for outer coupling iteration loop
   switch (couplingtype_)
   {
-    case Inpar::STI::CouplingType::oneway_scatratothermo:
-    case Inpar::STI::CouplingType::oneway_thermotoscatra:
+    case STI::CouplingType::oneway_scatratothermo:
+    case STI::CouplingType::oneway_thermotoscatra:
       // do nothing
       break;
 
-    case Inpar::STI::CouplingType::twoway_scatratothermo:
-    case Inpar::STI::CouplingType::twoway_scatratothermo_aitken:
-    case Inpar::STI::CouplingType::twoway_scatratothermo_aitken_dofsplit:
-    case Inpar::STI::CouplingType::twoway_thermotoscatra:
-    case Inpar::STI::CouplingType::twoway_thermotoscatra_aitken:
+    case STI::CouplingType::twoway_scatratothermo:
+    case STI::CouplingType::twoway_scatratothermo_aitken:
+    case STI::CouplingType::twoway_scatratothermo_aitken_dofsplit:
+    case STI::CouplingType::twoway_thermotoscatra:
+    case STI::CouplingType::twoway_thermotoscatra_aitken:
     {
       // initialize increment vectors
       scatra_field()->set_phinp_inc(
@@ -56,28 +56,28 @@ STI::Partitioned::Partitioned(MPI_Comm comm,  //! communicator
           Core::LinAlg::create_vector(*thermo_field()->discretization()->dof_row_map(), true));
 
       // initialize old increment vectors
-      if (couplingtype_ == Inpar::STI::CouplingType::twoway_scatratothermo_aitken or
-          couplingtype_ == Inpar::STI::CouplingType::twoway_scatratothermo_aitken_dofsplit)
+      if (couplingtype_ == STI::CouplingType::twoway_scatratothermo_aitken or
+          couplingtype_ == STI::CouplingType::twoway_scatratothermo_aitken_dofsplit)
       {
         scatra_field()->set_phinp_inc_old(
             Core::LinAlg::create_vector(*scatra_field()->discretization()->dof_row_map(), true));
       }
-      else if (couplingtype_ == Inpar::STI::CouplingType::twoway_thermotoscatra_aitken)
+      else if (couplingtype_ == STI::CouplingType::twoway_thermotoscatra_aitken)
       {
         thermo_field()->set_phinp_inc_old(
             Core::LinAlg::create_vector(*thermo_field()->discretization()->dof_row_map(), true));
       }
 
       // initialize relaxation parameter
-      if (couplingtype_ == Inpar::STI::CouplingType::twoway_scatratothermo)
+      if (couplingtype_ == STI::CouplingType::twoway_scatratothermo)
         scatra_field()->omega().resize(1, stidyn.sublist("PARTITIONED").get<double>("OMEGA"));
-      else if (couplingtype_ == Inpar::STI::CouplingType::twoway_scatratothermo_aitken)
+      else if (couplingtype_ == STI::CouplingType::twoway_scatratothermo_aitken)
         scatra_field()->omega().resize(1, 1.);
-      else if (couplingtype_ == Inpar::STI::CouplingType::twoway_scatratothermo_aitken_dofsplit)
+      else if (couplingtype_ == STI::CouplingType::twoway_scatratothermo_aitken_dofsplit)
         scatra_field()->omega().resize(scatra_field()->num_dof_per_node(), 1.);
-      else if (couplingtype_ == Inpar::STI::CouplingType::twoway_thermotoscatra)
+      else if (couplingtype_ == STI::CouplingType::twoway_thermotoscatra)
         thermo_field()->omega().resize(1, stidyn.sublist("PARTITIONED").get<double>("OMEGA"));
-      else if (couplingtype_ == Inpar::STI::CouplingType::twoway_thermotoscatra_aitken)
+      else if (couplingtype_ == STI::CouplingType::twoway_thermotoscatra_aitken)
         thermo_field()->omega().resize(1, 1.);
       else
         thermo_field()->omega().resize(scatra_field()->num_dof_per_node(), 1.);
@@ -166,18 +166,18 @@ void STI::Partitioned::solve()
 {
   switch (couplingtype_)
   {
-    case Inpar::STI::CouplingType::oneway_scatratothermo:
-    case Inpar::STI::CouplingType::oneway_thermotoscatra:
+    case STI::CouplingType::oneway_scatratothermo:
+    case STI::CouplingType::oneway_thermotoscatra:
     {
       solve_one_way();
       break;
     }
 
-    case Inpar::STI::CouplingType::twoway_scatratothermo:
-    case Inpar::STI::CouplingType::twoway_scatratothermo_aitken:
-    case Inpar::STI::CouplingType::twoway_scatratothermo_aitken_dofsplit:
-    case Inpar::STI::CouplingType::twoway_thermotoscatra:
-    case Inpar::STI::CouplingType::twoway_thermotoscatra_aitken:
+    case STI::CouplingType::twoway_scatratothermo:
+    case STI::CouplingType::twoway_scatratothermo_aitken:
+    case STI::CouplingType::twoway_scatratothermo_aitken_dofsplit:
+    case STI::CouplingType::twoway_thermotoscatra:
+    case STI::CouplingType::twoway_thermotoscatra_aitken:
     {
       solve_two_way();
       break;
@@ -199,7 +199,7 @@ void STI::Partitioned::solve_one_way() const
 {
   switch (couplingtype_)
   {
-    case Inpar::STI::CouplingType::oneway_scatratothermo:
+    case STI::CouplingType::oneway_scatratothermo:
     {
       // pass thermo degrees of freedom to scatra discretization
       transfer_thermo_to_scatra(thermo_field()->phiafnp());
@@ -216,7 +216,7 @@ void STI::Partitioned::solve_one_way() const
       break;
     }
 
-    case Inpar::STI::CouplingType::oneway_thermotoscatra:
+    case STI::CouplingType::oneway_thermotoscatra:
     {
       // pass scatra degrees of freedom to thermo discretization
       transfer_scatra_to_thermo(scatra_field()->phiafnp());
@@ -252,9 +252,9 @@ void STI::Partitioned::solve_two_way()
 
   switch (couplingtype_)
   {
-    case Inpar::STI::CouplingType::twoway_scatratothermo:
-    case Inpar::STI::CouplingType::twoway_scatratothermo_aitken:
-    case Inpar::STI::CouplingType::twoway_scatratothermo_aitken_dofsplit:
+    case STI::CouplingType::twoway_scatratothermo:
+    case STI::CouplingType::twoway_scatratothermo_aitken:
+    case STI::CouplingType::twoway_scatratothermo_aitken_dofsplit:
     {
       // initialize relaxed scatra state vector
       const std::shared_ptr<Core::LinAlg::Vector<double>> scatra_relaxed =
@@ -298,7 +298,7 @@ void STI::Partitioned::solve_two_way()
         if (exit_outer_coupling()) break;
 
         // perform static relaxation
-        if (couplingtype_ == Inpar::STI::CouplingType::twoway_scatratothermo)
+        if (couplingtype_ == STI::CouplingType::twoway_scatratothermo)
         {
           if (scatra_relaxed->update(scatra_field()->omega()[0], *scatra_field()->phinp_inc(), 1.))
             FOUR_C_THROW("Update failed!");
@@ -312,7 +312,7 @@ void STI::Partitioned::solve_two_way()
           if (scatra_inc_diff.update(-1., *scatra_field()->phinp_inc_old(), 1.))
             FOUR_C_THROW("Update failed!");
 
-          if (couplingtype_ == Inpar::STI::CouplingType::twoway_scatratothermo_aitken)
+          if (couplingtype_ == STI::CouplingType::twoway_scatratothermo_aitken)
           {
             // compute L2 norm of difference between current and previous increments of scatra state
             // vector
@@ -390,8 +390,8 @@ void STI::Partitioned::solve_two_way()
       break;
     }
 
-    case Inpar::STI::CouplingType::twoway_thermotoscatra:
-    case Inpar::STI::CouplingType::twoway_thermotoscatra_aitken:
+    case STI::CouplingType::twoway_thermotoscatra:
+    case STI::CouplingType::twoway_thermotoscatra_aitken:
     {
       // initialize relaxed thermo state vector
       const std::shared_ptr<Core::LinAlg::Vector<double>> thermo_relaxed =
@@ -434,7 +434,7 @@ void STI::Partitioned::solve_two_way()
         // convergence check
         if (exit_outer_coupling()) break;
 
-        if (couplingtype_ == Inpar::STI::CouplingType::twoway_thermotoscatra_aitken)
+        if (couplingtype_ == STI::CouplingType::twoway_thermotoscatra_aitken)
         {
           // compute difference between current and previous increments of thermo state vector
           Core::LinAlg::Vector<double> thermo_inc_diff(*thermo_field()->phinp_inc());

@@ -5,7 +5,7 @@
 //
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
-#include "4C_inpar_sti.hpp"
+#include "4C_sti_input.hpp"
 
 #include "4C_fem_condition_definition.hpp"
 #include "4C_inpar_scatra.hpp"
@@ -13,10 +13,8 @@
 #include "4C_linalg_sparseoperator.hpp"
 FOUR_C_NAMESPACE_OPEN
 
-/*------------------------------------------------------------------------*
- | set valid parameters for scatra-thermo interaction          fang 10/16 |
- *------------------------------------------------------------------------*/
-void Inpar::STI::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
+
+void STI::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
 {
   using namespace Core::IO::InputSpecBuilders;
 
@@ -114,10 +112,7 @@ void Inpar::STI::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>
 }
 
 
-/*------------------------------------------------------------------------*
- | set valid conditions for scatra-thermo interaction          fang 10/16 |
- *------------------------------------------------------------------------*/
-void Inpar::STI::set_valid_conditions(std::vector<Core::Conditions::ConditionDefinition>& condlist)
+void STI::set_valid_conditions(std::vector<Core::Conditions::ConditionDefinition>& condlist)
 {
   return;
 }
