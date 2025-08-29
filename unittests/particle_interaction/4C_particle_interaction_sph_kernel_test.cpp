@@ -99,8 +99,9 @@ namespace
 
     const double normalizationconstant_1D = 2.0 / (3.0 * h);
     const double normalizationconstant_2D =
-        10.0 * M_1_PI / (7.0 * ParticleInteraction::Utils::pow<2>(h));
-    const double normalizationconstant_3D = M_1_PI / ParticleInteraction::Utils::pow<3>(h);
+        10.0 * std::numbers::inv_pi / (7.0 * ParticleInteraction::Utils::pow<2>(h));
+    const double normalizationconstant_3D =
+        std::numbers::inv_pi / ParticleInteraction::Utils::pow<3>(h);
 
     EXPECT_NEAR(kernel_1D_->normalization_constant(inv_h), normalizationconstant_1D, 1.0e-10);
     EXPECT_NEAR(kernel_2D_->normalization_constant(inv_h), normalizationconstant_2D, 1.0e-10);
@@ -114,8 +115,9 @@ namespace
 
     const double normalizationconstant_1D = 2.0 / (3.0 * h);
     const double normalizationconstant_2D =
-        10.0 * M_1_PI / (7.0 * ParticleInteraction::Utils::pow<2>(h));
-    const double normalizationconstant_3D = M_1_PI / ParticleInteraction::Utils::pow<3>(h);
+        10.0 * std::numbers::inv_pi / (7.0 * ParticleInteraction::Utils::pow<2>(h));
+    const double normalizationconstant_3D =
+        std::numbers::inv_pi / ParticleInteraction::Utils::pow<3>(h);
 
     double w_unnormalized = 1.0;
     EXPECT_NEAR(kernel_1D_->w0(support), w_unnormalized * normalizationconstant_1D, 1.0e-10);
@@ -130,8 +132,9 @@ namespace
 
     const double normalizationconstant_1D = 2.0 / (3.0 * h);
     const double normalizationconstant_2D =
-        10.0 * M_1_PI / (7.0 * ParticleInteraction::Utils::pow<2>(h));
-    const double normalizationconstant_3D = M_1_PI / ParticleInteraction::Utils::pow<3>(h);
+        10.0 * std::numbers::inv_pi / (7.0 * ParticleInteraction::Utils::pow<2>(h));
+    const double normalizationconstant_3D =
+        std::numbers::inv_pi / ParticleInteraction::Utils::pow<3>(h);
 
     double rij = 0.0;
     double q = rij / h;
@@ -170,8 +173,9 @@ namespace
 
     const double normalizationconstant_1D = 2.0 / (3.0 * h);
     const double normalizationconstant_2D =
-        10.0 * M_1_PI / (7.0 * ParticleInteraction::Utils::pow<2>(h));
-    const double normalizationconstant_3D = M_1_PI / ParticleInteraction::Utils::pow<3>(h);
+        10.0 * std::numbers::inv_pi / (7.0 * ParticleInteraction::Utils::pow<2>(h));
+    const double normalizationconstant_3D =
+        std::numbers::inv_pi / ParticleInteraction::Utils::pow<3>(h);
 
     double rij = 0.0;
     double q = rij / h;
@@ -221,8 +225,9 @@ namespace
 
     const double normalizationconstant_1D = 2.0 / (3.0 * h);
     const double normalizationconstant_2D =
-        10.0 * M_1_PI / (7.0 * ParticleInteraction::Utils::pow<2>(h));
-    const double normalizationconstant_3D = M_1_PI / ParticleInteraction::Utils::pow<3>(h);
+        10.0 * std::numbers::inv_pi / (7.0 * ParticleInteraction::Utils::pow<2>(h));
+    const double normalizationconstant_3D =
+        std::numbers::inv_pi / ParticleInteraction::Utils::pow<3>(h);
 
     double rij = 0.0;
     double q = rij / h;
@@ -275,7 +280,8 @@ namespace
     eij[2] = 0.0;
 
     const double h = 0.4;
-    const double normalizationconstant_3D = M_1_PI / ParticleInteraction::Utils::pow<3>(h);
+    const double normalizationconstant_3D =
+        std::numbers::inv_pi / ParticleInteraction::Utils::pow<3>(h);
     const double q = rij / h;
     const double w_unnormalized =
         (-3.0 * q + 2.25 * ParticleInteraction::Utils::pow<2>(q)) * (1.0 / h);
@@ -373,9 +379,9 @@ namespace
 
     const double normalizationconstant_1D = 1.0 / (120.0 * h);
     const double normalizationconstant_2D =
-        7.0 * M_1_PI / (478.0 * ParticleInteraction::Utils::pow<2>(h));
+        7.0 * std::numbers::inv_pi / (478.0 * ParticleInteraction::Utils::pow<2>(h));
     const double normalizationconstant_3D =
-        3.0 * M_1_PI / (359.0 * ParticleInteraction::Utils::pow<3>(h));
+        3.0 * std::numbers::inv_pi / (359.0 * ParticleInteraction::Utils::pow<3>(h));
 
     EXPECT_NEAR(kernel_1D_->normalization_constant(inv_h), normalizationconstant_1D, 1.0e-10);
     EXPECT_NEAR(kernel_2D_->normalization_constant(inv_h), normalizationconstant_2D, 1.0e-10);
@@ -389,9 +395,9 @@ namespace
 
     const double normalizationconstant_1D = 1.0 / (120.0 * h);
     const double normalizationconstant_2D =
-        7.0 * M_1_PI / (478.0 * ParticleInteraction::Utils::pow<2>(h));
+        7.0 * std::numbers::inv_pi / (478.0 * ParticleInteraction::Utils::pow<2>(h));
     const double normalizationconstant_3D =
-        3.0 * M_1_PI / (359.0 * ParticleInteraction::Utils::pow<3>(h));
+        3.0 * std::numbers::inv_pi / (359.0 * ParticleInteraction::Utils::pow<3>(h));
 
     double w_unnormalized = 66.0;
     EXPECT_NEAR(kernel_1D_->w0(support), w_unnormalized * normalizationconstant_1D, 1.0e-10);
@@ -406,9 +412,9 @@ namespace
 
     const double normalizationconstant_1D = 1.0 / (120.0 * h);
     const double normalizationconstant_2D =
-        7.0 * M_1_PI / (478.0 * ParticleInteraction::Utils::pow<2>(h));
+        7.0 * std::numbers::inv_pi / (478.0 * ParticleInteraction::Utils::pow<2>(h));
     const double normalizationconstant_3D =
-        3.0 * M_1_PI / (359.0 * ParticleInteraction::Utils::pow<3>(h));
+        3.0 * std::numbers::inv_pi / (359.0 * ParticleInteraction::Utils::pow<3>(h));
 
     double rij = 0.0;
     double q = rij / h;
@@ -456,9 +462,9 @@ namespace
 
     const double normalizationconstant_1D = 1.0 / (120.0 * h);
     const double normalizationconstant_2D =
-        7.0 * M_1_PI / (478.0 * ParticleInteraction::Utils::pow<2>(h));
+        7.0 * std::numbers::inv_pi / (478.0 * ParticleInteraction::Utils::pow<2>(h));
     const double normalizationconstant_3D =
-        3.0 * M_1_PI / (359.0 * ParticleInteraction::Utils::pow<3>(h));
+        3.0 * std::numbers::inv_pi / (359.0 * ParticleInteraction::Utils::pow<3>(h));
 
     double rij = 0.0;
     double q = rij / h;
@@ -523,9 +529,9 @@ namespace
 
     const double normalizationconstant_1D = 1.0 / (120.0 * h);
     const double normalizationconstant_2D =
-        7.0 * M_1_PI / (478.0 * ParticleInteraction::Utils::pow<2>(h));
+        7.0 * std::numbers::inv_pi / (478.0 * ParticleInteraction::Utils::pow<2>(h));
     const double normalizationconstant_3D =
-        3.0 * M_1_PI / (359.0 * ParticleInteraction::Utils::pow<3>(h));
+        3.0 * std::numbers::inv_pi / (359.0 * ParticleInteraction::Utils::pow<3>(h));
 
     double rij = 0.0;
     double q = rij / h;
@@ -595,7 +601,7 @@ namespace
 
     const double h = 0.3;
     const double normalizationconstant_3D =
-        3.0 * M_1_PI / (359.0 * ParticleInteraction::Utils::pow<3>(h));
+        3.0 * std::numbers::inv_pi / (359.0 * ParticleInteraction::Utils::pow<3>(h));
     const double q = rij / h;
     const double w_unnormalized = (-5.0 * ParticleInteraction::Utils::pow<4>(3.0 - q) +
                                       30.0 * ParticleInteraction::Utils::pow<4>(2.0 - q) -

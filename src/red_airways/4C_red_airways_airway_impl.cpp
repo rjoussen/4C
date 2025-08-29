@@ -1301,7 +1301,7 @@ void Discret::Elements::AirwayImpl<distype>::calc_elem_volume(RedAirway* ele,
   evaluation_data.elemVolumenp->replace_global_values(1, &eVolumenp, &gid);
 
   // calculate and update element radius
-  double eRadiusnp = std::sqrt(eVolumenp / L * M_1_PI);
+  double eRadiusnp = std::sqrt(eVolumenp / L * std::numbers::inv_pi);
   evaluation_data.elemRadiusnp->replace_global_values(1, &eRadiusnp, &gid);
 }  // CalcElemVolume
 

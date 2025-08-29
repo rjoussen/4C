@@ -90,12 +90,12 @@ double ParticleInteraction::SPHKernelCubicSpline::normalization_constant(const d
     }
     case Inpar::PARTICLE::Kernel2D:
     {
-      // (10.0 / 7.0) * M_1_PI * inv_h * inv_h
+      // (10.0 / 7.0) * std::numbers::inv_pi * inv_h * inv_h
       return 0.4547284088339866 * Utils::pow<2>(inv_h);
     }
     case Inpar::PARTICLE::Kernel3D:
     {
-      return M_1_PI * Utils::pow<3>(inv_h);
+      return std::numbers::inv_pi * Utils::pow<3>(inv_h);
     }
     default:
     {
@@ -178,12 +178,12 @@ double ParticleInteraction::SPHKernelQuinticSpline::normalization_constant(
     }
     case Inpar::PARTICLE::Kernel2D:
     {
-      // (7.0 / 478.0) * M_1_PI * inv_h * inv_h
+      // (7.0 / 478.0) * std::numbers::inv_pi * inv_h * inv_h
       return 0.0046614418478797 * Utils::pow<2>(inv_h);
     }
     case Inpar::PARTICLE::Kernel3D:
     {
-      // (3.0 / 359.0) * M_1_PI * inv_h * inv_h * inv_h
+      // (3.0 / 359.0) * std::numbers::inv_pi * inv_h * inv_h * inv_h
       return 0.0026599711937364 * Utils::pow<3>(inv_h);
     }
     default:
