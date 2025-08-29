@@ -13,13 +13,13 @@
 #include "4C_adapter_str_structure_new.hpp"
 #include "4C_fem_general_utils_createdis.hpp"
 #include "4C_global_data.hpp"
-#include "4C_inpar_ssti.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "4C_scatra_timint_implicit.hpp"
 #include "4C_scatra_timint_meshtying_strategy_s2i.hpp"
 #include "4C_scatra_utils.hpp"
 #include "4C_ssi_utils.hpp"
+#include "4C_ssti_input.hpp"
 #include "4C_ssti_monolithic.hpp"
 #include "4C_ssti_resulttest.hpp"
 #include "4C_ssti_utils.hpp"
@@ -479,12 +479,12 @@ Teuchos::ParameterList SSTI::SSTIAlgorithm::clone_thermo_params(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 std::shared_ptr<SSTI::SSTIAlgorithm> SSTI::build_ssti(
-    Inpar::SSTI::SolutionScheme coupling, MPI_Comm comm, const Teuchos::ParameterList& sstiparams)
+    SSTI::SolutionScheme coupling, MPI_Comm comm, const Teuchos::ParameterList& sstiparams)
 {
   std::shared_ptr<SSTI::SSTIAlgorithm> ssti = nullptr;
   switch (coupling)
   {
-    case Inpar::SSTI::SolutionScheme::monolithic:
+    case SSTI::SolutionScheme::monolithic:
     {
       ssti = std::make_shared<SSTI::SSTIMono>(comm, sstiparams);
       break;

@@ -8,7 +8,6 @@
 #include "4C_adapter_scatra_base_algorithm.hpp"
 
 #include "4C_global_data.hpp"
-#include "4C_inpar_ssti.hpp"
 #include "4C_inpar_sti.hpp"
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
@@ -27,6 +26,7 @@
 #include "4C_scatra_timint_stat.hpp"
 #include "4C_scatra_timint_stat_hdg.hpp"
 #include "4C_ssi_input.hpp"
+#include "4C_ssti_input.hpp"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
@@ -195,9 +195,9 @@ Adapter::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
                     SSI::ScaTraTimIntType::elch) or
                (disname == "scatra" and
                    ((probtype == Core::ProblemType::ssti and
-                        Teuchos::getIntegralValue<Inpar::SSTI::ScaTraTimIntType>(
+                        Teuchos::getIntegralValue<SSTI::ScaTraTimIntType>(
                             Global::Problem::instance()->ssti_control_params(),
-                            "SCATRATIMINTTYPE") == Inpar::SSTI::ScaTraTimIntType::elch) or
+                            "SCATRATIMINTTYPE") == SSTI::ScaTraTimIntType::elch) or
                        (probtype == Core::ProblemType::sti and
                            Teuchos::getIntegralValue<Inpar::STI::ScaTraTimIntType>(
                                Global::Problem::instance()->sti_dynamic_params(),

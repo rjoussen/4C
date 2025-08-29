@@ -24,13 +24,10 @@ namespace Adapter
   class StructureBaseAlgorithmNew;
 }  // namespace Adapter
 
-namespace Inpar
+namespace SSTI
 {
-  namespace SSTI
-  {
-    enum class SolutionScheme;
-  }
-}  // namespace Inpar
+  enum class SolutionScheme;
+}
 
 namespace Core::LinAlg
 {
@@ -177,8 +174,8 @@ namespace SSTI
   };  // SSTI_Algorithm
 
   //! Construct specific SSTI algorithm
-  std::shared_ptr<SSTI::SSTIAlgorithm> build_ssti(Inpar::SSTI::SolutionScheme coupling,
-      MPI_Comm comm, const Teuchos::ParameterList& sstiparams);
+  std::shared_ptr<SSTI::SSTIAlgorithm> build_ssti(
+      SSTI::SolutionScheme coupling, MPI_Comm comm, const Teuchos::ParameterList& sstiparams);
 }  // namespace SSTI
 FOUR_C_NAMESPACE_CLOSE
 
