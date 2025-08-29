@@ -358,9 +358,8 @@ namespace
 
 
   std::pair<std::shared_ptr<Core::LinAlg::Map>, std::shared_ptr<Core::LinAlg::Map>>
-  do_rebalance_discretization(const std::shared_ptr<const Core::LinAlg::Graph>& graph,
-      Core::FE::Discretization& discret, Core::Rebalance::RebalanceType rebalanceMethod,
-      Teuchos::ParameterList& rebalanceParams,
+  do_rebalance_discretization(const Core::LinAlg::Graph& graph, Core::FE::Discretization& discret,
+      Core::Rebalance::RebalanceType rebalanceMethod, Teuchos::ParameterList& rebalanceParams,
       const Core::IO::MeshReader::MeshReaderParameters& parameters, MPI_Comm comm)
   {
     std::shared_ptr<Core::LinAlg::Map> rowmap, colmap;
@@ -373,7 +372,7 @@ namespace
           std::cout << "Redistributing using hypergraph .........\n";
 
         rebalanceParams.set("partitioning method", "HYPERGRAPH");
-        std::tie(rowmap, colmap) = Core::Rebalance::rebalance_node_maps(*graph, rebalanceParams);
+        std::tie(rowmap, colmap) = Core::Rebalance::rebalance_node_maps(graph, rebalanceParams);
         break;
       }
       case Core::Rebalance::RebalanceType::recursive_coordinate_bisection:
@@ -384,9 +383,9 @@ namespace
         rebalanceParams.set("partitioning method", "RCB");
 
         rowmap = std::make_shared<Core::LinAlg::Map>(
-            -1, graph->row_map().num_my_elements(), graph->row_map().my_global_elements(), 0, comm);
+            -1, graph.row_map().num_my_elements(), graph.row_map().my_global_elements(), 0, comm);
         colmap = std::make_shared<Core::LinAlg::Map>(
-            -1, graph->col_map().num_my_elements(), graph->col_map().my_global_elements(), 0, comm);
+            -1, graph.col_map().num_my_elements(), graph.col_map().my_global_elements(), 0, comm);
 
         discret.redistribute(*rowmap, *colmap,
             {.assign_degrees_of_freedom = false,
@@ -397,7 +396,7 @@ namespace
             discret.build_node_coordinates();
 
         std::tie(rowmap, colmap) = Core::Rebalance::rebalance_node_maps(
-            *graph, rebalanceParams, nullptr, nullptr, coordinates);
+            graph, rebalanceParams, nullptr, nullptr, coordinates);
         break;
       }
       case Core::Rebalance::RebalanceType::monolithic:
@@ -408,9 +407,9 @@ namespace
         rebalanceParams.set("partitioning method", "HYPERGRAPH");
 
         rowmap = std::make_shared<Core::LinAlg::Map>(
-            -1, graph->row_map().num_my_elements(), graph->row_map().my_global_elements(), 0, comm);
+            -1, graph.row_map().num_my_elements(), graph.row_map().my_global_elements(), 0, comm);
         colmap = std::make_shared<Core::LinAlg::Map>(
-            -1, graph->col_map().num_my_elements(), graph->col_map().my_global_elements(), 0, comm);
+            -1, graph.col_map().num_my_elements(), graph.col_map().my_global_elements(), 0, comm);
 
         discret.redistribute(*rowmap, *colmap, {.do_boundary_conditions = false});
 
@@ -468,7 +467,7 @@ namespace
     if (graph)
     {
       std::tie(rowmap, colmap) = do_rebalance_discretization(
-          graph, discret, rebalanceMethod, rebalanceParams, parameters, comm);
+          *graph, discret, rebalanceMethod, rebalanceParams, parameters, comm);
     }
     else
     {
