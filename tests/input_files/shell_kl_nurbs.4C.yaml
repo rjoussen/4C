@@ -101,30 +101,29 @@ DSURF-NODE TOPOLOGY:
   - "NODE 15 DSURFACE 1"
   - "NODE 16 DSURFACE 1"
 STRUCTURE KNOTVECTORS:
-  - "NURBS_DIMENSION 2"
-  - "BEGIN NURBSPATCH"
-  - "ID 1"
-  - "NUMKNOTS 7"
-  - "DEGREE 2"
-  - "TYPE Interpolated"
-  - "+0.000000000000"
-  - "+0.000000000000"
-  - "+0.000000000000"
-  - "+0.500000000000"
-  - "+1.000000000000"
-  - "+1.000000000000"
-  - "+1.000000000000"
-  - "NUMKNOTS 7"
-  - "DEGREE 2"
-  - "TYPE Interpolated"
-  - "+0.000000000000"
-  - "+0.000000000000"
-  - "+0.000000000000"
-  - "+0.500000000000"
-  - "+1.000000000000"
-  - "+1.000000000000"
-  - "+1.000000000000"
-  - "END NURBSPATCH"
+  PATCHES:
+    - KNOT_VECTORS:
+        - DEGREE: 2
+          TYPE: Interpolated
+          KNOTS:
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.5
+            - 1.0
+            - 1.0
+            - 1.0
+        - DEGREE: 2
+          TYPE: Interpolated
+          KNOTS:
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.5
+            - 1.0
+            - 1.0
+            - 1.0
+      ID: 1
 NODE COORDS:
   - "CP 1 COORD +2.00000000e+00 +0.00000000e+00 +0.000000000000e+00 +1.000000000000e+00"
   - "CP 2 COORD +2.50000000e+00 +0.00000000e+00 +0.000000000000e+00 +1.000000000000e+00"

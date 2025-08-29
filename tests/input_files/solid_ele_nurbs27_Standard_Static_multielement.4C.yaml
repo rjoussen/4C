@@ -30,43 +30,42 @@ STRUCTURAL DYNAMIC:
   TOLRES: 1e-09
   LINEAR_SOLVER: 1
 STRUCTURE KNOTVECTORS:
-  - "NURBS_DIMENSION 3"
-  - "BEGIN NURBSPATCH"
-  - "ID 1"
-  - "NUMKNOTS 7"
-  - "DEGREE 2"
-  - "TYPE Interpolated"
-  - "0.0"
-  - "0.0"
-  - "0.0"
-  - "0.5"
-  - "1.0"
-  - "1.0"
-  - "1.0"
-  - "NUMKNOTS 8"
-  - "DEGREE 2"
-  - "TYPE Interpolated"
-  - "0.0"
-  - "0.0"
-  - "0.0"
-  - "0.3333333333333333"
-  - "0.6666666666666666"
-  - "1.0"
-  - "1.0"
-  - "1.0"
-  - "NUMKNOTS 9"
-  - "DEGREE 2"
-  - "TYPE Interpolated"
-  - "0.0"
-  - "0.0"
-  - "0.0"
-  - "0.25"
-  - "0.5"
-  - "0.75"
-  - "1.0"
-  - "1.0"
-  - "1.0"
-  - "END NURBSPATCH"
+  PATCHES:
+    - KNOT_VECTORS:
+        - DEGREE: 2
+          TYPE: Interpolated
+          KNOTS:
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.5
+            - 1.0
+            - 1.0
+            - 1.0
+        - DEGREE: 2
+          TYPE: Interpolated
+          KNOTS:
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.3333333333333333
+            - 0.6666666666666666
+            - 1.0
+            - 1.0
+            - 1.0
+        - DEGREE: 2
+          TYPE: Interpolated
+          KNOTS:
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.25
+            - 0.5
+            - 0.75
+            - 1.0
+            - 1.0
+            - 1.0
+      ID: 1
 DESIGN SURF DIRICH CONDITIONS:
   - E: 1
     NUMDOF: 3

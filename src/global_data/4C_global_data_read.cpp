@@ -146,13 +146,6 @@ Core::IO::InputFile Global::set_up_input_file(MPI_Comm comm)
       "DLINE-NODE TOPOLOGY",
       "DSURF-NODE TOPOLOGY",
       "DVOL-NODE TOPOLOGY",
-      // nurbs
-      "STRUCTURE KNOTVECTORS",
-      "FLUID KNOTVECTORS",
-      "ALE KNOTVECTORS",
-      "TRANSPORT KNOTVECTORS",
-      "TRANSPORT2 KNOTVECTORS",
-      "THERMO KNOTVECTORS",
   };
 
   return Core::IO::InputFile{std::move(valid_sections), std::move(legacy_section_names), comm};

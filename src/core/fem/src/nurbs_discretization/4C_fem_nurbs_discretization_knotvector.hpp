@@ -17,6 +17,10 @@
 
 #include <memory>
 
+namespace FourC::Core::IO
+{
+  class InputParameterContainer;
+}
 FOUR_C_NAMESPACE_OPEN
 
 namespace Core::FE
@@ -51,6 +55,14 @@ namespace Core::FE
     class Knotvector : public Core::Communication::ParObject
     {
      public:
+      //! Knotvector types
+      enum class KnotvectorType
+      {
+        Undefined,
+        Interpolated,
+        Periodic,
+      };
+
       /*!
       \brief standard constructor
 
@@ -262,7 +274,7 @@ namespace Core::FE
       \param directions_knots (in) the knotvector to be inserted
       */
       void set_knots(const int& direction, const int& npatch, const int& degree,
-          const int& numknots, const std::string& knotvectortype,
+          const int& numknots, KnotvectorType knotvectortype,
           const std::vector<double>& directions_knots);
 
       //! @}
@@ -447,15 +459,17 @@ namespace Core::FE
       */
       void print(std::ostream& os) const;
 
-     private:
-      //! Knotvector types
-      enum class KnotvectorType
-      {
-        Undefined,
-        Interpolated,
-        Periodic,
-      };
+      /**
+       * Return the InputSpec containing the parameters needed to create a Knotvector.
+       */
+      [[nodiscard]] static Core::IO::InputSpec spec();
 
+      /**
+       * Create a Knotvector from the given input @p data. The data is expected to match the spec().
+       */
+      [[nodiscard]] static Knotvector from_input(const Core::IO::InputParameterContainer& data);
+
+     private:
       //! Spatial dimension
       int dim_;
 

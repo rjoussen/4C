@@ -20,6 +20,7 @@
 #include "4C_elch_input.hpp"
 #include "4C_fbi_input.hpp"
 #include "4C_fem_general_element_definition.hpp"
+#include "4C_fem_nurbs_discretization_knotvector.hpp"
 #include "4C_geometric_search_input.hpp"
 #include "4C_inpar_beaminteraction.hpp"
 #include "4C_inpar_bio.hpp"
@@ -185,12 +186,21 @@ std::map<std::string, Core::IO::InputSpec> Global::valid_parameters()
             .required = false});
   };
 
+  const auto add_knotvector_section = [spec = Core::FE::Nurbs::Knotvector::spec()](
+                                          auto& specs, const std::string& field_identifier)
+  {
+    specs[field_identifier + " KNOTVECTORS"] = group(field_identifier + " KNOTVECTORS", {spec},
+        {.description = "Knot vector description for NURBS discretization of " + field_identifier,
+            .required = false});
+  };
+
   const std::vector known_fields = {"STRUCTURE", "FLUID", "LUBRICATION", "TRANSPORT", "TRANSPORT2",
       "ALE", "ARTERY", "REDUCED D AIRWAYS", "THERMO", "PERIODIC BOUNDINGBOX"};
   for (const auto& field : known_fields)
   {
     add_geometry_section(specs, field);
     add_domain_section(specs, field);
+    add_knotvector_section(specs, field);
   }
 
   specs["fields"] = list("fields",

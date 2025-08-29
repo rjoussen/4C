@@ -134,33 +134,32 @@ BEAM INTERACTION/BEAM TO SOLID SURFACE MESHTYING SURFACE:
   - E: 1
     COUPLING_ID: 1
 STRUCTURE KNOTVECTORS:
-  - "NURBS_DIMENSION 2"
-  - "BEGIN NURBSPATCH"
-  - "ID 1"
-  - "NUMKNOTS 10"
-  - "DEGREE 2"
-  - "TYPE Interpolated"
-  - "0.0"
-  - "0.0"
-  - "0.0"
-  - "0.2"
-  - "0.4"
-  - "0.6000000000000001"
-  - "0.8"
-  - "1.0"
-  - "1.0"
-  - "1.0"
-  - "NUMKNOTS 7"
-  - "DEGREE 2"
-  - "TYPE Interpolated"
-  - "0.0"
-  - "0.0"
-  - "0.0"
-  - "0.5"
-  - "1.0"
-  - "1.0"
-  - "1.0"
-  - "END NURBSPATCH"
+  PATCHES:
+    - KNOT_VECTORS:
+        - DEGREE: 2
+          TYPE: Interpolated
+          KNOTS:
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.2
+            - 0.4
+            - 0.6000000000000001
+            - 0.8
+            - 1.0
+            - 1.0
+            - 1.0
+        - DEGREE: 2
+          TYPE: Interpolated
+          KNOTS:
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.5
+            - 1.0
+            - 1.0
+            - 1.0
+      ID: 1
 DNODE-NODE TOPOLOGY:
   - "NODE 2 DNODE 1"
   - "NODE 9 DNODE 1"
