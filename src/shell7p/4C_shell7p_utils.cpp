@@ -328,12 +328,12 @@ namespace
 
 }  // namespace
 
-Teuchos::SerialDenseMatrix<int, double> Solid::Utils::Shell::compute_shell_null_space(
+Core::LinAlg::SerialDenseMatrix Solid::Utils::Shell::compute_shell_null_space(
     Core::Nodes::Node& node, const double* x0, const Core::LinAlg::Matrix<3, 1>& dir)
 {
   const auto& x = node.x();
 
-  Teuchos::SerialDenseMatrix<int, double> nullspace(6, 6);
+  Core::LinAlg::SerialDenseMatrix nullspace(6, 6);
   // x-modes
   nullspace(0, 0) = 1.0;
   nullspace(0, 1) = 0.0;
