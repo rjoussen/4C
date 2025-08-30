@@ -12,6 +12,15 @@
 
 #include "4C_utils_exceptions.hpp"
 
+/**
+ * Epetra has a C-style interface returning integer error codes. This macro is meant to be wrapped
+ * around a call to an Epetra function and asserts that the integer return value is equal to zero.
+ * Otherwise, an exception is thrown.
+ *
+ * @code
+ *    CHECK_EPETRA_CALL(graph_->insert_global_value(...));
+ * @endcode
+ */
 #define CHECK_EPETRA_CALL(expr)                                     \
   do                                                                \
   {                                                                 \
