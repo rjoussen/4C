@@ -469,7 +469,7 @@ namespace ReducedLung
                     (coords_1[2] - coords_2[2]) * (coords_1[2] - coords_2[2]));
       length[airway_id] = current_length;
       area[airway_id] = airway_params.area;
-      poiseuille_resistance[airway_id] = 8 * M_PI * dynamic_viscosity_mu * density_rho *
+      poiseuille_resistance[airway_id] = 8 * std::numbers::pi * dynamic_viscosity_mu * density_rho *
                                          current_length / (airway_params.area * airway_params.area);
     }
 

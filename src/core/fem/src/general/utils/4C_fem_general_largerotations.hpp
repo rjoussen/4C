@@ -139,7 +139,7 @@ namespace Core::LargeRotations
     {
       // note that with q(3) == 0 the first three elements of q represent the unit direction vector
       // of the angle according to Crisfield, Vol. 2, equation (16.67)
-      for (int i = 0; i < 3; i++) theta(i) = q(i) * M_PI;
+      for (int i = 0; i < 3; i++) theta(i) = q(i) * std::numbers::pi;
     }
     else
     {

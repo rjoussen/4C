@@ -420,8 +420,8 @@ namespace Discret
         {
           if (nsd_ == 3)
           {
-            const double a = M_PI / 4.0;
-            const double d = M_PI / 2.0;
+            const double a = std::numbers::pi / 4.0;
+            const double d = std::numbers::pi / 2.0;
 
             double x = xyzint(0);
             double y = xyzint(1);

@@ -4496,8 +4496,8 @@ void FLD::XFluid::set_initial_flow_field(
     if (numdim_ != 3) FOUR_C_THROW("Beltrami flow is a three-dimensional flow!");
 
     // set constants for analytical solution
-    const double a = M_PI / 4.0;
-    const double d = M_PI / 2.0;
+    const double a = std::numbers::pi / 4.0;
+    const double d = std::numbers::pi / 2.0;
 
     // loop all nodes on the processor
     for (int lnodeid = 0; lnodeid < discret_->num_my_row_nodes(); lnodeid++)

@@ -404,7 +404,7 @@ void Mat::ConstraintMixture::setup(int numgp, const Core::IO::InputParameterCont
     locsys(i, 2) = cir[i] / cirnorm;
   }
 
-  const double gamma = (45.0 * M_PI) / 180.;  // angle for diagonal fibers
+  const double gamma = (45.0 * std::numbers::pi) / 180.;  // angle for diagonal fibers
 
   for (int gp = 0; gp < numgp; gp++)
   {
@@ -2011,7 +2011,7 @@ void Mat::ConstraintMixture::mass_production_single_fiber(const int gp,
 void Mat::ConstraintMixture::mass_function(
     double growthfac, double delta, double mmax, double& massfac)
 {
-  if (delta < -M_PI / (2.0 * growthfac))
+  if (delta < -std::numbers::pi / (2.0 * growthfac))
   {
     massfac = 0.0;
   }
@@ -2019,7 +2019,7 @@ void Mat::ConstraintMixture::mass_function(
   {
     massfac = 0.5 * (1.0 + cos(2.0 * growthfac * delta));
   }
-  else if (delta < (mmax - 1.0) * M_PI / (2.0 * growthfac))  // && 0.0 < delta
+  else if (delta < (mmax - 1.0) * std::numbers::pi / (2.0 * growthfac))  // && 0.0 < delta
   {
     massfac = 0.5 * (mmax + 1.0 - (mmax - 1.0) * cos(2.0 * growthfac * delta / (mmax - 1.0)));
   }
@@ -2057,7 +2057,9 @@ void Mat::ConstraintMixture::degradation(double t, double& degr)
     }
     else if (t < params_->lifetime_ - 1.0e-11)
     {
-      degr = 0.5 * (cos(M_PI * (t - 0.2 * params_->lifetime_) / (0.8 * params_->lifetime_)) + 1.0);
+      degr = 0.5 *
+             (cos(std::numbers::pi * (t - 0.2 * params_->lifetime_) / (0.8 * params_->lifetime_)) +
+                 1.0);
     }
     else
     {
@@ -2084,11 +2086,11 @@ void Mat::ConstraintMixture::elastin_degradation(
     double z4 = 16.0;
     if (z1 < coord(2) && coord(2) < z2)
     {
-      funcz = 0.5 * (1.0 - cos((coord(2) - z1) / (z2 - z1) * M_PI));
+      funcz = 0.5 * (1.0 - cos((coord(2) - z1) / (z2 - z1) * std::numbers::pi));
     }
     else if (z3 < coord(2) && coord(2) < z4)
     {
-      funcz = 0.5 * (1.0 + cos((coord(2) - z3) / (z4 - z3) * M_PI));
+      funcz = 0.5 * (1.0 + cos((coord(2) - z3) / (z4 - z3) * std::numbers::pi));
     }
     else if (z2 <= coord(2) && coord(2) <= z3)
     {
@@ -2097,17 +2099,17 @@ void Mat::ConstraintMixture::elastin_degradation(
 
     double funcphi = 0.0;
     double phi = atan2(coord(1), coord(0));
-    double phi1 = -0.55 * M_PI;
-    double phi2 = -0.5 * M_PI;
-    double phi3 = -0.25 * M_PI;
-    double phi4 = -0.2 * M_PI;
+    double phi1 = -0.55 * std::numbers::pi;
+    double phi2 = -0.5 * std::numbers::pi;
+    double phi3 = -0.25 * std::numbers::pi;
+    double phi4 = -0.2 * std::numbers::pi;
     if (phi1 < phi && phi < phi2)
     {
-      funcphi = 0.5 * (1.0 - cos((phi - phi1) / (phi2 - phi1) * M_PI));
+      funcphi = 0.5 * (1.0 - cos((phi - phi1) / (phi2 - phi1) * std::numbers::pi));
     }
     else if (phi3 < phi && phi < phi4)
     {
-      funcphi = 0.5 * (1.0 + cos((phi - phi3) / (phi4 - phi3) * M_PI));
+      funcphi = 0.5 * (1.0 + cos((phi - phi3) / (phi4 - phi3) * std::numbers::pi));
     }
     else if (phi2 <= phi && phi <= phi3)
     {
@@ -2125,11 +2127,11 @@ void Mat::ConstraintMixture::elastin_degradation(
     double z4 = 2.5;
     if (z1 < coord(2) && coord(2) < z2)
     {
-      funcz = 0.5 * (1.0 - cos((coord(2) - z1) / (z2 - z1) * M_PI));
+      funcz = 0.5 * (1.0 - cos((coord(2) - z1) / (z2 - z1) * std::numbers::pi));
     }
     else if (z3 < coord(2) && coord(2) < z4)
     {
-      funcz = 0.5 * (1.0 + cos((coord(2) - z3) / (z4 - z3) * M_PI));
+      funcz = 0.5 * (1.0 + cos((coord(2) - z3) / (z4 - z3) * std::numbers::pi));
     }
     else if (z2 <= coord(2) && coord(2) <= z3)
     {
@@ -2143,11 +2145,11 @@ void Mat::ConstraintMixture::elastin_degradation(
     double x4 = 2.5;
     if (x1 < coord(0) && coord(0) < x2)
     {
-      funcx = 0.5 * (1.0 - cos((coord(0) - x1) / (x2 - x1) * M_PI));
+      funcx = 0.5 * (1.0 - cos((coord(0) - x1) / (x2 - x1) * std::numbers::pi));
     }
     else if (x3 < coord(0) && coord(0) < x4)
     {
-      funcx = 0.5 * (1.0 + cos((coord(0) - x3) / (x4 - x3) * M_PI));
+      funcx = 0.5 * (1.0 + cos((coord(0) - x3) / (x4 - x3) * std::numbers::pi));
     }
     else if (x2 <= coord(0) && coord(0) <= x3)
     {
@@ -2164,17 +2166,17 @@ void Mat::ConstraintMixture::elastin_degradation(
     double z3 = 12.0;   // 19.0; //12.0;
     double z4 = 16.0;   // 22.0; //16.0;
     double phi = atan2(coord(1), coord(0));
-    z1 = ((M_PI - abs(phi)) / M_PI * 0.75 + 0.25) * z1;
-    z2 = ((M_PI - abs(phi)) / M_PI * 0.75 + 0.25) * z2;
-    z3 = ((M_PI - abs(phi)) / M_PI * 0.75 + 0.25) * z3;
-    z4 = ((M_PI - abs(phi)) / M_PI * 0.75 + 0.25) * z4;
+    z1 = ((std::numbers::pi - abs(phi)) / std::numbers::pi * 0.75 + 0.25) * z1;
+    z2 = ((std::numbers::pi - abs(phi)) / std::numbers::pi * 0.75 + 0.25) * z2;
+    z3 = ((std::numbers::pi - abs(phi)) / std::numbers::pi * 0.75 + 0.25) * z3;
+    z4 = ((std::numbers::pi - abs(phi)) / std::numbers::pi * 0.75 + 0.25) * z4;
     if (z1 < coord(2) && coord(2) < z2)
     {
-      funcz = 0.5 * (1.0 - cos((coord(2) - z1) / (z2 - z1) * M_PI));
+      funcz = 0.5 * (1.0 - cos((coord(2) - z1) / (z2 - z1) * std::numbers::pi));
     }
     else if (z3 < coord(2) && coord(2) < z4)
     {
-      funcz = 0.5 * (1.0 + cos((coord(2) - z3) / (z4 - z3) * M_PI));
+      funcz = 0.5 * (1.0 + cos((coord(2) - z3) / (z4 - z3) * std::numbers::pi));
     }
     else if (z2 <= coord(2) && coord(2) <= z3)
     {
@@ -2201,7 +2203,7 @@ void Mat::ConstraintMixture::elastin_degradation(
     }
     else if (rad1 < radmax)
     {
-      func1 = 0.5 * (1.0 - cos((rad1 - radmax) / (radmax - radmin) * M_PI));
+      func1 = 0.5 * (1.0 - cos((rad1 - radmax) / (radmax - radmin) * std::numbers::pi));
     }
     double func2 = 0.0;
     Core::LinAlg::Matrix<1, 3> center2(Core::LinAlg::Initialization::zero);
@@ -2217,7 +2219,7 @@ void Mat::ConstraintMixture::elastin_degradation(
     }
     else if (rad2 < radmax)
     {
-      func2 = 0.5 * (1.0 - cos((rad2 - radmax) / (radmax - radmin) * M_PI));
+      func2 = 0.5 * (1.0 - cos((rad2 - radmax) / (radmax - radmin) * std::numbers::pi));
     }
     double func = std::max(func1, func2);
     elastin_survival = 1.0 - func;
@@ -2909,7 +2911,7 @@ void Mat::ConstraintMixture::evaluate_fiber_vecs(const int gp,
   // configuration as the material is evaluated there.
   // If this function is called during Setup defgrd should be replaced by the Identity.
 
-  const double gamma = (45 * M_PI) / 180.;  // angle for diagonal fibers
+  const double gamma = (45 * std::numbers::pi) / 180.;  // angle for diagonal fibers
   Core::LinAlg::Matrix<3, 1> ca1(Core::LinAlg::Initialization::zero);
   Core::LinAlg::Matrix<3, 1> ca2(Core::LinAlg::Initialization::zero);
   Core::LinAlg::Matrix<3, 1> ca3(Core::LinAlg::Initialization::zero);

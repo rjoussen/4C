@@ -272,10 +272,10 @@ void BeamInteraction::BeamToSpherePotentialPair<numnodes,
   switch (params()->type)  // Todo do we need a own Beam-to-sphere potential type here?
   {
     case BeamInteraction::Potential::Type::surface:
-      prefactor *= 2 * radius1_ * M_PI;
+      prefactor *= 2 * radius1_ * std::numbers::pi;
       break;
     case BeamInteraction::Potential::Type::volume:
-      prefactor *= std::pow(radius1_, 2) * M_PI;
+      prefactor *= std::pow(radius1_, 2) * std::numbers::pi;
       break;
     default:
       FOUR_C_THROW("No valid TYPE specified. Choose either `surface` `volume` in input file!");

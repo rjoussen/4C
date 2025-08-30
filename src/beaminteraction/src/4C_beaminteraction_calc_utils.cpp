@@ -567,7 +567,7 @@ namespace BeamInteraction
       double angle = std::acos(cos_angle);
 
       // acos returns angle \in [0,\pi] but we always want the acute angle here
-      if (angle > 0.5 * M_PI) angle = M_PI - angle;
+      if (angle > 0.5 * std::numbers::pi) angle = std::numbers::pi - angle;
 
       return (angle < lowerbound or angle > upperbound) ? true : false;
     }

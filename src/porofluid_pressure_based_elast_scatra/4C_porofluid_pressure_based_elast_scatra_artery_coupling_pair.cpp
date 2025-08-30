@@ -588,7 +588,7 @@ void PoroPressureBased::PorofluidElastScatraArteryCouplingPair<dis_type_artery,
 
   // size of one integration patch: 2 * pi * R/num_patches_radial_ * L/num_patches_axial_
   const double patch_size = 1.0 / num_patches_axial_ * artery_ele_length_ref_ * 1.0 /
-                            num_patches_radial_ * 2.0 * M_PI * radius;
+                            num_patches_radial_ * 2.0 * std::numbers::pi * radius;
 
   // Vectors for shape functions and their derivatives
   Core::LinAlg::Matrix<1, num_nodes_artery_> shape_functions_artery(
@@ -640,7 +640,7 @@ void PoroPressureBased::PorofluidElastScatraArteryCouplingPair<dis_type_artery,
         const double theta =
             (-1.0 - 1.0 / num_patches_radial_ + (i_rad + 1.0) * 2.0 / num_patches_radial_ +
                 gauss_points_per_patch.qxg[i_gp][1] * 1.0 / num_patches_radial_) *
-            M_PI;
+            std::numbers::pi;
 
         // get point on lateral blood vessel surface
         for (int i_dim = 0; i_dim < 3; i_dim++)
@@ -1078,7 +1078,7 @@ void PoroPressureBased::PorofluidElastScatraArteryCouplingPair<dis_type_artery,
   // this is the integrated diameter over the entire element (all segments)
   const double artery_diameter = artery_material_->diam();
   const double pre_factor =
-      M_PI * std::pow(artery_diameter, 3) / 32.0 / artery_material_->viscosity();
+      std::numbers::pi * std::pow(artery_diameter, 3) / 32.0 / artery_material_->viscosity();
   // TODO: for viscosity law blood, viscosity depends on diameter, linearization is still missing
 
   Core::LinAlg::update(
@@ -1732,7 +1732,7 @@ void PoroPressureBased::PorofluidElastScatraArteryCouplingPair<dis_type_artery,
     {
       ele_rhs_artery(i) += shape_functions_artery_deriv(i) * current_gp_weight *
                            jacobian_determinant_artery * velocity_x_current_artery_orientation *
-                           artery_diameter_ref_ * artery_diameter_ref_ * M_PI / 4.0;
+                           artery_diameter_ref_ * artery_diameter_ref_ * std::numbers::pi / 4.0;
     }
   }
 }
@@ -2737,8 +2737,9 @@ double PoroPressureBased::PorofluidElastScatraArteryCouplingPair<dis_type_artery
   const double radius = artery_diameter_at_gp_ / 2.0;
 
   // Hagen-Poiseuille equation
-  const double artery_element_flow_rate = -artery_pressure_gradient * M_PI * radius * radius *
-                                          radius * radius / (8.0 * artery_material_->viscosity());
+  const double artery_element_flow_rate = -artery_pressure_gradient * std::numbers::pi * radius *
+                                          radius * radius * radius /
+                                          (8.0 * artery_material_->viscosity());
 
   return artery_element_flow_rate;
 }

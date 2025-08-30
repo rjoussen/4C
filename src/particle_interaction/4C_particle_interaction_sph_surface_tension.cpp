@@ -557,7 +557,7 @@ void ParticleInteraction::SPHSurfaceTension::correct_triple_point_normal() const
         (type_i == liquidtype_) ? staticcontactangle_ : (180 - staticcontactangle_);
 
     // convert static contact angle in radians
-    const double theta_0 = staticcontactangle * M_PI / 180.0;
+    const double theta_0 = staticcontactangle * std::numbers::pi / 180.0;
 
     // get container of owned particles of current particle type
     PARTICLEENGINE::ParticleContainer* container_i =

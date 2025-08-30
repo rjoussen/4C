@@ -1172,7 +1172,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::evaluate_algorithmic_fo
       }
       else if (gap_ > gd2)
       {
-        d = d0 / 2 * (1 - cos((gap_ - gd1) / (gd2 - gd1) * M_PI));
+        d = d0 / 2 * (1 - cos((gap_ - gd1) / (gd2 - gd1) * std::numbers::pi));
       }
       else
       {
@@ -1406,8 +1406,9 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::evaluate_algorithmic_st
       }
       else if (gap_ > gd2)
       {
-        d = d0 / 2 * (1 - cos((gap_ - gd1) / (gd2 - gd1) * M_PI));
-        dd = d0 * M_PI / (2 * (gd2 - gd1)) * sin((gap_ - gd1) / (gd2 - gd1) * M_PI);
+        d = d0 / 2 * (1 - cos((gap_ - gd1) / (gd2 - gd1) * std::numbers::pi));
+        dd = d0 * std::numbers::pi / (2 * (gd2 - gd1)) *
+             sin((gap_ - gd1) / (gd2 - gd1) * std::numbers::pi);
       }
       else
       {
@@ -2732,8 +2733,9 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::calc_damping_law()
       }
       else if (gap_ > gd2)
       {
-        d_ = d0 / 2 * (1 - cos((gap_ - gd1) / (gd2 - gd1) * M_PI));
-        dd_ = d0 * M_PI / (2 * (gd2 - gd1)) * sin((gap_ - gd1) / (gd2 - gd1) * M_PI);
+        d_ = d0 / 2 * (1 - cos((gap_ - gd1) / (gd2 - gd1) * std::numbers::pi));
+        dd_ = d0 * std::numbers::pi / (2 * (gd2 - gd1)) *
+              sin((gap_ - gd1) / (gd2 - gd1) * std::numbers::pi);
       }
       else
       {

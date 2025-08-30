@@ -379,7 +379,7 @@ double Discret::Utils::MovingLevelSetCylinder::evaluate(
   // coefficient for sinus.
   double sin_coeff = maxspeed_ * (2.0 / distance_);
   // distance of cylinder viewed from the midpoint
-  double dist = 0.5 * distance_ * sin(sin_coeff * t - M_PI * 0.5);
+  double dist = 0.5 * distance_ * sin(sin_coeff * t - std::numbers::pi * 0.5);
 
   double x0_t = midpoint_trajectory_[0] + direction_[0] * dist;
   double x1_t = midpoint_trajectory_[1] + direction_[1] * dist;
@@ -441,7 +441,7 @@ Discret::Utils::MovingLSTorus::MovingLSTorus(std::vector<double>* origin,
   rotvector_[2] /= rotvector_norm;
 
   // Rotation speed
-  rotspeed_ = 2 * M_PI * rotspeed;  // rotation-speed:       revolutions/sec
+  rotspeed_ = 2 * std::numbers::pi * rotspeed;  // rotation-speed:       revolutions/sec
 
   // Ramp time
   ramptime_ = rotramptime;  // ADD VALUE HERE!
@@ -518,7 +518,7 @@ double Discret::Utils::MovingLevelSetTorus::evaluate(
   {
     double sin_coeff = maxspeed_ * (2.0 / distance_);
     // distance of cylinder viewed from the midpoint
-    dist = 0.5 * distance_ * sin(sin_coeff * t - M_PI * 0.5);
+    dist = 0.5 * distance_ * sin(sin_coeff * t - std::numbers::pi * 0.5);
   }
   else
     dist = 0.0;
@@ -544,7 +544,7 @@ double Discret::Utils::MovingLevelSetTorus::evaluate(
   if (rotspeed_ != 0.0)
   {
     if (t < ramptime_ and ramptime_ != 0.0)
-      rotspeed_t = 0.5 * (1.0 - cos(M_PI * t / ramptime_)) *
+      rotspeed_t = 0.5 * (1.0 - cos(std::numbers::pi * t / ramptime_)) *
                    rotspeed_;  // Gives zero acceleration in the beginning of used!
     //    else
     //      rotspeed_t = rotspeed_;
@@ -630,8 +630,8 @@ double Discret::Utils::MovingLevelSetTorusVelocity::evaluate(
   {
     double sin_coeff = maxspeed_ * (2.0 / distance_);
     // distance of cylinder viewed from the midpoint
-    dist = 0.5 * distance_ * sin(sin_coeff * t - M_PI * 0.5);
-    vel = 0.5 * distance_ * sin_coeff * cos(sin_coeff * t - M_PI * 0.5);
+    dist = 0.5 * distance_ * sin(sin_coeff * t - std::numbers::pi * 0.5);
+    vel = 0.5 * distance_ * sin_coeff * cos(sin_coeff * t - std::numbers::pi * 0.5);
   }
   else
   {
@@ -676,7 +676,7 @@ double Discret::Utils::MovingLevelSetTorusVelocity::evaluate(
   // rotation speed
   double rotspeed_t = rotspeed_;
   if (t < ramptime_ and ramptime_ != 0.0)
-    rotspeed_t = 0.5 * (1.0 - cos(M_PI * t / ramptime_)) *
+    rotspeed_t = 0.5 * (1.0 - cos(std::numbers::pi * t / ramptime_)) *
                  rotspeed_;  // Gives zero acceleration in the beginning of used!
 
   for (int i = 0; i < 3; i++)
@@ -755,7 +755,7 @@ double Discret::Utils::MovingLevelSetTorusSliplength::evaluate(
   {
     double sin_coeff = maxspeed_ * (2.0 / distance_);
     // distance of cylinder viewed from the midpoint
-    dist = 0.5 * distance_ * sin(sin_coeff * t - M_PI * 0.5);
+    dist = 0.5 * distance_ * sin(sin_coeff * t - std::numbers::pi * 0.5);
   }
   else
     dist = 0.0;
@@ -781,7 +781,7 @@ double Discret::Utils::MovingLevelSetTorusSliplength::evaluate(
   if (rotspeed_ != 0.0)
   {
     if (t < ramptime_ and ramptime_ != 0.0)
-      rotspeed_t = 0.5 * (1.0 - cos(M_PI * t / ramptime_)) *
+      rotspeed_t = 0.5 * (1.0 - cos(std::numbers::pi * t / ramptime_)) *
                    rotspeed_;  // Gives zero acceleration in the beginning of used!
     //    else
     //      rotspeed_t = rotspeed_;
@@ -1032,7 +1032,7 @@ Discret::Utils::UrquizaBoxFlow::UrquizaBoxFlow(double lengthx, double lengthy, d
 
   if (lengthy_ != 1.0) FOUR_C_THROW("Not tested for other than length 1.0.");
 
-  if (rotation_ >= 2 * M_PI or rotation_ < 0.0)
+  if (rotation_ >= 2 * std::numbers::pi or rotation_ < 0.0)
     FOUR_C_THROW("The rotation is not in the predefined interval.");
 
   if (rotation_ != 0.0)

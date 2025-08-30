@@ -1134,7 +1134,7 @@ void Discret::Elements::ScaTraEleCalc<distype, probdim>::calc_b_and_d_for_multif
     kappa_phi = 1.0 / (1.0 - pow(turbparams_->alpha(), -gamma1));
     D_mfs = turbparams_->csgs_sg_phi() * sqrt(kappa_phi) * pow(2.0, -gamma2 * Nphi / 2.0) *
             sqrt((pow(2.0, gamma1 * Nvel[0]) - 1.0) +
-                 2.0 / 3.0 * pow((M_PI / hk), 2.0 / 3.0) *
+                 2.0 / 3.0 * pow((std::numbers::pi / hk), 2.0 / 3.0) *
                      (pow(2.0, gamma2 * Nphi) - pow(2.0, gamma2 * Nvel[0])));
   }
 
@@ -1200,7 +1200,7 @@ double Discret::Elements::ScaTraEleCalc<distype, probdim>::calc_ref_length(
     case FLUID::sphere_diameter:
     {
       // b) volume-equivalent diameter
-      hk = std::pow((6. * vol / M_PI), (1.0 / 3.0)) / sqrt(3.0);
+      hk = std::pow((6. * vol / std::numbers::pi), (1.0 / 3.0)) / sqrt(3.0);
 
       break;
     }

@@ -184,8 +184,8 @@ std::array<double, 3> ScaTra::CylinderMagnetFunction::global_to_cylinder_coordin
     const std::span<const double, 3> x) const
 {
   // convert rotation angles to radians
-  const double gamma = parameters_.magnet_rotation.x_axis * M_PI / 180;
-  const double beta = parameters_.magnet_rotation.y_axis * M_PI / 180;
+  const double gamma = parameters_.magnet_rotation.x_axis * std::numbers::pi / 180;
+  const double beta = parameters_.magnet_rotation.y_axis * std::numbers::pi / 180;
 
   // translate coordinates to the magnet's coordinate system
   const double x_translated = x[0] - parameters_.magnet_position[0];
@@ -221,8 +221,8 @@ std::array<double, 3> ScaTra::CylinderMagnetFunction::cylinder_to_global_coordin
     const double rho_component, const double z_component, const double phi) const
 {
   // convert rotation angles to radians
-  const double gamma = parameters_.magnet_rotation.x_axis * M_PI / 180;
-  const double beta = parameters_.magnet_rotation.y_axis * M_PI / 180;
+  const double gamma = parameters_.magnet_rotation.x_axis * std::numbers::pi / 180;
+  const double beta = parameters_.magnet_rotation.y_axis * std::numbers::pi / 180;
 
   // transform to cartesian coordinates
   const double xi = rho_component * std::cos(phi);
@@ -310,10 +310,11 @@ std::array<double, 3> ScaTra::CylinderMagnetFunction::evaluate_magnetic_field(
 
   // calculate magnetic field components
   // see Eq. (3) in Caciagli et al. (2018)
-  const double H_rho = (radius_magnet * parameters_.magnet_magnetization / M_PI) *
+  const double H_rho = (radius_magnet * parameters_.magnet_magnetization / std::numbers::pi) *
                        (alpha_p * P_1(k_p) - alpha_m * P_1(k_m));
-  const double H_z = (radius_magnet * parameters_.magnet_magnetization / (M_PI * rho_p)) *
-                     (beta_p * P_2(k_p) - beta_m * P_2(k_m));
+  const double H_z =
+      (radius_magnet * parameters_.magnet_magnetization / (std::numbers::pi * rho_p)) *
+      (beta_p * P_2(k_p) - beta_m * P_2(k_m));
 
   // transform back to global cartesian coordinates
   return cylinder_to_global_coordinates(H_rho, H_z, phi);
@@ -374,8 +375,10 @@ std::array<double, 3> ScaTra::CylinderMagnetFunction::evaluate_magnetic_force(
 
   // mobility zeta^-1 of the particle (based on Stokes law)
   const double mobility = std::pow(
-      6.0 * M_PI * parameters_.dynamic_viscosity_fluid * parameters_.particle_radius, -1.0);
-  const double volume_particle = (4.0 / 3.0) * M_PI * std::pow(parameters_.particle_radius, 3.0);
+      6.0 * std::numbers::pi * parameters_.dynamic_viscosity_fluid * parameters_.particle_radius,
+      -1.0);
+  const double volume_particle =
+      (4.0 / 3.0) * std::numbers::pi * std::pow(parameters_.particle_radius, 3.0);
 
   // demagnetization factor f(|H|) as part of the magnetization model
   const double f_H = evaluate_magnetization_model(x);
@@ -455,7 +458,7 @@ std::array<double, 3> ScaTra::CylinderMagnetFunction::evaluate_magnetic_force(
               (a_4 * (std::pow(b_1, 2.0) + b_3 * std::pow(rho, 2.0)) * alpha_m * E_p -
                   a_3 * (std::pow(b_2, 2.0) + b_4 * std::pow(rho, 2.0)) * alpha_p * E_m +
                   a_4 * a_3 * b_2 * alpha_p * K_m - a_4 * a_3 * b_1 * alpha_m * K_p)) /
-      (4.0 * std::pow(M_PI, 2.0) * std::pow(rho, 3.0) * rho_p * a_4 * a_2 * a_3 * a_1);
+      (4.0 * std::pow(std::numbers::pi, 2.0) * std::pow(rho, 3.0) * rho_p * a_4 * a_2 * a_3 * a_1);
 
   const double F_z =
       mobility * std::pow(parameters_.magnet_magnetization, 2.0) *
@@ -465,7 +468,7 @@ std::array<double, 3> ScaTra::CylinderMagnetFunction::evaluate_magnetic_force(
                c_2 * zeta_m * a_3 * alpha_p * E_m - c_1 * zeta_p * a_4 * alpha_m * E_p)) +
           ((Q_2 / rho_p) * (c_4 * a_3 * alpha_p * E_m - c_3 * a_4 * alpha_m * E_p -
                                a_3 * a_4 * alpha_p * K_m + a_3 * a_4 * alpha_m * K_p))) /
-      (4.0 * std::pow(M_PI, 2.0) * a_4 * a_2 * a_3 * a_1);
+      (4.0 * std::pow(std::numbers::pi, 2.0) * a_4 * a_2 * a_3 * a_1);
 
   // transform back to global cartesian coordinates
   return cylinder_to_global_coordinates(F_rho, F_z, phi);

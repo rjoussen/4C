@@ -144,7 +144,7 @@ void Mat::Elastic::StructuralTensorStrategyByDistributionFunction::setup_structu
     for (int i = 0; i < numbgp; i++)
     {
       double theta = acos(gausspoints.qxg[i][0]);
-      double phi = (((double)(j)) * M_PI) / ((double)gausspoints.nquad);
+      double phi = (((double)(j)) * std::numbers::pi) / ((double)gausspoints.nquad);
 
       x(0) = sin(theta) * cos(phi);
       x(1) = sin(theta) * sin(phi);
@@ -154,7 +154,7 @@ void Mat::Elastic::StructuralTensorStrategyByDistributionFunction::setup_structu
       {
         case Mat::Elastic::PAR::distr_type_vonmisesfisher:
         {
-          double c = c1 / (sinh(c1) * 4.0 * M_PI);
+          double c = c1 / (sinh(c1) * 4.0 * std::numbers::pi);
           double arg = aux_fiber_vector.dot(x);
           rho(i, j) = c * exp(c1 * arg);
           break;
@@ -173,7 +173,7 @@ void Mat::Elastic::StructuralTensorStrategyByDistributionFunction::setup_structu
       }  // switch
 
       // integration fac
-      double fac = (M_PI * gausspoints.qwgt[i] * rho(i, j)) / ((double)numbgp);
+      double fac = (std::numbers::pi * gausspoints.qwgt[i] * rho(i, j)) / ((double)numbgp);
 
       structural_tensor_stress(0, 0) += fac * x(0) * x(0);  // A_11
       structural_tensor_stress(1, 1) += fac * x(1) * x(1);  // A_22

@@ -2194,11 +2194,11 @@ void CONTACT::Beam3cmanager::console_output()
             gapsize++;
 #endif
 
-            if (fabs(angles[j] / M_PI * 180.0) > maxangle)
-              maxangle = fabs(angles[j] / M_PI * 180.0);
+            if (fabs(angles[j] / std::numbers::pi * 180.0) > maxangle)
+              maxangle = fabs(angles[j] / std::numbers::pi * 180.0);
 
-            if (fabs(angles[j] / M_PI * 180.0) < minangle)
-              minangle = fabs(angles[j] / M_PI * 180.0);
+            if (fabs(angles[j] / std::numbers::pi * 180.0) < minangle)
+              minangle = fabs(angles[j] / std::numbers::pi * 180.0);
 
             if (types[j] == 0)
             {
@@ -2206,8 +2206,8 @@ void CONTACT::Beam3cmanager::console_output()
               if (gaps[j] > maxcpgap) maxcpgap = gaps[j];
               numperpc++;
 
-              if (fabs(angles[j] / M_PI * 180.0) < perpshiftangle2 and
-                  fabs(angles[j] / M_PI * 180.0) > perpshiftangle1)
+              if (fabs(angles[j] / std::numbers::pi * 180.0) < perpshiftangle2 and
+                  fabs(angles[j] / std::numbers::pi * 180.0) > perpshiftangle1)
                 numperpc_transitions++;
             }
 
@@ -2222,7 +2222,7 @@ void CONTACT::Beam3cmanager::console_output()
               if (id1 >= 320 and id1 <= 359 and id2 >= 360 and id2 <= 399)
                 filecontent << id1 << " " << id2 << " " << closestpoints[j].first << " "
                             << closestpoints[j].second << " " << gaps[j] << " " << forces[j] << " "
-                            << angles[j] / M_PI * 180.0 << "\n";
+                            << angles[j] / std::numbers::pi * 180.0 << "\n";
 #endif
             }
 
@@ -2241,10 +2241,10 @@ void CONTACT::Beam3cmanager::console_output()
                 << "   " << types[j] << " " << std::setw(9) << std::left << std::setprecision(2)
                 << closestpoints[j].first << std::setw(9) << std::left << std::setprecision(2)
                 << closestpoints[j].second << std::setw(9) << std::left << std::setprecision(3)
-                << angles[j] / M_PI * 180.0 << std::setw(12) << std::left << std::scientific
-                << gaps[j] << std::setw(12) << std::left << std::scientific << forces[j]
-                << std::setprecision(6) << std::resetiosflags(std::ios::scientific) << std::right
-                << Core::IO::endl
+                << angles[j] / std::numbers::pi * 180.0 << std::setw(12) << std::left
+                << std::scientific << gaps[j] << std::setw(12) << std::left << std::scientific
+                << forces[j] << std::setprecision(6) << std::resetiosflags(std::ios::scientific)
+                << std::right << Core::IO::endl
                 << Core::IO::flush;
           }
         }

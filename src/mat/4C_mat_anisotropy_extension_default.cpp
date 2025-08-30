@@ -73,7 +73,7 @@ void Mat::DefaultAnisotropyExtension<numfib>::set_fiber_vecs(const double newgam
     // alignment angles gamma_i are read from first entry of then unnecessary vectors a1 and a2
     if ((gamma_ < -90) || (gamma_ > 90)) FOUR_C_THROW("Fiber angle not in [-90,90]");
     // convert
-    double gamma = (gamma_ * M_PI) / 180.;
+    double gamma = (gamma_ * std::numbers::pi) / 180.;
 
     if (adapt_angle_ && newgamma != -1.0)
     {

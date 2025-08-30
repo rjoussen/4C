@@ -1391,8 +1391,9 @@ void Discret::Elements::ScaTraEleCalc<distype, probdim>::calculate_momentum_and_
     // Smoothing function
     if (abs(ephi_gp) <= interface_thickness)
     {
-      heavyside_epsilon = 0.5 * (1.0 + ephi_gp / interface_thickness +
-                                    1.0 / M_PI * sin(M_PI * ephi_gp / interface_thickness));
+      heavyside_epsilon =
+          0.5 * (1.0 + ephi_gp / interface_thickness +
+                    1.0 / std::numbers::pi * sin(std::numbers::pi * ephi_gp / interface_thickness));
     }
     else if (ephi_gp < interface_thickness)
     {

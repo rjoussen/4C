@@ -139,7 +139,7 @@ namespace Discret
       //! Return the current length of the truss from @p curr_nodal_coords
       double curr_length(const Core::LinAlg::Matrix<6, 1>& curr_nodal_coords) const
       {
-        return curr_nodal_coords.norm2() * M_SQRT1_2;
+        return curr_nodal_coords.norm2() * 0.5 * std::numbers::sqrt2;
       }
 
       //! Return the squared value of the current length of the truss from @p curr_nodal_coords
@@ -153,7 +153,7 @@ namespace Discret
       double d_curr_lengthdu(
           const Core::LinAlg::Matrix<6, 1>& curr_nodal_coords, const int col) const
       {
-        return curr_nodal_coords(col) / curr_nodal_coords.norm2() * M_SQRT1_2;
+        return curr_nodal_coords(col) / curr_nodal_coords.norm2() * 0.5 * std::numbers::sqrt2;
       }
 
       std::vector<std::shared_ptr<Core::Elements::Element>> lines() override;

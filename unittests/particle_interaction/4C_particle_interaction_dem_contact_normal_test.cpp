@@ -55,7 +55,7 @@ namespace
 
   TEST_F(DEMContactNormalLinearSpringTest, get_normal_contact_stiffness)
   {
-    const double k_normal = 2.0 / 3.0 * r_max_ * M_PI * dens_max_ *
+    const double k_normal = 2.0 / 3.0 * r_max_ * std::numbers::pi * dens_max_ *
                             ParticleInteraction::Utils::pow<2>(v_max_) /
                             ParticleInteraction::Utils::pow<2>(c_);
 
@@ -64,7 +64,7 @@ namespace
 
   TEST_F(DEMContactNormalLinearSpringTest, GetTimeCriticalStiffness)
   {
-    const double k_normal = 2.0 / 3.0 * r_max_ * M_PI * dens_max_ *
+    const double k_normal = 2.0 / 3.0 * r_max_ * std::numbers::pi * dens_max_ *
                             ParticleInteraction::Utils::pow<2>(v_max_) /
                             ParticleInteraction::Utils::pow<2>(c_);
 
@@ -150,7 +150,7 @@ namespace
 
   TEST_F(DEMContactNormalLinearSpringDampTest, get_normal_contact_stiffness)
   {
-    const double k_normal = 2.0 / 3.0 * r_max_ * M_PI * dens_max_ *
+    const double k_normal = 2.0 / 3.0 * r_max_ * std::numbers::pi * dens_max_ *
                             ParticleInteraction::Utils::pow<2>(v_max_) /
                             ParticleInteraction::Utils::pow<2>(c_);
 
@@ -159,7 +159,7 @@ namespace
 
   TEST_F(DEMContactNormalLinearSpringDampTest, GetTimeCriticalStiffness)
   {
-    const double k_normal = 2.0 / 3.0 * r_max_ * M_PI * dens_max_ *
+    const double k_normal = 2.0 / 3.0 * r_max_ * std::numbers::pi * dens_max_ *
                             ParticleInteraction::Utils::pow<2>(v_max_) /
                             ParticleInteraction::Utils::pow<2>(c_);
 
@@ -178,9 +178,10 @@ namespace
 
     const double k_normal = contactnormal_->get_normal_contact_stiffness();
     const double lne = std::log(e_);
-    const double d_normal_fac = 2.0 * std::abs(lne) *
-                                std::sqrt(k_normal / (ParticleInteraction::Utils::pow<2>(lne) +
-                                                         ParticleInteraction::Utils::pow<2>(M_PI)));
+    const double d_normal_fac =
+        2.0 * std::abs(lne) *
+        std::sqrt(k_normal / (ParticleInteraction::Utils::pow<2>(lne) +
+                                 ParticleInteraction::Utils::pow<2>(std::numbers::pi)));
     const double d_normal = d_normal_fac * std::sqrt(m_eff);
     const double normalcontactforce_ref = k_normal * gap - d_normal * v_rel_normal;
 
@@ -238,7 +239,7 @@ namespace
 
   TEST_F(DEMContactNormalHertzTest, get_normal_contact_stiffness)
   {
-    const double k_normal = 10.0 / 3.0 * M_PI * dens_max_ *
+    const double k_normal = 10.0 / 3.0 * std::numbers::pi * dens_max_ *
                             ParticleInteraction::Utils::pow<2>(v_max_) * std::pow(r_max_, 0.5) /
                             std::pow(2.0 * c_, 2.5);
 
@@ -247,7 +248,7 @@ namespace
 
   TEST_F(DEMContactNormalHertzTest, GetTimeCriticalStiffness)
   {
-    const double k_normal_crit = 2.0 / 3.0 * r_max_ * M_PI * dens_max_ *
+    const double k_normal_crit = 2.0 / 3.0 * r_max_ * std::numbers::pi * dens_max_ *
                                  ParticleInteraction::Utils::pow<2>(v_max_) /
                                  ParticleInteraction::Utils::pow<2>(c_);
 
@@ -324,7 +325,7 @@ namespace
 
   TEST_F(DEMContactNormalLeeHerrmannTest, get_normal_contact_stiffness)
   {
-    const double k_normal = 10.0 / 3.0 * M_PI * dens_max_ *
+    const double k_normal = 10.0 / 3.0 * std::numbers::pi * dens_max_ *
                             ParticleInteraction::Utils::pow<2>(v_max_) * std::pow(r_max_, 0.5) /
                             std::pow(2.0 * c_, 2.5);
 
@@ -333,7 +334,7 @@ namespace
 
   TEST_F(DEMContactNormalLeeHerrmannTest, GetTimeCriticalStiffness)
   {
-    const double k_normal_crit = 2.0 / 3.0 * r_max_ * M_PI * dens_max_ *
+    const double k_normal_crit = 2.0 / 3.0 * r_max_ * std::numbers::pi * dens_max_ *
                                  ParticleInteraction::Utils::pow<2>(v_max_) /
                                  ParticleInteraction::Utils::pow<2>(c_);
 
@@ -397,7 +398,7 @@ namespace
 
   TEST_F(DEMContactNormalKuwabaraKonoTest, get_normal_contact_stiffness)
   {
-    const double k_normal = 10.0 / 3.0 * M_PI * dens_max_ *
+    const double k_normal = 10.0 / 3.0 * std::numbers::pi * dens_max_ *
                             ParticleInteraction::Utils::pow<2>(v_max_) * std::pow(r_max_, 0.5) /
                             std::pow(2.0 * c_, 2.5);
 
@@ -406,7 +407,7 @@ namespace
 
   TEST_F(DEMContactNormalKuwabaraKonoTest, GetTimeCriticalStiffness)
   {
-    const double k_normal_crit = 2.0 / 3.0 * r_max_ * M_PI * dens_max_ *
+    const double k_normal_crit = 2.0 / 3.0 * r_max_ * std::numbers::pi * dens_max_ *
                                  ParticleInteraction::Utils::pow<2>(v_max_) /
                                  ParticleInteraction::Utils::pow<2>(c_);
 
@@ -469,7 +470,7 @@ namespace
 
   TEST_F(DEMContactNormalTsujiTest, get_normal_contact_stiffness)
   {
-    const double k_normal = 10.0 / 3.0 * M_PI * dens_max_ *
+    const double k_normal = 10.0 / 3.0 * std::numbers::pi * dens_max_ *
                             ParticleInteraction::Utils::pow<2>(v_max_) * std::pow(r_max_, 0.5) /
                             std::pow(2.0 * c_, 2.5);
 
@@ -478,7 +479,7 @@ namespace
 
   TEST_F(DEMContactNormalTsujiTest, GetTimeCriticalStiffness)
   {
-    const double k_normal_crit = 2.0 / 3.0 * r_max_ * M_PI * dens_max_ *
+    const double k_normal_crit = 2.0 / 3.0 * r_max_ * std::numbers::pi * dens_max_ *
                                  ParticleInteraction::Utils::pow<2>(v_max_) /
                                  ParticleInteraction::Utils::pow<2>(c_);
 

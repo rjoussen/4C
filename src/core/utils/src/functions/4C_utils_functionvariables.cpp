@@ -410,11 +410,11 @@ ScalarT Core::Utils::FourierInterpolationVariable::value(const ScalarT& t)
       const int mod = (int)N % 2;
       if (mod == 1)  // odd
       {
-        tau = sin(N * M_PI * xt / 2) / (N * sin(M_PI * xt / 2));
+        tau = sin(N * std::numbers::pi * xt / 2) / (N * sin(std::numbers::pi * xt / 2));
       }
       else  // even
       {
-        tau = sin(N * M_PI * xt / 2) / (N * tan(M_PI * xt / 2));
+        tau = sin(N * std::numbers::pi * xt / 2) / (N * tan(std::numbers::pi * xt / 2));
       }
     }
 

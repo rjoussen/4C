@@ -133,7 +133,7 @@ void Mat::Elastic::CoupTransverselyIsotropic::set_fiber_vecs(const double newang
   if ((params_->angle_ < -90) || (params_->angle_ > 90))
     FOUR_C_THROW("Fiber angle not in [-90,90]! Given angle = {}", params_->angle_);
   // convert
-  const double angle = (params_->angle_ * M_PI) / 180.;
+  const double angle = (params_->angle_ * std::numbers::pi) / 180.;
 
   Core::LinAlg::Tensor<double, 3> ca;
   for (int i = 0; i < 3; ++i)

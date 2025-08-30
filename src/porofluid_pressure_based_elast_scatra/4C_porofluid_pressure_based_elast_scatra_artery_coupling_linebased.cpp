@@ -479,7 +479,7 @@ void PoroPressureBased::PorofluidElastScatraArteryCouplingLineBasedAlgorithm::
 
     const double volume_homogenized = coupled_ele_pair->calculate_volume_homogenized_element();
     const double volume_artery = (etaB - etaA) / 2.0 * length * artery_material->diam() *
-                                 artery_material->diam() * M_PI / 4.0;
+                                 artery_material->diam() * std::numbers::pi / 4.0;
 
     total_blood_vessel_volume += volume_artery;
 

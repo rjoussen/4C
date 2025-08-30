@@ -289,7 +289,7 @@ void ParticleInteraction::ParticleInteractionSPH::set_initial_states()
       if (kernelspacedim == 2)
       {
         // effective particle radius considering initial particle volume in disk shape
-        const double effectiveradius = std::sqrt(M_1_PI * initialparticlevolume);
+        const double effectiveradius = std::sqrt(std::numbers::inv_pi * initialparticlevolume);
 
         // inertia for disk shape
         initinertia[0] = 0.5 * initmass[0] * Utils::pow<2>(effectiveradius);
@@ -297,7 +297,8 @@ void ParticleInteraction::ParticleInteractionSPH::set_initial_states()
       else if (kernelspacedim == 3)
       {
         // effective particle radius considering initial particle volume in spherical shape
-        const double effectiveradius = std::pow(0.75 * M_1_PI * initialparticlevolume, 1.0 / 3.0);
+        const double effectiveradius =
+            std::pow(0.75 * std::numbers::inv_pi * initialparticlevolume, 1.0 / 3.0);
 
         // inertia for spherical shape
         initinertia[0] = 0.4 * initmass[0] * Utils::pow<2>(effectiveradius);

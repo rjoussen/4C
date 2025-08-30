@@ -65,7 +65,7 @@ namespace Discret
         const double fac = my::eval_shape_func_and_derivs_at_int_point(intpoints, iquad);
 
         // scale fac with the area of the artery pi*D^2/4
-        return fac * M_PI * var_manager()->diam() * var_manager()->diam() / 4.0;
+        return fac * std::numbers::pi * var_manager()->diam() * var_manager()->diam() / 4.0;
       }
 
       //! evaluate shape functions and their derivatives at element center

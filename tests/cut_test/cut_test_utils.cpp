@@ -233,8 +233,8 @@ void create_quad4_cylinder_mesh(
 
       double alpha = static_cast<double>(i) / rows;
 
-      coord[0] = x + r * cos(2 * M_PI * alpha);
-      coord[1] = y + r * sin(2 * M_PI * alpha);
+      coord[0] = x + r * cos(2 * std::numbers::pi * alpha);
+      coord[1] = y + r * sin(2 * std::numbers::pi * alpha);
       coord[2] = static_cast<double>(j) / cols;
 
       intersection.cut_mesh().get_node(numnode + id, coord);

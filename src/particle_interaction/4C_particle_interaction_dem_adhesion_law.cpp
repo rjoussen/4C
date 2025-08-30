@@ -60,7 +60,8 @@ void ParticleInteraction::DEMAdhesionLawBase::setup(const double& k_normal)
     const double young_eff = young / (2 * (1 - Utils::pow<2>(nue)));
 
     adhesion_max_contact_force_fac_ =
-        Utils::pow<3>(M_PI * adhesion_max_contact_pressure_) / (6 * Utils::pow<2>(young_eff));
+        Utils::pow<3>(std::numbers::pi * adhesion_max_contact_pressure_) /
+        (6 * Utils::pow<2>(young_eff));
 
     // safety check
     if (adhesion_max_contact_pressure_ > 0.0)
@@ -104,7 +105,7 @@ void ParticleInteraction::DEMAdhesionLawVdWDMT::adhesion_force(const double& gap
   const double gap_intersect_max = adhesioncontactforce * inv_k_normal_;
 
   // determine the pull-off force
-  const double adhesionforce_pulloff_max = 4.0 * M_PI * r_eff * surfaceenergy;
+  const double adhesionforce_pulloff_max = 4.0 * std::numbers::pi * r_eff * surfaceenergy;
 
   // determine the fraction of the pull-off force for particles in contact
   const double adhesionforce_pulloff = adhesion_surface_energy_factor_ * adhesionforce_pulloff_max;
@@ -217,8 +218,8 @@ void ParticleInteraction::DEMAdhesionLawVdWDMT::calculate_intersection_gap(
     dummy = std::acos(r / std::sqrt(dummy));
     r13 = 2.0 * std::sqrt(q);
     x1 = -term1 + r13 * std::cos(dummy / 3.0);
-    x2 = -term1 + r13 * std::cos((dummy + 2.0 * M_PI) / 3.0);
-    x3 = -term1 + r13 * std::cos((dummy + 4.0 * M_PI) / 3.0);
+    x2 = -term1 + r13 * std::cos((dummy + 2.0 * std::numbers::pi) / 3.0);
+    x3 = -term1 + r13 * std::cos((dummy + 4.0 * std::numbers::pi) / 3.0);
 
     if (x1 > x2)
     {
@@ -268,7 +269,7 @@ void ParticleInteraction::DEMAdhesionLawRegDMT::adhesion_force(const double& gap
   const double gap_intersect_max = adhesioncontactforce * inv_k_normal_;
 
   // determine the pull-off force
-  const double adhesionforce_pulloff_max = 4.0 * M_PI * r_eff * surfaceenergy;
+  const double adhesionforce_pulloff_max = 4.0 * std::numbers::pi * r_eff * surfaceenergy;
 
   // determine the fraction of the pull-off force for particles in contact
   const double adhesionforce_pulloff = adhesion_surface_energy_factor_ * adhesionforce_pulloff_max;

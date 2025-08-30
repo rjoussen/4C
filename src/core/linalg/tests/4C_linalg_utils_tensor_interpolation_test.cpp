@@ -51,7 +51,7 @@ namespace
     lambda_T_1(1, 1) = 1.0;
     lambda_T_1(2, 2) = 1.0;
     Core::LinAlg::Matrix<3, 3> Q_T_1(Core::LinAlg::Initialization::zero);
-    double angle_T_1 = M_PI / 4.0;
+    double angle_T_1 = std::numbers::pi / 4.0;
     Q_T_1(0, 0) = std::cos(angle_T_1);
     Q_T_1(0, 1) = -std::sin(angle_T_1);
     Q_T_1(1, 0) = std::sin(angle_T_1);
@@ -68,7 +68,7 @@ namespace
     lambda_T_2(1, 1) = 4.0;
     lambda_T_2(2, 2) = 1.0;
     Core::LinAlg::Matrix<3, 3> Q_T_2(Core::LinAlg::Initialization::zero);
-    double angle_T_2 = -0.99 * M_PI / 4.0;
+    double angle_T_2 = -0.99 * std::numbers::pi / 4.0;
     Q_T_2(0, 0) = std::cos(angle_T_2);
     Q_T_2(0, 1) = -std::sin(angle_T_2);
     Q_T_2(1, 0) = std::sin(angle_T_2);
@@ -104,7 +104,7 @@ namespace
     lambda_T_ref(2, 2) =
         std::pow(lambda_T_1(2, 2), 1.0 / 2.0) * std::pow(lambda_T_2(2, 2), 1.0 / 2.0);
     Core::LinAlg::Matrix<3, 3> Q_T_ref(Core::LinAlg::Initialization::zero);
-    double angle_T_ref = (1 - 0.99) / 2.0 * M_PI / 4.0;
+    double angle_T_ref = (1 - 0.99) / 2.0 * std::numbers::pi / 4.0;
     Q_T_ref(0, 0) = std::cos(angle_T_ref);
     Q_T_ref(0, 1) = -std::sin(angle_T_ref);
     Q_T_ref(1, 0) = std::sin(angle_T_ref);
@@ -141,14 +141,14 @@ namespace
     lambda_T_1(1, 1) = 1.0;
     lambda_T_1(2, 2) = 1.0;
     Core::LinAlg::Matrix<3, 3> Q_T_1(Core::LinAlg::Initialization::zero);
-    double angle_T_1_U = M_PI / 4.0;
+    double angle_T_1_U = std::numbers::pi / 4.0;
     Q_T_1(0, 0) = std::cos(angle_T_1_U);
     Q_T_1(0, 1) = -std::sin(angle_T_1_U);
     Q_T_1(1, 0) = std::sin(angle_T_1_U);
     Q_T_1(1, 1) = std::cos(angle_T_1_U);
     Q_T_1(2, 2) = 1.0;
     Core::LinAlg::Matrix<3, 3> R_T_1(Core::LinAlg::Initialization::zero);
-    double angle_T_1_R = M_PI / 2.0;
+    double angle_T_1_R = std::numbers::pi / 2.0;
     R_T_1(0, 0) = std::cos(angle_T_1_R);
     R_T_1(0, 1) = -std::sin(angle_T_1_R);
     R_T_1(1, 0) = std::sin(angle_T_1_R);
@@ -166,7 +166,7 @@ namespace
     lambda_T_2(1, 1) = 4.0;
     lambda_T_2(2, 2) = 1.0;
     Core::LinAlg::Matrix<3, 3> Q_T_2(Core::LinAlg::Initialization::zero);
-    double angle_T_2 = -0.99 * M_PI / 4.0;
+    double angle_T_2 = -0.99 * std::numbers::pi / 4.0;
     Q_T_2(0, 0) = std::cos(angle_T_2);
     Q_T_2(0, 1) = -std::sin(angle_T_2);
     Q_T_2(1, 0) = std::sin(angle_T_2);
@@ -202,14 +202,14 @@ namespace
     lambda_T_ref(2, 2) =
         std::pow(lambda_T_1(2, 2), 1.0 / 2.0) * std::pow(lambda_T_2(2, 2), 1.0 / 2.0);
     Core::LinAlg::Matrix<3, 3> Q_T_ref(Core::LinAlg::Initialization::zero);
-    double angle_T_ref_U = (1 - 0.99) / 2.0 * M_PI / 4.0;
+    double angle_T_ref_U = (1 - 0.99) / 2.0 * std::numbers::pi / 4.0;
     Q_T_ref(0, 0) = std::cos(angle_T_ref_U);
     Q_T_ref(0, 1) = -std::sin(angle_T_ref_U);
     Q_T_ref(1, 0) = std::sin(angle_T_ref_U);
     Q_T_ref(1, 1) = std::cos(angle_T_ref_U);
     Q_T_ref(2, 2) = 1.0;
     Core::LinAlg::Matrix<3, 3> R_T_ref(Core::LinAlg::Initialization::zero);
-    double angle_T_ref_R = M_PI / 4.0;
+    double angle_T_ref_R = std::numbers::pi / 4.0;
     R_T_ref(0, 0) = std::cos(angle_T_ref_R);
     R_T_ref(0, 1) = -std::sin(angle_T_ref_R);
     R_T_ref(1, 0) = std::sin(angle_T_ref_R);

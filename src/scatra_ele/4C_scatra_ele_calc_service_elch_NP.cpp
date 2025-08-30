@@ -353,24 +353,30 @@ void Discret::Elements::ScaTraEleCalcElchNP<distype>::cal_error_compared_to_anal
 
         if (nsd_ == 3)
         {
-          expterm = exp((-D) * (m * m + n * n + k * k) * t * M_PI * M_PI);
-          c(0) = A0 +
-                 (A_mnk *
-                     (cos(m * M_PI * xint(0)) * cos(n * M_PI * xint(1)) * cos(k * M_PI * xint(2))) *
-                     expterm);
-          c_0_0_0_t = A0 + (A_mnk * exp((-D) * (m * m + n * n + k * k) * t * M_PI * M_PI));
+          expterm = exp((-D) * (m * m + n * n + k * k) * t * std::numbers::pi * std::numbers::pi);
+          c(0) =
+              A0 + (A_mnk *
+                       (cos(m * std::numbers::pi * xint(0)) * cos(n * std::numbers::pi * xint(1)) *
+                           cos(k * std::numbers::pi * xint(2))) *
+                       expterm);
+          c_0_0_0_t = A0 + (A_mnk * exp((-D) * (m * m + n * n + k * k) * t * std::numbers::pi *
+                                        std::numbers::pi));
         }
         else if (nsd_ == 2)
         {
-          expterm = exp((-D) * (m * m + n * n) * t * M_PI * M_PI);
-          c(0) = A0 + (A_mnk * (cos(m * M_PI * xint(0)) * cos(n * M_PI * xint(1))) * expterm);
-          c_0_0_0_t = A0 + (A_mnk * exp((-D) * (m * m + n * n) * t * M_PI * M_PI));
+          expterm = exp((-D) * (m * m + n * n) * t * std::numbers::pi * std::numbers::pi);
+          c(0) =
+              A0 +
+              (A_mnk * (cos(m * std::numbers::pi * xint(0)) * cos(n * std::numbers::pi * xint(1))) *
+                  expterm);
+          c_0_0_0_t =
+              A0 + (A_mnk * exp((-D) * (m * m + n * n) * t * std::numbers::pi * std::numbers::pi));
         }
         else if (nsd_ == 1)
         {
-          expterm = exp((-D) * (m * m) * t * M_PI * M_PI);
-          c(0) = A0 + (A_mnk * (cos(m * M_PI * xint(0))) * expterm);
-          c_0_0_0_t = A0 + (A_mnk * exp((-D) * (m * m) * t * M_PI * M_PI));
+          expterm = exp((-D) * (m * m) * t * std::numbers::pi * std::numbers::pi);
+          c(0) = A0 + (A_mnk * (cos(m * std::numbers::pi * xint(0))) * expterm);
+          c_0_0_0_t = A0 + (A_mnk * exp((-D) * (m * m) * t * std::numbers::pi * std::numbers::pi));
         }
         else
           FOUR_C_THROW("Illegal number of space dimensions for analyt. solution: {}", nsd_);

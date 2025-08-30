@@ -128,11 +128,12 @@ using TYPE = double;
 
 #define MAXNUMSEG 256  // default: 256         //maximal number of segments
 #define ANGLETOL \
-  0.1 / 180 * M_PI  // within the search algorithm, for angles<ANGLETOL two segments are assumed to
-                    // be parallel
+  0.1 / 180 * std::numbers::pi  // within the search algorithm, for angles<ANGLETOL two segments are
+                                // assumed to
+                                // be parallel
 #define UNIQUECPPANGLE \
-  1.0 / 180.0 *        \
-      M_PI  // angle above which it is assumed that a unique cpp can be found by the local Newton
+  1.0 / 180.0 * std::numbers::pi  // angle above which it is assumed that a unique cpp can be found
+                                  // by the local Newton
 
 #define BEAMCONTACTGAUSSRULE \
   Core::FE::GaussRule1D::line_5point  // Gauss rule applied in each segment

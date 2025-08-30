@@ -267,7 +267,7 @@ double BeamInteraction::calc_angle(
                   // information of the FAD quantity gets lost here!
 
   // We want an angle \in [0;pi/2] in each case:
-  if (angle > M_PI / 2.0)
+  if (angle > std::numbers::pi / 2.0)
     FOUR_C_THROW("Something went wrong here, angle should be in the interval [0;pi/2]!");
 
   return angle;

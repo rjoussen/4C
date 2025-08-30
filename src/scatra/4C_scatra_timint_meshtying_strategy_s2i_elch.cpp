@@ -254,7 +254,7 @@ void ScaTra::MeshtyingStrategyS2IElch::evaluate_point_coupling()
               "Saturation value c_max of intercalated lithium concentration is too small!");
 
         // compute domain integration factor
-        constexpr double four_pi = 4.0 * M_PI;
+        constexpr double four_pi = 4.0 * std::numbers::pi;
         const double fac = scatratimint_->scatra_parameter_list()->get<bool>("SPHERICALCOORDS")
                                ? *slave_node->x().data() * *slave_node->x().data() * four_pi
                                : 1.0;

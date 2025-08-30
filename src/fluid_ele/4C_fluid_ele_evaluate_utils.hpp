@@ -2205,7 +2205,7 @@ namespace FLD
         case FLUID::sphere_diameter:
         {
           // b) volume-equivalent diameter
-          hk = std::pow((6. * vol / M_PI), (1.0 / 3.0)) / sqrt(3.0);
+          hk = std::pow((6. * vol / std::numbers::pi), (1.0 / 3.0)) / sqrt(3.0);
 
           break;
         }
@@ -2588,7 +2588,8 @@ namespace FLD
         kappa_phi = 1.0 / (1.0 - pow(alpha, -gamma1));
         D = Csgs_phi * sqrt(kappa_phi) * pow(2.0, -gamma2 * Nphi / 2.0) *
             sqrt((pow(2.0, gamma1 * Nvel[0]) - 1) +
-                 4.0 / 3.0 * (M_PI / hk) * (pow(2.0, gamma2 * Nphi) - pow(2.0, gamma2 * Nvel[0])));
+                 4.0 / 3.0 * (std::numbers::pi / hk) *
+                     (pow(2.0, gamma2 * Nphi) - pow(2.0, gamma2 * Nvel[0])));
       }
 
       // apply near-wall limit if required
@@ -2904,7 +2905,7 @@ namespace FLD
           case FLUID::sphere_diameter:
           {
             // b) volume-equivalent diameter
-            hk = std::pow((6. * vol / M_PI), (1.0 / 3.0)) / sqrt(3.0);
+            hk = std::pow((6. * vol / std::numbers::pi), (1.0 / 3.0)) / sqrt(3.0);
 
             break;
           }

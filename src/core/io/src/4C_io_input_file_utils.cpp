@@ -314,8 +314,8 @@ void Core::IO::read_design(InputFile& input, const std::string& name,
             dx[1] = coords[1] - coordm[1];
             dx[2] = coords[2] - coordm[2];
 
-            double calpha = cos(-box_specifications[rotaxis + rotoffset] * M_PI / 180);
-            double salpha = sin(-box_specifications[rotaxis + rotoffset] * M_PI / 180);
+            double calpha = cos(-box_specifications[rotaxis + rotoffset] * std::numbers::pi / 180);
+            double salpha = sin(-box_specifications[rotaxis + rotoffset] * std::numbers::pi / 180);
 
             coords[0] = coordm[0];  //+ calpha*dx[0] + salpha*dx[1];
             coords[1] = coordm[1];  //+ -salpha*dx[0] + calpha*dx[1];

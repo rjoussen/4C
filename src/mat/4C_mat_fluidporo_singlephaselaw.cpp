@@ -195,7 +195,8 @@ double Mat::PAR::FluidPoroPhaseLawTangent::evaluate_saturation(const std::vector
 
   double presval = std::inner_product(presids_.begin(), presids_.end(), pressure.begin(), 0.0);
 
-  double saturation = sat0_ - std::pow(2 / M_PI * std::atan(reltensions_ * presval), exp_);
+  double saturation =
+      sat0_ - std::pow(2 / std::numbers::pi * std::atan(reltensions_ * presval), exp_);
 
   return saturation;
 }
@@ -214,9 +215,10 @@ double Mat::PAR::FluidPoroPhaseLawTangent::evaluate_deriv_of_saturation_wrt_pres
 
   double presval = std::inner_product(presids_.begin(), presids_.end(), pressure.begin(), 0.0);
 
-  double deriv = -exp_ * std::pow(2 / M_PI * std::atan(reltensions_ * presval), exp_ - 1.0) * 2.0 *
-                 reltensions_ /
-                 (M_PI * (1.0 + (reltensions_ * presval) * (reltensions_ * presval)));
+  double deriv = -exp_ *
+                 std::pow(2 / std::numbers::pi * std::atan(reltensions_ * presval), exp_ - 1.0) *
+                 2.0 * reltensions_ /
+                 (std::numbers::pi * (1.0 + (reltensions_ * presval) * (reltensions_ * presval)));
 
   return deriv * presids_[doftoderive];
 }
@@ -241,7 +243,7 @@ double Mat::PAR::FluidPoroPhaseLawTangent::evaluate_second_deriv_of_saturation_w
   {
     secondderiv = -exp_ * reltensions_ * reltensions_ *
                   (exp_ - 2.0 * reltensions_ * presval * std::atan(reltensions_ * presval) - 1.0) *
-                  std::pow(2.0 / M_PI * std::atan(reltensions_ * presval), exp_) /
+                  std::pow(2.0 / std::numbers::pi * std::atan(reltensions_ * presval), exp_) /
                   ((1.0 + (reltensions_ * presval) * (reltensions_ * presval)) *
                       (1.0 + (reltensions_ * presval) * (reltensions_ * presval))) /
                   (std::atan(reltensions_ * presval) * std::atan(reltensions_ * presval));
@@ -259,8 +261,10 @@ double Mat::PAR::FluidPoroPhaseLawTangent::evaluate_deriv_of_pressure_wrt_satura
   if (presids_[doftoderive] == 0) return 0.0;
 
   double deriv =
-      -0.5 * M_PI / (reltensions_ * exp_) * std::pow(sat0_ - saturation, 1.0 / exp_ - 1.0) *
-      (1.0 + std::pow(std::tan(0.5 * M_PI * std::pow(sat0_ - saturation, 1.0 / exp_)), 2));
+      -0.5 * std::numbers::pi / (reltensions_ * exp_) *
+      std::pow(sat0_ - saturation, 1.0 / exp_ - 1.0) *
+      (1.0 +
+          std::pow(std::tan(0.5 * std::numbers::pi * std::pow(sat0_ - saturation, 1.0 / exp_)), 2));
 
   return deriv * presids_[doftoderive];
 }
@@ -269,8 +273,8 @@ double Mat::PAR::FluidPoroPhaseLawTangent::evaluate_deriv_of_pressure_wrt_satura
  *----------------------------------------------------------------------*/
 double Mat::PAR::FluidPoroPhaseLawTangent::evaluate_gen_pressure(double saturation)
 {
-  double presval =
-      1.0 / reltensions_ * std::tan(0.5 * M_PI * std::pow(sat0_ - saturation, 1.0 / exp_));
+  double presval = 1.0 / reltensions_ *
+                   std::tan(0.5 * std::numbers::pi * std::pow(sat0_ - saturation, 1.0 / exp_));
 
   return presval;
 }

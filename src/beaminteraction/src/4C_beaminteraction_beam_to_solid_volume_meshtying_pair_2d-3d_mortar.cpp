@@ -212,8 +212,8 @@ void BeamInteraction::BeamToSolidVolumeMeshtyingPair2D3DMortar<Beam, Solid,
     GeometryPair::evaluate_shape_function_matrix<Mortar>(psi, xi_mortar);
 
     // Numerical integration factor for this Gauss point
-    const double integration_factor =
-        projected_gauss_point.get_gauss_weight() * beam_jacobian * beam_cross_section_radius * M_PI;
+    const double integration_factor = projected_gauss_point.get_gauss_weight() * beam_jacobian *
+                                      beam_cross_section_radius * std::numbers::pi;
 
     // Evaluate the mortar matrices
     Core::LinAlg::Matrix<Mortar::n_dof_, Solid::n_dof_, double> local_constraint_lin_solid_gp(
@@ -523,8 +523,8 @@ void BeamInteraction::BeamToSolidVolumeMeshtyingPair2D3DMortar<Beam, Solid,
             Core::LinAlg::Matrix<2, 1> xi;
             xi(0) =
                 -1.0 + (2 * i_curve_segment + offset_axial) * 2.0 / (2.0 * (double)mortar_segments);
-            xi(1) = (2.0 * i_circumference_segment + offset_circumference) * 2.0 * M_PI /
-                    (2.0 * (double)mortar_segments_circumference);
+            xi(1) = (2.0 * i_circumference_segment + offset_circumference) * 2.0 *
+                    std::numbers::pi / (2.0 * (double)mortar_segments_circumference);
 
             get_triad_at_xi_double(xi(0), triad_ref, true);
             get_triad_at_xi_double(xi(0), triad, false);

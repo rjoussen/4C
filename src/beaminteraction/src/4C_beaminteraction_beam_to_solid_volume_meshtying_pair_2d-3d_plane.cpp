@@ -127,7 +127,7 @@ bool BeamInteraction::BeamToSolidVolumeMeshtyingPair2D3DPlane<Beam, Solid>::eval
     force.scale(penalty_parameter);
 
     const double integration_factor =
-        projected_gauss_point.get_gauss_weight() * beam_jacobian * radius * M_PI;
+        projected_gauss_point.get_gauss_weight() * beam_jacobian * radius * std::numbers::pi;
 
     // The force vector is in R3, we need to calculate the equivalent nodal forces on the element
     // dof. This is done with the virtual work equation $F \delta r = f \delta q$.

@@ -154,7 +154,7 @@ void Discret::Elements::ArteryEleCalcPresBased<distype>::sysmat(Artery* ele,
   // Read in blood viscosity
   const double visc = actmat->viscosity();
 
-  const double hag_pois = M_PI * pow(diam, 4) / 128.0 / visc;
+  const double hag_pois = std::numbers::pi * pow(diam, 4) / 128.0 / visc;
   // gaussian points
   const Core::FE::IntegrationPoints1D intpoints(ele->gauss_rule());
 
@@ -230,7 +230,7 @@ void Discret::Elements::ArteryEleCalcPresBased<distype>::evaluate_flow(Artery* e
   // Read in blood viscosity
   const double visc = actmat->viscosity();
 
-  const double hag_pois = M_PI * pow(diam, 4) / 128.0 / visc;
+  const double hag_pois = std::numbers::pi * pow(diam, 4) / 128.0 / visc;
 
   // TODO: this works only for line 2 elements
   flowVec(0) = -hag_pois * (mypress(1) - mypress(0)) / L;

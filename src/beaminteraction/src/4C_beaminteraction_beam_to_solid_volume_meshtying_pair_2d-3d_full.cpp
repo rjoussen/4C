@@ -193,7 +193,7 @@ void BeamInteraction::BeamToSolidVolumeMeshtyingPair2D3DFull<Beam, Solid>::evalu
 
     // Numerical integration factor for this Gauss point.
     const double integration_factor =
-        projected_gauss_point.get_gauss_weight() * beam_jacobian * radius * M_PI;
+        projected_gauss_point.get_gauss_weight() * beam_jacobian * radius * std::numbers::pi;
 
     // The following calculations are based on Steinbrecher, Popp, Meier: "Consistent coupling of
     // positions and rotations for embedding 1D Cosserat beams into 3D solid volumes", eq. 97-98. Be

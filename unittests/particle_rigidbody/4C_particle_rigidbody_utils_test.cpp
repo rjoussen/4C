@@ -77,8 +77,9 @@ namespace
 
   TEST(QuaternionTest, FromAngleXAxis)
   {
-    const double q_ref[4] = {std::sin(M_PI / 4), 0.0, 0.0, std::cos(M_PI / 4)};
-    const double phi[3] = {M_PI / 2, 0.0, 0.0};
+    const double q_ref[4] = {
+        std::sin(std::numbers::pi / 4), 0.0, 0.0, std::cos(std::numbers::pi / 4)};
+    const double phi[3] = {std::numbers::pi / 2, 0.0, 0.0};
 
     double q[4];
     ParticleRigidBody::Utils::quaternion_from_angle(q, phi);
@@ -88,8 +89,9 @@ namespace
 
   TEST(QuaternionTest, FromAngleYAxis)
   {
-    const double q_ref[4] = {0.0, std::sin(M_PI / 4), 0.0, std::cos(M_PI / 4)};
-    const double phi[3] = {0.0, M_PI / 2, 0.0};
+    const double q_ref[4] = {
+        0.0, std::sin(std::numbers::pi / 4), 0.0, std::cos(std::numbers::pi / 4)};
+    const double phi[3] = {0.0, std::numbers::pi / 2, 0.0};
 
     double q[4];
     ParticleRigidBody::Utils::quaternion_from_angle(q, phi);
@@ -99,8 +101,9 @@ namespace
 
   TEST(QuaternionTest, FromAngleZAxis)
   {
-    const double q_ref[4] = {0.0, 0.0, std::sin(M_PI / 4), std::cos(M_PI / 4)};
-    const double phi[3] = {0.0, 0.0, M_PI / 2};
+    const double q_ref[4] = {
+        0.0, 0.0, std::sin(std::numbers::pi / 4), std::cos(std::numbers::pi / 4)};
+    const double phi[3] = {0.0, 0.0, std::numbers::pi / 2};
 
     double q[4];
     ParticleRigidBody::Utils::quaternion_from_angle(q, phi);
@@ -112,7 +115,7 @@ namespace
   {
     const double q_ref[4] = {
         -0.2759788075111623, 0.8279364225334871, 0.4139682112667435, -0.2588190451025209};
-    const double phi[3] = {-M_PI / 3, M_PI, M_PI / 2};
+    const double phi[3] = {-std::numbers::pi / 3, std::numbers::pi, std::numbers::pi / 2};
 
     double q[4];
     ParticleRigidBody::Utils::quaternion_from_angle(q, phi);
@@ -126,7 +129,7 @@ namespace
     double v[3] = {1.0, 0.0, 0.0};
     double w[3] = {0.0, 0.0, 0.0};
 
-    const double q[4] = {0.0, 0.0, std::sin(M_PI / 4), std::cos(M_PI / 4)};
+    const double q[4] = {0.0, 0.0, std::sin(std::numbers::pi / 4), std::cos(std::numbers::pi / 4)};
 
     ParticleRigidBody::Utils::quaternion_rotate_vector(w, q, v);
 
@@ -139,7 +142,7 @@ namespace
     double v[3] = {0.0, 0.0, 1.0};
     double w[3] = {0.0, 0.0, 0.0};
 
-    const double q[4] = {0.0, std::sin(M_PI / 4), 0.0, std::cos(M_PI / 4)};
+    const double q[4] = {0.0, std::sin(std::numbers::pi / 4), 0.0, std::cos(std::numbers::pi / 4)};
 
     ParticleRigidBody::Utils::quaternion_rotate_vector(w, q, v);
 
@@ -152,7 +155,7 @@ namespace
     double v[3] = {0.0, 1.0, 0.0};
     double w[3] = {0.0, 0.0, 0.0};
 
-    const double q[4] = {std::sin(M_PI / 4), 0.0, 0.0, std::cos(M_PI / 4)};
+    const double q[4] = {std::sin(std::numbers::pi / 4), 0.0, 0.0, std::cos(std::numbers::pi / 4)};
 
     ParticleRigidBody::Utils::quaternion_rotate_vector(w, q, v);
 
@@ -165,7 +168,7 @@ namespace
     double v[3] = {0.5, 1.0, -2.0};
     double w[3] = {0.0, 0.0, 0.0};
 
-    const double phi[3] = {-M_PI / 3, M_PI, M_PI / 2};
+    const double phi[3] = {-std::numbers::pi / 3, std::numbers::pi, std::numbers::pi / 2};
 
     double q[4];
     ParticleRigidBody::Utils::quaternion_from_angle(q, phi);

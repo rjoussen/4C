@@ -214,7 +214,7 @@ void Mat::ViscoAnisotropic::setup(int numgp, const Core::IO::InputParameterConta
   ca2_ = std::make_shared<std::vector<std::vector<double>>>(numgp);
 
   if ((params_->gamma_ < 0) || (params_->gamma_ > 90)) FOUR_C_THROW("Fiber angle not in [0,90]");
-  const double gamma = (params_->gamma_ * M_PI) / 180.;  // convert
+  const double gamma = (params_->gamma_ * std::numbers::pi) / 180.;  // convert
 
   // read local (cylindrical) cosy-directions at current element
   auto rad_opt = container.get<std::optional<std::vector<double>>>("RAD");
@@ -308,7 +308,7 @@ void Mat::ViscoAnisotropic::setup(const int numgp, const std::vector<double> thi
 
     if (abs(params_->gamma_) >= 1.0E-6)
       FOUR_C_THROW("Fibers can only be aligned in thickness direction for gamma = 0.0!");
-    const double gamma = (params_->gamma_ * M_PI) / 180.;  // convert
+    const double gamma = (params_->gamma_ * std::numbers::pi) / 180.;  // convert
 
     // Fibers are related to the element thickness direction
     std::vector<double> rad = thickvec;

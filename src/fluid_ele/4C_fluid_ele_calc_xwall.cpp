@@ -1017,7 +1017,7 @@ double Discret::Elements::FluidEleCalcXWall<distype, enrtype>::calc_mk()
       FOUR_C_THROW("only volume equivalent diameter defined up to now");
 
     // volume equivalent diameter
-    h_u = std::pow((6. * vol / M_PI), (1.0 / 3.0)) / sqrt(3.0);
+    h_u = std::pow((6. * vol / std::numbers::pi), (1.0 / 3.0)) / sqrt(3.0);
   }
   else
     FOUR_C_THROW(

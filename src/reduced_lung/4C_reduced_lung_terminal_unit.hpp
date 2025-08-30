@@ -563,7 +563,7 @@ namespace ReducedLung
         std::sqrt((coords_node_1[0] - coords_node_2[0]) * (coords_node_1[0] - coords_node_2[0]) +
                   (coords_node_1[1] - coords_node_2[1]) * (coords_node_1[1] - coords_node_2[1]) +
                   (coords_node_1[2] - coords_node_2[2]) * (coords_node_1[2] - coords_node_2[2]));
-    const double volume = (4.0 / 3.0) * M_PI * radius * radius * radius;
+    const double volume = (4.0 / 3.0) * std::numbers::pi * radius * radius * radius;
     model.data.volume_v.push_back(volume);
     model.data.reference_volume_v0.push_back(volume);
     std::visit(AddRheologicalModelParameter{ele}, model.rheological_model);

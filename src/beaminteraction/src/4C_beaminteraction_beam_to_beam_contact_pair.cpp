@@ -507,18 +507,6 @@ void BeamInteraction::BeamToBeamContactPair<numnodes,
     double lengthspec_energy = Core::FADUtils::cast_to_double(cpvariables_[numcp]->get_energy());
     cpvariables_[numcp]->set_integrated_energy(lengthspec_energy);
 
-    //    std::cout << "cpvariables_[numcp]->GetNormal(): " << cpvariables_[numcp]->GetNormal() <<
-    //    std::endl; std::cout << "numcp: " << numcp << std::endl; std::cout << "xi: " <<
-    //    cpvariables_[numcp]->GetCP().first.val() << std::endl; std::cout << "eta: " <<
-    //    cpvariables_[numcp]->GetCP().second.val() << std::endl; std::cout << "gap: " <<
-    //    cpvariables_[numcp]->GetGap().val() << std::endl; std::cout << "angle: " <<
-    //    cpvariables_[numcp]->get_angle()/M_PI*180.0 << std::endl; std::cout << "r1_xi: " << r1_xi
-    //    << std::endl; std::cout << "r2_xi: " << r2_xi << std::endl; std::cout << "|r1_xi|: " <<
-    //    r1_xi.Norm2() << std::endl; std::cout << "|r2_xi|: " << r2_xi.Norm2() << std::endl;
-    //    std::cout << "r1_xi*r2_xi: " << Core::FADUtils::ScalarProduct(r1_xi,r2_xi) << std::endl;
-    //    std::cout << "cpvariables_[numcp]->Getfp(): " << cpvariables_[numcp]->Getfp() <<
-    //    std::endl;
-
     // call function to compute contact contribution to residual vector
     if (forcevec1 != nullptr and forcevec2 != nullptr)
       evaluate_fc_contact(*forcevec1, *forcevec2, r1, r2, r1_xi, r2_xi, r1_xixi, r2_xixi, N1, N2,
@@ -1438,18 +1426,6 @@ void BeamInteraction::BeamToBeamContactPair<numnodes,
     double lengthspec_energy = Core::FADUtils::cast_to_double(epvariables_[numep]->get_energy());
     epvariables_[numep]->set_integrated_energy(lengthspec_energy);
 
-    //    std::cout << "epvariables_[numep]->GetNormal(): " << epvariables_[numep]->GetNormal() <<
-    //    std::endl; std::cout << "numep: " << numep << std::endl; std::cout << "xi: " <<
-    //    epvariables_[numep]->GetCP().first.val() << std::endl; std::cout << "eta: " <<
-    //    epvariables_[numep]->GetCP().second.val() << std::endl; std::cout << "gap: " <<
-    //    epvariables_[numep]->GetGap().val() << std::endl; std::cout << "angle: " <<
-    //    epvariables_[numep]->get_angle()/M_PI*180.0 << std::endl; std::cout << "r1_xi: " << r1_xi
-    //    << std::endl; std::cout << "r2_xi: " << r2_xi << std::endl; std::cout << "|r1_xi|: " <<
-    //    r1_xi.Norm2() << std::endl; std::cout << "|r2_xi|: " << r2_xi.Norm2() << std::endl;
-    //    std::cout << "r1_xi*r2_xi: " << Core::FADUtils::ScalarProduct(r1_xi,r2_xi) << std::endl;
-    //    std::cout << "epvariables_[numep]->Getfp(): " << epvariables_[numep]->Getfp() <<
-    //    std::endl;
-
     bool fixedendpointxi = epvariables_[numep]->get_int_ids().first;
     bool fixedendpointeta = epvariables_[numep]->get_int_ids().second;
 
@@ -1698,7 +1674,7 @@ void BeamInteraction::BeamToBeamContactPair<numnodes, numnodalvalues>::calc_perp
   TYPE ppfac = 1.0;
   TYPE dppfac = 0.0;
 
-  if (shiftangle1 > M_PI / 2.0 and shiftangle2 > M_PI / 2.0)
+  if (shiftangle1 > std::numbers::pi / 2.0 and shiftangle2 > std::numbers::pi / 2.0)
   {
     ppfac = 0.0;
     dppfac = 0.0;
@@ -1710,8 +1686,8 @@ void BeamInteraction::BeamToBeamContactPair<numnodes, numnodalvalues>::calc_perp
     double s1 = cos(shiftangle1);
     double s2 = cos(shiftangle2);
 
-    if (shiftangle1 < 0.0 or shiftangle1 > M_PI / 2.0 or shiftangle2 < 0.0 or
-        shiftangle2 > M_PI / 2.0 or shiftangle1 >= shiftangle2)
+    if (shiftangle1 < 0.0 or shiftangle1 > std::numbers::pi / 2.0 or shiftangle2 < 0.0 or
+        shiftangle2 > std::numbers::pi / 2.0 or shiftangle1 >= shiftangle2)
       FOUR_C_THROW("Invalid choice of shift angles!");
 
     if (Core::FADUtils::cast_to_double(s) > s1)
@@ -1719,20 +1695,22 @@ void BeamInteraction::BeamToBeamContactPair<numnodes, numnodalvalues>::calc_perp
     else if (Core::FADUtils::cast_to_double(s) > s2)
     {
 #ifndef CONSISTENTTRANSITION
-      ppfac = 0.5 * (cos(M_PI * (s - s2) / (s1 - s2)) + 1.0);
-      dppfac = -0.5 * M_PI / (s1 - s2) * sin(M_PI * (s - s2) / (s1 - s2));
+      ppfac = 0.5 * (cos(std::numbers::pi * (s - s2) / (s1 - s2)) + 1.0);
+      dppfac = -0.5 * std::numbers::pi / (s1 - s2) * sin(std::numbers::pi * (s - s2) / (s1 - s2));
 #else
       if (CONSISTENTTRANSITION == 1)
       {
-        TYPE simple_fac = 0.5 * (cos(M_PI * (s - s2) / (s1 - s2)) + 1.0);
-        TYPE d_simple_fac = -0.5 * M_PI / (s1 - s2) * sin(M_PI * (s - s2) / (s1 - s2));
+        TYPE simple_fac = 0.5 * (cos(std::numbers::pi * (s - s2) / (s1 - s2)) + 1.0);
+        TYPE d_simple_fac =
+            -0.5 * std::numbers::pi / (s1 - s2) * sin(std::numbers::pi * (s - s2) / (s1 - s2));
         ppfac = simple_fac * simple_fac;
         dppfac = 2 * simple_fac * d_simple_fac;
       }
       else if (CONSISTENTTRANSITION == 2)
       {
-        TYPE simple_fac = 0.5 * (-cos(M_PI * (s - s2) / (s1 - s2)) + 1.0);
-        TYPE d_simple_fac = 0.5 * M_PI / (s1 - s2) * sin(M_PI * (s - s2) / (s1 - s2));
+        TYPE simple_fac = 0.5 * (-cos(std::numbers::pi * (s - s2) / (s1 - s2)) + 1.0);
+        TYPE d_simple_fac =
+            0.5 * std::numbers::pi / (s1 - s2) * sin(std::numbers::pi * (s - s2) / (s1 - s2));
         ppfac = 1 - simple_fac * simple_fac;
         dppfac = -2 * simple_fac * d_simple_fac;
       }
@@ -1766,7 +1744,7 @@ void BeamInteraction::BeamToBeamContactPair<numnodes, numnodalvalues>::calc_par_
   TYPE ppfac = 1.0;
   TYPE dppfac = 0.0;
 
-  if (shiftangle1 > M_PI / 2.0 and shiftangle2 > M_PI / 2.0)
+  if (shiftangle1 > std::numbers::pi / 2.0 and shiftangle2 > std::numbers::pi / 2.0)
   {
     ppfac = 1.0;
     dppfac = 0.0;
@@ -1778,8 +1756,8 @@ void BeamInteraction::BeamToBeamContactPair<numnodes, numnodalvalues>::calc_par_
     double s1 = cos(shiftangle1);
     double s2 = cos(shiftangle2);
 
-    if (shiftangle1 < 0.0 or shiftangle1 > M_PI / 2.0 or shiftangle2 < 0.0 or
-        shiftangle2 > M_PI / 2.0 or shiftangle1 >= shiftangle2)
+    if (shiftangle1 < 0.0 or shiftangle1 > std::numbers::pi / 2.0 or shiftangle2 < 0.0 or
+        shiftangle2 > std::numbers::pi / 2.0 or shiftangle1 >= shiftangle2)
       FOUR_C_THROW("Invalid choice of shift angles!");
 
     if (Core::FADUtils::cast_to_double(s) > s1)
@@ -1787,11 +1765,12 @@ void BeamInteraction::BeamToBeamContactPair<numnodes, numnodalvalues>::calc_par_
     else if (Core::FADUtils::cast_to_double(s) > s2)
     {
 #ifndef CONSISTENTTRANSITION
-      ppfac = 0.5 * (-cos(M_PI * (s - s2) / (s1 - s2)) + 1.0);
-      dppfac = 0.5 * M_PI / (s1 - s2) * sin(M_PI * (s - s2) / (s1 - s2));
+      ppfac = 0.5 * (-cos(std::numbers::pi * (s - s2) / (s1 - s2)) + 1.0);
+      dppfac = 0.5 * std::numbers::pi / (s1 - s2) * sin(std::numbers::pi * (s - s2) / (s1 - s2));
 #else
-      TYPE simple_fac = 0.5 * (-cos(M_PI * (s - s2) / (s1 - s2)) + 1.0);
-      TYPE d_simple_fac = 0.5 * M_PI / (s1 - s2) * sin(M_PI * (s - s2) / (s1 - s2));
+      TYPE simple_fac = 0.5 * (-cos(std::numbers::pi * (s - s2) / (s1 - s2)) + 1.0);
+      TYPE d_simple_fac =
+          0.5 * std::numbers::pi / (s1 - s2) * sin(std::numbers::pi * (s - s2) / (s1 - s2));
       ppfac = simple_fac * simple_fac;
       dppfac = 2 * simple_fac * d_simple_fac;
 #endif
@@ -2000,9 +1979,9 @@ bool BeamInteraction::BeamToBeamContactPair<numnodes, numnodalvalues>::check_seg
     {
       this->print(std::cout);
 
-      std::cout << "\n\nangle_left= " << angle1 / M_PI * 180
-                << "degrees, angle_right= " << angle2 / M_PI * 180
-                << "degrees, segangle= " << segangle / M_PI * 180 << "degrees";
+      std::cout << "\n\nangle_left= " << angle1 / std::numbers::pi * 180
+                << "degrees, angle_right= " << angle2 / std::numbers::pi * 180
+                << "degrees, segangle= " << segangle / std::numbers::pi * 180 << "degrees";
       std::cout << "\n\nsegment midpoint position (linear approx)= " << rm_lin;
       std::cout << "\n\nsegment midpoint position                = " << rm;
       std::cout << "\n\ndist= " << dist << ", segdist= " << segdist;
@@ -2417,7 +2396,8 @@ bool BeamInteraction::BeamToBeamContactPair<numnodes, numnodalvalues>::closest_p
           std::cout << "Element2()->Id(): " << element2()->id() << std::endl;
           std::cout << "R2_: " << r2_ << std::endl;
           std::cout << "g_min: " << g_min << std::endl;
-          std::cout << "alpha_g_min: " << alpha_g_min / M_PI * 180 << "degrees" << std::endl;
+          std::cout << "alpha_g_min: " << alpha_g_min / std::numbers::pi * 180 << "degrees"
+                    << std::endl;
           std::cout << "numstartpoint: " << numstartpoint << std::endl;
           std::cout << "iter: " << iter << std::endl;
           std::cout << "residual0: " << residual0 << std::endl;
@@ -2748,22 +2728,6 @@ bool BeamInteraction::BeamToBeamContactPair<numnodes, numnodalvalues>::point_to_
       // compute the scalar residuum
       // The residual is scaled with 1/element_length since r_xi scales with the element_length
       residual = fabs((double)Core::FADUtils::cast_to_double((TYPE)(f / jacobi)));
-
-      //      std::cout << "iter: " << iter << std::endl;
-      //      std::cout << "residual: " << residual << std::endl;
-      //      std::cout << "eta1: " << eta1.val() << std::endl;
-      //      std::cout << "eta2: " << eta2.val() << std::endl;
-      //      std::cout << "r1: " << r1 << std::endl;
-      //      std::cout << "r2: " << r2 << std::endl;
-      //      std::cout << "r1_xi: " << r1_xi << std::endl;
-      //      std::cout << "r2_xi: " << r2_xi << std::endl;
-      //      std::cout << "r1_xixi: " << r1_xixi << std::endl;
-      //      std::cout << "r2_xixi: " << r2_xixi << std::endl;
-      //      std::cout << "ele1pos_: " << ele1pos_ << std::endl;
-      //      std::cout << "ele2pos_: " << ele2pos_ << std::endl;
-      //      std::cout << "angle: " <<
-      //      BeamContact::CalcAngle(Core::FADUtils::cast_to_double<TYPE,3,1>(r1_xi),Core::FADUtils::cast_to_double<TYPE,3,1>(r2_xi))/M_PI*180.0
-      //      << std::endl;
 
       if (iter == 1) residual0 = residual;
 

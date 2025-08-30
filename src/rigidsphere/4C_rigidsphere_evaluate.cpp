@@ -178,7 +178,7 @@ void Discret::Elements::Rigidsphere::nlnstiffmass(Teuchos::ParameterList& params
   // assemble massmatrix if requested
   if (massmatrix != nullptr)
   {
-    double m = rho_ * 4.0 / 3.0 * M_PI * radius_ * radius_ * radius_;
+    double m = rho_ * 4.0 / 3.0 * std::numbers::pi * radius_ * radius_ * radius_;
     for (int i = 0; i < 3; ++i) (*massmatrix)(i, i) = m;
   }
 
@@ -316,7 +316,7 @@ double Discret::Elements::Rigidsphere::my_damping_constant()
   double eta = params_interface().get_brownian_dyn_param_interface()->get_viscosity();
 
   // damping/friction coefficient of a rigid sphere (Stokes' law for very small Reynolds numbers)
-  return 6 * M_PI * eta * radius_;
+  return 6 * std::numbers::pi * eta * radius_;
 }
 
 /*-----------------------------------------------------------------------------------------------------------*

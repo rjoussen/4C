@@ -300,7 +300,7 @@ namespace FLD
         // domain length
         const double L = 10.0 * M;
         // reference length
-        const double L_ref = L / (2.0 * M_PI);
+        const double L_ref = L / (2.0 * std::numbers::pi);
 
         for (std::size_t rr = 0; rr < k_exp.size(); rr++) k_exp[rr] *= (L_ref / 0.01);
 

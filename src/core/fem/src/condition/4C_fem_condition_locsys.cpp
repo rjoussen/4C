@@ -663,7 +663,7 @@ void Core::Conditions::LocsysManager::calc_rotation_vector_for_normal_system(
     {  // normal vector is (-1,0,0), thus rotate 180 deg about z-axis, i.e. (0,0,pi)
       currNodalRotVector(0, 0) = 0.0;
       currNodalRotVector(1, 0) = 0.0;
-      currNodalRotVector(2, 0) = M_PI;
+      currNodalRotVector(2, 0) = std::numbers::pi;
     }
     else
     {  // normal vector is (+1,0,0), thus no rotation at all

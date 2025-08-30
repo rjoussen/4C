@@ -3014,7 +3014,7 @@ void ScaTra::ScaTraTimIntElch::apply_neumann_bc(
 
               const auto neumann_value = condition->parameters().get<double>("CURRENT");
 
-              constexpr double four_pi = 4.0 * M_PI;
+              constexpr double four_pi = 4.0 * std::numbers::pi;
               const double fac = scatra_parameter_list()->get<bool>("SPHERICALCOORDS")
                                      ? *node->x().data() * *node->x().data() * four_pi
                                      : 1.0;

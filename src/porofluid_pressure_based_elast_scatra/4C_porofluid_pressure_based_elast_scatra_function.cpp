@@ -615,10 +615,10 @@ double PoroPressureBased::OxygenConsumptionLawHeaviside<dim>::evaluate(
   const double heaviside_pres((parameters_.p_t_crit - p2) > 0. ? 1. : 0.);
 
   // evaluate the function
-  const double functval =
-      (1.0 - necr_frac) * S2 * porosity *
-      (macaulay * heaviside_pres +
-          parameters_.gamma_0_nl * sin(M_PI / 2.0 * oxy_mass_frac / parameters_.w_nl_env));
+  const double functval = (1.0 - necr_frac) * S2 * porosity *
+                          (macaulay * heaviside_pres +
+                              parameters_.gamma_0_nl * sin(std::numbers::pi / 2.0 * oxy_mass_frac /
+                                                           parameters_.w_nl_env));
 
   return functval;
 }
@@ -649,18 +649,20 @@ std::vector<double> PoroPressureBased::OxygenConsumptionLawHeaviside<dim>::evalu
     const double heaviside_pres((parameters_.p_t_crit - p2) > 0. ? 1. : 0.);
 
     // derivative w.r.t. oxygen mass fraction
-    const double oxy_deriv = (1.0 - necr_frac) * S2 * porosity *
-                             (parameters_.gamma_nl_growth * heaviside_oxy * heaviside_pres * 1.0 /
-                                     (parameters_.w_nl_env - parameters_.w_nl_crit) +
-                                 parameters_.gamma_0_nl * M_PI / 2.0 / parameters_.w_nl_env *
-                                     cos(M_PI / 2.0 * oxy_mass_frac / parameters_.w_nl_env));
+    const double oxy_deriv =
+        (1.0 - necr_frac) * S2 * porosity *
+        (parameters_.gamma_nl_growth * heaviside_oxy * heaviside_pres * 1.0 /
+                (parameters_.w_nl_env - parameters_.w_nl_crit) +
+            parameters_.gamma_0_nl * std::numbers::pi / 2.0 / parameters_.w_nl_env *
+                cos(std::numbers::pi / 2.0 * oxy_mass_frac / parameters_.w_nl_env));
     deriv[0] = oxy_deriv;
 
     // derivative w.r.t. necrotic cell mass fraction
     const double necro_deriv =
         S2 * porosity * (-1.0) *
         (macaulay * heaviside_pres +
-            parameters_.gamma_0_nl * sin(M_PI / 2.0 * oxy_mass_frac / parameters_.w_nl_env));
+            parameters_.gamma_0_nl *
+                sin(std::numbers::pi / 2.0 * oxy_mass_frac / parameters_.w_nl_env));
     deriv[1] = necro_deriv;
   }
   else if (variables[0].first == "p1")  // OD-derivative
@@ -679,17 +681,18 @@ std::vector<double> PoroPressureBased::OxygenConsumptionLawHeaviside<dim>::evalu
     const double heaviside_pres((parameters_.p_t_crit - p2) > 0. ? 1. : 0.);
 
     // derivative w.r.t. tumor cell saturation S2
-    const double tc_deriv =
-        (1.0 - necr_frac) * porosity *
-        (macaulay * heaviside_pres +
-            parameters_.gamma_0_nl * sin(M_PI / 2.0 * oxy_mass_frac / parameters_.w_nl_env));
+    const double tc_deriv = (1.0 - necr_frac) * porosity *
+                            (macaulay * heaviside_pres +
+                                parameters_.gamma_0_nl * sin(std::numbers::pi / 2.0 *
+                                                             oxy_mass_frac / parameters_.w_nl_env));
     deriv[4] = tc_deriv;
 
     // derivative w.r.t. porosity
     const double poro_deriv =
         (1.0 - necr_frac) * S2 *
         (macaulay * heaviside_pres +
-            parameters_.gamma_0_nl * sin(M_PI / 2.0 * oxy_mass_frac / parameters_.w_nl_env));
+            parameters_.gamma_0_nl *
+                sin(std::numbers::pi / 2.0 * oxy_mass_frac / parameters_.w_nl_env));
     deriv[6] = poro_deriv;
   }
   else
@@ -1183,8 +1186,8 @@ double PoroPressureBased::OxygenTransvascularExchangeLawDisc<dim>::evaluate(
 
   // evaluate function
   const double heaviside_S2 = ((S2 - parameters_.S2_max) > 0. ? 0. : 1.);
-  const double functval =
-      parameters_.gamma_rho * M_PI * D * (Pb - oxy_mass_frac_if / fac_if) * heaviside_S2;
+  const double functval = parameters_.gamma_rho * std::numbers::pi * D *
+                          (Pb - oxy_mass_frac_if / fac_if) * heaviside_S2;
 
   return functval;
 }
@@ -1222,8 +1225,9 @@ std::vector<double> PoroPressureBased::OxygenTransvascularExchangeLawDisc<dim>::
   // evaluate function
   const double heaviside_S2 = ((S2 - parameters_.S2_max) > 0. ? 0. : 1.);
 
-  deriv[0] = parameters_.gamma_rho * M_PI * D * (-1.0 / fac_if) * heaviside_S2;
-  deriv[pos_oxy_art_] = parameters_.gamma_rho * M_PI * D * (Pb.fastAccessDx(0)) * heaviside_S2;
+  deriv[0] = parameters_.gamma_rho * std::numbers::pi * D * (-1.0 / fac_if) * heaviside_S2;
+  deriv[pos_oxy_art_] =
+      parameters_.gamma_rho * std::numbers::pi * D * (Pb.fastAccessDx(0)) * heaviside_S2;
 
   return deriv;
 }

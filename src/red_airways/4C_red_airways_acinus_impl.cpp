@@ -783,7 +783,7 @@ void Discret::Elements::AcinusImpl<distype>::calc_elem_volume(RedAcinus* ele,
   evaluation_data.elemVolumenp->replace_global_values(1, &evolnp, &gid);
 
   // calculate and update element radius
-  double eRadiusnp = std::pow(evolnp * 0.75 * M_1_PI, 1.0 / 3.0);
+  double eRadiusnp = std::pow(evolnp * 0.75 * std::numbers::inv_pi, 1.0 / 3.0);
   evaluation_data.elemRadiusnp->replace_global_values(1, &eRadiusnp, &gid);
 }
 

@@ -942,7 +942,8 @@ void Discret::Elements::ScaTraEleCalcLsReinit<distype, prob_dim>::sign_function(
     else if (phizero > epsilon)
       sign_phi = +1.0;
     else
-      sign_phi = phizero / epsilon + 1.0 / M_PI * sin(M_PI * phizero / epsilon);
+      sign_phi =
+          phizero / epsilon + 1.0 / std::numbers::pi * sin(std::numbers::pi * phizero / epsilon);
   }
   else
     FOUR_C_THROW("unknown type of sign function!");
@@ -965,7 +966,7 @@ void Discret::Elements::ScaTraEleCalcLsReinit<distype, prob_dim>::deriv_sign_fun
   else if (phizero > epsilon)
     deriv_sign = 0.0;
   else
-    deriv_sign = 1.0 / (2.0 * epsilon) * (1.0 + cos(M_PI * phizero / epsilon));
+    deriv_sign = 1.0 / (2.0 * epsilon) * (1.0 + cos(std::numbers::pi * phizero / epsilon));
 
   return;
 }

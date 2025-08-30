@@ -78,7 +78,7 @@ double FLD::get_rot_angle_from_condition(const Core::Conditions::Condition* cond
 {
   const double rotangle_deg = cond->parameters().get<double>("ANGLE");
 
-  return rotangle_deg * M_PI / 180.0;  // angle of rotation (RAD);
+  return rotangle_deg * std::numbers::pi / 180.0;  // angle of rotation (RAD);
 }
 
 /*----------------------------------------------------------------------*/
