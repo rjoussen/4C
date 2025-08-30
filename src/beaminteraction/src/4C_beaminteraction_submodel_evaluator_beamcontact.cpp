@@ -227,7 +227,7 @@ void BeamInteraction::SubmodelEvaluator::BeamContact::setup()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-std::shared_ptr<const BeamInteraction::SubmodelEvaluator::BeamContactAssemblyManagerInDirect> const
+std::shared_ptr<const BeamInteraction::SubmodelEvaluator::BeamContactAssemblyManagerInDirect>
 BeamInteraction::SubmodelEvaluator::BeamContact::get_lagrange_multiplier_assembly_manager() const
 {
   if (!std::dynamic_pointer_cast<BeamContactAssemblyManagerInDirect>(assembly_managers_[0]))

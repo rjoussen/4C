@@ -151,8 +151,7 @@ namespace BeamInteraction
       /**
        * \brief Lagrange Multiplier specific function returning the first assembly manager.
        */
-      std::shared_ptr<
-          const BeamInteraction::SubmodelEvaluator::BeamContactAssemblyManagerInDirect> const
+      std::shared_ptr<const BeamInteraction::SubmodelEvaluator::BeamContactAssemblyManagerInDirect>
       get_lagrange_multiplier_assembly_manager() const;
 
       /**
