@@ -144,6 +144,7 @@ endfunction()
 # CSV_COMPARISON_REFERENCE_FILE:  Reference files to compare with
 # CSV_COMPARISON_TOL_R:           Relative tolerances for comparison
 # CSV_COMPARISON_TOL_A:           Absolute tolerances for comparison
+# REQUIRED_DEPENDENCIES:          Any required external dependencies. The test will be skipped if the dependencies are not met.
 
 function(four_c_test)
 
@@ -157,6 +158,7 @@ function(four_c_test)
       CSV_COMPARISON_REFERENCE_FILE
       CSV_COMPARISON_TOL_R
       CSV_COMPARISON_TOL_A
+      REQUIRED_DEPENDENCIES
       )
   cmake_parse_arguments(
     _parsed
@@ -264,6 +266,28 @@ function(four_c_test)
     endif()
     list(APPEND csv_comparison_reference_file ${file_name})
   endforeach()
+
+  if(DEFINED _parsed_REQUIRED_DEPENDENCIES)
+    foreach(dep IN LISTS _parsed_REQUIRED_DEPENDENCIES)
+      four_c_sanitize_package_name(${dep} dep_sanitized)
+      # Check that we even know this dependency
+      if(NOT DEFINED "FOUR_C_WITH_${dep_sanitized}")
+        message(FATAL_ERROR "Unknown dependency ${dep}")
+      endif()
+      if(NOT FOUR_C_WITH_${dep_sanitized})
+        string(
+          APPEND skip_message "Skipping because FOUR_C_WITH_${dep_sanitized} is not enabled.\n"
+          )
+      endif()
+    endforeach()
+    if(NOT "${skip_message}" STREQUAL "")
+      # Note that this only adds _one_ skipped test, even though multiple dependent tests
+      # might have been created by this function.
+      skip_test(${_parsed_TEST_FILE}-p${_parsed_NP} "${skip_message}")
+      message(VERBOSE "Skipping test ${_parsed_TEST_FILE} because dependencies are not met.")
+      return()
+    endif()
+  endif()
 
   # set base test name and directory
   if(num_TEST_FILE EQUAL 1)
