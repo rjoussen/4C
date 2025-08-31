@@ -107,6 +107,9 @@ namespace Core::LinAlg
     //! Returns the number of matrix rows on this processor.
     int num_local_rows() const { return graph_->NumMyRows(); }
 
+    //! Returns the number of indices in the local graph.
+    int num_local_nonzeros() const { return graph_->NumMyNonzeros(); }
+
     //! Returns the number of indices in the global graph.
     int num_global_nonzeros() const { return graph_->NumGlobalNonzeros(); }
 
