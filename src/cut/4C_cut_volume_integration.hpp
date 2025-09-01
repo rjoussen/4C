@@ -38,17 +38,10 @@ namespace Cut
   class VolumeIntegration
   {
    public:
-    VolumeIntegration(
-        VolumeCell* volcell, Element* elem, const Cut::Point::PointPosition posi, int num_func)
-        : volcell_(volcell), elem1_(elem), position_(posi), num_func_(num_func)
+    VolumeIntegration(VolumeCell* volcell, Element* elem, const Cut::Point::PointPosition posi)
+        : volcell_(volcell), elem1_(elem), position_(posi)
     {
     }
-
-    /*!
-    \brief Computes the RHS of the moment fitting matrix (performs integration of base functions
-    over the volumecell)
-    */
-    Core::LinAlg::SerialDenseVector compute_rhs_moment();
 
     /*!
     \brief Returns the location of Gauss points distributed over the volumecell
@@ -63,47 +56,6 @@ namespace Cut
     std::string is_point_inside(Core::LinAlg::Matrix<3, 1>& rst);
 
    private:
-    /*!
-    \brief Distribute Gaussian points over the volumecell with "numeach" points in each direction
-    */
-    bool compute_gaussian_points(int numeach);
-
-    /*!
-    \brief Check whether the generated ray intersect the facets of the volumecell, if so
-    distribute Gauss points along this ray
-    */
-    bool is_intersect(double* pt, double* mini, double* maxi,
-        std::vector<std::vector<double>>& linePts, std::vector<std::vector<double>> zcoord,
-        std::vector<std::vector<double>> ycoord, double toler, int numeach);
-
-    /*!
-    \brief Check whether the particular z-plane of the volumecell contains significant area so as
-    to distribute the Gauss points in that plane
-    */
-    bool is_contain_area(double minn[3], double maxx[3], double& zmin,
-        std::vector<std::vector<double>>& pts, std::vector<std::vector<double>> zcoord,
-        std::vector<std::vector<double>> ycoord, double toler, int numeach);
-
-    /*!
-    \brief Generates equally spaced "num" number of points on the line whose end points are
-    specified by inter1 and inter2
-    */
-    void on_line(std::vector<double> inter1, std::vector<double> inter2,
-        std::vector<std::vector<double>>& linePts, int num);
-
-    /*!
-    \brief Store the z- and y-coordinates of the all corner points which will be used to find
-    whether the intersection point lies inside the volume or not
-    */
-    void get_zcoordinates(
-        std::vector<std::vector<double>>& zcoord, std::vector<std::vector<double>>& ycoord);
-
-    /*
-    \brief Check whether the intersection point, which is in the plane containing the facet,
-    actually lies with in the facet area
-    */
-    int pnpoly(int npol, std::vector<double> xp, std::vector<double> yp, double x, double y);
-
     /*
     \brief Check whether the intersection point, which is in the plane containing the facet,
     actually lies with in the facet area
@@ -119,9 +71,6 @@ namespace Cut
 
     //! position (inside or outside) of volumecell
     const Cut::Point::PointPosition position_;
-
-    //! defines the base function to be integrated
-    int num_func_;
 
     //! position of Gauss points
     std::vector<std::vector<double>> gauss_pts_;

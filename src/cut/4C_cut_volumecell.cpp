@@ -657,7 +657,7 @@ std::string Cut::VolumeCell::is_this_point_inside(Core::LinAlg::Matrix<3, 1>& xg
   const Cut::Point::PointPosition posi = position();
   if (posi == 0) FOUR_C_THROW("undefined position for the volumecell");
 
-  VolumeIntegration vc(this, element_, posi, 0);
+  VolumeIntegration vc(this, element_, posi);
   std::string inside = vc.is_point_inside(xloc);
   return inside;
 }
