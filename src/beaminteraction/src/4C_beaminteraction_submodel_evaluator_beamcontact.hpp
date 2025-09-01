@@ -203,13 +203,6 @@ namespace BeamInteraction
 
       //! @}
 
-     public:
-      inline BeamInteraction::BeamContactParams const& beam_contact_params() const
-      {
-        check_init();
-        return *beam_contact_params_ptr_;
-      }
-
      private:
       inline BeamInteraction::BeamContactParams& beam_contact_params()
       {
@@ -218,6 +211,12 @@ namespace BeamInteraction
       }
 
      public:
+      inline BeamInteraction::BeamContactParams const& beam_contact_params() const
+      {
+        check_init();
+        return *beam_contact_params_ptr_;
+      }
+
       inline std::shared_ptr<BeamInteraction::BeamContactParams> beam_contact_params_ptr() const
       {
         check_init();
@@ -265,12 +264,16 @@ namespace BeamInteraction
           const Core::Elements::Element* currele,
           std::set<Core::Elements::Element*>& neighbors) const;
 
-      /// create instances of class BeamContactPair that will be evaluated
-      ///  to get force and stiffness contributions from beam interactions
+      /**
+       * create instances of class BeamContactPair that will be evaluated
+       *  to get force and stiffness contributions from beam interactions
+       */
       void create_beam_contact_element_pairs();
 
-      /// Add the restart displacement to the pairs, if the coupling should be evaluated with
-      /// respect to the restart state.
+      /**
+       *  Add the restart displacement to the pairs, if the coupling should be evaluated with
+       *  respect to the restart state.
+       */
       void set_restart_displacement_in_pairs();
 
       //! @}
