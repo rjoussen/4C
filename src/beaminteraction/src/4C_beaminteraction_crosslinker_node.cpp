@@ -76,7 +76,7 @@ void CrossLinking::CrosslinkerNodeDataContainer::unpack(Core::Communication::Unp
  *  ctor (public)                                              eichinger 10/16|
  *----------------------------------------------------------------------------*/
 CrossLinking::CrosslinkerNode::CrosslinkerNode(
-    int id, const std::vector<double>& coords, const int owner)
+    int id, std::span<const double> coords, const int owner)
     : Core::Nodes::Node(id, coords, owner), mat_(nullptr)
 {
   return;

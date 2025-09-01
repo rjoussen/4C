@@ -38,7 +38,7 @@ Core::Communication::ParObject* CONTACT::RoughNodeType::create(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-CONTACT::RoughNode::RoughNode(int id, const std::vector<double>& coords, const int owner,
+CONTACT::RoughNode::RoughNode(int id, std::span<const double> coords, const int owner,
     const std::vector<int>& dofs, const bool isslave, const bool initactive,
     const int hurstexponentfunction, int initialtopologystddeviationfunction, int resolution,
     bool randomtopologyflag, bool randomseedflag, int randomgeneratorseed)

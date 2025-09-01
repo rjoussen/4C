@@ -30,8 +30,8 @@ Core::Communication::ParObject* Core::Nodes::NodeType::create(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Core::Nodes::Node::Node(const int id, const std::vector<double>& coords, const int owner)
-    : ParObject(), id_(id), lid_(-1), owner_(owner), x_(coords)
+Core::Nodes::Node::Node(const int id, std::span<const double> coords, const int owner)
+    : ParObject(), id_(id), lid_(-1), owner_(owner), x_(coords.begin(), coords.end())
 {
 }
 

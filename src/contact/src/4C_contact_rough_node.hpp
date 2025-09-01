@@ -49,7 +49,7 @@ namespace CONTACT
      \brief Standard Constructor
 
      \param id     (in): A globally unique node id
-     \param coords (in): vector of nodal coordinates, length 3
+     \param coords (in): span of nodal coordinates, length 3
      \param owner  (in): Owner of this node.
      \param dofs   (in): list of global degrees of freedom
      \param isslave(in): flag indicating whether node is slave or master
@@ -63,10 +63,10 @@ namespace CONTACT
      \\ add remaining params here
 
      */
-    RoughNode(int id, const std::vector<double>& coords, const int owner,
-        const std::vector<int>& dofs, const bool isslave, const bool initactive,
-        const int hurstexponentfunction, int initialtopologystddeviationfunction, int resolution,
-        bool randomtopologyflag, bool randomseedflag, int randomgeneratorseed);
+    RoughNode(int id, std::span<const double> coords, const int owner, const std::vector<int>& dofs,
+        const bool isslave, const bool initactive, const int hurstexponentfunction,
+        int initialtopologystddeviationfunction, int resolution, bool randomtopologyflag,
+        bool randomseedflag, int randomgeneratorseed);
 
     /*!
      \brief Return unique ParObject id

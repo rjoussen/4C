@@ -75,7 +75,7 @@ namespace Core::Nodes
     \param coords (in): vector of nodal coordinates
     \param owner  (in): Owner of this node.
     */
-    Node(int id, const std::vector<double>& coords, int owner);
+    Node(int id, std::span<const double> coords, int owner);
 
     /*!
     \brief Copy Constructor

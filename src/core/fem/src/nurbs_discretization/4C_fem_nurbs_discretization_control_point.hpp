@@ -63,11 +63,11 @@ namespace Core::FE
       \brief Standard Constructor
 
       \param id     (in): A globally unique control point id
-      \param coords (in): vector of nodal coordinates, length 3
+      \param coords (in): span of nodal coordinates, length 3
       \param weight (in): nurbs weight
       \param owner  (in): Owner of this node.
       */
-      ControlPoint(int id, const std::vector<double>& coords, const double weight, const int owner);
+      ControlPoint(int id, std::span<const double> coords, const double weight, const int owner);
 
       /*!
       \brief Copy Constructor

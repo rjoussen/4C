@@ -170,11 +170,11 @@ namespace CrossLinking
     \brief Standard Constructor
 
     \param id     (in): A globally unique node id
-    \param coords (in): vector of nodal coordinates, length 3
+    \param coords (in): span of nodal coordinates, length 3
     \param owner  (in): Owner of this node.
 
     */
-    CrosslinkerNode(int id, const std::vector<double>& coords, const int owner);
+    CrosslinkerNode(int id, std::span<const double> coords, const int owner);
 
     /*!
     \brief Copy Constructor

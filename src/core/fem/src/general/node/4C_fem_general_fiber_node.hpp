@@ -71,13 +71,13 @@ namespace Core::Nodes
     \brief Standard Constructor
 
     \param id     (in): A globally unique fiber node
-    \param coords (in): vector of nodal coordinates, length 3
+    \param coords (in): span of nodal coordinates, length 3
     \param coordinateSystemDirections (in): map of coordinate system directions
     \param fibers (in): list of fiber vectors
     \param angles (in): map of angles
     \param owner  (in): Owner of this node.
     */
-    FiberNode(int id, const std::vector<double>& coords,
+    FiberNode(int id, std::span<const double> coords,
         std::map<CoordinateSystemDirection, std::array<double, 3>> coordinateSystemDirections,
         std::vector<std::array<double, 3>> fibers, std::map<AngleType, double> angles,
         const int owner);

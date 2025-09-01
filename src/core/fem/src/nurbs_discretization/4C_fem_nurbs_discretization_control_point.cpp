@@ -29,7 +29,7 @@ Core::Communication::ParObject* Core::FE::Nurbs::ControlPointType::create(
   Standard ctor
  */
 Core::FE::Nurbs::ControlPoint::ControlPoint(
-    int id, const std::vector<double>& coords, const double weight, const int owner)
+    int id, std::span<const double> coords, const double weight, const int owner)
     : Core::Nodes::Node(id, coords, owner), w_(weight)
 {
   return;
