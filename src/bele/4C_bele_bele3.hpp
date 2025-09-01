@@ -387,24 +387,7 @@ namespace Discret
 
       //! don't want = operator
       Bele3Line& operator=(const Bele3Line& old);
-
-
-      //! compute infinitesimal line element dr for integration along the line
-      double f2_substitution(const Core::LinAlg::SerialDenseMatrix xye,
-          const Core::LinAlg::SerialDenseMatrix deriv, const int iel);
-
-      //! Get Rule for Gaussintegration according to Discret::UTIL
-      Core::FE::GaussRule1D get_optimal_gaussrule(const Core::FE::CellType& distype);
-
-      //! integrate shape functions over a line
-      void integrate_shape_function(Teuchos::ParameterList& params,
-          Core::FE::Discretization& discretization, const std::vector<int>& lm,
-          Core::LinAlg::SerialDenseVector& elevec1, const std::vector<double>& edispnp);
-
-
     };  // class Bele3Line
-
-
 
   }  // namespace Elements
 }  // namespace Discret
