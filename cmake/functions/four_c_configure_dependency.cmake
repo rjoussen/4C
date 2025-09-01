@@ -5,6 +5,15 @@
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
+function(four_c_sanitize_package_name _package_name _output_var)
+  string(TOUPPER ${_package_name} _package_name_sanitized)
+  string(REGEX REPLACE "[^A-Z0-9]" "_" _package_name_sanitized ${_package_name_sanitized})
+  set(${_output_var}
+      ${_package_name_sanitized}
+      PARENT_SCOPE
+      )
+endfunction()
+
 # This function checks for the existence of a file dependencies/supported_version/${_package_name}.txt and reports
 # whether the given hash is supported.
 function(four_c_check_dependency_version _package_name _package_name_sanitized _sha)
@@ -225,9 +234,7 @@ function(four_c_configure_dependency _package_name)
     endif()
   endif()
 
-  # Sanitize the package name: all upper case, no hyphens and dots.
-  string(TOUPPER ${_package_name} _package_name_sanitized)
-  string(REGEX REPLACE "[^A-Z0-9]" "_" _package_name_sanitized ${_package_name_sanitized})
+  four_c_sanitize_package_name(${_package_name} _package_name_sanitized)
 
   # Add a cache entry to turn the option ON or OFF.
   four_c_process_global_option(

@@ -9,9 +9,7 @@
 # Append configuration for a package to FOUR_C_ACTIVATED_DEPENDENCIES_CONFIG
 ##
 macro(_add_dependency_to_config _package_name)
-  # Sanitize the package name: all upper case, no hyphens and dots.
-  string(TOUPPER ${_package_name} _package_name_SANITIZED)
-  string(REGEX REPLACE "[^A-Z0-9]" "_" _package_name_SANITIZED ${_package_name_SANITIZED})
+  four_c_sanitize_package_name(${_package_name} _package_name_SANITIZED)
 
   string(
     APPEND
