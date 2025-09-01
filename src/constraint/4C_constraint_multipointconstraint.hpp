@@ -46,7 +46,7 @@ namespace Constraints
     /*!
         \brief Destructor
     */
-    virtual ~MPConstraint() { ; };
+    virtual ~MPConstraint() = default;
 
     /// Set state of the underlying constraint discretization
     void set_constr_state(const std::string& state,  ///< name of state to set
