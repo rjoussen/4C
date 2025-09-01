@@ -721,7 +721,7 @@ add_test(
   NAME test_cleanup
   COMMAND
     sh -c
-    "if [ -f *_CUTFAIL.pos ]; then mkdir -p ../cut-debug ; cp *_CUTFAIL.pos ../cut-debug/ ; fi ; rm -fr xxx* framework_test_output* core.*"
+    "if [ -f *_CUTFAIL.pos ]; then mkdir -p ../cut-debug ; cp *_CUTFAIL.pos ../cut-debug/ ; fi ; rm -fr xxx* framework_test_output* core.* tutorials*"
   )
 set_processors(test_cleanup 1)
 set_tests_properties(test_cleanup PROPERTIES FIXTURES_CLEANUP test_cleanup)
