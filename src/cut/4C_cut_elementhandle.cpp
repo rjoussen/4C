@@ -13,7 +13,6 @@
 #include "4C_cut_node.hpp"
 #include "4C_cut_point.hpp"
 #include "4C_cut_position.hpp"
-#include "4C_cut_quadrature_compression.hpp"
 #include "4C_cut_tolerance.hpp"
 #include "4C_cut_volumecell.hpp"
 #include "4C_utils_enum.hpp"

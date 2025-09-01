@@ -35,44 +35,16 @@ namespace Cut
    public:
     FacetIntegration(Facet* face1, Element* element1, const Cut::Point::PointPosition posi,
         bool bcellInt, bool global)
-        : face1_(face1),             // facet under consideration
-          elem1_(element1),          // the element for which the facet is a part of
-          position_(posi),           // position
-          bcell_int_(bcellInt),      //"true" if it is boundarycell integration
-          ordering_computed_(false)  // whether cw or acw ordering of vertices computed
+        : face1_(face1),     // facet under consideration
+          elem1_(element1),  // the element for which the facet is a part of
+          position_(posi)    // position
     {
     }
-
-    /*!
-    \brief Select the base function to be integrated
-    */
-    void set_integ_number(int inte_num) { inte_num_ = inte_num; }
-
-    /*!
-    \brief Performs the integration of a function over the facet
-    */
-    double integrate_facet();
 
     /*!
     \brief Computes the equation of the plane that contains this facet
     */
     std::vector<double> equation_plane(const std::vector<std::vector<double>>& cornersLocal);
-
-    /*!
-    \brief Returns the equation of plane that contains this facet
-    */
-    std::vector<double> get_equation() { return eqn_plane_; }
-
-    /*!
-    \brief Return whether the vertices numbering of the facet is clockwise
-    */
-    bool is_clockwise_ordering();
-
-    /*!
-    \brief Generate Gaussian points over the considered facet by triangulating it. This is used
-    when DirectDivergence option is used for Gauss point generation
-    */
-    void divergence_integration_rule(Mesh& mesh, Core::FE::CollectedGaussPoints& cgp);
 
     /*!
     \brief Generate Gaussian points over the considered facet by triangulating it. This is used
@@ -86,30 +58,6 @@ namespace Cut
     */
     void is_clockwise(
         const std::vector<double>& eqn_plane, const std::vector<std::vector<double>>& cornersLocal);
-
-    /*
-    \brief Compute the function which replaces "x" when projecting the facet into coordinate plane
-    */
-    std::vector<double> compute_alpha(
-        std::vector<double>& eqn_plane, Cut::ProjectionDirection intType);
-
-    /*!
-    \brief Get normal of the considered facet in a particular coordinate direction defined by
-    intType
-    */
-    double get_normal(Cut::ProjectionDirection intType);
-
-    /*!
-    \brief Perform integration of base functions over boundarycells
-    */
-    void boundary_facet_integration(const std::vector<std::vector<double>>& cornersLocal,
-        double& facet_integ, Cut::ProjectionDirection intType);
-
-    /*!
-    \brief Generate boundary cells for the considered facet. May need to perform triangulatio
-    */
-    void generate_divergence_cells(
-        bool divergenceRule, Mesh& mesh, std::list<std::shared_ptr<BoundaryCell>>& divCells);
 
     /*!
     \brief Generate boundary cells for the considered facet. May need to perform triangulatio
@@ -140,17 +88,8 @@ namespace Cut
     //! position of the facet
     const Cut::Point::PointPosition position_;
 
-    //! True for boundarycell integration
-    bool bcell_int_;
-
-    //! set the base function to be integrated
-    int inte_num_;
-
     //! True if nodes of facet are arranged to give inward normal
     bool clockwise_;
-
-    //! whether the clockwise or ACW ordering of facet computed already
-    bool ordering_computed_;
 
     //! equation of plane that contains the facet
     std::vector<double> eqn_plane_;
