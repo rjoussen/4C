@@ -84,7 +84,7 @@ void Mortar::NodeDataContainer::unpack(Core::Communication::UnpackBuffer& buffer
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Mortar::Node::Node(int id, const std::vector<double>& coords, const int owner,
+Mortar::Node::Node(int id, std::span<const double> coords, const int owner,
     const std::vector<int>& dofs, const bool isslave)
     : Core::Nodes::Node(id, coords, owner),
       isslave_(isslave),

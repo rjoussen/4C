@@ -28,7 +28,7 @@ Core::Communication::ParObject* Core::Nodes::FiberNodeType::create(
   return object;
 }
 
-Core::Nodes::FiberNode::FiberNode(int id, const std::vector<double>& coords,
+Core::Nodes::FiberNode::FiberNode(int id, std::span<const double> coords,
     std::map<CoordinateSystemDirection, std::array<double, 3>> coordinateSystemDirections,
     std::vector<std::array<double, 3>> fibers, std::map<AngleType, double> angles, const int owner)
     : Core::Nodes::Node(id, coords, owner),

@@ -222,7 +222,7 @@ void CONTACT::FriNodeWearDataContainer::unpack(Core::Communication::UnpackBuffer
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             mgit 02/10|
  *----------------------------------------------------------------------*/
-CONTACT::FriNode::FriNode(int id, const std::vector<double>& coords, const int owner,
+CONTACT::FriNode::FriNode(int id, std::span<const double> coords, const int owner,
     const std::vector<int>& dofs, const bool isslave, const bool initactive, const bool friplus)
     : CONTACT::Node(id, coords, owner, dofs, isslave, initactive), wear_(friplus)
 {

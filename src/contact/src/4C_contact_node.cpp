@@ -210,7 +210,7 @@ void CONTACT::NodeTSIDataContainer::clear()
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 10/07|
  *----------------------------------------------------------------------*/
-CONTACT::Node::Node(int id, const std::vector<double>& coords, const int owner,
+CONTACT::Node::Node(int id, std::span<const double> coords, const int owner,
     const std::vector<int>& dofs, const bool isslave, const bool initactive)
     : Mortar::Node(id, coords, owner, dofs, isslave),
       active_(false),
