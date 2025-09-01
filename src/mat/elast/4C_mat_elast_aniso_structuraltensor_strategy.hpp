@@ -92,7 +92,7 @@ namespace Mat
       StructuralTensorStrategyBase(Mat::Elastic::PAR::StructuralTensorParameter* params);
 
       /// destructor
-      virtual ~StructuralTensorStrategyBase() { ; };
+      virtual ~StructuralTensorStrategyBase() = default;
 
       /*!
        * @brief Method for computing the structural tensor in stress like Voigt notation for
