@@ -117,7 +117,12 @@ namespace Core::Conditions
     /*!
     \brief Set vector of my global node ids
     */
-    void set_nodes(const std::vector<int>& nodes) { nodes_ = nodes; }
+    void set_nodes(std::vector<int> nodes)
+    {
+      // We want to use binary search on the nodes, hence sorting the nodes here.
+      std::ranges::sort(nodes);
+      nodes_ = std::move(nodes);
+    }
 
     /*!
       \brief Return if a node gid is contained in this condition
