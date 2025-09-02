@@ -33,7 +33,7 @@ namespace
     EXPECT_FALSE(validator(1.1));
 
     std::stringstream ss;
-    ss << validator;
+    validator.describe(ss);
     EXPECT_EQ(ss.str(), "in_range(0,1]");
   }
 
@@ -61,7 +61,7 @@ namespace
     EXPECT_FALSE(validator(MyEnum::C));
 
     std::stringstream ss;
-    ss << validator;
+    validator.describe(ss);
     EXPECT_EQ(ss.str(), "in_set{A,B}");
   }
 
@@ -72,7 +72,7 @@ namespace
     EXPECT_FALSE(validator(std::vector<int>{1, -2, 3}));
 
     std::stringstream ss;
-    ss << validator;
+    validator.describe(ss);
     EXPECT_EQ(ss.str(), "all_elements{in_range[1,4]}");
   }
 

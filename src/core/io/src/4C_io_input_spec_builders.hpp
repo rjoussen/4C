@@ -1970,7 +1970,7 @@ bool Core::IO::Internal::ParameterSpec<T>::match(ConstYamlNodeRef node,
   {
     std::ostringstream ss;
     ss << "does not pass validation: ";
-    ss << *data.validator;
+    data.validator->describe(ss);
     match_entry.additional_info = ss.str();
     return false;
   }
@@ -2574,7 +2574,7 @@ Core::IO::InputSpec Core::IO::InputSpecBuilders::parameter(
     Core::IO::Internal::DatPrinter{}(
         validation_error_stream, std::get<1>(internal_data.default_value));
     validation_error_stream << "' does not pass validation: ";
-    validation_error_stream << *data.validator;
+    data.validator->describe(validation_error_stream);
 
     FOUR_C_THROW("{}", validation_error_stream.str());
   }

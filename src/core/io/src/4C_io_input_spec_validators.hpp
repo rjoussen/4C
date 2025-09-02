@@ -10,6 +10,7 @@
 
 #include "4C_config.hpp"
 
+#include "4C_io_input_types.hpp"
 #include "4C_io_yaml.hpp"
 #include "4C_utils_enum.hpp"
 #include "4C_utils_exceptions.hpp"
@@ -30,78 +31,142 @@ FOUR_C_NAMESPACE_OPEN
  */
 namespace Core::IO::InputSpecBuilders::Validators
 {
-  /**
-   * A generic validator providing the interface to check an input value against a predicate.
-   * This class is heavily tied to the InputSpec system and is used to validate input values in a
-   * type-erased manner. Usually, there is nothing you should do with this class directly. Use the
-   * various factory functions to create instances of this class that can then be passed to one of
-   * the InputSpecBuilders functions.
-   */
-  template <typename T>
-  class Validator
-  {
-    using Predicate = std::function<bool(const T&)>;
-    using Describe = std::function<void(std::ostream&)>;
-    using EmitMetadata = std::function<void(YamlNodeRef)>;
-
-    struct Concept
-    {
-      Predicate pred;
-      Describe desc;
-      EmitMetadata emit;
-
-      bool operator()(const T& v) const { return pred(v); }
-      void describe(std::ostream& os) const { desc(os); }
-      void emit_metadata(YamlNodeRef node) const { emit(node); }
-    };
-
-    Concept impl_;
-
-   public:
-    //! Type-erasing constructor.
-    template <typename FPredicate, typename FDescribe, typename FEmitMetadata>
-    Validator(FPredicate p, FDescribe d, FEmitMetadata em)
-        : impl_{
-              .pred = Predicate(std::move(p)),
-              .desc = Describe(std::move(d)),
-              .emit = EmitMetadata(std::move(em)),
-          }
-    {
-    }
-
-    /**
-     * The main validation function. Returns true if the value is valid according to the
-     * predicate stored inside this validator. Returns false otherwise.
-     *
-     * @note This operator can only be called with a value that is exactly of type T without any
-     * implicit conversions.
-     */
-    template <typename U>
-      requires(std::same_as<T, std::decay_t<U>>)
-    [[nodiscard]] bool operator()(const U& v) const
-    {
-      return impl_(v);
-    }
-
-    /**
-     * Describes what this validator expects from the value in human-readable form .
-     */
-    void describe(std::ostream& os) const { impl_.describe(os); }
-
-    /**
-     * Emits metadata about this validator into the given YAML node.
-     */
-    void emit_metadata(YamlNodeRef node) const { impl_.emit_metadata(node); }
-
-    friend std::ostream& operator<<(std::ostream& os, const Validator& v)
-    {
-      v.describe(os);
-      return os;
-    }
-  };
-
   namespace Internal
   {
+
+    template <typename T, typename Enable = void>
+      requires SupportedType<T>
+    class ValidatorImpl
+    {
+     public:
+      template <typename U>
+        requires(std::same_as<T, std::decay_t<U>>)
+      [[nodiscard]] bool operator()(const U& v) const
+      {
+        FOUR_C_THROW("Not implemented");
+      }
+
+      void describe(std::ostream& os) const { FOUR_C_THROW("Not implemented"); }
+
+      void emit_metadata(YamlNodeRef node) const { FOUR_C_THROW("Not implemented"); }
+    };
+
+    template <typename T>
+    class ValidatorImpl<T, std::enable_if_t<IO::Internal::SupportedTypePrimitives<T>>>
+    {
+      using Predicate = std::function<bool(const T&)>;
+      using Describe = std::function<void(std::ostream&)>;
+      using EmitMetadata = std::function<void(YamlNodeRef)>;
+
+      struct Concept
+      {
+        Predicate pred;
+        Describe desc;
+        EmitMetadata emit;
+      };
+
+      Concept impl_;
+
+     public:
+      //! Type-erasing constructor.
+      template <typename FPredicate, typename FDescribe, typename FEmitMetadata>
+      ValidatorImpl(FPredicate p, FDescribe d, FEmitMetadata em)
+          : impl_{
+                .pred = Predicate(std::move(p)),
+                .desc = Describe(std::move(d)),
+                .emit = EmitMetadata(std::move(em)),
+            }
+      {
+      }
+
+      /**
+       * The main validation function. Returns true if the value is valid according to the
+       * predicate stored inside this validator. Returns false otherwise.
+       *
+       * @note This operator can only be called with a value that is exactly of type T without any
+       * implicit conversions.
+       */
+      template <typename U>
+        requires(std::same_as<T, std::decay_t<U>>)
+      [[nodiscard]] bool operator()(const U& v) const
+      {
+        return impl_.pred(v);
+      }
+
+      /**
+       * Describes what this validator expects from the value in human-readable form .
+       */
+      void describe(std::ostream& os) const { impl_.desc(os); }
+
+      /**
+       * Emits metadata about this validator into the given YAML node.
+       */
+      void emit_metadata(YamlNodeRef node) const { impl_.emit(node); }
+    };
+
+    template <typename T>
+    class ValidatorImpl<std::vector<T>>
+    {
+     public:
+      ValidatorImpl(ValidatorImpl<T> inner) : inner_validator_(inner) {}
+
+      template <typename U>
+        requires(std::same_as<std::vector<T>, std::decay_t<U>>)
+      bool operator()(const U& vec) const
+      {
+        for (const auto& v : vec)
+        {
+          if (!inner_validator_(v)) return false;
+        }
+        return true;
+      }
+
+      void describe(std::ostream& os) const
+      {
+        os << "all_elements{";
+        inner_validator_.describe(os);
+        os << "}";
+      }
+
+      void emit_metadata(YamlNodeRef yaml) const
+      {
+        auto& node = yaml.node;
+        node |= ryml::MAP;
+        auto all_node = node["all_elements"];
+        inner_validator_.emit_metadata(yaml.wrap(all_node));
+      }
+
+     private:
+      ValidatorImpl<T> inner_validator_;
+    };
+
+    template <typename T>
+    class ValidatorImpl<std::optional<T>>
+    {
+     public:
+      ValidatorImpl(ValidatorImpl<T> inner) : inner_validator_(inner) {}
+
+      template <typename U>
+        requires(std::same_as<std::optional<T>, std::decay_t<U>>)
+      bool operator()(const U& opt) const
+      {
+        if (!opt.has_value()) return true;
+        return inner_validator_(opt.value());
+      }
+
+      void describe(std::ostream& os) const
+      {
+        os << "null_or{";
+        inner_validator_.describe(os);
+        os << "}";
+      }
+
+      void emit_metadata(YamlNodeRef yaml) const { inner_validator_.emit_metadata(yaml); }
+
+     private:
+      ValidatorImpl<T> inner_validator_;
+    };
+
     //! The types of numbers that we support in the input.
     template <typename T>
     concept Numeric = std::is_same_v<T, int> || std::is_same_v<T, double>;
@@ -145,6 +210,16 @@ namespace Core::IO::InputSpecBuilders::Validators
 
 
   }  // namespace Internal
+
+  /**
+   * A generic validator providing the interface to check an input value against a predicate.
+   * This class is heavily tied to the InputSpec system and is used to validate input values in a
+   * type-erased manner. Usually, there is nothing you should do with this class directly. Use the
+   * various factory functions in this namespace to create instances of this class that can then be
+   * passed to one of the InputSpecBuilders functions.
+   */
+  template <typename T>
+  using Validator = Internal::ValidatorImpl<T>;
 
   /**
    * @brief Create a Validator that checks if a value is within a specified range.
@@ -355,47 +430,14 @@ template <typename T>
 [[nodiscard]] Core::IO::InputSpecBuilders::Validators::Validator<std::vector<T>>
 Core::IO::InputSpecBuilders::Validators::all_elements(Validator<T> validator)
 {
-  return (Validator<std::vector<T>>(
-      [validator](const std::vector<T>& vec)
-      {
-        for (const auto& v : vec)
-        {
-          if (!validator(v)) return false;
-        }
-        return true;
-      },
-      [validator](std::ostream& os)
-      {
-        os << "all_elements{";
-        validator.describe(os);
-        os << "}";
-      },
-      [validator](YamlNodeRef yaml)
-      {
-        auto& node = yaml.node;
-        node |= ryml::MAP;
-        auto all_node = node["all_elements"];
-        validator.emit_metadata(yaml.wrap(all_node));
-      }));
+  return Validator<std::vector<T>>(validator);
 }
 
 template <typename T>
 [[nodiscard]] Core::IO::InputSpecBuilders::Validators::Validator<std::optional<T>>
 Core::IO::InputSpecBuilders::Validators::null_or(Validator<T> validator)
 {
-  return Validator<std::optional<T>>(
-      [validator](const std::optional<T>& opt)
-      {
-        if (!opt.has_value()) return true;
-        return validator(*opt);
-      },
-      [validator](std::ostream& os)
-      {
-        os << "null_or{";
-        validator.describe(os);
-        os << "}";
-      },
-      [validator](YamlNodeRef yaml) { validator.emit_metadata(yaml); });
+  return Validator<std::optional<T>>(validator);
 }
 
 FOUR_C_NAMESPACE_CLOSE
