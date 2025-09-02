@@ -1211,9 +1211,15 @@ c: [[1.0, 2.0], [[1.0, 2.0, 8.0], {a: true, b: false, c: true, d: false}]])",
 
   TEST(InputSpecTest, MatchYamlVectorOfArraysOfVectorsOfArrays)
   {
+    using namespace Core::IO::InputSpecBuilders::Validators;
     using ComplicatedType = std::vector<std::array<std::array<std::vector<int>, 3>, 2>>;
 
-    auto spec = parameter<ComplicatedType>("t", {.description = "", .size = {2, 3}});
+    auto spec = parameter<ComplicatedType>("t",
+        {
+            .description = "",
+            .validator = all_elements(all_elements(all_elements(all_elements(positive<int>())))),
+            .size = {2, 3},
+        });
     auto tree = init_yaml_tree_with_exceptions();
     ryml::NodeRef root = tree.rootref();
 

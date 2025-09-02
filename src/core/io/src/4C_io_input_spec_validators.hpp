@@ -33,14 +33,78 @@ namespace Core::IO::InputSpecBuilders::Validators
 {
   namespace Internal
   {
+    template <typename T>
+    struct RangeLike
+    {
+      using value_type = T;
+    };
+
+    /**
+     * A type trait that abstracts certain types into a more general form. For example,
+     * a std::vector<T> is abstracted into RangeLike<T> to indicate that a validator may be
+     * applied to all elements of the vector.
+     */
+    template <typename T, typename Enable = void>
+    struct GeneralizedType;
+
+    template <typename T>
+    struct GeneralizedType<T, std::enable_if_t<IO::Internal::SupportedTypePrimitives<T>>>
+    {
+      using type = T;
+    };
+
+    template <typename T>
+    struct GeneralizedType<RangeLike<T>>
+    {
+      using type = RangeLike<typename GeneralizedType<T>::type>;
+    };
+
+    template <typename T>
+    struct GeneralizedType<std::vector<T>>
+    {
+      using type = RangeLike<typename GeneralizedType<T>::type>;
+    };
+
+    template <typename T, std::size_t n>
+    struct GeneralizedType<std::array<T, n>>
+    {
+      using type = RangeLike<typename GeneralizedType<T>::type>;
+    };
+
+    template <typename T>
+    struct GeneralizedType<std::optional<T>>
+    {
+      using type = std::optional<typename GeneralizedType<T>::type>;
+    };
+
+    template <typename T>
+    struct GeneralizedType<std::map<std::string, T>>
+    {
+      using type = std::map<std::string, typename GeneralizedType<T>::type>;
+    };
+
+    template <typename T1, typename T2>
+    struct GeneralizedType<std::pair<T1, T2>>
+    {
+      using type =
+          std::pair<typename GeneralizedType<T1>::type, typename GeneralizedType<T2>::type>;
+    };
+
+    template <typename... Ts>
+    struct GeneralizedType<std::tuple<Ts...>>
+    {
+      using type = std::tuple<typename GeneralizedType<Ts>::type...>;
+    };
+
+    template <typename T>
+    using GeneralizedTypeT = typename GeneralizedType<T>::type;
+
 
     template <typename T, typename Enable = void>
-      requires SupportedType<T>
     class ValidatorImpl
     {
      public:
       template <typename U>
-        requires(std::same_as<T, std::decay_t<U>>)
       [[nodiscard]] bool operator()(const U& v) const
       {
         FOUR_C_THROW("Not implemented");
@@ -105,20 +169,17 @@ namespace Core::IO::InputSpecBuilders::Validators
     };
 
     template <typename T>
-    class ValidatorImpl<std::vector<T>>
+    class ValidatorImpl<RangeLike<T>>
     {
      public:
       ValidatorImpl(ValidatorImpl<T> inner) : inner_validator_(inner) {}
 
-      template <typename U>
-        requires(std::same_as<std::vector<T>, std::decay_t<U>>)
-      bool operator()(const U& vec) const
+      template <std::ranges::range R>
+      [[nodiscard]]
+      bool operator()(const R& range) const
       {
-        for (const auto& v : vec)
-        {
-          if (!inner_validator_(v)) return false;
-        }
-        return true;
+        return std::ranges::all_of(
+            range, [this](const auto& val) { return inner_validator_(val); });
       }
 
       void describe(std::ostream& os) const
@@ -147,8 +208,7 @@ namespace Core::IO::InputSpecBuilders::Validators
       ValidatorImpl(ValidatorImpl<T> inner) : inner_validator_(inner) {}
 
       template <typename U>
-        requires(std::same_as<std::optional<T>, std::decay_t<U>>)
-      bool operator()(const U& opt) const
+      [[nodiscard]] bool operator()(const std::optional<U>& opt) const
       {
         if (!opt.has_value()) return true;
         return inner_validator_(opt.value());
@@ -219,7 +279,14 @@ namespace Core::IO::InputSpecBuilders::Validators
    * passed to one of the InputSpecBuilders functions.
    */
   template <typename T>
-  using Validator = Internal::ValidatorImpl<T>;
+  using Validator = Internal::ValidatorImpl<Internal::GeneralizedTypeT<T>>;
+
+  /**
+   * A tag type to indicate that a validator may be applied to range-like types such as
+   * vector or array.
+   */
+  template <typename T>
+  using RangeLike = Internal::RangeLike<T>;
 
   /**
    * @brief Create a Validator that checks if a value is within a specified range.
@@ -298,23 +365,26 @@ namespace Core::IO::InputSpecBuilders::Validators
 
 
   /**
-   * A validator that checks if all elements in a vector satisfy the given @p validator, e.g.,
+   * A validator that checks if all elements in a range-like object satisfy the given @p validator:
    *
    * @code
-   * // check that all vector elements are positive
-   * all_elements(positive<int>()):
+   * // check that all range elements are positive
+   * auto v = all_elements(positive<int>()):
+   * v(std::vector<int>{1,2,3}); // true
+   * v(std::array<int,3>{1,-2,3}); // false
+   *
    * @endcode
    *
    */
   template <typename T>
-  [[nodiscard]] Validator<std::vector<T>> all_elements(Validator<T> validator);
+  [[nodiscard]] Validator<RangeLike<T>> all_elements(Internal::ValidatorImpl<T> validator);
 
   /**
    * A validator that allows an empty optional "null" value or a value that satisfies the given @p
    * validator.
    */
   template <typename T>
-  [[nodiscard]] Validator<std::optional<T>> null_or(Validator<T> validator);
+  [[nodiscard]] Validator<std::optional<T>> null_or(Internal::ValidatorImpl<T> validator);
 
 
   /**
@@ -427,15 +497,16 @@ template <typename T>
 }
 
 template <typename T>
-[[nodiscard]] Core::IO::InputSpecBuilders::Validators::Validator<std::vector<T>>
-Core::IO::InputSpecBuilders::Validators::all_elements(Validator<T> validator)
+[[nodiscard]] Core::IO::InputSpecBuilders::Validators::Validator<
+    Core::IO::InputSpecBuilders::Validators::RangeLike<T>>
+Core::IO::InputSpecBuilders::Validators::all_elements(Internal::ValidatorImpl<T> validator)
 {
   return Validator<std::vector<T>>(validator);
 }
 
 template <typename T>
 [[nodiscard]] Core::IO::InputSpecBuilders::Validators::Validator<std::optional<T>>
-Core::IO::InputSpecBuilders::Validators::null_or(Validator<T> validator)
+Core::IO::InputSpecBuilders::Validators::null_or(Internal::ValidatorImpl<T> validator)
 {
   return Validator<std::optional<T>>(validator);
 }
