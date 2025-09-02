@@ -14,29 +14,16 @@
 #include "4C_config.hpp"
 
 #include "4C_io_input_spec.hpp"
-#include "4C_utils_exceptions.hpp"
-
-#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Solid
 
+namespace Solid::IOMonitorStructureDBC
 {
-  namespace IOMonitorStructureDBC
-  {
-    /// data format for written numeric data
-    enum FileType
-    {
-      csv,
-      data
-    };
+  //! valid parameters related to writing of output at runtime
+  Core::IO::InputSpec valid_parameters();
 
-    /// valid parameters related to writing of output at runtime
-    Core::IO::InputSpec valid_parameters();
-
-  }  // namespace IOMonitorStructureDBC
-}  // namespace Solid
+}  // namespace Solid::IOMonitorStructureDBC
 
 FOUR_C_NAMESPACE_CLOSE
 
