@@ -10,77 +10,331 @@
 
 #include "4C_config.hpp"
 
-#include "4C_fem_general_element.hpp"
+#include "4C_fem_general_cell_type.hpp"
+#include "4C_fem_general_cell_type_traits.hpp"
 #include "4C_utils_exceptions.hpp"
+#include "4C_utils_std23_unreachable.hpp"
 
+#include <algorithm>
+#include <cstddef>
+#include <cstdint>
+#include <optional>
 #include <vector>
 
 FOUR_C_NAMESPACE_OPEN
 
 namespace Core::IO
 {
-  std::pair<uint8_t, std::vector<int>> inline get_vtk_cell_type_from_element_cell_type(
-      Core::FE::CellType four_c_ele_shape_type)
-  {
-    static_assert(29 == static_cast<int>(Core::FE::CellType::max_distype),
-        "The number of element types defined by Core::FE::CellType does not match "
-        "the number of vtk cell types supported by the vtu writer.");
+  using VtkCellType = uint8_t;
 
-    // the VTK element types are from the documentation of vtkCellType,
-    // e.g. at http://www.vtk.org/doc/nightly/html/vtkCellType_8h.html
-    // this list must be kept in sync with the element types since we use this for index translation
-    switch (four_c_ele_shape_type)
+  /*!
+   * @brief This is a list of all known mapping from vtk-celltypes to 4C CellTypes
+   *
+   * @note This map only contains 1-to-1 mappings (bijective) of the celltype.
+   */
+  constexpr std::array vtk_celltype_mapping = {
+      std::make_pair<Core::FE::CellType, VtkCellType>(Core::FE::CellType::quad4, 9),
+      std::make_pair<Core::FE::CellType, VtkCellType>(Core::FE::CellType::quad6, 30),
+      std::make_pair<Core::FE::CellType, VtkCellType>(Core::FE::CellType::quad8, 23),
+      std::make_pair<Core::FE::CellType, VtkCellType>(Core::FE::CellType::quad9, 28),
+      std::make_pair<Core::FE::CellType, VtkCellType>(Core::FE::CellType::tri3, 5),
+      std::make_pair<Core::FE::CellType, VtkCellType>(Core::FE::CellType::tri6, 22),
+      std::make_pair<Core::FE::CellType, VtkCellType>(Core::FE::CellType::hex8, 12),
+      std::make_pair<Core::FE::CellType, VtkCellType>(Core::FE::CellType::hex20, 25),
+      std::make_pair<Core::FE::CellType, VtkCellType>(Core::FE::CellType::hex27, 29),
+      std::make_pair<Core::FE::CellType, VtkCellType>(Core::FE::CellType::tet4, 10),
+      std::make_pair<Core::FE::CellType, VtkCellType>(Core::FE::CellType::tet10, 24),
+      std::make_pair<Core::FE::CellType, VtkCellType>(Core::FE::CellType::wedge6, 13),
+      std::make_pair<Core::FE::CellType, VtkCellType>(Core::FE::CellType::wedge15, 26),
+      std::make_pair<Core::FE::CellType, VtkCellType>(Core::FE::CellType::pyramid5, 14),
+      std::make_pair<Core::FE::CellType, VtkCellType>(Core::FE::CellType::line2, 3),
+      std::make_pair<Core::FE::CellType, VtkCellType>(Core::FE::CellType::line3, 21),
+      std::make_pair<Core::FE::CellType, VtkCellType>(Core::FE::CellType::point1, 1),
+  };
+
+  namespace Internal
+  {
+
+    template <std::array, typename>
+    struct SupportedCellTypesHelper;
+
+    template <std::array mapping, std::size_t... is>
+    struct SupportedCellTypesHelper<mapping, std::integer_sequence<std::size_t, is...>>
     {
-      case Core::FE::CellType::dis_none:
-        return {0, {}};
-      case Core::FE::CellType::quad4:
-        return {9, {0, 1, 2, 3}};
-      case Core::FE::CellType::quad6:
-        return {30, {0, 1, 4, 3, 2, 5}};
-      case Core::FE::CellType::quad8:
-        return {23, {0, 1, 2, 3, 4, 5, 6, 7}};
-      case Core::FE::CellType::quad9:
-        return {28, {0, 1, 2, 3, 4, 5, 6, 7, 8}};
-      case Core::FE::CellType::tri3:
-        return {5, {0, 1, 2}};
-      case Core::FE::CellType::tri6:
-        return {22, {0, 1, 2, 3, 4, 5}};
-      case Core::FE::CellType::hex8:
-        return {12, {0, 1, 2, 3, 4, 5, 6, 7}};
-      case Core::FE::CellType::hex16:
-        return {12, {0, 1, 2, 3, 8, 9, 10, 11}};
-      case Core::FE::CellType::hex18:
-        return {12, {0, 1, 2, 3, 9, 10, 11, 12}};
-      case Core::FE::CellType::hex20:
-        return {25, {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 16, 17, 18, 19, 12, 13, 14, 15}};
-      case Core::FE::CellType::hex27:
-        return {29, {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 16, 17, 18, 19, 12, 13, 14, 15, 24, 22,
-                        21, 23, 20, 25, 26}};
-      case Core::FE::CellType::tet4:
-        return {10, {0, 1, 2, 3}};
-      case Core::FE::CellType::tet10:
-        return {24, {0, 1, 2, 3, 4, 5, 6, 7, 8, 9}};
-      case Core::FE::CellType::wedge6:
-        return {13, {0, 2, 1, 3, 5, 4}};
-      case Core::FE::CellType::wedge15:
-        return {26, {0, 2, 1, 3, 5, 4, 8, 7, 6, 14, 13, 12, 9, 11, 10}};
-      case Core::FE::CellType::pyramid5:
-        return {14, {0, 1, 2, 3, 4}};
-      case Core::FE::CellType::line2:
-        return {3, {0, 1}};
-      case Core::FE::CellType::line3:
-        return {21, {0, 1, 2}};
-      case Core::FE::CellType::line4:
-      case Core::FE::CellType::line5:  // line5 -> mapped onto line4
-      case Core::FE::CellType::line6:  // line6 -> mapped onto line4
-        return {35, {0, 1, 2, 3}};
-      case Core::FE::CellType::point1:
-        return {1, {0}};
-      default:
-        FOUR_C_THROW("VTK cell type not implemented for element: {}",
-            Core::FE::cell_type_to_string(four_c_ele_shape_type));
+      using type = Core::FE::CelltypeSequence<mapping[is].first...>;
+    };
+
+    template <Core::FE::CellType cell_type>
+    struct VTKConnectivityMapping;
+
+    template <>
+    struct VTKConnectivityMapping<Core::FE::CellType::quad4>
+    {
+      static constexpr std::array value = {0, 1, 2, 3};
+    };
+    template <>
+    struct VTKConnectivityMapping<Core::FE::CellType::quad6>
+    {
+      static constexpr std::array value = {0, 1, 4, 3, 2, 5};
+    };
+    template <>
+    struct VTKConnectivityMapping<Core::FE::CellType::quad8>
+    {
+      static constexpr std::array value = {0, 1, 2, 3, 4, 5, 6, 7};
+    };
+    template <>
+    struct VTKConnectivityMapping<Core::FE::CellType::quad9>
+    {
+      static constexpr std::array value = {0, 1, 2, 3, 4, 5, 6, 7, 8};
+    };
+    template <>
+    struct VTKConnectivityMapping<Core::FE::CellType::tri3>
+    {
+      static constexpr std::array value = {0, 1, 2};
+    };
+    template <>
+    struct VTKConnectivityMapping<Core::FE::CellType::tri6>
+    {
+      static constexpr std::array value = {0, 1, 2, 3, 4, 5};
+    };
+    template <>
+    struct VTKConnectivityMapping<Core::FE::CellType::hex8>
+    {
+      static constexpr std::array value = {0, 1, 2, 3, 4, 5, 6, 7};
+    };
+    template <>
+    struct VTKConnectivityMapping<Core::FE::CellType::hex20>
+    {
+      static constexpr std::array value = {
+          0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 16, 17, 18, 19, 12, 13, 14, 15};
+    };
+    template <>
+    struct VTKConnectivityMapping<Core::FE::CellType::hex27>
+    {
+      static constexpr std::array value = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 16, 17, 18, 19, 12,
+          13, 14, 15, 24, 22, 21, 23, 20, 25, 26};
+    };
+    template <>
+    struct VTKConnectivityMapping<Core::FE::CellType::tet4>
+    {
+      static constexpr std::array value = {0, 1, 2, 3};
+    };
+    template <>
+    struct VTKConnectivityMapping<Core::FE::CellType::tet10>
+    {
+      static constexpr std::array value = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+    };
+    template <>
+    struct VTKConnectivityMapping<Core::FE::CellType::wedge6>
+    {
+      static constexpr std::array value = {0, 2, 1, 3, 5, 4};
+    };
+    template <>
+    struct VTKConnectivityMapping<Core::FE::CellType::wedge15>
+    {
+      static constexpr std::array value = {0, 2, 1, 3, 5, 4, 8, 7, 6, 14, 13, 12, 9, 11, 10};
+    };
+    template <>
+    struct VTKConnectivityMapping<Core::FE::CellType::pyramid5>
+    {
+      static constexpr std::array value = {0, 1, 2, 3, 4};
+    };
+    template <>
+    struct VTKConnectivityMapping<Core::FE::CellType::line2>
+    {
+      static constexpr std::array value = {0, 1};
+    };
+    template <>
+    struct VTKConnectivityMapping<Core::FE::CellType::line3>
+    {
+      static constexpr std::array value = {0, 1, 2};
+    };
+    template <>
+    struct VTKConnectivityMapping<Core::FE::CellType::point1>
+    {
+      static constexpr std::array value = {0};
+    };
+
+    /*!
+     * @brief Special mapping for VTK cell types for output since some 4C cell types don't have a
+     * direct VTK counterpart.
+     */
+    constexpr std::array vtk_celltype_special_mapping_for_output = {
+        std::make_pair<Core::FE::CellType, VtkCellType>(Core::FE::CellType::hex16, 12),
+        std::make_pair<Core::FE::CellType, VtkCellType>(Core::FE::CellType::hex18, 12),
+        std::make_pair<Core::FE::CellType, VtkCellType>(Core::FE::CellType::line4, 4),
+        std::make_pair<Core::FE::CellType, VtkCellType>(Core::FE::CellType::line5, 4),
+        std::make_pair<Core::FE::CellType, VtkCellType>(Core::FE::CellType::line6, 4),
+    };
+
+    /*!
+     * @brief Special mapping for VTK connectivity for output since some 4C cell types don't have a
+     * direct VTK counterpart.
+     *
+     * @tparam cell_type The 4C cell type.
+     */
+    template <Core::FE::CellType cell_type>
+    struct VTKConnectivitySpecialMappingForOutput;
+    template <>
+    struct VTKConnectivitySpecialMappingForOutput<Core::FE::CellType::hex16>
+    {
+      static constexpr std::array value = {0, 1, 2, 3, 8, 9, 10, 11};
+    };
+    template <>
+    struct VTKConnectivitySpecialMappingForOutput<Core::FE::CellType::hex18>
+    {
+      static constexpr std::array value = {0, 1, 2, 3, 9, 10, 11, 12};
+    };
+    template <>
+    struct VTKConnectivitySpecialMappingForOutput<Core::FE::CellType::line4>
+    {
+      static constexpr std::array value = {0, 1, 2, 4};
+    };
+    template <>
+    struct VTKConnectivitySpecialMappingForOutput<Core::FE::CellType::line5>
+    {
+      static constexpr std::array value =
+          VTKConnectivitySpecialMappingForOutput<Core::FE::CellType::line4>::value;
+    };
+    template <>
+    struct VTKConnectivitySpecialMappingForOutput<Core::FE::CellType::line6>
+    {
+      static constexpr std::array value =
+          VTKConnectivitySpecialMappingForOutput<Core::FE::CellType::line4>::value;
+    };
+  }  // namespace Internal
+
+  using VTKSupportedCellTypes = Internal::SupportedCellTypesHelper<vtk_celltype_mapping,
+      std::make_index_sequence<vtk_celltype_mapping.size()>>::type;
+
+  template <Core::FE::CellType celltype, std::array mapping = vtk_celltype_mapping>
+  static constexpr VtkCellType vtk_cell_type = []() consteval
+  {
+    for (const auto& [fe_type, vtk_type] : mapping)
+    {
+      if (fe_type == celltype)
+      {
+        return vtk_type;
+      }
     }
+    FOUR_C_THROW("Unsupported cell type");
+  }();
+
+  /*!
+   * @brief Creates a mapping of the 4C connectivity ordering to the VTK connectivity ordering.
+   *
+   * @tparam cell_type The 4C cell type.
+   */
+  template <Core::FE::CellType cell_type>
+  constexpr std::array vtk_connectivity_mapping =
+      Internal::VTKConnectivityMapping<cell_type>::value;
+
+  /*!
+   * @brief Defines the reverse connectivity mapping from VTK to 4C
+   *
+   * @note this is implicitly defined by the @p vtk_connectivity_mapping
+   */
+  template <Core::FE::CellType cell_type>
+  static constexpr std::array vtk_connectivity_reverse_mapping = []() consteval
+  {
+    constexpr std::size_t size = vtk_connectivity_mapping<cell_type>.size();
+    std::array<std::size_t, size> reverse_mapping{};
+
+    for (std::size_t i = 0; i < vtk_connectivity_mapping<cell_type>.size(); ++i)
+    {
+      reverse_mapping[vtk_connectivity_mapping<cell_type>[i]] = i;
+    }
+
+    return reverse_mapping;
+  }();
+
+
+  /*!
+   * @brief Get the vtk cell type and the connectivity mapping from 4C cell type for output
+   *
+   * @param four_c_ele_shape_type
+   * @return constexpr std::pair<VtkCellType, std::vector<int>>
+   */
+  constexpr std::pair<VtkCellType,
+      std::vector<int>> inline get_vtk_cell_type_from_element_cell_type(Core::FE::CellType
+          four_c_ele_shape_type)
+  {
+    return Core::FE::cell_type_switch<VTKSupportedCellTypes>(
+        four_c_ele_shape_type,
+        [](auto celltype_t) -> std::pair<VtkCellType, std::vector<int>>
+        {
+          // this cell-type is directly supported by VTK
+          constexpr Core::FE::CellType celltype = celltype_t();
+          return std::make_pair(
+              vtk_cell_type<celltype>, std::vector<int>(vtk_connectivity_mapping<celltype>.begin(),
+                                           vtk_connectivity_mapping<celltype>.end()));
+        },
+        [](auto celltype_t) -> std::pair<VtkCellType, std::vector<int>>
+        {
+          // this cell-type is NOT directly supported
+          // check whether this cell-type can be mapped to a supported cell-type
+          constexpr Core::FE::CellType celltype = celltype_t();
+
+          constexpr bool is_specially_supported_for_output =
+              std::ranges::any_of(Internal::vtk_celltype_special_mapping_for_output,
+                  [](const auto& pair) { return celltype == pair.first; });
+
+          if constexpr (is_specially_supported_for_output)
+          {
+            for (const auto& [supported_celltype, vtk_type] :
+                Internal::vtk_celltype_special_mapping_for_output)
+            {
+              return std::make_pair(vtk_type,
+                  std::vector<int>(
+                      Internal::VTKConnectivitySpecialMappingForOutput<celltype_t()>::value.begin(),
+                      Internal::VTKConnectivitySpecialMappingForOutput<celltype_t()>::value.end()));
+            }
+
+            std23::unreachable();
+          }
+
+          FOUR_C_THROW(
+              "Unsupported cell type {} for VTK output.", Core::FE::cell_type_to_string(celltype));
+        });
   }
+
+  /*!
+   * @brief Get the 4C celltype from vtk cell-type
+   *
+   * @param vtk_cell_type
+   * @return constexpr Core::FE::CellType
+   */
+  constexpr Core::FE::CellType get_celltype_from_vtk(VtkCellType vtk_cell_type)
+  {
+    constexpr VtkCellType max_id = []() consteval
+    {
+      VtkCellType max_id = 0;
+      for (auto [_, id] : vtk_celltype_mapping)
+      {
+        if (id > max_id) max_id = id;
+      }
+      return max_id;
+    }();
+
+    constexpr std::array<std::optional<Core::FE::CellType>, max_id + 1> celltype_mapping =
+        []() consteval
+    {
+      std::array<std::optional<Core::FE::CellType>, max_id + 1> mapping{};
+      for (const auto& pair : vtk_celltype_mapping)
+      {
+        mapping[pair.second] = pair.first;
+      }
+      return mapping;
+    }();
+
+    std::optional<Core::FE::CellType> cell_type =
+        (vtk_cell_type <= max_id) ? celltype_mapping[vtk_cell_type] : std::nullopt;
+
+    FOUR_C_ASSERT_ALWAYS(cell_type.has_value(), "VTK cell type {} not found in 4C.", vtk_cell_type);
+
+    return *cell_type;
+  }
+
 }  // namespace Core::IO
 
 FOUR_C_NAMESPACE_CLOSE

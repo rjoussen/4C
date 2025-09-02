@@ -19,6 +19,7 @@
 #include "4C_io_input_file.hpp"
 #include "4C_io_mesh.hpp"
 #include "4C_io_value_parser.hpp"
+#include "4C_io_vtu_reader.hpp"
 #include "4C_rebalance.hpp"
 #include "4C_rebalance_graph_based.hpp"
 #include "4C_rebalance_print.hpp"
@@ -907,14 +908,20 @@ void Core::IO::MeshReader::read_and_partition()
       else
       {
         previous_mesh_file = this_file_path;
+        std::cout << "Read mesh from file '" << this_file_path.string() << "'\n";
+
 
         if (this_file_path.extension() == ".e" || this_file_path.extension() == ".exo" ||
             this_file_path.extension() == ".exii")
         {
           mesh = std::make_shared<MeshInput::Mesh>(
-              Exodus::read_exodus_file(this_file_path.string(), Core::IO::Exodus::MeshParameters{
-                                                                    .node_start_id = 0,
-                                                                }));
+              Exodus::read_exodus_file(this_file_path, Core::IO::Exodus::MeshParameters{
+                                                           .node_start_id = 0,
+                                                       }));
+        }
+        else if (this_file_path.extension() == ".vtu" || this_file_path.extension() == ".vtk")
+        {
+          mesh = std::make_shared<MeshInput::Mesh>(VTU::read_vtu_file(this_file_path));
         }
         else
         {
