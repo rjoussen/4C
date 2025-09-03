@@ -9,8 +9,6 @@
 #define FOUR_C_STRUCTURE_NEW_MONITOR_DBC_INPUT_HPP
 
 
-/*----------------------------------------------------------------------*/
-/* headers */
 #include "4C_config.hpp"
 
 #include "4C_io_input_spec.hpp"
@@ -20,6 +18,13 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Solid::IOMonitorStructureDBC
 {
+  //! data format for written data
+  enum class FileType : std::uint8_t
+  {
+    csv,
+    yaml
+  };
+
   //! valid parameters related to writing of output at runtime
   Core::IO::InputSpec valid_parameters();
 

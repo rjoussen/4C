@@ -17,7 +17,6 @@ FOUR_C_NAMESPACE_OPEN
 Solid::TimeInt::ParamsMonitorDBC::ParamsMonitorDBC(
     const Teuchos::ParameterList& IO_monitor_dbc_structure_paramslist)
     : output_interval_steps_(IO_monitor_dbc_structure_paramslist.get<int>("INTERVAL_STEPS")),
-      of_precision_(IO_monitor_dbc_structure_paramslist.get<int>("PRECISION_FILE")),
       os_precision_(IO_monitor_dbc_structure_paramslist.get<int>("PRECISION_SCREEN"))
 {
   // empty constructor

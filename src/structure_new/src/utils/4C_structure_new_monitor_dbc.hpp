@@ -11,8 +11,10 @@
 #include "4C_config.hpp"
 
 #include "4C_fem_condition.hpp"
+#include "4C_io_yaml.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_linalg_map.hpp"
+#include "4C_structure_new_monitor_dbc_input.hpp"
 
 #include <mpi.h>
 
@@ -56,9 +58,6 @@ namespace Solid
   class MonitorDbc
   {
     const static unsigned DIM = 3;
-
-    /// constants for the FILE output
-    const static unsigned OF_WIDTH = 24;
 
     /// constants for the SCREEN output
     const static unsigned OS_WIDTH = 14;
@@ -105,10 +104,6 @@ namespace Solid
 
     void write_column_header(std::ostream& os, const int col_width) const;
 
-    void write_results_to_csv_file(const Core::IO::RuntimeCsvWriter& csv_writer,
-        const Core::LinAlg::Matrix<DIM, 1>& rforce, const Core::LinAlg::Matrix<DIM, 1>& rmoment,
-        const double& area_ref, const double& area_curr) const;
-
     void write_results_to_screen(const Core::Conditions::Condition& rcond_ptr,
         const Core::LinAlg::Matrix<DIM, 1>& rforce, const Core::LinAlg::Matrix<DIM, 1>& rmoment,
         const double& area_ref, const double& area_curr) const;
@@ -132,9 +127,10 @@ namespace Solid
 
     /// extract the dofs of the reaction forces which shall be monitored
     std::map<int, std::vector<std::shared_ptr<Core::LinAlg::Map>>> react_maps_;
-    int of_precision_ = -1;
     int os_precision_ = -1;
     std::vector<std::unique_ptr<Core::IO::RuntimeCsvWriter>> dbc_monitor_csvwriter_;
+    std::vector<ryml::Tree> dbc_monitor_yaml_file_trees_;
+    IOMonitorStructureDBC::FileType file_type_;
 
     bool isempty_ = true;
     bool isinit_ = false;

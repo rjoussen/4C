@@ -12,14 +12,18 @@
 #include "4C_fem_geometry_element_volume.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
+#include "4C_io_control.hpp"
 #include "4C_io_pstream.hpp"
 #include "4C_io_runtime_csv_writer.hpp"
+#include "4C_io_yaml.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "4C_structure_new_dbc.hpp"
+#include "4C_structure_new_monitor_dbc_input.hpp"
 #include "4C_structure_new_timint_basedataglobalstate.hpp"
 #include "4C_structure_new_timint_basedataio.hpp"
 #include "4C_structure_new_timint_basedataio_monitor_dbc.hpp"
 
+#include <ranges>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -31,8 +35,6 @@ void Solid::MonitorDbc::init(const std::shared_ptr<Solid::TimeInt::BaseDataIO>& 
   issetup_ = false;
   isinit_ = false;
 
-
-  of_precision_ = io_ptr->get_monitor_dbc_params()->file_precision();
   os_precision_ = io_ptr->get_monitor_dbc_params()->screen_precision();
 
   std::vector<const Core::Conditions::Condition*> tagged_conds;
@@ -128,6 +130,10 @@ void Solid::MonitorDbc::setup()
     return;
   }
 
+  const Teuchos::ParameterList& sublist_IO_monitor_structure_dbc =
+      Global::Problem::instance()->io_params().sublist("MONITOR STRUCTURE DBC");
+  file_type_ = sublist_IO_monitor_structure_dbc.get<IOMonitorStructureDBC::FileType>("FILE_TYPE");
+
   std::vector<const Core::Conditions::Condition*> rconds;
   discret_ptr_->get_condition("ReactionForce", rconds);
   for (const auto& rcond_ptr : rconds)
@@ -141,14 +147,112 @@ void Solid::MonitorDbc::setup()
 
     create_reaction_maps(*discret_ptr_, rcond, ipair.first->second.data());
 
-    dbc_monitor_csvwriter_.emplace_back(
-        std::make_unique<Core::IO::RuntimeCsvWriter>(Core::Communication::my_mpi_rank(get_comm()),
+    switch (file_type_)
+    {
+      case IOMonitorStructureDBC::FileType::csv:
+      {
+        dbc_monitor_csvwriter_.emplace_back(std::make_unique<Core::IO::RuntimeCsvWriter>(
+            Core::Communication::my_mpi_rank(get_comm()),
             *Global::Problem::instance()->output_control_file(),
             std::to_string(rcond.id() + 1) + "_monitor_dbc"));
-    dbc_monitor_csvwriter_.back()->register_data_vector("ref_area", 1, of_precision_);
-    dbc_monitor_csvwriter_.back()->register_data_vector("curr_area", 1, of_precision_);
-    dbc_monitor_csvwriter_.back()->register_data_vector("f", DIM, of_precision_);
-    dbc_monitor_csvwriter_.back()->register_data_vector("m", DIM, of_precision_);
+        const int csv_precision = 16;
+        dbc_monitor_csvwriter_.back()->register_data_vector("ref_area", 1, csv_precision);
+        dbc_monitor_csvwriter_.back()->register_data_vector("curr_area", 1, csv_precision);
+        dbc_monitor_csvwriter_.back()->register_data_vector("f", DIM, csv_precision);
+        dbc_monitor_csvwriter_.back()->register_data_vector("m", DIM, csv_precision);
+        break;
+      }
+      case IOMonitorStructureDBC::FileType::yaml:
+      {
+        // handle restart
+        if (Global::Problem::instance()->restart() and
+            Core::Communication::my_mpi_rank(get_comm()) == 0)
+        {
+          const std::string full_restart_dirpath(
+              Global::Problem::instance()->output_control_file()->restart_name());
+
+          const std::string filename =
+              full_restart_dirpath + "-" + std::to_string(rcond.id() + 1) + "_monitor_dbc.yaml";
+
+          std::ifstream in(filename, std::ios::binary);
+          if (!in)
+          {
+            FOUR_C_THROW("Could not open file {}", filename);
+          }
+          std::stringstream ss;
+          ss << in.rdbuf();
+          std::string file_contents = ss.str();
+
+          c4::csubstr yaml_view{file_contents.c_str(), file_contents.size()};
+
+          dbc_monitor_yaml_file_trees_.emplace_back(ryml::parse_in_arena(yaml_view));
+
+          ryml::NodeRef root = dbc_monitor_yaml_file_trees_.back().rootref();
+          auto data_node = root["dbc monitor condition data"];
+
+          std::vector<c4::yml::NodeRef> to_remove;
+
+          for (auto child : data_node.children())
+          {
+            auto candidate = child["step"];
+            if (!candidate.invalid())
+            {
+              // ensure scalar
+              if (!candidate.is_map() && !candidate.is_seq())
+              {
+                int val = 0;
+                candidate >> val;
+
+                if (val > Global::Problem::instance()->restart())
+                {
+                  to_remove.push_back(child);
+                }
+              }
+            }
+          }
+
+          for (auto id : std::ranges::reverse_view(to_remove))
+          {
+            data_node.remove_child(id);
+          }
+        }
+        break;
+      }
+    }
+
+    if (sublist_IO_monitor_structure_dbc.get<bool>("WRITE_CONDITION_INFORMATION"))
+    {
+      FOUR_C_ASSERT_ALWAYS(file_type_ == IOMonitorStructureDBC::FileType::yaml,
+          "DBC monitor including condition information ('WRITE_CONDITION_INFORMATION: true') can "
+          "only be written to file for the 'yaml' file format!");
+
+      // only needs to be done if simulation is not restarted because in this case the file from
+      // the simulation that is restarted is read and on proc 0
+      if (!Global::Problem::instance()->restart() and
+          Core::Communication::my_mpi_rank(get_comm()) == 0)
+      {
+        dbc_monitor_yaml_file_trees_.emplace_back(Core::IO::init_yaml_tree_with_exceptions());
+        ryml::NodeRef root = dbc_monitor_yaml_file_trees_.back().rootref();
+
+        root |= ryml::MAP;
+        auto information_node = root.append_child();
+        information_node << ryml::key("dbc monitor condition");
+        information_node |= ryml::SEQ;
+        {
+          std::ostringstream of;
+          write_condition_header(of, OS_WIDTH, rcond_ptr);
+          auto first_entry = information_node.append_child();
+          first_entry |= ryml::MAP;
+          first_entry["condition information"] << of.str();
+        }
+
+        // add the data node to be appended later
+        root |= ryml::MAP;
+        auto data_node = root.append_child();
+        data_node << ryml::key("dbc monitor condition data");
+        data_node |= ryml::SEQ;
+      }
+    }
   }
 
   issetup_ = true;
@@ -215,29 +319,60 @@ void Solid::MonitorDbc::execute(Core::IO::DiscretizationWriter& writer)
     get_reaction_force(rforce_xyz, react_maps_[rid].data());
     get_reaction_moment(rmoment_xyz, react_maps_[rid].data(), rcond_ptr);
 
-    write_results_to_csv_file(
-        *dbc_monitor_csvwriter_[condition_counter], rforce_xyz, rmoment_xyz, area_ref, area_curr);
+    std::vector<double> rforce_vec(DIM);
+    std::vector<double> rmoment_vec(DIM);
+    rforce_vec.assign(rforce_xyz.data(), rforce_xyz.data() + DIM);
+    rmoment_vec.assign(rmoment_xyz.data(), rmoment_xyz.data() + DIM);
+
+    switch (file_type_)
+    {
+      case IOMonitorStructureDBC::FileType::csv:
+      {
+        std::map<std::string, std::vector<double>> output_data;
+        output_data["ref_area"] = {area_ref};
+        output_data["curr_area"] = {area_curr};
+        output_data["f"] = rforce_vec;
+        output_data["m"] = rmoment_vec;
+        dbc_monitor_csvwriter_[condition_counter]->write_data_to_file(
+            gstate_ptr_->get_time_n(), gstate_ptr_->get_step_n(), output_data);
+
+        break;
+      }
+      case IOMonitorStructureDBC::FileType::yaml:
+      {
+        if (Core::Communication::my_mpi_rank(get_comm()) != 0) continue;
+
+        ryml::NodeRef root = dbc_monitor_yaml_file_trees_[condition_counter].rootref();
+
+        auto data_node = root["dbc monitor condition data"];
+
+        auto current_entry = data_node.append_child();
+        current_entry |= ryml::MAP;
+
+        current_entry["step"] << gstate_ptr_->get_step_n();
+        current_entry["time"] << gstate_ptr_->get_time_n();
+        current_entry["f"] << rforce_vec;
+        current_entry["m"] << rmoment_vec;
+        current_entry["curr_area"] << area_curr;
+        current_entry["ref_area"] << area_ref;
+
+        std::string file_name = Global::Problem::instance()->output_control_file()->file_name() +
+                                "-" + std::to_string(rid + 1) + "_monitor_dbc.yaml";
+
+        std::ofstream output_filestream(file_name, std::ios::out);
+        if (!output_filestream.is_open())
+        {
+          FOUR_C_THROW("Failed to open file for writing");
+        }
+
+        output_filestream << dbc_monitor_yaml_file_trees_[condition_counter];
+
+        break;
+      }
+    }
+
     write_results_to_screen(*rcond_ptr, rforce_xyz, rmoment_xyz, area_ref, area_curr);
   }
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-void Solid::MonitorDbc::write_results_to_csv_file(const Core::IO::RuntimeCsvWriter& csv_writer,
-    const Core::LinAlg::Matrix<DIM, 1>& rforce, const Core::LinAlg::Matrix<DIM, 1>& rmoment,
-    const double& area_ref, const double& area_curr) const
-{
-  std::vector<double> rforce_vec(DIM);
-  std::vector<double> rmoment_vec(DIM);
-  rforce_vec.assign(rforce.data(), rforce.data() + DIM);
-  rmoment_vec.assign(rmoment.data(), rmoment.data() + DIM);
-
-  std::map<std::string, std::vector<double>> output_data;
-  output_data["ref_area"] = {area_ref};
-  output_data["curr_area"] = {area_curr};
-  output_data["f"] = rforce_vec;
-  output_data["m"] = rmoment_vec;
-  csv_writer.write_data_to_file(gstate_ptr_->get_time_n(), gstate_ptr_->get_step_n(), output_data);
 }
 
 /*----------------------------------------------------------------------------*

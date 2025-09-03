@@ -29,13 +29,19 @@ namespace Solid::IOMonitorStructureDBC
                 {.description = "write reaction force output every INTERVAL_STEPS steps",
                     .default_value = -1}),
 
-            // precision for file
-            parameter<int>("PRECISION_FILE",
-                {.description = "precision for written file", .default_value = 16}),
-
             // precision for screen
             parameter<int>("PRECISION_SCREEN",
-                {.description = "precision for written screen output", .default_value = 5})},
+                {.description = "precision for written screen output", .default_value = 5}),
+
+            // type of written output file
+            parameter<FileType>("FILE_TYPE",
+                {.description = "type of written output file", .default_value = FileType::csv}),
+
+            // whether to write information about monitored boundary condition to an output file
+            parameter<bool>("WRITE_CONDITION_INFORMATION",
+                {.description =
+                        "write information about monitored boundary condition to output file",
+                    .default_value = false})},
         {.required = false});
     return spec;
   }

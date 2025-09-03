@@ -32,9 +32,6 @@ namespace Solid::TimeInt
     /// output interval regarding steps: write output every INTERVAL_STEPS steps
     [[nodiscard]] int output_interval_in_steps() const { return output_interval_steps_; }
 
-    /// precision for file output
-    [[nodiscard]] unsigned file_precision() const { return of_precision_; }
-
     /// precision for screen output
     [[nodiscard]] unsigned screen_precision() const { return os_precision_; }
 
@@ -43,9 +40,6 @@ namespace Solid::TimeInt
     /// @{
     /// output interval regarding steps: write output every INTERVAL_STEPS steps
     int output_interval_steps_;
-
-    /// precision for file output
-    unsigned of_precision_;
 
     /// precision for screen output
     unsigned os_precision_;
