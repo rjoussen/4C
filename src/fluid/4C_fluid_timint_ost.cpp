@@ -306,11 +306,11 @@ void FLD::TimIntOneStepTheta::treat_turbulence_models(Teuchos::ParameterList& el
   if (reconstructder_)
   {
     FLD::Utils::project_gradient_and_set_param(
-        *discret_, eleparams, velnp_, "velafgrad", alefluid_);
+        *discret_, eleparams, *velnp_, "velafgrad", alefluid_);
     if (params_->get<bool>("ost new"))
     {
       FLD::Utils::project_gradient_and_set_param(
-          *discret_, eleparams, veln_, "velngrad", alefluid_);
+          *discret_, eleparams, *veln_, "velngrad", alefluid_);
     }
   }
 }

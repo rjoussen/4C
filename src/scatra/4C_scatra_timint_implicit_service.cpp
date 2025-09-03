@@ -1991,18 +1991,17 @@ void ScaTra::ScaTraTimIntImpl::evaluate_error_compared_to_analytical_sol()
       discret_->set_state("phinp", *phinp_);
 
       // get (squared) error values
-      std::shared_ptr<Core::LinAlg::SerialDenseVector> errors =
-          std::make_shared<Core::LinAlg::SerialDenseVector>(4 * num_dof_per_node());
-      discret_->evaluate_scalars(eleparams, *errors);
+      Core::LinAlg::SerialDenseVector errors(4 * num_dof_per_node());
+      discret_->evaluate_scalars(eleparams, errors);
 
       for (int k = 0; k < num_dof_per_node(); ++k)
       {
-        if (std::abs((*errors)[k * 4 + 2]) > 1e-14)
-          (*relerrors_)[k * 2] = sqrt((*errors)[k * 4]) / sqrt((*errors)[k * 4 + 2]);
+        if (std::abs((errors)[k * 4 + 2]) > 1e-14)
+          (*relerrors_)[k * 2] = sqrt((errors)[k * 4]) / sqrt((errors)[k * 4 + 2]);
         else
           FOUR_C_THROW("Can't compute relative L2 error due to numerical roundoff sensitivity!");
-        if (std::abs((*errors)[k * 4 + 3]) > 1e-14)
-          (*relerrors_)[k * 2 + 1] = sqrt((*errors)[k * 4 + 1]) / sqrt((*errors)[k * 4 + 3]);
+        if (std::abs((errors)[k * 4 + 3]) > 1e-14)
+          (*relerrors_)[k * 2 + 1] = sqrt((errors)[k * 4 + 1]) / sqrt((errors)[k * 4 + 3]);
         else
           FOUR_C_THROW("Can't compute relative H1 error due to numerical roundoff sensitivity!");
 
@@ -2442,27 +2441,26 @@ void ScaTra::OutputScalarsStrategyDomain::evaluate_integrals(
   // initialize result vector
   // first components = scalar integrals, last component = domain integral
   const int num_active_scalars = output_mean_grad_ ? numscal_ : 0;
-  auto scalars =
-      std::make_shared<Core::LinAlg::SerialDenseVector>(numdofpernode_ + 1 + num_active_scalars);
+  FourC::Core::LinAlg::SerialDenseVector scalars(numdofpernode_ + 1 + num_active_scalars);
 
   // perform integration
-  scatratimint->discret_->evaluate_scalars(eleparams, *scalars);
+  scatratimint->discret_->evaluate_scalars(eleparams, scalars);
 
   // extract domain integral
-  domainintegral_[dummy_domain_id_] = (*scalars)[numdofpernode_];
+  domainintegral_[dummy_domain_id_] = (scalars)[numdofpernode_];
 
   // compute results
   for (int k = 0; k < numdofpernode_; ++k)
   {
-    totalscalars_[dummy_domain_id_][k] = (*scalars)[k];
-    meanscalars_[dummy_domain_id_][k] = (*scalars)[k] / domainintegral_[dummy_domain_id_];
+    totalscalars_[dummy_domain_id_][k] = (scalars)[k];
+    meanscalars_[dummy_domain_id_][k] = (scalars)[k] / domainintegral_[dummy_domain_id_];
   }
   if (output_mean_grad_)
   {
     for (int k = 0; k < numscal_; ++k)
     {
       const double mean_gradient =
-          (*scalars)[numdofpernode_ + 1 + k] / domainintegral_[dummy_domain_id_];
+          (scalars)[numdofpernode_ + 1 + k] / domainintegral_[dummy_domain_id_];
 
       meangradients_[dummy_domain_id_][k] = std::abs(mean_gradient) < 1.0e-10 ? 0.0 : mean_gradient;
     }

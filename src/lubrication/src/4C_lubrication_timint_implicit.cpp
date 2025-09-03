@@ -1068,9 +1068,8 @@ void Lubrication::TimIntImpl::evaluate_error_compared_to_analytical_sol()
   discret_->set_state("prenp", *prenp_);
 
   // get (squared) error values
-  std::shared_ptr<Core::LinAlg::SerialDenseVector> errors =
-      std::make_shared<Core::LinAlg::SerialDenseVector>(4);
-  discret_->evaluate_scalars(eleparams, *errors);
+  Core::LinAlg::SerialDenseVector errors(4);
+  discret_->evaluate_scalars(eleparams, errors);
   discret_->clear_state();
 
   // std::vector containing
@@ -1078,14 +1077,14 @@ void Lubrication::TimIntImpl::evaluate_error_compared_to_analytical_sol()
   // [1]: relative H1 pressure error
   std::vector<double> relerror(2);
 
-  if (std::abs((*errors)[2]) > 1e-14)
-    (relerror)[0] = sqrt((*errors)[0]) / sqrt((*errors)[2]);
+  if (std::abs((errors)[2]) > 1e-14)
+    (relerror)[0] = sqrt((errors)[0]) / sqrt((errors)[2]);
   else
-    (relerror)[0] = sqrt((*errors)[0]);
-  if (std::abs((*errors)[2]) > 1e-14)
-    (relerror)[1] = sqrt((*errors)[1]) / sqrt((*errors)[3]);
+    (relerror)[0] = sqrt((errors)[0]);
+  if (std::abs((errors)[2]) > 1e-14)
+    (relerror)[1] = sqrt((errors)[1]) / sqrt((errors)[3]);
   else
-    (relerror)[1] = sqrt((*errors)[1]);
+    (relerror)[1] = sqrt((errors)[1]);
 
   if (myrank_ == 0)
   {
@@ -1167,13 +1166,12 @@ void Lubrication::TimIntImpl::output_mean_pressures(const int num)
     if (isale_) eleparams.set<int>("ndsdisp", nds_disp_);
 
     // evaluate integrals of pressure(s) and domain
-    std::shared_ptr<Core::LinAlg::SerialDenseVector> pressures =
-        std::make_shared<Core::LinAlg::SerialDenseVector>(2);
-    discret_->evaluate_scalars(eleparams, *pressures);
+    Core::LinAlg::SerialDenseVector pressures(2);
+    discret_->evaluate_scalars(eleparams, pressures);
     discret_->clear_state();  // clean up
 
     // extract domain integral
-    const double domint = (*pressures)[1];
+    const double domint = (pressures)[1];
 
     // print out results to screen and file
     if (myrank_ == 0)
@@ -1181,7 +1179,7 @@ void Lubrication::TimIntImpl::output_mean_pressures(const int num)
       // screen output
       std::cout << "Mean pressure values:" << std::endl;
       std::cout << "+-------------------------------+" << std::endl;
-      std::cout << "| Mean pressure:   " << std::setprecision(6) << (*pressures)[0] / domint << " |"
+      std::cout << "| Mean pressure:   " << std::setprecision(6) << (pressures)[0] / domint << " |"
                 << std::endl;
       std::cout << "+-------------------------------+" << std::endl << std::endl;
 
@@ -1204,8 +1202,8 @@ void Lubrication::TimIntImpl::output_mean_pressures(const int num)
         f.open(fname.c_str(), std::fstream::ate | std::fstream::app);
 
       f << step() << " " << time() << " " << std::setprecision(9) << domint;
-      f << " " << std::setprecision(9) << (*pressures)[0];
-      f << " " << std::setprecision(9) << (*pressures)[0] / domint;
+      f << " " << std::setprecision(9) << (pressures)[0];
+      f << " " << std::setprecision(9) << (pressures)[0] / domint;
       f << "\n";
       f.flush();
       f.close();

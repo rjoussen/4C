@@ -2319,11 +2319,10 @@ void Solid::TimInt::determine_energy()
       discret_->clear_state();
       discret_->set_state("displacement", *disn_);
       // get energies
-      std::shared_ptr<Core::LinAlg::SerialDenseVector> energies =
-          std::make_shared<Core::LinAlg::SerialDenseVector>(1);
-      discret_->evaluate_scalars(p, *energies);
+      Core::LinAlg::SerialDenseVector energies(1);
+      discret_->evaluate_scalars(p, energies);
       discret_->clear_state();
-      intergy_ = (*energies)(0);
+      intergy_ = (energies)(0);
     }
 
     // global calculation of kinetic energy

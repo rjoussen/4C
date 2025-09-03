@@ -364,17 +364,16 @@ double Mat::ScatraMultiScaleGP::evaluate_mean_concentration() const
 
   // initialize result vector: first component = concentration integral, second component = domain
   // integral
-  const std::shared_ptr<Core::LinAlg::SerialDenseVector> integrals =
-      std::make_shared<Core::LinAlg::SerialDenseVector>(2);
+  Core::LinAlg::SerialDenseVector integrals(2);
 
   // evaluate concentration and domain integrals on micro scale
-  discret.evaluate_scalars(eleparams, *integrals);
+  discret.evaluate_scalars(eleparams, integrals);
 
   // clear discretization
   discret.clear_state();
 
   // compute and return mean concentration on micro scale
-  return (*integrals)[0] / (*integrals)[1];
+  return (integrals)[0] / (integrals)[1];
 }
 
 /*-------------------------------------------------------------------------*
@@ -396,17 +395,16 @@ double Mat::ScatraMultiScaleGP::evaluate_mean_concentration_time_derivative() co
 
   // initialize result vector: first component = integral of concentration time derivative, second
   // component = integral of domain
-  const std::shared_ptr<Core::LinAlg::SerialDenseVector> integrals =
-      std::make_shared<Core::LinAlg::SerialDenseVector>(2);
+  Core::LinAlg::SerialDenseVector integrals(2);
 
   // evaluate integrals of domain and time derivative of concentration on micro scale
-  discret.evaluate_scalars(eleparams, *integrals);
+  discret.evaluate_scalars(eleparams, integrals);
 
   // clear discretization
   discret.clear_state();
 
   // compute and return mean concentration time derivative on micro scale
-  return (*integrals)[0] / (*integrals)[1];
+  return (integrals)[0] / (integrals)[1];
 }
 
 /*------------------------------------------------------------------------------*

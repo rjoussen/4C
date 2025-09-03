@@ -696,14 +696,13 @@ void ScaTra::ScaTraTimIntImpl::setup_nat_conv()
   eleparams.set("calc_grad_phi", false);
 
   // evaluate integrals of concentrations and domain
-  std::shared_ptr<Core::LinAlg::SerialDenseVector> scalars =
-      std::make_shared<Core::LinAlg::SerialDenseVector>(num_scal() + 1);
-  discret_->evaluate_scalars(eleparams, *scalars);
+  Core::LinAlg::SerialDenseVector scalars(num_scal() + 1);
+  discret_->evaluate_scalars(eleparams, scalars);
 
   // calculate mean concentrations
-  const double domint = (*scalars)[num_scal()];
+  const double domint = (scalars)[num_scal()];
   if (std::abs(domint) < 1e-15) FOUR_C_THROW("Domain has zero volume!");
-  for (int k = 0; k < num_scal(); ++k) c0_[k] = (*scalars)[k] / domint;
+  for (int k = 0; k < num_scal(); ++k) c0_[k] = (scalars)[k] / domint;
 
   // initialization of the densification coefficient vector
   densific_.resize(num_scal());

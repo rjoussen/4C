@@ -988,7 +988,7 @@ void Solid::TimIntImpl::apply_force_stiff_spring_dashpot(
   {
     auto stiff_sparse = std::dynamic_pointer_cast<Core::LinAlg::SparseMatrix>(stiff);
     if (stiff_sparse == nullptr) FOUR_C_THROW("Cannot cast stiffness matrix to sparse matrix!");
-    springman_->stiffness_and_internal_forces(stiff_sparse, fint, disn, veln, psprdash);
+    springman_->stiffness_and_internal_forces(stiff_sparse, fint, disn, *veln, psprdash);
   }
 
   return;

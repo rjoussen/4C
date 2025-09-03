@@ -215,16 +215,14 @@ namespace BeamInteraction
      */
     void assemble_force(const Solid::TimeInt::BaseDataGlobalState& gstate,
         Core::LinAlg::Vector<double>& f,
-        const std::shared_ptr<const Solid::ModelEvaluator::BeamInteractionDataState>& data_state)
-        const;
+        const Solid::ModelEvaluator::BeamInteractionDataState& data_state) const;
 
     /**
      * \brief Assemble the coupling blocks in the global stiffness matrix
      */
     void assemble_stiff(const Solid::TimeInt::BaseDataGlobalState& gstate,
         Core::LinAlg::SparseOperator& jac,
-        const std::shared_ptr<const Solid::ModelEvaluator::BeamInteractionDataState>& data_state)
-        const;
+        const Solid::ModelEvaluator::BeamInteractionDataState& data_state) const;
 
    protected:
     /**

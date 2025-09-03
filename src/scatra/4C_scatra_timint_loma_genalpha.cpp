@@ -140,15 +140,14 @@ void ScaTra::TimIntLomaGenAlpha::compute_therm_pressure()
   set_element_time_parameter();
 
   // variables for integrals of domain and bodyforce
-  std::shared_ptr<Core::LinAlg::SerialDenseVector> scalars =
-      std::make_shared<Core::LinAlg::SerialDenseVector>(2);
+  Core::LinAlg::SerialDenseVector scalars(2);
 
   // evaluate domain and bodyforce integral
-  discret_->evaluate_scalars(eleparams, *scalars);
+  discret_->evaluate_scalars(eleparams, scalars);
 
   // get global integral values
-  double pardomint = (*scalars)[0];
-  double parbofint = (*scalars)[1];
+  double pardomint = (scalars)[0];
+  double parbofint = (scalars)[1];
 
   // set action for elements
   Core::Utils::add_enum_class_to_parameter_list<ScaTra::BoundaryAction>(

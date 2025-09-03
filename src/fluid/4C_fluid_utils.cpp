@@ -800,10 +800,10 @@ void FLD::Utils::write_lift_drag_to_file(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 std::map<int, double> FLD::Utils::compute_flow_rates(Core::FE::Discretization& dis,
-    const std::shared_ptr<Core::LinAlg::Vector<double>>& velnp, const std::string& condstring,
+    Core::LinAlg::Vector<double>& velnp, const std::string& condstring,
     const Inpar::FLUID::PhysicalType physicaltype)
 {
-  return compute_flow_rates(dis, *velnp, nullptr, nullptr, condstring, physicaltype);
+  return compute_flow_rates(dis, velnp, nullptr, nullptr, condstring, physicaltype);
 }
 
 /*----------------------------------------------------------------------*
@@ -942,12 +942,12 @@ void FLD::Utils::write_doubles_to_file(
  | project vel gradient and store it in given param list        bk 05/15 |
  *----------------------------------------------------------------------*/
 void FLD::Utils::project_gradient_and_set_param(Core::FE::Discretization& discret,
-    Teuchos::ParameterList& eleparams, std::shared_ptr<const Core::LinAlg::Vector<double>> vel,
+    Teuchos::ParameterList& eleparams, const Core::LinAlg::Vector<double>& vel,
     const std::string paraname, bool alefluid)
 {
   // project gradient
   std::shared_ptr<Core::LinAlg::MultiVector<double>> projected_velgrad =
-      FLD::Utils::project_gradient(discret, *vel, alefluid);
+      FLD::Utils::project_gradient(discret, vel, alefluid);
 
   // store multi vector in parameter list after export to col layout
   if (projected_velgrad != nullptr)

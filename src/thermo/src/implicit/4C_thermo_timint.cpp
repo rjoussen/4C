@@ -424,11 +424,10 @@ void Thermo::TimInt::write_runtime_output()
       discret_->clear_state();
       discret_->set_state(0, "temperature", *temp_(0));
 
-      std::shared_ptr<Core::LinAlg::SerialDenseVector> energies =
-          std::make_shared<Core::LinAlg::SerialDenseVector>(1);
-      discret_->evaluate_scalars(p, *energies);
+      Core::LinAlg::SerialDenseVector energies(1);
+      discret_->evaluate_scalars(p, energies);
       discret_->clear_state();
-      energy = (*energies)(0);
+      energy = (energies)(0);
 
       std::map<std::string, std::vector<double>> output_energy;
       output_energy["energy"] = {energy};
@@ -965,19 +964,18 @@ std::shared_ptr<std::vector<double>> Thermo::TimInt::evaluate_error_compared_to_
       // 1: delta temperature for H1-error norm
       // 2: analytical temperature for L2 norm
       // 3: analytical temperature for H1 norm
-      std::shared_ptr<Core::LinAlg::SerialDenseVector> errors =
-          std::make_shared<Core::LinAlg::SerialDenseVector>(4);
+      Core::LinAlg::SerialDenseVector errors(4);
 
       // vector for output
       Core::LinAlg::MultiVector<double> normvec(*discret_->element_row_map(), 7);
 
       // call loop over elements (assemble nothing)
-      discret_->evaluate_scalars(eleparams, *errors);
+      discret_->evaluate_scalars(eleparams, errors);
       discret_->evaluate_scalars(eleparams, normvec);
       discret_->clear_state();
 
-      (*relerror)[0] = sqrt((*errors)[0]) / sqrt((*errors)[2]);
-      (*relerror)[1] = sqrt((*errors)[1]) / sqrt((*errors)[3]);
+      (*relerror)[0] = sqrt((errors)[0]) / sqrt((errors)[2]);
+      (*relerror)[1] = sqrt((errors)[1]) / sqrt((errors)[3]);
 
       if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
       {
@@ -991,7 +989,7 @@ std::shared_ptr<std::vector<double>> Thermo::TimInt::evaluate_error_compared_to_
           std::cout << "--------------------------------------------------------------------"
                     << std::endl
                     << std::endl;
-          std::cout << "H1 temperature scaling  " << sqrt((*errors)[3]) << std::endl;
+          std::cout << "H1 temperature scaling  " << sqrt((errors)[3]) << std::endl;
         }
 
         // print last error in a separate file

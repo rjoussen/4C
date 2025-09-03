@@ -53,8 +53,8 @@ namespace Constraints
     //! add contribution of spring dashpot BC to residual vector and stiffness matrix
     void stiffness_and_internal_forces(std::shared_ptr<Core::LinAlg::SparseMatrix> stiff,
         std::shared_ptr<Core::LinAlg::Vector<double>> fint,
-        std::shared_ptr<Core::LinAlg::Vector<double>> disn,
-        std::shared_ptr<Core::LinAlg::Vector<double>> veln, Teuchos::ParameterList parlist);
+        std::shared_ptr<Core::LinAlg::Vector<double>> disn, Core::LinAlg::Vector<double>& veln,
+        Teuchos::ParameterList parlist);
 
     //! update for each new time step
     void update();

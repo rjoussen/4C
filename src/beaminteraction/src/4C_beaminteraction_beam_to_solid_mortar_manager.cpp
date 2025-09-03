@@ -792,7 +792,7 @@ BeamInteraction::BeamToSolidMortarManager::penalty_invert_kappa() const
  */
 void BeamInteraction::BeamToSolidMortarManager::assemble_force(
     const Solid::TimeInt::BaseDataGlobalState& gstate, Core::LinAlg::Vector<double>& f,
-    const std::shared_ptr<const Solid::ModelEvaluator::BeamInteractionDataState>& data_state) const
+    const Solid::ModelEvaluator::BeamInteractionDataState& data_state) const
 {
   if (!have_lagrange_dofs())
     FOUR_C_THROW("assemble_force only possible with Langrange multiplier constraint enforcement");
@@ -807,7 +807,7 @@ void BeamInteraction::BeamToSolidMortarManager::assemble_force(
  */
 void BeamInteraction::BeamToSolidMortarManager::assemble_stiff(
     const Solid::TimeInt::BaseDataGlobalState& gstate, Core::LinAlg::SparseOperator& jac,
-    const std::shared_ptr<const Solid::ModelEvaluator::BeamInteractionDataState>& data_state) const
+    const Solid::ModelEvaluator::BeamInteractionDataState& data_state) const
 {
   if (!have_lagrange_dofs())
     FOUR_C_THROW("assemble_stiff only possible with Langrange multiplier constraint enforcement");
@@ -825,11 +825,10 @@ void BeamInteraction::BeamToSolidMortarManager::assemble_stiff(
     const double penalty_translation = beam_to_solid_params_->get_penalty_parameter();
     auto kappa_vector = Core::LinAlg::Vector<double>(block_lm_displ_row_map);
     Core::LinAlg::export_to(*kappa_, kappa_vector);
-    std::shared_ptr<Core::LinAlg::SparseMatrix> kappa_penalty_inv_mat =
-        std::make_shared<Core::LinAlg::SparseMatrix>(kappa_vector);
-    kappa_penalty_inv_mat->scale(-1.0 / penalty_translation);
-    kappa_penalty_inv_mat->complete();
-    gstate.assign_model_block(jac, *kappa_penalty_inv_mat, Inpar::Solid::model_beaminteraction,
+    Core::LinAlg::SparseMatrix kappa_penalty_inv_mat(kappa_vector);
+    kappa_penalty_inv_mat.scale(-1.0 / penalty_translation);
+    kappa_penalty_inv_mat.complete();
+    gstate.assign_model_block(jac, kappa_penalty_inv_mat, Inpar::Solid::model_beaminteraction,
         Solid::MatBlockType::lm_lm);
   }
 
