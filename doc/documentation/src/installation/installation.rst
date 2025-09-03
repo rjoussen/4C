@@ -539,8 +539,8 @@ Executables:
 
 Documentation (for the documentation to be generated, you have to set the respective cmake variables in the presets file described :ref:`above<installation_configure>`):
 
-- ``documentation`` create the main documentation (set ``FOUR_C_BUILD_DOCUMENTATION=ON`` in the presets)
-- ``doxygen`` create the (developer-oriented) Doxygen documentation (set ``FOUR_C_BUILD_DOXYGEN=ON`` in the presets)
+- ``documentation`` create the main documentation (set ``FOUR_C_ENABLE_DOCUMENTATION=ON`` in the presets)
+- ``doxygen`` create the (developer-oriented) Doxygen documentation (set ``FOUR_C_ENABLE_DOXYGEN=ON`` in the presets)
 
 .. note::
 

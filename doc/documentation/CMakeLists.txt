@@ -91,17 +91,17 @@ if(FOUR_C_ENABLE_DOCUMENTATION)
     COMMAND
       ${CMAKE_COMMAND} -E copy_if_different ${_sphinx_TEST_INPUT_FILES}
       "${_sphinx_OUT_DIR}/testfiles"
-    # Copy tutorial files
+      # Copy tutorial files
     COMMAND
       ${CMAKE_COMMAND} -E copy_directory "${PROJECT_SOURCE_DIR}/tests/tutorials"
       "${_sphinx_OUT_DIR}/testfiles"
-    # Run 4C to generate a help file
+      # Run 4C to generate a help file
     COMMAND ${FOUR_C_EXECUTABLE_NAME} -h > ${_sphinx_OUT_DIR}/reference_docs/4C-help.txt
     # Generate a cmake preset list which is used in the documentation
     COMMAND
       ${CMAKE_COMMAND} ${PROJECT_SOURCE_DIR} --list-presets >
       ${_sphinx_OUT_DIR}/reference_docs/4C-cmake-presets.txt
-    # A list of cmake variables will also be given in the documentation.
+      # A list of cmake variables will also be given in the documentation.
     COMMAND
       bash ${CMAKE_CURRENT_SOURCE_DIR}/scripts/extract_cmake_variables.sh
       ${PROJECT_BINARY_DIR}/CMakeCache.txt >
