@@ -432,6 +432,12 @@ void Coupling::Adapter::Coupling::build_dof_maps(const Core::FE::Discretization&
   std::vector<int> dofmapvec;
   std::map<int, std::vector<int>> dofs;
 
+
+  auto surface_periodic_conditions = Core::Conditions::find_conditioned_node_ids_and_conditions(
+      dis, "SurfacePeriodic", Core::Conditions::LookFor::locally_owned);
+  auto line_periodic_conditions = Core::Conditions::find_conditioned_node_ids_and_conditions(
+      dis, "LinePeriodic", Core::Conditions::LookFor::locally_owned);
+
   const int* nodes = nodemap.my_global_elements();
   const int numnode = nodemap.num_my_elements();
 
@@ -439,17 +445,16 @@ void Coupling::Adapter::Coupling::build_dof_maps(const Core::FE::Discretization&
   {
     const Core::Nodes::Node* actnode = dis.g_node(nodes[i]);
 
-    // ----------------------------------------------------------------
-    // get all periodic boundary conditions on this node
-    // slave nodes do not contribute dofs, we skip them
-    // ----------------------------------------------------------------
-    std::vector<Core::Conditions::Condition*> thiscond;
-    actnode->get_condition("SurfacePeriodic", thiscond);
+    std::vector<const Core::Conditions::Condition*> thiscond;
 
-    if (thiscond.empty())
+    const auto copy_relevant_conditions = [&](const auto& conditions_map)
     {
-      actnode->get_condition("LinePeriodic", thiscond);
-    }
+      auto range = conditions_map.equal_range(actnode->id());
+      std::ranges::copy(std::ranges::subrange(range.first, range.second) | std::views::values,
+          std::back_inserter(thiscond));
+    };
+    copy_relevant_conditions(surface_periodic_conditions);
+    copy_relevant_conditions(line_periodic_conditions);
 
     if (!thiscond.empty())
     {

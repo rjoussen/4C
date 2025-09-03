@@ -139,6 +139,16 @@ Core::Conditions::find_conditioned_node_ids_and_conditions(
 }
 
 
+std::multimap<int, const Core::Conditions::Condition*>
+Core::Conditions::find_conditioned_node_ids_and_conditions(
+    const Core::FE::Discretization& dis, const std::string& condition_name, LookFor look_for)
+{
+  std::vector<const Condition*> conditions;
+  dis.get_condition(condition_name, conditions);
+  return find_conditioned_node_ids_and_conditions(dis, conditions, look_for);
+}
+
+
 
 void Core::Conditions::find_conditioned_nodes(const Core::FE::Discretization& dis,
     std::span<const Condition*> conditions, std::map<int, std::shared_ptr<std::vector<int>>>& nodes,
