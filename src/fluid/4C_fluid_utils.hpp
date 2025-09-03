@@ -477,7 +477,7 @@ namespace FLD
      *         The sign of the flow rate indicates net inflow (positive) or outflow (negative).
      */
     std::map<int, double> compute_flow_rates(Core::FE::Discretization& dis,
-        const std::shared_ptr<Core::LinAlg::Vector<double>>& velnp, const std::string& condstring,
+        Core::LinAlg::Vector<double>& velnp, const std::string& condstring,
         const Inpar::FLUID::PhysicalType physicaltype);
 
     /**
@@ -529,7 +529,7 @@ namespace FLD
 
     */
     void project_gradient_and_set_param(Core::FE::Discretization& discret,
-        Teuchos::ParameterList& eleparams, std::shared_ptr<const Core::LinAlg::Vector<double>> vel,
+        Teuchos::ParameterList& eleparams, const Core::LinAlg::Vector<double>& vel,
         const std::string paraname, bool alefluid);
 
     /*!

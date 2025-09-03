@@ -46,8 +46,8 @@ Constraints::SpringDashpotManager::SpringDashpotManager(
 void Constraints::SpringDashpotManager::stiffness_and_internal_forces(
     std::shared_ptr<Core::LinAlg::SparseMatrix> stiff,
     std::shared_ptr<Core::LinAlg::Vector<double>> fint,
-    std::shared_ptr<Core::LinAlg::Vector<double>> disn,
-    std::shared_ptr<Core::LinAlg::Vector<double>> veln, Teuchos::ParameterList parlist)
+    std::shared_ptr<Core::LinAlg::Vector<double>> disn, Core::LinAlg::Vector<double>& veln,
+    Teuchos::ParameterList parlist)
 {
   // evaluate all spring dashpot conditions
   for (int i = 0; i < n_conds_; ++i)
@@ -58,9 +58,9 @@ void Constraints::SpringDashpotManager::stiffness_and_internal_forces(
 
     if (stype == Constraints::SpringDashpot::RobinSpringDashpotType::xyz or
         stype == Constraints::SpringDashpot::RobinSpringDashpotType::refsurfnormal)
-      springs_[i]->evaluate_robin(stiff, fint, disn, *veln, parlist);
+      springs_[i]->evaluate_robin(stiff, fint, disn, veln, parlist);
     if (stype == Constraints::SpringDashpot::RobinSpringDashpotType::cursurfnormal)
-      springs_[i]->evaluate_force_stiff(*stiff, *fint, disn, *veln, parlist);
+      springs_[i]->evaluate_force_stiff(*stiff, *fint, disn, veln, parlist);
   }
 
   return;

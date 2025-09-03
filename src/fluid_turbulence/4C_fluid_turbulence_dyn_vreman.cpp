@@ -142,17 +142,16 @@ double FLD::Vreman::dyn_vreman_compute_cv()
 
 
   // loop all elements on this proc (excluding ghosted ones)
-  std::shared_ptr<Core::LinAlg::SerialDenseVector> Cv_num_denom =
-      std::make_shared<Core::LinAlg::SerialDenseVector>(2);
+  Core::LinAlg::SerialDenseVector Cv_num_denom(2);
 
 
   // call loop over elements (assemble nothing)
-  discret_->evaluate_scalars(calc_vreman_params, *Cv_num_denom);
+  discret_->evaluate_scalars(calc_vreman_params, Cv_num_denom);
   discret_->clear_state();
 
 
-  cv_numerator_volumeav = (*Cv_num_denom)[0];
-  cv_denominator_volumeav = (*Cv_num_denom)[1];
+  cv_numerator_volumeav = (Cv_num_denom)[0];
+  cv_denominator_volumeav = (Cv_num_denom)[1];
   // multiply with viscosity
   if (sqrt(cv_denominator_volumeav * cv_denominator_volumeav) <
       1.0e-12)  // the denominator might also become negative
@@ -197,13 +196,12 @@ void FLD::Vreman::dyn_vreman_compute_dt(Teuchos::ParameterList& extraparams)
   calc_vreman_params_scatra.set("col_filtered_phiexpression", col_filtered_phiexpression_);
   calc_vreman_params_scatra.set("col_filtered_alphaijsc", col_filtered_alphaijsc_);
   // loop all elements on this proc (excluding ghosted ones)
-  std::shared_ptr<Core::LinAlg::SerialDenseVector> Dt_num_denom =
-      std::make_shared<Core::LinAlg::SerialDenseVector>(2);
+  Core::LinAlg::SerialDenseVector Dt_num_denom(2);
   // call loop over elements (assemble nothing)
-  scatradiscret_->evaluate_scalars(calc_vreman_params_scatra, *Dt_num_denom);
+  scatradiscret_->evaluate_scalars(calc_vreman_params_scatra, Dt_num_denom);
   scatradiscret_->clear_state();
-  dt_numerator_volumeav = (*Dt_num_denom)[0];
-  dt_denominator_volumeav = (*Dt_num_denom)[1];
+  dt_numerator_volumeav = (Dt_num_denom)[0];
+  dt_denominator_volumeav = (Dt_num_denom)[1];
   if (sqrt(dt_denominator_volumeav * dt_denominator_volumeav) <
       1.0e-12)  // the denominator might also become negative
     Dt = 0.0;   // constant vreman

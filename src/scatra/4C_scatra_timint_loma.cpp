@@ -140,13 +140,12 @@ void ScaTra::ScaTraTimIntLoma::compute_initial_mass()
   eleparams.set("calc_grad_phi", false);
 
   // evaluate integral of inverse temperature
-  std::shared_ptr<Core::LinAlg::SerialDenseVector> scalars =
-      std::make_shared<Core::LinAlg::SerialDenseVector>(num_scal() + 1);
-  discret_->evaluate_scalars(eleparams, *scalars);
+  Core::LinAlg::SerialDenseVector scalars(num_scal() + 1);
+  discret_->evaluate_scalars(eleparams, scalars);
   discret_->clear_state();  // clean up
 
   // compute initial mass times gas constant: R*M_0 = int(1/T_0)*tp
-  initialmass_ = (*scalars)[0] * thermpressn_;
+  initialmass_ = (scalars)[0] * thermpressn_;
 
   // print out initial total mass
   if (myrank_ == 0)
@@ -182,13 +181,12 @@ void ScaTra::ScaTraTimIntLoma::compute_therm_pressure_from_mass_cons()
   eleparams.set("calc_grad_phi", false);
 
   // evaluate integral of inverse temperature
-  std::shared_ptr<Core::LinAlg::SerialDenseVector> scalars =
-      std::make_shared<Core::LinAlg::SerialDenseVector>(num_scal() + 1);
-  discret_->evaluate_scalars(eleparams, *scalars);
+  Core::LinAlg::SerialDenseVector scalars(num_scal() + 1);
+  discret_->evaluate_scalars(eleparams, scalars);
   discret_->clear_state();  // clean up
 
   // compute thermodynamic pressure: tp = R*M_0/int(1/T)
-  thermpressnp_ = initialmass_ / (*scalars)[0];
+  thermpressnp_ = initialmass_ / (scalars)[0];
 
   // print out thermodynamic pressure
   if (myrank_ == 0)

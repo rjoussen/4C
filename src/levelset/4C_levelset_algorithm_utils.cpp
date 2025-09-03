@@ -248,13 +248,12 @@ void ScaTra::LevelSetAlgorithm::evaluate_error_compared_to_analytical_sol()
         discret_->set_state("phiref", phiref);
 
         // get error and volume
-        std::shared_ptr<Core::LinAlg::SerialDenseVector> errors =
-            std::make_shared<Core::LinAlg::SerialDenseVector>(2);
-        discret_->evaluate_scalars(eleparams, *errors);
+        Core::LinAlg::SerialDenseVector errors(2);
+        discret_->evaluate_scalars(eleparams, errors);
         discret_->clear_state();
 
         // division by thickness of element layer for 2D problems with domain size 1
-        double errL1 = (*errors)[0] / (*errors)[1];
+        double errL1 = (errors)[0] / (errors)[1];
         Core::LinAlg::Vector<double> phidiff(*phinp_);
         phidiff.update(-1.0, phiref, 1.0);
         double errLinf = 0.0;
@@ -458,16 +457,15 @@ void ScaTra::LevelSetAlgorithm::mass_center_using_smoothing()
       "INTERFACE_THICKNESS_TPF", levelsetparams_->get<double>("INTERFACE_THICKNESS_TPF"));
 
   // get masscenter and volume, last entry of vector is total volume of minus domain.
-  std::shared_ptr<Core::LinAlg::SerialDenseVector> masscenter_and_volume =
-      std::make_shared<Core::LinAlg::SerialDenseVector>(nsd_ + 1);
-  discret_->evaluate_scalars(eleparams, *masscenter_and_volume);
+  Core::LinAlg::SerialDenseVector masscenter_and_volume(nsd_ + 1);
+  discret_->evaluate_scalars(eleparams, masscenter_and_volume);
   discret_->clear_state();
 
   std::vector<double> center(nsd_);
 
   for (int idim = 0; idim < nsd_; idim++)
   {
-    center[idim] = masscenter_and_volume->values()[idim] / (masscenter_and_volume->values()[nsd_]);
+    center[idim] = masscenter_and_volume.values()[idim] / (masscenter_and_volume.values()[nsd_]);
   }
 
   if (nsd_ != 3)

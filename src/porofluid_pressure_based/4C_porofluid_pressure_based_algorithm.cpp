@@ -1712,9 +1712,8 @@ void PoroPressureBased::PorofluidAlgorithm::evaluate_error_compared_to_analytica
   discret_->set_state("phinp_fluid", *phinp_);
 
   // get (squared) error values
-  std::shared_ptr<Core::LinAlg::SerialDenseVector> errors =
-      std::make_shared<Core::LinAlg::SerialDenseVector>(4);
-  discret_->evaluate_scalars(eleparams, *errors);
+  Core::LinAlg::SerialDenseVector errors(4);
+  discret_->evaluate_scalars(eleparams, errors);
   discret_->clear_state();
 
   // std::vector containing
@@ -1722,14 +1721,14 @@ void PoroPressureBased::PorofluidAlgorithm::evaluate_error_compared_to_analytica
   // [1]: relative H1 pressure error
   std::vector<double> relerror(2);
 
-  if (std::abs((*errors)[2]) > 1e-14)
-    (relerror)[0] = sqrt((*errors)[0]) / sqrt((*errors)[2]);
+  if (std::abs((errors)[2]) > 1e-14)
+    (relerror)[0] = sqrt((errors)[0]) / sqrt((errors)[2]);
   else
-    (relerror)[0] = sqrt((*errors)[0]);
-  if (std::abs((*errors)[2]) > 1e-14)
-    (relerror)[1] = sqrt((*errors)[1]) / sqrt((*errors)[3]);
+    (relerror)[0] = sqrt((errors)[0]);
+  if (std::abs((errors)[2]) > 1e-14)
+    (relerror)[1] = sqrt((errors)[1]) / sqrt((errors)[3]);
   else
-    (relerror)[1] = sqrt((*errors)[1]);
+    (relerror)[1] = sqrt((errors)[1]);
 
   if (myrank_ == 0)
   {

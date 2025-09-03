@@ -530,17 +530,16 @@ FLD::TimIntHDGWeakComp::evaluate_error_compared_to_analytical_sol()
       // (3: analytical mixed variable for L2 norm)
       // (4: analytical density for L2 norm)
       // (5: analytical momentum for L2 norm)
-      std::shared_ptr<Core::LinAlg::SerialDenseVector> errors =
-          std::make_shared<Core::LinAlg::SerialDenseVector>(3 + 3);
+      Core::LinAlg::SerialDenseVector errors(3 + 3);
 
       // call loop over elements (assemble nothing)
-      discret_->evaluate_scalars(eleparams, *errors);
+      discret_->evaluate_scalars(eleparams, errors);
       discret_->clear_state();
 
       // evaluate absolute L2 error
-      (*abserror)[0] = sqrt((*errors)[0]);
-      (*abserror)[1] = sqrt((*errors)[1]);
-      (*abserror)[2] = sqrt((*errors)[2]);
+      (*abserror)[0] = sqrt((errors)[0]);
+      (*abserror)[1] = sqrt((errors)[1]);
+      (*abserror)[2] = sqrt((errors)[2]);
 
       if (myrank_ == 0)
       {

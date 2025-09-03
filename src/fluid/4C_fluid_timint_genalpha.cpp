@@ -320,7 +320,7 @@ void FLD::TimIntGenAlpha::treat_turbulence_models(Teuchos::ParameterList& elepar
   FLD::FluidImplicitTimeInt::treat_turbulence_models(eleparams);
   if (reconstructder_)
     FLD::Utils::project_gradient_and_set_param(
-        *discret_, eleparams, velaf_, "velafgrad", alefluid_);
+        *discret_, eleparams, *velaf_, "velafgrad", alefluid_);
   return;
 }
 

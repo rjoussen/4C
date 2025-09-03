@@ -4777,18 +4777,17 @@ FLD::FluidImplicitTimeInt::evaluate_error_compared_to_analytical_sol()
       // 3: analytical velocity for L2 norm
       // 4: analytical p for L2 norm
       // 5: analytical velocity for H1 norm
-      std::shared_ptr<Core::LinAlg::SerialDenseVector> errors =
-          std::make_shared<Core::LinAlg::SerialDenseVector>(3 + 3);
+      Core::LinAlg::SerialDenseVector errors(3 + 3);
 
       // call loop over elements (assemble nothing)
-      discret_->evaluate_scalars(eleparams, *errors);
+      discret_->evaluate_scalars(eleparams, errors);
       discret_->clear_state();
 
-      (*relerror)[0] = sqrt((*errors)[0]) / sqrt((*errors)[3]);
-      (*relerror)[1] = sqrt((*errors)[1]) / sqrt((*errors)[4]);
+      (*relerror)[0] = sqrt((errors)[0]) / sqrt((errors)[3]);
+      (*relerror)[1] = sqrt((errors)[1]) / sqrt((errors)[4]);
 
       if ((calcerr == Inpar::FLUID::beltrami_flow) or (calcerr == Inpar::FLUID::byfunct))
-        (*relerror)[2] = sqrt((*errors)[2]) / sqrt((*errors)[5]);
+        (*relerror)[2] = sqrt((errors)[2]) / sqrt((errors)[5]);
       else
       {
         (*relerror)[2] = 0.0;
@@ -4819,7 +4818,7 @@ FLD::FluidImplicitTimeInt::evaluate_error_compared_to_analytical_sol()
                     << std::endl
                     << std::endl;
           if ((*relerror)[2] != 0.0)
-            std::cout << "H1 velocity scaling  " << sqrt((*errors)[5]) << std::endl;
+            std::cout << "H1 velocity scaling  " << sqrt((errors)[5]) << std::endl;
         }
 
         // print last error in a separate file
@@ -5124,7 +5123,7 @@ void FLD::FluidImplicitTimeInt::compute_flow_rates() const
   else
   {
     const std::map<int, double> flowrates =
-        FLD::Utils::compute_flow_rates(*discret_, velnp_, condstring, physicaltype_);
+        FLD::Utils::compute_flow_rates(*discret_, *velnp_, condstring, physicaltype_);
 
     // write to file
     if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)

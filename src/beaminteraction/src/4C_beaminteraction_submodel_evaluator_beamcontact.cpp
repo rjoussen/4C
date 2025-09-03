@@ -849,14 +849,14 @@ void BeamInteraction::SubmodelEvaluator::BeamContact::assemble_force(
     Core::LinAlg::Vector<double>& f) const
 {
   get_lagrange_multiplier_assembly_manager()->get_mortar_manager()->assemble_force(
-      g_state(), f, beam_interaction_data_state_ptr());
+      g_state(), f, *beam_interaction_data_state_ptr());
 };
 
 void BeamInteraction::SubmodelEvaluator::BeamContact::assemble_stiff(
     Core::LinAlg::SparseOperator& jac) const
 {
   get_lagrange_multiplier_assembly_manager()->get_mortar_manager()->assemble_stiff(
-      g_state(), jac, beam_interaction_data_state_ptr());
+      g_state(), jac, *beam_interaction_data_state_ptr());
 }
 
 /*----------------------------------------------------------------------------*

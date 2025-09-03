@@ -703,27 +703,26 @@ void ScaTra::ScaTraTimIntElch::evaluate_error_compared_to_analytical_sol()
       discret_->set_state("phinp", *phinp_);
 
       // get (squared) error values
-      std::shared_ptr<Core::LinAlg::SerialDenseVector> errors =
-          std::make_shared<Core::LinAlg::SerialDenseVector>(3);
-      discret_->evaluate_scalars(eleparams, *errors);
+      Core::LinAlg::SerialDenseVector errors(3);
+      discret_->evaluate_scalars(eleparams, errors);
 
       double conerr1 = 0.0;
       double conerr2 = 0.0;
       // for the L2 norm, we need the square root
       if (num_scal() == 2)
       {
-        conerr1 = sqrt((*errors)[0]);
-        conerr2 = sqrt((*errors)[1]);
+        conerr1 = sqrt((errors)[0]);
+        conerr2 = sqrt((errors)[1]);
       }
       else if (num_scal() == 1)
       {
-        conerr1 = sqrt((*errors)[0]);
+        conerr1 = sqrt((errors)[0]);
         conerr2 = 0.0;
       }
       else
         FOUR_C_THROW("The analytical solution of Kwok and Wu is only defined for two species");
 
-      double poterr = sqrt((*errors)[2]);
+      double poterr = sqrt((errors)[2]);
 
       if (myrank_ == 0)
       {
@@ -751,14 +750,13 @@ void ScaTra::ScaTraTimIntElch::evaluate_error_compared_to_analytical_sol()
       discret_->set_state("phinp", *phinp_);
 
       // get (squared) error values
-      std::shared_ptr<Core::LinAlg::SerialDenseVector> errors =
-          std::make_shared<Core::LinAlg::SerialDenseVector>(3);
-      discret_->evaluate_scalars(eleparams, *errors);
+      Core::LinAlg::SerialDenseVector errors(3);
+      discret_->evaluate_scalars(eleparams, errors);
 
       // for the L2 norm, we need the square root
-      double conerr1 = sqrt((*errors)[0]);
-      double conerr2 = sqrt((*errors)[1]);
-      double poterr = sqrt((*errors)[2]);
+      double conerr1 = sqrt((errors)[0]);
+      double conerr2 = sqrt((errors)[1]);
+      double poterr = sqrt((errors)[2]);
 
       if (myrank_ == 0)
       {
@@ -783,12 +781,11 @@ void ScaTra::ScaTraTimIntElch::evaluate_error_compared_to_analytical_sol()
       discret_->set_state("phinp", *phinp_);
 
       // get (squared) error values
-      std::shared_ptr<Core::LinAlg::SerialDenseVector> errors =
-          std::make_shared<Core::LinAlg::SerialDenseVector>(1);
-      discret_->evaluate_scalars(eleparams, *errors);
+      Core::LinAlg::SerialDenseVector errors(1);
+      discret_->evaluate_scalars(eleparams, errors);
 
       // for the L2 norm, we need the square root
-      double err = sqrt((*errors)[0]);
+      double err = sqrt((errors)[0]);
 
       if (myrank_ == 0)
       {
@@ -1670,16 +1667,15 @@ void ScaTra::ScaTraTimIntElch::setup_nat_conv()
   eleparams.set("calc_grad_phi", false);
 
   // evaluate integrals of concentrations and domain
-  std::shared_ptr<Core::LinAlg::SerialDenseVector> scalars =
-      std::make_shared<Core::LinAlg::SerialDenseVector>(num_dof_per_node() + 1);
-  discret_->evaluate_scalars(eleparams, *scalars);
+  Core::LinAlg::SerialDenseVector scalars(num_dof_per_node() + 1);
+  discret_->evaluate_scalars(eleparams, scalars);
 
   // calculate mean concentration
-  const double domint = (*scalars)[num_dof_per_node()];
+  const double domint = (scalars)[num_dof_per_node()];
 
   if (std::abs(domint) < 1e-15) FOUR_C_THROW("Division by zero!");
 
-  for (int k = 0; k < num_scal(); k++) c0_[k] = (*scalars)[k] / domint;
+  for (int k = 0; k < num_scal(); k++) c0_[k] = (scalars)[k] / domint;
 
   // initialization of the densification coefficient vector
   densific_.resize(num_scal());
@@ -2128,15 +2124,14 @@ double ScaTra::ScaTraTimIntElch::compute_conductivity(
   add_time_integration_specific_vectors();
 
   // evaluate integrals of scalar(s) and domain
-  std::shared_ptr<Core::LinAlg::SerialDenseVector> sigma_domint =
-      std::make_shared<Core::LinAlg::SerialDenseVector>(num_scal() + 2);
-  discret_->evaluate_scalars(eleparams, *sigma_domint);
-  const double domint = (*sigma_domint)[num_scal() + 1];
+  Core::LinAlg::SerialDenseVector sigma_domint(num_scal() + 2);
+  discret_->evaluate_scalars(eleparams, sigma_domint);
+  const double domint = (sigma_domint)[num_scal() + 1];
 
   if (!specresist)
-    for (int ii = 0; ii < num_scal() + 1; ++ii) sigma[ii] = (*sigma_domint)[ii] / domint;
+    for (int ii = 0; ii < num_scal() + 1; ++ii) sigma[ii] = (sigma_domint)[ii] / domint;
   else
-    specific_resistance = (*sigma_domint)[num_scal()] / domint;
+    specific_resistance = (sigma_domint)[num_scal()] / domint;
 
   return specific_resistance;
 }

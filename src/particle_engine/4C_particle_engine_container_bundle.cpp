@@ -87,11 +87,11 @@ void PARTICLEENGINE::ParticleContainerBundle::get_packed_particle_objects_of_all
       ParticleStates states;
       container->get_particle(index, globalid, states);
 
-      ParticleObjShrdPtr particleobject = std::make_shared<ParticleObject>(type, globalid, states);
+      ParticleObject particleobject(type, globalid, states);
 
       // pack data for writing
       Core::Communication::PackBuffer data;
-      particleobject->pack(data);
+      particleobject.pack(data);
       particlebuffer.insert(particlebuffer.end(), data().begin(), data().end());
     }
   }

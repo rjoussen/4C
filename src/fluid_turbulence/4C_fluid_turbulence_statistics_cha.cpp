@@ -3057,7 +3057,7 @@ void FLD::TurbulenceStatisticsCha::evaluate_residuals(
         if (state->first == "velaf")
         {  // project_gradient_and_set_param decides, if we want to project something or not
           FLD::Utils::project_gradient_and_set_param(
-              *discret_, eleparams_, state->second, "velafgrad", alefluid_);
+              *discret_, eleparams_, *state->second, "velafgrad", alefluid_);
           break;
         }
       }
