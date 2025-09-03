@@ -2213,7 +2213,7 @@ void Discret::Elements::Wall1Poro<distype>::compute_sol_pressure_deriv(
     using ordinalType = Core::LinAlg::SerialDenseMatrix::ordinalType;
     using scalarType = Core::LinAlg::SerialDenseMatrix::scalarType;
     Teuchos::SerialDenseSolver<ordinalType, scalarType> inverse;
-    inverse.setMatrix(Teuchos::rcpFromRef(pressderiv));
+    inverse.setMatrix(Teuchos::rcpFromRef(pressderiv.base()));
     int err = inverse.invert();
     if (err != 0)
       FOUR_C_THROW("Inversion of matrix for pressure derivative failed with error code {}.", err);

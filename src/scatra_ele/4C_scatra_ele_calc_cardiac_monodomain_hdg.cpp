@@ -626,8 +626,8 @@ int Discret::Elements::ScaTraEleCalcHDGCardiacMonodomain<distype,
   using ordinalType = Core::LinAlg::SerialDenseMatrix::ordinalType;
   using scalarType = Core::LinAlg::SerialDenseMatrix::scalarType;
   Teuchos::SerialDenseSolver<ordinalType, scalarType> inverseMat;
-  inverseMat.setMatrix(Teuchos::rcpFromRef(Mmat));
-  inverseMat.setVectors(Teuchos::rcpFromRef(tempMat1), Teuchos::rcpFromRef(tempMat1));
+  inverseMat.setMatrix(Teuchos::rcpFromRef(Mmat.base()));
+  inverseMat.setVectors(Teuchos::rcpFromRef(tempMat1.base()), Teuchos::rcpFromRef(tempMat1.base()));
   inverseMat.factorWithEquilibration(true);
   int err2 = inverseMat.factor();
   int err = inverseMat.solve();
@@ -756,8 +756,8 @@ int Discret::Elements::ScaTraEleCalcHDGCardiacMonodomain<distype,
   using ordinalType = Core::LinAlg::SerialDenseMatrix::ordinalType;
   using scalarType = Core::LinAlg::SerialDenseMatrix::scalarType;
   Teuchos::SerialDenseSolver<ordinalType, scalarType> inverseMat;
-  inverseMat.setMatrix(Teuchos::rcpFromRef(Mmat));
-  inverseMat.setVectors(Teuchos::rcpFromRef(tempMat1), Teuchos::rcpFromRef(tempMat1));
+  inverseMat.setMatrix(Teuchos::rcpFromRef(Mmat.base()));
+  inverseMat.setVectors(Teuchos::rcpFromRef(tempMat1.base()), Teuchos::rcpFromRef(tempMat1.base()));
   inverseMat.factorWithEquilibration(true);
   int err2 = inverseMat.factor();
   int err = inverseMat.solve();

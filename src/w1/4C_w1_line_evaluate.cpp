@@ -212,7 +212,7 @@ int Discret::Elements::Wall1Line::evaluate_neumann(Teuchos::ParameterList& param
 
               // calculate reference position of GP
               Core::LinAlg::SerialDenseMatrix gp_coord(1, Wall1::numdim_);
-              gp_coord.multiply(Teuchos::TRANS, Teuchos::TRANS, 1.0, shapefcts, xye, 0.0);
+              Core::LinAlg::multiply_tt(gp_coord, shapefcts, xye);
 
               // write coordinates in another datatype
               double gp_coord2[3];  // the position vector has to be given in 3D!!!
@@ -269,7 +269,7 @@ int Discret::Elements::Wall1Line::evaluate_neumann(Teuchos::ParameterList& param
 
           // calculate reference position of GP
           Core::LinAlg::SerialDenseMatrix gp_coord(1, Wall1::numdim_);
-          gp_coord.multiply(Teuchos::TRANS, Teuchos::TRANS, 1.0, shapefcts, xye, 0.0);
+          Core::LinAlg::multiply_tt(gp_coord, shapefcts, xye);
 
           // write coordinates in another datatype
           double gp_coord2[3];  // the position vector has to be given in 3D!!!

@@ -2630,7 +2630,7 @@ void XFEM::MeshCouplingFluidFluid::estimate_nitsche_trace_max_eigenvalue(
   params.set<std::shared_ptr<std::map<int, double>>>(
       "trace_estimate_max_eigenvalue_map", ele_to_max_eigenvalue_);
   Core::LinAlg::SerialDenseMatrix dummyelemat;
-  Core::LinAlg::SerialDenseVector dummyelevec;
+  Core::LinAlg::SerialDenseMatrix dummyelevec;
   Core::Elements::FaceElement* faceele = dynamic_cast<Core::Elements::FaceElement*>(ele);
   if (!faceele) FOUR_C_THROW("Cast to faceele failed!");  // todo change to FOUR_C_ASSERT
 

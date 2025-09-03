@@ -266,8 +266,15 @@ namespace Discret
         static constexpr unsigned master_numdof_ = nsd_ + 1;
 
         static std::shared_ptr<NitscheInterface<distype>> create_nitsche_coupling_x_fluid_wdbc(
-            Core::LinAlg::SerialDenseMatrix::Base& C_umum,  ///< C_umum coupling matrix
-            Core::LinAlg::SerialDenseMatrix::Base& rhC_um,  ///< C_um coupling rhs
+            Core::LinAlg::SerialDenseMatrix& C_umum,  ///< C_umum coupling matrix
+            Core::LinAlg::SerialDenseMatrix& rhC_um,  ///< C_um coupling rhs
+            const Discret::Elements::FluidEleParameterXFEM&
+                fldparaxfem  ///< specific XFEM based fluid parameters
+        );
+
+        static std::shared_ptr<NitscheInterface<distype>> create_nitsche_coupling_x_fluid_wdbc(
+            Core::LinAlg::SerialDenseMatrix& C_umum,  ///< C_umum coupling matrix
+            Core::LinAlg::SerialDenseVector& rhC_um,  ///< C_um coupling rhs
             const Discret::Elements::FluidEleParameterXFEM&
                 fldparaxfem  ///< specific XFEM based fluid parameters
         );
@@ -275,10 +282,20 @@ namespace Discret
         //! create a coupling interface for Nitsche's method for xfluid weak dirichlet problems
         static std::shared_ptr<NitscheInterface<distype>> create_nitsche_coupling_x_fluid_wdbc(
             Core::Elements::Element* bele,  ///< boundary element
-            Core::LinAlg::SerialDenseMatrix::Base&
+            Core::LinAlg::SerialDenseMatrix&
                 bele_xyz,  ///< global node coordinates of boundary element
-            Core::LinAlg::SerialDenseMatrix::Base& C_umum,  ///< C_umum coupling matrix
-            Core::LinAlg::SerialDenseMatrix::Base& rhC_um,  ///< C_um coupling rhs
+            Core::LinAlg::SerialDenseMatrix& C_umum,  ///< C_umum coupling matrix
+            Core::LinAlg::SerialDenseMatrix& rhC_um,  ///< C_um coupling rhs
+            const Discret::Elements::FluidEleParameterXFEM&
+                fldparaxfem  ///< specific XFEM based fluid parameters
+        );
+
+        static std::shared_ptr<NitscheInterface<distype>> create_nitsche_coupling_x_fluid_wdbc(
+            Core::Elements::Element* bele,  ///< boundary element
+            Core::LinAlg::SerialDenseMatrix&
+                bele_xyz,  ///< global node coordinates of boundary element
+            Core::LinAlg::SerialDenseMatrix& C_umum,  ///< C_umum coupling matrix
+            Core::LinAlg::SerialDenseVector& rhC_um,  ///< C_um coupling rhs
             const Discret::Elements::FluidEleParameterXFEM&
                 fldparaxfem  ///< specific XFEM based fluid parameters
         );
@@ -286,14 +303,28 @@ namespace Discret
         //! create a coupling interface for Nitsche's method for xfluid-sided coupling strategy
         static std::shared_ptr<NitscheInterface<distype>> create_nitsche_coupling_x_fluid_sided(
             Core::Elements::Element* bele,  ///< boundary element
-            Core::LinAlg::SerialDenseMatrix::Base&
+            Core::LinAlg::SerialDenseMatrix&
                 bele_xyz,  ///< global node coordinates of boundary element
-            Core::LinAlg::SerialDenseMatrix::Base& C_umum,  ///< C_umum coupling matrix
-            Core::LinAlg::SerialDenseMatrix::Base& C_usum,  ///< C_usum coupling matrix
-            Core::LinAlg::SerialDenseMatrix::Base& C_umus,  ///< C_umus coupling matrix
-            Core::LinAlg::SerialDenseMatrix::Base& C_usus,  ///< C_usus coupling matrix
-            Core::LinAlg::SerialDenseMatrix::Base& rhC_um,  ///< C_um coupling rhs
-            Core::LinAlg::SerialDenseMatrix::Base& rhC_us,  ///< C_us coupling rhs
+            Core::LinAlg::SerialDenseMatrix& C_umum,  ///< C_umum coupling matrix
+            Core::LinAlg::SerialDenseMatrix& C_usum,  ///< C_usum coupling matrix
+            Core::LinAlg::SerialDenseMatrix& C_umus,  ///< C_umus coupling matrix
+            Core::LinAlg::SerialDenseMatrix& C_usus,  ///< C_usus coupling matrix
+            Core::LinAlg::SerialDenseMatrix& rhC_um,  ///< C_um coupling rhs
+            Core::LinAlg::SerialDenseMatrix& rhC_us,  ///< C_us coupling rhs
+            const Discret::Elements::FluidEleParameterXFEM&
+                fldparaxfem  ///< specific XFEM based fluid parameters
+        );
+
+        static std::shared_ptr<NitscheInterface<distype>> create_nitsche_coupling_x_fluid_sided(
+            Core::Elements::Element* bele,  ///< boundary element
+            Core::LinAlg::SerialDenseMatrix&
+                bele_xyz,  ///< global node coordinates of boundary element
+            Core::LinAlg::SerialDenseMatrix& C_umum,  ///< C_umum coupling matrix
+            Core::LinAlg::SerialDenseMatrix& C_usum,  ///< C_usum coupling matrix
+            Core::LinAlg::SerialDenseMatrix& C_umus,  ///< C_umus coupling matrix
+            Core::LinAlg::SerialDenseMatrix& C_usus,  ///< C_usus coupling matrix
+            Core::LinAlg::SerialDenseVector& rhC_um,  ///< C_um coupling rhs
+            Core::LinAlg::SerialDenseMatrix& rhC_us,  ///< C_us coupling rhs
             const Discret::Elements::FluidEleParameterXFEM&
                 fldparaxfem  ///< specific XFEM based fluid parameters
         );
@@ -302,14 +333,28 @@ namespace Discret
         //! (weighted or fully embedded-sided)
         static std::shared_ptr<NitscheInterface<distype>> create_nitsche_coupling_two_sided(
             Core::Elements::Element* vele,  ///< volumetric element to couple with
-            Core::LinAlg::SerialDenseMatrix::Base&
+            Core::LinAlg::SerialDenseMatrix&
                 vele_xyz,  ///< global node coordinates of volumetric element
-            Core::LinAlg::SerialDenseMatrix::Base& C_umum,  ///< C_umum coupling matrix
-            Core::LinAlg::SerialDenseMatrix::Base& C_usum,  ///< C_usum coupling matrix
-            Core::LinAlg::SerialDenseMatrix::Base& C_umus,  ///< C_umus coupling matrix
-            Core::LinAlg::SerialDenseMatrix::Base& C_usus,  ///< C_usus coupling matrix
-            Core::LinAlg::SerialDenseMatrix::Base& rhC_um,  ///< C_um coupling rhs
-            Core::LinAlg::SerialDenseMatrix::Base& rhC_us,  ///< C_us coupling rhs
+            Core::LinAlg::SerialDenseMatrix& C_umum,  ///< C_umum coupling matrix
+            Core::LinAlg::SerialDenseMatrix& C_usum,  ///< C_usum coupling matrix
+            Core::LinAlg::SerialDenseMatrix& C_umus,  ///< C_umus coupling matrix
+            Core::LinAlg::SerialDenseMatrix& C_usus,  ///< C_usus coupling matrix
+            Core::LinAlg::SerialDenseMatrix& rhC_um,  ///< C_um coupling rhs
+            Core::LinAlg::SerialDenseMatrix& rhC_us,  ///< C_us coupling rhs
+            const Discret::Elements::FluidEleParameterXFEM&
+                fldparaxfem  ///< specific XFEM based fluid parameters
+        );
+
+        static std::shared_ptr<NitscheInterface<distype>> create_nitsche_coupling_two_sided(
+            Core::Elements::Element* vele,  ///< volumetric element to couple with
+            Core::LinAlg::SerialDenseMatrix&
+                vele_xyz,  ///< global node coordinates of volumetric element
+            Core::LinAlg::SerialDenseMatrix& C_umum,  ///< C_umum coupling matrix
+            Core::LinAlg::SerialDenseMatrix& C_usum,  ///< C_usum coupling matrix
+            Core::LinAlg::SerialDenseMatrix& C_umus,  ///< C_umus coupling matrix
+            Core::LinAlg::SerialDenseMatrix& C_usus,  ///< C_usus coupling matrix
+            Core::LinAlg::SerialDenseVector& rhC_um,  ///< C_um coupling rhs
+            Core::LinAlg::SerialDenseMatrix& rhC_us,  ///< C_us coupling rhs
             const Discret::Elements::FluidEleParameterXFEM&
                 fldparaxfem  ///< specific XFEM based fluid parameters
         );

@@ -13,9 +13,8 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-void Core::LinAlg::svd(const Core::LinAlg::SerialDenseMatrix::Base& A,
-    Core::LinAlg::SerialDenseMatrix& Q, Core::LinAlg::SerialDenseMatrix& S,
-    Core::LinAlg::SerialDenseMatrix& VT)
+void Core::LinAlg::svd(const Core::LinAlg::SerialDenseMatrix& A, Core::LinAlg::SerialDenseMatrix& Q,
+    Core::LinAlg::SerialDenseMatrix& S, Core::LinAlg::SerialDenseMatrix& VT)
 {
   Core::LinAlg::SerialDenseMatrix tmp(A);  // copy, because content of A is destroyed
   const char jobu = 'A';                   // compute and return all M columns of U
@@ -35,7 +34,7 @@ void Core::LinAlg::svd(const Core::LinAlg::SerialDenseMatrix::Base& A,
   if (info) FOUR_C_THROW("Lapack's dgesvd returned {}", info);
 
   // 0 for off-diagonal, otherwise s
-  S.putScalar(0.0);
+  S.put_scalar(0.0);
   for (int i = 0; i < std::min(n, m); ++i)
   {
     S(i, i) = s[i];

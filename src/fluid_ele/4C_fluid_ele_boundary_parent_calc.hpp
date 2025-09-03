@@ -48,32 +48,32 @@ namespace Discret
       virtual ~FluidBoundaryParentInterface() = default;
       virtual void flow_dep_pressure_bc(Discret::Elements::FluidBoundary* ele1,
           Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
-          std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix::Base& elemat1,
+          std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat1,
           Core::LinAlg::SerialDenseVector::Base& elevec1) = 0;
 
       virtual void slip_supp_bc(Discret::Elements::FluidBoundary* ele1,
           Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
-          std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix::Base& elemat1,
+          std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat1,
           Core::LinAlg::SerialDenseVector::Base& elevec1) = 0;
 
       virtual void navier_slip_bc(Discret::Elements::FluidBoundary* ele1,
           Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
-          std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix::Base& elemat1,
+          std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat1,
           Core::LinAlg::SerialDenseVector::Base& elevec1) = 0;
 
       virtual void evaluate_weak_dbc(Discret::Elements::FluidBoundary* ele1,
           Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
-          std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix::Base& elemat1,
+          std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat1,
           Core::LinAlg::SerialDenseVector::Base& elevec1) = 0;
 
       virtual void estimate_nitsche_trace_max_eigenvalue(Core::Elements::FaceElement* ele1,
           Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
-          std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix::Base& elemat1,
-          Core::LinAlg::SerialDenseMatrix::Base& elemat2) = 0;
+          std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat1,
+          Core::LinAlg::SerialDenseMatrix& elemat2) = 0;
 
       virtual void mix_hyb_dirichlet(Discret::Elements::FluidBoundary* ele1,
           Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
-          std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix::Base& elemat1,
+          std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat1,
           Core::LinAlg::SerialDenseVector::Base& elevec1) = 0;
 
       /// Internal implementation class for FluidBoundaryParent elements
@@ -103,32 +103,32 @@ namespace Discret
 
       void flow_dep_pressure_bc(Discret::Elements::FluidBoundary* surfele,
           Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
-          std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix::Base& elemat,
+          std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat,
           Core::LinAlg::SerialDenseVector::Base& elevec) override;
 
       void slip_supp_bc(Discret::Elements::FluidBoundary* surfele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, std::vector<int>& lm,
-          Core::LinAlg::SerialDenseMatrix::Base& elemat,
+          Core::LinAlg::SerialDenseMatrix& elemat,
           Core::LinAlg::SerialDenseVector::Base& elevec) override;
 
       void navier_slip_bc(Discret::Elements::FluidBoundary* surfele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, std::vector<int>& lm,
-          Core::LinAlg::SerialDenseMatrix::Base& elemat,
+          Core::LinAlg::SerialDenseMatrix& elemat,
           Core::LinAlg::SerialDenseVector::Base& elevec) override;
 
       void evaluate_weak_dbc(Discret::Elements::FluidBoundary* surfele,
           Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
-          std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix::Base& elemat,
+          std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat,
           Core::LinAlg::SerialDenseVector::Base& elevec) override;
 
       void estimate_nitsche_trace_max_eigenvalue(Core::Elements::FaceElement* surfele,
           Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
-          std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix::Base& elemat1,
-          Core::LinAlg::SerialDenseMatrix::Base& elemat2) override;
+          std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat1,
+          Core::LinAlg::SerialDenseMatrix& elemat2) override;
 
       void mix_hyb_dirichlet(Discret::Elements::FluidBoundary* surfele,
           Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
-          std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix::Base& elemat,
+          std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat,
           Core::LinAlg::SerialDenseVector::Base& elevec) override;
 
 
@@ -136,38 +136,34 @@ namespace Discret
       template <Core::FE::CellType bdistype, Core::FE::CellType pdistype>
       void flow_dep_pressure_bc(Discret::Elements::FluidBoundary* ele,
           Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
-          std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix::Base& elemat,
+          std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat,
           Core::LinAlg::SerialDenseVector::Base& elevec);
 
       template <Core::FE::CellType bdistype, Core::FE::CellType pdistype>
       void slip_supp_bc(Discret::Elements::FluidBoundary* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, std::vector<int>& lm,
-          Core::LinAlg::SerialDenseMatrix::Base& elemat,
-          Core::LinAlg::SerialDenseVector::Base& elevec);
+          Core::LinAlg::SerialDenseMatrix& elemat, Core::LinAlg::SerialDenseVector::Base& elevec);
 
       template <Core::FE::CellType bdistype, Core::FE::CellType pdistype>
       void navier_slip_bc(Discret::Elements::FluidBoundary* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, std::vector<int>& lm,
-          Core::LinAlg::SerialDenseMatrix::Base& elemat,
-          Core::LinAlg::SerialDenseVector::Base& elevec);
+          Core::LinAlg::SerialDenseMatrix& elemat, Core::LinAlg::SerialDenseVector::Base& elevec);
 
       template <Core::FE::CellType bdistype, Core::FE::CellType pdistype>
       void evaluate_weak_dbc(Discret::Elements::FluidBoundary* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, std::vector<int>& lm,
-          Core::LinAlg::SerialDenseMatrix::Base& elemat,
-          Core::LinAlg::SerialDenseVector::Base& elevec);
+          Core::LinAlg::SerialDenseMatrix& elemat, Core::LinAlg::SerialDenseVector::Base& elevec);
 
       template <Core::FE::CellType bdistype, Core::FE::CellType pdistype>
       void estimate_nitsche_trace_max_eigenvalue(Core::Elements::FaceElement* ele,
           Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
-          std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix::Base& elemat1,
-          Core::LinAlg::SerialDenseMatrix::Base& elemat2);
+          std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat1,
+          Core::LinAlg::SerialDenseMatrix& elemat2);
 
       template <Core::FE::CellType bdistype, Core::FE::CellType pdistype>
       void mix_hyb_dirichlet(Discret::Elements::FluidBoundary* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, std::vector<int>& lm,
-          Core::LinAlg::SerialDenseMatrix::Base& elemat,
-          Core::LinAlg::SerialDenseVector::Base& elevec);
+          Core::LinAlg::SerialDenseMatrix& elemat, Core::LinAlg::SerialDenseVector::Base& elevec);
 
       void get_density_and_viscosity(std::shared_ptr<const Core::Mat::Material> material,
           const double pscaaf, const double thermpressaf, const double rateofstrain);

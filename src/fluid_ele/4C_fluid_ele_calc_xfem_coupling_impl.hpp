@@ -52,7 +52,7 @@ namespace Discret
         static constexpr unsigned slave_nen_ = Core::FE::num_nodes(slave_distype);
 
         //! ctor
-        SlaveElementRepresentation(Core::LinAlg::SerialDenseMatrix::Base& slave_xyze)
+        SlaveElementRepresentation(Core::LinAlg::SerialDenseMatrix& slave_xyze)
             : slave_xyze_(slave_xyze.values(), true)
         {
           SlaveElementInterface<distype>::define_state_names(
@@ -288,7 +288,7 @@ namespace Discret
         SlaveElementRepresentation() {};
 
         //! ctor
-        SlaveElementRepresentation(Core::LinAlg::SerialDenseMatrix::Base& slave_xyze) {};
+        SlaveElementRepresentation(Core::LinAlg::SerialDenseMatrix& slave_xyze) {};
 
         //! get nodal shape function derivatives
         void get_slave_funct_deriv(Core::LinAlg::Matrix<nsd_, slave_nen_>& slave_derxy) const
@@ -318,30 +318,56 @@ namespace Discret
 
         //! ctor for one-sided (xfluid weak dirichlet) problems (interface defined by level-set
         //! field)
-        NitscheCoupling(Core::LinAlg::SerialDenseMatrix::Base& C_umum,  ///< C_umum coupling matrix
-            Core::LinAlg::SerialDenseMatrix::Base& rhC_um,              ///< C_um coupling rhs
+        NitscheCoupling(Core::LinAlg::SerialDenseMatrix& C_umum,  ///< C_umum coupling matrix
+            Core::LinAlg::SerialDenseMatrix& rhC_um,              ///< C_um coupling rhs
+            const Discret::Elements::FluidEleParameterXFEM&
+                fldparaxfem  ///< specific XFEM based fluid parameters
+        );
+
+        NitscheCoupling(Core::LinAlg::SerialDenseMatrix& C_umum,  ///< C_umum coupling matrix
+            Core::LinAlg::SerialDenseVector& rhC_um,              ///< C_um coupling rhs
             const Discret::Elements::FluidEleParameterXFEM&
                 fldparaxfem  ///< specific XFEM based fluid parameters
         );
 
         //! ctor for one-sided (xfluid weak dirichlet) problems (interface defined by mesh)
-        NitscheCoupling(Core::LinAlg::SerialDenseMatrix::Base&
-                            slave_xyze,  ///< global node coordinates of slave element
-            Core::LinAlg::SerialDenseMatrix::Base& C_umum,  ///< C_umum coupling matrix
-            Core::LinAlg::SerialDenseMatrix::Base& rhC_um,  ///< C_um coupling rhs
+        NitscheCoupling(Core::LinAlg::SerialDenseMatrix&
+                            slave_xyze,               ///< global node coordinates of slave element
+            Core::LinAlg::SerialDenseMatrix& C_umum,  ///< C_umum coupling matrix
+            Core::LinAlg::SerialDenseMatrix& rhC_um,  ///< C_um coupling rhs
+            const Discret::Elements::FluidEleParameterXFEM&
+                fldparaxfem  ///< specific XFEM based fluid parameters
+        );
+
+        NitscheCoupling(Core::LinAlg::SerialDenseMatrix&
+                            slave_xyze,               ///< global node coordinates of slave element
+            Core::LinAlg::SerialDenseMatrix& C_umum,  ///< C_umum coupling matrix
+            Core::LinAlg::SerialDenseVector& rhC_um,  ///< C_um coupling rhs
             const Discret::Elements::FluidEleParameterXFEM&
                 fldparaxfem  ///< specific XFEM based fluid parameters
         );
 
         //! ctor for two-sided problems
-        NitscheCoupling(Core::LinAlg::SerialDenseMatrix::Base&
-                            slave_xyze,  ///< global node coordinates of slave element
-            Core::LinAlg::SerialDenseMatrix::Base& C_umum,  ///< C_umum coupling matrix
-            Core::LinAlg::SerialDenseMatrix::Base& C_usum,  ///< C_usum coupling matrix
-            Core::LinAlg::SerialDenseMatrix::Base& C_umus,  ///< C_umus coupling matrix
-            Core::LinAlg::SerialDenseMatrix::Base& C_usus,  ///< C_usus coupling matrix
-            Core::LinAlg::SerialDenseMatrix::Base& rhC_um,  ///< C_um coupling rhs
-            Core::LinAlg::SerialDenseMatrix::Base& rhC_us,  ///< C_us coupling rhs
+        NitscheCoupling(Core::LinAlg::SerialDenseMatrix&
+                            slave_xyze,               ///< global node coordinates of slave element
+            Core::LinAlg::SerialDenseMatrix& C_umum,  ///< C_umum coupling matrix
+            Core::LinAlg::SerialDenseMatrix& C_usum,  ///< C_usum coupling matrix
+            Core::LinAlg::SerialDenseMatrix& C_umus,  ///< C_umus coupling matrix
+            Core::LinAlg::SerialDenseMatrix& C_usus,  ///< C_usus coupling matrix
+            Core::LinAlg::SerialDenseMatrix& rhC_um,  ///< C_um coupling rhs
+            Core::LinAlg::SerialDenseMatrix& rhC_us,  ///< C_us coupling rhs
+            const Discret::Elements::FluidEleParameterXFEM&
+                fldparaxfem  ///< specific XFEM based fluid parameters
+        );
+
+        NitscheCoupling(Core::LinAlg::SerialDenseMatrix&
+                            slave_xyze,               ///< global node coordinates of slave element
+            Core::LinAlg::SerialDenseMatrix& C_umum,  ///< C_umum coupling matrix
+            Core::LinAlg::SerialDenseMatrix& C_usum,  ///< C_usum coupling matrix
+            Core::LinAlg::SerialDenseMatrix& C_umus,  ///< C_umus coupling matrix
+            Core::LinAlg::SerialDenseMatrix& C_usus,  ///< C_usus coupling matrix
+            Core::LinAlg::SerialDenseVector& rhC_um,  ///< C_um coupling rhs
+            Core::LinAlg::SerialDenseMatrix& rhC_us,  ///< C_us coupling rhs
             const Discret::Elements::FluidEleParameterXFEM&
                 fldparaxfem  ///< specific XFEM based fluid parameters
         );
@@ -914,7 +940,7 @@ namespace Discret
         }
 
         //! ctor for xfluid weak dirichlet problem
-        HybridLMCoupling(Core::LinAlg::SerialDenseMatrix::Base&
+        HybridLMCoupling(Core::LinAlg::SerialDenseMatrix&
                              slave_xyze,  ///< global node coordinates of slave element
             bool isViscAdjointSymmetric =
                 true  ///< symmetric or skew-symmetric formulation of Nitsche's adjoint viscous term
@@ -925,15 +951,13 @@ namespace Discret
         }
 
         //! ctor for fluid-fluid
-        HybridLMCoupling(Core::LinAlg::SerialDenseMatrix::Base&
-                             slave_xyz,  ///< global node coordinates of slave element
-            Core::LinAlg::SerialDenseMatrix::Base& C_usum,  ///< C_usum coupling matrix
-            Core::LinAlg::SerialDenseMatrix::Base& C_umus,  ///< C_umus coupling matrix
-            Core::LinAlg::SerialDenseMatrix::Base& rhC_us,  ///< C_us coupling rhs
-            Core::LinAlg::SerialDenseMatrix::Base&
-                G_s_us,  ///< \f$G_{u^s \sigma}\f$ coupling matrix
-            Core::LinAlg::SerialDenseMatrix::Base&
-                G_us_s,                          ///< \f$G_{\sigma u^s}\f$ coupling matrix
+        HybridLMCoupling(Core::LinAlg::SerialDenseMatrix&
+                             slave_xyz,               ///< global node coordinates of slave element
+            Core::LinAlg::SerialDenseMatrix& C_usum,  ///< C_usum coupling matrix
+            Core::LinAlg::SerialDenseMatrix& C_umus,  ///< C_umus coupling matrix
+            Core::LinAlg::SerialDenseMatrix& rhC_us,  ///< C_us coupling rhs
+            Core::LinAlg::SerialDenseMatrix& G_s_us,  ///< \f$G_{u^s \sigma}\f$ coupling matrix
+            Core::LinAlg::SerialDenseMatrix& G_us_s,  ///< \f$G_{\sigma u^s}\f$ coupling matrix
             bool isViscAdjointSymmetric = false  ///< symmetric or skew-symmetric formulation of
                                                  ///< Nitsche's adjoint viscous term
             )

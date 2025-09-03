@@ -241,9 +241,9 @@ int Discret::Elements::FluidEleCalcXWall<distype, enrtype>::evaluate(Discret::El
           ++j)
       {
         if (*i == 0 && *j == 0 && row1 == col1)
-          elemat1[col1][row1] = 1.0;
+          elemat1(row1, col1) = 1.0;
         else if (*i == 0 or *j == 0)
-          elemat1[col1][row1] = 0.0;
+          elemat1(row1, col1) = 0.0;
         ++row1;
       }
       ++col1;

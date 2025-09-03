@@ -11,6 +11,7 @@
 #include "4C_fem_general_utils_fem_shapefunctions.hpp"
 #include "4C_fem_general_utils_integration.hpp"
 #include "4C_global_data.hpp"
+#include "4C_linalg_utils_densematrix_multiply.hpp"
 #include "4C_shell7p_line.hpp"
 #include "4C_utils_function.hpp"
 #include "4C_utils_function_of_time.hpp"
@@ -94,13 +95,9 @@ int Discret::Elements::Shell7pLine::evaluate_neumann(Teuchos::ParameterList& par
         if (spa_func[i].has_value() && spa_func[i].value() > 0)
         {
           // calculate reference position of gaussian point
-          Core::LinAlg::SerialDenseMatrix gp_coord(1, num_dim_);
-          gp_coord.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, 1.0, shape_functions, x, 0.0);
-
-          // write coordinates in another datatype
-          double gp_coord2[num_dim_];
-          for (int k = 0; k < num_dim_; k++) gp_coord2[k] = gp_coord(0, k);
-          const double* coordgpref = gp_coord2;  // needed for function evaluation
+          Core::LinAlg::SerialDenseVector gp_coord(num_dim_);
+          Core::LinAlg::multiply_tn(gp_coord, x, shape_functions);
+          const double* coordgpref = gp_coord.values();  // needed for function evaluation
 
           // evaluate function at current gauss point
           functfac = Global::Problem::instance()
@@ -127,7 +124,7 @@ void Discret::Elements::Shell7pLine::line_integration(double& dL,
 {
   // compute dXYZ / drs
   Core::LinAlg::SerialDenseMatrix dxyzdrs(1, num_dim_);
-  dxyzdrs.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, derivatives, x, 0.0);
+  Core::LinAlg::multiply(dxyzdrs, derivatives, x);
   dL = 0.0;
 
   for (int i = 0; i < 3; ++i) dL += dxyzdrs(0, i) * dxyzdrs(0, i);

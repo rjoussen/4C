@@ -23,6 +23,7 @@
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 #include "4C_linalg_tensor_generators.hpp"
+#include "4C_linalg_utils_densematrix_multiply.hpp"
 #include "4C_linalg_vector.hpp"
 #include "4C_mat_fluidporo.hpp"
 #include "4C_mat_fluidporo_multiphase.hpp"
@@ -1924,7 +1925,7 @@ namespace Discret::Elements
     {
       Teuchos::SerialDenseSolver<int, double> inverse;
 
-      inverse.setMatrix(Teuchos::rcpFromRef(pressderiv));
+      inverse.setMatrix(Teuchos::rcpFromRef(pressderiv.base()));
       int err = inverse.invert();
       if (err != 0)
         FOUR_C_THROW("Inversion of matrix for pressure derivative failed with error code {}.", err);
@@ -1935,8 +1936,7 @@ namespace Discret::Elements
 
     // chain rule: the derivative of saturation w.r.t. dof =
     // (derivative of saturation w.r.t. pressure) * (derivative of pressure w.r.t. dof)
-    satderiv.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, helpderiv, pressderiv, 0.0);
-
+    Core::LinAlg::multiply(satderiv, helpderiv, pressderiv);
     // compute derivative of solid pressure w.r.t. dofs with product rule
     // standard derivative: no volume fractions present
     for (int iphase = 0; iphase < numfluidphases; iphase++)

@@ -150,7 +150,20 @@ SlaveElementInterface<distype>::create_slave_element_representation(
 template <Core::FE::CellType distype>
 std::shared_ptr<NitscheInterface<distype>>
 NitscheInterface<distype>::create_nitsche_coupling_x_fluid_wdbc(
-    Core::LinAlg::SerialDenseMatrix::Base& C_umum, Core::LinAlg::SerialDenseMatrix::Base& rhC_um,
+    Core::LinAlg::SerialDenseMatrix& C_umum, Core::LinAlg::SerialDenseMatrix& rhC_um,
+    const Discret::Elements::FluidEleParameterXFEM& fldparaxfem)
+{
+  NitscheInterface* nit = nullptr;
+  using NitscheCouplType = NitscheCoupling<distype, Core::FE::CellType::dis_none, 3>;
+  nit = new NitscheCouplType(C_umum, rhC_um, fldparaxfem);
+
+  return std::shared_ptr<NitscheInterface<distype>>(nit);
+}
+
+template <Core::FE::CellType distype>
+std::shared_ptr<NitscheInterface<distype>>
+NitscheInterface<distype>::create_nitsche_coupling_x_fluid_wdbc(
+    Core::LinAlg::SerialDenseMatrix& C_umum, Core::LinAlg::SerialDenseVector& rhC_um,
     const Discret::Elements::FluidEleParameterXFEM& fldparaxfem)
 {
   NitscheInterface* nit = nullptr;
@@ -164,8 +177,82 @@ NitscheInterface<distype>::create_nitsche_coupling_x_fluid_wdbc(
 template <Core::FE::CellType distype>
 std::shared_ptr<NitscheInterface<distype>>
 NitscheInterface<distype>::create_nitsche_coupling_x_fluid_wdbc(Core::Elements::Element* bele,
-    Core::LinAlg::SerialDenseMatrix::Base& bele_xyz, Core::LinAlg::SerialDenseMatrix::Base& C_umum,
-    Core::LinAlg::SerialDenseMatrix::Base& rhC_um,
+    Core::LinAlg::SerialDenseMatrix& bele_xyz, Core::LinAlg::SerialDenseMatrix& C_umum,
+    Core::LinAlg::SerialDenseMatrix& rhC_um,
+    const Discret::Elements::FluidEleParameterXFEM& fldparaxfem)
+{
+  NitscheInterface* nit = nullptr;
+
+  // get number of dofs for this boundary element
+  const unsigned numdofpernode = bele->num_dof_per_node(*bele->nodes()[0]);
+
+  // three dofs per node, for standard Dirichlet coupling, four dofs per node for background
+  // geometry coupling
+  if (numdofpernode == 3)
+  {
+    switch (bele->shape())
+    {
+      case Core::FE::CellType::quad4:
+      {
+        using NitscheCouplType = NitscheCoupling<distype, Core::FE::CellType::quad4, 3>;
+        nit = new NitscheCouplType(bele_xyz, C_umum, rhC_um, fldparaxfem);
+        break;
+      }
+      case Core::FE::CellType::quad8:
+      {
+        using NitscheCouplType = NitscheCoupling<distype, Core::FE::CellType::quad8, 3>;
+        nit = new NitscheCouplType(bele_xyz, C_umum, rhC_um, fldparaxfem);
+        break;
+      }
+      case Core::FE::CellType::quad9:
+      {
+        using NitscheCouplType = NitscheCoupling<distype, Core::FE::CellType::quad9, 3>;
+        nit = new NitscheCouplType(bele_xyz, C_umum, rhC_um, fldparaxfem);
+        break;
+      }
+      default:
+        FOUR_C_THROW("Unsupported boundary element shape {}", bele->shape());
+        break;
+    }
+  }
+  else if (numdofpernode == 4)
+  {
+    switch (bele->shape())
+    {
+      case Core::FE::CellType::quad4:
+      {
+        using NitscheCouplType = NitscheCoupling<distype, Core::FE::CellType::quad4, 4>;
+        nit = new NitscheCouplType(bele_xyz, C_umum, rhC_um, fldparaxfem);
+        break;
+      }
+      case Core::FE::CellType::quad8:
+      {
+        using NitscheCouplType = NitscheCoupling<distype, Core::FE::CellType::quad8, 4>;
+        nit = new NitscheCouplType(bele_xyz, C_umum, rhC_um, fldparaxfem);
+        break;
+      }
+      case Core::FE::CellType::quad9:
+      {
+        using NitscheCouplType = NitscheCoupling<distype, Core::FE::CellType::quad9, 4>;
+        nit = new NitscheCouplType(bele_xyz, C_umum, rhC_um, fldparaxfem);
+        break;
+      }
+      default:
+        FOUR_C_THROW("Unsupported boundary element shape {}", bele->shape());
+        break;
+    }
+  }
+  else
+    FOUR_C_THROW("Unsupported number of {} nodes for coupling slave element.", numdofpernode);
+
+  return std::shared_ptr<NitscheInterface<distype>>(nit);
+}
+
+template <Core::FE::CellType distype>
+std::shared_ptr<NitscheInterface<distype>>
+NitscheInterface<distype>::create_nitsche_coupling_x_fluid_wdbc(Core::Elements::Element* bele,
+    Core::LinAlg::SerialDenseMatrix& bele_xyz, Core::LinAlg::SerialDenseMatrix& C_umum,
+    Core::LinAlg::SerialDenseVector& rhC_um,
     const Discret::Elements::FluidEleParameterXFEM& fldparaxfem)
 {
   NitscheInterface* nit = nullptr;
@@ -240,10 +327,92 @@ NitscheInterface<distype>::create_nitsche_coupling_x_fluid_wdbc(Core::Elements::
 template <Core::FE::CellType distype>
 std::shared_ptr<NitscheInterface<distype>>
 NitscheInterface<distype>::create_nitsche_coupling_x_fluid_sided(Core::Elements::Element* bele,
-    Core::LinAlg::SerialDenseMatrix::Base& bele_xyz, Core::LinAlg::SerialDenseMatrix::Base& C_umum,
-    Core::LinAlg::SerialDenseMatrix::Base& C_usum, Core::LinAlg::SerialDenseMatrix::Base& C_umus,
-    Core::LinAlg::SerialDenseMatrix::Base& C_usus, Core::LinAlg::SerialDenseMatrix::Base& rhC_um,
-    Core::LinAlg::SerialDenseMatrix::Base& rhC_us,
+    Core::LinAlg::SerialDenseMatrix& bele_xyz, Core::LinAlg::SerialDenseMatrix& C_umum,
+    Core::LinAlg::SerialDenseMatrix& C_usum, Core::LinAlg::SerialDenseMatrix& C_umus,
+    Core::LinAlg::SerialDenseMatrix& C_usus, Core::LinAlg::SerialDenseMatrix& rhC_um,
+    Core::LinAlg::SerialDenseMatrix& rhC_us,
+    const Discret::Elements::FluidEleParameterXFEM& fldparaxfem)
+{
+  NitscheInterface* nit = nullptr;
+
+  // get number of dofs for this boundary element
+  const unsigned numdofpernode = bele->num_dof_per_node(*bele->nodes()[0]);
+
+  // three dofs per node, for monolithic XFSI, four dofs per node for background-sided fluid-fluid
+  // coupling
+  if (numdofpernode == 3)
+  {
+    switch (bele->shape())
+    {
+      case Core::FE::CellType::quad4:
+      {
+        using NitscheCouplType = NitscheCoupling<distype, Core::FE::CellType::quad4, 3>;
+        nit = new NitscheCouplType(
+            bele_xyz, C_umum, C_usum, C_umus, C_usus, rhC_um, rhC_us, fldparaxfem);
+        break;
+      }
+      case Core::FE::CellType::quad8:
+      {
+        using NitscheCouplType = NitscheCoupling<distype, Core::FE::CellType::quad8, 3>;
+        nit = new NitscheCouplType(
+            bele_xyz, C_umum, C_usum, C_umus, C_usus, rhC_um, rhC_us, fldparaxfem);
+        break;
+      }
+      case Core::FE::CellType::quad9:
+      {
+        using NitscheCouplType = NitscheCoupling<distype, Core::FE::CellType::quad9, 3>;
+        nit = new NitscheCouplType(
+            bele_xyz, C_umum, C_usum, C_umus, C_usus, rhC_um, rhC_us, fldparaxfem);
+        break;
+      }
+      default:
+        FOUR_C_THROW("Unsupported boundary element shape {}", bele->shape());
+        break;
+    }
+  }
+  else if (numdofpernode == 4)
+  {
+    switch (bele->shape())
+    {
+      case Core::FE::CellType::quad4:
+      {
+        using NitscheCouplType = NitscheCoupling<distype, Core::FE::CellType::quad4, 4>;
+        nit = new NitscheCouplType(
+            bele_xyz, C_umum, C_usum, C_umus, C_usus, rhC_um, rhC_us, fldparaxfem);
+        break;
+      }
+      case Core::FE::CellType::quad8:
+      {
+        using NitscheCouplType = NitscheCoupling<distype, Core::FE::CellType::quad8, 4>;
+        nit = new NitscheCouplType(
+            bele_xyz, C_umum, C_usum, C_umus, C_usus, rhC_um, rhC_us, fldparaxfem);
+        break;
+      }
+      case Core::FE::CellType::quad9:
+      {
+        using NitscheCouplType = NitscheCoupling<distype, Core::FE::CellType::quad9, 4>;
+        nit = new NitscheCouplType(
+            bele_xyz, C_umum, C_usum, C_umus, C_usus, rhC_um, rhC_us, fldparaxfem);
+        break;
+      }
+      default:
+        FOUR_C_THROW("Unsupported boundary element shape {}", bele->shape());
+        break;
+    }
+  }
+  else
+    FOUR_C_THROW("Unsupported number of {} nodes for coupling slave element.", numdofpernode);
+
+  return std::shared_ptr<NitscheInterface<distype>>(nit);
+}
+
+template <Core::FE::CellType distype>
+std::shared_ptr<NitscheInterface<distype>>
+NitscheInterface<distype>::create_nitsche_coupling_x_fluid_sided(Core::Elements::Element* bele,
+    Core::LinAlg::SerialDenseMatrix& bele_xyz, Core::LinAlg::SerialDenseMatrix& C_umum,
+    Core::LinAlg::SerialDenseMatrix& C_usum, Core::LinAlg::SerialDenseMatrix& C_umus,
+    Core::LinAlg::SerialDenseMatrix& C_usus, Core::LinAlg::SerialDenseVector& rhC_um,
+    Core::LinAlg::SerialDenseMatrix& rhC_us,
     const Discret::Elements::FluidEleParameterXFEM& fldparaxfem)
 {
   NitscheInterface* nit = nullptr;
@@ -324,10 +493,75 @@ NitscheInterface<distype>::create_nitsche_coupling_x_fluid_sided(Core::Elements:
 template <Core::FE::CellType distype>
 std::shared_ptr<NitscheInterface<distype>>
 NitscheInterface<distype>::create_nitsche_coupling_two_sided(Core::Elements::Element* vele,
-    Core::LinAlg::SerialDenseMatrix::Base& vele_xyz, Core::LinAlg::SerialDenseMatrix::Base& C_umum,
-    Core::LinAlg::SerialDenseMatrix::Base& C_usum, Core::LinAlg::SerialDenseMatrix::Base& C_umus,
-    Core::LinAlg::SerialDenseMatrix::Base& C_usus, Core::LinAlg::SerialDenseMatrix::Base& rhC_um,
-    Core::LinAlg::SerialDenseMatrix::Base& rhC_us,
+    Core::LinAlg::SerialDenseMatrix& vele_xyz, Core::LinAlg::SerialDenseMatrix& C_umum,
+    Core::LinAlg::SerialDenseMatrix& C_usum, Core::LinAlg::SerialDenseMatrix& C_umus,
+    Core::LinAlg::SerialDenseMatrix& C_usus, Core::LinAlg::SerialDenseMatrix& rhC_um,
+    Core::LinAlg::SerialDenseMatrix& rhC_us,
+    const Discret::Elements::FluidEleParameterXFEM& fldparaxfem)
+{
+  NitscheInterface* nit = nullptr;
+
+  // get number of dofs for the embedded element
+  const unsigned numdofpernode = vele->num_dof_per_node(*vele->nodes()[0]);
+
+  if (numdofpernode == 4)
+  {
+    switch (vele->shape())
+    {
+      case Core::FE::CellType::hex8:
+      {
+        using NitscheCouplType = NitscheCoupling<distype, Core::FE::CellType::hex8, 4>;
+        nit = new NitscheCouplType(
+            vele_xyz, C_umum, C_usum, C_umus, C_usus, rhC_um, rhC_us, fldparaxfem);
+        break;
+      }
+      case Core::FE::CellType::hex20:
+      {
+        using NitscheCouplType = NitscheCoupling<distype, Core::FE::CellType::hex20, 4>;
+        nit = new NitscheCouplType(
+            vele_xyz, C_umum, C_usum, C_umus, C_usus, rhC_um, rhC_us, fldparaxfem);
+        break;
+      }
+      case Core::FE::CellType::hex27:
+      {
+        using NitscheCouplType = NitscheCoupling<distype, Core::FE::CellType::hex27, 4>;
+        nit = new NitscheCouplType(
+            vele_xyz, C_umum, C_usum, C_umus, C_usus, rhC_um, rhC_us, fldparaxfem);
+        break;
+      }
+      default:
+        FOUR_C_THROW("Unsupported volume element shape {}.", vele->shape());
+        break;
+    }
+  }
+  else if (numdofpernode == 3)
+  {
+    switch (vele->shape())
+    {
+      case Core::FE::CellType::hex8:
+      {
+        using NitscheCouplType = NitscheCoupling<distype, Core::FE::CellType::hex8, 3>;
+        nit = new NitscheCouplType(
+            vele_xyz, C_umum, C_usum, C_umus, C_usus, rhC_um, rhC_us, fldparaxfem);
+        break;
+      }
+      default:
+        // expecting 3 dofs per slave element node as this is fluid-solid coupling
+        FOUR_C_THROW("Unsupported volume element shape {}.", vele->shape());
+        break;
+    }
+  }
+
+  return std::shared_ptr<NitscheInterface<distype>>(nit);
+}
+
+template <Core::FE::CellType distype>
+std::shared_ptr<NitscheInterface<distype>>
+NitscheInterface<distype>::create_nitsche_coupling_two_sided(Core::Elements::Element* vele,
+    Core::LinAlg::SerialDenseMatrix& vele_xyz, Core::LinAlg::SerialDenseMatrix& C_umum,
+    Core::LinAlg::SerialDenseMatrix& C_usum, Core::LinAlg::SerialDenseMatrix& C_umus,
+    Core::LinAlg::SerialDenseMatrix& C_usus, Core::LinAlg::SerialDenseVector& rhC_um,
+    Core::LinAlg::SerialDenseMatrix& rhC_us,
     const Discret::Elements::FluidEleParameterXFEM& fldparaxfem)
 {
   NitscheInterface* nit = nullptr;

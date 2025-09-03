@@ -979,8 +979,8 @@ void Mat::GrowthRemodelElastHyper::solve_for_rho_lambr(Core::LinAlg::SerialDense
     if (iter != 0)
     {
       // Solve linearized system of equations
-      solver.setMatrix(Teuchos::rcpFromRef(K_T));
-      solver.setVectors(Teuchos::rcpFromRef(dsol), Teuchos::rcpFromRef(R));
+      solver.setMatrix(Teuchos::rcpFromRef(K_T.base()));
+      solver.setVectors(Teuchos::rcpFromRef(dsol.base()), Teuchos::rcpFromRef(R.base()));
       solver.solveToRefinedSolution(true);
       solver.factorWithEquilibration(true);
       solver.solve();
@@ -1076,8 +1076,8 @@ void Mat::GrowthRemodelElastHyper::solve_fordrhod_cdlambrd_c(
   using scalarType = Core::LinAlg::SerialDenseMatrix::scalarType;
   static Teuchos::SerialDenseSolver<ordinalType, scalarType> solver;
   static Core::LinAlg::SerialDenseMatrix dsolcmat(2 * nr_rf_tot_, 6);
-  solver.setMatrix(Teuchos::rcpFromRef(K_T));
-  solver.setVectors(Teuchos::rcpFromRef(dsolcmat), Teuchos::rcpFromRef(Rcmat));
+  solver.setMatrix(Teuchos::rcpFromRef(K_T.base()));
+  solver.setVectors(Teuchos::rcpFromRef(dsolcmat.base()), Teuchos::rcpFromRef(Rcmat.base()));
   solver.solveToRefinedSolution(true);
   solver.factorWithEquilibration(true);
   solver.solve();

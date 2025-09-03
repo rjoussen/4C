@@ -4461,7 +4461,43 @@ namespace Discret
         const Core::LinAlg::Matrix<nen_, 1>& funct_m,  ///< coupling master shape functions
         const Core::LinAlg::Matrix<nsd_, 1>&
             itraction_jump,  ///< prescribed interface traction, jump height for coupled problems
-        Core::LinAlg::SerialDenseMatrix::Base& elevec1  ///< element vector
+        Core::LinAlg::SerialDenseMatrix& elevec1  ///< element vector
+    )
+    {
+      const int master_numdof = nsd_ + 1;
+      Core::LinAlg::Matrix<master_numdof * nen_, 1> rhC_um(elevec1.values(), true);
+
+      // funct_m * timefac * fac
+      Core::LinAlg::Matrix<nen_, 1> funct_m_timefacfac(funct_m);
+      funct_m_timefacfac.scale(timefacfac);
+
+      //-----------------------------------------------------------------
+      // standard consistency Neumann term
+
+      /*            \
+   - |    v  ,   t   |   with t = [sigma * n]
+      \             /     */
+
+      // loop over velocity components
+      for (int ivel = 0; ivel < nsd_; ++ivel)
+      {
+        //-----------------------------------------------
+        //    - (vm, t)
+        //-----------------------------------------------
+        for (int ir = 0; ir < nen_; ++ir)
+        {
+          const unsigned row = ir * (nsd_ + 1) + ivel;
+          rhC_um(row, 0) += funct_m_timefacfac(ir) * itraction_jump(ivel);
+        }
+      }  // end loop over velocity components
+    }
+
+    template <Core::FE::CellType distype>
+    void FluidEleCalcXFEM<distype>::evaluate_neumann(const double& timefacfac,  ///< theta*dt
+        const Core::LinAlg::Matrix<nen_, 1>& funct_m,  ///< coupling master shape functions
+        const Core::LinAlg::Matrix<nsd_, 1>&
+            itraction_jump,  ///< prescribed interface traction, jump height for coupled problems
+        Core::LinAlg::SerialDenseVector& elevec1  ///< element vector
     )
     {
       const int master_numdof = nsd_ + 1;

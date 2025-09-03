@@ -12,6 +12,7 @@
 #include "4C_fem_general_node.hpp"
 #include "4C_fem_general_utils_fem_shapefunctions.hpp"
 #include "4C_io_input_parameter_container.hpp"
+#include "4C_linalg_utils_densematrix_multiply.hpp"
 #include "4C_shell7p_ele.hpp"
 #include "4C_shell7p_ele_scatra.hpp"
 #include "4C_utils_enum.hpp"
@@ -410,7 +411,7 @@ void Solid::Utils::Shell::Director::setup_director_for_element(
         derivatives, nodal_coordinates(0), nodal_coordinates(1), ele.shape());
 
     // get a1, a2 direction derivatives in r and s direction
-    metrics_kovariant.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, derivatives, xrefe, 0.0);
+    Core::LinAlg::multiply(metrics_kovariant, derivatives, xrefe);
 
     // get thickness direction derivative perpendicular to a1 and a2
     // -> a3 = (a1 x a2) / (|a1 x a2 |)

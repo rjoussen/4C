@@ -11,6 +11,7 @@
 #include "4C_legacy_enum_definitions_element_actions.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
+#include "4C_linalg_utils_densematrix_multiply.hpp"
 #include "4C_solid_3D_ele.hpp"
 #include "4C_solid_3D_ele_calc_interface.hpp"
 #include "4C_solid_3D_ele_calc_lib.hpp"
@@ -36,9 +37,14 @@ namespace
       const Core::LinAlg::SerialDenseVector& acceleration,
       Core::LinAlg::SerialDenseVector& inertia_force)
   {
+    // This function is called during setup with an uninitialized inertia_force vector. In this
+    // case, the multiply call doesn't work and should be skipped.
+    if (inertia_force.empty())
+    {
+      return;
+    }
     inertia_force.putScalar();
-    inertia_force.multiply(Teuchos::ETransp::NO_TRANS, Teuchos::ETransp::NO_TRANS, 1.0, mass_matrix,
-        acceleration, 0.0);
+    Core::LinAlg::multiply(inertia_force, mass_matrix, acceleration);
   }
 
   void evaluate_inertia_force(const Core::FE::Discretization& discretization,

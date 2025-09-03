@@ -481,12 +481,12 @@ Core::LinAlg::SecondOrderTensorInterpolator<loc_dim>::get_interpolated_matrix(
       polynomial_space_.evaluate(ref_locs[i], p_vec);
 
       // P matrix
-      P.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, all_norm_weights[i], p_vec, p_vec, 1.0);
+      P.base().multiply(Teuchos::NO_TRANS, Teuchos::TRANS, all_norm_weights[i], p_vec, p_vec, 1.0);
 
       // RHS of the rotation interpolation
-      b_Q.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, all_norm_weights[i], p_vec,
+      b_Q.base().multiply(Teuchos::NO_TRANS, Teuchos::TRANS, all_norm_weights[i], p_vec,
           Core::LinAlg::SerialDenseVector(Teuchos::Copy, all_rot_vect_Q_rel[i].data(), 3), 1.0);
-      b_R.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, all_norm_weights[i], p_vec,
+      b_R.base().multiply(Teuchos::NO_TRANS, Teuchos::TRANS, all_norm_weights[i], p_vec,
           Core::LinAlg::SerialDenseVector(Teuchos::Copy, all_rot_vect_R_rel[i].data(), 3), 1.0);
 
       // compute contribution to the natural logarithm of the interpolated eigenvalues (logarithmic
@@ -507,8 +507,8 @@ Core::LinAlg::SecondOrderTensorInterpolator<loc_dim>::get_interpolated_matrix(
     Teuchos::SerialDenseSolver<ordinalType, scalarType> solver;
 
     // solve for the coefficients of Q
-    solver.setMatrix(Teuchos::rcpFromRef(P));
-    solver.setVectors(Teuchos::rcpFromRef(a_Q), Teuchos::rcpFromRef(b_Q));
+    solver.setMatrix(Teuchos::rcpFromRef(P.base()));
+    solver.setVectors(Teuchos::rcpFromRef(a_Q.base()), Teuchos::rcpFromRef(b_Q.base()));
     solver.factorWithEquilibration(true);
     solver.solveToRefinedSolution(true);
     if (solver.factor() or solver.solve())
@@ -518,8 +518,8 @@ Core::LinAlg::SecondOrderTensorInterpolator<loc_dim>::get_interpolated_matrix(
     }
 
     // solve for the coefficients of R
-    solver.setMatrix(Teuchos::rcpFromRef(copy_P));
-    solver.setVectors(Teuchos::rcpFromRef(a_R), Teuchos::rcpFromRef(b_R));
+    solver.setMatrix(Teuchos::rcpFromRef(copy_P.base()));
+    solver.setVectors(Teuchos::rcpFromRef(a_R.base()), Teuchos::rcpFromRef(b_R.base()));
     solver.factorWithEquilibration(true);
     solver.solveToRefinedSolution(true);
     if (solver.factor() or solver.solve())
@@ -535,14 +535,14 @@ Core::LinAlg::SecondOrderTensorInterpolator<loc_dim>::get_interpolated_matrix(
     polynomial_space_.evaluate(interp_loc, p_vec);
 
     // ...for Q
-    rot_serial_dense_vec.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, 1.0, a_Q, p_vec, 0.0);
+    rot_serial_dense_vec.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, 1.0, a_Q.base(), p_vec, 0.0);
     Core::LinAlg::Matrix<3, 1> rot_vect_Q_rel_interp(Initialization::zero);
     rot_vect_Q_rel_interp(0) = rot_serial_dense_vec(0);
     rot_vect_Q_rel_interp(1) = rot_serial_dense_vec(1);
     rot_vect_Q_rel_interp(2) = rot_serial_dense_vec(2);
 
     // ...for R
-    rot_serial_dense_vec.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, 1.0, a_R, p_vec, 0.0);
+    rot_serial_dense_vec.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, 1.0, a_R.base(), p_vec, 0.0);
     Core::LinAlg::Matrix<3, 1> rot_vect_R_rel_interp(Initialization::zero);
     rot_vect_R_rel_interp(0) = rot_serial_dense_vec(0);
     rot_vect_R_rel_interp(1) = rot_serial_dense_vec(1);

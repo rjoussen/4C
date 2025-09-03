@@ -247,10 +247,7 @@ void Discret::Elements::FluidIntFaceImpl<distype>::assemble_internal_faces_using
 
   for (int b = 0; b < numblocks; b++)
   {
-    int err = elemat_blocks[b].shape(
-        numnodeinpatch, numnodeinpatch);  // new shape and init values to zero
-
-    if (err != 0) FOUR_C_THROW("element matrix Shape not successful");
+    elemat_blocks[b].shape(numnodeinpatch, numnodeinpatch);  // new shape and init values to zero
   }
 
   for (int b = 0; b < numdofpernode; b++)

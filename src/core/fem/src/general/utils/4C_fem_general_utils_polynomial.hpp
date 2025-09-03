@@ -605,7 +605,7 @@ namespace Core::FE
 
     Core::LinAlg::SerialDenseMatrix vandermonde_;
     mutable Teuchos::SerialDenseSolver<ordinalType, scalarType> vandermonde_factor_;
-    mutable Core::LinAlg::SerialDenseMatrix evaluate_vec_;
+    mutable Core::LinAlg::SerialDenseVector evaluate_vec_;
     Core::LinAlg::SerialDenseMatrix fekete_points_;
     LegendreBasis<nsd> legendre_;
   };

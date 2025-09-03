@@ -8,9 +8,9 @@
 #ifndef FOUR_C_LINALG_SERIALDENSEMATRIX_HPP
 #define FOUR_C_LINALG_SERIALDENSEMATRIX_HPP
 
-
 #include "4C_config.hpp"
 
+#include <Teuchos_DataAccess.hpp>
 #include <Teuchos_SerialDenseMatrix.hpp>
 
 FOUR_C_NAMESPACE_OPEN
@@ -18,65 +18,92 @@ FOUR_C_NAMESPACE_OPEN
 namespace Core::LinAlg
 {
   /*!
-  \brief A class that wraps Teuchos::SerialDenseMatrix
-
-       This is done in favor of typedef to allow forward declaration
-  */
-  class SerialDenseMatrix : public Teuchos::SerialDenseMatrix<int, double>
+   * \brief A wrapper around Teuchos::SerialDenseMatrix
+   */
+  class SerialDenseMatrix
   {
    public:
-    /// Base type definition
-    using Base = Teuchos::SerialDenseMatrix<int, double>;
+    using ordinalType = int;
+    using scalarType = double;
+    using Base = Teuchos::SerialDenseMatrix<ordinalType, scalarType>;
 
-    /// Using the base class constructor
-    using Base::SerialDenseMatrix;
+    // --- constructors ---
+    SerialDenseMatrix() = default;
+    SerialDenseMatrix(int rows, int cols);
+    SerialDenseMatrix(int rows, int cols, bool zeroOut);
+    SerialDenseMatrix(const Base& src, Teuchos::ETransp trans = Teuchos::NO_TRANS);
+    SerialDenseMatrix(Teuchos::DataAccess cv, double* values, int stride, int rows, int cols);
 
-    /*!
-       \brief Standard Copy Constructor wraps
-        Teuchos::SerialDenseMatrix(const SerialDenseMatrix& Source);
-       This allows to use the Core::LinAlg::SerialDenseVector in place of
-       Core::LinAlg::SerialDenseMatrix at the cost of a copy operation
-    */
-    SerialDenseMatrix(const Base& Source, Teuchos::ETransp trans = Teuchos::NO_TRANS)
-        : Base(Source, trans)
-    {
-    }
+    // NOLINTBEGIN(readability-identifier-naming)
 
-    //! Return number of rows.
-    int num_rows() const { return this->numRows(); }
+    // --- size queries ---
+    int num_rows() const;
+    int num_cols() const;
+    int numRows() const;
+    int numCols() const;
+    int stride() const;
+    double normInf() const;
+    double normOne() const;
 
-    //! Return number of columns.
-    int num_cols() const { return this->numCols(); }
+    // --- element access ---
+    double& operator()(int i, int j) { return mat_(i, j); };
+    const double& operator()(int i, int j) const { return mat_(i, j); };
+
+    // --- data access ---
+    //! Returns a pointer to the raw data in column-major order.
+    double* values() const;
+
+    // --- modifiers ---
+    void scale(double alpha);
+    void put_scalar(double val);
+    void putScalar(double val);
+    void shape(int rows, int cols);
+    void reshape(int rows, int cols);
+    void assign(const SerialDenseMatrix& source);
+
+    // NOLINTEND(readability-identifier-naming)
+
+    // --- algebraic operations ---
+    SerialDenseMatrix& operator+=(const SerialDenseMatrix& other);
+
+    // --- access to underlying Trilinos object ---
+    Base& base();
+    const Base& base() const;
+
+   private:
+    Base mat_;
   };
 
+  // ===============================================================
+  //  Free functions operating on SerialDenseMatrix
+  // ===============================================================
+
   /*!
-    \brief Update matrix components with scaled values of A,
-           B = alpha*A + beta*B
-    */
+   * \brief Update matrix components with scaled values of A,
+   *        B = alpha*A + beta*B
+   */
   void update(double alpha, const SerialDenseMatrix& A, double beta, SerialDenseMatrix& B);
 
   /*!
-   * \brief Zero out first n elements of the matrix
+   * \brief Zero out first n elements of the matrix (column-major order).
    */
   void zero(SerialDenseMatrix& mat, int length);
 
   /*!
-    \brief determinant Computation using the Sarrus rule.
-    Internal computation is based on the long double data type (80/128 bit depending on platform)
-    this allows for higher precision when used on a bigger matrix. Long double is also used for
-    output, therefore it has to be explicitly casted to a double if used in a "double only" context.
-    */
+   * \brief Determinant computation using recursive expansion (Sarrus rule).
+   * \note Only safe for n <= 4 due to complexity.
+   */
   long double det_long(const SerialDenseMatrix& matrix);
 
   /*!
-   * \brief Utility function to copy the data to SerialDenseMatrix
+   * \brief Utility function to copy raw vector data into a SerialDenseMatrix (column-major).
    */
-  void copy(const double* vec, SerialDenseMatrix::Base& mat);
+  void copy(const double* vec, SerialDenseMatrix& mat);
 
-  // output stream operator
+  //! Output stream operator
   inline std::ostream& operator<<(std::ostream& out, const SerialDenseMatrix& mat)
   {
-    mat.print(out);
+    mat.base().print(out);
     return out;
   }
 

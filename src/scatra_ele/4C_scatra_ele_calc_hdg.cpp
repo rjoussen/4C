@@ -443,7 +443,7 @@ int Discret::Elements::ScaTraEleCalcHDG<distype, probdim>::project_dirich_field(
   using ordinalType = Core::LinAlg::SerialDenseMatrix::ordinalType;
   using scalarType = Core::LinAlg::SerialDenseMatrix::scalarType;
   Teuchos::SerialDenseSolver<ordinalType, scalarType> inverseMass;
-  inverseMass.setMatrix(Teuchos::rcpFromRef(mass));
+  inverseMass.setMatrix(Teuchos::rcpFromRef(mass.base()));
   inverseMass.setVectors(Teuchos::rcpFromRef(trVec), Teuchos::rcpFromRef(trVec));
   inverseMass.solve();
 
@@ -603,7 +603,7 @@ void Discret::Elements::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::compute
   using ordinalType = Core::LinAlg::SerialDenseMatrix::ordinalType;
   using scalarType = Core::LinAlg::SerialDenseMatrix::scalarType;
   Teuchos::SerialDenseSolver<ordinalType, scalarType> inverseAMmat;
-  inverseAMmat.setMatrix(Teuchos::rcpFromRef(hdgele->invAMmat_));
+  inverseAMmat.setMatrix(Teuchos::rcpFromRef(hdgele->invAMmat_.base()));
   int err = inverseAMmat.invert();
   if (err != 0)
   {
@@ -1166,7 +1166,7 @@ void Discret::Elements::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::condens
   using ordinalType = Core::LinAlg::SerialDenseMatrix::ordinalType;
   using scalarType = Core::LinAlg::SerialDenseMatrix::scalarType;
   Teuchos::SerialDenseSolver<ordinalType, scalarType> inverseinW;
-  inverseinW.setMatrix(Teuchos::rcpFromRef(tempMat2));
+  inverseinW.setMatrix(Teuchos::rcpFromRef(tempMat2.base()));
   int err = inverseinW.invert();
   if (err != 0)
     FOUR_C_THROW(
@@ -1622,8 +1622,9 @@ int Discret::Elements::ScaTraEleCalcHDG<distype, probdim>::set_initial_field(
       using ordinalType = Core::LinAlg::SerialDenseMatrix::ordinalType;
       using scalarType = Core::LinAlg::SerialDenseMatrix::scalarType;
       Teuchos::SerialDenseSolver<ordinalType, scalarType> inverseMass;
-      inverseMass.setMatrix(Teuchos::rcpFromRef(Mmat));
-      inverseMass.setVectors(Teuchos::rcpFromRef(localMat), Teuchos::rcpFromRef(localMat));
+      inverseMass.setMatrix(Teuchos::rcpFromRef(Mmat.base()));
+      inverseMass.setVectors(
+          Teuchos::rcpFromRef(localMat.base()), Teuchos::rcpFromRef(localMat.base()));
       inverseMass.factorWithEquilibration(true);
       int err2 = inverseMass.factor();
       int err = inverseMass.solve();
@@ -1672,8 +1673,8 @@ int Discret::Elements::ScaTraEleCalcHDG<distype, probdim>::set_initial_field(
     using ordinalType = Core::LinAlg::SerialDenseMatrix::ordinalType;
     using scalarType = Core::LinAlg::SerialDenseMatrix::scalarType;
     Teuchos::SerialDenseSolver<ordinalType, scalarType> inverseMass;
-    inverseMass.setMatrix(Teuchos::rcpFromRef(mass));
-    inverseMass.setVectors(Teuchos::rcpFromRef(trVec), Teuchos::rcpFromRef(trVec));
+    inverseMass.setMatrix(Teuchos::rcpFromRef(mass.base()));
+    inverseMass.setVectors(Teuchos::rcpFromRef(trVec.base()), Teuchos::rcpFromRef(trVec.base()));
     inverseMass.factorWithEquilibration(true);
     int err2 = inverseMass.factor();
     int err = inverseMass.solve();
@@ -1751,7 +1752,7 @@ void Discret::Elements::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::prepare
   using ordinalType = Core::LinAlg::SerialDenseMatrix::ordinalType;
   using scalarType = Core::LinAlg::SerialDenseMatrix::scalarType;
   Teuchos::SerialDenseSolver<ordinalType, scalarType> inverseindifftensor;
-  inverseindifftensor.setMatrix(Teuchos::rcpFromRef(difftensor));
+  inverseindifftensor.setMatrix(Teuchos::rcpFromRef(difftensor.base()));
   int err = inverseindifftensor.invert();
   if (err != 0) FOUR_C_THROW("Inversion of diffusion tensor failed with errorcode {}", err);
 
@@ -1857,7 +1858,7 @@ int Discret::Elements::ScaTraEleCalcHDG<distype, probdim>::project_field(
       for (unsigned int i = 0; i < shapes_->ndofs_; i++)
       {
         Core::LinAlg::SerialDenseVector tempVec(shapes_old->ndofs_);
-        Core::LinAlg::Matrix<nsd_, 1> point(shapes_->nodexyzunit[i]);
+        Core::LinAlg::Matrix<nsd_, 1> point(shapes_->nodexyzunit.base()[i]);
         polySpace_old->evaluate(point, tempVec);
         for (unsigned int j = 0; j < nsd_ + 1; j++)
           for (unsigned int k = 0; k < shapes_old->ndofs_; k++)
@@ -1914,7 +1915,7 @@ int Discret::Elements::ScaTraEleCalcHDG<distype, probdim>::project_field(
         for (unsigned int i = 0; i < shapesface_->nfdofs_; i++)
         {
           Core::LinAlg::SerialDenseVector tempVec(shapesface_old->nfdofs_);
-          Core::LinAlg::Matrix<nsd_ - 1, 1> point(shapesface_->nodexyzunit[i]);
+          Core::LinAlg::Matrix<nsd_ - 1, 1> point(shapesface_->nodexyzunit.base()[i]);
 
           polySpaceFace_old->evaluate(point, tempVec);
           for (unsigned int k = 0; k < shapesface_old->nfdofs_; k++) tempMat1(i, k) = tempVec(k);
