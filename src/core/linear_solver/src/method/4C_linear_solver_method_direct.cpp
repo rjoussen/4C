@@ -91,8 +91,8 @@ void Core::LinearSolver::DirectSolver::setup(std::shared_ptr<Core::LinAlg::Spars
     {
 #if FOUR_C_TRILINOS_INTERNAL_VERSION_GE(2025, 3)
       solver_type = "Umfpack";
-      auto umfpack_params = Teuchos::sublist(Teuchos::rcpFromRef(params), solver_type);
-      umfpack_params->set("IsContiguous", false, "Are GIDs Contiguous");
+      auto& umfpack_params = params.sublist(solver_type);
+      umfpack_params.set("IsContiguous", false, "Are GIDs Contiguous");
 #else
       solver_ = std::make_shared<Amesos_Umfpack>((*reindexer_)(*linear_problem_));
 #endif
@@ -101,11 +101,11 @@ void Core::LinearSolver::DirectSolver::setup(std::shared_ptr<Core::LinAlg::Spars
     {
 #if FOUR_C_TRILINOS_INTERNAL_VERSION_GE(2025, 3)
       solver_type = "SuperLU_DIST";
-      auto superludist_params = Teuchos::sublist(Teuchos::rcpFromRef(params), solver_type);
-      superludist_params->set("Equil", true, "Whether to equilibrate the system before solve");
-      superludist_params->set("RowPerm", "LargeDiag_MC64", "Row ordering");
-      superludist_params->set("ReplaceTinyPivot", true, "Replace tiny pivot");
-      superludist_params->set("IsContiguous", false, "Are GIDs Contiguous");
+      auto& superludist_params = params.sublist(solver_type);
+      superludist_params.set("Equil", true, "Whether to equilibrate the system before solve");
+      superludist_params.set("RowPerm", "LargeDiag_MC64", "Row ordering");
+      superludist_params.set("ReplaceTinyPivot", true, "Replace tiny pivot");
+      superludist_params.set("IsContiguous", false, "Are GIDs Contiguous");
 #else
       solver_ = std::make_shared<Amesos_Superludist>((*reindexer_)(*linear_problem_));
 #endif
@@ -114,8 +114,8 @@ void Core::LinearSolver::DirectSolver::setup(std::shared_ptr<Core::LinAlg::Spars
     {
 #if FOUR_C_TRILINOS_INTERNAL_VERSION_GE(2025, 3)
       solver_type = "KLU2";
-      auto klu_params = Teuchos::sublist(Teuchos::rcpFromRef(params), solver_type);
-      klu_params->set("IsContiguous", false, "Are GIDs Contiguous");
+      auto& klu_params = params.sublist(solver_type);
+      klu_params.set("IsContiguous", false, "Are GIDs Contiguous");
 #else
       solver_ = std::make_shared<Amesos_Klu>((*reindexer_)(*linear_problem_));
 #endif
@@ -127,7 +127,7 @@ void Core::LinearSolver::DirectSolver::setup(std::shared_ptr<Core::LinAlg::Spars
         Teuchos::rcpFromRef(x_->get_epetra_multi_vector()),
         Teuchos::rcpFromRef(b_->get_epetra_multi_vector()));
 
-    solver_->setParameters(Teuchos::rcpFromRef(params));
+    solver_->setParameters(Teuchos::make_rcp<Teuchos::ParameterList>(std::move(params)));
 #endif
 
     factored_ = false;
