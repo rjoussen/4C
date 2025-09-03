@@ -175,17 +175,17 @@ namespace BeamInteraction
       /**
        * \brief Return the dof rowmap of the lagrange multipliers.
        */
-      std::shared_ptr<const FourC::Core::LinAlg::Map> get_lagrange_map() const override;
+      std::shared_ptr<const FourC::Core::LinAlg::Map> get_lagrange_map() const;
 
       /**
        * \brief Method used to assemble the force vector when using Lagrange Multipliers
        */
-      void assemble_force(Core::LinAlg::Vector<double>& f) const override;
+      void assemble_force(Core::LinAlg::Vector<double>& f) const;
 
       /**
        * \brief Method used to assemble the stiffness matrix when using Lagrange Multipliers
        */
-      void assemble_stiff(Core::LinAlg::SparseOperator& jac) const override;
+      void assemble_stiff(Core::LinAlg::SparseOperator& jac) const;
 
       //! @}
 

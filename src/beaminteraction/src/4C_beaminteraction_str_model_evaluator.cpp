@@ -724,7 +724,6 @@ bool Solid::ModelEvaluator::BeamInteraction::evaluate_force_stiff()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-
 bool Solid::ModelEvaluator::BeamInteraction::have_lagrange_dofs() const
 {
   bool lagrange_flag = false;
@@ -747,20 +746,25 @@ bool Solid::ModelEvaluator::BeamInteraction::have_lagrange_dofs() const
     }
   }
 
-
   return lagrange_flag;
 }
 
-
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 bool Solid::ModelEvaluator::BeamInteraction::assemble_force(
     Core::LinAlg::Vector<double>& f, const double& timefac_np) const
 {
   check_init_setup();
 
   Core::LinAlg::assemble_my_vector(1.0, f, timefac_np, *force_beaminteraction_);
+
   if (have_lagrange_dofs())
   {
-    (*me_vec_ptr_)[0]->assemble_force(f);
+    auto beam_contact_model =
+        std::dynamic_pointer_cast<FourC::BeamInteraction::SubmodelEvaluator::BeamContact const>(
+            (*me_vec_ptr_)[0]);
+
+    beam_contact_model->assemble_force(f);
   }
 
   return true;
@@ -778,9 +782,12 @@ bool Solid::ModelEvaluator::BeamInteraction::assemble_jacobian(
 
   if (have_lagrange_dofs())
   {
-    (*me_vec_ptr_)[0]->assemble_stiff(jac);
-  }
+    auto beam_contact_model =
+        std::dynamic_pointer_cast<FourC::BeamInteraction::SubmodelEvaluator::BeamContact const>(
+            (*me_vec_ptr_)[0]);
 
+    beam_contact_model->assemble_stiff(jac);
+  }
 
   // no need to keep it
   stiff_beaminteraction_->zero();
@@ -1134,7 +1141,11 @@ Solid::ModelEvaluator::BeamInteraction::get_block_dof_row_map_ptr() const
 
   if (have_lagrange_dofs())
   {
-    return (*me_vec_ptr_)[0]->get_lagrange_map();
+    auto beam_contact_model =
+        std::dynamic_pointer_cast<FourC::BeamInteraction::SubmodelEvaluator::BeamContact const>(
+            (*me_vec_ptr_)[0]);
+
+    return beam_contact_model->get_lagrange_map();
   }
   else
   {
