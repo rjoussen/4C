@@ -33,7 +33,7 @@ jobs:
           build-targets: doxygen
           build-directory: ${{ github.workspace }}/build
           use-ccache: "false"
-          additional-cmake-flags: -DFOUR_C_BUILD_DOXYGEN="ON"
+          additional-cmake-flags: -DFOUR_C_ENABLE_DOXYGEN="ON"
       - name: Upload doxygen
         uses: actions/upload-artifact@v4
         with:

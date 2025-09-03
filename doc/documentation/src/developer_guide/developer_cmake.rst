@@ -55,8 +55,8 @@ Such a local preset could look like this::
             "CMAKE_CXX_COMPILER": "g++",
             "CMAKE_CXX_COMPILER_LAUNCHER": "ccache",
             "FOUR_C_WITH_GOOGLETEST": "OFF",
-            "FOUR_C_BUILD_DOCUMENTATION": "ON",
-            "FOUR_C_BUILD_DOXYGEN": "ON",
+            "FOUR_C_ENABLE_DOCUMENTATION": "ON",
+            "FOUR_C_ENABLE_DOXYGEN": "ON",
             "FOUR_C_ENABLE_DEVELOPER_MODE": "ON",
           }
         }

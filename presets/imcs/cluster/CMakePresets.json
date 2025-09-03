@@ -6,7 +6,7 @@
       "hidden": true,
       "generator": "Ninja",
       "cacheVariables": {
-        "FOUR_C_BUILD_DOXYGEN": "OFF",
+        "FOUR_C_ENABLE_DOXYGEN": "OFF",
         "FOUR_C_ENABLE_METADATA_GENERATION": "OFF",
         "FOUR_C_ENABLE_NATIVE_OPTIMIZATIONS": "ON",
         "FOUR_C_WITH_ARBORX": "ON",

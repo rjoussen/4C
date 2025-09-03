@@ -9,7 +9,7 @@
         "CMAKE_BUILD_TYPE": "RELEASE",
         "FOUR_C_ENABLE_NATIVE_OPTIMIZATIONS": "ON",
         "FOUR_C_WITH_GOOGLETEST": "OFF",
-        "FOUR_C_BUILD_DOXYGEN": "OFF",
+        "FOUR_C_ENABLE_DOXYGEN": "OFF",
         "FOUR_C_CLN_ROOT": "/lnm/packages/cln/1-3-4",
         "FOUR_C_QHULL_ROOT": "/lnm/packages/qhull/2012-1",
         "FOUR_C_TRILINOS_ROOT": "/lnm/packages/trilinos/16-1-0_v2/release",
