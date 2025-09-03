@@ -48,7 +48,7 @@ void Core::LinearSolver::DirectSolver::setup(std::shared_ptr<Core::LinAlg::Spars
         std::dynamic_pointer_cast<Core::LinAlg::BlockSparseMatrixBase>(matrix);
 
     int matrixDim = Ablock->full_range_map().num_global_elements();
-    if (matrixDim > 50000)
+    if (matrixDim > 50000 and Communication::my_mpi_rank(matrix->domain_map().get_comm()) == 0)
       std::cout << "\n WARNING: Direct linear solver is merging matrix, this is very expensive! \n";
 
     crsA = Ablock->merge();
