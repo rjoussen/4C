@@ -2125,7 +2125,10 @@ int Discret::Elements::Beam3k::evaluate_neumann(Teuchos::ParameterList& params,
   // get element displacements
   std::shared_ptr<const Core::LinAlg::Vector<double>> disp =
       discretization.get_state("displacement new");
-  if (disp == nullptr) FOUR_C_THROW("Cannot get state vector 'displacement new'");
+  if (disp == nullptr)
+    FOUR_C_THROW(
+        "Cannot get state vector 'displacement new'. "
+        "No linearization provided for load (add 'LOADLIN: true' to input file)");
   std::vector<double> mydisp = Core::FE::extract_values(*disp, lm);
 
   Core::LinAlg::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1, double> disp_totlag(
