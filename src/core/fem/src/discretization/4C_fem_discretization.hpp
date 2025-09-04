@@ -2038,13 +2038,6 @@ namespace Core::FE
     */
     void build_node_to_element_pointers();
 
-    /*!
-    \brief Build pointers Element -> Element (Filled()==true NOT prerequisite)
-
-    \note This is a collective call
-    */
-    void build_element_to_element_pointers();
-
    protected:
     /*!
     \brief Build the geometry of lines for a certain line condition

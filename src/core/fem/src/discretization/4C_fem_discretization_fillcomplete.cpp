@@ -16,16 +16,13 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-/*----------------------------------------------------------------------*
- |  Finalize construction (public)                           mwgee 11/06|
- *----------------------------------------------------------------------*/
 void Core::FE::Discretization::reset(bool killdofs, bool killcond)
 {
   filled_ = false;
   if (killdofs)
   {
     havedof_ = false;
-    for (unsigned i = 0; i < dofsets_.size(); ++i) dofsets_[i]->reset();
+    for (auto& dofset : dofsets_) dofset->reset();
   }
 
   elerowmap_ = nullptr;
@@ -41,18 +38,14 @@ void Core::FE::Discretization::reset(bool killdofs, bool killcond)
   // as early as possible
   if (killcond)
   {
-    std::multimap<std::string, std::shared_ptr<Core::Conditions::Condition>>::iterator fool;
-    for (fool = condition_.begin(); fool != condition_.end(); ++fool)
+    for (const auto& cond : condition_ | std::views::values)
     {
-      fool->second->clear_geometry();
+      cond->clear_geometry();
     }
   }
 }
 
 
-/*----------------------------------------------------------------------*
- |  Finalize construction (public)                           mwgee 11/06|
- *----------------------------------------------------------------------*/
 int Core::FE::Discretization::fill_complete(
     bool assigndegreesoffreedom, bool initelements, bool doboundaryconditions)
 {
@@ -86,9 +79,6 @@ int Core::FE::Discretization::fill_complete(
 
   // (re)construct node -> element pointers
   build_node_to_element_pointers();
-
-  // (re)construct element -> element pointers for interface-elements
-  build_element_to_element_pointers();
 
   // set the flag indicating Filled()==true
   // as the following methods make use of maps
@@ -143,158 +133,92 @@ int Core::FE::Discretization::fill_complete(
 }
 
 
-/*----------------------------------------------------------------------*
- |  init elements (public)                                   mwgee 12/06|
- *----------------------------------------------------------------------*/
 void Core::FE::Discretization::initialize_elements()
 {
   if (!filled()) FOUR_C_THROW("fill_complete was not called");
 
   Core::Communication::ParObjectFactory::instance().initialize_elements(*this);
+}
 
-  return;
+/**
+ * Find all entities and put them into a Map. Also create a vector of local pointers to the
+ * entities. If local_only is true, only the entities owned by this proc are put into the
+ * map and the local pointer vector. If local_only is false, all entities are put in.
+ */
+template <typename T>
+static void make_map_and_local_pointers(MPI_Comm comm,
+    const std::map<int, std::shared_ptr<T>>& entities, std::vector<T*>& local_ptrs,
+    std::shared_ptr<Core::LinAlg::Map>& map, bool local_only)
+{
+  const int myrank = Core::Communication::my_mpi_rank(comm);
+  const size_t num_entities = local_only ? std::ranges::count(entities | std::views::values, myrank,
+                                               [&](const auto& ele) { return ele->owner(); })
+                                         : entities.size();
+
+  std::vector<int> local_ids(num_entities);
+  local_ptrs.resize(num_entities);
+
+  size_t count = 0;
+  for (const auto& [id, entity] : entities)
+  {
+    FOUR_C_ASSERT(id == entity->id(), "Internal error: mapping is corrupted.");
+    if (!local_only || entity->owner() == myrank)
+    {
+      local_ids[count] = entity->id();
+      local_ptrs[count] = entity.get();
+
+      if (!local_only) entity->set_lid(count);
+
+      ++count;
+    }
+  }
+
+  if (count != num_entities) FOUR_C_THROW("Mismatch in no. of nodes");
+
+  map = std::make_unique<Core::LinAlg::Map>(-1, num_entities, local_ids.data(), 0, comm);
 }
 
 
-/*----------------------------------------------------------------------*
- |  Build noderowmap_ (private)                              mwgee 11/06|
- *----------------------------------------------------------------------*/
 void Core::FE::Discretization::build_node_row_map()
 {
-  const int myrank = Core::Communication::my_mpi_rank(get_comm());
-  int nummynodes = 0;
-  std::map<int, std::shared_ptr<Core::Nodes::Node>>::iterator curr;
-  for (curr = node_.begin(); curr != node_.end(); ++curr)
-    if (curr->second->owner() == myrank) ++nummynodes;
-  std::vector<int> nodeids(nummynodes);
-  noderowptr_.resize(nummynodes);
-
-  int count = 0;
-  for (curr = node_.begin(); curr != node_.end(); ++curr)
-    if (curr->second->owner() == myrank)
-    {
-      nodeids[count] = curr->second->id();
-      noderowptr_[count] = curr->second.get();
-      ++count;
-    }
-  if (count != nummynodes) FOUR_C_THROW("Mismatch in no. of nodes");
-  noderowmap_ = std::make_shared<Core::LinAlg::Map>(-1, nummynodes, nodeids.data(), 0, get_comm());
-  return;
+  make_map_and_local_pointers(get_comm(), node_, noderowptr_, noderowmap_, /*local_only=*/true);
 }
 
-/*----------------------------------------------------------------------*
- |  Build nodecolmap_ (private)                              mwgee 11/06|
- *----------------------------------------------------------------------*/
 void Core::FE::Discretization::build_node_col_map()
 {
-  int nummynodes = (int)node_.size();
-  std::vector<int> nodeids(nummynodes);
-  nodecolptr_.resize(nummynodes);
-
-  int count = 0;
-  std::map<int, std::shared_ptr<Core::Nodes::Node>>::iterator curr;
-  for (curr = node_.begin(); curr != node_.end(); ++curr)
-  {
-    nodeids[count] = curr->second->id();
-    nodecolptr_[count] = curr->second.get();
-    curr->second->set_lid(count);
-    ++count;
-  }
-  if (count != nummynodes) FOUR_C_THROW("Mismatch in no. of nodes");
-  nodecolmap_ = std::make_shared<Core::LinAlg::Map>(-1, nummynodes, nodeids.data(), 0, get_comm());
-  return;
+  make_map_and_local_pointers(get_comm(), node_, nodecolptr_, nodecolmap_, /*local_only=*/false);
 }
 
 
-/*----------------------------------------------------------------------*
- |  Build elerowmap_ (private)                                mwgee 11/06|
- *----------------------------------------------------------------------*/
 void Core::FE::Discretization::build_element_row_map()
 {
-  const int myrank = Core::Communication::my_mpi_rank(get_comm());
-  int nummyeles = 0;
-  std::map<int, std::shared_ptr<Core::Elements::Element>>::iterator curr;
-  for (curr = element_.begin(); curr != element_.end(); ++curr)
-    if (curr->second->owner() == myrank) nummyeles++;
-  std::vector<int> eleids(nummyeles);
-  elerowptr_.resize(nummyeles);
-  int count = 0;
-  for (curr = element_.begin(); curr != element_.end(); ++curr)
-    if (curr->second->owner() == myrank)
-    {
-      eleids[count] = curr->second->id();
-      elerowptr_[count] = curr->second.get();
-      ++count;
-    }
-  if (count != nummyeles) FOUR_C_THROW("Mismatch in no. of elements");
-  elerowmap_ = std::make_shared<Core::LinAlg::Map>(-1, nummyeles, eleids.data(), 0, get_comm());
-  return;
+  make_map_and_local_pointers(get_comm(), element_, elerowptr_, elerowmap_, /*local_only=*/true);
 }
 
-/*----------------------------------------------------------------------*
- |  Build elecolmap_ (private)                                mwgee 11/06|
- *----------------------------------------------------------------------*/
 void Core::FE::Discretization::build_element_col_map()
 {
-  int nummyeles = (int)element_.size();
-  std::vector<int> eleids(nummyeles);
-  elecolptr_.resize(nummyeles);
-  std::map<int, std::shared_ptr<Core::Elements::Element>>::iterator curr;
-  int count = 0;
-  for (curr = element_.begin(); curr != element_.end(); ++curr)
-  {
-    eleids[count] = curr->second->id();
-    elecolptr_[count] = curr->second.get();
-    curr->second->set_lid(count);
-    ++count;
-  }
-  if (count != nummyeles) FOUR_C_THROW("Mismatch in no. of elements");
-  elecolmap_ = std::make_shared<Core::LinAlg::Map>(-1, nummyeles, eleids.data(), 0, get_comm());
-  return;
+  make_map_and_local_pointers(get_comm(), element_, elecolptr_, elecolmap_, /*local_only=*/false);
 }
 
-/*----------------------------------------------------------------------*
- |  Build ptrs element -> node (private)                      mwgee 11/06|
- *----------------------------------------------------------------------*/
+
 void Core::FE::Discretization::build_element_to_node_pointers()
 {
-  std::map<int, std::shared_ptr<Core::Elements::Element>>::iterator elecurr;
-  for (elecurr = element_.begin(); elecurr != element_.end(); ++elecurr)
+  for (const auto& ele : element_ | std::views::values)
   {
-    bool success = elecurr->second->build_nodal_pointers(node_);
+    bool success = ele->build_nodal_pointers(node_);
     if (!success) FOUR_C_THROW("Building element <-> node topology failed");
   }
-  return;
 }
 
-/*----------------------------------------------------------------------*
- |  Build ptrs element -> element (private)                      mwgee 11/06|
- *----------------------------------------------------------------------*/
-void Core::FE::Discretization::build_element_to_element_pointers()
-{
-  std::map<int, std::shared_ptr<Core::Elements::Element>>::iterator elecurr;
-  for (elecurr = element_.begin(); elecurr != element_.end(); ++elecurr)
-  {
-    bool success = elecurr->second->build_element_pointers(element_);
-    if (!success) FOUR_C_THROW("Building element <-> element topology failed");
-  }
-  return;
-}
 
-/*----------------------------------------------------------------------*
- |  Build ptrs node -> element (private)                      mwgee 11/06|
- *----------------------------------------------------------------------*/
 void Core::FE::Discretization::build_node_to_element_pointers()
 {
-  std::map<int, std::shared_ptr<Core::Nodes::Node>>::iterator nodecurr;
-  for (nodecurr = node_.begin(); nodecurr != node_.end(); ++nodecurr)
-    nodecurr->second->clear_my_element_topology();
+  for (const auto& node : node_ | std::views::values) node->clear_my_element_topology();
 
-  std::map<int, std::shared_ptr<Core::Elements::Element>>::iterator elecurr;
-  for (elecurr = element_.begin(); elecurr != element_.end(); ++elecurr)
+  for (const auto& ele : element_ | std::views::values)
   {
-    const int nnode = elecurr->second->num_node();
-    const int* nodes = elecurr->second->node_ids();
+    const int nnode = ele->num_node();
+    const int* nodes = ele->node_ids();
     for (int j = 0; j < nnode; ++j)
     {
       Core::Nodes::Node* node = g_node(nodes[j]);
@@ -302,15 +226,12 @@ void Core::FE::Discretization::build_node_to_element_pointers()
         FOUR_C_THROW(
             "Node {} is not on this proc {}", j, Core::Communication::my_mpi_rank(get_comm()));
       else
-        node->add_element_ptr(elecurr->second.get());
+        node->add_element_ptr(ele.get());
     }
   }
-  return;
 }
 
-/*----------------------------------------------------------------------*
- |  set degrees of freedom (protected)                       mwgee 03/07|
- *----------------------------------------------------------------------*/
+
 int Core::FE::Discretization::assign_degrees_of_freedom(int start)
 {
   if (!filled()) FOUR_C_THROW("Filled()==false");
