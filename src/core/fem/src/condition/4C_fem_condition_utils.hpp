@@ -90,6 +90,12 @@ namespace Core::Conditions
       const Core::FE::Discretization& dis, std::span<const Condition*> conditions,
       LookFor look_for);
 
+  /**
+   * Same as the other overload, but first finds all conditions with the given name.
+   */
+  [[nodiscard]] std::multimap<int, const Condition*> find_conditioned_node_ids_and_conditions(
+      const Core::FE::Discretization& dis, const std::string& condition_name, LookFor look_for);
+
 
   /// find all local nodes from discretization marked with condition and
   /// put them into a vector indexed by Id of the condition
