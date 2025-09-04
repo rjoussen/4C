@@ -17,7 +17,7 @@ assignees: ''
 - [ ] Draft the release notes and post them as a comment to this issue (See notes below on release notes)
 - [ ] Update the version number in the ``VERSION`` file in the repo. The version scheme is ``YYYY.MINOR.PATCH``, where ``YYYY`` is the year of the release, ``MINOR`` is the number of the release in the year starting at ``1``, and ``PATCH`` is the patch number. ``PATCH`` is typically ``0`` and incremented on demand. Typically, this step only involves removing the ``-dev`` suffix from the version.
 - [ ] Pick a commit from ``main``-branch where all nightly tests have passed and the above points are satisfied. Commit: ``<insert the commit sha>``
-- [ ] Create a new branch from the commit chosen in the previous step. The branch should be named ``release/YYYY.MINOR.x``. Note, since all patches are maintained on this branch, the name does not contain the respective patch number.
+- [ ] Create a new branch from the commit chosen in the previous step. The branch should be named ``release/vYYYY.MINOR.x``. Note, since all patches are maintained on this branch, the name does not contain the respective patch number.
 - [ ] Create a new release on GitHub. The tag name should be ``vYYYY.MINOR.PATCH`` and the release title should be ``4C version vYYYY.MINOR.PATCH``. Tick 'Set as latest release' and 'Create a discussion for this release'
 - [ ] Upload the `4C_metadata.yaml` and `4C_schema.yaml` to the release. You can download them as artifact from the nightly pipeline.
 - [ ] Update the tags of all Docker images, e.g., ``4c`` and ``4c-dependencies-ubuntu24.04``. Add the tag ``YYYY.MINOR.PATCH`` to the images, and ``latest`` if it is the latest release. You can run the script `./utilities/tag_images_for_release.sh`.
