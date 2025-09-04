@@ -1986,7 +1986,6 @@ four_c_test_post_processing(contact3D_pwlin_penalty_hex20.4C.yaml 2 2 ndxyz ndxy
 four_c_test_post_processing(contact3D_pwlin_penalty_hex27.4C.yaml 2 2 ndxyz ndxyz 10)
 four_c_test_post_processing(orthopressure_solidw6.4C.yaml 2 2 ndxyz ndxyz 10)
 four_c_test_post_processing(poro_3D_hex8.4C.yaml 2 2 ndxyz ndxyz 10 "_porofluid" "")
-four_c_test_post_processing(poro_3D_hex8.4C.yaml 2 2 ndxyz ndxyz 10 "_structure" "")
 four_c_test_post_processing(poro_3D_hex8_new_struc.4C.yaml 2 2 ndxyz ndxyz 10 "_porofluid" "")
 four_c_test_post_processing(soshw6_thin_nonlinear_pinched_hemisphere.4C.yaml 2 2 ndxyz ndxyz 20)
 four_c_test_post_processing(sotet10_cooks_nl.4C.yaml 2 2 ndxyz ndxyz 100)

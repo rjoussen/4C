@@ -180,9 +180,6 @@ Solid::ModelEvaluator::Data::Data()
       straindata_postprocessed_nodal_ptr_(nullptr),
       straindata_postprocessed_element_ptr_(nullptr),
       plastic_straindata_ptr_(nullptr),
-      coupling_stressdata_ptr_(nullptr),
-      coupling_stressdata_postprocessed_nodal_ptr_(nullptr),
-      coupling_stressdata_postprocessed_element_ptr_(nullptr),
       gauss_point_data_manager_ptr_(nullptr),
       sdyn_ptr_(nullptr),
       io_ptr_(nullptr),
@@ -562,22 +559,6 @@ const std::vector<char>& Solid::ModelEvaluator::Data::plastic_strain_data() cons
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-std::shared_ptr<std::vector<char>>& Solid::ModelEvaluator::Data::coupling_stress_data_ptr()
-{
-  check_init_setup();
-  return coupling_stressdata_ptr_;
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-const std::vector<char>& Solid::ModelEvaluator::Data::coupling_stress_data() const
-{
-  FOUR_C_ASSERT(coupling_stressdata_ptr_, "Undefined reference to the stress data!");
-  return *coupling_stressdata_ptr_;
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
 std::shared_ptr<std::vector<char>> Solid::ModelEvaluator::Data::opt_quantity_data_ptr()
 {
   check_init_setup();
@@ -614,14 +595,6 @@ enum Inpar::Solid::StrainType Solid::ModelEvaluator::Data::get_plastic_strain_ou
 {
   check_init_setup();
   return io_ptr_->get_plastic_strain_output_type();
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-enum Inpar::Solid::StressType Solid::ModelEvaluator::Data::get_coupling_stress_output_type() const
-{
-  check_init_setup();
-  return io_ptr_->get_coupling_stress_output_type();
 }
 
 /*----------------------------------------------------------------------------*

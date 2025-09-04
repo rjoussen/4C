@@ -56,7 +56,6 @@ Solid::TimeInt::BaseDataIO::BaseDataIO()
       writeenergyevery_(-1),
       lastwrittenresultsstep_(-1),
       writestress_(Inpar::Solid::stress_none),
-      writecouplstress_(Inpar::Solid::stress_none),
       writestrain_(Inpar::Solid::strain_none),
       writeplstrain_(Inpar::Solid::strain_none),
       conditionnumbertype_(Inpar::Solid::ConditionNumber::none)
@@ -94,8 +93,6 @@ void Solid::TimeInt::BaseDataIO::init(const Teuchos::ParameterList& ioparams,
     firstoutputofrun_ = true;
     writeresultsevery_ = sdynparams.get<int>("RESULTSEVERY");
     writestress_ = Teuchos::getIntegralValue<Inpar::Solid::StressType>(ioparams, "STRUCT_STRESS");
-    writecouplstress_ =
-        Teuchos::getIntegralValue<Inpar::Solid::StressType>(ioparams, "STRUCT_COUPLING_STRESS");
     writestrain_ = Teuchos::getIntegralValue<Inpar::Solid::StrainType>(ioparams, "STRUCT_STRAIN");
     writeplstrain_ =
         Teuchos::getIntegralValue<Inpar::Solid::StrainType>(ioparams, "STRUCT_PLASTIC_STRAIN");

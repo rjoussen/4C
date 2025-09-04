@@ -247,25 +247,6 @@ void Discret::Elements::SolidPoroPressureBasedEleCalc<
       });
 }
 
-template <Core::FE::CellType celltype>
-void Discret::Elements::SolidPoroPressureBasedEleCalc<celltype>::coupling_stress(
-    const Core::Elements::Element& ele, const Core::FE::Discretization& discretization,
-    const std::vector<int>& lm, Teuchos::ParameterList& params)
-{
-  auto iocouplingstress =
-      params.get<Inpar::Solid::StressType>("iocouplstress", Inpar::Solid::stress_none);
-
-  // check for output of coupling stress
-  if (iocouplingstress == Inpar::Solid::stress_none)
-  {
-    // nothing to do for calculation of effective stress
-    return;
-  }
-  else
-  {
-    FOUR_C_THROW("coupling stress poroelast not yet implemented for pressure-based variant");
-  }
-}
 
 // template classes
 template class Discret::Elements::SolidPoroPressureBasedEleCalc<Core::FE::CellType::hex8>;

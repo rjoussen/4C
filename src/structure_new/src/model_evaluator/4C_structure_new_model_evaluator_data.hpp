@@ -180,9 +180,6 @@ namespace Solid
       //! mutable access to the plastic strain data vector
       std::shared_ptr<std::vector<char>>& plastic_strain_data_ptr() override;
 
-      //! mutable access to the stress data vector
-      std::shared_ptr<std::vector<char>>& coupling_stress_data_ptr() override;
-
       //! mutable access to the optional quantity data vector
       std::shared_ptr<std::vector<char>> opt_quantity_data_ptr() override;
 
@@ -194,9 +191,6 @@ namespace Solid
 
       //! get the current plastic strain type [derived]
       [[nodiscard]] enum Inpar::Solid::StrainType get_plastic_strain_output_type() const override;
-
-      //! get the current coupling stress type [derived]
-      [[nodiscard]] enum Inpar::Solid::StressType get_coupling_stress_output_type() const override;
 
       //! get the current strain type [derived]
       virtual enum Inpar::Solid::OptQuantityType get_opt_quantity_output_type() const;
@@ -547,41 +541,6 @@ namespace Solid
         return stressdata_postprocessed_element_ptr_;
       }
 
-      //! get nodal postprocessed coupling stress data vector
-      inline const std::shared_ptr<Core::LinAlg::MultiVector<double>>&
-      get_coupling_stress_data_node_postprocessed() const
-      {
-        return coupling_stressdata_postprocessed_nodal_ptr_;
-      }
-
-      //! get nodal postprocessed coupling stress data vector
-      inline std::shared_ptr<Core::LinAlg::MultiVector<double>>&
-      get_coupling_stress_data_node_postprocessed()
-      {
-        return coupling_stressdata_postprocessed_nodal_ptr_;
-      }
-
-      //! get element postprocessed coupling stress data vector
-      inline const std::shared_ptr<Core::LinAlg::MultiVector<double>>&
-      get_coupling_stress_data_element_postprocessed() const
-      {
-        return coupling_stressdata_postprocessed_element_ptr_;
-      }
-
-      //! get element postprocessed coupling stress data vector
-      inline std::shared_ptr<Core::LinAlg::MultiVector<double>>&
-      get_coupling_stress_data_element_postprocessed()
-      {
-        return coupling_stressdata_postprocessed_element_ptr_;
-      }
-
-      //! set coupling stress data vector
-      inline void set_coupling_stress_data(
-          const std::shared_ptr<std::vector<char>>& coupling_stressdata)
-      {
-        coupling_stressdata_ptr_ = coupling_stressdata;
-      }
-
       //! set strain data vector
       inline void set_strain_data(const std::shared_ptr<std::vector<char>>& straindata)
       {
@@ -671,9 +630,6 @@ namespace Solid
 
       //! return the plastic strain data (read-only)
       const std::vector<char>& plastic_strain_data() const;
-
-      //! return the coupling stress data (read-only)
-      const std::vector<char>& coupling_stress_data() const;
 
       //! return the optional quantity data (read-only)
       [[nodiscard]] const std::vector<char>& opt_quantity_data() const;
@@ -928,18 +884,6 @@ namespace Solid
 
       //! strain data vector
       std::shared_ptr<std::vector<char>> plastic_straindata_ptr_;
-
-      //! coupling stress data vector
-      //! e.g. in TSI: coupling stress corresponds to thermal stresses
-      std::shared_ptr<std::vector<char>> coupling_stressdata_ptr_;
-
-      //! postprocessed nodal coupling stress data vector
-      std::shared_ptr<Core::LinAlg::MultiVector<double>>
-          coupling_stressdata_postprocessed_nodal_ptr_;
-
-      //! postprocessed element coupling stress data vector
-      std::shared_ptr<Core::LinAlg::MultiVector<double>>
-          coupling_stressdata_postprocessed_element_ptr_;
 
       //! optional quantity data vector
       std::shared_ptr<std::vector<char>> opt_quantity_data_ptr_;

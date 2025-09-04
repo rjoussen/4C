@@ -767,36 +767,6 @@ void Solid::ModelEvaluator::Structure::write_output_runtime_structure(
         context);
   }
 
-  if (structure_output_params.output_stress_strain() and
-      global_in_output().get_coupling_stress_output_type() != Inpar::Solid::stress_none)
-  {
-    std::string name_nodal = "";
-    std::string name_element = "";
-
-    if (global_in_output().get_stress_output_type() == Inpar::Solid::stress_2pk)
-    {
-      name_nodal = "nodal_2PK_coupling_stresses_xyz";
-      name_element = "element_2PK_coupling_stresses_xyz";
-    }
-    else if (global_in_output().get_stress_output_type() == Inpar::Solid::stress_cauchy)
-    {
-      name_nodal = "nodal_cauchy_coupling_stresses_xyz";
-      name_element = "element_cauchy_coupling_stresses_xyz";
-    }
-
-    // Write nodal stress data.
-    std::vector<std::optional<std::string>> context(6, name_nodal);
-    vtu_writer_ptr_->append_result_data_vector_with_context(
-        *eval_data().get_coupling_stress_data_node_postprocessed(), Core::IO::OutputEntity::node,
-        context);
-
-    // Write element stress data.
-    context.assign(6, name_element);
-    vtu_writer_ptr_->append_result_data_vector_with_context(
-        *eval_data().get_coupling_stress_data_element_postprocessed(),
-        Core::IO::OutputEntity::element, context);
-  }
-
   // append strain if desired.
   if (structure_output_params.output_stress_strain() and
       global_in_output().get_strain_output_type() != Inpar::Solid::strain_none)
@@ -1013,7 +983,6 @@ void Solid::ModelEvaluator::Structure::output_runtime_structure_postprocess_stre
   eval_data().set_total_time(global_state().get_time_np());
   eval_data().set_delta_time((global_state().get_delta_time())[0]);
   eval_data().set_stress_data(std::make_shared<std::vector<char>>());
-  eval_data().set_coupling_stress_data(std::make_shared<std::vector<char>>());
   eval_data().set_strain_data(std::make_shared<std::vector<char>>());
   eval_data().set_plastic_strain_data(std::make_shared<std::vector<char>>());
 
@@ -1122,29 +1091,6 @@ void Solid::ModelEvaluator::Structure::output_runtime_structure_postprocess_stre
 
     postprocess_gauss_point_data_to_element_center(
         gp_strain_data, *eval_data().get_strain_data_element_postprocessed());
-  }
-  if (global_in_output().get_coupling_stress_output_type() != Inpar::Solid::stress_none)
-  {
-    std::map<int, std::shared_ptr<Core::LinAlg::SerialDenseMatrix>> gp_coupling_stress_data =
-        evaluate_gauss_point_data(*eval_data().coupling_stress_data_ptr());
-
-    Core::Communication::Exporter ex(
-        *(discret().element_row_map()), *(discret().element_col_map()), discret().get_comm());
-    ex.do_export(gp_coupling_stress_data);
-
-    eval_data().get_coupling_stress_data_node_postprocessed() =
-        std::make_shared<Core::LinAlg::MultiVector<double>>(*discret().node_col_map(), 6, true);
-    eval_data().get_coupling_stress_data_element_postprocessed() =
-        std::make_shared<Core::LinAlg::MultiVector<double>>(*discret().element_row_map(), 6, true);
-
-
-    Core::LinAlg::MultiVector<double> row_nodal_data(*discret().node_row_map(), 6, true);
-    postprocess_gauss_point_data_to_nodes(gp_coupling_stress_data, row_nodal_data);
-    Core::LinAlg::export_to(
-        row_nodal_data, *eval_data().get_coupling_stress_data_node_postprocessed());
-
-    postprocess_gauss_point_data_to_element_center(
-        gp_coupling_stress_data, *eval_data().get_coupling_stress_data_element_postprocessed());
   }
 }
 
@@ -1514,7 +1460,6 @@ void Solid::ModelEvaluator::Structure::run_post_iterate(const ::NOX::Solver::Gen
       global_in_output().get_runtime_output_params()->output_every_iteration())
   {
     if (not(global_in_output().get_stress_output_type() == Inpar::Solid::stress_none and
-            global_in_output().get_coupling_stress_output_type() == Inpar::Solid::stress_none and
             global_in_output().get_strain_output_type() == Inpar::Solid::strain_none))
     {
       output_runtime_structure_postprocess_stress_strain();
@@ -1655,7 +1600,6 @@ void Solid::ModelEvaluator::Structure::determine_stress_strain()
   check_init_setup();
 
   if (global_in_output().get_stress_output_type() == Inpar::Solid::stress_none and
-      global_in_output().get_coupling_stress_output_type() == Inpar::Solid::stress_none and
       global_in_output().get_strain_output_type() == Inpar::Solid::strain_none and
       global_in_output().get_plastic_strain_output_type() == Inpar::Solid::strain_none)
     return;
@@ -1665,7 +1609,6 @@ void Solid::ModelEvaluator::Structure::determine_stress_strain()
   eval_data().set_total_time(global_state().get_time_np());
   eval_data().set_delta_time(global_state().get_delta_time()[0]);
   eval_data().set_stress_data(std::make_shared<std::vector<char>>());
-  eval_data().set_coupling_stress_data(std::make_shared<std::vector<char>>());
   eval_data().set_strain_data(std::make_shared<std::vector<char>>());
   eval_data().set_plastic_strain_data(std::make_shared<std::vector<char>>());
 
@@ -1787,7 +1730,6 @@ void Solid::ModelEvaluator::Structure::runtime_pre_output_step_state()
   if (vtu_writer_ptr_ != nullptr)
   {
     if (not(global_in_output().get_stress_output_type() == Inpar::Solid::stress_none and
-            global_in_output().get_coupling_stress_output_type() == Inpar::Solid::stress_none and
             global_in_output().get_strain_output_type() == Inpar::Solid::strain_none))
     {
       output_runtime_structure_postprocess_stress_strain();

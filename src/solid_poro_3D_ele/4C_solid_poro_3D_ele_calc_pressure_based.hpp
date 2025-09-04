@@ -51,10 +51,6 @@ namespace Discret
           const Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
           Teuchos::ParameterList& params, Core::LinAlg::SerialDenseMatrix& stiffness_matrix);
 
-      void coupling_stress(const Core::Elements::Element& ele,
-          const Core::FE::Discretization& discretization, const std::vector<int>& lm,
-          Teuchos::ParameterList& params);
-
       void poro_setup(
           Mat::StructPoro& porostructmat, const Core::IO::InputParameterContainer& container);
 
