@@ -10,10 +10,14 @@
 
 #include "4C_config.hpp"
 
-#include "4C_fem_general_element.hpp"
+#include "4C_fem_general_cell_type_traits.hpp"
+#include "4C_utils_exceptions.hpp"
 
-#include <filesystem>
+#include <cstddef>
+#include <map>
+#include <ranges>
 #include <string>
+#include <unordered_set>
 #include <vector>
 
 FOUR_C_NAMESPACE_OPEN
@@ -39,10 +43,11 @@ namespace Core::IO::MeshInput
   std::string describe(VerbosityLevel level);
 
 
-  struct CellBlock;
-  struct SideSet;
-  struct LineSet;
+  class CellBlock;
   struct PointSet;
+
+  using InternalIdType = int;
+  using ExternalIdType = int;
 
   /*!
    * @brief An intermediate representation of finite element meshes
@@ -51,13 +56,19 @@ namespace Core::IO::MeshInput
    * Discretization from it.
    *
    */
+  template <unsigned dim>
   struct Mesh
   {
     /**
-     * The points in the mesh. The keys are the point IDs, and the values are the coordinates of the
-     * points.
+     * The points in the mesh.
      */
-    std::map<int, std::vector<double>> points;
+    std::vector<std::array<double, dim>> points{};
+
+    /*!
+     * @brief Some mesh formats provide an ID for points in the mesh. If available, these IDs are
+     * stored in this vector.
+     */
+    std::optional<std::vector<ExternalIdType>> external_ids;
 
     /**
      * The cell blocks in the mesh. The keys are the cell block IDs, and the values are the cell
@@ -67,43 +78,83 @@ namespace Core::IO::MeshInput
      * cell-block is required to have the same cell-type. 4C can solve different equations on each
      * block.
      */
-    std::map<int, CellBlock> cell_blocks;
-
-    /**
-     * The sides in the mesh. The keys are the side-set IDs, and the values are the side-sets.
-     */
-    std::map<int, SideSet> side_sets;
-
-    /**
-     * The lines in the mesh. The keys are the line-set IDs, and the values are the line-sets.
-     */
-    std::map<int, LineSet> line_sets;
+    std::map<ExternalIdType, CellBlock> cell_blocks{};
 
     /**
      * The points in the mesh. The keys are the point-set IDs, and the values are the point-sets.
      */
-    std::map<int, PointSet> point_sets;
+    std::map<ExternalIdType, PointSet> point_sets{};
   };
-
 
   /**
    * A cell-block. This encodes a collection of cells of the same type.
    */
-  struct CellBlock
+  class CellBlock
   {
+   public:
     /**
      * The type of the cells in the cell block.
      */
     FE::CellType cell_type;
 
-    /**
-     * Cells in this block. The keys are the cell-IDs, and the values are the IDs of the points
-     * making up the cell. The ordering of the points are important for the cell connectivity.
+    /*!
+     * The external IDs of the cells in this block (if available).
      */
-    std::map<int, std::vector<int>> cell_connectivities;
+    std::optional<std::vector<ExternalIdType>> external_ids_{};
+
+    CellBlock(FE::CellType cell_type) : cell_type(cell_type) {}
+
+    /*!
+     * @brief Returns the number of cells in this block
+     */
+    [[nodiscard]] std::size_t size() const { return cells_.size() / FE::num_nodes(cell_type); }
+
+    /*!
+     * @brief Add a cell to this block
+     */
+    void add_cell(std::span<const InternalIdType> connectivity)
+    {
+      FOUR_C_ASSERT_ALWAYS(
+          connectivity.size() == static_cast<std::size_t>(FE::num_nodes(cell_type)),
+          "You are adding a cell with {} points to a cell-block of type {} expecting {} points per "
+          "cell.",
+          connectivity.size(), FE::cell_type_to_string(cell_type), FE::num_nodes(cell_type));
+
+      cells_.insert(cells_.end(), connectivity.begin(), connectivity.end());
+    }
+
+    /*!
+     * @brief Returns a range for iterating over the cell connectivities in this block
+     */
+    [[nodiscard]] auto cells() const
+    {
+      auto indices = std::views::iota(std::size_t(0), size());
+      return indices |
+             std::views::transform(
+                 [this](std::size_t i)
+                 {
+                   return std::span<const InternalIdType>(
+                       cells_.data() + i * FE::num_nodes(cell_type), FE::num_nodes(cell_type));
+                 });
+    }
+
+    /*!
+     * @brief Allocates memory for the given number of cells in this block
+     */
+    void reserve(const std::size_t num_cells)
+    {
+      cells_.reserve(num_cells * FE::num_nodes(cell_type));
+      if (external_ids_.has_value()) external_ids_->reserve(num_cells);
+    }
+
+   private:
+    /*!
+     * Cells in this block. The cell connectivity is flattened to a 1D array.
+     */
+    std::vector<InternalIdType> cells_{};
   };
 
-  /**
+  /*!
    * A point set. This encodes a collection of points.
    */
   struct PointSet
@@ -111,53 +162,30 @@ namespace Core::IO::MeshInput
     /**
      *  The IDs of the points in the point set.
      */
-    std::vector<int> point_ids;
+    std::unordered_set<ExternalIdType> point_ids;
   };
 
-  /**
-   * An side set. This encodes a collection of sides/faces of elements.
+  /*!
+   * @brief Asserts that the given mesh internals are consistent and valid.
    */
-  struct SideSet
-  {
-    /**
-     * The IDs of the nodes making up the sides of the side set.
-     */
-    std::map<int, std::vector<int>> sides;
-  };
+  template <unsigned dim>
+  void assert_valid(const Mesh<dim>& mesh);
 
-  /**
-   * An line set. This encodes a collection of lines/edges of elements.
-   */
-  struct LineSet
-  {
-    /**
-     * The IDs of the nodes making up the lines of the line set.
-     */
-    std::map<int, std::vector<int>> lines;
-  };
-
-  /**
+  /*!
    * Print a summary of the mesh to the given output stream (details according to @p verbose )
    */
-  void print(const Mesh& mesh, std::ostream& os, VerbosityLevel verbose);
+  template <unsigned dim>
+  void print(const Mesh<dim>& mesh, std::ostream& os, VerbosityLevel verbose);
 
-  /**
-   * Print a summary of the cell block to the given output stream (details according to @p verbose )
+  /*!
+   * Print a summary of the cell block to the given output stream (details according to @p verbose
+   * )
    */
   void print(const CellBlock& block, std::ostream& os, VerbosityLevel verbose);
 
-  /**
-   * Print a summary of the side set to the given output stream (details according to @p verbose )
-   */
-  void print(const SideSet& side_set, std::ostream& os, VerbosityLevel verbose);
-
-  /**
-   * Print a summary of the line set to the given output stream (details according to @p verbose )
-   */
-  void print(const LineSet& line_set, std::ostream& os, VerbosityLevel verbose);
-
-  /**
-   * Print a summary of the point set to the given output stream (details according to @p verbose )
+  /*!
+   * Print a summary of the point set to the given output stream (details according to @p verbose
+   * )
    */
   void print(const PointSet& point_set, std::ostream& os, VerbosityLevel verbose);
 }  // namespace Core::IO::MeshInput
