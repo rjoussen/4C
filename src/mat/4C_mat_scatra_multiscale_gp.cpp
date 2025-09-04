@@ -151,7 +151,7 @@ void Mat::ScatraMultiScaleGP::init()
       xcoords.reserve(microdis->num_my_row_nodes());
       for (const auto& node : microdis->my_row_node_range())
       {
-        xcoords.push_back(node->x()[0]);
+        xcoords.push_back(node.x()[0]);
       }
       std::ranges::sort(xcoords);
 

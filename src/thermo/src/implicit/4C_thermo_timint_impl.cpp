@@ -95,8 +95,8 @@ Thermo::TimIntImpl::TimIntImpl(const Teuchos::ParameterList& ioparams,
 
   for (const auto& node : discret_->my_row_node_range())
   {
-    auto* adjacent_elements = node->elements();
-    const int num_elements = node->num_element();
+    auto* adjacent_elements = node.user_data()->elements();
+    const int num_elements = node.user_data()->num_element();
 
     for (size_t col = 0; col < columns; col++)
     {
@@ -111,7 +111,7 @@ Thermo::TimIntImpl::TimIntImpl(const Teuchos::ParameterList& ioparams,
         nodal_material = nodal_material + element_material[local_element_id];
       }
 
-      conductivity_->ReplaceGlobalValue(node->id(), col, nodal_material / num_elements);
+      conductivity_->ReplaceGlobalValue(node.global_id(), col, nodal_material / num_elements);
     }
   }
 

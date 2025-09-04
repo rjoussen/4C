@@ -22,7 +22,7 @@ namespace Core::Geo
 {
   //! Update material configuration of @p dis with @p disp
   void update_reference_config_with_disp(
-      const Core::FE::Discretization& dis, const Core::LinAlg::Vector<double>& disp);
+      Core::FE::Discretization& dis, const Core::LinAlg::Vector<double>& disp);
 }  // namespace Core::Geo
 
 FOUR_C_NAMESPACE_CLOSE

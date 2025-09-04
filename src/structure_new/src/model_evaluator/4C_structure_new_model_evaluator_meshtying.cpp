@@ -146,11 +146,11 @@ void Solid::ModelEvaluator::Meshtying::setup()
         {
           for (int d = 0; d < strategy_ptr_->n_dim(); ++d)
           {
-            int dof = gdiscret->dof(node, d);
+            int dof = gdiscret->dof(node.user_data(), d);
             if (strategy_ptr_->non_redist_slave_row_dofs()->lid(dof) != -1)
             {
               mesh_relocation_->get_values()[mesh_relocation_->get_map().lid(dof)] =
-                  node->x()[d] -
+                  node.x()[d] -
                   Xslavemod_noredist->get_values()[Xslavemod_noredist->get_map().lid(dof)];
             }
           }

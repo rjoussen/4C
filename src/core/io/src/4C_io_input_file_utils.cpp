@@ -291,9 +291,9 @@ void Core::IO::read_design(InputFile& input, const std::string& name,
 
       // collect all nodes which are outside the adapted bounding box
       std::set<int> dnodes;
-      for (const auto* node : actdis.my_row_node_range())
+      for (const auto& node : actdis.my_row_node_range())
       {
-        const auto& coord = node->x();
+        const auto& coord = node.x();
         std::array<double, 3> coords;
         coords[0] = coord[0];
         coords[1] = coord[1];
@@ -332,7 +332,7 @@ void Core::IO::read_design(InputFile& input, const std::string& name,
         if ((coords[0] <= bbox[0] || coords[0] >= bbox[3]) &&
             (coords[1] <= bbox[1] || coords[1] >= bbox[4]) &&
             (coords[2] <= bbox[2] || coords[2] >= bbox[5]))
-          dnodes.insert(node->id());
+          dnodes.insert(node.global_id());
       }
       Core::LinAlg::gather_all(dnodes, input.get_comm());
       topology[dobj - 1].insert(dnodes.begin(), dnodes.end());
