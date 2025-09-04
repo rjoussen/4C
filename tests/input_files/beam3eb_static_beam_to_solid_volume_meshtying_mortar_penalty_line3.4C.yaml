@@ -133,30 +133,6 @@ MATERIALS:
       MOMIN: 4.9087385212340526e-06
 FUNCT1:
   - SYMBOLIC_FUNCTION_OF_SPACE_TIME: t
-DESIGN POINT DIRICH CONDITIONS:
-  - E: 1
-    NUMDOF: 6
-    ONOFF:
-      - 0
-      - 0
-      - 0
-      - 0
-      - 0
-      - 0
-    VAL:
-      - 0
-      - 0
-      - 0
-      - 0
-      - 0
-      - 0
-    FUNCT:
-      - 0
-      - 0
-      - 0
-      - 0
-      - 0
-      - 0
 DESIGN LINE NEUMANN CONDITIONS:
   - E: 1
     NUMDOF: 6
@@ -384,8 +360,6 @@ DVOL-NODE TOPOLOGY:
   - NODE 187 DVOL 1
   - NODE 188 DVOL 1
   - NODE 189 DVOL 1
-DNODE-NODE TOPOLOGY:
-  - NODE 190 DNODE 1
 DLINE-NODE TOPOLOGY:
   - NODE 190 DLINE 1
   - NODE 191 DLINE 1
