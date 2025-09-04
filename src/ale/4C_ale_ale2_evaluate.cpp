@@ -946,7 +946,7 @@ void Discret::Elements::Ale2::jacobian_matrix(const Core::LinAlg::SerialDenseMat
   }
 
   /*------------------------------------------ determinant of jacobian ---*/
-  *det = xjm[0][0] * xjm[1][1] - xjm[1][0] * xjm[0][1];
+  *det = xjm(0, 0) * xjm(1, 1) - xjm(1, 0) * xjm(0, 1);
 
   if (*det < 0.0) FOUR_C_THROW("NEGATIVE JACOBIAN DETERMINANT {:8.5f} in ELEMENT {}\n", *det, id());
   /*----------------------------------------------------------------------*/
@@ -1352,7 +1352,7 @@ void Discret::Elements::Ale2::evaluate_oddy(
   {
     for (int j = 0; j < 2; ++j)
     {
-      for (int k = 0; k < 2; ++k) c(i, j) += xjm[k][i] * xjm[k][j];
+      for (int k = 0; k < 2; ++k) c(i, j) += xjm(i, k) * xjm(j, k);
       c(i, j) /= det;
     }
   }

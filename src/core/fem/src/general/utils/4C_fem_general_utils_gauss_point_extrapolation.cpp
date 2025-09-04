@@ -156,7 +156,7 @@ namespace
       using ordinalType = Core::LinAlg::SerialDenseMatrix::ordinalType;
       using scalarType = Core::LinAlg::SerialDenseMatrix::scalarType;
       Teuchos::SerialDenseSolver<ordinalType, scalarType> matrixInverter;
-      matrixInverter.setMatrix(Teuchos::rcpFromRef(shapefunctions_at_gps_copy));
+      matrixInverter.setMatrix(Teuchos::rcpFromRef(shapefunctions_at_gps_copy.base()));
       int error_code = matrixInverter.invert();
 
       if (error_code != 0)
@@ -184,7 +184,7 @@ namespace
       using ordinalType = Core::LinAlg::SerialDenseMatrix::ordinalType;
       using scalarType = Core::LinAlg::SerialDenseMatrix::scalarType;
       Teuchos::SerialDenseSolver<ordinalType, scalarType> matrixInverter;
-      matrixInverter.setMatrix(Teuchos::rcpFromRef(matTmat));
+      matrixInverter.setMatrix(Teuchos::rcpFromRef(matTmat.base()));
       int error_code = matrixInverter.invert();
 
       if (error_code != 0)

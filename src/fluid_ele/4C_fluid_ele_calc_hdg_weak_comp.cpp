@@ -511,8 +511,9 @@ int Discret::Elements::FluidEleCalcHDGWeakComp<distype>::project_field(
     using ordinalType = Core::LinAlg::SerialDenseMatrix::ordinalType;
     using scalarType = Core::LinAlg::SerialDenseMatrix::scalarType;
     Teuchos::SerialDenseSolver<ordinalType, scalarType> inverseMass;
-    inverseMass.setMatrix(Teuchos::rcpFromRef(local_solver_->massMat));
-    inverseMass.setVectors(Teuchos::rcpFromRef(localMat), Teuchos::rcpFromRef(localMat));
+    inverseMass.setMatrix(Teuchos::rcpFromRef(local_solver_->massMat.base()));
+    inverseMass.setVectors(
+        Teuchos::rcpFromRef(localMat.base()), Teuchos::rcpFromRef(localMat.base()));
     inverseMass.solve();
   }
 
@@ -616,10 +617,10 @@ int Discret::Elements::FluidEleCalcHDGWeakComp<distype>::project_field(
     using ordinalType = Core::LinAlg::SerialDenseMatrix::ordinalType;
     using scalarType = Core::LinAlg::SerialDenseMatrix::scalarType;
     Teuchos::SerialDenseSolver<ordinalType, scalarType> inverseMass;
-    inverseMass.setMatrix(Teuchos::rcpFromRef(mass));
+    inverseMass.setMatrix(Teuchos::rcpFromRef(mass.base()));
     // In this cas trVec is a proper vector and not a matrix used as multiple
     // RHS vectors
-    inverseMass.setVectors(Teuchos::rcpFromRef(trVec), Teuchos::rcpFromRef(trVec));
+    inverseMass.setVectors(Teuchos::rcpFromRef(trVec.base()), Teuchos::rcpFromRef(trVec.base()));
     inverseMass.solve();
 
     // In this case we fill elevec1 with the values of trVec because we have not
@@ -2033,7 +2034,7 @@ template <Core::FE::CellType distype>
 void Discret::Elements::FluidEleCalcHDGWeakComp<distype>::LocalSolver::invert_local_local_matrix()
 {
   KlocallocalInv = Klocallocal;
-  KlocallocalInvSolver.setMatrix(Teuchos::rcpFromRef(KlocallocalInv));
+  KlocallocalInvSolver.setMatrix(Teuchos::rcpFromRef(KlocallocalInv.base()));
   int err = KlocallocalInvSolver.invert();
   if (err != 0) FOUR_C_THROW("Inversion of local-local matrix failed with errorcode {}", err);
 }
@@ -2088,45 +2089,45 @@ void Discret::Elements::FluidEleCalcHDGWeakComp<distype>::LocalSolver::print_mat
 
   // matrices
   std::cout << "\n\n ALL = \n\n";
-  ALL.print(std::cout);
+  std::cout << ALL;
   std::cout << "\n\n ALr = \n\n";
-  ALr.print(std::cout);
+  std::cout << ALr;
   std::cout << "\n\n ALw = \n\n";
-  ALw.print(std::cout);
+  std::cout << ALw;
   std::cout << "\n\n ALR = \n\n";
-  ALR.print(std::cout);
+  std::cout << ALR;
   std::cout << "\n\n ALW = \n\n";
-  ALW.print(std::cout);
+  std::cout << ALW;
   std::cout << "\n\n Arr = \n\n";
-  Arr.print(std::cout);
+  std::cout << Arr;
   std::cout << "\n\n Arw = \n\n";
-  Arw.print(std::cout);
+  std::cout << Arw;
   std::cout << "\n\n ArR = \n\n";
-  ArR.print(std::cout);
+  std::cout << ArR;
   std::cout << "\n\n ArW = \n\n";
-  ArW.print(std::cout);
+  std::cout << ArW;
   std::cout << "\n\n AwL = \n\n";
-  AwL.print(std::cout);
+  std::cout << AwL;
   std::cout << "\n\n Awr = \n\n";
-  Awr.print(std::cout);
+  std::cout << Awr;
   std::cout << "\n\n Aww = \n\n";
-  Aww.print(std::cout);
+  std::cout << Aww;
   std::cout << "\n\n AwR = \n\n";
-  AwR.print(std::cout);
+  std::cout << AwR;
   std::cout << "\n\n AwW = \n\n";
-  AwW.print(std::cout);
+  std::cout << AwW;
   std::cout << "\n\n ARr = \n\n";
-  ARr.print(std::cout);
+  std::cout << ARr;
   std::cout << "\n\n ARR = \n\n";
-  ARR.print(std::cout);
+  std::cout << ARR;
   std::cout << "\n\n AWL = \n\n";
-  AWL.print(std::cout);
+  std::cout << AWL;
   std::cout << "\n\n AWw = \n\n";
-  AWw.print(std::cout);
+  std::cout << AWw;
   std::cout << "\n\n AWR = \n\n";
-  AWR.print(std::cout);
+  std::cout << AWR;
   std::cout << "\n\n AWW = \n\n";
-  AWW.print(std::cout);
+  std::cout << AWW;
 
   // residuals
   std::cout << "\n\n RL = \n\n";
@@ -2142,25 +2143,25 @@ void Discret::Elements::FluidEleCalcHDGWeakComp<distype>::LocalSolver::print_mat
 
   // local/global matrices/vectors
   std::cout << "\n\n Klocallocal = \n\n";
-  Klocallocal.print(std::cout);
+  std::cout << Klocallocal;
   std::cout << "\n\n Klocalglobal = \n\n";
-  Klocalglobal.print(std::cout);
+  std::cout << Klocalglobal;
   std::cout << "\n\n Kgloballocal = \n\n";
-  Kgloballocal.print(std::cout);
+  std::cout << Kgloballocal;
   std::cout << "\n\n Kglobalglobal = \n\n";
-  Kglobalglobal.print(std::cout);
+  std::cout << Kglobalglobal;
   std::cout << "\n\n Rlocal = \n\n";
   Rlocal.print(std::cout);
   std::cout << "\n\n Rglobal = \n\n";
   Rglobal.print(std::cout);
   std::cout << "\n\n KlocallocalInv = \n\n";
-  KlocallocalInv.print(std::cout);
+  std::cout << KlocallocalInv;
 
   // element vector and matrix
   std::cout << "\n\n eleVec = \n\n";
   eleVec.print(std::cout);
   std::cout << "\n\n eleMat = \n\n";
-  eleMat.print(std::cout);
+  std::cout << eleMat;
 }
 
 

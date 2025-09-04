@@ -15,6 +15,7 @@
 #include "4C_fem_general_utils_local_connectivity_matrices.hpp"
 #include "4C_inpar_structure.hpp"
 #include "4C_linalg_fixedsizematrix_voigt_notation.hpp"
+#include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_utils_densematrix_eigen.hpp"
 
 #include <memory>
@@ -88,10 +89,10 @@ namespace Solid::Utils::Shell
    *  @param node (in): node to calculate the nullspace on
    *  @param x0 (in): pre-computed geometric center of gravity of the discretization to be used
    * as center of rotation for the rotational modes of the nullspace
-   *  @return Teuchos::SerialDenseMatrix<int, double>: Translational (x,y,z) and
+   *  @return Core::LinAlg::SerialDenseMatrix: Translational (x,y,z) and
    *  rotational (around x,y,z) nullspace contribution for given node
    */
-  Teuchos::SerialDenseMatrix<int, double> compute_shell_null_space(
+  Core::LinAlg::SerialDenseMatrix compute_shell_null_space(
       Core::Nodes::Node& node, const double* x0, const Core::LinAlg::Matrix<3, 1>& dir);
 
   void nodal_block_information_shell(

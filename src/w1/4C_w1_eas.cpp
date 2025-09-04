@@ -50,7 +50,7 @@ void Discret::Elements::Wall1::w1_eassetup(Core::LinAlg::SerialDenseMatrix& bopl
   }
 
   /*------------------------------------------ determinant of jacobian ---*/
-  detJ0 = xjm0[0][0] * xjm0[1][1] - xjm0[1][0] * xjm0[0][1];
+  detJ0 = xjm0(0, 0) * xjm0(1, 1) - xjm0(1, 0) * xjm0(0, 1);
 
   if (detJ0 < 0.0) FOUR_C_THROW("NEGATIVE JACOBIAN DETERMINANT");
 

@@ -72,8 +72,7 @@ namespace Core::LinAlg
    \param B (in):    B Matrix
 
    */
-  double generalized_eigen(
-      Core::LinAlg::SerialDenseMatrix::Base& A, Core::LinAlg::SerialDenseMatrix::Base& B);
+  double generalized_eigen(Core::LinAlg::SerialDenseMatrix& A, Core::LinAlg::SerialDenseMatrix& B);
 
   /*!
    \brief Compute all eigenvalues and eigenvectors of a real symmetric matrix A
@@ -226,7 +225,7 @@ namespace Core::LinAlg
 
     // return eigenvalues
     S.clear();
-    for (unsigned int i = 0; i < dim; ++i) S(i, i) = std::complex<double>(wr[i], wi[i]);
+    for (unsigned int j = 0; j < dim; ++j) S(j, j) = std::complex<double>(wr[j], wi[j]);
 
     return;
   }

@@ -108,7 +108,7 @@ void Discret::Elements::ScaTraEleCalcElchDiffCondMultiScale<distype,
   Core::LinAlg::SerialDenseMatrix N(nen_, nen_);
 
   // Gauss point concentration of electrode
-  Core::LinAlg::SerialDenseMatrix conc_gp(nen_, 1);
+  Core::LinAlg::SerialDenseVector conc_gp(nen_);
 
   // loop over integration points
   for (int iquad = 0; iquad < intpoints.ip().nquad; ++iquad)
@@ -118,7 +118,7 @@ void Discret::Elements::ScaTraEleCalcElchDiffCondMultiScale<distype,
 
     // calculate mean concentration at Gauss point and store in vector
     const double concentration_gp = newmanmultiscale->evaluate_mean_concentration(iquad);
-    conc_gp(iquad, 0) = concentration_gp;
+    conc_gp(iquad) = concentration_gp;
 
     // build matrix of shape functions
     for (int node = 0; node < static_cast<int>(nen_); ++node) N(iquad, node) = my::funct_(node, 0);
@@ -128,7 +128,7 @@ void Discret::Elements::ScaTraEleCalcElchDiffCondMultiScale<distype,
   using ordinalType = Core::LinAlg::SerialDenseMatrix::ordinalType;
   using scalarType = Core::LinAlg::SerialDenseMatrix::scalarType;
   Teuchos::SerialDenseSolver<ordinalType, scalarType> invert;
-  invert.setMatrix(Teuchos::rcpFromRef(N));
+  invert.setMatrix(Teuchos::rcpFromRef(N.base()));
   invert.invert();
   Core::LinAlg::multiply(conc, N, conc_gp);
 }

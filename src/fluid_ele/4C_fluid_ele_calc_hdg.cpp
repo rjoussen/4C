@@ -514,11 +514,12 @@ int Discret::Elements::FluidEleCalcHDG<distype>::project_field(Discret::Elements
     using scalarType = Core::LinAlg::SerialDenseMatrix::scalarType;
     Teuchos::SerialDenseSolver<ordinalType, scalarType> inverseMass;
     // Setting A matrix
-    inverseMass.setMatrix(Teuchos::rcpFromRef(local_solver_->massMat));
+    inverseMass.setMatrix(Teuchos::rcpFromRef(local_solver_->massMat.base()));
     // localMat is, in this case, used both as the RHS and as the unknown vector
     // localMat is placed in the memory where elevec2 was and therefore it takes
     // its place as result vector
-    inverseMass.setVectors(Teuchos::rcpFromRef(localMat), Teuchos::rcpFromRef(localMat));
+    inverseMass.setVectors(
+        Teuchos::rcpFromRef(localMat.base()), Teuchos::rcpFromRef(localMat.base()));
     // Solving
     inverseMass.solve();
   }
@@ -634,10 +635,10 @@ int Discret::Elements::FluidEleCalcHDG<distype>::project_field(Discret::Elements
     using ordinalType = Core::LinAlg::SerialDenseMatrix::ordinalType;
     using scalarType = Core::LinAlg::SerialDenseMatrix::scalarType;
     Teuchos::SerialDenseSolver<ordinalType, scalarType> inverseMass;
-    inverseMass.setMatrix(Teuchos::rcpFromRef(mass));
+    inverseMass.setMatrix(Teuchos::rcpFromRef(mass.base()));
     // In this cas trVec is a proper vector and not a matrix used as multiple
     // RHS vectors
-    inverseMass.setVectors(Teuchos::rcpFromRef(trVec), Teuchos::rcpFromRef(trVec));
+    inverseMass.setVectors(Teuchos::rcpFromRef(trVec.base()), Teuchos::rcpFromRef(trVec.base()));
     inverseMass.solve();
 
     // In this case we fill elevec1 with the values of trVec because we have not
@@ -1026,8 +1027,9 @@ int Discret::Elements::FluidEleCalcHDG<distype>::project_force_on_dof_vec_for_hi
     using ordinalType = Core::LinAlg::SerialDenseMatrix::ordinalType;
     using scalarType = Core::LinAlg::SerialDenseMatrix::scalarType;
     Teuchos::SerialDenseSolver<ordinalType, scalarType> inverseMass;
-    inverseMass.setMatrix(Teuchos::rcpFromRef(local_solver_->massMat));
-    inverseMass.setVectors(Teuchos::rcpFromRef(localMat), Teuchos::rcpFromRef(localMat));
+    inverseMass.setMatrix(Teuchos::rcpFromRef(local_solver_->massMat.base()));
+    inverseMass.setVectors(
+        Teuchos::rcpFromRef(localMat.base()), Teuchos::rcpFromRef(localMat.base()));
     inverseMass.solve();
   }
 
@@ -1135,8 +1137,9 @@ int Discret::Elements::FluidEleCalcHDG<distype>::project_initial_field_for_hit(
     using ordinalType = Core::LinAlg::SerialDenseMatrix::ordinalType;
     using scalarType = Core::LinAlg::SerialDenseMatrix::scalarType;
     Teuchos::SerialDenseSolver<ordinalType, scalarType> inverseMass;
-    inverseMass.setMatrix(Teuchos::rcpFromRef(local_solver_->massMat));
-    inverseMass.setVectors(Teuchos::rcpFromRef(localMat), Teuchos::rcpFromRef(localMat));
+    inverseMass.setMatrix(Teuchos::rcpFromRef(local_solver_->massMat.base()));
+    inverseMass.setVectors(
+        Teuchos::rcpFromRef(localMat.base()), Teuchos::rcpFromRef(localMat.base()));
     inverseMass.solve();
   }
 
@@ -1196,8 +1199,8 @@ int Discret::Elements::FluidEleCalcHDG<distype>::project_initial_field_for_hit(
     using ordinalType = Core::LinAlg::SerialDenseMatrix::ordinalType;
     using scalarType = Core::LinAlg::SerialDenseMatrix::scalarType;
     Teuchos::SerialDenseSolver<ordinalType, scalarType> inverseMass;
-    inverseMass.setMatrix(Teuchos::rcpFromRef(mass));
-    inverseMass.setVectors(Teuchos::rcpFromRef(trVec), Teuchos::rcpFromRef(trVec));
+    inverseMass.setMatrix(Teuchos::rcpFromRef(mass.base()));
+    inverseMass.setVectors(Teuchos::rcpFromRef(trVec.base()), Teuchos::rcpFromRef(trVec.base()));
     inverseMass.solve();
 
 
@@ -2241,7 +2244,7 @@ void Discret::Elements::FluidEleCalcHDG<distype>::LocalSolver::eliminate_velocit
     using ordinalType = Core::LinAlg::SerialDenseMatrix::ordinalType;
     using scalarType = Core::LinAlg::SerialDenseMatrix::scalarType;
     Teuchos::SerialDenseSolver<ordinalType, scalarType> inverseMass;
-    inverseMass.setMatrix(Teuchos::rcpFromRef(massMat));
+    inverseMass.setMatrix(Teuchos::rcpFromRef(massMat.base()));
     inverseMass.invert();
   }
 
@@ -2350,8 +2353,8 @@ void Discret::Elements::FluidEleCalcHDG<distype>::LocalSolver::solve_residual()
   lapack.GETRF(size, size, uuMatFinal.values(), size, pivots.data(), &errnum);
   if (errnum > 0)
   {
-    uuMatFinal.print(std::cout);
-    uuMat.print(std::cout);
+    std::cout << uuMatFinal;
+    std::cout << uuMat;
   }
   FOUR_C_ASSERT(errnum == 0, "Factorization failed");
   lapack.GETRS(
@@ -2509,7 +2512,7 @@ void Discret::Elements::FluidEleCalcHDG<distype>::LocalSolver::compute_correctio
   for (unsigned int i = 0; i < ndofs_; ++i)
   {
     double x[nsd_];
-    for (unsigned int d = 0; d < nsd_; ++d) x[d] = shapes_.nodexyzreal[i][d];
+    for (unsigned int d = 0; d < nsd_; ++d) x[d] = shapes_.nodexyzreal(d, i);
 
     interiorecorrectionterm[i] =
         Global::Problem::instance()
@@ -2525,7 +2528,7 @@ void Discret::Elements::FluidEleCalcHDG<distype>::LocalSolver::compute_body_forc
   for (unsigned int i = 0; i < ndofs_; ++i)
   {
     double x[nsd_];
-    for (unsigned int d = 0; d < nsd_; ++d) x[d] = shapes_.nodexyzreal[i][d];
+    for (unsigned int d = 0; d < nsd_; ++d) x[d] = shapes_.nodexyzreal(d, i);
 
     for (unsigned int d = 0; d < nsd_; ++d)
       interiorebodyforce[d * ndofs_ + i] =
@@ -2626,7 +2629,7 @@ void Discret::Elements::FluidEleCalcHDG<distype>::print_local_correction(
     double x[nsd_];
     for (unsigned int d = 0; d < nsd_; ++d)
     {
-      x[d] = local_solver_->shapes_.nodexyzreal[i][d];
+      x[d] = local_solver_->shapes_.nodexyzreal(d, i);
       std::cout << x[d];
       if (d < nsd_ - 1) std::cout << ",\t";
     }
@@ -2651,7 +2654,7 @@ void Discret::Elements::FluidEleCalcHDG<distype>::print_local_body_force(
     double x[nsd_];
     for (unsigned int d = 0; d < nsd_; ++d)
     {
-      x[d] = local_solver_->shapes_.nodexyzreal[i][d];
+      x[d] = local_solver_->shapes_.nodexyzreal(d, i);
       std::cout << x[d];
       if (d < nsd_ - 1) std::cout << ",\t";
     }

@@ -49,13 +49,11 @@ namespace
 
     Core::LinAlg::SerialDenseMatrix eashelp(neas, 1);
     // make multiplication eashelp = - old L^T * disp_incr[kstep]
-    eashelp.multiply(
-        Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, old_eas_data.transL_, disp_inc, 0.0);
+    Core::LinAlg::multiply(eashelp, old_eas_data.transL_, disp_inc);
     // add old RTilde to eashelp
     eashelp += old_eas_data.RTilde_;
     // make multiplication alpha_inc = - old invDTilde * eashelp
-    delta_alpha.multiply(
-        Teuchos::NO_TRANS, Teuchos::NO_TRANS, -1.0, old_eas_data.invDTilde_, eashelp, 0.0);
+    Core::LinAlg::multiply(0.0, delta_alpha, -1.0, old_eas_data.invDTilde_, eashelp);
   }  // end of EvaluateAlphaIncrement
 
   /*!
@@ -81,18 +79,15 @@ namespace
     // we invert the matrix. At this point, this is still D_Tilde and NOT invD_Tilde
     Core::LinAlg::SerialDenseMatrix MTDmat(
         neas, Discret::Elements::Shell::Internal::num_internal_variables);
-    MTDmat.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, 1.0, M, stress_enh.dmat_, 0.0);
+    Core::LinAlg::multiply_tn(MTDmat, M, stress_enh.dmat_);
 
-    eas_data.invDTilde_.multiply(
-        Teuchos::NO_TRANS, Teuchos::NO_TRANS, integration_factor, MTDmat, M, 1.);
+    Core::LinAlg::multiply(1.0, eas_data.invDTilde_, integration_factor, MTDmat, M);
 
     //  integrate transL (L^T) += M^T * D * B * detJ * w(gp)
-    eas_data.transL_.multiply(
-        Teuchos::NO_TRANS, Teuchos::NO_TRANS, integration_factor, MTDmat, Bop, 1.);
+    Core::LinAlg::multiply(1.0, eas_data.transL_, integration_factor, MTDmat, Bop);
 
     //  integrate Rtilde (R_Tilde) : Rtilde  += M^T * stress_r * detJ * w(gp)
-    eas_data.RTilde_.multiply(
-        Teuchos::TRANS, Teuchos::NO_TRANS, integration_factor, M, stress_enh.stress_, 1.);
+    Core::LinAlg::multiply_tn(1.0, eas_data.RTilde_, integration_factor, M, stress_enh.stress_);
   }
 }  // namespace
 
@@ -678,8 +673,8 @@ void Discret::Elements::Shell7pEleCalcEas<distype>::evaluate_nonlinear_force_sti
   // compute  L * DTilde^-1  which is later needed for force and stiffness update
   Core::LinAlg::SerialDenseMatrix LinvDTilde(
       Shell::Internal::numdofperelement<distype>, locking_types_.total);
-  LinvDTilde.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, 1., eas_iteration_data_.transL_,
-      eas_iteration_data_.invDTilde_, 0.);
+  Core::LinAlg::multiply_tn(
+      LinvDTilde, eas_iteration_data_.transL_, eas_iteration_data_.invDTilde_);
   if (stiffness_matrix != nullptr)
   {
     Shell::EAS::add_eas_stiffness_matrix(
@@ -729,7 +724,7 @@ void Discret::Elements::Shell7pEleCalcEas<distype>::recover(Core::Elements::Elem
   {
     // first, store the eas state of the previous accepted Newton step
     interface_ptr.sum_into_my_previous_sol_norm(NOX::Nln::StatusTest::quantity_eas,
-        locking_types_.total, eas_iteration_data_.alpha_[0], ele.owner());
+        locking_types_.total, eas_iteration_data_.alpha_.values(), ele.owner());
 
     // compute the EAS increment delta_alpha
     evaluate_alpha_increment<distype>(
@@ -757,7 +752,7 @@ void Discret::Elements::Shell7pEleCalcEas<distype>::recover(Core::Elements::Elem
   // Check if delta alpha is tested and if yes, calculate the element
   // contribution to the norm
   interface_ptr.sum_into_my_update_norm(NOX::Nln::StatusTest::quantity_eas, locking_types_.total,
-      delta_alpha[0], eas_iteration_data_.alpha_[0], step_length, ele.owner());
+      delta_alpha.values(), eas_iteration_data_.alpha_.values(), step_length, ele.owner());
 
   // save the old step length
   old_step_length_ = step_length;

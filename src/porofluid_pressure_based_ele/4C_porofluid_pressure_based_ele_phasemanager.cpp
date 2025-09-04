@@ -715,7 +715,7 @@ void Discret::Elements::PoroFluidManager::PhaseManagerDeriv::evaluate_gp_state(
     using ordinalType = Core::LinAlg::SerialDenseMatrix::ordinalType;
     using scalarType = Core::LinAlg::SerialDenseMatrix::scalarType;
     Teuchos::SerialDenseSolver<ordinalType, scalarType> inverse;
-    inverse.setMatrix(Teuchos::rcpFromRef(*pressurederiv_));
+    inverse.setMatrix(Teuchos::rcpFromRef(pressurederiv_->base()));
     int err = inverse.invert();
     if (err != 0)
       FOUR_C_THROW("Inversion of matrix for pressure derivative failed with error code {}.", err);

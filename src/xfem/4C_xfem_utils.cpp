@@ -139,7 +139,7 @@ void XFEM::Utils::safety_check_materials(
 }
 
 //! Extract a quantity for an element
-void XFEM::Utils::extract_quantity_at_element(Core::LinAlg::SerialDenseMatrix::Base& element_vector,
+void XFEM::Utils::extract_quantity_at_element(Core::LinAlg::SerialDenseMatrix& element_vector,
     const Core::Elements::Element* element,
     const Core::LinAlg::MultiVector<double>& global_col_vector, Core::FE::Discretization& dis,
     const int nds_vector, const int nsd)
@@ -168,7 +168,7 @@ void XFEM::Utils::extract_quantity_at_element(Core::LinAlg::SerialDenseMatrix::B
 
 
 //! Extract a quantity for a node
-void XFEM::Utils::extract_quantity_at_node(Core::LinAlg::SerialDenseMatrix::Base& element_vector,
+void XFEM::Utils::extract_quantity_at_node(Core::LinAlg::SerialDenseMatrix& element_vector,
     const Core::Nodes::Node* node, const Core::LinAlg::MultiVector<double>& global_col_vector,
     Core::FE::Discretization& dis, const int nds_vector, const unsigned int nsd)
 {

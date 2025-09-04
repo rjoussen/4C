@@ -125,7 +125,7 @@ void Core::Utils::CubicSplineInterpolation::solve_linear_system(Core::LinAlg::Se
   using ordinalType = Core::LinAlg::SerialDenseMatrix::ordinalType;
   using scalarType = Core::LinAlg::SerialDenseMatrix::scalarType;
   Teuchos::SerialDenseSolver<ordinalType, scalarType> solver;
-  solver.setMatrix(Teuchos::rcpFromRef(A));
+  solver.setMatrix(Teuchos::rcpFromRef(A.base()));
   solver.setVectors(Teuchos::rcpFromRef(c), Teuchos::rcpFromRef(b));
   solver.factorWithEquilibration(true);
   solver.solveToRefinedSolution(true);

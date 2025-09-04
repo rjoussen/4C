@@ -366,7 +366,7 @@ std::shared_ptr<Core::LinAlg::SparseMatrix> Core::LinAlg::matrix_sparse_inverse(
     // 5. solve linear system for x
     Core::LinAlg::SerialDenseVector localX(Ik_size);
     Teuchos::SerialQRDenseSolver<int, double> qrSolver;
-    qrSolver.setMatrix(Teuchos::rcpFromRef(localA));
+    qrSolver.setMatrix(Teuchos::rcpFromRef(localA.base()));
     qrSolver.setVectors(Teuchos::rcpFromRef(localX), Teuchos::rcpFromRef(ek));
     const int err = qrSolver.solve();
     if (err != 0) FOUR_C_THROW("Error in serial QR solve.");

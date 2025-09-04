@@ -167,7 +167,7 @@ void Core::LinAlg::KrylovProjector::fill_complete()
   using ordinalType = Core::LinAlg::SerialDenseMatrix::ordinalType;
   using scalarType = Core::LinAlg::SerialDenseMatrix::scalarType;
   Teuchos::SerialDenseSolver<ordinalType, scalarType> densesolver;
-  densesolver.setMatrix(Teuchos::rcpFromRef(*invw_tc_));
+  densesolver.setMatrix(Teuchos::rcpFromRef(invw_tc_->base()));
   int err = densesolver.invert();
   if (err)
     FOUR_C_THROW(
@@ -229,7 +229,7 @@ Core::LinAlg::SparseMatrix Core::LinAlg::KrylovProjector::get_pt()
     else
     {
       std::shared_ptr<Core::LinAlg::SerialDenseMatrix> invwTcT =
-          std::make_shared<Core::LinAlg::SerialDenseMatrix>(*invw_tc_, Teuchos::TRANS);
+          std::make_shared<Core::LinAlg::SerialDenseMatrix>(invw_tc_->base(), Teuchos::TRANS);
       create_projector(pt_, c_, w_, invwTcT);
     }
   }
@@ -271,7 +271,7 @@ int Core::LinAlg::KrylovProjector::apply_pt(Core::LinAlg::MultiVector<double>& Y
     FOUR_C_THROW(
         "Krylov space projector is not complete. Call fill_complete() after changing c_ or w_.");
 
-  Core::LinAlg::SerialDenseMatrix invwTcT(*invw_tc_, Teuchos::TRANS);
+  Core::LinAlg::SerialDenseMatrix invwTcT(invw_tc_->base(), Teuchos::TRANS);
   return apply_projector(Y, *c_, *w_, invwTcT);
 }
 

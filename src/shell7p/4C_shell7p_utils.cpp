@@ -12,6 +12,7 @@
 #include "4C_fem_general_node.hpp"
 #include "4C_fem_general_utils_fem_shapefunctions.hpp"
 #include "4C_io_input_parameter_container.hpp"
+#include "4C_linalg_utils_densematrix_multiply.hpp"
 #include "4C_shell7p_ele.hpp"
 #include "4C_shell7p_ele_scatra.hpp"
 #include "4C_utils_enum.hpp"
@@ -328,12 +329,12 @@ namespace
 
 }  // namespace
 
-Teuchos::SerialDenseMatrix<int, double> Solid::Utils::Shell::compute_shell_null_space(
+Core::LinAlg::SerialDenseMatrix Solid::Utils::Shell::compute_shell_null_space(
     Core::Nodes::Node& node, const double* x0, const Core::LinAlg::Matrix<3, 1>& dir)
 {
   const auto& x = node.x();
 
-  Teuchos::SerialDenseMatrix<int, double> nullspace(6, 6);
+  Core::LinAlg::SerialDenseMatrix nullspace(6, 6);
   // x-modes
   nullspace(0, 0) = 1.0;
   nullspace(0, 1) = 0.0;
@@ -410,7 +411,7 @@ void Solid::Utils::Shell::Director::setup_director_for_element(
         derivatives, nodal_coordinates(0), nodal_coordinates(1), ele.shape());
 
     // get a1, a2 direction derivatives in r and s direction
-    metrics_kovariant.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, derivatives, xrefe, 0.0);
+    Core::LinAlg::multiply(metrics_kovariant, derivatives, xrefe);
 
     // get thickness direction derivative perpendicular to a1 and a2
     // -> a3 = (a1 x a2) / (|a1 x a2 |)

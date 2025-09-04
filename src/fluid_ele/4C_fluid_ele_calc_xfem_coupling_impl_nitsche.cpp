@@ -24,8 +24,25 @@ namespace Discret
       template <Core::FE::CellType distype, Core::FE::CellType slave_distype,
           unsigned int slave_numdof>
       NitscheCoupling<distype, slave_distype, slave_numdof>::NitscheCoupling(
-          Core::LinAlg::SerialDenseMatrix::Base& C_umum,  ///< C_umum coupling matrix
-          Core::LinAlg::SerialDenseMatrix::Base& rhC_um,  ///< C_um coupling rhs
+          Core::LinAlg::SerialDenseMatrix& C_umum,  ///< C_umum coupling matrix
+          Core::LinAlg::SerialDenseMatrix& rhC_um,  ///< C_um coupling rhs
+          const Discret::Elements::FluidEleParameterXFEM&
+              fldparaxfem  ///< specific XFEM based fluid parameters
+          )
+          : SlaveElementRepresentation<distype, slave_distype, slave_numdof>(),
+            fldparaxfem_(fldparaxfem),
+            c_umum_(C_umum.values(), true),
+            rh_c_um_(rhC_um.values(), true),
+            adj_visc_scale_(fldparaxfem_.get_viscous_adjoint_scaling()),
+            eval_coupling_(false)
+      {
+      }
+
+      template <Core::FE::CellType distype, Core::FE::CellType slave_distype,
+          unsigned int slave_numdof>
+      NitscheCoupling<distype, slave_distype, slave_numdof>::NitscheCoupling(
+          Core::LinAlg::SerialDenseMatrix& C_umum,  ///< C_umum coupling matrix
+          Core::LinAlg::SerialDenseVector& rhC_um,  ///< C_um coupling rhs
           const Discret::Elements::FluidEleParameterXFEM&
               fldparaxfem  ///< specific XFEM based fluid parameters
           )
@@ -43,10 +60,29 @@ namespace Discret
       template <Core::FE::CellType distype, Core::FE::CellType slave_distype,
           unsigned int slave_numdof>
       NitscheCoupling<distype, slave_distype, slave_numdof>::NitscheCoupling(
-          Core::LinAlg::SerialDenseMatrix::Base&
-              slave_xyze,  ///< global node coordinates of slave element
-          Core::LinAlg::SerialDenseMatrix::Base& C_umum,  ///< C_umum coupling matrix
-          Core::LinAlg::SerialDenseMatrix::Base& rhC_um,  ///< C_um coupling rhs
+          Core::LinAlg::SerialDenseMatrix&
+              slave_xyze,                           ///< global node coordinates of slave element
+          Core::LinAlg::SerialDenseMatrix& C_umum,  ///< C_umum coupling matrix
+          Core::LinAlg::SerialDenseMatrix& rhC_um,  ///< C_um coupling rhs
+          const Discret::Elements::FluidEleParameterXFEM&
+              fldparaxfem  ///< specific XFEM based fluid parameters
+          )
+          : SlaveElementRepresentation<distype, slave_distype, slave_numdof>(slave_xyze),
+            fldparaxfem_(fldparaxfem),
+            c_umum_(C_umum.values(), true),
+            rh_c_um_(rhC_um.values(), true),
+            adj_visc_scale_(fldparaxfem_.get_viscous_adjoint_scaling()),
+            eval_coupling_(false)
+      {
+      }
+
+      template <Core::FE::CellType distype, Core::FE::CellType slave_distype,
+          unsigned int slave_numdof>
+      NitscheCoupling<distype, slave_distype, slave_numdof>::NitscheCoupling(
+          Core::LinAlg::SerialDenseMatrix&
+              slave_xyze,                           ///< global node coordinates of slave element
+          Core::LinAlg::SerialDenseMatrix& C_umum,  ///< C_umum coupling matrix
+          Core::LinAlg::SerialDenseVector& rhC_um,  ///< C_um coupling rhs
           const Discret::Elements::FluidEleParameterXFEM&
               fldparaxfem  ///< specific XFEM based fluid parameters
           )
@@ -64,14 +100,41 @@ namespace Discret
       template <Core::FE::CellType distype, Core::FE::CellType slave_distype,
           unsigned int slave_numdof>
       NitscheCoupling<distype, slave_distype, slave_numdof>::NitscheCoupling(
-          Core::LinAlg::SerialDenseMatrix::Base&
-              slave_xyze,  ///< global node coordinates of slave element
-          Core::LinAlg::SerialDenseMatrix::Base& C_umum,  ///< C_umum coupling matrix
-          Core::LinAlg::SerialDenseMatrix::Base& C_usum,  ///< C_usum coupling matrix
-          Core::LinAlg::SerialDenseMatrix::Base& C_umus,  ///< C_umus coupling matrix
-          Core::LinAlg::SerialDenseMatrix::Base& C_usus,  ///< C_usus coupling matrix
-          Core::LinAlg::SerialDenseMatrix::Base& rhC_um,  ///< C_um coupling rhs
-          Core::LinAlg::SerialDenseMatrix::Base& rhC_us,  ///< C_us coupling rhs
+          Core::LinAlg::SerialDenseMatrix&
+              slave_xyze,                           ///< global node coordinates of slave element
+          Core::LinAlg::SerialDenseMatrix& C_umum,  ///< C_umum coupling matrix
+          Core::LinAlg::SerialDenseMatrix& C_usum,  ///< C_usum coupling matrix
+          Core::LinAlg::SerialDenseMatrix& C_umus,  ///< C_umus coupling matrix
+          Core::LinAlg::SerialDenseMatrix& C_usus,  ///< C_usus coupling matrix
+          Core::LinAlg::SerialDenseMatrix& rhC_um,  ///< C_um coupling rhs
+          Core::LinAlg::SerialDenseMatrix& rhC_us,  ///< C_us coupling rhs
+          const Discret::Elements::FluidEleParameterXFEM&
+              fldparaxfem  ///< specific XFEM based fluid parameters
+          )
+          : SlaveElementRepresentation<distype, slave_distype, slave_numdof>(slave_xyze),
+            fldparaxfem_(fldparaxfem),
+            c_umum_(C_umum.values(), true),
+            c_usum_(C_usum.values(), true),
+            c_umus_(C_umus.values(), true),
+            c_usus_(C_usus.values(), true),
+            rh_c_um_(rhC_um.values(), true),
+            rh_c_us_(rhC_us.values(), true),
+            adj_visc_scale_(fldparaxfem_.get_viscous_adjoint_scaling()),
+            eval_coupling_(true)
+      {
+      }
+
+      template <Core::FE::CellType distype, Core::FE::CellType slave_distype,
+          unsigned int slave_numdof>
+      NitscheCoupling<distype, slave_distype, slave_numdof>::NitscheCoupling(
+          Core::LinAlg::SerialDenseMatrix&
+              slave_xyze,                           ///< global node coordinates of slave element
+          Core::LinAlg::SerialDenseMatrix& C_umum,  ///< C_umum coupling matrix
+          Core::LinAlg::SerialDenseMatrix& C_usum,  ///< C_usum coupling matrix
+          Core::LinAlg::SerialDenseMatrix& C_umus,  ///< C_umus coupling matrix
+          Core::LinAlg::SerialDenseMatrix& C_usus,  ///< C_usus coupling matrix
+          Core::LinAlg::SerialDenseVector& rhC_um,  ///< C_um coupling rhs
+          Core::LinAlg::SerialDenseMatrix& rhC_us,  ///< C_us coupling rhs
           const Discret::Elements::FluidEleParameterXFEM&
               fldparaxfem  ///< specific XFEM based fluid parameters
           )

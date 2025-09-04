@@ -162,7 +162,7 @@ void Mat::PAR::FluidPoroMultiPhase::initialize()
     using ordinalType = Core::LinAlg::SerialDenseMatrix::ordinalType;
     using scalarType = Core::LinAlg::SerialDenseMatrix::scalarType;
     Teuchos::SerialDenseSolver<ordinalType, scalarType> inverse;
-    inverse.setMatrix(Teuchos::rcpFromRef(*dof2pres_));
+    inverse.setMatrix(Teuchos::rcpFromRef(dof2pres_->base()));
     int err = inverse.invert();
     if (err != 0)
       FOUR_C_THROW(

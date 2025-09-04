@@ -19,6 +19,7 @@
 #include "4C_linalg_symmetric_tensor.hpp"
 #include "4C_linalg_tensor.hpp"
 #include "4C_linalg_tensor_matrix_conversion.hpp"
+#include "4C_linalg_utils_densematrix_multiply.hpp"
 #include "4C_mat_material_factory.hpp"
 #include "4C_mat_so3_material.hpp"
 #include "4C_shell7p_ele.hpp"
@@ -1423,8 +1424,8 @@ namespace Discret::Elements::Shell
     // calculate Ke = integration_factor * B^TDB
     Core::LinAlg::SerialDenseMatrix DB(
         Internal::num_internal_variables, Internal::numdofperelement<distype>);
-    DB.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, Dmat, Bop, 0.0);
-    stiffness_matrix.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, integration_fac, Bop, DB, 1.0);
+    Core::LinAlg::multiply(DB, Dmat, Bop);
+    Core::LinAlg::multiply_tn(1.0, stiffness_matrix, integration_fac, Bop, DB);
   }
 
   /*!
@@ -1552,7 +1553,7 @@ namespace Discret::Elements::Shell
       const Core::LinAlg::SerialDenseVector& stress_enh, const double integration_fac,
       Core::LinAlg::SerialDenseVector& force_vector)
   {
-    force_vector.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, integration_fac, Bop, stress_enh, 1.);
+    Core::LinAlg::multiply_tn(1.0, force_vector, integration_fac, Bop, stress_enh);
   }
   /*!
    * @brief Adds mass matrix contribution of one Gauss point

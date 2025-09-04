@@ -672,8 +672,8 @@ namespace Discret::Elements::Shell::EAS
     // transform basis of M-matrix to gaussian point: M_gp = detJ0/ detJ * T0^-T * M
     Core::LinAlg::SerialDenseMatrix M_gp(
         Discret::Elements::Shell::Internal::num_internal_variables, neas);
-    M_gp.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS,
-        metrics_centroid_reference.detJ_ / a_reference.detJ_, T0inv, M, 0.0);
+    Core::LinAlg::multiply(
+        0.0, M_gp, metrics_centroid_reference.detJ_ / a_reference.detJ_, T0inv, M);
     return M_gp;
   }
 
@@ -698,7 +698,7 @@ namespace Discret::Elements::Shell::EAS
       const Core::LinAlg::SerialDenseMatrix& alpha, Core::LinAlg::SerialDenseMatrix& M)
   {
     // evaluate enhanced strains = M * alpha to "unlock" element
-    strain_enh.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, M, alpha, 0.0);
+    strain_enh.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, M.base(), alpha.base(), 0.0);
   }
 
   /*!
@@ -713,7 +713,8 @@ namespace Discret::Elements::Shell::EAS
   {
     // EAS internal force vector is: R - L * DTilde^-1 * RTilde (R is the usual unenhanced
     // internal force vector
-    force_vector.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, -1., LinvDTilde, RTilde, 1.0);
+    force_vector.multiply(
+        Teuchos::NO_TRANS, Teuchos::NO_TRANS, -1., LinvDTilde.base(), RTilde.base(), 1.0);
   }
 
   /*!
@@ -730,7 +731,7 @@ namespace Discret::Elements::Shell::EAS
   {
     // EAS-stiffness matrix is: K- L * DTilde^-1 * L^T (K is the usual unenhanced stiffness
     // matrix)
-    stiffness_matrix.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, -1., LinvDTilde, transL, 1.0);
+    Core::LinAlg::multiply(1.0, stiffness_matrix, -1.0, LinvDTilde, transL);
   }
 }  // namespace Discret::Elements::Shell::EAS
 

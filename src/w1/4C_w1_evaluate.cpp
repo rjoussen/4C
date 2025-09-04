@@ -512,7 +512,7 @@ int Discret::Elements::Wall1::evaluate_neumann(Teuchos::ParameterList& params,
       {
         // calculate reference position of GP
         Core::LinAlg::SerialDenseMatrix gp_coord(1, numdim_);
-        gp_coord.multiply(Teuchos::TRANS, Teuchos::TRANS, 1.0, shapefcts, xrefe, 0.0);
+        Core::LinAlg::multiply_tt(gp_coord, shapefcts, xrefe);
 
         // write coordinates in another datatype
         double gp_coord2[3];  // the position vector has to be given in 3D!!!
@@ -573,7 +573,7 @@ void Discret::Elements::Wall1::w1_recover(const std::vector<int>& lm,
     {
       // first, store the eas state of the previous accepted Newton step
       str_params_interface().sum_into_my_previous_sol_norm(
-          NOX::Nln::StatusTest::quantity_eas, w1_neas(), (*alpha)[0], owner());
+          NOX::Nln::StatusTest::quantity_eas, w1_neas(), alpha->values(), owner());
 
       // get stored EAS history
       Core::LinAlg::SerialDenseMatrix* oldfeas = &easdata_.feas;
@@ -620,7 +620,7 @@ void Discret::Elements::Wall1::w1_recover(const std::vector<int>& lm,
   // contribution to the norm
   if (iseas_)
     str_params_interface().sum_into_my_update_norm(NOX::Nln::StatusTest::quantity_eas, w1_neas(),
-        (*eas_inc)[0], (*alpha)[0], step_length, owner());
+        eas_inc->values(), alpha->values(), step_length, owner());
 
   // the element internal stuff should be up-to-date for now...
 }
@@ -974,7 +974,7 @@ void Discret::Elements::Wall1::w1_nlnstiffmass(const std::vector<int>& lm,
       using ordinalType = Core::LinAlg::SerialDenseMatrix::ordinalType;
       using scalarType = Core::LinAlg::SerialDenseMatrix::scalarType;
       Teuchos::SerialDenseSolver<ordinalType, scalarType> solve_for_inverseKaa;
-      solve_for_inverseKaa.setMatrix(Teuchos::rcpFromRef(Kaa));
+      solve_for_inverseKaa.setMatrix(Teuchos::rcpFromRef(Kaa.base()));
       solve_for_inverseKaa.invert();
 
 
@@ -1208,7 +1208,7 @@ void Discret::Elements::Wall1::w1_jacobianmatrix(const Core::LinAlg::SerialDense
   }
 
   /*------------------------------------------ determinant of jacobian ---*/
-  *det = xjm[0][0] * xjm[1][1] - xjm[1][0] * xjm[0][1];
+  *det = xjm(0, 0) * xjm(1, 1) - xjm(1, 0) * xjm(0, 1);
 
   if (*det < 0.0) FOUR_C_THROW("NEGATIVE JACOBIAN DETERMINANT {:8.5f} in ELEMENT {}\n", *det, id());
   /*----------------------------------------------------------------------*/

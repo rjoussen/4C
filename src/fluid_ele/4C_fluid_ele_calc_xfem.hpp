@@ -298,7 +298,15 @@ namespace Discret
           const Core::LinAlg::Matrix<nen_, 1>& funct_m,  ///< coupling master shape functions
           const Core::LinAlg::Matrix<nsd_, 1>&
               itraction_jump,  ///< prescribed interface traction, jump height for coupled problems
-          Core::LinAlg::SerialDenseMatrix::Base& elevec1  ///< element vector
+          Core::LinAlg::SerialDenseMatrix& elevec1  ///< element vector
+      );
+
+      //! evaluate Neumann boundary condition
+      void evaluate_neumann(const double& timefacfac,    ///< theta*dt
+          const Core::LinAlg::Matrix<nen_, 1>& funct_m,  ///< coupling master shape functions
+          const Core::LinAlg::Matrix<nsd_, 1>&
+              itraction_jump,  ///< prescribed interface traction, jump height for coupled problems
+          Core::LinAlg::SerialDenseVector& elevec1  ///< element vector
       );
 
       //! build traction vector w.r.t fluid domain

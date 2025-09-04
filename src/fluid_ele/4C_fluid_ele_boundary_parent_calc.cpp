@@ -132,7 +132,7 @@ template <Core::FE::CellType distype>
 void Discret::Elements::FluidBoundaryParent<distype>::flow_dep_pressure_bc(
     Discret::Elements::FluidBoundary* surfele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
-    Core::LinAlg::SerialDenseMatrix::Base& elemat, Core::LinAlg::SerialDenseVector::Base& elevec)
+    Core::LinAlg::SerialDenseMatrix& elemat, Core::LinAlg::SerialDenseVector::Base& elevec)
 {
   switch (surfele->shape())
   {
@@ -211,7 +211,7 @@ template <Core::FE::CellType distype>
 void Discret::Elements::FluidBoundaryParent<distype>::slip_supp_bc(
     Discret::Elements::FluidBoundary* surfele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
-    Core::LinAlg::SerialDenseMatrix::Base& elemat, Core::LinAlg::SerialDenseVector::Base& elevec)
+    Core::LinAlg::SerialDenseMatrix& elemat, Core::LinAlg::SerialDenseVector::Base& elevec)
 {
   switch (surfele->shape())
   {
@@ -253,7 +253,7 @@ template <Core::FE::CellType distype>
 void Discret::Elements::FluidBoundaryParent<distype>::navier_slip_bc(
     Discret::Elements::FluidBoundary* surfele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
-    Core::LinAlg::SerialDenseMatrix::Base& elemat, Core::LinAlg::SerialDenseVector::Base& elevec)
+    Core::LinAlg::SerialDenseMatrix& elemat, Core::LinAlg::SerialDenseVector::Base& elevec)
 {
   switch (surfele->shape())
   {
@@ -295,7 +295,7 @@ template <Core::FE::CellType distype>
 void Discret::Elements::FluidBoundaryParent<distype>::evaluate_weak_dbc(
     Discret::Elements::FluidBoundary* surfele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
-    Core::LinAlg::SerialDenseMatrix::Base& elemat, Core::LinAlg::SerialDenseVector::Base& elevec)
+    Core::LinAlg::SerialDenseMatrix& elemat, Core::LinAlg::SerialDenseVector::Base& elevec)
 {
   switch (surfele->shape())
   {
@@ -374,7 +374,7 @@ template <Core::FE::CellType distype>
 void Discret::Elements::FluidBoundaryParent<distype>::estimate_nitsche_trace_max_eigenvalue(
     Core::Elements::FaceElement* surfele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
-    Core::LinAlg::SerialDenseMatrix::Base& elemat1, Core::LinAlg::SerialDenseMatrix::Base& elemat2)
+    Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2)
 {
   switch (surfele->shape())
   {
@@ -461,7 +461,7 @@ template <Core::FE::CellType distype>
 void Discret::Elements::FluidBoundaryParent<distype>::mix_hyb_dirichlet(
     Discret::Elements::FluidBoundary* surfele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
-    Core::LinAlg::SerialDenseMatrix::Base& elemat, Core::LinAlg::SerialDenseVector::Base& elevec)
+    Core::LinAlg::SerialDenseMatrix& elemat, Core::LinAlg::SerialDenseVector::Base& elevec)
 {
   switch (surfele->shape())
   {
@@ -504,7 +504,7 @@ template <Core::FE::CellType bdistype, Core::FE::CellType pdistype>
 void Discret::Elements::FluidBoundaryParent<distype>::flow_dep_pressure_bc(
     Discret::Elements::FluidBoundary* surfele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& plm,
-    Core::LinAlg::SerialDenseMatrix::Base& elemat1, Core::LinAlg::SerialDenseVector::Base& elevec1)
+    Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseVector::Base& elevec1)
 {
   // initialize pressure value and pressure derivative at boundary
   double pressure = 0.0;
@@ -1239,7 +1239,7 @@ template <Core::FE::CellType bdistype, Core::FE::CellType pdistype>
 void Discret::Elements::FluidBoundaryParent<distype>::slip_supp_bc(
     Discret::Elements::FluidBoundary* surfele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& plm,
-    Core::LinAlg::SerialDenseMatrix::Base& elemat1, Core::LinAlg::SerialDenseVector::Base& elevec1)
+    Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseVector::Base& elevec1)
 {
   //---------------------------------------------------------------------
   // get time-integration parameters
@@ -1571,7 +1571,7 @@ template <Core::FE::CellType bdistype, Core::FE::CellType pdistype>
 void Discret::Elements::FluidBoundaryParent<distype>::navier_slip_bc(
     Discret::Elements::FluidBoundary* surfele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& plm,
-    Core::LinAlg::SerialDenseMatrix::Base& elemat1, Core::LinAlg::SerialDenseVector::Base& elevec1)
+    Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseVector::Base& elevec1)
 {
   //---------------------------------------------------------------------
   // get time-integration parameters
@@ -1830,7 +1830,7 @@ template <Core::FE::CellType bdistype, Core::FE::CellType pdistype>
 void Discret::Elements::FluidBoundaryParent<distype>::evaluate_weak_dbc(
     Discret::Elements::FluidBoundary* surfele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& plm,
-    Core::LinAlg::SerialDenseMatrix::Base& elemat1, Core::LinAlg::SerialDenseVector::Base& elevec1)
+    Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseVector::Base& elevec1)
 {
   //---------------------------------------------------------------------
   // get condition information
@@ -3712,7 +3712,7 @@ template <Core::FE::CellType bdistype, Core::FE::CellType pdistype>
 void Discret::Elements::FluidBoundaryParent<distype>::estimate_nitsche_trace_max_eigenvalue(
     Core::Elements::FaceElement* surfele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& blm,
-    Core::LinAlg::SerialDenseMatrix::Base& elemat1, Core::LinAlg::SerialDenseMatrix::Base& elemat2)
+    Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2)
 {
   //---------------------------------------------------------------------
   // get parent element data
@@ -4253,7 +4253,7 @@ template <Core::FE::CellType bdistype, Core::FE::CellType pdistype>
 void Discret::Elements::FluidBoundaryParent<distype>::mix_hyb_dirichlet(
     Discret::Elements::FluidBoundary* surfele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& plm,
-    Core::LinAlg::SerialDenseMatrix::Base& elemat, Core::LinAlg::SerialDenseVector::Base& elevec)
+    Core::LinAlg::SerialDenseMatrix& elemat, Core::LinAlg::SerialDenseVector::Base& elevec)
 {
   //--------------------------------------------------
   // get my parent element

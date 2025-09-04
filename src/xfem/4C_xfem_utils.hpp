@@ -54,7 +54,7 @@ namespace XFEM
     /*!
     \brief Needs a column-vector to extract correctly in parallel
      */
-    void extract_quantity_at_element(Core::LinAlg::SerialDenseMatrix::Base& element_vector,
+    void extract_quantity_at_element(Core::LinAlg::SerialDenseMatrix& element_vector,
         const Core::Elements::Element* element,
         const Core::LinAlg::MultiVector<double>& global_col_vector, Core::FE::Discretization& dis,
         const int nds_vector, const int nsd);
@@ -63,7 +63,7 @@ namespace XFEM
     /*!
     \brief Needs a column-vector to extract correctly in parallel
      */
-    void extract_quantity_at_node(Core::LinAlg::SerialDenseMatrix::Base& element_vector,
+    void extract_quantity_at_node(Core::LinAlg::SerialDenseMatrix& element_vector,
         const Core::Nodes::Node* node, const Core::LinAlg::MultiVector<double>& global_col_vector,
         Core::FE::Discretization& dis, const int nds_vector, const unsigned int nsd);
 

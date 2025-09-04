@@ -90,10 +90,10 @@ void Core::LinAlg::symmetric_eigen(Core::LinAlg::SerialDenseMatrix& A,
  |  maximum eigenvalue                              shahmiri  05/13
  *----------------------------------------------------------------------*/
 double Core::LinAlg::generalized_eigen(
-    Core::LinAlg::SerialDenseMatrix::Base& A, Core::LinAlg::SerialDenseMatrix::Base& B)
+    Core::LinAlg::SerialDenseMatrix& A, Core::LinAlg::SerialDenseMatrix& B)
 {
-  Core::LinAlg::SerialDenseMatrix::Base tmpA(A);
-  Core::LinAlg::SerialDenseMatrix::Base tmpB(B);
+  Core::LinAlg::SerialDenseMatrix tmpA(A);
+  Core::LinAlg::SerialDenseMatrix tmpB(B);
 
   //--------------------------------------------------------------------
   // STEP 1:
@@ -138,32 +138,32 @@ double Core::LinAlg::generalized_eigen(
   // v is a vector with v(1:i-1) = 0 and v(i+1:m) is stored on exit in B(i+1:m,i)
 
   // Q is initialized as an unit matrix
-  Core::LinAlg::SerialDenseMatrix::Base Q_new;
+  Core::LinAlg::SerialDenseMatrix Q_new;
   Q_new.shape(N, N);
   for (int i = 0; i < N; ++i) Q_new(i, i) = 1.0;
 
   for (int i = 0; i < N; ++i)
   {
-    Core::LinAlg::SerialDenseVector::Base v;
+    Core::LinAlg::SerialDenseVector v;
     v.size(N);
     v(i) = 1.;
     for (int j = i + 1; j < N; ++j) v(j) = tmpB(j, i);
 
-    Core::LinAlg::SerialDenseMatrix::Base H;
+    Core::LinAlg::SerialDenseMatrix H;
     H.shape(N, N);
 
     Core::LinAlg::multiply_nt(0., H, tau[i], v, v);
     H.scale(-1.);
     for (int k = 0; k < N; ++k) H(k, k) = 1. + H(k, k);
 
-    Core::LinAlg::SerialDenseMatrix::Base Q_help;
+    Core::LinAlg::SerialDenseMatrix Q_help;
     Q_help.shape(N, N);
     Core::LinAlg::multiply(Q_help, Q_new, H);
     Q_new = Q_help;
   }
 
   // permutation matrix
-  Core::LinAlg::SerialDenseMatrix::Base P;
+  Core::LinAlg::SerialDenseMatrix P;
   P.shape(N, N);
   for (int i = 0; i < N; ++i)
   {
@@ -180,12 +180,12 @@ double Core::LinAlg::generalized_eigen(
   }
 
   // the new A:= Q**T A P
-  Core::LinAlg::SerialDenseMatrix::Base A_tmp;
+  Core::LinAlg::SerialDenseMatrix A_tmp;
   A_tmp.shape(N, N);
   // A_tt.Multiply('T','N',1.,Q_qr_tt,A,0.);
   Core::LinAlg::multiply_tn(A_tmp, Q_new, tmpA);
 
-  Core::LinAlg::SerialDenseMatrix::Base A_new;
+  Core::LinAlg::SerialDenseMatrix A_new;
   A_new.shape(N, N);
   Core::LinAlg::multiply(A_new, A_tmp, P);
 
@@ -220,8 +220,8 @@ double Core::LinAlg::generalized_eigen(
   }
   std::vector<double> work(lwork);
 
-  Core::LinAlg::SerialDenseMatrix::Base A1;
-  Core::LinAlg::SerialDenseMatrix::Base A2;
+  Core::LinAlg::SerialDenseMatrix A1;
+  Core::LinAlg::SerialDenseMatrix A2;
   A1.shape(N, N);
   A2.shape(N, N);
   double* Q = A1.values();

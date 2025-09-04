@@ -70,9 +70,9 @@ CONTACT::RoughNode::RoughNode(int id, std::span<const double> coords, const int 
     MIRCO::CreateSurfaceObject(resolution_, initialTopologyStdDeviation_, hurstExponent_,
         randomseedflag_, topologyFilePath, randomtopologyflag_, randomgeneratorseed_,
         surfacegenerator);
-    surfacegenerator->GetSurface(topology_);
+    surfacegenerator->GetSurface(topology_.base());
 
-    auto max_and_mean = MIRCO::ComputeMaxAndMean(topology_);
+    auto max_and_mean = MIRCO::ComputeMaxAndMean(topology_.base());
     maxTopologyHeight_ = max_and_mean.max_;
   }
 #else
