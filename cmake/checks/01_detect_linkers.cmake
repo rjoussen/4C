@@ -16,8 +16,6 @@ four_c_process_global_option(
   "Detect a fast linker"
   DEFAULT
   ON
-  DEPRECATED_NAMES
-  "FOUR_C_DETECT_LINKER"
   )
 
 if(FOUR_C_ENABLE_LINKER_DETECTION)

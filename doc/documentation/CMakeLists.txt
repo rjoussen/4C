@@ -14,8 +14,6 @@ four_c_process_global_option(
   "Build the documentation"
   DEFAULT
   OFF
-  DEPRECATED_NAMES
-  "FOUR_C_BUILD_DOCUMENTATION"
   )
 if(FOUR_C_ENABLE_DOCUMENTATION)
 

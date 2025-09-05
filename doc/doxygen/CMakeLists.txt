@@ -13,8 +13,6 @@ four_c_process_global_option(
   "Build doxygen documentation"
   DEFAULT
   OFF
-  DEPRECATED_NAMES
-  "FOUR_C_BUILD_DOXYGEN"
   )
 four_c_process_global_option(
   FOUR_C_DOXYGEN_USE_LOCAL_MATHJAX
