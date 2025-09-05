@@ -1920,11 +1920,8 @@ void ScaTra::ScaTraTimIntImpl::set_initial_field(
     {
       const Core::LinAlg::Map* dofrowmap = discret_->dof_row_map();
 
-      // loop all nodes on the processor
-      for (int lnodeid = 0; lnodeid < discret_->num_my_row_nodes(); lnodeid++)
+      for (auto lnode : discret_->my_row_node_range())
       {
-        // get the processor local node
-        Core::Nodes::Node* lnode = discret_->l_row_node(lnodeid);
         // the set of degrees of freedom associated with the node
         std::vector<int> nodedofset = discret_->dof(0, lnode);
 
@@ -1936,7 +1933,7 @@ void ScaTra::ScaTraTimIntImpl::set_initial_field(
           // evaluate component k of spatial function
           double initialval =
               problem_->function_by_id<Core::Utils::FunctionOfSpaceTime>(startfuncno)
-                  .evaluate(lnode->x().data(), time_, k);
+                  .evaluate(lnode.x().data(), time_, k);
           int err = phin_->replace_local_value(doflid, initialval);
           if (err != 0) FOUR_C_THROW("dof not on proc");
         }
@@ -2054,16 +2051,13 @@ void ScaTra::ScaTraTimIntImpl::set_initial_field(
     {
       const Core::LinAlg::Map* dofrowmap = discret_->dof_row_map();
 
-      // loop all nodes on the processor
-      for (int lnodeid = 0; lnodeid < discret_->num_my_row_nodes(); lnodeid++)
+      for (auto lnode : discret_->my_row_node_range())
       {
-        // get the processor local node
-        Core::Nodes::Node* lnode = discret_->l_row_node(lnodeid);
         // the set of degrees of freedom associated with the node
         std::vector<int> nodedofset = discret_->dof(0, lnode);
 
         // get coordinate
-        const double x = lnode->x()[0];
+        const double x = lnode.x()[0];
 
         int numdofs = static_cast<int>(nodedofset.size());
         for (int k = 0; k < numdofs; ++k)
@@ -2113,16 +2107,13 @@ void ScaTra::ScaTraTimIntImpl::set_initial_field(
       // define variable
       double initialval = 0.0;
 
-      // loop all nodes on the processor
-      for (int lnodeid = 0; lnodeid < discret_->num_my_row_nodes(); lnodeid++)
+      for (auto lnode : discret_->my_row_node_range())
       {
-        // get the processor local node
-        Core::Nodes::Node* lnode = discret_->l_row_node(lnodeid);
         // the set of degrees of freedom associated with the node
         std::vector<int> nodedofset = discret_->dof(0, lnode);
 
         // get x2-coordinate
-        const double x2 = lnode->x()[1];
+        const double x2 = lnode.x()[1];
 
         int numdofs = static_cast<int>(nodedofset.size());
         for (int k = 0; k < numdofs; ++k)
@@ -2156,17 +2147,14 @@ void ScaTra::ScaTraTimIntImpl::set_initial_field(
 
       const Core::LinAlg::Map* dofrowmap = discret_->dof_row_map();
 
-      // loop all nodes on the processor
-      for (int lnodeid = 0; lnodeid < discret_->num_my_row_nodes(); lnodeid++)
+      for (auto lnode : discret_->my_row_node_range())
       {
-        // get the processor local node
-        Core::Nodes::Node* lnode = discret_->l_row_node(lnodeid);
         // the set of degrees of freedom associated with the node
         std::vector<int> nodedofset = discret_->dof(0, lnode);
 
         // get x1- and x2-coordinate
-        const double x1 = lnode->x()[0];
-        const double x2 = lnode->x()[1];
+        const double x1 = lnode.x()[0];
+        const double x2 = lnode.x()[1];
 
         // interface disturbance
         double x2_int = 0.0;
@@ -2211,17 +2199,14 @@ void ScaTra::ScaTraTimIntImpl::set_initial_field(
     {
       const Core::LinAlg::Map* dofrowmap = discret_->dof_row_map();
 
-      // loop all nodes on the processor
-      for (int lnodeid = 0; lnodeid < discret_->num_my_row_nodes(); lnodeid++)
+      for (auto lnode : discret_->my_row_node_range())
       {
-        // get the processor local node
-        Core::Nodes::Node* lnode = discret_->l_row_node(lnodeid);
         // the set of degrees of freedom associated with the node
         std::vector<int> nodedofset = discret_->dof(0, lnode);
 
         // get x1- and x2-coordinate
-        const double x1 = lnode->x()[0];
-        const double x2 = lnode->x()[1];
+        const double x1 = lnode.x()[0];
+        const double x2 = lnode.x()[1];
 
         int numdofs = static_cast<int>(nodedofset.size());
         for (int k = 0; k < numdofs; ++k)
@@ -2248,16 +2233,13 @@ void ScaTra::ScaTraTimIntImpl::set_initial_field(
     {
       const Core::LinAlg::Map* dofrowmap = discret_->dof_row_map();
 
-      // loop all nodes on the processor
-      for (int lnodeid = 0; lnodeid < discret_->num_my_row_nodes(); lnodeid++)
+      for (auto lnode : discret_->my_row_node_range())
       {
-        // get the processor local node
-        Core::Nodes::Node* lnode = discret_->l_row_node(lnodeid);
         // the set of degrees of freedom associated with the node
         std::vector<int> nodedofset = discret_->dof(0, lnode);
 
         // get x1- and x2-coordinate
-        const double x1 = lnode->x()[0];
+        const double x1 = lnode.x()[0];
 
         int numdofs = static_cast<int>(nodedofset.size());
         for (int k = 0; k < numdofs; ++k)
@@ -2288,16 +2270,13 @@ void ScaTra::ScaTraTimIntImpl::set_initial_field(
 
       const double eps = 0.00152;
 
-      // loop all nodes on the processor
-      for (int lnodeid = 0; lnodeid < discret_->num_my_row_nodes(); lnodeid++)
+      for (auto lnode : discret_->my_row_node_range())
       {
-        // get the processor local node
-        Core::Nodes::Node* lnode = discret_->l_row_node(lnodeid);
         // the set of degrees of freedom associated with the node
         std::vector<int> nodedofset = discret_->dof(0, lnode);
 
         // get x2-coordinate
-        const double x2 = lnode->x()[1];
+        const double x2 = lnode.x()[1];
 
         int numdofs = static_cast<int>(nodedofset.size());
         for (int k = 0; k < numdofs; ++k)

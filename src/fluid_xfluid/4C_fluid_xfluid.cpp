@@ -4450,11 +4450,8 @@ void FLD::XFluid::set_initial_flow_field(
     if (myrank_ == 0)
       std::cout << "SetInitialFlowField with function number " << startfuncno << std::endl;
 
-    // loop all nodes on the processor
-    for (int lnodeid = 0; lnodeid < discret_->num_my_row_nodes(); lnodeid++)
+    for (auto lnode : discret_->my_row_node_range())
     {
-      // get the processor local node
-      Core::Nodes::Node* lnode = discret_->l_row_node(lnodeid);
       // the set of degrees of freedom associated with the node
       const std::vector<int> nodedofset = discret_->dof(0, lnode);
 
@@ -4466,7 +4463,7 @@ void FLD::XFluid::set_initial_flow_field(
 
           double initialval = Global::Problem::instance()
                                   ->function_by_id<Core::Utils::FunctionOfSpaceTime>(startfuncno)
-                                  .evaluate(lnode->x().data(), time_, dof % 4);
+                                  .evaluate(lnode.x().data(), time_, dof % 4);
           state_->velnp_->replace_global_values(1, &initialval, &gid);
         }
       }
@@ -4499,19 +4496,15 @@ void FLD::XFluid::set_initial_flow_field(
     const double a = std::numbers::pi / 4.0;
     const double d = std::numbers::pi / 2.0;
 
-    // loop all nodes on the processor
-    for (int lnodeid = 0; lnodeid < discret_->num_my_row_nodes(); lnodeid++)
+    for (auto lnode : discret_->my_row_node_range())
     {
-      // get the processor local node
-      Core::Nodes::Node* lnode = discret_->l_row_node(lnodeid);
-
       // the set of degrees of freedom associated with the node
       std::vector<int> nodedofset = discret_->dof(0, lnode);
 
       // set node coordinates
       for (int dim = 0; dim < numdim_; dim++)
       {
-        xyz[dim] = lnode->x()[dim];
+        xyz[dim] = lnode.x()[dim];
       }
 
       // compute initial velocity components

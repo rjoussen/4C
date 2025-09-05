@@ -110,7 +110,7 @@ namespace Solid::Utils::Shell
      * @param dis (in) : Reference to the discretization
      */
     void setup_shell_element_directors(
-        const Core::Elements::ElementType& eletype, const Core::FE::Discretization& dis);
+        const Core::Elements::ElementType& eletype, Core::FE::Discretization& dis);
 
     /*!
      * @brief Sets the nodal directors for one element
@@ -149,7 +149,7 @@ namespace Solid::Utils::Shell
      * @param director_map (in) : Nodal director map
      */
     void export_director_map_from_row_to_col_map(const Core::Elements::ElementType& eletype,
-        const Core::FE::Discretization& dis, std::map<int, std::vector<double>>& director_map);
+        Core::FE::Discretization& dis, std::map<int, std::vector<double>>& director_map);
 
   }  // namespace Director
 

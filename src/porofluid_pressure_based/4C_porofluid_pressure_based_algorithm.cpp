@@ -1880,11 +1880,8 @@ void PoroPressureBased::PorofluidAlgorithm::set_initial_field(
     {
       const Core::LinAlg::Map* dofrowmap = discret_->dof_row_map();
 
-      // loop all nodes on the processor
-      for (int lnodeid = 0; lnodeid < discret_->num_my_row_nodes(); lnodeid++)
+      for (auto lnode : discret_->my_row_node_range())
       {
-        // get the processor local node
-        Core::Nodes::Node* lnode = discret_->l_row_node(lnodeid);
         // the set of degrees of freedom associated with the node
         std::vector<int> nodedofset = discret_->dof(0, lnode);
 
@@ -1896,7 +1893,7 @@ void PoroPressureBased::PorofluidAlgorithm::set_initial_field(
           // evaluate component k of spatial function
           double initialval = Global::Problem::instance()
                                   ->function_by_id<Core::Utils::FunctionOfSpaceTime>(startfuncno)
-                                  .evaluate(lnode->x().data(), time_, k);
+                                  .evaluate(lnode.x().data(), time_, k);
           int err = phin_->replace_local_value(doflid, initialval);
           if (err != 0) FOUR_C_THROW("dof not on proc");
         }

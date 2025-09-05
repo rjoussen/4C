@@ -187,6 +187,25 @@ void Core::FE::Discretization::build_node_row_map()
 void Core::FE::Discretization::build_node_col_map()
 {
   make_map_and_local_pointers(get_comm(), node_, nodecolptr_, nodecolmap_, /*local_only=*/false);
+
+  // Build an index into the nodecolptr_ data
+
+  all_local_node_ids_.resize(nodecolptr_.size());
+  locally_owned_local_node_ids_.resize(noderowptr_.size());
+
+  size_t count_locally_owned = 0;
+  int my_rank = Core::Communication::my_mpi_rank(get_comm());
+  for (size_t i = 0; i < nodecolptr_.size(); ++i)
+  {
+    all_local_node_ids_[i] = i;
+    if (nodecolptr_[i]->owner() == my_rank)
+    {
+      locally_owned_local_node_ids_[count_locally_owned] = i;
+      ++count_locally_owned;
+    }
+  }
+  FOUR_C_ASSERT(count_locally_owned == noderowptr_.size(),
+      "Internal error: counted {}, expected {}", count_locally_owned, noderowptr_.size());
 }
 
 

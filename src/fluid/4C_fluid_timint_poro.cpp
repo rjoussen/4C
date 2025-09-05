@@ -112,18 +112,15 @@ void FLD::TimIntPoro::set_initial_porosity_field(
     {
       const Core::LinAlg::Map* dofrowmap = discret_->dof_row_map();
 
-      // loop all nodes on the processor
-      for (int lnodeid = 0; lnodeid < discret_->num_my_row_nodes(); lnodeid++)
+      for (auto lnode : discret_->my_row_node_range())
       {
-        // get the processor local node
-        Core::Nodes::Node* lnode = discret_->l_row_node(lnodeid);
         // the set of degrees of freedom associated with the node
-        std::vector<int> nodedofset = discret_->dof(lnode);
+        std::vector<int> nodedofset = discret_->dof(0, lnode);
 
         int numdofs = nodedofset.size();
         double initialval = Global::Problem::instance()
                                 ->function_by_id<Core::Utils::FunctionOfSpaceTime>(startfuncno)
-                                .evaluate(lnode->x().data(), time_, 0);
+                                .evaluate(lnode.x().data(), time_, 0);
 
         // check whether there are invalid values of porosity
         if (initialval < 1e-15) FOUR_C_THROW("zero or negative initial porosity");

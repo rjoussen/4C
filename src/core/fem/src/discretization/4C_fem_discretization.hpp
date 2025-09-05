@@ -10,7 +10,9 @@
 
 #include "4C_config.hpp"
 
+#include "4C_fem_discretization_iterator.hpp"
 #include "4C_fem_dofset_interface.hpp"
+#include "4C_fem_general_node.hpp"
 #include "4C_fem_general_shape_function_type.hpp"
 #include "4C_linalg_graph.hpp"
 #include "4C_linalg_map.hpp"
@@ -512,6 +514,16 @@ namespace Core::FE
       return dofsets_[nds]->dof(node);
     }
 
+    /**
+     * Overload taking a ConstNodeRef.
+     */
+    [[nodiscard]] std::vector<int> dof(unsigned nds, Nodes::ConstNodeRef node) const
+    {
+      FOUR_C_ASSERT(nds < dofsets_.size(), "undefined dof set found in discretization {}!", name_);
+      FOUR_C_ASSERT(havedof_, "no dofs assigned in discretization {}!", name_);
+      return dofsets_[nds]->dof(node.user_data());
+    }
+
     /*!
     \brief Get the gid of all dofs of a node.
 
@@ -905,7 +917,7 @@ namespace Core::FE
 
     \return Address of node if node is stored by calling proc
     */
-    Core::Nodes::Node* l_col_node(int lid) const
+    [[nodiscard]] Core::Nodes::Node* l_col_node(int lid) const
     {
       FOUR_C_ASSERT(filled(), "Discretization {} not Filled()!", name_);
       return nodecolptr_[lid];
@@ -915,14 +927,36 @@ namespace Core::FE
     [[nodiscard]] auto my_row_node_range() const
     {
       FOUR_C_ASSERT(filled(), "Discretization {} not Filled()!", name_);
-      return std::views::all(noderowptr_);
+      return IteratorRange(
+          DiscretizationIterator<Nodes::ConstNodeRef>(this, locally_owned_local_node_ids_.data()),
+          DiscretizationIterator<Nodes::ConstNodeRef>(
+              this, locally_owned_local_node_ids_.data() + locally_owned_local_node_ids_.size()));
     }
 
+    [[nodiscard]] auto my_row_node_range()
+    {
+      FOUR_C_ASSERT(filled(), "Discretization {} not Filled()!", name_);
+      return IteratorRange(
+          DiscretizationIterator<Nodes::NodeRef>(this, locally_owned_local_node_ids_.data()),
+          DiscretizationIterator<Nodes::NodeRef>(
+              this, locally_owned_local_node_ids_.data() + locally_owned_local_node_ids_.size()));
+    }
 
     [[nodiscard]] auto my_col_node_range() const
     {
       FOUR_C_ASSERT(filled(), "Discretization {} not Filled()!", name_);
-      return std::views::all(nodecolptr_);
+      return IteratorRange(
+          DiscretizationIterator<Nodes::ConstNodeRef>(this, all_local_node_ids_.data()),
+          DiscretizationIterator<Nodes::ConstNodeRef>(
+              this, all_local_node_ids_.data() + all_local_node_ids_.size()));
+    }
+
+    [[nodiscard]] auto my_col_node_range()
+    {
+      FOUR_C_ASSERT(filled(), "Discretization {} not Filled()!", name_);
+      return IteratorRange(DiscretizationIterator<Nodes::NodeRef>(this, all_local_node_ids_.data()),
+          DiscretizationIterator<Nodes::NodeRef>(
+              this, all_local_node_ids_.data() + all_local_node_ids_.size()));
     }
 
     unsigned int n_dim() const { return n_dim_; }
@@ -2170,6 +2204,11 @@ namespace Core::FE
     //! Vector of pointers to column nodes for faster access
     std::vector<Core::Nodes::Node*> nodecolptr_;
 
+    //! Local IDs of the nodes in nodecolptr_. This is the range [0,numnodes-1].
+    std::vector<int> all_local_node_ids_;
+    //! Local IDs of the nodes in nodecolptr_ (!) that are owned by this rank.
+    std::vector<int> locally_owned_local_node_ids_;
+
     //! Map from nodal Gid to node pointers
     std::map<int, std::shared_ptr<Core::Nodes::Node>> node_;
 
@@ -2191,6 +2230,9 @@ namespace Core::FE
     const unsigned int n_dim_;
 
     Callbacks callbacks_;
+
+    template <bool is_const>
+    friend class Nodes::NodeRefImpl;
   };  // class Discretization
 }  // namespace Core::FE
 

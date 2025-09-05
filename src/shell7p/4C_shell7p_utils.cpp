@@ -496,7 +496,7 @@ void Solid::Utils::Shell::Director::average_director(const Core::LinAlg::Matrix<
 }
 
 void Solid::Utils::Shell::Director::export_director_map_from_row_to_col_map(
-    const Core::Elements::ElementType& eletype, const Core::FE::Discretization& dis,
+    const Core::Elements::ElementType& eletype, Core::FE::Discretization& dis,
     std::map<int, std::vector<double>>& director_map)
 {
   // export this map from nodal row map to nodal col map
@@ -506,20 +506,20 @@ void Solid::Utils::Shell::Director::export_director_map_from_row_to_col_map(
   exporter.do_export(director_map);
 
   // loop through column nodes and put directors back into discretization
-  for (const auto& actnode : dis.my_col_node_range())
+  for (auto actnode : dis.my_col_node_range())
   {
-    auto curr = director_map.find(actnode->id());
+    auto curr = director_map.find(actnode.global_id());
     FOUR_C_ASSERT(curr != director_map.end(), "Cannot find director map entry");
-    for (int j = 0; j < actnode->num_element(); ++j)
+    for (int j = 0; j < actnode.user_data()->num_element(); ++j)
     {
-      Core::Elements::Element* tmpele = actnode->elements()[j];
+      Core::Elements::Element* tmpele = actnode.user_data()->elements()[j];
       if (!tmpele) continue;
       if (tmpele->element_type() != eletype) continue;
       if (auto* scatra_ele = dynamic_cast<Discret::Elements::Shell7pScatra*>(tmpele))
       {
         for (int k = 0; k < scatra_ele->num_node(); ++k)
         {
-          if (scatra_ele->nodes()[k] == actnode)
+          if (scatra_ele->nodes()[k] == actnode.user_data())
           {
             scatra_ele->set_nodal_director(k, curr->second);
             break;
@@ -530,7 +530,7 @@ void Solid::Utils::Shell::Director::export_director_map_from_row_to_col_map(
       {
         for (int k = 0; k < shell_ele->num_node(); ++k)
         {
-          if (shell_ele->nodes()[k] == actnode)
+          if (shell_ele->nodes()[k] == actnode.user_data())
           {
             shell_ele->set_nodal_director(k, curr->second);
             break;
@@ -556,15 +556,15 @@ void Solid::Utils::Shell::Director::average_directors_at_nodes(
   for (const auto& act_node : dis.my_row_node_range())
   {
     int num_directors = 0;
-    for (int j = 0; j < act_node->num_element(); ++j)
+    for (int j = 0; j < act_node.user_data()->num_element(); ++j)
     {
-      Core::Elements::Element* tmpele = act_node->elements()[j];
+      const Core::Elements::Element* tmpele = act_node.user_data()->elements()[j];
       if (tmpele->element_type() != eletype) continue;
-      if (auto* scatra_ele = dynamic_cast<Discret::Elements::Shell7pScatra*>(tmpele))
+      if (auto* scatra_ele = dynamic_cast<const Discret::Elements::Shell7pScatra*>(tmpele))
       {
         for (int k = 0; k < scatra_ele->num_node(); ++k)
         {
-          if (scatra_ele->nodes()[k] == act_node)
+          if (scatra_ele->nodes()[k] == act_node.user_data())
           {
             const auto nodal_directors = scatra_ele->get_directors();
             for (int dim = 0; dim < num_dim; ++dim)
@@ -575,11 +575,11 @@ void Solid::Utils::Shell::Director::average_directors_at_nodes(
           }
         }
       }
-      else if (auto* shell_ele = dynamic_cast<Discret::Elements::Shell7p*>(tmpele))
+      else if (auto* shell_ele = dynamic_cast<const Discret::Elements::Shell7p*>(tmpele))
       {
         for (int k = 0; k < shell_ele->num_node(); ++k)
         {
-          if (shell_ele->nodes()[k] == act_node)
+          if (shell_ele->nodes()[k] == act_node.user_data())
           {
             const auto nodal_directors = shell_ele->get_directors();
             for (int dim = 0; dim < num_dim; ++dim)
@@ -597,23 +597,23 @@ void Solid::Utils::Shell::Director::average_directors_at_nodes(
 
     if (num_directors == 1)  // no averaging if number of neighboring elements to a node is one
     {
-      director_map[act_node->id()].resize(num_dim);
+      director_map[act_node.global_id()].resize(num_dim);
       for (int dim = 0; dim < num_dim; ++dim)
-        director_map[act_node->id()][dim] = collaverdir(dim, 0);
+        director_map[act_node.global_id()][dim] = collaverdir(dim, 0);
     }
     else  // average director at node actnode
     {
       Core::LinAlg::Matrix<num_dim, 1> nodal_director(Core::LinAlg::Initialization::zero);
       average_director(collaverdir, num_directors, nodal_director);
-      director_map[act_node->id()].resize(num_dim);
+      director_map[act_node.global_id()].resize(num_dim);
       for (int dim = 0; dim < num_dim; ++dim)
-        director_map[act_node->id()][dim] = nodal_director(dim);
+        director_map[act_node.global_id()][dim] = nodal_director(dim);
     }
   }
 }
 
 void Solid::Utils::Shell::Director::setup_shell_element_directors(
-    const Core::Elements::ElementType& eletype, const Core::FE::Discretization& dis)
+    const Core::Elements::ElementType& eletype, Core::FE::Discretization& dis)
 {
   for (const auto& actele : dis.my_col_element_range())
   {

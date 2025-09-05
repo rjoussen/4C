@@ -28,11 +28,11 @@ namespace
   void fill_conditioned_node_set(const Range& node_range,
       const Core::Conditions::Condition* condition, std::set<int>& node_set)
   {
-    for (const Core::Nodes::Node* node : node_range)
+    for (const Core::Nodes::ConstNodeRef node : node_range)
     {
-      if (condition->contains_node(node->id()))
+      if (condition->contains_node(node.global_id()))
       {
-        node_set.insert(node->id());
+        node_set.insert(node.global_id());
       }
     }
   }
