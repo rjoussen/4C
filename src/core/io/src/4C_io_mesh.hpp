@@ -102,6 +102,13 @@ namespace Core::IO::MeshInput
      */
     std::optional<std::vector<ExternalIdType>> external_ids_{};
 
+    /**
+     * An optional name for the cell block.
+     *
+     * @note Not every file formats provides std::string-names for cell blocks.
+     */
+    std::optional<std::string> name{};
+
     CellBlock(FE::CellType cell_type) : cell_type(cell_type) {}
 
     /*!
@@ -163,6 +170,13 @@ namespace Core::IO::MeshInput
      *  The IDs of the points in the point set.
      */
     std::unordered_set<ExternalIdType> point_ids;
+
+    /**
+     * An optional name for the point set.
+     *
+     * @note Not every file formats provides std::string-names for point sets.
+     */
+    std::optional<std::string> name{};
   };
 
   /*!
