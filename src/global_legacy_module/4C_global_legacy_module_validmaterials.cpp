@@ -1044,10 +1044,14 @@ std::unordered_map<Core::Materials::MaterialType, Core::IO::InputSpec> Global::v
   /*--------------------------------------------------------------------*/
   // St.Venant--Kirchhoff
   {
+    using namespace Core::IO::InputSpecBuilders::Validators;
+
     known_materials[Core::Materials::m_stvenant] = group("MAT_Struct_StVenantKirchhoff",
         {
-            parameter<double>("YOUNG", {.description = "Young's modulus"}),
-            parameter<double>("NUE", {.description = "Poisson's ratio"}),
+            parameter<double>(
+                "YOUNG", {.description = "Young's modulus", .validator = positive<double>()}),
+            parameter<double>("NUE",
+                {.description = "Poisson's ratio", .validator = in_range<double>(-1.0, excl(0.5))}),
             parameter<double>("DENS", {.description = "mass density"}),
         },
         {.description = "St.Venant--Kirchhoff material"});
