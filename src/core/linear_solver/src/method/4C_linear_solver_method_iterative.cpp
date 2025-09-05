@@ -22,6 +22,7 @@
 #include <BelosLinearProblem.hpp>
 #include <BelosPseudoBlockCGSolMgr.hpp>
 #include <BelosPseudoBlockGmresSolMgr.hpp>
+#include <Teuchos_RCPDecl.hpp>
 #include <Teuchos_RCPStdSharedPtrConversions.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_XMLParameterListHelpers.hpp>
@@ -71,7 +72,7 @@ void Core::LinearSolver::IterativeSolver::setup(std::shared_ptr<Core::LinAlg::Sp
       std::cout << "*******************************************************" << std::endl;
     }
 
-    preconditioner_->setup(a_->epetra_operator().get(), x_.get(), b_.get());
+    preconditioner_->setup(&a_->epetra_operator(), x_.get(), b_.get());
   }
   else
   {
@@ -90,7 +91,8 @@ int Core::LinearSolver::IterativeSolver::solve()
   Teuchos::ParameterList& belist = params().sublist("Belos Parameters");
 
   auto problem = Teuchos::make_rcp<Belos::LinearProblem<double, BelosVectorType, BelosMatrixType>>(
-      Teuchos::rcp(a_->epetra_operator()), Teuchos::rcpFromRef(x_->get_epetra_multi_vector()),
+      Teuchos::rcpFromRef(a_->epetra_operator()),
+      Teuchos::rcpFromRef(x_->get_epetra_multi_vector()),
       Teuchos::rcpFromRef(b_->get_epetra_multi_vector()));
 
   if (preconditioner_ != nullptr)

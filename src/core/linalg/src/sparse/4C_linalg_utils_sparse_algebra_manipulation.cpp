@@ -307,7 +307,7 @@ std::shared_ptr<Core::LinAlg::Graph> Core::LinAlg::enrich_matrix_graph(
     A_copy = *A_power;
   }
 
-  return std::make_shared<Core::LinAlg::Graph>(A_copy.epetra_matrix()->Graph());
+  return std::make_shared<Core::LinAlg::Graph>(A_copy.epetra_matrix().Graph());
 }
 
 /*----------------------------------------------------------------------*

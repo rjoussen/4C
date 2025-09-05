@@ -101,10 +101,7 @@ namespace Core::LinAlg
       \warning Only low level solver routines are interested in the internal
       Epetra_Operator.
      */
-    virtual std::shared_ptr<Epetra_Operator> epetra_operator()
-    {
-      return Core::Utils::shared_ptr_from_ref(*this);
-    }
+    virtual Epetra_Operator& epetra_operator() { return *this; }
 
     /// set matrix to zero
     virtual void zero() = 0;
