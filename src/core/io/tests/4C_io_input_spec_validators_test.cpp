@@ -33,7 +33,7 @@ namespace
     EXPECT_FALSE(validator(1.1));
 
     std::stringstream ss;
-    ss << validator;
+    validator.describe(ss);
     EXPECT_EQ(ss.str(), "in_range(0,1]");
   }
 
@@ -61,7 +61,7 @@ namespace
     EXPECT_FALSE(validator(MyEnum::C));
 
     std::stringstream ss;
-    ss << validator;
+    validator.describe(ss);
     EXPECT_EQ(ss.str(), "in_set{A,B}");
   }
 
@@ -70,10 +70,23 @@ namespace
     const auto validator = all_elements(in_range(1, 4));
     EXPECT_TRUE(validator(std::vector<int>{1, 2, 3}));
     EXPECT_FALSE(validator(std::vector<int>{1, -2, 3}));
+    EXPECT_FALSE(validator(std::array{1, -2, 3}));
 
     std::stringstream ss;
-    ss << validator;
+    validator.describe(ss);
     EXPECT_EQ(ss.str(), "all_elements{in_range[1,4]}");
+  }
+
+  TEST(InputSpecValidators, NestedAllElements)
+  {
+    const auto validator = all_elements(null_or(all_elements(positive<int>())));
+    std::vector<std::optional<std::vector<int>>> good{
+        std::vector<int>{1, 2, 3}, std::vector<int>{4, 5}, std::nullopt, std::vector<int>{10}};
+    EXPECT_TRUE(validator(good));
+
+    std::array<std::optional<std::vector<int>>, 3> bad{
+        std::vector<int>{1, 2, 3}, std::vector<int>{4, -5}, std::nullopt};
+    EXPECT_FALSE(validator(bad));
   }
 
   TEST(InputSpecValidators, Pattern)
