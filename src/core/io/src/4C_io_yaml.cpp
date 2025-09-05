@@ -63,13 +63,14 @@ void Core::IO::emit_value_as_yaml(YamlNodeRef node, const std::filesystem::path&
   }
 }
 
-void Core::IO::read_value_from_yaml(Core::IO::ConstYamlNodeRef node, double& value)
+Core::IO::YamlReadStatus Core::IO::Internal::read_value_from_yaml(
+    Core::IO::ConstYamlNodeRef node, double& value)
 {
-  FOUR_C_ASSERT_ALWAYS(node.node.has_val(), "Expected a value node.");
+  if (!node.node.has_val()) return YamlReadStatus::wrong_type;
   // Instead of relying on the ryml library to parse the double value, we do it ourselves to
   // ensure that we only accept data that fully parses as a double.
 
-  if (node.node.is_val_quoted()) throw YamlException("Found a quoted value.");
+  if (node.node.is_val_quoted()) return YamlReadStatus::wrong_type;
 
   // Null-terminate the string.
   std::string string(node.node.val().data(), node.node.val().size());
@@ -80,20 +81,19 @@ void Core::IO::read_value_from_yaml(Core::IO::ConstYamlNodeRef node, double& val
   }
   catch (const std::logic_error&)
   {
-    throw YamlException("Could not parse '" + string + "' as a double value.");
+    return YamlReadStatus::wrong_type;
   }
 
-  if (end != string.size())
-  {
-    throw YamlException("Could not parse '" + string + "' as a double value.");
-  }
+  if (end != string.size()) return YamlReadStatus::wrong_type;
+  return YamlReadStatus::success;
 }
 
-void Core::IO::read_value_from_yaml(Core::IO::ConstYamlNodeRef node, bool& value)
+Core::IO::YamlReadStatus Core::IO::Internal::read_value_from_yaml(
+    Core::IO::ConstYamlNodeRef node, bool& value)
 {
-  FOUR_C_ASSERT_ALWAYS(node.node.has_val(), "Expected a value node.");
+  if (!node.node.has_val()) return YamlReadStatus::wrong_type;
 
-  if (node.node.is_val_quoted()) throw YamlException("Found a quoted value.");
+  if (node.node.is_val_quoted()) return YamlReadStatus::wrong_type;
 
   std::string token(node.node.val().data(), node.node.val().size());
   std::transform(token.begin(), token.end(), token.begin(), ::tolower);
@@ -102,22 +102,25 @@ void Core::IO::read_value_from_yaml(Core::IO::ConstYamlNodeRef node, bool& value
   else if (token == "false" || token == "no" || token == "off" || token == "0")
     value = false;
   else
-  {
-    throw YamlException("Could not parse '" + token + "' as a boolean value.");
-  }
+    return YamlReadStatus::wrong_type;
+
+  return YamlReadStatus::success;
 }
 
-void Core::IO::read_value_from_yaml(ConstYamlNodeRef node, std::filesystem::path& value)
+Core::IO::YamlReadStatus Core::IO::Internal::read_value_from_yaml(
+    ConstYamlNodeRef node, std::filesystem::path& value)
 {
-  FOUR_C_ASSERT_ALWAYS(node.node.has_val(), "Expected a value node.");
+  if (!node.node.has_val()) return YamlReadStatus::wrong_type;
   std::string path;
-  read_value_from_yaml(node, path);
+  auto status = read_value_from_yaml(node, path);
+  if (status != YamlReadStatus::success) return status;
 
   value = std::filesystem::path(path);
   if (value.is_relative())
   {
     value = node.associated_file.parent_path() / value;
   }
+  return YamlReadStatus::success;
 }
 
 FOUR_C_NAMESPACE_CLOSE

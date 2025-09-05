@@ -160,142 +160,218 @@ namespace Core::IO
   template <typename T1, typename T2>
   void emit_value_as_yaml(YamlNodeRef node, const std::pair<T1, T2>& value);
 
-  template <YamlSupportedType T>
-    requires(!std::is_enum_v<T>)
-  void read_value_from_yaml(ConstYamlNodeRef node, T& value)
-  {
-    FOUR_C_ASSERT_ALWAYS(node.node.has_val(), "Expected a value node.");
-    node.node >> value;
-  }
-
-  void read_value_from_yaml(ConstYamlNodeRef node, double& value);
-
   /**
-   * Reading a bool currently supports the following options:
-   *
-   * - truthy values: "true", "yes", "on", "1"
-   * - falsy values: "false", "no", "off", "0"
-   *
-   * All of them are case-insensitive.
+   * Bitmask enum indicating the status of reading a value from a yaml node.
    */
-  void read_value_from_yaml(ConstYamlNodeRef node, bool& value);
-
-  template <typename T>
-    requires(std::is_enum_v<T>)
-  void read_value_from_yaml(ConstYamlNodeRef node, T& value)
+  enum class YamlReadStatus
   {
-    FOUR_C_ASSERT_ALWAYS(node.node.has_val(), "Expected a value node.");
-    auto substr = node.node.val();
-    auto val = EnumTools::enum_cast<T>(std::string_view(substr.data(), substr.size()));
-    if (val)
-    {
-      value = *val;
-    }
-    else
-    {
-      FOUR_C_THROW("Could not parse value '{}' as an enum constant of type '{}'.",
-          std::string_view(substr.data(), substr.size()), EnumTools::enum_type_name<T>());
-    }
+    success = 0,
+    wrong_type = 1 << 0,
+    wrong_size = 1 << 1,
+  };
+
+  inline YamlReadStatus operator|(YamlReadStatus lhs, YamlReadStatus rhs)
+  {
+    using T = std::underlying_type_t<YamlReadStatus>;
+    return static_cast<YamlReadStatus>(static_cast<T>(lhs) | static_cast<T>(rhs));
   }
 
-  template <typename T>
-  void read_value_from_yaml(ConstYamlNodeRef node, std::optional<T>& value)
+  inline YamlReadStatus& operator|=(YamlReadStatus& lhs, YamlReadStatus rhs)
   {
-    if (node.node.has_val() && node.node.val_is_null())
-    {
-      value.reset();
-    }
-    else
-    {
-      value = T{};
-      read_value_from_yaml(node, value.value());
-    }
+    return lhs = lhs | rhs;
   }
 
-  template <typename... Ts>
-  void read_value_from_yaml(ConstYamlNodeRef node, std::tuple<Ts...>& value)
+  inline YamlReadStatus operator&(YamlReadStatus lhs, YamlReadStatus rhs)
   {
-    FOUR_C_ASSERT_ALWAYS(node.node.is_seq(), "Expected a sequence node for a tuple.");
-    FOUR_C_ASSERT_ALWAYS(node.node.num_children() == sizeof...(Ts),
-        "Expected exactly {} children in the sequence node for a tuple, but got {}.", sizeof...(Ts),
-        node.node.num_children());
-
-    std::size_t index = 0;
-    (read_value_from_yaml(node.wrap(node.node[index++]), std::get<Ts>(value)), ...);
+    using T = std::underlying_type_t<YamlReadStatus>;
+    return static_cast<YamlReadStatus>(static_cast<T>(lhs) & static_cast<T>(rhs));
   }
 
-
-  template <typename T1, typename T2>
-  void read_value_from_yaml(ConstYamlNodeRef node, std::pair<T1, T2>& value)
+  inline YamlReadStatus& operator&=(YamlReadStatus& lhs, YamlReadStatus rhs)
   {
-    FOUR_C_ASSERT_ALWAYS(node.node.is_seq(), "Expected a sequence node for a pair.");
-    FOUR_C_ASSERT_ALWAYS(node.node.num_children() == 2,
-        "Expected exactly two children in the sequence node for a pair.");
-    read_value_from_yaml(node.wrap(node.node[0]), value.first);
-    read_value_from_yaml(node.wrap(node.node[1]), value.second);
+    return lhs = lhs & rhs;
   }
 
-  void read_value_from_yaml(ConstYamlNodeRef node, std::filesystem::path& value);
-
-  template <typename U>
-  void read_value_from_yaml(ConstYamlNodeRef node, std::map<std::string, U>& value)
+  [[nodiscard]]
+  inline bool has_flag(YamlReadStatus status, YamlReadStatus flag)
   {
-    FOUR_C_ASSERT_ALWAYS(node.node.is_map(), "Expected a map node for a map.");
-    value.clear();
-    for (auto child : node.node.children())
+    return (status & flag) == flag;
+  }
+
+  namespace Internal
+  {
+    template <YamlSupportedType T>
+      requires(!std::is_enum_v<T>)
+    [[nodiscard]] YamlReadStatus read_value_from_yaml(ConstYamlNodeRef node, T& value)
     {
-      FOUR_C_ASSERT_ALWAYS(child.has_key(), "Expected a key in the map node.");
-      std::string key(child.key().data(), child.key().size());
-      read_value_from_yaml(node.wrap(child), value[key]);
-    }
-  }
-
-  template <typename U>
-  void read_value_from_yaml(ConstYamlNodeRef node, std::unordered_map<int, U>& value)
-  {
-    FOUR_C_ASSERT_ALWAYS(node.node.is_map(), "Expected a map node for a map.");
-    value.clear();
-    value.reserve(node.node.num_children());
-    for (auto child : node.node.children())
-    {
-      FOUR_C_ASSERT_ALWAYS(child.has_key(), "Expected a key in the map node.");
-      std::string key(child.key().data(), child.key().size());
+      if (!node.node.has_val()) return YamlReadStatus::wrong_type;
       try
       {
-        int int_key = std::stoi(key);
-        read_value_from_yaml(node.wrap(child), value[int_key]);
+        node.node >> value;
       }
-      catch (const std::invalid_argument& e)
+      catch (const YamlException&)
       {
-        FOUR_C_THROW("Key '{}' cannot be converted to an integer.", key);
+        return YamlReadStatus::wrong_type;
+      }
+      return YamlReadStatus::success;
+    }
+
+    [[nodiscard]] YamlReadStatus read_value_from_yaml(ConstYamlNodeRef node, double& value);
+
+    /**
+     * Reading a bool currently supports the following options:
+     *
+     * - truthy values: "true", "yes", "on", "1"
+     * - falsy values: "false", "no", "off", "0"
+     *
+     * All of them are case-insensitive.
+     */
+    [[nodiscard]] YamlReadStatus read_value_from_yaml(ConstYamlNodeRef node, bool& value);
+
+    template <typename T>
+      requires(std::is_enum_v<T>)
+    [[nodiscard]] YamlReadStatus read_value_from_yaml(ConstYamlNodeRef node, T& value)
+    {
+      if (!node.node.has_val()) return YamlReadStatus::wrong_type;
+      auto substr = node.node.val();
+      auto val = EnumTools::enum_cast<T>(std::string_view(substr.data(), substr.size()));
+      if (!val) return YamlReadStatus::wrong_type;
+
+      value = *val;
+      return YamlReadStatus::success;
+    }
+
+    template <typename T>
+    [[nodiscard]] YamlReadStatus read_value_from_yaml(
+        ConstYamlNodeRef node, std::optional<T>& value)
+    {
+      if (node.node.has_val() && node.node.val_is_null())
+      {
+        value.reset();
+        return YamlReadStatus::success;
+      }
+      else
+      {
+        value = T{};
+        return read_value_from_yaml(node, value.value());
       }
     }
-  }
+
+    template <typename... Ts>
+    [[nodiscard]] YamlReadStatus read_value_from_yaml(
+        ConstYamlNodeRef node, std::tuple<Ts...>& value)
+    {
+      if (!node.node.is_seq()) return YamlReadStatus::wrong_type;
+      if (node.node.num_children() != sizeof...(Ts)) return YamlReadStatus::wrong_size;
+
+      std::size_t index = 0;
+      YamlReadStatus status = YamlReadStatus::success;
+
+      auto try_read = [&](auto& val)
+      {
+        if (status != YamlReadStatus::success) return;
+        status |= read_value_from_yaml(node.wrap(node.node[index++]), val);
+      };
+
+      (try_read(std::get<Ts>(value)), ...);
+      return status;
+    }
+
+
+    template <typename T1, typename T2>
+    [[nodiscard]] YamlReadStatus read_value_from_yaml(
+        ConstYamlNodeRef node, std::pair<T1, T2>& value)
+    {
+      if (!node.node.is_seq()) return YamlReadStatus::wrong_type;
+      if (node.node.num_children() != 2) return YamlReadStatus::wrong_size;
+      auto status = YamlReadStatus::success;
+      status |= read_value_from_yaml(node.wrap(node.node[0]), value.first);
+      status |= read_value_from_yaml(node.wrap(node.node[1]), value.second);
+      return status;
+    }
+
+    [[nodiscard]] YamlReadStatus read_value_from_yaml(
+        ConstYamlNodeRef node, std::filesystem::path& value);
+
+    template <typename U>
+    [[nodiscard]] YamlReadStatus read_value_from_yaml(
+        ConstYamlNodeRef node, std::map<std::string, U>& value)
+    {
+      if (!node.node.is_map()) return YamlReadStatus::wrong_type;
+      value.clear();
+      auto status = YamlReadStatus::success;
+      for (auto child : node.node.children())
+      {
+        if (!child.has_key()) return YamlReadStatus::wrong_type;
+        std::string key(child.key().data(), child.key().size());
+        status |= read_value_from_yaml(node.wrap(child), value[key]);
+      }
+      return status;
+    }
+
+    template <typename U>
+    [[nodiscard]] YamlReadStatus read_value_from_yaml(
+        ConstYamlNodeRef node, std::unordered_map<int, U>& value)
+    {
+      if (!node.node.is_map()) return YamlReadStatus::wrong_type;
+      value.clear();
+      value.reserve(node.node.num_children());
+      auto status = YamlReadStatus::success;
+      for (auto child : node.node.children())
+      {
+        if (!child.has_key()) return YamlReadStatus::wrong_type;
+        std::string key(child.key().data(), child.key().size());
+        try
+        {
+          int int_key = std::stoi(key);
+          status |= read_value_from_yaml(node.wrap(child), value[int_key]);
+        }
+        catch (const std::invalid_argument& e)
+        {
+          return YamlReadStatus::wrong_type;
+        }
+      }
+      return status;
+    }
+
+    template <typename T>
+    [[nodiscard]] YamlReadStatus read_value_from_yaml(ConstYamlNodeRef node, std::vector<T>& value)
+    {
+      if (!node.node.is_seq()) return YamlReadStatus::wrong_type;
+      value.clear();
+      value.reserve(node.node.num_children());
+      YamlReadStatus status = YamlReadStatus::success;
+      for (auto child : node.node.children())
+      {
+        T v;
+        status |= read_value_from_yaml(node.wrap(child), v);
+        value.push_back(v);
+      }
+      return status;
+    }
+
+    template <typename T, std::size_t n>
+    [[nodiscard]] YamlReadStatus read_value_from_yaml(
+        ConstYamlNodeRef node, std::array<T, n>& value)
+    {
+      if (!node.node.is_seq()) return YamlReadStatus::wrong_type;
+      if (node.node.num_children() != n) return YamlReadStatus::wrong_size;
+
+      value.fill(T{});
+      std::size_t index = 0;
+      YamlReadStatus status = YamlReadStatus::success;
+      for (auto child : node.node.children())
+      {
+        status |= read_value_from_yaml(node.wrap(child), value[index++]);
+      }
+      return status;
+    }
+  }  // namespace Internal
 
   template <typename T>
-  void read_value_from_yaml(ConstYamlNodeRef node, std::vector<T>& value)
+  [[nodiscard]] YamlReadStatus read_value_from_yaml(ConstYamlNodeRef node, T& value)
   {
-    FOUR_C_ASSERT_ALWAYS(node.node.is_seq(), "Expected a sequence node for a vector.");
-    value.clear();
-    value.reserve(node.node.num_children());
-    for (auto child : node.node.children())
-    {
-      T v;
-      read_value_from_yaml(node.wrap(child), v);
-      value.push_back(v);
-    }
-  }
-
-  template <typename T, std::size_t n>
-  void read_value_from_yaml(ConstYamlNodeRef node, std::array<T, n>& value)
-  {
-    FOUR_C_ASSERT_ALWAYS(node.node.is_seq(), "Expected a sequence node for an array.");
-    value.fill(T{});
-    std::size_t index = 0;
-    for (auto child : node.node.children())
-    {
-      read_value_from_yaml(node.wrap(child), value[index++]);
-    }
+    return Internal::read_value_from_yaml(node, value);
   }
 
   /**
@@ -341,7 +417,11 @@ namespace Core::IO
 
     ryml::NodeRef node = root[ryml::to_csubstr(key)];
     ConstYamlNodeRef key_node(node, file_path);
-    read_value_from_yaml(key_node, value);
+    auto status = read_value_from_yaml(key_node, value);
+    if (status != YamlReadStatus::success)
+    {
+      throw YamlException(std::format("Error reading key '{}'.", key));
+    }
   }
 }  // namespace Core::IO
 
