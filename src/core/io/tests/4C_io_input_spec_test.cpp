@@ -1209,6 +1209,49 @@ c: [[1.0, 2.0], [[1.0, 2.0, 8.0], {a: true, b: false, c: true, d: false}]])",
     EXPECT_EQ(map.at("d"), false);
   }
 
+  TEST(InputSpecTest, MatchArray)
+  {
+    auto spec = parameter<std::array<int, 3>>("a", {});
+
+    {
+      SCOPED_TRACE("Matches");
+      auto tree = init_yaml_tree_with_exceptions();
+      ryml::NodeRef root = tree.rootref();
+
+      ryml::parse_in_arena("a: [1, 2, 3]", root);
+
+      ConstYamlNodeRef node(root, "");
+      InputParameterContainer container;
+      spec.match(node, container);
+    }
+
+    {
+      SCOPED_TRACE("Too few elements");
+      auto tree = init_yaml_tree_with_exceptions();
+      ryml::NodeRef root = tree.rootref();
+
+      ryml::parse_in_arena("a: [1, 2 ]", root);
+
+      ConstYamlNodeRef node(root, "");
+      InputParameterContainer container;
+      FOUR_C_EXPECT_THROW_WITH_MESSAGE(spec.match(node, container), Core::Exception,
+          "Candidate parameter 'a' has incorrect size");
+    }
+
+    {
+      SCOPED_TRACE("Too many elements");
+      auto tree = init_yaml_tree_with_exceptions();
+      ryml::NodeRef root = tree.rootref();
+
+      ryml::parse_in_arena("a: [1, 2, 3, 4]", root);
+
+      ConstYamlNodeRef node(root, "");
+      InputParameterContainer container;
+      FOUR_C_EXPECT_THROW_WITH_MESSAGE(spec.match(node, container), Core::Exception,
+          "Candidate parameter 'a' has incorrect size");
+    }
+  }
+
   TEST(InputSpecTest, MatchYamlVectorOfArraysOfVectorsOfArrays)
   {
     using namespace Core::IO::InputSpecBuilders::Validators;
@@ -1786,7 +1829,7 @@ t: [[[[1,1,1],[1,1,2],[1,3,1]], [[2,2,2],[2,2,1],[2,2,9]]], [[[3,3,3],[3,2,3],[3
 
       InputParameterContainer container;
       FOUR_C_EXPECT_THROW_WITH_MESSAGE(
-          spec.match(node, container), Core::Exception, "value has incorrect size");
+          spec.match(node, container), Core::Exception, "has incorrect size");
     }
 
     {
@@ -1804,7 +1847,7 @@ t: [[[[1,1,1],[1,1,2],[1,3,1]], [[2,2,2],[2,2,1],[2,2,9]]], [[[3,3,3],[3,2,3],[3
 
       InputParameterContainer container;
       FOUR_C_EXPECT_THROW_WITH_MESSAGE(
-          spec.match(node, container), Core::Exception, "value has incorrect size");
+          spec.match(node, container), Core::Exception, "has incorrect size");
     }
   }
 

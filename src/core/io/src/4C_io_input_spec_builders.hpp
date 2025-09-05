@@ -1934,35 +1934,42 @@ bool Core::IO::Internal::ParameterSpec<T>::match(ConstYamlNodeRef node,
   FOUR_C_ASSERT(entry_node.node.key() == name, "Internal error.");
 
   T value;
-  try
+
+  auto status = read_value_from_yaml(entry_node, value);
+  if (status != YamlReadStatus::success)
   {
-    read_value_from_yaml(entry_node, value);
-  }
-  catch (const Core::Exception& e)
-  {
-    if constexpr (std::is_enum_v<T>)
+    if (has_flag(status, YamlReadStatus::wrong_size))
     {
-      std::string choices_string;
-      for (const auto& e : EnumTools::enum_names<T>())
+      match_entry.additional_info = "has incorrect size";
+      return false;
+    }
+    if (has_flag(status, YamlReadStatus::wrong_type))
+    {
+      if constexpr (std::is_enum_v<T>)
       {
-        choices_string += std::string(e) + "|";
-      }
-      choices_string.pop_back();
+        std::string choices_string;
+        for (const auto& e : EnumTools::enum_names<T>())
+        {
+          choices_string += std::string(e) + "|";
+        }
+        choices_string.pop_back();
 
-      match_entry.additional_info = "has wrong value, possible values: " + choices_string;
+        match_entry.additional_info = "has wrong value, possible values: " + choices_string;
+      }
+      else
+      {
+        match_entry.additional_info = "has wrong type, expected type: " + get_pretty_type_name<T>();
+      }
+      return false;
     }
-    else
-    {
-      match_entry.additional_info = "has wrong type, expected type: " + get_pretty_type_name<T>();
-    }
-    return false;
   }
 
+  // During reading of YAML values we can only check for static sizes. Check for dynamic sizes here.
   if constexpr (dynamic_rank<T>() > 0)
   {
     if (!has_correct_size(value, container))
     {
-      match_entry.additional_info = "value has incorrect size";
+      match_entry.additional_info = "has incorrect size";
       return false;
     }
   }
@@ -2197,11 +2204,10 @@ bool Core::IO::Internal::DeprecatedSelectionSpec<T>::match(ConstYamlNodeRef node
 
   FOUR_C_ASSERT(entry_node.node.key() == name, "Internal error.");
 
-  try
+  InputType value;
+  auto status = read_value_from_yaml(entry_node, value);
+  if (status == YamlReadStatus::success)
   {
-    InputType value;
-    read_value_from_yaml(entry_node, value);
-
     for (const auto& choice : choices)
     {
       if (choice.first == value)
@@ -2219,10 +2225,6 @@ bool Core::IO::Internal::DeprecatedSelectionSpec<T>::match(ConstYamlNodeRef node
         return true;
       }
     }
-  }
-  catch (const std::exception& e)
-  {
-    // catch all and error out below
   }
 
   match_entry.additional_info = "has wrong value, possible values: " + choices_string;
