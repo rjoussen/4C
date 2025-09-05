@@ -15,7 +15,10 @@
 # For the prebuilt 4C images it is better to use the digest `4c@sha256:...` instead of the `main` tag.
 # The main tag can already point to a newer commit than the desired commit.
 #
-# Note: you need a working docker installation
+# Note:
+#  * you need a working docker installation
+#  * You need to generate a personal access token with write:packages scope
+#  * You need to log in to the GitHub Container Registry (ghcr.io) using Docker, see https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry#authenticating-with-a-personal-access-token-classic
 set -e
 
 echo "This script pushes images to the public 4C repository for a release."
@@ -51,6 +54,11 @@ echo ""
 docker pull ghcr.io/4c-multiphysics/4c-dependencies-ubuntu24.04:${VERSION_DEPENDENCIES}
 docker tag ghcr.io/4c-multiphysics/4c-dependencies-ubuntu24.04:${VERSION_DEPENDENCIES} ghcr.io/4c-multiphysics/4c-dependencies-ubuntu24.04:${RELEASE}
 docker tag ghcr.io/4c-multiphysics/4c-dependencies-ubuntu24.04:${VERSION_DEPENDENCIES} ghcr.io/4c-multiphysics/4c-dependencies-ubuntu24.04:latest
+
+# Oldest supported dependencies image
+docker pull ghcr.io/4c-multiphysics/4c-dependencies-ubuntu24.04-oldest-supported:${VERSION_DEPENDENCIES}
+docker tag ghcr.io/4c-multiphysics/4c-dependencies-ubuntu24.04-oldest-supported:${VERSION_DEPENDENCIES} ghcr.io/4c-multiphysics/4c-dependencies-ubuntu24.04-oldest-supported:${RELEASE}
+docker tag ghcr.io/4c-multiphysics/4c-dependencies-ubuntu24.04-oldest-supported:${VERSION_DEPENDENCIES} ghcr.io/4c-multiphysics/4c-dependencies-ubuntu24.04-oldest-supported:latest
 
 
 # Prebuilt 4C
@@ -95,6 +103,9 @@ fi
 # Push the images
 docker push ghcr.io/4c-multiphysics/4c-dependencies-ubuntu24.04:${RELEASE}
 docker push ghcr.io/4c-multiphysics/4c-dependencies-ubuntu24.04:latest
+
+docker push ghcr.io/4c-multiphysics/4c-dependencies-ubuntu24.04-oldest-supported:${RELEASE}
+docker push ghcr.io/4c-multiphysics/4c-dependencies-ubuntu24.04-oldest-supported:latest
 
 docker push ghcr.io/4c-multiphysics/4c:${RELEASE}
 docker push ghcr.io/4c-multiphysics/4c:latest
