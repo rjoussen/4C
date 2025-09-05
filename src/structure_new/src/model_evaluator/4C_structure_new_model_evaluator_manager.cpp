@@ -112,12 +112,10 @@ void Solid::ModelEvaluatorManager::setup_multi_map_extractor()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool Solid::ModelEvaluatorManager::initialize_inertia_and_damping(
-    const Core::LinAlg::Vector<double>& x, Core::LinAlg::SparseOperator& jac)
+    const Core::LinAlg::Vector<double>& x)
 {
   check_init_setup();
 
-  // initialize stiffness matrix to zero
-  jac.zero();
   // get structural model evaluator
   Solid::ModelEvaluator::Structure& str_model =
       dynamic_cast<Solid::ModelEvaluator::Structure&>(evaluator(Inpar::Solid::model_structure));
