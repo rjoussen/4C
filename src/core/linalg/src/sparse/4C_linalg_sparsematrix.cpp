@@ -1753,7 +1753,7 @@ bool Core::LinAlg::SparseMatrix::is_dbc_applied(const Core::LinAlg::Map& dbcmap,
         int* tIndices = nullptr;
 
         const int trafo_rlid = trafo->row_map().lid(row);
-        trafo->epetra_matrix()->ExtractMyRowView(trafo_rlid, tNumEntries, tValues, tIndices);
+        trafo->epetra_matrix().ExtractMyRowView(trafo_rlid, tNumEntries, tValues, tIndices);
 
         // get the global indices corresponding to the extracted local indices
         std::fill(gtIndices.begin(), gtIndices.end(), 0.0);

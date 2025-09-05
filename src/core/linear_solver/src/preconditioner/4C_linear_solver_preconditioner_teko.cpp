@@ -20,6 +20,7 @@
 #include <Teko_InverseLibrary.hpp>
 #include <Teko_LU2x2PreconditionerFactory.hpp>
 #include <Teko_StratimikosFactory.hpp>
+#include <Teuchos_RCPDecl.hpp>
 #include <Teuchos_XMLParameterListHelpers.hpp>
 #include <Xpetra_MultiVectorFactory.hpp>
 
@@ -89,7 +90,7 @@ void Core::LinearSolver::TekoPreconditioner::setup(Epetra_Operator* matrix,
     {
       for (int col = 0; col < A->cols(); col++)
       {
-        auto A_crs = Teuchos::make_rcp<Epetra_CrsMatrix>(*A->matrix(row, col).epetra_matrix());
+        auto A_crs = Teuchos::make_rcp<Epetra_CrsMatrix>(A->matrix(row, col).epetra_matrix());
         Teko::toBlockedLinearOp(pmatrix_)->setBlock(row, col, Thyra::epetraLinearOp(A_crs));
       }
     }
@@ -231,8 +232,7 @@ void Core::LinearSolver::LU2x2SpaiStrategy::initialize_state(
     std::shared_ptr<Core::LinAlg::SparseMatrix> A_inverse =
         Core::LinAlg::matrix_sparse_inverse(A_sparse, sparsity_pattern_enriched);
     A_thresh = Core::LinAlg::threshold_matrix(*A_inverse, drop_tol_);
-    Teko::LinearOp H =
-        Thyra::epetraLinearOp(Teuchos::make_rcp<Epetra_CrsMatrix>(*A_thresh->epetra_matrix()));
+    Teko::LinearOp H = Thyra::epetraLinearOp(Teuchos::rcpFromRef(A_thresh->epetra_matrix()));
 
     // build Schur-complement
     Teko::LinearOp HBt;

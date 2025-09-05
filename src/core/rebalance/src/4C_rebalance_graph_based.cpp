@@ -70,7 +70,7 @@ std::shared_ptr<Core::LinAlg::Graph> Core::Rebalance::rebalance_graph(
   if (initialNodeWeights != nullptr)
     costs.setVertexWeights(Teuchos::rcpFromRef(initialNodeWeights->get_ref_of_epetra_vector()));
   if (initialEdgeWeights != nullptr)
-    costs.setGraphEdgeWeights(Teuchos::rcpFromRef(*initialEdgeWeights->epetra_matrix()));
+    costs.setGraphEdgeWeights(Teuchos::rcpFromRef(initialEdgeWeights->epetra_matrix()));
 
   Teuchos::RCP<Isorropia::Epetra::Partitioner> partitioner;
   if (initialNodeCoordinates)

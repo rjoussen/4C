@@ -10,6 +10,7 @@
 #include "4C_fem_discretization.hpp"
 #include "4C_utils_exceptions.hpp"
 
+#include <Epetra_CrsMatrix.h>
 #include <MueLu_AmalgamationFactory.hpp>
 #include <MueLu_CoalesceDropFactory.hpp>
 #include <MueLu_CoarseMapFactory.hpp>
@@ -72,8 +73,8 @@ Core::LinAlg::SparseMatrix Core::LinAlg::create_interpolation_matrix(const Spars
           Teuchos::rcp(new Epetra_MultiVector(nullspace.get_epetra_multi_vector()))));
   const int number_of_equations = params.get<int>("PDE equations");
 
-  Teuchos::RCP<Xpetra::CrsMatrix<SC, LO, GO, NO>> mueluA =
-      Teuchos::rcp(new EpetraCrsMatrix(Teuchos::rcpFromRef(*matrix.epetra_matrix())));
+  Teuchos::RCP<Xpetra::CrsMatrix<SC, LO, GO, NO>> mueluA = Teuchos::rcp(new EpetraCrsMatrix(
+      Teuchos::rcpFromRef(const_cast<Epetra_CrsMatrix&>(matrix.epetra_matrix()))));
   Teuchos::RCP<Xpetra::Matrix<SC, LO, GO, NO>> xpetra_matrix =
       Teuchos::rcp(new Xpetra::CrsMatrixWrap<SC, LO, GO, NO>(mueluA));
   xpetra_matrix->SetFixedBlockSize(number_of_equations);

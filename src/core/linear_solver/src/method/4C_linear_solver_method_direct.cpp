@@ -72,7 +72,7 @@ void Core::LinearSolver::DirectSolver::setup(std::shared_ptr<Core::LinAlg::Spars
 #else
   linear_problem_->SetRHS(&b_->get_epetra_multi_vector());
   linear_problem_->SetLHS(&x_->get_epetra_multi_vector());
-  linear_problem_->SetOperator(a_->epetra_matrix().get());
+  linear_problem_->SetOperator(&a_->epetra_matrix());
 
   if (reindexer_ and not(reset or refactor)) reindexer_->fwd();
 #endif
@@ -123,7 +123,7 @@ void Core::LinearSolver::DirectSolver::setup(std::shared_ptr<Core::LinAlg::Spars
 
 #if FOUR_C_TRILINOS_INTERNAL_VERSION_GE(2025, 3)
     solver_ = Amesos2::create<Epetra_CrsMatrix, Epetra_MultiVector>(solver_type,
-        Teuchos::rcpFromRef(*a_->epetra_matrix()),
+        Teuchos::rcpFromRef(a_->epetra_matrix()),
         Teuchos::rcpFromRef(x_->get_epetra_multi_vector()),
         Teuchos::rcpFromRef(b_->get_epetra_multi_vector()));
 

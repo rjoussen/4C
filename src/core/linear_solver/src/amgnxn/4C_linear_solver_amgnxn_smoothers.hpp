@@ -156,7 +156,7 @@ namespace Core::LinearSolver::AMGNxN
     Teuchos::RCP<Core::LinAlg::Solver> solver_;
     std::shared_ptr<Core::LinAlg::SparseMatrix> sparse_matrix_;
     Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> block_sparse_matrix_;
-    std::shared_ptr<Epetra_Operator> a_;
+
     mutable std::shared_ptr<Core::LinAlg::MultiVector<double>> x_;
     mutable std::shared_ptr<Core::LinAlg::MultiVector<double>> b_;
     bool is_set_up_{false};

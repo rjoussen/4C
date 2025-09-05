@@ -242,8 +242,8 @@ std::unique_ptr<Core::LinAlg::SparseMatrix> Core::LinAlg::matrix_multiply(
     transB = false;
   }
 
-  int err = EpetraExt::MatrixMatrix::Multiply(*A_trans->epetra_matrix(), transA,
-      *B_trans->epetra_matrix(), transB, *C->epetra_matrix(), complete);
+  int err = EpetraExt::MatrixMatrix::Multiply(A_trans->epetra_matrix(), transA,
+      B_trans->epetra_matrix(), transB, C->epetra_matrix(), complete);
   if (err) FOUR_C_THROW("EpetraExt::MatrixMatrix::MatrixMultiply returned err = {}", err);
 
   return C;
@@ -280,8 +280,8 @@ std::unique_ptr<Core::LinAlg::SparseMatrix> Core::LinAlg::matrix_multiply(const 
     transB = false;
   }
 
-  int err = EpetraExt::MatrixMatrix::Multiply(*A_trans->epetra_matrix(), transA,
-      *B_trans->epetra_matrix(), transB, *C->epetra_matrix(), complete);
+  int err = EpetraExt::MatrixMatrix::Multiply(A_trans->epetra_matrix(), transA,
+      B_trans->epetra_matrix(), transB, C->epetra_matrix(), complete);
   if (err) FOUR_C_THROW("EpetraExt::MatrixMatrix::MatrixMultiply returned err = {}", err);
 
   return C;
@@ -296,7 +296,9 @@ std::shared_ptr<Core::LinAlg::SparseMatrix> Core::LinAlg::matrix_transpose(const
   EpetraExt::RowMatrix_Transpose transposer;
   std::shared_ptr<Core::LinAlg::SparseMatrix> matrix = nullptr;
 
-  Epetra_CrsMatrix* a_prime = &(dynamic_cast<Epetra_CrsMatrix&>(transposer(*A.epetra_matrix())));
+  // Transposer does not modify the matrix but only provides a non-const interface
+  Epetra_CrsMatrix* a_prime = &(dynamic_cast<Epetra_CrsMatrix&>(
+      transposer(const_cast<Epetra_CrsMatrix&>(A.epetra_matrix()))));
   matrix = std::make_shared<SparseMatrix>(Core::Utils::shared_ptr_from_ref(*a_prime),
       Core::LinAlg::DataAccess::Copy, A.explicit_dirichlet(), A.save_graph());
 
@@ -316,7 +318,7 @@ std::shared_ptr<Core::LinAlg::SparseMatrix> Core::LinAlg::matrix_sparse_inverse(
   // gather missing rows from other procs to generate an overlapping map
   Core::LinAlg::Import rowImport =
       Core::LinAlg::Import(sparsity_pattern->col_map(), sparsity_pattern->row_map());
-  Epetra_CrsMatrix A_overlap = Epetra_CrsMatrix(*A.epetra_matrix(), rowImport.get_epetra_import());
+  Epetra_CrsMatrix A_overlap = Epetra_CrsMatrix(A.epetra_matrix(), rowImport.get_epetra_import());
 
   // loop over all rows of the inverse sparsity pattern (this can be done in parallel)
   for (int k = 0; k < sparsity_pattern->num_local_rows(); k++)

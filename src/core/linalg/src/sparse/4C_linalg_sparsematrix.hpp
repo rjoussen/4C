@@ -376,18 +376,18 @@ namespace Core::LinAlg
 
     \note This method is here for performance reasons.
    */
-    std::shared_ptr<Epetra_Operator> epetra_operator() override { return sysmat_; }
+    Epetra_Operator& epetra_operator() override { return *sysmat_; }
 
     /// return the internal Epetra matrix as Epetra_Operator
-    std::shared_ptr<Epetra_Operator> epetra_operator() const { return sysmat_; }
+    const Epetra_Operator& epetra_operator() const { return *sysmat_; }
 
     /// return the internal Epetra_CrsMatrix or Epetra_FECrsMatrix
     /// (down-cast from Epetra_CrsMatrix !) (you should not need this!)
-    std::shared_ptr<Epetra_CrsMatrix> epetra_matrix() { return sysmat_; }
+    Epetra_CrsMatrix& epetra_matrix() { return *sysmat_; }
 
     /// return the internal Epetra_CrsMatrix or Epetra_FECrsMatrix
     /// (down-cast from Epetra_CrsMatrix !) (you should not need this!)
-    std::shared_ptr<Epetra_CrsMatrix> epetra_matrix() const { return sysmat_; }
+    const Epetra_CrsMatrix& epetra_matrix() const { return *sysmat_; }
 
     /** \name Attribute set methods */
     //@{
@@ -608,13 +608,13 @@ namespace Core::LinAlg
     int import(const SparseMatrix& A, const Core::LinAlg::Import& importer,
         Epetra_CombineMode combine_mode)
     {
-      return sysmat_->Import(*A.epetra_matrix(), importer.get_epetra_import(), combine_mode);
+      return sysmat_->Import(A.epetra_matrix(), importer.get_epetra_import(), combine_mode);
     }
 
     int import(const SparseMatrix& A, const Core::LinAlg::Export& exporter,
         Epetra_CombineMode combine_mode)
     {
-      return sysmat_->Import(*A.epetra_matrix(), exporter.get_epetra_export(), combine_mode);
+      return sysmat_->Import(A.epetra_matrix(), exporter.get_epetra_export(), combine_mode);
     }
 
     //@}

@@ -39,10 +39,13 @@ void Core::LinearSolver::IFPACKPreconditioner::setup(Epetra_Operator* matrix,
             Core::Utils::shared_ptr_from_ref(*matrix));
 
     std::cout << "\n WARNING: IFPACK preconditioner is merging matrix, this is very expensive! \n";
-    A_crs = A->merge()->epetra_matrix();
+    pmatrix_ = std::make_shared<Epetra_CrsMatrix>(A->merge()->epetra_matrix());
+  }
+  else
+  {
+    pmatrix_ = std::make_shared<Epetra_CrsMatrix>(*A_crs);
   }
 
-  pmatrix_ = std::make_shared<Epetra_CrsMatrix>(*A_crs);
 
   std::string prectype;
   int overlap = 0;

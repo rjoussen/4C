@@ -185,21 +185,20 @@ void Core::LinearSolver::AMGNxN::MergeAndSolve::setup(BlockedMatrix matrix)
   // Set matrix
   block_sparse_matrix_ = matrix.get_block_sparse_matrix(Core::LinAlg::DataAccess::View);
   sparse_matrix_ = block_sparse_matrix_->merge();
-  a_ = std::dynamic_pointer_cast<Epetra_Operator>(sparse_matrix_->epetra_matrix());
-  auto crsA = std::dynamic_pointer_cast<Epetra_CrsMatrix>(a_);
-  FOUR_C_ASSERT_ALWAYS(crsA, "Houston, something went wrong in merging the matrix");
 
   // Set sol vector and rhs
   x_ = std::make_shared<Core::LinAlg::MultiVector<double>>(
-      a_->OperatorDomainMap(), 1);  // TODO this one might cause problems
-  b_ = std::make_shared<Core::LinAlg::MultiVector<double>>(a_->OperatorRangeMap(), 1);
+      sparse_matrix_->epetra_matrix().OperatorDomainMap(),
+      1);  // TODO this one might cause problems
+  b_ = std::make_shared<Core::LinAlg::MultiVector<double>>(
+      sparse_matrix_->epetra_matrix().OperatorRangeMap(), 1);
 
   // Create linear solver
   Teuchos::ParameterList solvparams;
   Core::Utils::add_enum_class_to_parameter_list<Core::LinearSolver::SolverType>(
       "SOLVER", Core::LinearSolver::SolverType::umfpack, solvparams);
   solver_ = Teuchos::make_rcp<Core::LinAlg::Solver>(solvparams,
-      Core::Communication::unpack_epetra_comm(a_->Comm()), nullptr,
+      Core::Communication::unpack_epetra_comm(sparse_matrix_->epetra_matrix().Comm()), nullptr,
       Core::IO::Verbositylevel::standard);
 
   // Set up solver
@@ -439,7 +438,7 @@ Core::LinearSolver::AMGNxN::MueluAMGWrapper::MueluAMGWrapper(
 void Core::LinearSolver::AMGNxN::MueluAMGWrapper::build_hierarchy()
 {
   // Prepare operator for MueLu
-  auto A_crs = Teuchos::rcpFromRef(*A_->epetra_matrix());
+  auto A_crs = Teuchos::rcpFromRef(A_->epetra_matrix());
   if (A_crs == Teuchos::null)
     FOUR_C_THROW("Make sure that the input matrix is a Epetra_CrsMatrix (or derived)");
   Teuchos::RCP<Xpetra::CrsMatrix<Scalar, LocalOrdinal, GlobalOrdinal, Node>> mueluA =
@@ -716,7 +715,7 @@ Core::LinearSolver::AMGNxN::IfpackWrapper::IfpackWrapper(
 
   // Create smoother
   Ifpack Factory;
-  arow_ = Teuchos::rcp_dynamic_cast<Epetra_RowMatrix>(Teuchos::rcpFromRef(*a_->epetra_matrix()));
+  arow_ = Teuchos::rcp_dynamic_cast<Epetra_RowMatrix>(Teuchos::rcpFromRef(a_->epetra_matrix()));
   if (arow_ == Teuchos::null)
     FOUR_C_THROW("Something wrong. Be sure that the given matrix is not a block matrix");
   prec_ = Factory.Create(type_, arow_.get(), overlap);
@@ -762,11 +761,12 @@ void Core::LinearSolver::AMGNxN::DirectSolverWrapper::setup(
 {
   // Set matrix
   matrix_ = Core::Utils::shared_ptr_from_ref(*matrix);
-  auto a = std::dynamic_pointer_cast<Epetra_CrsMatrix>(matrix->epetra_matrix());
 
   // Set sol vector and rhs
-  x_ = std::make_shared<Core::LinAlg::MultiVector<double>>(a->OperatorDomainMap(), 1);
-  b_ = std::make_shared<Core::LinAlg::MultiVector<double>>(a->OperatorRangeMap(), 1);
+  x_ = std::make_shared<Core::LinAlg::MultiVector<double>>(
+      matrix->epetra_matrix().OperatorDomainMap(), 1);
+  b_ = std::make_shared<Core::LinAlg::MultiVector<double>>(
+      matrix->epetra_matrix().OperatorRangeMap(), 1);
 
   // Create linear solver. Default solver: UMFPACK
   const auto solvertype = params->get<std::string>("solver", "umfpack");
@@ -785,7 +785,7 @@ void Core::LinearSolver::AMGNxN::DirectSolverWrapper::setup(
     FOUR_C_THROW("Solver type not supported as direct solver in AMGNXN framework");
 
   solver_ = std::make_shared<Core::LinAlg::Solver>(*params,
-      Core::Communication::unpack_epetra_comm(a->Comm()), nullptr,
+      Core::Communication::unpack_epetra_comm(matrix->epetra_matrix().Comm()), nullptr,
       Core::IO::Verbositylevel::standard);
 
   // Set up solver
