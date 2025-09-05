@@ -138,12 +138,8 @@ void ALE::Ale::set_initial_displacement(const ALE::InitialDisp init, const int s
     {
       const Core::LinAlg::Map* dofrowmap = discret_->dof_row_map();
 
-      // loop all nodes on the processor
-      for (int lnodeid = 0; lnodeid < discret_->num_my_row_nodes(); lnodeid++)
+      for (auto lnode : discret_->my_row_node_range())
       {
-        // get the processor local node
-        Core::Nodes::Node* lnode = discret_->l_row_node(lnodeid);
-
         // the set of degrees of freedom associated with the node
         std::vector<int> nodedofset = discret_->dof(0, lnode);
 
@@ -156,7 +152,7 @@ void ALE::Ale::set_initial_displacement(const ALE::InitialDisp init, const int s
           // evaluate component d of function
           double initialval = Global::Problem::instance()
                                   ->function_by_id<Core::Utils::FunctionOfSpaceTime>(startfuncno)
-                                  .evaluate(lnode->x().data(), 0, d);
+                                  .evaluate(lnode.x().data(), 0, d);
 
           int err = dispn_->replace_local_value(doflid, initialval);
           if (err != 0) FOUR_C_THROW("dof not on proc");

@@ -275,12 +275,8 @@ void Lubrication::TimIntImpl::set_height_field_pure_lub(const int nds)
 
   int err(0);
   const int heightfuncno = params_->get<int>("HFUNCNO");
-  // loop all nodes on the processor
-  for (int lnodeid = 0; lnodeid < discret_->num_my_row_nodes(); lnodeid++)
+  for (auto lnode : discret_->my_row_node_range())
   {
-    // get the processor local node
-    Core::Nodes::Node* lnode = discret_->l_row_node(lnodeid);
-
     // get dofs associated with current node
     std::vector<int> nodedofs = discret_->dof(nds, lnode);
 
@@ -288,7 +284,7 @@ void Lubrication::TimIntImpl::set_height_field_pure_lub(const int nds)
     {
       double heightfuncvalue = Global::Problem::instance()
                                    ->function_by_id<Core::Utils::FunctionOfSpaceTime>(heightfuncno)
-                                   .evaluate(lnode->x().data(), time_, index);
+                                   .evaluate(lnode.x().data(), time_, index);
 
       // get global and local dof IDs
       const int gid = nodedofs[index];
@@ -319,12 +315,8 @@ void Lubrication::TimIntImpl::set_average_velocity_field_pure_lub(const int nds)
 
   int err(0);
   const int velfuncno = params_->get<int>("VELFUNCNO");
-  // loop all nodes on the processor
-  for (int lnodeid = 0; lnodeid < discret_->num_my_row_nodes(); lnodeid++)
+  for (auto lnode : discret_->my_row_node_range())
   {
-    // get the processor local node
-    Core::Nodes::Node* lnode = discret_->l_row_node(lnodeid);
-
     // get dofs associated with current node
     std::vector<int> nodedofs = discret_->dof(nds, lnode);
 
@@ -332,7 +324,7 @@ void Lubrication::TimIntImpl::set_average_velocity_field_pure_lub(const int nds)
     {
       double velfuncvalue = Global::Problem::instance()
                                 ->function_by_id<Core::Utils::FunctionOfSpaceTime>(velfuncno)
-                                .evaluate(lnode->x().data(), time_, index);
+                                .evaluate(lnode.x().data(), time_, index);
 
       // get global and local dof IDs
       const int gid = nodedofs[index];

@@ -66,12 +66,9 @@ void ScaTra::ScaTraTimIntPoroMulti::set_l2_flux_of_multi_fluid(
     std::stringstream statename;
     statename << stateprefix << curphase;
 
-    // loop all nodes on the processor
-    for (int lnodeid = 0; lnodeid < discret_->num_my_row_nodes(); lnodeid++)
+    int count = 0;
+    for (auto lnode : discret_->my_row_node_range())
     {
-      // get the processor local node
-      Core::Nodes::Node* lnode = discret_->l_row_node(lnodeid);
-
       // get dofs associated with current node
       std::vector<int> nodedofs = discret_->dof(nds_vel(), lnode);
 
@@ -87,11 +84,12 @@ void ScaTra::ScaTraTimIntPoroMulti::set_l2_flux_of_multi_fluid(
         const int lid = phaseflux->get_map().lid(gid);
         if (lid < 0) FOUR_C_THROW("Local ID not found in map for given global ID!");
 
-        const double value = ((*multiflux)(curphase * nsd_ + index))[lnodeid];
+        const double value = ((*multiflux)(curphase * nsd_ + index))[count];
 
         int err = phaseflux->replace_local_value(lid, value);
         if (err != 0) FOUR_C_THROW("error while inserting a value into convel");
       }
+      ++count;
     }
 
     // provide scatra discretization with convective velocity

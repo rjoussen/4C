@@ -220,11 +220,8 @@ void ScaTra::LevelSetAlgorithm::evaluate_error_compared_to_analytical_sol()
         int startfuncno = params_->get<int>("INITFUNCNO");
         if (startfuncno < 1) FOUR_C_THROW("No initial field defined!");
 
-        // loop all nodes on the processor
-        for (int lnodeid = 0; lnodeid < discret_->num_my_row_nodes(); lnodeid++)
+        for (auto lnode : discret_->my_row_node_range())
         {
-          // get the processor local node
-          Core::Nodes::Node* lnode = discret_->l_row_node(lnodeid);
           // the set of degrees of freedom associated with the node
           std::vector<int> nodedofset = discret_->dof(0, lnode);
 
@@ -236,7 +233,7 @@ void ScaTra::LevelSetAlgorithm::evaluate_error_compared_to_analytical_sol()
             // evaluate component k of spatial function
             double initialval =
                 problem_->function_by_id<Core::Utils::FunctionOfSpaceTime>(startfuncno)
-                    .evaluate(lnode->x().data(), time_, k);
+                    .evaluate(lnode.x().data(), time_, k);
             int err = phiref.replace_local_value(doflid, initialval);
             if (err != 0) FOUR_C_THROW("dof not on proc");
           }
