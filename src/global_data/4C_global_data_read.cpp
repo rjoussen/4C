@@ -43,23 +43,25 @@
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
 #include <string>
+#include <vector>
 
 FOUR_C_NAMESPACE_OPEN
 
 namespace
 {
   /**
-   * Gather all known sections and their specs.
+   * Gather all known section specs.
    */
-  void gather_all_section_specs(std::map<std::string, Core::IO::InputSpec>& section_specs)
+  std::vector<Core::IO::InputSpec> gather_all_section_specs()
   {
     using namespace Core::IO::InputSpecBuilders;
-
-    section_specs["CONTACT CONSTITUTIVE LAWS"] =
-        CONTACT::CONSTITUTIVELAW::valid_contact_constitutive_laws();
-    section_specs["CLONING MATERIAL MAP"] = Core::FE::valid_cloning_material_map();
-    section_specs["RESULT DESCRIPTION"] =
-        global_legacy_module_callbacks().valid_result_description_lines();
+    std::vector<Core::IO::InputSpec> section_specs;
+    section_specs.push_back(list("CONTACT CONSTITUTIVE LAWS",
+        {CONTACT::CONSTITUTIVELAW::valid_contact_constitutive_laws()}, {.required = false}));
+    section_specs.push_back(list(
+        "CLONING MATERIAL MAP", {Core::FE::valid_cloning_material_map()}, {.required = false}));
+    section_specs.push_back(list("RESULT DESCRIPTION",
+        {global_legacy_module_callbacks().valid_result_description_lines()}, {.required = false}));
 
     {
       std::vector<Core::IO::InputSpec> possible_materials;
@@ -78,7 +80,7 @@ namespace
           one_of(possible_materials,
               store_index_as<Core::Materials::MaterialType>("_material_type", material_type)),
       });
-      section_specs["MATERIALS"] = all_materials;
+      section_specs.push_back(list("MATERIALS", {all_materials}, {.required = false}));
     }
 
     {
@@ -91,7 +93,7 @@ namespace
       // capabilities of InputSpec. The special FUNCT<n> section is not supposed to be entered by
       // users but we use this information inside the input file. Not pretty, but it works.
       // TODO remove this hack by restructuring the input of functions.
-      section_specs["FUNCT<n>"] = valid_functions;
+      section_specs.push_back(list("FUNCT<n>", valid_functions, {.required = false}));
     }
 
     {
@@ -107,25 +109,23 @@ namespace
                                    .default_value = Core::Conditions::EntityType::legacy_id}),
             all_of(cond.specs()),
         });
-        section_specs.emplace(cond.section_name(), std::move(condition_spec));
+        // section_specs.emplace(cond.section_name(), std::move(condition_spec));
+        section_specs.push_back(list(cond.section_name(), condition_spec, {.required = false}));
       }
     }
 
-    // Up to here all the sections allow for multiple entries. Thus, wrap up the specs into
-    // lists.
-    for (auto& [section_name, spec] : section_specs)
     {
-      spec = Core::IO::InputSpecBuilders::list(section_name, spec, {.required = false});
+      auto global_specs = Global::valid_parameters();
+      section_specs.insert(section_specs.end(), std::make_move_iterator(global_specs.begin()),
+          std::make_move_iterator(global_specs.end()));
     }
-
-    section_specs.merge(Global::valid_parameters());
+    return section_specs;
   }
 }  // namespace
 
 Core::IO::InputFile Global::set_up_input_file(MPI_Comm comm)
 {
-  std::map<std::string, Core::IO::InputSpec> valid_sections;
-  gather_all_section_specs(valid_sections);
+  std::vector<Core::IO::InputSpec> valid_sections = gather_all_section_specs();
 
   std::vector<std::string> legacy_section_names{
       // elements
@@ -148,7 +148,7 @@ Core::IO::InputFile Global::set_up_input_file(MPI_Comm comm)
       "DVOL-NODE TOPOLOGY",
   };
 
-  return Core::IO::InputFile{std::move(valid_sections), std::move(legacy_section_names), comm};
+  return Core::IO::InputFile{valid_sections, std::move(legacy_section_names), comm};
 }
 
 void Global::emit_general_metadata(Core::IO::YamlNodeRef node)
@@ -1291,9 +1291,9 @@ void Global::read_parameter(Global::Problem& problem, Core::IO::InputFile& input
 
   auto parameter_section_specs = global_legacy_module_callbacks().parameters();
 
-  for (const auto& [section_name, _] : parameter_section_specs)
+  for (const auto& sec : parameter_section_specs)
   {
-    Core::IO::read_parameters_in_section(input, section_name, *list);
+    Core::IO::read_parameters_in_section(input, sec.name(), *list);
   }
 
   // check for invalid parameters

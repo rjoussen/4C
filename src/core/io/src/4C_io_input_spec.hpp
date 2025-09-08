@@ -12,6 +12,7 @@
 
 #include <memory>
 #include <optional>
+#include <string>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -93,6 +94,12 @@ namespace Core::IO
      * code.
      */
     [[nodiscard]] const Internal::InputSpecImpl& impl() const;
+
+    /**
+     * Get the name of this InputSpec. The name is used as a key in the input file.
+     * The name may be an empty string in case the spec does not have a name.
+     */
+    [[nodiscard]] const std::string& name() const;
 
    private:
     std::shared_ptr<Internal::InputSpecImpl> pimpl_;

@@ -322,11 +322,24 @@ namespace Core::IO
   }
 
 
-  InputFile::InputFile(std::map<std::string, InputSpec> valid_sections,
+  InputFile::InputFile(const std::vector<InputSpec>& valid_sections,
       std::vector<std::string> legacy_section_names, MPI_Comm comm)
       : pimpl_(std::make_unique<Internal::InputFileImpl>(comm))
   {
-    pimpl_->valid_sections_ = std::move(valid_sections);
+    std::map<std::string, InputSpec> section_map;
+    for (auto&& spec : valid_sections)
+    {
+      const auto name = spec.name();
+      FOUR_C_ASSERT_ALWAYS(!name.empty(),
+          "You are trying to add an unnamed InputSpec for a top-level section. "
+          "You can only add a named spec, not an all_of or one_of spec.");
+      FOUR_C_ASSERT_ALWAYS(section_map.find(name) == section_map.end(),
+          "You are trying to add multiple InputSpecs with the same name '{}' on the top level. "
+          "Each InputSpec must have a unique name.",
+          name);
+      section_map.emplace(name, std::move(spec));
+    }
+    pimpl_->valid_sections_ = std::move(section_map);
     pimpl_->legacy_section_names_ = std::move(legacy_section_names);
 
     using namespace Core::IO::InputSpecBuilders;
@@ -514,11 +527,13 @@ namespace Core::IO
           opt_version.has_value())
       {
         if (*opt_version != VersionControl::input_version)
+        {
           std::cout << std::format(
               "Warning: version mismatch: "
               "The input file requires input version {}, but the input version of 4C is {}. "
               "Your input file may be incompatible with 4C.\n",
               *opt_version, VersionControl::input_version);
+        }
         else
         {
           std::cout << "Compatible input file version " << *opt_version << " detected.\n";

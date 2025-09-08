@@ -120,7 +120,7 @@ namespace Core::IO
      * Since reading and distributing input is a collective operation, an MPI communicator @p comm
      * is required.
      */
-    InputFile(std::map<std::string, InputSpec> valid_sections,
+    InputFile(const std::vector<InputSpec>& valid_sections,
         std::vector<std::string> legacy_section_names, MPI_Comm comm);
 
 

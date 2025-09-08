@@ -436,7 +436,7 @@ namespace Inpar
   namespace LowMach
   {
     /// set the low mach number parameters
-    void set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list);
+    Core::IO::InputSpec set_valid_parameters();
   }  // namespace LowMach
 
 }  // namespace Inpar

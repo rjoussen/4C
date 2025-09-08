@@ -60,18 +60,18 @@ namespace RTD
     headerdocumentationfile << "=================\n\n";
     auto parameters = Global::valid_parameters();
 
-    for (const auto& [section_name, spec] : parameters)
+    for (const auto& spec : parameters)
     {
-      std::string linktarget = section_name;
+      std::string linktarget = spec.name();
       std::ranges::replace(linktarget, '/', '_');
       linktarget = Teuchos::StrUtils::removeAllSpaces(Core::Utils::to_lower(linktarget));
 
       // write link:
       write_linktarget(headerdocumentationfile, "SEC" + linktarget);
       // write section header
-      write_header(headerdocumentationfile, 1, section_name);
+      write_header(headerdocumentationfile, 1, spec.name());
 
-      headerdocumentationfile << section_name << "\n";
+      headerdocumentationfile << spec.name() << "\n";
       std::stringstream ss;
       spec.print_as_dat(ss);
 
