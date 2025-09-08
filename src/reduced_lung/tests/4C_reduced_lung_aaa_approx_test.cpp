@@ -17,7 +17,6 @@ namespace
   // Helper: compute max abs error between two vectors
   double max_error(const std::vector<double>& a, const std::vector<double>& b)
   {
-    assert(a.size() == b.size());
     double err = 0.0;
     for (size_t i = 0; i < a.size(); ++i) err = std::max(err, abs(a[i] - b[i]));
     return err;
@@ -31,7 +30,7 @@ namespace
     for (int i = 0; i < M; ++i) Z[i] = 6.0 * i / (M - 1);
 
     // True function
-    auto F = [](const std::vector<double>& x)
+    auto F = [](const std::span<const double> x)
     {
       std::vector<double> y(x.size());
       for (size_t i = 0; i < x.size(); ++i) y[i] = exp(x[i]);
@@ -57,7 +56,7 @@ namespace
     std::vector<double> Z(M);
     for (int i = 0; i < M; ++i) Z[i] = 4 * std::numbers::pi / M * i;
 
-    auto F = [](const std::vector<double>& x)
+    auto F = [](const std::span<const double> x)
     {
       std::vector<double> y(x.size());
       for (size_t i = 0; i < x.size(); ++i) y[i] = sin(x[i]);
@@ -70,7 +69,7 @@ namespace
     const auto val = result(result.z);
     for (size_t k = 0; k < result.z.size(); ++k)
     {
-      EXPECT_NEAR(abs(val[k] - result.f[k]), 0.0, 1e-14)
+      EXPECT_DOUBLE_EQ(abs(val[k] - result.f[k]), 0.0)
           << "Rational approximant should interpolate at support points.";
     }
   }
@@ -81,7 +80,7 @@ namespace
     std::vector<double> Z(M);
     for (int i = 0; i < M; ++i) Z[i] = i;
 
-    auto F = [](const std::vector<double>& x)
+    auto F = [](const std::span<const double> x)
     {
       std::vector<double> y(x.size(), 42.0);
       return y;
@@ -93,8 +92,7 @@ namespace
     const auto r_test = result(z_test);
 
     for (const auto val : r_test)
-      EXPECT_NEAR(abs(val - 42.0), 0.0, 1e-14)
-          << "AAA should reproduce a constant function exactly.";
+      EXPECT_DOUBLE_EQ(abs(val - 42.0), 0.0) << "AAA should reproduce a constant function exactly.";
   }
 
   TEST(AAATests, ErrorDecreasesWithMmax)
@@ -104,7 +102,7 @@ namespace
     std::vector<double> Z(M);
     for (int i = 0; i < M; ++i) Z[i] = 10.0 * i / (M - 1);
 
-    auto F = [](const std::vector<double>& x)
+    auto F = [](const std::span<const double> x)
     {
       std::vector<double> y(x.size());
       for (size_t i = 0; i < x.size(); ++i) y[i] = 1.0 / (1.0 + std::sqrt(x[i]));
@@ -175,8 +173,10 @@ namespace
     const auto poles = R.compute_poles();
     ASSERT_EQ(poles.size(), 2u);
 
-    std::vector<std::complex<double>> got = poles, exp = {std::complex<double>(r1, 0),
-                                                       std::complex<double>(r2, 0)};
+    std::vector<std::complex<double>> got = poles;
+    std::vector<std::complex<double>> exp = {
+        std::complex<double>(r1, 0), std::complex<double>(r2, 0)};
+
     sort_by_real(got);
     sort_by_real(exp);
     for (int i = 0; i < 2; ++i)
@@ -331,31 +331,33 @@ namespace
 
   TEST(AAA_ResultProcessing, TwoSupport_PoleAndResidue_MatchNumericalLimit)
   {
-    const std::vector<double> z = {0.0, 4.0};
-    const std::vector<double> f = {3.0, -1.0};
-    const std::vector<double> w = {2.0, 5.0};
+    ReducedLung::AAAResult R;
+    R.z = {0.0, 4.0};
+    R.f = {3.0, -1.0};
+    R.w = {2.0, 5.0};
 
-    const double w0 = w[0], w1 = w[1], z0 = z[0], z1 = z[1];
+    const double w0 = R.w[0], w1 = R.w[1], z0 = R.z[0], z1 = R.z[1];
     const double lambda = (w0 * z1 + w1 * z0) / (w0 + w1);  // unique finite pole
     const std::vector<std::complex<double>> poles = {std::complex<double>(lambda, 0.0)};
 
-    const auto R = ReducedLung::compute_residues(poles, z, f, w);
+    const auto residues = ReducedLung::compute_residues(poles, R);
 
-    const std::complex<double> Rnum = numeric_residue(poles[0], z, f, w);
+    const std::complex<double> Rnum = numeric_residue(poles[0], R.z, R.f, R.w);
 
-    ASSERT_EQ(R.size(), 1u);
-    EXPECT_NEAR(R[0].real(), Rnum.real(), 1e-8);
-    EXPECT_NEAR(R[0].imag(), Rnum.imag(), 1e-8);
+    ASSERT_EQ(residues.size(), 1u);
+    EXPECT_NEAR(residues[0].real(), Rnum.real(), 1e-8);
+    EXPECT_NEAR(residues[0].imag(), Rnum.imag(), 1e-8);
   }
 
   TEST(AAA_ResultProcessing, ThreeSupport_TwoPoles_ResiduesMatchNumericalLimit)
   {
-    const std::vector<double> z = {-1.0, 2.0, 5.0};
-    const std::vector<double> f = {4.0, -1.0, 2.0};
-    const std::vector<double> w = {1.0, 2.0, 3.0};
+    ReducedLung::AAAResult R;
+    R.z = {-1.0, 2.0, 5.0};
+    R.f = {4.0, -1.0, 2.0};
+    R.w = {1.0, 2.0, 3.0};
 
-    const double z0 = z[0], z1 = z[1], z2 = z[2];
-    const double w0 = w[0], w1 = w[1], w2 = w[2];
+    const double z0 = R.z[0], z1 = R.z[1], z2 = R.z[2];
+    const double w0 = R.w[0], w1 = R.w[1], w2 = R.w[2];
 
     const double A = (w0 + w1 + w2);
     const double B = -(w0 * (z1 + z2) + w1 * (z0 + z2) + w2 * (z0 + z1));
@@ -368,26 +370,27 @@ namespace
     const std::vector<std::complex<double>> poles = {
         std::complex<double>(r1, 0.0), std::complex<double>(r2, 0.0)};
 
-    const auto R = ReducedLung::compute_residues(poles, z, f, w);
-    ASSERT_EQ(R.size(), 2u);
+    const auto residues = ReducedLung::compute_residues(poles, R);
+    ASSERT_EQ(residues.size(), 2u);
 
-    const std::complex<double> Rnum1 = numeric_residue(poles[0], z, f, w);
-    const std::complex<double> Rnum2 = numeric_residue(poles[1], z, f, w);
-    EXPECT_NEAR(R[0].real(), Rnum1.real(), 1e-8);
-    EXPECT_NEAR(R[0].imag(), Rnum1.imag(), 1e-8);
-    EXPECT_NEAR(R[1].real(), Rnum2.real(), 1e-8);
-    EXPECT_NEAR(R[1].imag(), Rnum2.imag(), 1e-8);
+    const std::complex<double> Rnum1 = numeric_residue(poles[0], R.z, R.f, R.w);
+    const std::complex<double> Rnum2 = numeric_residue(poles[1], R.z, R.f, R.w);
+    EXPECT_NEAR(residues[0].real(), Rnum1.real(), 1e-8);
+    EXPECT_NEAR(residues[0].imag(), Rnum1.imag(), 1e-8);
+    EXPECT_NEAR(residues[1].real(), Rnum2.real(), 1e-8);
+    EXPECT_NEAR(residues[1].imag(), Rnum2.imag(), 1e-8);
   }
 
   TEST(AAA_ResultProcessing, ScalingFScalesResidues)
   {
-    const std::vector<double> z = {0.0, 3.0, 6.0};
-    const std::vector<double> f = {2.0, -1.0, 4.0};
-    const std::vector<double> w = {1.0, 2.0, 3.0};
+    ReducedLung::AAAResult R;
+    R.z = {0.0, 3.0, 6.0};
+    R.f = {2.0, -1.0, 4.0};
+    R.w = {1.0, 2.0, 3.0};
 
     // Poles (roots of D): compute via quadratic as above
-    const double z0 = z[0], z1 = z[1], z2 = z[2];
-    const double w0 = w[0], w1 = w[1], w2 = w[2];
+    const double z0 = R.z[0], z1 = R.z[1], z2 = R.z[2];
+    const double w0 = R.w[0], w1 = R.w[1], w2 = R.w[2];
     const double A = (w0 + w1 + w2);
     const double B = -(w0 * (z1 + z2) + w1 * (z0 + z2) + w2 * (z0 + z1));
     const double Cc = (w0 * z1 * z2 + w1 * z0 * z2 + w2 * z0 * z1);
@@ -397,31 +400,31 @@ namespace
         std::complex<double>((-B + std::sqrt(disc)) / (2 * A), 0.0),
         std::complex<double>((-B - std::sqrt(disc)) / (2 * A), 0.0)};
 
-    const auto R1 = ReducedLung::compute_residues(poles, z, f, w);
+    const auto residues1 = ReducedLung::compute_residues(poles, R);
 
     constexpr double alpha = 7.5;
-    std::vector<double> f2 = f;
-    for (auto& v : f2) v *= alpha;
+    for (auto& v : R.f) v *= alpha;
 
-    const auto R2 = ReducedLung::compute_residues(poles, z, f2, w);
+    const auto residues2 = ReducedLung::compute_residues(poles, R);
 
-    ASSERT_EQ(R1.size(), R2.size());
-    for (std::size_t k = 0; k < R1.size(); ++k)
+    ASSERT_EQ(residues1.size(), residues2.size());
+    for (std::size_t k = 0; k < residues1.size(); ++k)
     {
-      EXPECT_NEAR(R2[k].real(), alpha * R1[k].real(), 1e-12);
-      EXPECT_NEAR(R2[k].imag(), alpha * R1[k].imag(), 1e-12);
+      EXPECT_NEAR(residues2[k].real(), alpha * residues1[k].real(), 1e-12);
+      EXPECT_NEAR(residues2[k].imag(), alpha * residues1[k].imag(), 1e-12);
     }
   }
 
   TEST(AAA_ResultProcessing, PermuteSupport_Invariance)
   {
-    const std::vector<double> z = {-2.0, 1.0, 4.0};
-    const std::vector<double> f = {3.0, 2.0, -1.0};
-    const std::vector<double> w = {2.0, 5.0, 1.0};
+    ReducedLung::AAAResult R;
+    R.z = {-2.0, 1.0, 4.0};
+    R.f = {3.0, 2.0, -1.0};
+    R.w = {2.0, 5.0, 1.0};
 
     // Poles from D: compute once
-    const double z0 = z[0], z1 = z[1], z2 = z[2];
-    const double w0 = w[0], w1 = w[1], w2 = w[2];
+    const double z0 = R.z[0], z1 = R.z[1], z2 = R.z[2];
+    const double w0 = R.w[0], w1 = R.w[1], w2 = R.w[2];
     const double A = (w0 + w1 + w2);
     const double B = -(w0 * (z1 + z2) + w1 * (z0 + z2) + w2 * (z0 + z1));
     const double Cc = (w0 * z1 * z2 + w1 * z0 * z2 + w2 * z0 * z1);
@@ -431,25 +434,26 @@ namespace
         std::complex<double>((-B + std::sqrt(disc)) / (2 * A), 0.0),
         std::complex<double>((-B - std::sqrt(disc)) / (2 * A), 0.0)};
 
-    const auto R1 = ReducedLung::compute_residues(poles, z, f, w);
+    const auto residues1 = ReducedLung::compute_residues(poles, R);
 
     // Permute (z,f,w) consistently
     const std::vector<int> perm = {2, 0, 1};
     std::vector<double> zP(3), fP(3), wP(3);
     for (int i = 0; i < 3; ++i)
     {
-      zP[i] = z[perm[i]];
-      fP[i] = f[perm[i]];
-      wP[i] = w[perm[i]];
+      zP[i] = R.z[perm[i]];
+      fP[i] = R.f[perm[i]];
+      wP[i] = R.w[perm[i]];
     }
+    ReducedLung::AAAResult RP{.z = zP, .f = fP, .w = wP, .errvec = {}};
 
-    const auto R2 = ReducedLung::compute_residues(poles, zP, fP, wP);
+    const auto residues2 = ReducedLung::compute_residues(poles, RP);
 
-    ASSERT_EQ(R1.size(), R2.size());
-    for (std::size_t k = 0; k < R1.size(); ++k)
+    ASSERT_EQ(residues1.size(), residues2.size());
+    for (std::size_t k = 0; k < residues1.size(); ++k)
     {
-      EXPECT_NEAR(R1[k].real(), R2[k].real(), 1e-12);
-      EXPECT_NEAR(R1[k].imag(), R2[k].imag(), 1e-12);
+      EXPECT_NEAR(residues1[k].real(), residues2[k].real(), 1e-12);
+      EXPECT_NEAR(residues1[k].imag(), residues2[k].imag(), 1e-12);
     }
   }
 

@@ -13,6 +13,7 @@
 #include "4C_linalg_serialdensematrix.hpp"
 
 #include <functional>
+#include <span>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -20,9 +21,6 @@ namespace ReducedLung
 {
   /**
    * @brief Options for the AAA (Adaptive Antoulas-Anderson) rational approximation.
-   *
-   * Controls the stopping tolerance and the maximum number of support points
-   * used by the greedy AAA iteration.
    */
   struct AAAOptions
   {
@@ -35,10 +33,6 @@ namespace ReducedLung
 
   /**
    * @brief Result of an AAA approximation in barycentric form.
-   *
-   * Holds the support points, function values, and barycentric weights that
-   * define the rational approximant, plus a per-iteration error history.
-   * Utility methods allow evaluation, pole/zero extraction, and gain.
    *
    * Reference: Nakatsukasa, Sete, Trefethen (SIAM SISC 2018).
    */
@@ -60,7 +54,7 @@ namespace ReducedLung
      * @brief Evaluate the rational approximant at given points.
      * Exact support-point queries return the stored f_j.
      */
-    std::vector<double> operator()(const std::vector<double>& zz) const;
+    std::vector<double> operator()(const std::span<const double> zz) const;
 
     /**
      * @brief Compute the finite poles (roots of the denominator).
@@ -88,21 +82,18 @@ namespace ReducedLung
    * data and moderate degree, double precision is typically sufficient.
    *
    * @param poles   Complex poles at which residues are requested.
-   * @param z       Support points (real).
-   * @param f       Function values at support points (real).
-   * @param w       Barycentric weights (real).
+   * @param aaa_result  result from an AAA approximation with support points z, function values at
+   * support points f, and barycentric weights w.
    * @param tiny_abs Absolute fallback threshold for declaring the denominator
    *                 derivative effectively zero (0 = derive a relative threshold).
    * @param eps_rel  Relative proximity threshold to treat a pole as colliding
    *                 with a support point.
    * @return Residues in the same order as @p poles.
-   *
    */
   std::vector<std::complex<double>> compute_residues(const std::vector<std::complex<double>>& poles,
-      const std::vector<double>& z, const std::vector<double>& f, const std::vector<double>& w,
-      const double tiny_abs = 0.0, const double eps_rel = 1e-14);
+      const AAAResult& aaa_result, const double tiny_abs = 0.0, const double eps_rel = 1e-14);
 
-  using EvaluationFunction = std::function<std::vector<double>(const std::vector<double>& x)>;
+  using EvaluationFunction = std::function<std::vector<double>(std::span<const double> x)>;
 
   /**
    * @brief Adaptive Antoulas-Anderson (AAA) rational approximation on real samples.

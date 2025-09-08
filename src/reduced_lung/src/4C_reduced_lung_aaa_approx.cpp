@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 namespace ReducedLung
 {
 
-  std::vector<double> AAAResult::operator()(const std::vector<double>& zz) const
+  std::vector<double> AAAResult::operator()(const std::span<const double> zz) const
   {
     const int m = z.size();
     std::vector<double> r(zz.size());
@@ -89,6 +89,8 @@ namespace ReducedLung
 
   double AAAResult::compute_gain() const
   {
+    FOUR_C_ASSERT(f.size() == w.size(),
+        "Size mismatch in AAA results: different number of weights and function values!");
     double num = 0.0;
     double den = 0.0;
     for (size_t i = 0; i < w.size(); ++i)
@@ -100,10 +102,9 @@ namespace ReducedLung
   }
 
   std::vector<std::complex<double>> compute_residues(const std::vector<std::complex<double>>& poles,
-      const std::vector<double>& z, const std::vector<double>& f, const std::vector<double>& w,
-      const double tiny_abs, const double eps_rel)
+      const AAAResult& aaa_result, const double tiny_abs, const double eps_rel)
   {
-    if (z.size() != f.size() || z.size() != w.size())
+    if (aaa_result.z.size() != aaa_result.f.size() || aaa_result.z.size() != aaa_result.w.size())
       FOUR_C_THROW("In compute_barycentric_residues: z,f,w size mismatch.");
 
     std::vector<std::complex<double>> R(poles.size());
@@ -127,11 +128,11 @@ namespace ReducedLung
       std::complex<double> sD2(0.0, 0.0), cD2(0.0, 0.0);  // sum w_j / (pk - z_j)^2
       double scaleD2 = 0.0;  // sum |w_j| / |pk - z_j|^2 (for relative tiny)
 
-      for (std::size_t j = 0; j < z.size(); ++j)
+      for (std::size_t j = 0; j < aaa_result.z.size(); ++j)
       {
-        if (w[j] == 0.0) continue;
+        if (aaa_result.w[j] == 0.0) continue;
 
-        const std::complex<double> zj(z[j], 0.0);
+        const std::complex<double> zj(aaa_result.z[j], 0.0);
         const std::complex<double> diff = pk - zj;
         const double diff_abs = std::abs(diff);
 
@@ -146,10 +147,10 @@ namespace ReducedLung
         const std::complex<double> inv = 1.0 / diff;
         const std::complex<double> inv2 = inv * inv;
 
-        kahan_add((w[j] * f[j]) * inv, sN, cN);
-        kahan_add(w[j] * inv2, sD2, cD2);
+        kahan_add((aaa_result.w[j] * aaa_result.f[j]) * inv, sN, cN);
+        kahan_add(aaa_result.w[j] * inv2, sD2, cD2);
 
-        scaleD2 += std::abs(w[j]) / (diff_abs * diff_abs);
+        scaleD2 += std::abs(aaa_result.w[j]) / (diff_abs * diff_abs);
       }
 
       // Form threshold
@@ -165,11 +166,8 @@ namespace ReducedLung
         FOUR_C_THROW(
             "In compute_barycentric_residues: D'(pk) ~ 0 (multiple pole / near-collision).");
       }
-      else
-      {
-        // Residue = N(pk) / d/dz D(pk); d/dz D(pk) = -sum w_j / (pk - z_j)^2 = -sD2
-        R[k] = -sN / sD2;
-      }
+      // Residue = N(pk) / d/dz D(pk); d/dz D(pk) = -sum w_j / (pk - z_j)^2 = -sD2
+      R[k] = -sN / sD2;
     }
 
     return R;
@@ -178,6 +176,9 @@ namespace ReducedLung
   AAAResult aaa(
       const std::vector<double>& Z, const EvaluationFunction& target_function, AAAOptions opts)
   {
+    // Output storage
+    AAAResult result;
+
     int M = Z.size();
 
     // Evaluate target function at support points
@@ -187,8 +188,6 @@ namespace ReducedLung
     std::vector<int> J(M);
     std::iota(J.begin(), J.end(), 0);
 
-    // Output vectors of barycentric approximation
-    std::vector<double> z, f, w, errvec;
     // Cauchy matrix (iteratively filled)
     Core::LinAlg::SerialDenseMatrix C(M, opts.mmax, true);
 
@@ -216,8 +215,8 @@ namespace ReducedLung
       }
 
       // Add support point with maximum error
-      z.push_back(Z[j]);
-      f.push_back(F[j]);
+      result.z.push_back(Z[j]);
+      result.f.push_back(F[j]);
 
       // Remove j from J
       std::erase(J, j);
@@ -241,7 +240,8 @@ namespace ReducedLung
       for (int row = 0; row < n; ++row)
       {
         int i = J[row];
-        for (int col = 0; col <= m; ++col) A(row, col) = F[i] * C(i, col) - C(i, col) * f[col];
+        for (int col = 0; col <= m; ++col)
+          A(row, col) = F[i] * C(i, col) - C(i, col) * result.f[col];
       }
 
       // SVD of A
@@ -251,8 +251,8 @@ namespace ReducedLung
       Core::LinAlg::svd(A, U, S, Vt);
 
       // w = last column of V
-      w.resize(m + 1);
-      for (int k = 0; k <= m; ++k) w[k] = Vt(m, k);
+      result.w.resize(m + 1);
+      for (int k = 0; k <= m; ++k) result.w[k] = Vt(m, k);
 
       // Compute new approximation R(J) = N(J)/D(J)
       for (int idx : J)
@@ -260,8 +260,8 @@ namespace ReducedLung
         double num = 0.0, den = 0.0;
         for (int k = 0; k <= m; ++k)
         {
-          num += C(idx, k) * w[k] * f[k];
-          den += C(idx, k) * w[k];
+          num += C(idx, k) * result.w[k] * result.f[k];
+          den += C(idx, k) * result.w[k];
         }
         R[idx] = num / den;
       }
@@ -270,15 +270,9 @@ namespace ReducedLung
       // Calculate new approximation error
       double err = 0.0;
       for (int i = 0; i < M; ++i) err = std::max(err, std::abs((F[i] - R[i]) / f_max));
-      errvec.push_back(err);
+      result.errvec.push_back(err);
       if (err <= opts.tol) break;
     }
-
-    AAAResult result;
-    result.z = std::move(z);
-    result.f = std::move(f);
-    result.w = std::move(w);
-    result.errvec = std::move(errvec);
 
     return result;
   }

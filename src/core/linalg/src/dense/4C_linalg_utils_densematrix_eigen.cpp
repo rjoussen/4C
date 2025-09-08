@@ -177,7 +177,6 @@ std::vector<std::complex<double>> Core::LinAlg::generalized_eigen(
   // the new A:= Q**T A P
   Core::LinAlg::SerialDenseMatrix A_tmp;
   A_tmp.shape(N, N);
-  // A_tt.Multiply('T','N',1.,Q_qr_tt,A,0.);
   Core::LinAlg::multiply_tn(A_tmp, Q_new, tmpA);
 
   Core::LinAlg::SerialDenseMatrix A_new;
@@ -264,21 +263,12 @@ std::vector<std::complex<double>> Core::LinAlg::generalized_eigen(
                  "Schur Form, but the Eigenvalues should be correct!"
               << std::endl;
 
-  /*cout << "--------Final----------" << std::endl;
-   std::cout << std::setprecision(16) << "A 2" << A_new << std::endl;
-   std::cout << std::setprecision(16) <<  "B 2" << tmpB << std::endl;
-   std::cout << std::setprecision(16) << "Q 2 " << Q_2 << std::endl;
-   std::cout << std::setprecision(16) << "Z 2 " << Z_2 << std::endl;*/
-
   std::vector<std::complex<double>> eigenvalues;
   eigenvalues.reserve(N);
-  int num_inf = 0;
-
   for (int i = 0; i < N; ++i)
   {
     if (std::abs(BETA[i]) < 1e-13)
     {
-      ++num_inf;
       continue;  // skip infinite eigenvalue
     }
     if (ALPHAI[i] > 1e-12)
@@ -287,9 +277,6 @@ std::vector<std::complex<double>> Core::LinAlg::generalized_eigen(
     }
     eigenvalues.emplace_back(ALPHAR[i] / BETA[i], ALPHAI[i] / BETA[i]);
   }
-  if (num_inf > 0)
-    std::cout << "Generalized eigenvalue computation: " << num_inf
-              << " infinite eigenvalue(s) discarded." << '\n';
 
   return eigenvalues;
 }
