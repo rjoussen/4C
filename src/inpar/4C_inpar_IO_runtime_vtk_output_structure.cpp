@@ -21,12 +21,12 @@ namespace Inpar
     {
       /*----------------------------------------------------------------------*
        *----------------------------------------------------------------------*/
-      void set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
+      Core::IO::InputSpec set_valid_parameters()
       {
         using namespace Core::IO::InputSpecBuilders;
 
         // related sublist
-        list["IO/RUNTIME VTK OUTPUT/STRUCTURE"] = group("IO/RUNTIME VTK OUTPUT/STRUCTURE",
+        Core::IO::InputSpec spec = group("IO/RUNTIME VTK OUTPUT/STRUCTURE",
             {
 
                 // whether to write output for structure
@@ -88,6 +88,7 @@ namespace Inpar
                     {.description = "Output of an optional quantity",
                         .default_value = Inpar::Solid::optquantity_none})},
             {.required = false});
+        return spec;
       }
 
 

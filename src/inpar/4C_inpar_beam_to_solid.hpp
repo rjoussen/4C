@@ -14,7 +14,8 @@
 #include "4C_fem_condition.hpp"
 #include "4C_io_input_spec.hpp"
 
-#include <map>
+#include <vector>
+
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -220,7 +221,7 @@ namespace Inpar
     /**
     \brief Set the beam-to-solid parameters
     */
-    void set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list);
+    std::vector<Core::IO::InputSpec> set_valid_parameters();
 
     /**
      * \brief Set beam beam-to-solid specific conditions.

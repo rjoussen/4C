@@ -19,7 +19,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-void ReducedLung::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
+Core::IO::InputSpec ReducedLung::set_valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
 
@@ -257,9 +257,7 @@ void ReducedLung::set_valid_parameters(std::map<std::string, Core::IO::InputSpec
           .description = "Elasticity model for the customizable spring of the rheological model.",
           .store = in_struct(&ReducedLungParameters::LungTree::TerminalUnits::elasticity_model),
       });
-
-
-  list["reduced_dimensional_lung"] = group<ReducedLungParameters>("reduced_dimensional_lung",
+  Core::IO::InputSpec spec = group<ReducedLungParameters>("reduced_dimensional_lung",
       {
           group<ReducedLungParameters::Dynamics>("dynamics",
               {
@@ -366,6 +364,7 @@ void ReducedLung::set_valid_parameters(std::map<std::string, Core::IO::InputSpec
       {
           .required = false,
       });
+  return spec;
 }
 
 FOUR_C_NAMESPACE_CLOSE

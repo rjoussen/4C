@@ -12,11 +12,12 @@
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*/
-void Inpar::FSI::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
+std::vector<Core::IO::InputSpec> Inpar::FSI::set_valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
 
-  list["FSI DYNAMIC"] = group("FSI DYNAMIC",
+  std::vector<Core::IO::InputSpec> specs;
+  specs.push_back(group("FSI DYNAMIC",
       {
 
           deprecated_selection<FsiCoupling>("COUPALGO",
@@ -105,10 +106,10 @@ void Inpar::FSI::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>
               },
               {.description = "Verbosity of the FSI problem.",
                   .default_value = Inpar::FSI::verbosity_full})},
-      {.required =
-              false}); /*----------------------------------------------------------------------*/
+      {.required = false}));
+  /*----------------------------------------------------------------------*/
   /* parameters for time step size adaptivity in fsi dynamics */
-  list["FSI DYNAMIC/TIMEADAPTIVITY"] = group("FSI DYNAMIC/TIMEADAPTIVITY",
+  specs.push_back(group("FSI DYNAMIC/TIMEADAPTIVITY",
       {
 
           parameter<int>("ADAPTSTEPMAX",
@@ -179,13 +180,13 @@ void Inpar::FSI::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>
           parameter<bool>(
               "TIMEADAPTON", {.description = "Activate or deactivate time step size adaptivity",
                                  .default_value = false})},
-      {.required = false});
+      {.required = false}));
 
   /*--------------------------------------------------------------------------*/
 
   /*--------------------------------------------------------------------------*/
   /* parameters for monolithic FSI solvers */
-  list["FSI DYNAMIC/MONOLITHIC SOLVER"] = group("FSI DYNAMIC/MONOLITHIC SOLVER",
+  specs.push_back(group("FSI DYNAMIC/MONOLITHIC SOLVER",
       {
 
           parameter<double>("ADAPTIVEDIST",
@@ -399,11 +400,11 @@ void Inpar::FSI::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>
           parameter<double>("TOL_VEL_INC_INF",
               {.description = "Absolute tolerance for fluid velocity increment in Inf-norm",
                   .default_value = 1e-6})},
-      {.required = false});
+      {.required = false}));
 
   /*----------------------------------------------------------------------*/
   /* parameters for partitioned FSI solvers */
-  list["FSI DYNAMIC/PARTITIONED SOLVER"] = group("FSI DYNAMIC/PARTITIONED SOLVER",
+  specs.push_back(group("FSI DYNAMIC/PARTITIONED SOLVER",
       {
 
           parameter<double>("BASETOL",
@@ -470,17 +471,18 @@ void Inpar::FSI::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>
           parameter<double>(
               "RELAX", {.description = "fixed relaxation parameter for partitioned FSI solvers",
                            .default_value = 1.0})},
-      {.required = false});
+      {.required = false}));
 
   /* ----------------------------------------------------------------------- */
-  list["FSI DYNAMIC/CONSTRAINT"] = group("FSI DYNAMIC/CONSTRAINT",
+  specs.push_back(group("FSI DYNAMIC/CONSTRAINT",
       {parameter<Inpar::FSI::PrecConstr>("PRECONDITIONER",
            {.description = "preconditioner to use", .default_value = Inpar::FSI::Simple}),
           parameter<int>("SIMPLEITER",
               {.description = "Number of iterations for simple pc", .default_value = 2}),
           parameter<double>(
               "ALPHA", {.description = "alpha parameter for simple pc", .default_value = 0.8})},
-      {.required = false});
+      {.required = false}));
+  return specs;
 }
 
 /*----------------------------------------------------------------------------*/

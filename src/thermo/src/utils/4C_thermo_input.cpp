@@ -12,11 +12,12 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-void Thermo::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
+std::vector<Core::IO::InputSpec> Thermo::set_valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
 
-  list["THERMAL DYNAMIC"] = group("THERMAL DYNAMIC",
+  std::vector<Core::IO::InputSpec> specs;
+  specs.push_back(group("THERMAL DYNAMIC",
       {
 
           parameter<Thermo::DynamicType>(
@@ -168,10 +169,10 @@ void Thermo::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& li
                   .default_value = no_error_calculation}),
           parameter<int>("CALCERRORFUNCNO",
               {.description = "Function for Error Calculation", .default_value = -1})},
-      {.required =
-              false}); /*----------------------------------------------------------------------*/
+      {.required = false}));
+  /*----------------------------------------------------------------------*/
   /* parameters for generalised-alpha thermal integrator */
-  list["THERMAL DYNAMIC/GENALPHA"] = group("THERMAL DYNAMIC/GENALPHA",
+  specs.push_back(group("THERMAL DYNAMIC/GENALPHA",
       {
 
           deprecated_selection<MidAverageEnum>("GENAVG",
@@ -192,20 +193,20 @@ void Thermo::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& li
               {.description = "Generalised-alpha factor in [0.5,1)", .default_value = 0.5}),
           parameter<double>("RHO_INF",
               {.description = "Generalised-alpha factor in [0,1]", .default_value = -1.0})},
-      {.required = false});
+      {.required = false}));
 
   /*----------------------------------------------------------------------*/
   /* parameters for one-step-theta thermal integrator */
-  list["THERMAL DYNAMIC/ONESTEPTHETA"] = group("THERMAL DYNAMIC/ONESTEPTHETA",
+  specs.push_back(group("THERMAL DYNAMIC/ONESTEPTHETA",
       {
 
           parameter<double>(
               "THETA", {.description = "One-step-theta factor in (0,1]", .default_value = 0.5})},
-      {.required = false});
+      {.required = false}));
 
   // vtk runtime output
   {
-    list["THERMAL DYNAMIC/RUNTIME VTK OUTPUT"] = group("THERMAL DYNAMIC/RUNTIME VTK OUTPUT",
+    specs.push_back(group("THERMAL DYNAMIC/RUNTIME VTK OUTPUT",
         {
 
             // whether to write output for thermo
@@ -239,12 +240,12 @@ void Thermo::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& li
             // whether to write node GIDs
             parameter<bool>("NODE_GID",
                 {.description = "write 4C internal node GIDs", .default_value = false})},
-        {.required = false});
+        {.required = false}));
   }
 
   // csv runtime output
   {
-    list["THERMAL DYNAMIC/RUNTIME CSV OUTPUT"] = group("THERMAL DYNAMIC/RUNTIME CSV OUTPUT",
+    specs.push_back(group("THERMAL DYNAMIC/RUNTIME CSV OUTPUT",
         {
 
             // whether to write csv output for thermo
@@ -254,8 +255,9 @@ void Thermo::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& li
             // whether to write energy state
             parameter<bool>(
                 "ENERGY", {.description = "write energy output", .default_value = false})},
-        {.required = false});
+        {.required = false}));
   }
+  return specs;
 }
 
 

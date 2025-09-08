@@ -14,11 +14,12 @@ FOUR_C_NAMESPACE_OPEN
 
 
 
-void Inpar::FLUID::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
+std::vector<Core::IO::InputSpec> Inpar::FLUID::set_valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
 
-  list["FLUID DYNAMIC"] = group("FLUID DYNAMIC",
+  std::vector<Core::IO::InputSpec> specs;
+  specs.push_back(group("FLUID DYNAMIC",
       {
 
           // physical type of fluid flow (incompressible, varying density, loma, Boussinesq
@@ -290,32 +291,30 @@ void Inpar::FLUID::set_valid_parameters(std::map<std::string, Core::IO::InputSpe
               {.description = "Do not evaluate ghosted elements but communicate them "
                               "--> faster if element call is expensive",
                   .default_value = false})},
-      {.required =
-              false}); /*----------------------------------------------------------------------*/
-  list["FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES"] =
-      group("FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES",
-          {
+      {.required = false}));
+  /*----------------------------------------------------------------------*/
+  specs.push_back(group("FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES",
+      {
 
-              parameter<double>("TOL_VEL_RES",
-                  {.description = "Tolerance for convergence check of velocity residual",
-                      .default_value = 1e-6}),
+          parameter<double>(
+              "TOL_VEL_RES", {.description = "Tolerance for convergence check of velocity residual",
+                                 .default_value = 1e-6}),
 
-              parameter<double>("TOL_VEL_INC",
-                  {.description = "Tolerance for convergence check of velocity increment",
-                      .default_value = 1e-6}),
+          parameter<double>("TOL_VEL_INC",
+              {.description = "Tolerance for convergence check of velocity increment",
+                  .default_value = 1e-6}),
 
-              parameter<double>("TOL_PRES_RES",
-                  {.description = "Tolerance for convergence check of pressure residual",
-                      .default_value = 1e-6}),
+          parameter<double>("TOL_PRES_RES",
+              {.description = "Tolerance for convergence check of pressure residual",
+                  .default_value = 1e-6}),
 
-              parameter<double>("TOL_PRES_INC",
-                  {.description = "Tolerance for convergence check of pressure increment",
-                      .default_value = 1e-6})},
-          {.required = false});
+          parameter<double>("TOL_PRES_INC",
+              {.description = "Tolerance for convergence check of pressure increment",
+                  .default_value = 1e-6})},
+      {.required = false}));
 
   /*----------------------------------------------------------------------*/
-  list["FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION"] = group(
-      "FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION",
+  specs.push_back(group("FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION",
       {
 
           // this parameter defines various stabilized methods
@@ -516,10 +515,10 @@ void Inpar::FLUID::set_valid_parameters(std::map<std::string, Core::IO::InputSpe
                       "Flag to (de)activate Reynolds-stress term loma continuity equation-> "
                       "residual-based VMM.",
                   .default_value = reynolds_stress_stab_none})},
-      {.required = false});
+      {.required = false}));
 
   /*----------------------------------------------------------------------*/
-  list["FLUID DYNAMIC/EDGE-BASED STABILIZATION"] = group("FLUID DYNAMIC/EDGE-BASED STABILIZATION",
+  specs.push_back(group("FLUID DYNAMIC/EDGE-BASED STABILIZATION",
       {
 
           //! Flag to (de)activate edge-based (EOS) pressure stabilization
@@ -648,10 +647,10 @@ void Inpar::FLUID::set_valid_parameters(std::map<std::string, Core::IO::InputSpe
                               "maximal volume equivalent diameter "
                               "of adjacent elements",
                   .default_value = EOS_he_max_diameter_to_opp_surf})},
-      {.required = false});
+      {.required = false}));
 
   /*----------------------------------------------------------------------*/
-  list["FLUID DYNAMIC/POROUS-FLOW STABILIZATION"] = group("FLUID DYNAMIC/POROUS-FLOW STABILIZATION",
+  specs.push_back(group("FLUID DYNAMIC/POROUS-FLOW STABILIZATION",
       {
 
           parameter<bool>("STAB_BIOT",
@@ -842,10 +841,10 @@ void Inpar::FLUID::set_valid_parameters(std::map<std::string, Core::IO::InputSpe
                       "Flag to (de)activate Reynolds-stress term loma continuity equation-> "
                       "residual-based VMM.",
                   .default_value = reynolds_stress_stab_none})},
-      {.required = false});
+      {.required = false}));
 
   /*----------------------------------------------------------------------*/
-  list["FLUID DYNAMIC/TURBULENCE MODEL"] = group("FLUID DYNAMIC/TURBULENCE MODEL",
+  specs.push_back(group("FLUID DYNAMIC/TURBULENCE MODEL",
       {
 
           //----------------------------------------------------------------------
@@ -1084,11 +1083,11 @@ void Inpar::FLUID::set_valid_parameters(std::map<std::string, Core::IO::InputSpe
               {.description =
                       "Flag to (de)activate XFEM dofs in calculation of fine-scale velocity.",
                   .default_value = false})},
-      {.required = false});
+      {.required = false}));
 
   /*----------------------------------------------------------------------*/
   // sublist with additional input parameters for Smagorinsky model
-  list["FLUID DYNAMIC/SUBGRID VISCOSITY"] = group("FLUID DYNAMIC/SUBGRID VISCOSITY",
+  specs.push_back(group("FLUID DYNAMIC/SUBGRID VISCOSITY",
       {
 
           parameter<double>("C_SMAGORINSKY",
@@ -1138,11 +1137,11 @@ void Inpar::FLUID::set_valid_parameters(std::map<std::string, Core::IO::InputSpe
               },
               {.description = "The Vreman model requires a filter width.",
                   .default_value = cuberootvol})},
-      {.required = false});
+      {.required = false}));
 
   /*----------------------------------------------------------------------*/
   // sublist with additional input parameters for Smagorinsky model
-  list["FLUID DYNAMIC/WALL MODEL"] = group("FLUID DYNAMIC/WALL MODEL",
+  specs.push_back(group("FLUID DYNAMIC/WALL MODEL",
       {
 
           parameter<bool>("X_WALL",
@@ -1212,12 +1211,11 @@ void Inpar::FLUID::set_valid_parameters(std::map<std::string, Core::IO::InputSpe
 
           parameter<int>("PROJECTION_SOLVER",
               {.description = "Set solver number for l2-projection.", .default_value = -1})},
-      {.required = false});
+      {.required = false}));
 
   /*----------------------------------------------------------------------*/
   // sublist with additional input parameters for multifractal subgrid-scales
-  list["FLUID DYNAMIC/MULTIFRACTAL SUBGRID SCALES"] = group(
-      "FLUID DYNAMIC/MULTIFRACTAL SUBGRID SCALES",
+  specs.push_back(group("FLUID DYNAMIC/MULTIFRACTAL SUBGRID SCALES",
       {
 
           parameter<double>(
@@ -1324,10 +1322,10 @@ void Inpar::FLUID::set_valid_parameters(std::map<std::string, Core::IO::InputSpe
               {.description = "Flag to (de)activate cross- and Reynolds-stress terms in "
                               "loma continuity equation.",
                   .default_value = false})},
-      {.required = false});
+      {.required = false}));
 
   /*----------------------------------------------------------------------*/
-  list["FLUID DYNAMIC/TURBULENT INFLOW"] = group("FLUID DYNAMIC/TURBULENT INFLOW",
+  specs.push_back(group("FLUID DYNAMIC/TURBULENT INFLOW",
       {
 
           parameter<bool>("TURBULENTINFLOW",
@@ -1424,11 +1422,11 @@ void Inpar::FLUID::set_valid_parameters(std::map<std::string, Core::IO::InputSpe
           parameter<int>("INFLOW_DUMPING_PERIOD",
               {.description = "Period of time steps after which statistical data shall be dumped",
                   .default_value = 1})},
-      {.required = false});
+      {.required = false}));
 
   /*----------------------------------------------------------------------*/
   // sublist with additional input parameters for time adaptivity in fluid/ coupled problems
-  list["FLUID DYNAMIC/TIMEADAPTIVITY"] = group("FLUID DYNAMIC/TIMEADAPTIVITY",
+  specs.push_back(group("FLUID DYNAMIC/TIMEADAPTIVITY",
       {
 
           deprecated_selection<AdaptiveTimeStepEstimator>("ADAPTIVE_TIME_STEP_ESTIMATOR",
@@ -1450,16 +1448,16 @@ void Inpar::FLUID::set_valid_parameters(std::map<std::string, Core::IO::InputSpe
           parameter<double>(
               "ADAPTIVE_DT_INC", {.description = "Increment of whole step for adaptive dt via CFL",
                                      .default_value = 0.8})},
-      {.required = false});
+      {.required = false}));
+  return specs;
 }
 
 
 
-void Inpar::LowMach::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
+Core::IO::InputSpec Inpar::LowMach::set_valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
-
-  list["LOMA CONTROL"] = group("LOMA CONTROL",
+  Core::IO::InputSpec spec = group("LOMA CONTROL",
       {
 
           parameter<bool>(
@@ -1497,6 +1495,7 @@ void Inpar::LowMach::set_valid_parameters(std::map<std::string, Core::IO::InputS
               "LINEAR_SOLVER", {.description = "number of linear solver used for LOMA problem",
                                    .default_value = -1})},
       {.required = false});
+  return spec;
 }
 
 

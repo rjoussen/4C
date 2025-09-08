@@ -37,8 +37,7 @@ namespace PoroPressureBased
   };
 
   /// set valid parameters for porofluid-elasticity with scalar transport problems
-  void set_valid_parameters_porofluid_elast_scatra(
-      std::map<std::string, Core::IO::InputSpec>& list);
+  std::vector<Core::IO::InputSpec> set_valid_parameters_porofluid_elast_scatra();
 
   /// set valid conditions for porofluid-elasticity with scalar transport problems
   void set_valid_conditions_porofluid_elast_scatra(

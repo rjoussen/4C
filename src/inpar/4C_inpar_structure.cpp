@@ -9,6 +9,7 @@
 
 #include "4C_constraint_springdashpot.hpp"
 #include "4C_fem_condition_definition.hpp"
+#include "4C_io_input_spec.hpp"
 #include "4C_io_input_spec_builders.hpp"
 #include "4C_utils_enum.hpp"
 FOUR_C_NAMESPACE_OPEN
@@ -59,11 +60,12 @@ namespace Inpar
       FOUR_C_THROW("Unknown kinematic type {}", kinem_type);
     }
 
-    void set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
+    std::vector<Core::IO::InputSpec> set_valid_parameters()
     {
       using namespace Core::IO::InputSpecBuilders;
 
-      list["STRUCTURAL DYNAMIC"] = group("STRUCTURAL DYNAMIC",
+      std::vector<Core::IO::InputSpec> specs;
+      specs.push_back(group("STRUCTURAL DYNAMIC",
           {
 
               deprecated_selection<Solid::IntegrationStrategy>("INT_STRATEGY",
@@ -423,9 +425,9 @@ namespace Inpar
               parameter<int>("STARTFUNCNO",
                   {.description = "Function for Initial displacement", .default_value = -1})},
           {.required =
-                  false}); /*--------------------------------------------------------------------*/
+                  false})); /*--------------------------------------------------------------------*/
       /* parameters for time step size adaptivity in structural dynamics */
-      list["STRUCTURAL DYNAMIC/TIMEADAPTIVITY"] = group("STRUCTURAL DYNAMIC/TIMEADAPTIVITY",
+      specs.push_back(group("STRUCTURAL DYNAMIC/TIMEADAPTIVITY",
           {
 
               deprecated_selection<Inpar::Solid::TimAdaKind>("KIND",
@@ -493,12 +495,11 @@ namespace Inpar
               parameter<int>("ADAPTSTEPMAX",
                   {.description = "Limit maximally allowed step size reduction attempts (>0)",
                       .default_value = 0})},
-          {.required = false});
+          {.required = false}));
 
       /// valid parameters for JOINT EXPLICIT
 
-      list["STRUCTURAL DYNAMIC/TIMEADAPTIVITY/JOINT EXPLICIT"] = group(
-          "STRUCTURAL DYNAMIC/TIMEADAPTIVITY/JOINT EXPLICIT",
+      specs.push_back(group("STRUCTURAL DYNAMIC/TIMEADAPTIVITY/JOINT EXPLICIT",
           {
 
               parameter<int>("LINEAR_SOLVER",
@@ -541,11 +542,11 @@ namespace Inpar
               parameter<double>("M_DAMP", {.description = "", .default_value = -1.0}),
 
               parameter<double>("K_DAMP", {.description = "", .default_value = -1.0})},
-          {.required = false});
+          {.required = false}));
 
       /*----------------------------------------------------------------------*/
       /* parameters for generalised-alpha structural integrator */
-      list["STRUCTURAL DYNAMIC/GENALPHA"] = group("STRUCTURAL DYNAMIC/GENALPHA",
+      specs.push_back(group("STRUCTURAL DYNAMIC/GENALPHA",
           {
 
               deprecated_selection<Solid::MidAverageEnum>("GENAVG",
@@ -568,20 +569,20 @@ namespace Inpar
                   "RHO_INF", {.description = "Spectral radius for generalised-alpha time "
                                              "integration, valid range is [0,1]",
                                  .default_value = 1.0})},
-          {.required = false});
+          {.required = false}));
 
       /*----------------------------------------------------------------------*/
       /* parameters for one-step-theta structural integrator */
-      list["STRUCTURAL DYNAMIC/ONESTEPTHETA"] = group("STRUCTURAL DYNAMIC/ONESTEPTHETA",
+      specs.push_back(group("STRUCTURAL DYNAMIC/ONESTEPTHETA",
           {
 
               parameter<double>("THETA",
                   {.description = "One-step-theta factor in (0,1]", .default_value = 0.5})},
-          {.required = false});
+          {.required = false}));
 
       /*----------------------------------------------------------------------*/
       /* parameters for error evaluation */
-      list["STRUCTURAL DYNAMIC/ERROR EVALUATION"] = group("STRUCTURAL DYNAMIC/ERROR EVALUATION",
+      specs.push_back(group("STRUCTURAL DYNAMIC/ERROR EVALUATION",
           {
 
               parameter<bool>("EVALUATE_ERROR_ANALYTICAL_REFERENCE",
@@ -590,7 +591,8 @@ namespace Inpar
                       .default_value = false}),
               parameter<int>("ANALYTICAL_DISPLACEMENT_FUNCTION",
                   {.description = "function ID of the analytical solution", .default_value = -1})},
-          {.required = false});
+          {.required = false}));
+      return specs;
     }
 
 

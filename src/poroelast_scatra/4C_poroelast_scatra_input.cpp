@@ -14,11 +14,10 @@ FOUR_C_NAMESPACE_OPEN
 
 
 
-void PoroElastScaTra::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
+Core::IO::InputSpec PoroElastScaTra::set_valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
-
-  list["POROSCATRA CONTROL"] = group("POROSCATRA CONTROL",
+  Core::IO::InputSpec spec = group("POROSCATRA CONTROL",
       {
 
           // Output type
@@ -142,6 +141,7 @@ void PoroElastScaTra::set_valid_parameters(std::map<std::string, Core::IO::Input
           parameter<bool>(
               "MATCHINGGRID", {.description = "is matching grid", .default_value = true})},
       {.required = false});
+  return spec;
 }
 
 FOUR_C_NAMESPACE_CLOSE

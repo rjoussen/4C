@@ -19,12 +19,12 @@ namespace Solid
 
     /*----------------------------------------------------------------------*
      *----------------------------------------------------------------------*/
-    void set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
+    Core::IO::InputSpec set_valid_parameters()
     {
       using namespace Core::IO::InputSpecBuilders;
 
       // related sublist
-      list["IO/MONITOR STRUCTURE DBC"] = group("IO/MONITOR STRUCTURE DBC",
+      Core::IO::InputSpec spec = group("IO/MONITOR STRUCTURE DBC",
           {
 
               // output interval regarding steps: write output every INTERVAL_STEPS steps
@@ -51,6 +51,7 @@ namespace Solid
                           "write information about monitored boundary condition to output file",
                       .default_value = false})},
           {.required = false});
+      return spec;
     }
   }  // namespace IOMonitorStructureDBC
 }  // namespace Solid

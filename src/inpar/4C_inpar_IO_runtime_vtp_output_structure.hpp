@@ -15,7 +15,6 @@
 
 #include "4C_io_input_spec.hpp"
 
-#include <map>
 #include <memory>
 
 FOUR_C_NAMESPACE_OPEN
@@ -34,7 +33,7 @@ namespace Inpar
     };
 
     /// set the valid parameters related to writing of VTP output at runtime
-    void set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list);
+    Core::IO::InputSpec set_valid_parameters();
 
   }  // namespace IORuntimeVTPStructure
 }  // namespace Inpar

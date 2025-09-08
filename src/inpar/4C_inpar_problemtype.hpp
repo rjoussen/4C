@@ -26,7 +26,7 @@ namespace Inpar
      *
      * @param[in/out] list Parameter list to be filled with valid parameters and their defaults
      */
-    void set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list);
+    Core::IO::InputSpec set_valid_parameters();
 
     /// create map of problem name and problem type enum
     std::map<std::string, Core::ProblemType> string_to_problem_type_map();

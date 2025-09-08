@@ -13,16 +13,17 @@
 #include "4C_porofluid_pressure_based_input.hpp"
 #include "4C_utils_parameter_list.hpp"
 
+#include <vector>
+
 FOUR_C_NAMESPACE_OPEN
 
 
-void PoroPressureBased::set_valid_parameters_porofluid_elast_scatra(
-    std::map<std::string, Core::IO::InputSpec>& list)
+std::vector<Core::IO::InputSpec> PoroPressureBased::set_valid_parameters_porofluid_elast_scatra()
 {
   using namespace Core::IO::InputSpecBuilders;
-
+  std::vector<Core::IO::InputSpec> specs;
   // general control parameters
-  list["porofluid_elasticity_scatra_dynamic"] = group("porofluid_elasticity_scatra_dynamic",
+  specs.push_back(group("porofluid_elasticity_scatra_dynamic",
       {
           parameter<double>("total_simulation_time",
               {.description = "total simulation time", .default_value = -1.0}),
@@ -81,11 +82,10 @@ void PoroPressureBased::set_valid_parameters_porofluid_elast_scatra(
                       "What to do with time integration when the nonlinear solver did not converge",
                   .default_value = DivergenceAction::stop}),
       },
-      {.required = false});
+      {.required = false}));
 
   // monolithic parameters
-  list["porofluid_elasticity_scatra_dynamic/monolithic"] = group(
-      "porofluid_elasticity_scatra_dynamic/monolithic",
+  specs.push_back(group("porofluid_elasticity_scatra_dynamic/monolithic",
       {
           // nonlinear solver
           group("nonlinear_solver",
@@ -139,17 +139,17 @@ void PoroPressureBased::set_valid_parameters_porofluid_elast_scatra(
           // finite difference check
           parameter<bool>("fd_check", {.description = "FD check active", .default_value = false}),
       },
-      {.required = false});
+      {.required = false}));
 
   // partitioned parameters
-  list["porofluid_elasticity_scatra_dynamic/partitioned"] =
-      group("porofluid_elasticity_scatra_dynamic/partitioned",
-          {
-              parameter<double>("convergence_tolerance",
-                  {.description = "tolerance for convergence check of outer iteration",
-                      .default_value = 1e-6}),
-          },
-          {.required = false});
+  specs.push_back(group("porofluid_elasticity_scatra_dynamic/partitioned",
+      {
+          parameter<double>("convergence_tolerance",
+              {.description = "tolerance for convergence check of outer iteration",
+                  .default_value = 1e-6}),
+      },
+      {.required = false}));
+  return specs;
 }
 
 void PoroPressureBased::set_valid_conditions_porofluid_elast_scatra(

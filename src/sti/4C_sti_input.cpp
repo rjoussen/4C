@@ -14,11 +14,12 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-void STI::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
+std::vector<Core::IO::InputSpec> STI::set_valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
 
-  list["STI DYNAMIC"] = group("STI DYNAMIC",
+  std::vector<Core::IO::InputSpec> specs;
+  specs.push_back(group("STI DYNAMIC",
       {
 
           // type of scalar transport time integration
@@ -75,10 +76,10 @@ void STI::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
               {.description = "flag for double condensation of linear equations associated with "
                               "temperature field",
                   .default_value = false})},
-      {.required =
-              false}); /*----------------------------------------------------------------------*/
+      {.required = false}));
+  /*----------------------------------------------------------------------*/
   // valid parameters for monolithic scatra-thermo interaction
-  list["STI DYNAMIC/MONOLITHIC"] = group("STI DYNAMIC/MONOLITHIC",
+  specs.push_back(group("STI DYNAMIC/MONOLITHIC",
       {
 
           // ID of linear solver for global system of equations
@@ -94,11 +95,11 @@ void STI::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
               },
               {.description = "type of global system matrix in global system of equations",
                   .default_value = Core::LinAlg::MatrixType::block_condition})},
-      {.required = false});
+      {.required = false}));
 
   /*----------------------------------------------------------------------*/
   // valid parameters for partitioned scatra-thermo interaction
-  list["STI DYNAMIC/PARTITIONED"] = group("STI DYNAMIC/PARTITIONED",
+  specs.push_back(group("STI DYNAMIC/PARTITIONED",
       {
 
           // relaxation parameter
@@ -108,7 +109,8 @@ void STI::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
           parameter<double>("OMEGAMAX",
               {.description = "maximum value of Aitken relaxation parameter (0.0 = no constraint)",
                   .default_value = 0.})},
-      {.required = false});
+      {.required = false}));
+  return specs;
 }
 
 

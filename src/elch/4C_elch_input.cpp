@@ -14,11 +14,12 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-void ElCh::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
+std::vector<Core::IO::InputSpec> ElCh::set_valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
 
-  list["ELCH CONTROL"] = group("ELCH CONTROL",
+  std::vector<Core::IO::InputSpec> specs;
+  specs.push_back(group("ELCH CONTROL",
       {
 
           parameter<int>("MOVBOUNDARYITEMAX",
@@ -121,10 +122,10 @@ void ElCh::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list
                       "the cell voltage, SOC, and C-Rate will be written to the csv file every "
                       "step, even if RESULTSEVERY is not 1",
                   .default_value = false})},
-      {.required =
-              false}); /*----------------------------------------------------------------------*/
+      {.required = false}));
+  /*----------------------------------------------------------------------*/
   // attention: this list is a sublist of elchcontrol
-  list["ELCH CONTROL/DIFFCOND"] = group("ELCH CONTROL/DIFFCOND",
+  specs.push_back(group("ELCH CONTROL/DIFFCOND",
       {
 
           parameter<bool>("CURRENT_SOLUTION_VAR",
@@ -158,11 +159,11 @@ void ElCh::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list
                   .default_value = -1.0}),
           parameter<double>("PERMITTIVITY_VACUUM",
               {.description = "Vacuum permittivity", .default_value = 8.8541878128e-12})},
-      {.required = false});
+      {.required = false}));
 
   /*----------------------------------------------------------------------*/
   // sublist for space-charge layers
-  list["ELCH CONTROL/SCL"] = group("ELCH CONTROL/SCL",
+  specs.push_back(group("ELCH CONTROL/SCL",
       {
 
           parameter<bool>("ADD_MICRO_MACRO_COUPLING",
@@ -201,7 +202,8 @@ void ElCh::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list
           parameter<int>(
               "INITFUNCNO", {.description = "function number for scalar transport initial field",
                                 .default_value = -1})},
-      {.required = false});
+      {.required = false}));
+  return specs;
 }
 
 

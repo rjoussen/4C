@@ -128,11 +128,10 @@ bool Discret::Elements::RedInterAcinarDep::read_element(const std::string& elety
   return true;
 }
 
-void Airway::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
+Core::IO::InputSpec Airway::set_valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
-
-  list["REDUCED DIMENSIONAL AIRWAYS DYNAMIC"] = group("REDUCED DIMENSIONAL AIRWAYS DYNAMIC",
+  Core::IO::InputSpec spec = group("REDUCED DIMENSIONAL AIRWAYS DYNAMIC",
       {
 
           parameter<Airway::RedAirwaysDyntype>(
@@ -181,6 +180,7 @@ void Airway::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& li
               {.description = "Transpulmonary pressure needed for recalculation of acini volumes",
                   .default_value = 800.0})},
       {.required = false});
+  return spec;
 }
 
 

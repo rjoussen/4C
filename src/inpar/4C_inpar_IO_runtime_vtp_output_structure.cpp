@@ -18,12 +18,12 @@ namespace Inpar
   {
     /*----------------------------------------------------------------------*
      *----------------------------------------------------------------------*/
-    void set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
+    Core::IO::InputSpec set_valid_parameters()
     {
       using namespace Core::IO::InputSpecBuilders;
 
       // related sublist
-      list["IO/RUNTIME VTP OUTPUT STRUCTURE"] = group("IO/RUNTIME VTP OUTPUT STRUCTURE",
+      Core::IO::InputSpec spec = group("IO/RUNTIME VTP OUTPUT STRUCTURE",
           {
 
               // output interval regarding steps: write output every INTERVAL_STEPS steps
@@ -56,6 +56,7 @@ namespace Inpar
               parameter<bool>("LINKINGFORCE",
                   {.description = "write force acting in linker", .default_value = false})},
           {.required = false});
+      return spec;
     }
 
 

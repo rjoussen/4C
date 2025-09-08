@@ -14,11 +14,12 @@ FOUR_C_NAMESPACE_OPEN
 /*------------------------------------------------------------------------*
  | set valid parameters for scatra-scatra interface coupling   fang 01/16 |
  *------------------------------------------------------------------------*/
-void Inpar::S2I::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
+std::vector<Core::IO::InputSpec> Inpar::S2I::set_valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
 
-  list["SCALAR TRANSPORT DYNAMIC/S2I COUPLING"] = group("SCALAR TRANSPORT DYNAMIC/S2I COUPLING",
+  std::vector<Core::IO::InputSpec> specs;
+  specs.push_back(group("SCALAR TRANSPORT DYNAMIC/S2I COUPLING",
       {
 
           // type of mortar meshtying
@@ -106,7 +107,8 @@ void Inpar::S2I::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>
               {.description = "evaluate integral of coupling flux on slave side "
                               "for each s2i condition and write it to csv file",
                   .default_value = false})},
-      {.required = false});
+      {.required = false}));
+  return specs;
 }
 
 

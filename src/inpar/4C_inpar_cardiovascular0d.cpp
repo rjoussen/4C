@@ -13,11 +13,12 @@ FOUR_C_NAMESPACE_OPEN
 
 
 
-void Inpar::Cardiovascular0D::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
+std::vector<Core::IO::InputSpec> Inpar::Cardiovascular0D::set_valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
 
-  list["CARDIOVASCULAR 0D-STRUCTURE COUPLING"] = group("CARDIOVASCULAR 0D-STRUCTURE COUPLING",
+  std::vector<Core::IO::InputSpec> specs;
+  specs.push_back(group("CARDIOVASCULAR 0D-STRUCTURE COUPLING",
       {
 
           parameter<double>("TOL_CARDVASC0D_RES",
@@ -66,9 +67,8 @@ void Inpar::Cardiovascular0D::set_valid_parameters(std::map<std::string, Core::I
           parameter<double>("K_PTC",
               {.description = "PTC parameter: 0 means normal Newton, ->infty means steepest desc",
                   .default_value = 0.0})},
-      {.required = false});
-  list["CARDIOVASCULAR 0D-STRUCTURE COUPLING/SYS-PUL CIRCULATION PARAMETERS"] = group(
-      "CARDIOVASCULAR 0D-STRUCTURE COUPLING/SYS-PUL CIRCULATION PARAMETERS",
+      {.required = false}));
+  specs.push_back(group("CARDIOVASCULAR 0D-STRUCTURE COUPLING/SYS-PUL CIRCULATION PARAMETERS",
       {
 
           parameter<double>("R_arvalve_max_l",
@@ -375,12 +375,8 @@ void Inpar::Cardiovascular0D::set_valid_parameters(std::map<std::string, Core::I
           parameter<double>(
               "V_cap_pul_u", {.description = "unstressed volume of pulmonary capillaries",
                                  .default_value = 123.0e3})},
-      {.required = false});
-
-
-
-  list["CARDIOVASCULAR 0D-STRUCTURE COUPLING/RESPIRATORY PARAMETERS"] = group(
-      "CARDIOVASCULAR 0D-STRUCTURE COUPLING/RESPIRATORY PARAMETERS",
+      {.required = false}));
+  specs.push_back(group("CARDIOVASCULAR 0D-STRUCTURE COUPLING/RESPIRATORY PARAMETERS",
       {
 
           deprecated_selection<Cardvasc0DRespiratoryModel>("RESPIRATORY_MODEL",
@@ -626,15 +622,15 @@ void Inpar::Cardiovascular0D::set_valid_parameters(std::map<std::string, Core::I
           parameter<double>(
               "ppO2_ven_sys_0", {.description = "initial systemic venous O2 partial pressure",
                                     .default_value = 1.0})},
-      {.required = false});
-
-  list["MOR"] = group("MOR",
+      {.required = false}));
+  specs.push_back(group("MOR",
       {
 
           parameter<std::string>(
               "POD_MATRIX", {.description = "filename of file containing projection matrix",
                                 .default_value = "none"})},
-      {.required = false});
+      {.required = false}));
+  return specs;
 }
 
 

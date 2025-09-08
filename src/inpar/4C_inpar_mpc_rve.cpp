@@ -13,10 +13,10 @@
 #include "4C_io_input_spec_builders.hpp"
 FOUR_C_NAMESPACE_OPEN
 // set the mpc specific parameters
-void Inpar::RveMpc::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
+Core::IO::InputSpec Inpar::RveMpc::set_valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
-  list["MULTI POINT CONSTRAINTS"] = group("MULTI POINT CONSTRAINTS",
+  Core::IO::InputSpec spec = group("MULTI POINT CONSTRAINTS",
       {
 
           parameter<Inpar::RveMpc::RveReferenceDeformationDefinition>("RVE_REFERENCE_POINTS",
@@ -34,6 +34,7 @@ void Inpar::RveMpc::set_valid_parameters(std::map<std::string, Core::IO::InputSp
           parameter<double>("PENALTY_PARAM",
               {.description = "Value of the penalty parameter", .default_value = 1e5})},
       {.required = false});
+  return spec;
 }
 
 // set mpc specific conditions

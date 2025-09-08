@@ -15,7 +15,6 @@
 
 #include "4C_io_input_spec.hpp"
 
-#include <map>
 #include <vector>
 
 FOUR_C_NAMESPACE_OPEN
@@ -252,7 +251,7 @@ namespace Inpar
     };
 
     //! set the particle parameters
-    void set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list);
+    std::vector<Core::IO::InputSpec> set_valid_parameters();
 
     //! set the particle conditions
     void set_valid_conditions(std::vector<Core::Conditions::ConditionDefinition>& condlist);

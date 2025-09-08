@@ -14,12 +14,12 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Inpar::PROBLEMTYPE::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
+Core::IO::InputSpec Inpar::PROBLEMTYPE::set_valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
 
   /*----------------------------------------------------------------------*/
-  list["PROBLEM TYPE"] = group("PROBLEM TYPE",
+  Core::IO::InputSpec spec = group("PROBLEM TYPE",
       {
 
           deprecated_selection<Core::ProblemType>(
@@ -35,6 +35,7 @@ void Inpar::PROBLEMTYPE::set_valid_parameters(std::map<std::string, Core::IO::In
               "RANDSEED", {.description = "Set the random seed. If < 0 use current time.",
                               .default_value = -1})},
       {.required = true});
+  return spec;
 }
 
 /*----------------------------------------------------------------------*/

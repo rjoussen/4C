@@ -11,11 +11,10 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-void Core::GeometricSearch::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
+Core::IO::InputSpec Core::GeometricSearch::set_valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
-
-  list["BOUNDINGVOLUME STRATEGY"] = group("BOUNDINGVOLUME STRATEGY",
+  Core::IO::InputSpec spec = group("BOUNDINGVOLUME STRATEGY",
       {
 
           parameter<double>("BEAM_RADIUS_EXTENSION_FACTOR",
@@ -35,6 +34,7 @@ void Core::GeometricSearch::set_valid_parameters(std::map<std::string, Core::IO:
               {.description = "If visualization output for the geometric search should be written",
                   .default_value = false})},
       {.required = false});
+  return spec;
 }
 
 FOUR_C_NAMESPACE_CLOSE

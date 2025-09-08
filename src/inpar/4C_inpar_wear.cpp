@@ -12,12 +12,12 @@ FOUR_C_NAMESPACE_OPEN
 
 
 
-void Inpar::Wear::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
+Core::IO::InputSpec Inpar::Wear::set_valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
 
   /* parameters for wear */
-  list["WEAR"] = group("WEAR",
+  Core::IO::InputSpec spec = group("WEAR",
       {
 
           deprecated_selection<WearLaw>("WEARLAW",
@@ -100,6 +100,7 @@ void Inpar::Wear::set_valid_parameters(std::map<std::string, Core::IO::InputSpec
               {.description = "Definition wear time scale compares to std. time scale",
                   .default_value = wear_time_equal})},
       {.required = false});
+  return spec;
 }
 
 FOUR_C_NAMESPACE_CLOSE

@@ -15,11 +15,12 @@ FOUR_C_NAMESPACE_OPEN
 
 
 
-void BeamContact::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
+std::vector<Core::IO::InputSpec> BeamContact::set_valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
 
-  list["BEAM CONTACT"] = group("BEAM CONTACT",
+  std::vector<Core::IO::InputSpec> specs;
+  specs.push_back(group("BEAM CONTACT",
       {
 
           deprecated_selection<BeamContact::Strategy>("BEAMS_STRATEGY",
@@ -189,10 +190,9 @@ void BeamContact::set_valid_parameters(std::map<std::string, Core::IO::InputSpec
           parameter<int>(
               "BEAMS_BOXESINOCT", {.description = "max number of bounding boxes in any leaf octant",
                                       .default_value = 8})},
-      {.required = false});
+      {.required = false}));
   /* parameters for visualization of beam contact via output at runtime */
-
-  list["BEAM CONTACT/RUNTIME VTK OUTPUT"] = group("BEAM CONTACT/RUNTIME VTK OUTPUT",
+  specs.push_back(group("BEAM CONTACT/RUNTIME VTK OUTPUT",
       {
 
           // whether to write visualization output for beam contact
@@ -233,7 +233,8 @@ void BeamContact::set_valid_parameters(std::map<std::string, Core::IO::InputSpec
                       "2 indicates active end point contact ",
                   .default_value = false}),
       },
-      {.required = false});
+      {.required = false}));
+  return specs;
 }
 
 /**

@@ -14,11 +14,10 @@ FOUR_C_NAMESPACE_OPEN
 
 
 
-void ALE::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
+Core::IO::InputSpec ALE::set_valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
-
-  list["ALE DYNAMIC"] = group("ALE DYNAMIC",
+  Core::IO::InputSpec spec = group("ALE DYNAMIC",
       {
 
           parameter<double>("TIMESTEP", {.description = "time step size", .default_value = 0.1}),
@@ -90,6 +89,7 @@ void ALE::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
               "LINEAR_SOLVER", {.description = "number of linear solver used for ale problems...",
                                    .default_value = -1})},
       {.required = false});
+  return spec;
 }
 
 

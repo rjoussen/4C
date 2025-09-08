@@ -14,11 +14,10 @@ FOUR_C_NAMESPACE_OPEN
 /**
  *
  */
-void Inpar::Constraints::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
+Core::IO::InputSpec Inpar::Constraints::set_valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
-
-  list["EMBEDDED MESH COUPLING"] = group("EMBEDDED MESH COUPLING",
+  Core::IO::InputSpec spec = group("EMBEDDED MESH COUPLING",
       {
 
           parameter<EmbeddedMeshCouplingStrategy>("COUPLING_STRATEGY",
@@ -42,6 +41,7 @@ void Inpar::Constraints::set_valid_parameters(std::map<std::string, Core::IO::In
                       "Penalty parameter for the constraint enforcement in embedded mesh coupling",
                   .default_value = 0.0})},
       {.required = false});
+  return spec;
 }
 
 FOUR_C_NAMESPACE_CLOSE

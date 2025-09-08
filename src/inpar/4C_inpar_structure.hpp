@@ -371,7 +371,7 @@ namespace Inpar
     //!@}
 
     /// set the structure parameters
-    void set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list);
+    std::vector<typename Core::IO::InputSpec> set_valid_parameters();
 
     /// set structure-specific conditions
     void set_valid_conditions(std::vector<Core::Conditions::ConditionDefinition>& condlist);

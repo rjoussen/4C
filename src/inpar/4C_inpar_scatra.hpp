@@ -12,7 +12,6 @@
 
 #include "4C_io_input_spec.hpp"
 
-#include <map>
 #include <utility>
 #include <vector>
 
@@ -253,7 +252,7 @@ namespace Inpar
     };
 
     /// set the scatra parameters
-    void set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list);
+    std::vector<Core::IO::InputSpec> set_valid_parameters();
 
     /// set additional scatra conditions
     void set_valid_conditions(std::vector<Core::Conditions::ConditionDefinition>& condlist);

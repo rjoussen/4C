@@ -12,7 +12,6 @@
 
 #include "4C_io_input_spec.hpp"
 
-#include <map>
 #include <vector>
 
 FOUR_C_NAMESPACE_OPEN
@@ -40,7 +39,7 @@ namespace Airway
   };
 
   /// set the reduced airways parameters
-  void set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list);
+  Core::IO::InputSpec set_valid_parameters();
 
   /// set specific reduced airways conditions
   void set_valid_conditions(std::vector<Core::Conditions::ConditionDefinition>& condlist);

@@ -316,7 +316,7 @@ namespace Inpar
     };
 
     /// set the xfem parameters
-    void set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list);
+    std::vector<Core::IO::InputSpec> set_valid_parameters();
 
     /// set specific xfem conditions
     void set_valid_conditions(std::vector<Core::Conditions::ConditionDefinition>& condlist);

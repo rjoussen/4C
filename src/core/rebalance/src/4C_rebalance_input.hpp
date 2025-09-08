@@ -12,14 +12,13 @@
 
 #include "4C_io_input_spec.hpp"
 
-#include <map>
 
 FOUR_C_NAMESPACE_OPEN
 
 namespace Core::Rebalance
 {
   //! set the parameters for the geometric search strategy
-  void set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list);
+  Core::IO::InputSpec set_valid_parameters();
 }  // namespace Core::Rebalance
 
 FOUR_C_NAMESPACE_CLOSE

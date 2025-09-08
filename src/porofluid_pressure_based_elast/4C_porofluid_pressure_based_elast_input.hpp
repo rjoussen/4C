@@ -14,6 +14,7 @@
 #include "4C_io_input_spec.hpp"
 
 #include <map>
+#include <vector>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -41,7 +42,7 @@ namespace PoroPressureBased
   };
 
   /// set the valid parameters for porofluid-elasticity problems
-  void set_valid_parameters_porofluid_elast(std::map<std::string, Core::IO::InputSpec>& list);
+  std::vector<Core::IO::InputSpec> set_valid_parameters_porofluid_elast();
 
 }  // namespace PoroPressureBased
 

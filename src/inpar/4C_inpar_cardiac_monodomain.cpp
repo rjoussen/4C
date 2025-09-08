@@ -11,12 +11,10 @@
 #include "4C_io_input_spec_builders.hpp"
 FOUR_C_NAMESPACE_OPEN
 
-void Inpar::ElectroPhysiology::set_valid_parameters(
-    std::map<std::string, Core::IO::InputSpec>& list)
+Core::IO::InputSpec Inpar::ElectroPhysiology::set_valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
-
-  list["CARDIAC MONODOMAIN CONTROL"] = group("CARDIAC MONODOMAIN CONTROL",
+  Core::IO::InputSpec spec = group("CARDIAC MONODOMAIN CONTROL",
       {
 
           // Parameters for reaction-diffusion systems (for example cardiac electrophysiology)
@@ -31,6 +29,7 @@ void Inpar::ElectroPhysiology::set_valid_parameters(
                                                         "and postprocessing activation time ",
                                             .default_value = 1.0})},
       {.required = false});
+  return spec;
 }
 
 

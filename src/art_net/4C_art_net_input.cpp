@@ -14,10 +14,10 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-void ArtDyn::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
+Core::IO::InputSpec ArtDyn::set_valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
-  list["ARTERIAL DYNAMIC"] = group("ARTERIAL DYNAMIC",
+  Core::IO::InputSpec spec = group("ARTERIAL DYNAMIC",
       {
 
           deprecated_selection<TimeIntegrationScheme>("DYNAMICTYPE",
@@ -62,16 +62,15 @@ void ArtDyn::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& li
               {.description = "Initial Field for artery problem",
                   .default_value = initfield_zero_field})},
       {.required = false});
+  return spec;
 }
 
 
 
-void ArteryNetwork::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
+Core::IO::InputSpec ArteryNetwork::set_valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
-
-  list["COUPLED REDUCED-D AIRWAYS AND TISSUE DYNAMIC"] = group(
-      "COUPLED REDUCED-D AIRWAYS AND TISSUE DYNAMIC",
+  Core::IO::InputSpec spec = group("COUPLED REDUCED-D AIRWAYS AND TISSUE DYNAMIC",
       {
 
           parameter<double>("CONVTOL_P",
@@ -94,6 +93,7 @@ void ArteryNetwork::set_valid_parameters(std::map<std::string, Core::IO::InputSp
 
           parameter<double>("NORMAL", {.description = "", .default_value = 1.0})},
       {.required = false});
+  return spec;
 }
 
 

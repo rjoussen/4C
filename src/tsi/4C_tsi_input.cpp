@@ -12,11 +12,12 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-void TSI::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
+std::vector<Core::IO::InputSpec> TSI::set_valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
 
-  list["TSI DYNAMIC"] = group("TSI DYNAMIC",
+  std::vector<Core::IO::InputSpec> specs;
+  specs.push_back(group("TSI DYNAMIC",
       {
 
           // coupling strategy for (partitioned and monolithic) TSI solvers
@@ -65,11 +66,11 @@ void TSI::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
               },
               {.description = "type of norm for convergence check of primary variables in TSI",
                   .default_value = convnorm_abs})},
-      {.required = false});
+      {.required = false}));
 
   /*----------------------------------------------------------------------*/
   /* parameters for monolithic TSI */
-  list["TSI DYNAMIC/MONOLITHIC"] = group("TSI DYNAMIC/MONOLITHIC",
+  specs.push_back(group("TSI DYNAMIC/MONOLITHIC",
       {
 
           // convergence tolerance of tsi residual
@@ -165,12 +166,11 @@ void TSI::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
                   {"or", LS_or},
               },
               {.description = "line-search strategy", .default_value = LS_none})},
-      {.required = false});
+      {.required = false}));
 
   /*----------------------------------------------------------------------*/
   /* parameters for partitioned TSI */
-
-  list["TSI DYNAMIC/PARTITIONED"] = group("TSI DYNAMIC/PARTITIONED",
+  specs.push_back(group("TSI DYNAMIC/PARTITIONED",
       {
 
           deprecated_selection<std::string>("COUPVARIABLE", {"Displacement", "Temperature"},
@@ -191,11 +191,11 @@ void TSI::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
                       "tolerance for convergence check of outer iteraiton within partitioned TSI",
                   .default_value = 1e-6}),
       },
-      {.required = false});
+      {.required = false}));
 
   /*----------------------------------------------------------------------*/
   /* parameters for tsi contact */
-  list["TSI CONTACT"] = group("TSI CONTACT",
+  specs.push_back(group("TSI CONTACT",
       {parameter<double>("HEATTRANSSLAVE",
            {.description = "Heat transfer parameter for slave side in thermal contact",
                .default_value = 0.0}),
@@ -227,7 +227,8 @@ void TSI::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
           parameter<double>("PENALTYPARAM_THERMO",
               {.description = "Penalty parameter for Nitsche solution strategy",
                   .default_value = 0.0})},
-      {.required = false});
+      {.required = false}));
+  return specs;
 }
 
 FOUR_C_NAMESPACE_CLOSE

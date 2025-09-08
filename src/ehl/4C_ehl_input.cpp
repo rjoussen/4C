@@ -15,11 +15,12 @@ FOUR_C_NAMESPACE_OPEN
 
 
 
-void EHL::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
+std::vector<Core::IO::InputSpec> EHL::set_valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
 
-  list["ELASTO HYDRO DYNAMIC"] = group("ELASTO HYDRO DYNAMIC",
+  std::vector<Core::IO::InputSpec> specs;
+  specs.push_back(group("ELASTO HYDRO DYNAMIC",
       {
 
           // Output type
@@ -72,9 +73,9 @@ void EHL::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
           parameter<bool>("DRY_CONTACT_MODEL",
               {.description = "set unprojectable nodes to zero pressure via Dirichlet condition",
                   .default_value = false})},
-      {.required = false});
+      {.required = false}));
   /* parameters for monolithic EHL */
-  list["ELASTO HYDRO DYNAMIC/MONOLITHIC"] = group("ELASTO HYDRO DYNAMIC/MONOLITHIC",
+  specs.push_back(group("ELASTO HYDRO DYNAMIC/MONOLITHIC",
       {
 
           // convergence tolerance of EHL residual
@@ -151,12 +152,12 @@ void EHL::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
 
           parameter<bool>("INFNORMSCALING",
               {.description = "Scale blocks of matrix with row infnorm?", .default_value = true})},
-      {.required = false});
+      {.required = false}));
 
   /*----------------------------------------------------------------------*/
   /* parameters for partitioned EHL */
   /*----------------------------------------------------------------------*/
-  list["ELASTO HYDRO DYNAMIC/PARTITIONED"] = group("ELASTO HYDRO DYNAMIC/PARTITIONED",
+  specs.push_back(group("ELASTO HYDRO DYNAMIC/PARTITIONED",
       {
 
           // Solver parameter for relaxation of iterative staggered partitioned EHL
@@ -174,7 +175,8 @@ void EHL::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
               {.description =
                       "tolerance for convergence check of outer iteration within partitioned EHL",
                   .default_value = 1e-6})},
-      {.required = false});
+      {.required = false}));
+  return specs;
 }
 
 

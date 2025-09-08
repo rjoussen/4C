@@ -13,12 +13,14 @@ FOUR_C_NAMESPACE_OPEN
 
 
 
-void Inpar::Mortar::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
+std::vector<Core::IO::InputSpec> Inpar::Mortar::set_valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
 
   /* parameters for mortar coupling */
-  list["MORTAR COUPLING"] = group("MORTAR COUPLING",
+
+  std::vector<Core::IO::InputSpec> specs;
+  specs.push_back(group("MORTAR COUPLING",
       {
 
           deprecated_selection<Inpar::Mortar::ShapeFcn>("LM_SHAPEFCN",
@@ -157,9 +159,10 @@ void Inpar::Mortar::set_valid_parameters(std::map<std::string, Core::IO::InputSp
                       "feature, purely to enhance visualization. Currently, this is limited to "
                       "solid meshtying and contact w/o friction.",
                   .default_value = false})},
-      {.required = false}); /*--------------------------------------------------------------------*/
+      {.required = false}));
+  /*--------------------------------------------------------------------*/
   // parameters for parallel redistribution of mortar interfaces
-  list["MORTAR COUPLING/PARALLEL REDISTRIBUTION"] = group("MORTAR COUPLING/PARALLEL REDISTRIBUTION",
+  specs.push_back(group("MORTAR COUPLING/PARALLEL REDISTRIBUTION",
       {
 
           parameter<bool>("EXPLOIT_PROXIMITY",
@@ -209,7 +212,8 @@ void Inpar::Mortar::set_valid_parameters(std::map<std::string, Core::IO::InputSp
               {.description = "Print details of the parallel distribution, i.e. "
                               "number of nodes/elements for each rank.",
                   .default_value = true})},
-      {.required = false});
+      {.required = false}));
+  return specs;
 }
 
 void Inpar::Mortar::set_valid_conditions(

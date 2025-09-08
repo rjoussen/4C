@@ -20,11 +20,11 @@ namespace Inpar
     {
       /*----------------------------------------------------------------------*
        *----------------------------------------------------------------------*/
-      void set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
+      Core::IO::InputSpec set_valid_parameters()
       {
         using namespace Core::IO::InputSpecBuilders;
 
-        list["IO/RUNTIME VTK OUTPUT/FLUID"] = group("IO/RUNTIME VTK OUTPUT/FLUID",
+        Core::IO::InputSpec spec = group("IO/RUNTIME VTK OUTPUT/FLUID",
             {
                 // whether to write output for fluid
                 parameter<bool>(
@@ -63,6 +63,7 @@ namespace Inpar
                     {.description = "write 4C internal node GIDs", .default_value = false}),
             },
             {.required = false});
+        return spec;
       }
     }  // namespace FLUID
   }  // namespace IORuntimeOutput

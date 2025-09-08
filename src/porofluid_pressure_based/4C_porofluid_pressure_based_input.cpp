@@ -14,12 +14,12 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-void PoroPressureBased::set_valid_parameters_porofluid(
-    std::map<std::string, Core::IO::InputSpec>& list)
+std::vector<Core::IO::InputSpec> PoroPressureBased::set_valid_parameters_porofluid()
 {
   using namespace Core::IO::InputSpecBuilders;
 
-  list["porofluid_dynamic"] = group("porofluid_dynamic",
+  std::vector<Core::IO::InputSpec> specs;
+  specs.push_back(group("porofluid_dynamic",
       {
           parameter<double>("total_simulation_time",
               {.description = "Total simulation time", .default_value = -1.0}),
@@ -214,10 +214,10 @@ void PoroPressureBased::set_valid_parameters_porofluid(
               },
               {.required = false}),
       },
-      {.required = false});
+      {.required = false}));
 
   // artery meshtying
-  list["porofluid_dynamic/artery_coupling"] = group("porofluid_dynamic/artery_coupling",
+  specs.push_back(group("porofluid_dynamic/artery_coupling",
       {
           parameter<ArteryNetwork::ArteryPorofluidElastScatraCouplingMethod>(
               "coupling_method", {.description = "Coupling method for artery coupling."}),
@@ -322,7 +322,8 @@ void PoroPressureBased::set_valid_parameters_porofluid(
                       "parameter should lie between 0 and 1)",
                   .default_value = -1.0}),
       },
-      {.required = false});
+      {.required = false}));
+  return specs;
 }
 
 FOUR_C_NAMESPACE_CLOSE

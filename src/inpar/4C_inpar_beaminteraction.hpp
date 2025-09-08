@@ -14,7 +14,8 @@
 #include "4C_io_input_spec.hpp"
 #include "4C_utils_exceptions.hpp"
 
-#include <map>
+#include <vector>
+
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -185,7 +186,7 @@ namespace Inpar
         std::vector<Inpar::BeamInteraction::BeamInteractionConditions>& interactions);
 
     /// set the beam interaction parameters
-    void set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list);
+    std::vector<Core::IO::InputSpec> set_valid_parameters();
 
     /// set beam interaction specific conditions
     void set_valid_conditions(std::vector<Core::Conditions::ConditionDefinition>& condlist);

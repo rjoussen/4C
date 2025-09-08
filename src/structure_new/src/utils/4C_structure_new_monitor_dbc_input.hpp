@@ -16,7 +16,6 @@
 #include "4C_io_input_spec.hpp"
 #include "4C_utils_exceptions.hpp"
 
-#include <map>
 #include <memory>
 
 FOUR_C_NAMESPACE_OPEN
@@ -34,7 +33,7 @@ namespace Solid
     };
 
     /// set the valid parameters related to writing of output at runtime
-    void set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list);
+    Core::IO::InputSpec set_valid_parameters();
 
   }  // namespace IOMonitorStructureDBC
 }  // namespace Solid

@@ -12,7 +12,6 @@
 
 #include "4C_io_input_spec.hpp"
 
-#include <map>
 #include <vector>
 
 FOUR_C_NAMESPACE_OPEN
@@ -83,7 +82,7 @@ namespace ElCh
   };
 
   /// set the elch parameters
-  void set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list);
+  std::vector<Core::IO::InputSpec> set_valid_parameters();
 
   /// set specific elch conditions
   void set_valid_conditions(std::vector<Core::Conditions::ConditionDefinition>& condlist);

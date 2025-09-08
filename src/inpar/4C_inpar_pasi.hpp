@@ -15,7 +15,6 @@
 
 #include "4C_io_input_spec.hpp"
 
-#include <map>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -36,7 +35,7 @@ namespace Inpar
     };
 
     //! set valid parameters for particle structure interaction
-    void set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list);
+    Core::IO::InputSpec set_valid_parameters();
 
   }  // namespace PaSI
 

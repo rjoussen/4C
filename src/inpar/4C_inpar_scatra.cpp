@@ -22,11 +22,12 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-void Inpar::ScaTra::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
+std::vector<Core::IO::InputSpec> Inpar::ScaTra::set_valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
 
-  list["SCALAR TRANSPORT DYNAMIC"] = group("SCALAR TRANSPORT DYNAMIC",
+  std::vector<Core::IO::InputSpec> specs;
+  specs.push_back(group("SCALAR TRANSPORT DYNAMIC",
       {
 
           deprecated_selection<Inpar::ScaTra::SolverType>("SOLVERTYPE",
@@ -334,9 +335,9 @@ void Inpar::ScaTra::set_valid_parameters(std::map<std::string, Core::IO::InputSp
           // flag for adaptive time stepping
           parameter<bool>("ADAPTIVE_TIMESTEPPING",
               {.description = "flag for adaptive time stepping", .default_value = false})},
-      {.required =
-              false}); /*----------------------------------------------------------------------*/
-  list["SCALAR TRANSPORT DYNAMIC/NONLINEAR"] = group("SCALAR TRANSPORT DYNAMIC/NONLINEAR",
+      {.required = false}));
+  /*----------------------------------------------------------------------*/
+  specs.push_back(group("SCALAR TRANSPORT DYNAMIC/NONLINEAR",
       {
 
           parameter<int>(
@@ -369,16 +370,15 @@ void Inpar::ScaTra::set_valid_parameters(std::map<std::string, Core::IO::InputSp
                       "The linear solver shall be this much better than the current nonlinear "
                       "residual in the nonlinear convergence limit",
                   .default_value = 0.1})},
-      {.required = false});
+      {.required = false}));
 
   /*----------------------------------------------------------------------*/
-  list["SCALAR TRANSPORT DYNAMIC/STABILIZATION"] = group("SCALAR TRANSPORT DYNAMIC/STABILIZATION",
-      {all_specs_for_scatra_stabilization()}, {.required = false});
+  specs.push_back(group("SCALAR TRANSPORT DYNAMIC/STABILIZATION",
+      {all_specs_for_scatra_stabilization()}, {.required = false}));
 
   // ----------------------------------------------------------------------
   // artery mesh tying
-  list["SCALAR TRANSPORT DYNAMIC/ARTERY COUPLING"] = group(
-      "SCALAR TRANSPORT DYNAMIC/ARTERY COUPLING",
+  specs.push_back(group("SCALAR TRANSPORT DYNAMIC/ARTERY COUPLING",
       {
           parameter<ArteryNetwork::ArteryPorofluidElastScatraCouplingMethod>("coupling_method",
               {.description = "Coupling method for artery coupling.",
@@ -423,10 +423,10 @@ void Inpar::ScaTra::set_valid_parameters(std::map<std::string, Core::IO::InputSp
               },
               {.required = false}),
       },
-      {.required = false});
+      {.required = false}));
 
   // ----------------------------------------------------------------------
-  list["SCALAR TRANSPORT DYNAMIC/EXTERNAL FORCE"] = group("SCALAR TRANSPORT DYNAMIC/EXTERNAL FORCE",
+  specs.push_back(group("SCALAR TRANSPORT DYNAMIC/EXTERNAL FORCE",
       {
 
           // Flag for external force
@@ -440,7 +440,8 @@ void Inpar::ScaTra::set_valid_parameters(std::map<std::string, Core::IO::InputSp
           // Function ID for mobility of the scalar
           parameter<int>("INTRINSIC_MOBILITY_FUNCTION_ID",
               {.description = "Function ID for intrinsic mobility", .default_value = -1})},
-      {.required = false});
+      {.required = false}));
+  return specs;
 }
 
 

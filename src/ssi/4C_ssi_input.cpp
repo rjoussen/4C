@@ -15,11 +15,12 @@
 #include "4C_linalg_sparseoperator.hpp"
 FOUR_C_NAMESPACE_OPEN
 
-void SSI::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
+std::vector<Core::IO::InputSpec> SSI::set_valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
 
-  list["SSI CONTROL"] = group("SSI CONTROL",
+  std::vector<Core::IO::InputSpec> specs;
+  specs.push_back(group("SSI CONTROL",
       {
 
           // Output type
@@ -100,11 +101,11 @@ void SSI::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
           parameter<bool>("REDISTRIBUTE_SOLID",
               {.description = "redistribution by binning of solid mechanics discretization",
                   .default_value = false})},
-      {.required =
-              false}); /*----------------------------------------------------------------------*/
+      {.required = false}));
+  /*----------------------------------------------------------------------*/
   /* parameters for partitioned SSI */
   /*----------------------------------------------------------------------*/
-  list["SSI CONTROL/PARTITIONED"] = group("SSI CONTROL/PARTITIONED",
+  specs.push_back(group("SSI CONTROL/PARTITIONED",
       {
 
           // Solver parameter for relaxation of iterative staggered partitioned SSI
@@ -122,12 +123,12 @@ void SSI::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
               {.description =
                       "tolerance for convergence check of outer iteration within partitioned SSI",
                   .default_value = 1e-6})},
-      {.required = false});
+      {.required = false}));
 
   /*----------------------------------------------------------------------*/
   /* parameters for monolithic SSI */
   /*----------------------------------------------------------------------*/
-  list["SSI CONTROL/MONOLITHIC"] = group("SSI CONTROL/MONOLITHIC",
+  specs.push_back(group("SSI CONTROL/MONOLITHIC",
       {
 
           // convergence tolerances of Newton-Raphson iteration loop
@@ -183,13 +184,12 @@ void SSI::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
               {.description = "relax the tolerance of the linear solver within "
                               "the first RELAX_LIN_SOLVER_STEP steps",
                   .default_value = -1})},
-      {.required = false});
+      {.required = false}));
 
   /*----------------------------------------------------------------------*/
   /* parameters for SSI with manifold */
   /*----------------------------------------------------------------------*/
-
-  list["SSI CONTROL/MANIFOLD"] = group("SSI CONTROL/MANIFOLD",
+  specs.push_back(group("SSI CONTROL/MANIFOLD",
       {
 
           parameter<bool>("ADD_MANIFOLD",
@@ -221,18 +221,19 @@ void SSI::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
               "OUTPUT_INFLOW", {.description = "write output of inflow of scatra manifold - scatra "
                                                "coupling into scatra manifold to csv file",
                                    .default_value = false})},
-      {.required = false});
+      {.required = false}));
 
   /*----------------------------------------------------------------------*/
   /* parameters for SSI with elch */
   /*----------------------------------------------------------------------*/
-  list["SSI CONTROL/ELCH"] = group("SSI CONTROL/ELCH",
+  specs.push_back(group("SSI CONTROL/ELCH",
       {
 
           parameter<bool>("INITPOTCALC",
               {.description = "Automatically calculate initial field for electric potential",
                   .default_value = false})},
-      {.required = false});
+      {.required = false}));
+  return specs;
 }
 
 /*--------------------------------------------------------------------

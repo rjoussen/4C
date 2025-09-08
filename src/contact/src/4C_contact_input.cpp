@@ -14,12 +14,12 @@ FOUR_C_NAMESPACE_OPEN
 
 
 
-void CONTACT::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
+Core::IO::InputSpec CONTACT::set_valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
 
   /* parameters for structural meshtying and contact */
-  list["CONTACT DYNAMIC"] = group("CONTACT DYNAMIC",
+  Core::IO::InputSpec spec = group("CONTACT DYNAMIC",
       {
 
           parameter<int>("LINEAR_SOLVER",
@@ -223,6 +223,7 @@ void CONTACT::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& l
               {.description = "initial contact stiffness (i.e. initial \"penalty parameter\")",
                   .default_value = -1.})},
       {.required = false});
+  return spec;
 }
 
 FOUR_C_NAMESPACE_CLOSE

@@ -13,11 +13,12 @@
 #include "4C_thermo_input.hpp"
 FOUR_C_NAMESPACE_OPEN
 
-void Inpar::IO::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
+std::vector<Core::IO::InputSpec> Inpar::IO::set_valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
 
-  list["IO"] = group("IO",
+  std::vector<Core::IO::InputSpec> specs;
+  specs.push_back(group("IO",
       {
 
           parameter<bool>("OUTPUT_GMSH", {.description = "", .default_value = false}),
@@ -196,8 +197,8 @@ void Inpar::IO::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>&
                   .default_value = -1.0}),
           parameter<int>("RESTARTEVERY",
               {.description = "write restart every RESTARTEVERY steps", .default_value = -1})},
-      {.required = false});
-  list["IO/EVERY ITERATION"] = group("IO/EVERY ITERATION",
+      {.required = false}));
+  specs.push_back(group("IO/EVERY ITERATION",
       {
 
           // Output every iteration (for debugging purposes)
@@ -222,7 +223,8 @@ void Inpar::IO::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>&
                       "If yes, the ownership of elements and nodes are written each Newton step, "
                       "instead of only once per time/load step.",
                   .default_value = false})},
-      {.required = false});
+      {.required = false}));
+  return specs;
 }
 
 FOUR_C_NAMESPACE_CLOSE

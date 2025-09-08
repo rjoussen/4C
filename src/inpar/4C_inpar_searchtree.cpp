@@ -12,11 +12,10 @@ FOUR_C_NAMESPACE_OPEN
 
 
 
-void Inpar::Geo::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
+Core::IO::InputSpec Inpar::Geo::set_valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
-
-  list["SEARCH TREE"] = group("SEARCH TREE",
+  Core::IO::InputSpec spec = group("SEARCH TREE",
       {
 
           deprecated_selection<Inpar::Geo::TreeType>("TREE_TYPE",
@@ -28,6 +27,7 @@ void Inpar::Geo::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>
               },
               {.description = "set tree type", .default_value = Inpar::Geo::Notree})},
       {.required = false});
+  return spec;
 }
 
 FOUR_C_NAMESPACE_CLOSE

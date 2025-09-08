@@ -15,7 +15,6 @@
 
 #include "4C_io_input_spec.hpp"
 
-#include <map>
 #include <memory>
 
 FOUR_C_NAMESPACE_OPEN
@@ -28,7 +27,7 @@ namespace Inpar
     namespace FLUID
     {
       /// set the valid parameters related to writing of output at runtime
-      void set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list);
+      Core::IO::InputSpec set_valid_parameters();
 
     }  // namespace FLUID
   }  // namespace IORuntimeOutput
