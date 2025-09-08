@@ -191,6 +191,7 @@ The following scenarios are covered by 4C:
    - If Lagrange multipliers are kept as unknowns in the linear system, it exhibits a block structure. It is beneficial to tailor the preconditioner to this block structure.
    - If Lagrange multipliers have been removed from the system through static condensation, the layout of the system does not differ very much from a regular solid mechanics problem. Knowledge about the contact interface might still be beneficial for designing a good preconditioner.
 
+.. _solver-interfaces:
 
 Solver Interfaces
 -------------------
