@@ -1,0 +1,60 @@
+<?xml version="1.0" ?> 
+<!-- 
+# vtk DataFile Version 3.0
+-->
+<VTKFile type="UnstructuredGrid" version="0.1" compressor="vtkZLibDataCompressor" byte_order="LittleEndian">
+  <UnstructuredGrid>
+    <FieldData>
+      <DataArray type="Float64" Name="TIME" NumberOfTuples="1" format="ascii">
+1.000000000000000e+00 
+      </DataArray>
+    </FieldData>
+
+    <Piece NumberOfPoints="12" NumberOfCells="2" >
+      <Points>
+        <DataArray type="Float64" NumberOfComponents="3" format="binary">
+AQAAACABAAAgAQAAawAAAA==eAGbGnJ7W+5tJgdjMLhszwAFAqseae97xIwh3vv/5QK+VywY4hyhH0XjP7I6mKCZ07LqR9f6H2wY6hnB9nBgiEOsxxQ/ewYEMMVnzQQBTgxzMtJAgAtD3AjsPm4HCI3wL8ReHgz1AGuWPL8=
+        </DataArray>
+      </Points>
+
+      <Cells>
+        <DataArray type="Int32" Name="connectivity" format="binary">
+AQAAADAAAAAwAAAAIQAAAA==eAENw4cNACAAA6C61///CglJUqw2u8Ppcnu8Pj8EqABD
+
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="binary">
+AQAAAAgAAAAIAAAADgAAAA==eAFjY2Bg4AFiAABoABM=
+
+        </DataArray>
+        <DataArray type="UInt8" Name="types" format="binary">
+AQAAAAIAAAACAAAACgAAAA==eAFjYQEAAA4ACQ==
+
+        </DataArray>
+      </Cells>
+
+  <PointData>
+        <DataArray type="Float64" Name="displacement" NumberOfComponents="3" format="binary">
+AQAAACABAAAgAQAAJQEAAA==eAFzWLBG5fSnE/sX6O28zuM1bf9UYcOvn7l+2iucXq9VuPrkfoYJgnnT3k7bn274+ID10p/2Bnv3lbUnn9rvsLD4qt7E6fudprJtcLX/Zb9gQ2e9k/Tp/QbXt65/bTJjP19EoIH6zV/2Ag8O7L526fR+h2Xr5j26MWP/lkmV678W/bZ/0CqyqKLrzP6EZhMXzdqZ+2XiTGcf4/ljfwCH+ITJ9a/LJM/uP/DrXorx35n7C4/E1lW0/LE3EON8unXF2f0X+h4xttbO2i8o1PrE6c8f+4Ked7Z+Fuf2b8i+7qHxb9Z+ryt7HumX/LVXKM1dGnHi3P4Pe0PT1etn70+aIdbn+eavfYD/4VNvI87vv7Dxa1cPw5z9614v/j0z5Z89ADv5nWA=
+        </DataArray>
+        <DataArray type="Float64" Name="lambda" NumberOfComponents="3" format="binary">
+AQAAACABAAAgAQAAJwEAAA==eAHzunj5kAzfBzsm9h1b94ddtWtpirU9tIzL3muv0P+ty5/t2yATzOo056jdvbWXHU7sULI/Y3+ndosbw34upj1+WxmW2R0JrbskxK5jf+zEnRlu59n3S0l9XPpr1rJ9Gmu0lTy8DO2dvI5dWOzMs/9CQewT5o3b9x2J0vdeYGBs73BkhuqZxbz7vVZd4LHU2rVvs5nXk4nbjO3toeLuUPFNUHHenRNPHZ7Cs1/C3/34Feut+xhcW1lktY3tv3Ykl7xawbmft//mzcuzl+z7PP/Xs8pThvY/jfmUHR6w7N+x8TeHXN0sO4n+EPFATX17oxLltZ2lf/YdPmPdVt+z125GucbTQGFNe/fcHdaPHj7bt/9NC3+9zVm7hJ8F5t+CFO0BMyKJQg==
+        </DataArray>
+        <DataArray type="Int32" Name="uid_0_pair_beam_id" format="binary">
+AQAAADAAAAAwAAAADwAAAA==eAETYGBgECABAwATsADB
+        </DataArray>
+        <DataArray type="Int32" Name="uid_1_pair_solid_id" format="binary">
+AQAAADAAAAAwAAAAEwAAAA==eAFjZ2BgYMeCOYBi2DAACQwAWw==
+        </DataArray>
+  </PointData>
+  <CellData>
+        <DataArray type="Int32" Name="uid_0_pair_beam_id" format="binary">
+AQAAAAgAAAAIAAAADgAAAA==eAETYGBgEABiAADIACE=
+        </DataArray>
+        <DataArray type="Int32" Name="uid_1_pair_solid_id" format="binary">
+AQAAAAgAAAAIAAAADgAAAA==eAFjZ2Bg4ABiAABgABA=
+        </DataArray>
+      </CellData>
+
+    </Piece>
+  </UnstructuredGrid>
+</VTKFile>
