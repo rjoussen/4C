@@ -108,7 +108,7 @@ namespace Core::LinAlg
     const int N = dim;
 
     // copy contents of the matrix A, since it will be destroyed
-    Matrix<dim, dim> tmp(A.data(), false);
+    Matrix<dim, dim> tmp = A;
 
     // leading dimension of the array A
     const int lda = dim;
@@ -133,8 +133,6 @@ namespace Core::LinAlg
     // return eigenvalues
     S.clear();
     for (unsigned int i = 0; i < dim; ++i) S(i, i) = w[i];
-
-    return;
   }
 
   /*!
@@ -164,7 +162,7 @@ namespace Core::LinAlg
     const int N = dim;
 
     // copy contents of the matrix A, since it will be destroyed
-    Matrix<dim, dim> tmp(A.data(), false);
+    Matrix<dim, dim> tmp = A;
 
     // leading dimension of the array A
     const int lda = dim;  //  LDA >=max(1,N)
@@ -235,10 +233,102 @@ namespace Core::LinAlg
     // return eigenvalues
     S.clear();
     for (unsigned int j = 0; j < dim; ++j) S(j, j) = std::complex<double>(wr[j], wi[j]);
-
-    return;
   }
 
+  /*!
+   * \brief Compute all (generally complex) generalized eigenvalues and right eigenvectors
+   *        of a pair of real, square, not necessarily symmetric matrices A and B.
+   *
+   * Solve the generalized eigenvalue problem
+   *
+   *    A * v = lambda * B * v
+   *
+   * where lambda = alpha / beta is the generalized eigenvalue returned by LAPACK GGEV.
+   *
+   * \note The eigenvalues are not sorted!
+   *
+   * \param A (in):  M-by-M matrix A
+   * \param B (in):  M-by-M matrix B
+   * \param S (out): M-by-M diagonal matrix holding the generalized eigenvalues
+   * \param V (out): M-by-M matrix whose columns are the generalized right eigenvectors
+   */
+  template <unsigned int dim>
+  void ggev(const Core::LinAlg::Matrix<dim, dim, double>& A,
+      const Core::LinAlg::Matrix<dim, dim, double>& B,
+      Core::LinAlg::Matrix<dim, dim, std::complex<double>>& S,
+      Core::LinAlg::Matrix<dim, dim, std::complex<double>>& V)
+  {
+    // ----- settings for generalized eigendecomposition ----- //
+
+    const char jobvl = 'N';  // do not compute left eigenvectors
+    const char jobvr = 'V';  // compute right eigenvectors
+
+    const int N = dim;
+
+    // Copy A and B since they will be overwritten by LAPACK
+    Matrix<dim, dim> tmpA = A;
+    Matrix<dim, dim> tmpB = B;
+
+    const int lda = dim;
+    const int ldb = dim;
+
+    // Eigenvalue parts: alpha = (alphar, alphai), beta
+    std::array<double, dim> alphar;
+    std::array<double, dim> alphai;
+    std::array<double, dim> beta;
+
+    // Left and right eigenvectors
+    const int ldvl = dim;
+    std::array<double, ldvl * N> vl;
+    const int ldvr = dim;
+    std::array<double, ldvr * N> vr;
+
+    // Work array
+    const int lwork = 2 * dim * dim + 6 * dim + 1;
+    std::array<double, lwork> work;
+    int info;
+
+    // ----- perform generalized eigendecomposition ----- //
+    Teuchos::LAPACK<int, double> lapack;
+    lapack.GGEV(jobvl, jobvr, N, tmpA.data(), lda, tmpB.data(), ldb, alphar.data(), alphai.data(),
+        beta.data(), vl.data(), ldvl, vr.data(), ldvr, work.data(), lwork, &info);
+
+    FOUR_C_ASSERT_ALWAYS(info == 0, "Lapack's GGEV returned {}", info);
+
+    // save the temporary right eigenvectors (real format)
+    Matrix<dim, dim> temp_V(vr.data());
+
+    // build the complex eigenvector matrix V
+    unsigned int i = 0;
+    while (i < dim)
+    {
+      if (std::abs(alphai[i]) > 0.0)
+      {
+        // complex conjugate eigenpair
+        for (unsigned int j = 0; j < dim; ++j)
+        {
+          V(j, i) = std::complex(temp_V(j, i), temp_V(j, i + 1));
+          V(j, i + 1) = std::complex(temp_V(j, i), -temp_V(j, i + 1));
+        }
+        i += 2;
+      }
+      else
+      {
+        for (unsigned int j = 0; j < dim; ++j)
+        {
+          V(j, i) = std::complex(temp_V(j, i), 0.0);
+        }
+        i += 1;
+      }
+    }
+
+    // return eigenvalues: lambda = alpha / beta
+    S.clear();
+    for (unsigned int j = 0; j < dim; ++j)
+    {
+      S(j, j) = std::complex<double>(alphar[j], alphai[j]) / beta[j];
+    }
+  }
 
 }  // namespace Core::LinAlg
 

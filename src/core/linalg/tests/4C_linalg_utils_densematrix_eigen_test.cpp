@@ -144,6 +144,43 @@ namespace
     FOUR_C_EXPECT_NEAR(A, A_result, 1e-9);
   }
 
+  template <unsigned int size, size_t length>
+  void assert_generalized_eigen_problem(const Core::LinAlg::Matrix<size, size>& A,
+      const Core::LinAlg::Matrix<size, size>& B,
+      const Core::LinAlg::Matrix<size, size, std::complex<double>>& eigenvalues,
+      const Core::LinAlg::Matrix<size, size, std::complex<double>>& eigenvectors,
+      const std::array<std::complex<double>, length>& eig_compare)
+  {
+    // First, check eigenvalues against reference
+    assert_eigen_values(eigenvalues, eig_compare);
+
+    // Compute A * V
+    Core::LinAlg::Matrix<size, size, std::complex<double>> AV(Core::LinAlg::Initialization::zero);
+    AV.multiply_nn(A, eigenvectors);
+
+    // Compute B * V * S
+    Core::LinAlg::Matrix<size, size, std::complex<double>> BV(Core::LinAlg::Initialization::zero);
+    BV.multiply_nn(B, eigenvectors);
+
+    Core::LinAlg::Matrix<size, size, std::complex<double>> BVS(Core::LinAlg::Initialization::zero);
+    BVS.multiply_nn(BV, eigenvalues);
+
+    // Convert both results back to real form (imaginary part should vanish)
+    Core::LinAlg::Matrix<size, size> AV_real(Core::LinAlg::Initialization::zero);
+    Core::LinAlg::Matrix<size, size> BVS_real(Core::LinAlg::Initialization::zero);
+
+    for (unsigned int i = 0; i < size; ++i)
+    {
+      for (unsigned int j = 0; j < size; ++j)
+      {
+        AV_real(i, j) = AV(i, j).real();
+        BVS_real(i, j) = BVS(i, j).real();
+      }
+    }
+
+    FOUR_C_EXPECT_NEAR(AV_real, BVS_real, 1e-9);
+  }
+
   /*
    * \note The values for the matrix used in tests below are generated with python/numpy
    */
@@ -245,6 +282,37 @@ namespace
     Core::LinAlg::geev(A, S, V);
 
     assert_eigen_problem(A, S, V, eigenvalues);
+  }
+
+  TEST(LinalgDenseMatrixEigenTest, 2x2GGEV)
+  {
+    // Define A and B for the generalized eigenvalue problem A v = w B v
+    Core::LinAlg::Matrix<2, 2> A(Core::LinAlg::Initialization::uninitialized);
+    A(0, 0) = 1.0;
+    A(0, 1) = 2.0;
+    A(1, 0) = 3.0;
+    A(1, 1) = 4.0;
+
+    Core::LinAlg::Matrix<2, 2> B(Core::LinAlg::Initialization::uninitialized);
+    B(0, 0) = 2.0;
+    B(0, 1) = 0.0;
+    B(1, 0) = 0.0;
+    B(1, 1) = 1.0;
+
+    // Expected generalized eigenvalues
+    // Solve det(A - w B) = 0 => det([[1-2w, 2], [3, 4-w]]) = 0
+    // => (1-2w)(4-w) - 6 = 0 => 2w^2 - 9w - 2 = 0
+    // => w = (9 +- sqrt(81 + 16)) / 4 = (9 +- sqrt(97)) / 4
+    std::array eigenvalues{std::complex<double>((9.0 - std::sqrt(97.0)) / 4.0, 0.0),
+        std::complex<double>((9.0 + std::sqrt(97.0)) / 4.0, 0.0)};
+
+    // Run wrapper
+    Core::LinAlg::Matrix<2, 2, std::complex<double>> V(Core::LinAlg::Initialization::uninitialized);
+    Core::LinAlg::Matrix<2, 2, std::complex<double>> S(Core::LinAlg::Initialization::uninitialized);
+    Core::LinAlg::ggev(A, B, S, V);
+
+    // Verify solution of A v = w B v
+    assert_generalized_eigen_problem(A, B, S, V, eigenvalues);
   }
 
   TEST(LinalgDenseMatrixEigenTest, 3x3SymmetricEigenValues)
@@ -378,6 +446,45 @@ namespace
     assert_eigen_problem(A, S, V, eigenvalues);
   }
 
+  TEST(LinalgDenseMatrixEigenTest, 3x3GGEV)
+  {
+    // Nonsymmetric A (same as in the 3x3 GEEV test)
+    Core::LinAlg::Matrix<3, 3> A(Core::LinAlg::Initialization::uninitialized);
+    A(0, 0) = 0.9876543212345678;
+    A(0, 1) = 1.2345678901234567;
+    A(0, 2) = 2.3456789012345678;
+    A(1, 0) = -1.2345678901234567;
+    A(1, 1) = 0.8765432109876543;
+    A(1, 2) = 3.4567890123456789;
+    A(2, 0) = 1.6789012345678901;
+    A(2, 1) = 3.4567890123456789;
+    A(2, 2) = 2.3456789012345678;
+
+    // Nonsymmetric, invertible B
+    Core::LinAlg::Matrix<3, 3> B(Core::LinAlg::Initialization::uninitialized);
+    B(0, 0) = 1.0;
+    B(0, 1) = 0.5;
+    B(0, 2) = 0.0;
+    B(1, 0) = 0.0;
+    B(1, 1) = 2.0;
+    B(1, 2) = 0.1;
+    B(2, 0) = 0.2;
+    B(2, 1) = 0.0;
+    B(2, 2) = 3.0;
+
+    // Expected generalized eigenvalues (computed numerically)
+    std::array eigenvalues{std::complex<double>(-0.8389339358750962, 0.0),
+        std::complex<double>(1.2853108039374150, 0.0),
+        std::complex<double>(1.9278544230051273, 0.0)};
+
+    // Run wrapper
+    Core::LinAlg::Matrix<3, 3, std::complex<double>> V(Core::LinAlg::Initialization::uninitialized);
+    Core::LinAlg::Matrix<3, 3, std::complex<double>> S(Core::LinAlg::Initialization::uninitialized);
+    Core::LinAlg::ggev(A, B, S, V);
+
+    // Verify A v = w B v
+    assert_generalized_eigen_problem(A, B, S, V, eigenvalues);
+  }
 
   TEST(LinalgDenseMatrixEigenTest, 4x4SymmetricEigenValues)
   {
