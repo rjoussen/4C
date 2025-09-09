@@ -211,48 +211,6 @@ Core::LinAlg::SparseMatrix::SparseMatrix(const Core::LinAlg::Vector<double>& dia
   }
 }
 
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-bool Core::LinAlg::SparseMatrix::destroy(bool throw_exception)
-{
-  // delete first the epetra matrix object
-  if (throw_exception and sysmat_.use_count() > 1)
-  {
-    std::stringstream msg;
-    msg << "Epetra_CrsMatrix cannot be finally deleted: The strong counter "
-           "is still larger than 1. ( use_count() = "
-        << sysmat_.use_count() << " )";
-    FOUR_C_THROW("{}", msg.str());
-  }
-  sysmat_ = nullptr;
-
-  // delete now also the matrix' graph
-  if (throw_exception and graph_.use_count() > 1)
-  {
-    std::stringstream msg;
-    msg << "Graph cannot be finally deleted: The strong counter is "
-           "still larger than 1. ( use_count() = "
-        << graph_.use_count() << " )";
-    FOUR_C_THROW("{}", msg.str());
-  }
-  graph_ = nullptr;
-
-  // delete now also the matrix' graph
-  if (throw_exception and dbcmaps_.use_count() > 1)
-  {
-    std::stringstream msg;
-    msg << "DBCMaps cannot be finally deleted: The strong counter is still "
-           "larger than 1. ( use_count() = "
-        << dbcmaps_.use_count() << " )";
-    FOUR_C_THROW("{}", msg.str());
-  }
-  dbcmaps_ = nullptr;
-
-  return true;
-}
-
-
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Core::LinAlg::SparseMatrix& Core::LinAlg::SparseMatrix::operator=(const SparseMatrix& mat)
@@ -1631,7 +1589,7 @@ int Core::LinAlg::SparseMatrix::extract_global_row_view(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 int Core::LinAlg::SparseMatrix::insert_my_values(
-    int my_row, int num_entries, const double* values, const int* indices) const
+    int my_row, int num_entries, const double* values, const int* indices)
 {
   return sysmat_->InsertMyValues(my_row, num_entries, values, indices);
 }
@@ -1639,7 +1597,7 @@ int Core::LinAlg::SparseMatrix::insert_my_values(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 int Core::LinAlg::SparseMatrix::sum_into_my_values(
-    int my_row, int num_entries, const double* values, const int* indices) const
+    int my_row, int num_entries, const double* values, const int* indices)
 {
   return sysmat_->SumIntoMyValues(my_row, num_entries, values, indices);
 }
@@ -1647,7 +1605,7 @@ int Core::LinAlg::SparseMatrix::sum_into_my_values(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 int Core::LinAlg::SparseMatrix::replace_my_values(
-    int my_row, int num_entries, const double* values, const int* indices) const
+    int my_row, int num_entries, const double* values, const int* indices)
 {
   return sysmat_->ReplaceMyValues(my_row, num_entries, values, indices);
 }
@@ -1655,7 +1613,7 @@ int Core::LinAlg::SparseMatrix::replace_my_values(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 int Core::LinAlg::SparseMatrix::replace_global_values(
-    int global_row, int num_entries, const double* values, const int* indices) const
+    int global_row, int num_entries, const double* values, const int* indices)
 {
   return sysmat_->ReplaceGlobalValues(global_row, num_entries, values, indices);
 }
@@ -1663,7 +1621,7 @@ int Core::LinAlg::SparseMatrix::replace_global_values(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 int Core::LinAlg::SparseMatrix::insert_global_values(
-    int global_row, int num_entries, const double* values, const int* indices) const
+    int global_row, int num_entries, const double* values, const int* indices)
 {
   return sysmat_->InsertGlobalValues(global_row, num_entries, values, indices);
 }
@@ -1671,7 +1629,7 @@ int Core::LinAlg::SparseMatrix::insert_global_values(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 int Core::LinAlg::SparseMatrix::sum_into_global_values(
-    int global_row, int num_entries, const double* values, const int* indices) const
+    int global_row, int num_entries, const double* values, const int* indices)
 {
   return sysmat_->SumIntoGlobalValues(global_row, num_entries, values, indices);
 }

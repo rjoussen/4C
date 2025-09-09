@@ -47,9 +47,6 @@ namespace Core::LinAlg
     /// make a copy of me
     virtual std::unique_ptr<BlockSparseMatrixBase> clone(DataAccess access) = 0;
 
-    /// destroy the underlying Epetra objects
-    virtual bool destroy(bool throw_exception_for_blocks = true);
-
     /// setup of block preconditioners
     /*!
       This method can be implemented by subclasses that implement

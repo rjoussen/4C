@@ -372,10 +372,10 @@ void Core::LinAlg::split_matrix2x2(
 
   if (ABlock.rows() != 2 || ABlock.cols() != 2) FOUR_C_THROW("Can only split in 2x2 system");
   if (!ASparse.filled()) FOUR_C_THROW("SparseMatrix must be filled");
-  const Core::LinAlg::SparseMatrix& A11 = ABlock(0, 0);
-  const Core::LinAlg::SparseMatrix& A12 = ABlock(0, 1);
-  const Core::LinAlg::SparseMatrix& A21 = ABlock(1, 0);
-  const Core::LinAlg::SparseMatrix& A22 = ABlock(1, 1);
+  Core::LinAlg::SparseMatrix& A11 = ABlock(0, 0);
+  Core::LinAlg::SparseMatrix& A12 = ABlock(0, 1);
+  Core::LinAlg::SparseMatrix& A21 = ABlock(1, 0);
+  Core::LinAlg::SparseMatrix& A22 = ABlock(1, 1);
   if (A11.filled() || A12.filled() || A21.filled() || A22.filled())
     FOUR_C_THROW("Sub-matrices of the block operator are expected to be not filled");
   const Core::LinAlg::Map& A11rmap = ABlock.range_map(0);

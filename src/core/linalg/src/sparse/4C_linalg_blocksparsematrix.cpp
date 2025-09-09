@@ -32,36 +32,6 @@ Core::LinAlg::BlockSparseMatrixBase::BlockSparseMatrixBase(const MultiMapExtract
   }
 }
 
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-bool Core::LinAlg::BlockSparseMatrixBase::destroy(bool throw_exception_for_blocks)
-{
-  /// destroy matrix blocks
-  for (auto& block : blocks_)
-  {
-    block.destroy(throw_exception_for_blocks);
-  }
-  /// destroy full matrix row map
-  if (fullrowmap_.use_count() > 1)
-  {
-    FOUR_C_THROW("fullrowmap_ cannot be finally deleted - any RCP ({}>1) still points to it",
-        fullrowmap_.use_count());
-  }
-  fullrowmap_ = nullptr;
-
-  /// destroy full matrix column map
-  if (fullcolmap_.use_count() > 1)
-  {
-    FOUR_C_THROW("fullrowmap_ cannot be finally deleted - any RCP ({}>1) still points to it",
-        fullrowmap_.use_count());
-  }
-  fullcolmap_ = nullptr;
-
-  return true;
-}
-
-
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 std::shared_ptr<Core::LinAlg::SparseMatrix> Core::LinAlg::BlockSparseMatrixBase::merge(
