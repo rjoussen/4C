@@ -99,7 +99,7 @@ namespace Core::LinAlg
     const int N = dim;
 
     // copy contents of the matrix A, since it will be destroyed
-    Matrix<dim, dim> tmp(A.data(), false);
+    Matrix<dim, dim> tmp = A;
 
     // leading dimension of the array A
     const int lda = dim;
@@ -124,8 +124,6 @@ namespace Core::LinAlg
     // return eigenvalues
     S.clear();
     for (unsigned int i = 0; i < dim; ++i) S(i, i) = w[i];
-
-    return;
   }
 
   /*!
@@ -155,7 +153,7 @@ namespace Core::LinAlg
     const int N = dim;
 
     // copy contents of the matrix A, since it will be destroyed
-    Matrix<dim, dim> tmp(A.data(), false);
+    Matrix<dim, dim> tmp = A;
 
     // leading dimension of the array A
     const int lda = dim;  //  LDA >=max(1,N)
@@ -226,8 +224,6 @@ namespace Core::LinAlg
     // return eigenvalues
     S.clear();
     for (unsigned int j = 0; j < dim; ++j) S(j, j) = std::complex<double>(wr[j], wi[j]);
-
-    return;
   }
 
   /*!
@@ -261,8 +257,8 @@ namespace Core::LinAlg
     const int N = dim;
 
     // Copy A and B since they will be overwritten by LAPACK
-    Matrix<dim, dim> tmpA(A.data(), false);
-    Matrix<dim, dim> tmpB(B.data(), false);
+    Matrix<dim, dim> tmpA = A;
+    Matrix<dim, dim> tmpB = B;
 
     const int lda = dim;
     const int ldb = dim;
@@ -323,8 +319,6 @@ namespace Core::LinAlg
     {
       S(j, j) = std::complex<double>(alphar[j], alphai[j]) / beta[j];
     }
-
-    return;
   }
 
 }  // namespace Core::LinAlg
