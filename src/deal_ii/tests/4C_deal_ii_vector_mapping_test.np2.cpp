@@ -7,7 +7,6 @@
 
 #include <gtest/gtest.h>
 
-#include "4C_deal_ii_create_discretization_helper_test.hpp"
 #include "4C_deal_ii_dofs.hpp"
 #include "4C_deal_ii_triangulation.hpp"
 #include "4C_deal_ii_vector_conversion.hpp"
@@ -16,6 +15,7 @@
 #include "4C_fem_general_extract_values.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "4C_unittest_utils_create_discretization_helper_test.hpp"
 
 #include <deal.II/distributed/fully_distributed_tria.h>
 #include <deal.II/dofs/dof_tools.h>
