@@ -378,7 +378,7 @@ void Core::LinearSolver::AmGnxnOperator::setup()
     for (int j = 0; j < NumBlocks; j++)
     {
       Teuchos::RCP<Core::LinAlg::SparseMatrix> Aij = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
-          a_->matrix(i, j), Core::LinAlg::DataAccess::View);
+          a_->matrix(i, j), Core::LinAlg::DataAccess::Share);
       Able->set_matrix(Aij, i, j);
     }
   }
@@ -519,7 +519,7 @@ void Core::LinearSolver::BlockSmootherOperator::setup()
     for (int j = 0; j < NumBlocks; j++)
     {
       Teuchos::RCP<Core::LinAlg::SparseMatrix> Aij = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
-          a_->matrix(i, j), Core::LinAlg::DataAccess::View);
+          a_->matrix(i, j), Core::LinAlg::DataAccess::Share);
       Able->set_matrix(Aij, i, j);
     }
   }

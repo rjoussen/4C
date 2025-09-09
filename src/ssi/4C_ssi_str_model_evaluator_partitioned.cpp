@@ -107,7 +107,7 @@ bool Solid::ModelEvaluator::PartitionedSSI::assemble_jacobian(
     jac_new.apply_dirichlet(*slavemaps);
 
     // replace old Jacobian by new one
-    jac_sparse.assign(Core::LinAlg::DataAccess::View, jac_new);
+    jac_sparse.assign(Core::LinAlg::DataAccess::Share, jac_new);
   }
 
   return true;

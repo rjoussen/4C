@@ -497,7 +497,7 @@ void FSI::MonolithicXFEM::setup_system_matrix()
     s->scale(scaling_S);
 
     // assign the structure sysmat diagonal block
-    systemmatrix_->assign(structp_block_, structp_block_, Core::LinAlg::DataAccess::View, *s);
+    systemmatrix_->assign(structp_block_, structp_block_, Core::LinAlg::DataAccess::Share, *s);
   }
   else  // we use a block structure for poro
   {
@@ -506,13 +506,13 @@ void FSI::MonolithicXFEM::setup_system_matrix()
     ps->un_complete();
     ps->scale(scaling_S);
     systemmatrix_->assign(
-        structp_block_, structp_block_, Core::LinAlg::DataAccess::View, ps->matrix(0, 0));  // psps
+        structp_block_, structp_block_, Core::LinAlg::DataAccess::Share, ps->matrix(0, 0));  // psps
     systemmatrix_->assign(
-        fluidp_block_, structp_block_, Core::LinAlg::DataAccess::View, ps->matrix(1, 0));  // pfps
+        fluidp_block_, structp_block_, Core::LinAlg::DataAccess::Share, ps->matrix(1, 0));  // pfps
     systemmatrix_->assign(
-        structp_block_, fluidp_block_, Core::LinAlg::DataAccess::View, ps->matrix(0, 1));  // pspf
+        structp_block_, fluidp_block_, Core::LinAlg::DataAccess::Share, ps->matrix(0, 1));  // pspf
     systemmatrix_->assign(
-        fluidp_block_, fluidp_block_, Core::LinAlg::DataAccess::View, ps->matrix(1, 1));  // pfpf
+        fluidp_block_, fluidp_block_, Core::LinAlg::DataAccess::Share, ps->matrix(1, 1));  // pfpf
   }
 
   /*----------------------------------------------------------------------*/
@@ -523,7 +523,7 @@ void FSI::MonolithicXFEM::setup_system_matrix()
   f->scale(scaling_F);  //<  1/(theta_f*dt) = 1/weight(t^f_np)
 
   // assign the fluid diagonal block
-  systemmatrix_->assign(fluid_block_, fluid_block_, Core::LinAlg::DataAccess::View, *f);
+  systemmatrix_->assign(fluid_block_, fluid_block_, Core::LinAlg::DataAccess::Share, *f);
 
   // Add Coupling Sysmat
   for (auto coupit = coup_man_.begin(); coupit != coup_man_.end(); ++coupit)

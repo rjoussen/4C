@@ -362,7 +362,7 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::setup_system_matrix()
   // interface meshes.
   f->un_complete();
 
-  systemmatrix_->assign(0, 0, Core::LinAlg::DataAccess::View, s->matrix(0, 0));
+  systemmatrix_->assign(0, 0, Core::LinAlg::DataAccess::Share, s->matrix(0, 0));
 
   (*sigtransform_)(s->full_row_map(), s->full_col_map(), s->matrix(0, 1), 1. / timescale,
       Coupling::Adapter::CouplingMasterConverter(coupsf), systemmatrix_->matrix(0, 1));
@@ -379,12 +379,12 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::setup_system_matrix()
   lsgi->complete(s->matrix(1, 0).domain_map(), f->range_map());
 
   // systemmatrix_->Assign(1,1,View,*f);
-  systemmatrix_->assign(1, 0, Core::LinAlg::DataAccess::View, *lsgi);
+  systemmatrix_->assign(1, 0, Core::LinAlg::DataAccess::Share, *lsgi);
 
   (*aigtransform_)(a->full_row_map(), a->full_col_map(), aig, 1. / timescale,
       Coupling::Adapter::CouplingSlaveConverter(icoupfa), systemmatrix_->matrix(2, 1));
 
-  systemmatrix_->assign(2, 2, Core::LinAlg::DataAccess::View, aii);
+  systemmatrix_->assign(2, 2, Core::LinAlg::DataAccess::Share, aii);
 
   /*----------------------------------------------------------------------*/
   // add optional fluid linearization with respect to mesh motion block
@@ -411,13 +411,13 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::setup_system_matrix()
 
     lfmgi.complete(aii.domain_map(), f->range_map());
 
-    systemmatrix_->assign(1, 2, Core::LinAlg::DataAccess::View, lfmgi);
+    systemmatrix_->assign(1, 2, Core::LinAlg::DataAccess::Share, lfmgi);
   }
 
   f->complete();
 
   // finally assign fluid block
-  systemmatrix_->assign(1, 1, Core::LinAlg::DataAccess::View, *f);
+  systemmatrix_->assign(1, 1, Core::LinAlg::DataAccess::Share, *f);
 
   // done. make sure all blocks are filled.
   systemmatrix_->complete();

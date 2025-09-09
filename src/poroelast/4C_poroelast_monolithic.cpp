@@ -551,13 +551,13 @@ void PoroElast::Monolithic::setup_system_matrix(Core::LinAlg::BlockSparseMatrixB
   }
 
   // assign structure part to the Poroelasticity matrix
-  mat.assign(0, 0, Core::LinAlg::DataAccess::View, *k_ss);
+  mat.assign(0, 0, Core::LinAlg::DataAccess::Share, *k_ss);
   // assign coupling part to the Poroelasticity matrix
-  mat.assign(0, 1, Core::LinAlg::DataAccess::View, *k_sf);
+  mat.assign(0, 1, Core::LinAlg::DataAccess::Share, *k_sf);
   // assign fluid part to the poroelasticity matrix
-  mat.assign(1, 1, Core::LinAlg::DataAccess::View, *k_ff);
+  mat.assign(1, 1, Core::LinAlg::DataAccess::Share, *k_ff);
   // assign coupling part to the Poroelasticity matrix
-  mat.assign(1, 0, Core::LinAlg::DataAccess::View, *k_fs);
+  mat.assign(1, 0, Core::LinAlg::DataAccess::Share, *k_fs);
 
   /*----------------------------------------------------------------------*/
   // done. make sure all blocks are filled.

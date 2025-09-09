@@ -355,10 +355,10 @@ bool Core::LinAlg::split_matrix2x2(std::shared_ptr<Core::LinAlg::SparseMatrix> A
   Ablock->complete();
   // extract internal data from Ablock in std::shared_ptr form and let Ablock die
   // (this way, internal data from Ablock will live)
-  A11 = std::make_shared<SparseMatrix>((*Ablock)(0, 0), DataAccess::View);
-  A12 = std::make_shared<SparseMatrix>((*Ablock)(0, 1), DataAccess::View);
-  A21 = std::make_shared<SparseMatrix>((*Ablock)(1, 0), DataAccess::View);
-  A22 = std::make_shared<SparseMatrix>((*Ablock)(1, 1), DataAccess::View);
+  A11 = std::make_shared<SparseMatrix>((*Ablock)(0, 0), DataAccess::Share);
+  A12 = std::make_shared<SparseMatrix>((*Ablock)(0, 1), DataAccess::Share);
+  A21 = std::make_shared<SparseMatrix>((*Ablock)(1, 0), DataAccess::Share);
+  A22 = std::make_shared<SparseMatrix>((*Ablock)(1, 1), DataAccess::Share);
 
   return true;
 }

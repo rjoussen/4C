@@ -521,7 +521,7 @@ void EHL::Monolithic::setup_system_matrix()
   k_ss->apply_dirichlet(*structure_field()->get_dbc_map_extractor()->cond_map(), true);
 
   // Assign k_ss to system matrix
-  systemmatrix_->assign(0, 0, Core::LinAlg::DataAccess::View, *k_ss);
+  systemmatrix_->assign(0, 0, Core::LinAlg::DataAccess::Share, *k_ss);
 
 
   //---------------------------------------------------------------------------------
@@ -567,7 +567,7 @@ void EHL::Monolithic::setup_system_matrix()
   k_sl_->apply_dirichlet(*structure_field()->get_dbc_map_extractor()->cond_map(), false);
 
   // Assign k_sl to system matrix
-  systemmatrix_->assign(0, 1, Core::LinAlg::DataAccess::View, *(k_sl_));
+  systemmatrix_->assign(0, 1, Core::LinAlg::DataAccess::Share, *(k_sl_));
 
 
   //-----------------------------------------------------------------------------------
@@ -579,7 +579,7 @@ void EHL::Monolithic::setup_system_matrix()
       lubrication_->lubrication_field()->system_matrix();
 
   // Assign k_ll to system matrix
-  systemmatrix_->assign(1, 1, Core::LinAlg::DataAccess::View, *(k_ll));
+  systemmatrix_->assign(1, 1, Core::LinAlg::DataAccess::Share, *(k_ll));
 
 
   //----------------------------------------------------------------------------------------
@@ -664,7 +664,7 @@ void EHL::Monolithic::setup_system_matrix()
   if (inf_gap_toggle_lub_ != nullptr) k_ls_->apply_dirichlet(*inf_gap_toggle_lub_, false);
 
   // Assign k_ls to system matrix
-  systemmatrix_->assign(1, 0, Core::LinAlg::DataAccess::View, *k_ls_);
+  systemmatrix_->assign(1, 0, Core::LinAlg::DataAccess::Share, *k_ls_);
 
   // Finished...
   systemmatrix_->complete();
@@ -1898,10 +1898,10 @@ void EHL::Monolithic::apply_dbc()
   }
 
   systemmatrix_->un_complete();
-  systemmatrix_->assign(0, 0, Core::LinAlg::DataAccess::View, *k_ss);
-  systemmatrix_->assign(0, 1, Core::LinAlg::DataAccess::View, *k_sl);
-  systemmatrix_->assign(1, 0, Core::LinAlg::DataAccess::View, *k_ls);
-  systemmatrix_->assign(1, 1, Core::LinAlg::DataAccess::View, *k_ll);
+  systemmatrix_->assign(0, 0, Core::LinAlg::DataAccess::Share, *k_ss);
+  systemmatrix_->assign(0, 1, Core::LinAlg::DataAccess::Share, *k_sl);
+  systemmatrix_->assign(1, 0, Core::LinAlg::DataAccess::Share, *k_ls);
+  systemmatrix_->assign(1, 1, Core::LinAlg::DataAccess::Share, *k_ll);
   systemmatrix_->complete();
 
 

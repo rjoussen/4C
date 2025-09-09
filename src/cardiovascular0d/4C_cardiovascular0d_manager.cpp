@@ -1020,11 +1020,11 @@ int Utils::Cardiovascular0DManager::solve(Core::LinAlg::SparseMatrix& mat_struct
     mergedsol = std::make_shared<Core::LinAlg::Vector<double>>(*mergedmap_R);
 
     // use BlockMatrix
-    blockmat->assign(0, 0, Core::LinAlg::DataAccess::View, *mat_structstiff_R);
-    blockmat->assign(1, 0, Core::LinAlg::DataAccess::View, *mat_dcardvasc0d_dd_R);
-    blockmat->assign(0, 1, Core::LinAlg::DataAccess::View,
+    blockmat->assign(0, 0, Core::LinAlg::DataAccess::Share, *mat_structstiff_R);
+    blockmat->assign(1, 0, Core::LinAlg::DataAccess::Share, *mat_dcardvasc0d_dd_R);
+    blockmat->assign(0, 1, Core::LinAlg::DataAccess::Share,
         *Core::LinAlg::matrix_transpose(*mat_dstruct_dcv0ddof_R));
-    blockmat->assign(1, 1, Core::LinAlg::DataAccess::View, *mat_cardvasc0dstiff);
+    blockmat->assign(1, 1, Core::LinAlg::DataAccess::Share, *mat_cardvasc0dstiff);
     blockmat->complete();
 
     // export 0D part of rhs
@@ -1045,11 +1045,11 @@ int Utils::Cardiovascular0DManager::solve(Core::LinAlg::SparseMatrix& mat_struct
     mergedsol = std::make_shared<Core::LinAlg::Vector<double>>(*mergedmap);
 
     // use BlockMatrix
-    blockmat->assign(0, 0, Core::LinAlg::DataAccess::View, mat_structstiff);
-    blockmat->assign(
-        1, 0, Core::LinAlg::DataAccess::View, *Core::LinAlg::matrix_transpose(*mat_dcardvasc0d_dd));
-    blockmat->assign(0, 1, Core::LinAlg::DataAccess::View, *mat_dstruct_dcv0ddof);
-    blockmat->assign(1, 1, Core::LinAlg::DataAccess::View, *mat_cardvasc0dstiff);
+    blockmat->assign(0, 0, Core::LinAlg::DataAccess::Share, mat_structstiff);
+    blockmat->assign(1, 0, Core::LinAlg::DataAccess::Share,
+        *Core::LinAlg::matrix_transpose(*mat_dcardvasc0d_dd));
+    blockmat->assign(0, 1, Core::LinAlg::DataAccess::Share, *mat_dstruct_dcv0ddof);
+    blockmat->assign(1, 1, Core::LinAlg::DataAccess::Share, *mat_cardvasc0dstiff);
     blockmat->complete();
 
     // export 0D part of rhs

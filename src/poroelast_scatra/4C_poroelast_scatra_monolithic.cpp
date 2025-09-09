@@ -442,10 +442,10 @@ void PoroElastScaTra::PoroScatraMono::setup_system_matrix()
   mat_pp->un_complete();
 
   // assign matrix block
-  systemmatrix_->assign(0, 0, Core::LinAlg::DataAccess::View, mat_pp->matrix(0, 0));
-  systemmatrix_->assign(0, 1, Core::LinAlg::DataAccess::View, mat_pp->matrix(0, 1));
-  systemmatrix_->assign(1, 0, Core::LinAlg::DataAccess::View, mat_pp->matrix(1, 0));
-  systemmatrix_->assign(1, 1, Core::LinAlg::DataAccess::View, mat_pp->matrix(1, 1));
+  systemmatrix_->assign(0, 0, Core::LinAlg::DataAccess::Share, mat_pp->matrix(0, 0));
+  systemmatrix_->assign(0, 1, Core::LinAlg::DataAccess::Share, mat_pp->matrix(0, 1));
+  systemmatrix_->assign(1, 0, Core::LinAlg::DataAccess::Share, mat_pp->matrix(1, 0));
+  systemmatrix_->assign(1, 1, Core::LinAlg::DataAccess::Share, mat_pp->matrix(1, 1));
 
   //----------------------------------------------------------------------
   // 2nd diagonal block (lower right): scatra weighting - scatra solution
@@ -457,7 +457,7 @@ void PoroElastScaTra::PoroScatraMono::setup_system_matrix()
   mat_ss->un_complete();
 
   // assign matrix block
-  systemmatrix_->assign(2, 2, Core::LinAlg::DataAccess::View, *mat_ss);
+  systemmatrix_->assign(2, 2, Core::LinAlg::DataAccess::Share, *mat_ss);
 
   // complete scatra block matrix
   systemmatrix_->complete();
@@ -480,8 +480,8 @@ void PoroElastScaTra::PoroScatraMono::setup_system_matrix()
   k_pfs_->un_complete();
 
   // assign matrix block
-  systemmatrix_->assign(0, 2, Core::LinAlg::DataAccess::View, *(k_pss_));
-  systemmatrix_->assign(1, 2, Core::LinAlg::DataAccess::View, *(k_pfs_));
+  systemmatrix_->assign(0, 2, Core::LinAlg::DataAccess::Share, *(k_pss_));
+  systemmatrix_->assign(1, 2, Core::LinAlg::DataAccess::Share, *(k_pfs_));
 
   //----------------------------------------------------------------------
   // 2nd off-diagonal block (lower left): scatra weighting - poro solution
@@ -500,8 +500,8 @@ void PoroElastScaTra::PoroScatraMono::setup_system_matrix()
   k_spf_->un_complete();
 
   // assign matrix block
-  systemmatrix_->assign(2, 0, Core::LinAlg::DataAccess::View, *(k_sps_));
-  systemmatrix_->assign(2, 1, Core::LinAlg::DataAccess::View, *(k_spf_));
+  systemmatrix_->assign(2, 0, Core::LinAlg::DataAccess::Share, *(k_sps_));
+  systemmatrix_->assign(2, 1, Core::LinAlg::DataAccess::Share, *(k_spf_));
 
   // complete block matrix
   systemmatrix_->complete();

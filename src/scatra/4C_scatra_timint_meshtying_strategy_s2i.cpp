@@ -3758,7 +3758,7 @@ void ScaTra::MeshtyingStrategyS2I::solve(const std::shared_ptr<Core::LinAlg::Sol
           // multipliers
           Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>
               extendedsystemmatrix(*extendedmaps_, *extendedmaps_);
-          extendedsystemmatrix.assign(0, 0, Core::LinAlg::DataAccess::View, *sparsematrix);
+          extendedsystemmatrix.assign(0, 0, Core::LinAlg::DataAccess::Share, *sparsematrix);
           if (lmside_ == Inpar::S2I::side_slave)
           {
             extendedsystemmatrix.matrix(0, 1).add(*D_, true, 1., 0.);
@@ -3833,13 +3833,13 @@ void ScaTra::MeshtyingStrategyS2I::solve(const std::shared_ptr<Core::LinAlg::Sol
 
               // assemble extended system matrix including rows and columns associated with
               // scatra-scatra interface layer thickness variables
-              extendedsystemmatrix_->assign(0, 0, Core::LinAlg::DataAccess::View, *sparsematrix);
-              extendedsystemmatrix_->assign(0, 1, Core::LinAlg::DataAccess::View,
+              extendedsystemmatrix_->assign(0, 0, Core::LinAlg::DataAccess::Share, *sparsematrix);
+              extendedsystemmatrix_->assign(0, 1, Core::LinAlg::DataAccess::Share,
                   *std::dynamic_pointer_cast<const Core::LinAlg::SparseMatrix>(scatragrowthblock_));
-              extendedsystemmatrix_->assign(1, 0, Core::LinAlg::DataAccess::View,
+              extendedsystemmatrix_->assign(1, 0, Core::LinAlg::DataAccess::Share,
                   *std::dynamic_pointer_cast<const Core::LinAlg::SparseMatrix>(growthscatrablock_));
               extendedsystemmatrix_->assign(
-                  1, 1, Core::LinAlg::DataAccess::View, *growthgrowthblock_);
+                  1, 1, Core::LinAlg::DataAccess::Share, *growthgrowthblock_);
 
               break;
             }
@@ -3861,19 +3861,19 @@ void ScaTra::MeshtyingStrategyS2I::solve(const std::shared_ptr<Core::LinAlg::Sol
               for (int iblock = 0; iblock < nblockmaps; ++iblock)
               {
                 for (int jblock = 0; jblock < nblockmaps; ++jblock)
-                  extendedsystemmatrix_->assign(iblock, jblock, Core::LinAlg::DataAccess::View,
+                  extendedsystemmatrix_->assign(iblock, jblock, Core::LinAlg::DataAccess::Share,
                       blocksparsematrix->matrix(iblock, jblock));
-                extendedsystemmatrix_->assign(iblock, nblockmaps, Core::LinAlg::DataAccess::View,
+                extendedsystemmatrix_->assign(iblock, nblockmaps, Core::LinAlg::DataAccess::Share,
                     std::dynamic_pointer_cast<const Core::LinAlg::BlockSparseMatrixBase>(
                         scatragrowthblock_)
                         ->matrix(iblock, 0));
-                extendedsystemmatrix_->assign(nblockmaps, iblock, Core::LinAlg::DataAccess::View,
+                extendedsystemmatrix_->assign(nblockmaps, iblock, Core::LinAlg::DataAccess::Share,
                     std::dynamic_pointer_cast<const Core::LinAlg::BlockSparseMatrixBase>(
                         growthscatrablock_)
                         ->matrix(0, iblock));
               }
               extendedsystemmatrix_->assign(
-                  nblockmaps, nblockmaps, Core::LinAlg::DataAccess::View, *growthgrowthblock_);
+                  nblockmaps, nblockmaps, Core::LinAlg::DataAccess::Share, *growthgrowthblock_);
 
               break;
             }

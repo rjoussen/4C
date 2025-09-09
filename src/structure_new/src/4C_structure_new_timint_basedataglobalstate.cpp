@@ -801,8 +801,8 @@ Solid::TimeInt::BaseDataGlobalState::extract_rot_vec_entries(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Solid::TimeInt::BaseDataGlobalState::assign_model_block(Core::LinAlg::SparseOperator& jac,
-    const Core::LinAlg::SparseMatrix& matrix, const Inpar::Solid::ModelType& mt,
-    const MatBlockType& bt, const Core::LinAlg::DataAccess& access) const
+    const Core::LinAlg::SparseMatrix& matrix, const Inpar::Solid::ModelType mt,
+    const MatBlockType bt, Core::LinAlg::DataAccess access) const
 {
   Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>* blockmat_ptr =
       dynamic_cast<Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>*>(

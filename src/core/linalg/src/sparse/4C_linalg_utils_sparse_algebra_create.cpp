@@ -134,7 +134,7 @@ Core::LinAlg::SparseMatrix Core::LinAlg::create_interpolation_matrix(const Spars
   auto prolongation_operator = MueLu::Utilities<SC, LO, GO, NO>::Op2NonConstEpetraCrs(Ptent);
 
   Core::LinAlg::SparseMatrix prolongator(
-      std::make_shared<Epetra_CrsMatrix>(*prolongation_operator), Core::LinAlg::DataAccess::View);
+      std::make_shared<Epetra_CrsMatrix>(*prolongation_operator), Core::LinAlg::DataAccess::Share);
 
   return prolongator;
 }

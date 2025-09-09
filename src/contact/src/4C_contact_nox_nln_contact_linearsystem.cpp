@@ -389,7 +389,7 @@ void NOX::Nln::CONTACT::LinearSystem::LinearSubProblem::extract_active_blocks(
     default:
     {
       p_jac_ = Teuchos::rcp(
-          block_mat.clone(Core::LinAlg::DataAccess::View, keep_row_col_index, keep_row_col_index)
+          block_mat.clone(Core::LinAlg::DataAccess::Share, keep_row_col_index, keep_row_col_index)
               .release());
       p_jac_->complete();
 

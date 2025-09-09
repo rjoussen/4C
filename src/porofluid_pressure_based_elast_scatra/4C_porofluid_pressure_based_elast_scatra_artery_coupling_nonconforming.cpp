@@ -217,7 +217,7 @@ void PoroPressureBased::PorofluidElastScatraArteryCouplingNonConformingAlgorithm
   sysmat.matrix(1, 1).apply_dirichlet((dbcmap_artery_with_collapsed), true);
   // Assign view to 3D system matrix (such that it now includes also contributions from coupling)
   // this is necessary for the monolithic solution schemes
-  sysmat_homogenized.assign(Core::LinAlg::DataAccess::View, sysmat.matrix(0, 0));
+  sysmat_homogenized.assign(Core::LinAlg::DataAccess::Share, sysmat.matrix(0, 0));
 }
 
 /*----------------------------------------------------------------------*

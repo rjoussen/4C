@@ -152,9 +152,9 @@ void XFEM::XfsCouplingManager::add_coupling_matrix(
                                          //* 1/weight(t^FSI_np)
 
     systemmatrix.assign(
-        idx_[0], idx_[1], Core::LinAlg::DataAccess::View, *xfluid_->c_sx_matrix(cond_name_));
+        idx_[0], idx_[1], Core::LinAlg::DataAccess::Share, *xfluid_->c_sx_matrix(cond_name_));
     systemmatrix.assign(
-        idx_[1], idx_[0], Core::LinAlg::DataAccess::View, *xfluid_->c_xs_matrix(cond_name_));
+        idx_[1], idx_[0], Core::LinAlg::DataAccess::Share, *xfluid_->c_xs_matrix(cond_name_));
   }
   else if (probtype == Core::ProblemType::fpsi_xfem || is_xfluidfluid)
   {
