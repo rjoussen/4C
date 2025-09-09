@@ -99,8 +99,8 @@ void PoroElast::MonolithicMeshtying::evaluate(
       fluid_field()->dof_row_map());
 
   // assign modified parts of system matrix into full system matrix
-  systemmatrix_->assign(1, 1, Core::LinAlg::DataAccess::View, *f);
-  systemmatrix_->assign(1, 0, Core::LinAlg::DataAccess::View, *k_fs);
+  systemmatrix_->assign(1, 1, Core::LinAlg::DataAccess::Share, *f);
+  systemmatrix_->assign(1, 0, Core::LinAlg::DataAccess::Share, *k_fs);
 
   // assign modified part of RHS vector into full RHS vector
   extractor()->insert_vector(*frhs, 1, *rhs_);

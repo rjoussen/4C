@@ -214,7 +214,7 @@ void PoroPressureBased::PorofluidElastScatraArteryCouplingNodeBasedAlgorithm::se
   artery_blocks->complete();
 
   // inner artery dofs
-  sysmat->assign(1, 1, Core::LinAlg::DataAccess::View, artery_blocks->matrix(0, 0));
+  sysmat->assign(1, 1, Core::LinAlg::DataAccess::Share, artery_blocks->matrix(0, 0));
 
   (*col_transform_)(artery_blocks->full_row_map(), artery_blocks->full_col_map(),
       artery_blocks->matrix(0, 1), 1.0,
@@ -231,7 +231,7 @@ void PoroPressureBased::PorofluidElastScatraArteryCouplingNodeBasedAlgorithm::se
       true, true);
 
   // continuous field
-  sysmat->assign(0, 0, Core::LinAlg::DataAccess::View, *sysmat_homogenized);
+  sysmat->assign(0, 0, Core::LinAlg::DataAccess::Share, *sysmat_homogenized);
   // complete
   sysmat->complete();
 }

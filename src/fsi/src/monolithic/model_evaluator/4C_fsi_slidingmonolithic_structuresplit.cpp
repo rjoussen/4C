@@ -721,7 +721,7 @@ void FSI::SlidingMonolithicStructureSplit::setup_system_matrix(
   // Contributions to blocks in system matrix are listed separately.
   // Block numbering in comments ranges from (1,1) to (4,4).
 
-  mat.assign(0, 0, Core::LinAlg::DataAccess::View, s->matrix(0, 0));
+  mat.assign(0, 0, Core::LinAlg::DataAccess::Share, s->matrix(0, 0));
 
   // ----------Addressing contribution to block (1,3)
   std::shared_ptr<Core::LinAlg::SparseMatrix> sig =
@@ -731,7 +731,7 @@ void FSI::SlidingMonolithicStructureSplit::setup_system_matrix(
   lsig.add(*sig, false, 1. / timescale, 0.0);
   lsig.complete(f->domain_map(), sig->range_map());
 
-  mat.assign(0, 1, Core::LinAlg::DataAccess::View, lsig);
+  mat.assign(0, 1, Core::LinAlg::DataAccess::Share, lsig);
 
   // ----------Addressing contribution to block (3,1)
   std::shared_ptr<Core::LinAlg::SparseMatrix> sgi =
@@ -741,7 +741,7 @@ void FSI::SlidingMonolithicStructureSplit::setup_system_matrix(
   lsgi.add(*sgi, false, (1. - ftiparam) / ((1. - stiparam) * scale), 0.0);
   lsgi.complete(sgi->domain_map(), f->range_map());
 
-  mat.assign(1, 0, Core::LinAlg::DataAccess::View, lsgi);
+  mat.assign(1, 0, Core::LinAlg::DataAccess::Share, lsgi);
 
   // ----------Addressing contribution to block (3,3)
   std::shared_ptr<Core::LinAlg::SparseMatrix> sgg =
@@ -749,11 +749,11 @@ void FSI::SlidingMonolithicStructureSplit::setup_system_matrix(
   sgg = matrix_multiply(*mortarp, true, *sgg, false, false, false, true);
 
   f->add(*sgg, false, (1. - ftiparam) / ((1. - stiparam) * scale * timescale), 1.0);
-  mat.assign(1, 1, Core::LinAlg::DataAccess::View, *f);
+  mat.assign(1, 1, Core::LinAlg::DataAccess::Share, *f);
 
   (*aigtransform_)(a->full_row_map(), a->full_col_map(), aig, 1. / timescale,
       Coupling::Adapter::CouplingSlaveConverter(interface_fluid_ale_coupling()), mat.matrix(2, 1));
-  mat.assign(2, 2, Core::LinAlg::DataAccess::View, aii);
+  mat.assign(2, 2, Core::LinAlg::DataAccess::Share, aii);
 
   /*--------------------------------------------------------------------------*/
   // add optional fluid linearization with respect to mesh motion block

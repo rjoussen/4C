@@ -183,7 +183,7 @@ void Core::LinearSolver::AMGNxN::MergeAndSolve::setup(BlockedMatrix matrix)
   }
 
   // Set matrix
-  block_sparse_matrix_ = matrix.get_block_sparse_matrix(Core::LinAlg::DataAccess::View);
+  block_sparse_matrix_ = matrix.get_block_sparse_matrix(Core::LinAlg::DataAccess::Share);
   sparse_matrix_ = block_sparse_matrix_->merge();
 
   // Set sol vector and rhs

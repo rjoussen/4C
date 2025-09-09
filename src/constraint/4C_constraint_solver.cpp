@@ -367,9 +367,9 @@ void Constraints::ConstraintSolver::solve_simple(Core::LinAlg::SparseMatrix& sti
   std::shared_ptr<Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>> mat =
       std::make_shared<Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
           dommapext, rowmapext, 81, false, false);
-  mat->assign(0, 0, Core::LinAlg::DataAccess::View, stiff);
-  mat->assign(0, 1, Core::LinAlg::DataAccess::View, constr);
-  mat->assign(1, 0, Core::LinAlg::DataAccess::View, constrTrans);
+  mat->assign(0, 0, Core::LinAlg::DataAccess::Share, stiff);
+  mat->assign(0, 1, Core::LinAlg::DataAccess::Share, constr);
+  mat->assign(1, 0, Core::LinAlg::DataAccess::Share, constrTrans);
   mat->complete();
 
   // merged rhs using Export

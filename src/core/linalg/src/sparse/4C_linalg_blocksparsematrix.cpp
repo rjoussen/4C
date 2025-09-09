@@ -32,36 +32,6 @@ Core::LinAlg::BlockSparseMatrixBase::BlockSparseMatrixBase(const MultiMapExtract
   }
 }
 
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-bool Core::LinAlg::BlockSparseMatrixBase::destroy(bool throw_exception_for_blocks)
-{
-  /// destroy matrix blocks
-  for (auto& block : blocks_)
-  {
-    block.destroy(throw_exception_for_blocks);
-  }
-  /// destroy full matrix row map
-  if (fullrowmap_.use_count() > 1)
-  {
-    FOUR_C_THROW("fullrowmap_ cannot be finally deleted - any RCP ({}>1) still points to it",
-        fullrowmap_.use_count());
-  }
-  fullrowmap_ = nullptr;
-
-  /// destroy full matrix column map
-  if (fullcolmap_.use_count() > 1)
-  {
-    FOUR_C_THROW("fullrowmap_ cannot be finally deleted - any RCP ({}>1) still points to it",
-        fullrowmap_.use_count());
-  }
-  fullcolmap_ = nullptr;
-
-  return true;
-}
-
-
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 std::shared_ptr<Core::LinAlg::SparseMatrix> Core::LinAlg::BlockSparseMatrixBase::merge(
@@ -485,10 +455,10 @@ Core::LinAlg::block_matrix2x2(Core::LinAlg::SparseMatrix& A00, Core::LinAlg::Spa
   // std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> Cb =
   // std::dynamic_pointer_cast<Core::LinAlg::BlockSparseMatrixBase>(C);
   // assign matrices
-  C->assign(0, 0, Core::LinAlg::DataAccess::View, A00);
-  C->assign(0, 1, Core::LinAlg::DataAccess::View, A01);
-  C->assign(1, 0, Core::LinAlg::DataAccess::View, A10);
-  C->assign(1, 1, Core::LinAlg::DataAccess::View, A11);
+  C->assign(0, 0, Core::LinAlg::DataAccess::Share, A00);
+  C->assign(0, 1, Core::LinAlg::DataAccess::Share, A01);
+  C->assign(1, 0, Core::LinAlg::DataAccess::Share, A10);
+  C->assign(1, 1, Core::LinAlg::DataAccess::Share, A11);
 
   C->complete();
 

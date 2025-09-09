@@ -210,14 +210,8 @@ namespace Solid
        *         | LmD    LmLm |
        *          ===       ===     */
       void assign_model_block(Core::LinAlg::SparseOperator& jac,
-          const Core::LinAlg::SparseMatrix& matrix, const Inpar::Solid::ModelType& mt,
-          const MatBlockType& bt) const
-      {
-        assign_model_block(jac, matrix, mt, bt, Core::LinAlg::DataAccess::View);
-      };
-      void assign_model_block(Core::LinAlg::SparseOperator& jac,
-          const Core::LinAlg::SparseMatrix& matrix, const Inpar::Solid::ModelType& mt,
-          const MatBlockType& bt, const Core::LinAlg::DataAccess& access) const;
+          const Core::LinAlg::SparseMatrix& matrix, Inpar::Solid::ModelType mt, MatBlockType bt,
+          Core::LinAlg::DataAccess access = Core::LinAlg::DataAccess::Share) const;
 
       /// Get the displacement block of the global jacobian matrix in the global
       /// state data container.

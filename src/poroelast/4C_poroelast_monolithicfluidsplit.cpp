@@ -241,7 +241,7 @@ void PoroElast::MonolithicFluidSplit::setup_system_matrix(Core::LinAlg::BlockSpa
   mat.matrix(1, 0).add(k_fs->matrix(0, 1), false, 1.0, 1.0);
 
   // pure structure part
-  mat.assign(0, 0, Core::LinAlg::DataAccess::View, *s);
+  mat.assign(0, 0, Core::LinAlg::DataAccess::Share, *s);
 
   // structure coupling part
   mat.matrix(0, 1).add(k_sf->matrix(0, 0), false, 1.0, 0.0);

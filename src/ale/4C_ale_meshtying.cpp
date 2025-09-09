@@ -709,10 +709,10 @@ int ALE::Meshtying::solve_meshtying(Core::LinAlg::Solver& solver,
     split_vector_based_on3x3(*residual, *res);
 
     // assign blocks to the solution matrix
-    sysmatsolve->assign(0, 0, Core::LinAlg::DataAccess::View, sysmatnew->matrix(0, 0));
-    sysmatsolve->assign(0, 1, Core::LinAlg::DataAccess::View, sysmatnew->matrix(0, 1));
-    sysmatsolve->assign(1, 0, Core::LinAlg::DataAccess::View, sysmatnew->matrix(1, 0));
-    sysmatsolve->assign(1, 1, Core::LinAlg::DataAccess::View, sysmatnew->matrix(1, 1));
+    sysmatsolve->assign(0, 0, Core::LinAlg::DataAccess::Share, sysmatnew->matrix(0, 0));
+    sysmatsolve->assign(0, 1, Core::LinAlg::DataAccess::Share, sysmatnew->matrix(0, 1));
+    sysmatsolve->assign(1, 0, Core::LinAlg::DataAccess::Share, sysmatnew->matrix(1, 0));
+    sysmatsolve->assign(1, 1, Core::LinAlg::DataAccess::Share, sysmatnew->matrix(1, 1));
     sysmatsolve->complete();
 
     mergedmatrix = sysmatsolve->merge();

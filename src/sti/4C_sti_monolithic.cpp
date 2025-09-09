@@ -791,7 +791,7 @@ void STI::Monolithic::assemble_mat_and_rhs()
           for (int iblock = 0; iblock < nblockmapsscatra; ++iblock)
           {
             for (int jblock = 0; jblock < nblockmapsscatra; ++jblock)
-              blocksystemmatrix->assign(iblock, jblock, Core::LinAlg::DataAccess::View,
+              blocksystemmatrix->assign(iblock, jblock, Core::LinAlg::DataAccess::Share,
                   scatra_field()->block_system_matrix()->matrix(iblock, jblock));
 
             // perform second condensation before assigning matrix blocks
@@ -858,12 +858,12 @@ void STI::Monolithic::assemble_mat_and_rhs()
             // assign matrix blocks directly
             else
             {
-              blocksystemmatrix->assign(iblock, nblockmapsscatra, Core::LinAlg::DataAccess::View,
+              blocksystemmatrix->assign(iblock, nblockmapsscatra, Core::LinAlg::DataAccess::Share,
                   std::dynamic_pointer_cast<const Core::LinAlg::BlockSparseMatrixBase>(
                       scatrathermo_domain_interface)
                       ->matrix(iblock, 0));
 
-              blocksystemmatrix->assign(nblockmapsscatra, iblock, Core::LinAlg::DataAccess::View,
+              blocksystemmatrix->assign(nblockmapsscatra, iblock, Core::LinAlg::DataAccess::Share,
                   std::dynamic_pointer_cast<const Core::LinAlg::BlockSparseMatrixBase>(
                       thermoscatra_domain_interface)
                       ->matrix(0, iblock));
@@ -923,7 +923,7 @@ void STI::Monolithic::assemble_mat_and_rhs()
           else
           {
             blocksystemmatrix->assign(nblockmapsscatra, nblockmapsscatra,
-                Core::LinAlg::DataAccess::View, *thermo_field()->system_matrix());
+                Core::LinAlg::DataAccess::Share, *thermo_field()->system_matrix());
           }
 
           break;
@@ -933,7 +933,7 @@ void STI::Monolithic::assemble_mat_and_rhs()
         {
           // construct global system matrix by assigning matrix blocks
           blocksystemmatrix->assign(
-              0, 0, Core::LinAlg::DataAccess::View, *scatra_field()->system_matrix());
+              0, 0, Core::LinAlg::DataAccess::Share, *scatra_field()->system_matrix());
 
           // perform second condensation before assigning matrix blocks
           if (condensationthermo_)
@@ -1027,14 +1027,14 @@ void STI::Monolithic::assemble_mat_and_rhs()
           // assign matrix blocks directly
           else
           {
-            blocksystemmatrix->assign(0, 1, Core::LinAlg::DataAccess::View,
+            blocksystemmatrix->assign(0, 1, Core::LinAlg::DataAccess::Share,
                 *std::dynamic_pointer_cast<Core::LinAlg::SparseMatrix>(
                     scatrathermo_domain_interface));
-            blocksystemmatrix->assign(1, 0, Core::LinAlg::DataAccess::View,
+            blocksystemmatrix->assign(1, 0, Core::LinAlg::DataAccess::Share,
                 *std::dynamic_pointer_cast<Core::LinAlg::SparseMatrix>(
                     thermoscatra_domain_interface));
             blocksystemmatrix->assign(
-                1, 1, Core::LinAlg::DataAccess::View, *thermo_field()->system_matrix());
+                1, 1, Core::LinAlg::DataAccess::Share, *thermo_field()->system_matrix());
           }
 
           break;

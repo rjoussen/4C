@@ -47,9 +47,6 @@ namespace Core::LinAlg
     /// make a copy of me
     virtual std::unique_ptr<BlockSparseMatrixBase> clone(DataAccess access) = 0;
 
-    /// destroy the underlying Epetra objects
-    virtual bool destroy(bool throw_exception_for_blocks = true);
-
     /// setup of block preconditioners
     /*!
       This method can be implemented by subclasses that implement
@@ -285,12 +282,12 @@ namespace Core::LinAlg
     /// clone the full block sparse matrix
 
     /** Do not forget to call Complete() after cloning, even if you
-     *  use Core::LinAlg::DataAccess::View! */
+     *  use Core::LinAlg::DataAccess::Share! */
     std::unique_ptr<BlockSparseMatrixBase> clone(DataAccess access) override;
 
     /// clone only a part of the block sparse matrix
     /** Do not forget to call Complete() after cloning, even if you
-     *  use Core::LinAlg::DataAccess::View!
+     *  use Core::LinAlg::DataAccess::Share!
      *
      *  \param[in] access : consider copy or view of block matrices
      *  \param[in] row_block_ids : ID's of the row blocks to clone

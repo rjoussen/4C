@@ -430,14 +430,14 @@ void FLD::XFluidFluid::assemble_mat_and_rhs(int itnum  ///< iteration number
       std::dynamic_pointer_cast<Core::LinAlg::BlockSparseMatrixBase>(xff_state_->xffluidsysmat_);
   if (sysmat_block != nullptr)
   {
-    sysmat_block->assign(1, 1, Core::LinAlg::DataAccess::View, *xff_state_->sysmat_);
-    sysmat_block->assign(1, 0, Core::LinAlg::DataAccess::View, *coup_state->C_xs_);
-    sysmat_block->assign(0, 1, Core::LinAlg::DataAccess::View, *coup_state->C_sx_);
+    sysmat_block->assign(1, 1, Core::LinAlg::DataAccess::Share, *xff_state_->sysmat_);
+    sysmat_block->assign(1, 0, Core::LinAlg::DataAccess::Share, *coup_state->C_xs_);
+    sysmat_block->assign(0, 1, Core::LinAlg::DataAccess::Share, *coup_state->C_sx_);
     embedded_fluid_->system_matrix()->un_complete();
     embedded_fluid_->system_matrix()->add(*coup_state->C_ss_, false, 1.0, 1.0);
     std::shared_ptr<Core::LinAlg::SparseMatrix> alesysmat_sparse =
         std::dynamic_pointer_cast<Core::LinAlg::SparseMatrix>(embedded_fluid_->system_matrix());
-    sysmat_block->assign(0, 0, Core::LinAlg::DataAccess::View, *alesysmat_sparse);
+    sysmat_block->assign(0, 0, Core::LinAlg::DataAccess::Share, *alesysmat_sparse);
   }
   else
   {

@@ -180,9 +180,6 @@ namespace Core::LinAlg
     /// throw away the matrix and its graph and start anew
     void reset() override;
 
-    /// destroy the underlying Epetra objects
-    virtual bool destroy(bool throw_exception = true);
-
     /// assemble method, if ONLY local values are assembled
     void assemble(int eid, const std::vector<int>& lmstride,
         const Core::LinAlg::SerialDenseMatrix& Aele, const std::vector<int>& lm,
@@ -555,28 +552,25 @@ namespace Core::LinAlg
     int replace_diagonal_values(const Core::LinAlg::Vector<double>& Diagonal);
 
     /// Inserts values into a local row.
-    int insert_my_values(
-        int my_row, int num_entries, const double* values, const int* indices) const;
+    int insert_my_values(int my_row, int num_entries, const double* values, const int* indices);
 
     /// Sum values into a local row.
-    int sum_into_my_values(
-        int my_row, int num_entries, const double* values, const int* indices) const;
+    int sum_into_my_values(int my_row, int num_entries, const double* values, const int* indices);
 
     /// Replaces values in a local row.
-    int replace_my_values(
-        int my_row, int num_entries, const double* values, const int* indices) const;
+    int replace_my_values(int my_row, int num_entries, const double* values, const int* indices);
 
     /// Replaces values in a global row.
     int replace_global_values(
-        int global_row, int num_entries, const double* values, const int* indices) const;
+        int global_row, int num_entries, const double* values, const int* indices);
 
     /// Inserts values into a global row.
     int insert_global_values(
-        int global_row, int num_entries, const double* values, const int* indices) const;
+        int global_row, int num_entries, const double* values, const int* indices);
 
     /// Sum values into a global row.
     int sum_into_global_values(
-        int global_row, int num_entries, const double* values, const int* indices) const;
+        int global_row, int num_entries, const double* values, const int* indices);
 
     //@}
 
@@ -638,7 +632,7 @@ namespace Core::LinAlg
     //! Print to user-provided output stream
     void print(std::ostream& os) const { sysmat_->Print(os); }
 
-   protected:
+   private:
     /// internal epetra matrix (Epetra_CrsMatrix or Epetra_FECrsMatrix)
     std::shared_ptr<Epetra_CrsMatrix> sysmat_;
 
@@ -647,7 +641,6 @@ namespace Core::LinAlg
     mutable View<const Map> domain_map_;
     mutable View<const Map> column_map_;
 
-   private:
     /// saved graph (if any)
     std::shared_ptr<Core::LinAlg::Graph> graph_;
 

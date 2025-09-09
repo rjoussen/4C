@@ -141,11 +141,11 @@ void PoroPressureBased::PorofluidElastArteryCouplingAlgorithm::setup_system_matr
   PorofluidElastMonolithicAlgorithm::setup_system_matrix(mat);
 
   // pure artery part
-  mat.assign(2, 2, Core::LinAlg::DataAccess::View, artery_porofluid_sysmat()->matrix(1, 1));
+  mat.assign(2, 2, Core::LinAlg::DataAccess::Share, artery_porofluid_sysmat()->matrix(1, 1));
   // artery-porofluid part
-  mat.assign(2, 1, Core::LinAlg::DataAccess::View, artery_porofluid_sysmat()->matrix(1, 0));
+  mat.assign(2, 1, Core::LinAlg::DataAccess::Share, artery_porofluid_sysmat()->matrix(1, 0));
   // porofluid-artery part
-  mat.assign(1, 2, Core::LinAlg::DataAccess::View, artery_porofluid_sysmat()->matrix(0, 1));
+  mat.assign(1, 2, Core::LinAlg::DataAccess::Share, artery_porofluid_sysmat()->matrix(0, 1));
 
   return;
 }

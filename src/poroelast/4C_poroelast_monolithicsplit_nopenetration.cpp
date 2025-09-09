@@ -289,7 +289,7 @@ void PoroElast::MonolithicSplitNoPenetration::setup_system_matrix(
 
   /*----------------------------------------------------------------------*/
   // pure structural part
-  mat.assign(0, 0, Core::LinAlg::DataAccess::View, *s);
+  mat.assign(0, 0, Core::LinAlg::DataAccess::Share, *s);
 
   // structure coupling part
   mat.matrix(0, 1).add(k_sf->matrix(sidx_other, fidx_other), false, 1.0, 0.0);

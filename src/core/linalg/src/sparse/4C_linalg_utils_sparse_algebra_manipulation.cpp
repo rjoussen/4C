@@ -355,10 +355,10 @@ bool Core::LinAlg::split_matrix2x2(std::shared_ptr<Core::LinAlg::SparseMatrix> A
   Ablock->complete();
   // extract internal data from Ablock in std::shared_ptr form and let Ablock die
   // (this way, internal data from Ablock will live)
-  A11 = std::make_shared<SparseMatrix>((*Ablock)(0, 0), DataAccess::View);
-  A12 = std::make_shared<SparseMatrix>((*Ablock)(0, 1), DataAccess::View);
-  A21 = std::make_shared<SparseMatrix>((*Ablock)(1, 0), DataAccess::View);
-  A22 = std::make_shared<SparseMatrix>((*Ablock)(1, 1), DataAccess::View);
+  A11 = std::make_shared<SparseMatrix>((*Ablock)(0, 0), DataAccess::Share);
+  A12 = std::make_shared<SparseMatrix>((*Ablock)(0, 1), DataAccess::Share);
+  A21 = std::make_shared<SparseMatrix>((*Ablock)(1, 0), DataAccess::Share);
+  A22 = std::make_shared<SparseMatrix>((*Ablock)(1, 1), DataAccess::Share);
 
   return true;
 }
@@ -372,10 +372,10 @@ void Core::LinAlg::split_matrix2x2(
 
   if (ABlock.rows() != 2 || ABlock.cols() != 2) FOUR_C_THROW("Can only split in 2x2 system");
   if (!ASparse.filled()) FOUR_C_THROW("SparseMatrix must be filled");
-  const Core::LinAlg::SparseMatrix& A11 = ABlock(0, 0);
-  const Core::LinAlg::SparseMatrix& A12 = ABlock(0, 1);
-  const Core::LinAlg::SparseMatrix& A21 = ABlock(1, 0);
-  const Core::LinAlg::SparseMatrix& A22 = ABlock(1, 1);
+  Core::LinAlg::SparseMatrix& A11 = ABlock(0, 0);
+  Core::LinAlg::SparseMatrix& A12 = ABlock(0, 1);
+  Core::LinAlg::SparseMatrix& A21 = ABlock(1, 0);
+  Core::LinAlg::SparseMatrix& A22 = ABlock(1, 1);
   if (A11.filled() || A12.filled() || A21.filled() || A22.filled())
     FOUR_C_THROW("Sub-matrices of the block operator are expected to be not filled");
   const Core::LinAlg::Map& A11rmap = ABlock.range_map(0);

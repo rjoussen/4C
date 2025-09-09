@@ -455,12 +455,12 @@ void PoroPressureBased::PorofluidElastScatraMonolithicAlgorithm::setup_system_ma
   // assign matrix block
   if (solve_structure_)
   {
-    systemmatrix_->assign(0, 0, Core::LinAlg::DataAccess::View, mat_pp->matrix(0, 0));
-    systemmatrix_->assign(0, 1, Core::LinAlg::DataAccess::View, mat_pp->matrix(0, 1));
-    systemmatrix_->assign(1, 0, Core::LinAlg::DataAccess::View, mat_pp->matrix(1, 0));
+    systemmatrix_->assign(0, 0, Core::LinAlg::DataAccess::Share, mat_pp->matrix(0, 0));
+    systemmatrix_->assign(0, 1, Core::LinAlg::DataAccess::Share, mat_pp->matrix(0, 1));
+    systemmatrix_->assign(1, 0, Core::LinAlg::DataAccess::Share, mat_pp->matrix(1, 0));
   }
   systemmatrix_->assign(
-      struct_offset_, struct_offset_, Core::LinAlg::DataAccess::View, mat_pp->matrix(1, 1));
+      struct_offset_, struct_offset_, Core::LinAlg::DataAccess::Share, mat_pp->matrix(1, 1));
 
   //----------------------------------------------------------------------
   // 2nd diagonal block (lower right): scatra weighting - scatra solution
@@ -475,7 +475,7 @@ void PoroPressureBased::PorofluidElastScatraMonolithicAlgorithm::setup_system_ma
 
   // assign matrix block
   systemmatrix_->assign(
-      struct_offset_ + 1, struct_offset_ + 1, Core::LinAlg::DataAccess::View, *mat_ss);
+      struct_offset_ + 1, struct_offset_ + 1, Core::LinAlg::DataAccess::Share, *mat_ss);
 
   // complete scatra block matrix
   systemmatrix_->complete();
@@ -503,9 +503,9 @@ void PoroPressureBased::PorofluidElastScatraMonolithicAlgorithm::setup_system_ma
   k_pfs->un_complete();
 
   // assign matrix block
-  // systemmatrix_->Assign(0,2,Core::LinAlg::DataAccess::View,*(k_pss_)); --> zero
+  // systemmatrix_->Assign(0,2,Core::LinAlg::DataAccess::Share,*(k_pss_)); --> zero
   systemmatrix_->assign(
-      struct_offset_, struct_offset_ + 1, Core::LinAlg::DataAccess::View, *(k_pfs));
+      struct_offset_, struct_offset_ + 1, Core::LinAlg::DataAccess::Share, *(k_pfs));
 
   //----------------------------------------------------------------------
   // 2nd off-diagonal block k_sp (lower left): scatra weighting - poro solution
@@ -537,9 +537,9 @@ void PoroPressureBased::PorofluidElastScatraMonolithicAlgorithm::setup_system_ma
   k_spf->un_complete();
 
   // assign matrix block
-  if (solve_structure_) systemmatrix_->assign(2, 0, Core::LinAlg::DataAccess::View, *(k_sps));
+  if (solve_structure_) systemmatrix_->assign(2, 0, Core::LinAlg::DataAccess::Share, *(k_sps));
   systemmatrix_->assign(
-      struct_offset_ + 1, struct_offset_, Core::LinAlg::DataAccess::View, *(k_spf));
+      struct_offset_ + 1, struct_offset_, Core::LinAlg::DataAccess::Share, *(k_spf));
 
   // complete block matrix
   systemmatrix_->complete();
@@ -1484,24 +1484,24 @@ void PoroPressureBased::PorofluidElastScatraMonolithicArteryCouplingAlgorithm::s
       porofluid_elast_algo()->block_system_matrix();
 
   // artery part
-  systemmatrix_->assign(
-      struct_offset_ + 2, struct_offset_ + 2, Core::LinAlg::DataAccess::View, mat_pp->matrix(2, 2));
+  systemmatrix_->assign(struct_offset_ + 2, struct_offset_ + 2, Core::LinAlg::DataAccess::Share,
+      mat_pp->matrix(2, 2));
   // artery-porofluid part
   systemmatrix_->assign(
-      struct_offset_ + 2, struct_offset_, Core::LinAlg::DataAccess::View, mat_pp->matrix(2, 1));
+      struct_offset_ + 2, struct_offset_, Core::LinAlg::DataAccess::Share, mat_pp->matrix(2, 1));
   // porofluid-artery part
   systemmatrix_->assign(
-      struct_offset_, struct_offset_ + 2, Core::LinAlg::DataAccess::View, mat_pp->matrix(1, 2));
+      struct_offset_, struct_offset_ + 2, Core::LinAlg::DataAccess::Share, mat_pp->matrix(1, 2));
 
   // -------------------------------------------------------------------------arteryscatra-scatra
   // arteryscatra part
-  systemmatrix_->assign(struct_offset_ + 3, struct_offset_ + 3, Core::LinAlg::DataAccess::View,
+  systemmatrix_->assign(struct_offset_ + 3, struct_offset_ + 3, Core::LinAlg::DataAccess::Share,
       scatra_meshtying_strategy_->combined_system_matrix()->matrix(1, 1));
   // scatra-arteryscatra part
-  systemmatrix_->assign(struct_offset_ + 1, struct_offset_ + 3, Core::LinAlg::DataAccess::View,
+  systemmatrix_->assign(struct_offset_ + 1, struct_offset_ + 3, Core::LinAlg::DataAccess::Share,
       scatra_meshtying_strategy_->combined_system_matrix()->matrix(0, 1));
   // arteryscatra-scatra part
-  systemmatrix_->assign(struct_offset_ + 3, struct_offset_ + 1, Core::LinAlg::DataAccess::View,
+  systemmatrix_->assign(struct_offset_ + 3, struct_offset_ + 1, Core::LinAlg::DataAccess::Share,
       scatra_meshtying_strategy_->combined_system_matrix()->matrix(1, 0));
 
   if (nodal_coupl_inactive_)
@@ -1520,7 +1520,7 @@ void PoroPressureBased::PorofluidElastScatraMonolithicArteryCouplingAlgorithm::s
 
     // arteryscatra-scatra part
     systemmatrix_->assign(
-        struct_offset_ + 3, struct_offset_ + 2, Core::LinAlg::DataAccess::View, *k_asa);
+        struct_offset_ + 3, struct_offset_ + 2, Core::LinAlg::DataAccess::Share, *k_asa);
   }
 
   systemmatrix_->complete();

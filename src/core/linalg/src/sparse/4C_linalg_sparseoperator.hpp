@@ -32,8 +32,7 @@ namespace Core::LinAlg
    *  \brief Handling of data access (Copy or View)
    *
    *  If set to Core::LinAlg::DataAccess::Copy, user data will be copied at construction.
-   *  If set to Core::LinAlg::DataAccess::View, user data will be encapsulated and used throughout
-   *  the life of the object.
+   *  If set to Core::LinAlg::DataAccess::Share, user data will be shared.
    *
    *  \note A separate Core::LinAlg::DataAccess is necessary in order to resolve
    *  possible ambiguity conflicts with the Epetra_DataAccess.
@@ -45,7 +44,7 @@ namespace Core::LinAlg
   enum class DataAccess
   {
     Copy,  ///< deep copy
-    View   ///< reference to original data
+    Share  ///< Shared ownership to original data
   };
 
   //! type of global system matrix in global system of equations

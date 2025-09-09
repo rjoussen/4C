@@ -852,7 +852,7 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::setup_system_matrix(
   // Block numbering in comments ranges from (1,1) to (6,6).
 
   // ---------Addressing contribution to blocks (1,1),(1,2),(2,1),(2,2)
-  mat.assign(0, 0, Core::LinAlg::DataAccess::View, *solidblock);
+  mat.assign(0, 0, Core::LinAlg::DataAccess::Share, *solidblock);
 
   // ---------Addressing contribution to blocks (3,3),(3,4),(4,3),(4,4)
   Core::LinAlg::SparseMatrix aux_fluidblock(fluidblock->full_row_map(), 108, false);
@@ -875,17 +875,17 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::setup_system_matrix(
   aux_ale_inner_interf->complete(
       fluidblock->domain_map(), aux_ale_inner_interf->range_map(), {.enforce_complete = true});
 
-  mat.assign(2, 1, Core::LinAlg::DataAccess::View, *aux_ale_inner_interf);
+  mat.assign(2, 1, Core::LinAlg::DataAccess::Share, *aux_ale_inner_interf);
 
   // ---------Addressing contribution to block (5,5)
-  mat.assign(2, 2, Core::LinAlg::DataAccess::View, ale_inner_inner);
+  mat.assign(2, 2, Core::LinAlg::DataAccess::Share, ale_inner_inner);
 
   // ---------Addressing contribution to block (6,2)
   std::shared_ptr<Core::LinAlg::SparseMatrix> aux_mortar_m =
       Core::LinAlg::matrix_row_transform_gids(*mortar_m, *lag_mult_dof_map_);
   aux_mortar_m->complete(solidblock->domain_map(), *lag_mult_dof_map_, {.enforce_complete = true});
 
-  mat.assign(3, 0, Core::LinAlg::DataAccess::View, *aux_mortar_m);
+  mat.assign(3, 0, Core::LinAlg::DataAccess::Share, *aux_mortar_m);
 
   // ---------Addressing contribution to block (2,6)
   aux_mortar_m = Core::LinAlg::matrix_row_transform_gids(*mortar_m, *lag_mult_dof_map_);
@@ -894,7 +894,7 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::setup_system_matrix(
   aux_mortar_m_trans.complete(
       *lag_mult_dof_map_, solidblock->range_map(), {.enforce_complete = true});
 
-  mat.assign(0, 3, Core::LinAlg::DataAccess::View, aux_mortar_m_trans);
+  mat.assign(0, 3, Core::LinAlg::DataAccess::Share, aux_mortar_m_trans);
 
   // ---------Addressing contribution to block (6,4)
   std::shared_ptr<Core::LinAlg::SparseMatrix> aux_mortar_d =
@@ -904,7 +904,7 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::setup_system_matrix(
   aux_mortar_d->complete(
       fluidblock->full_domain_map(), *lag_mult_dof_map_, {.enforce_complete = true});
 
-  mat.assign(3, 1, Core::LinAlg::DataAccess::View, *aux_mortar_d);
+  mat.assign(3, 1, Core::LinAlg::DataAccess::Share, *aux_mortar_d);
 
   // ---------Addressing contribution to block (4,6)
   aux_mortar_d = Core::LinAlg::matrix_row_transform_gids(*mortar_d, *lag_mult_dof_map_);
@@ -914,7 +914,7 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::setup_system_matrix(
   aux_mortar_d_trans.complete(
       *lag_mult_dof_map_, fluidblock->full_range_map(), {.enforce_complete = true});
 
-  mat.assign(1, 3, Core::LinAlg::DataAccess::View, aux_mortar_d_trans);
+  mat.assign(1, 3, Core::LinAlg::DataAccess::Share, aux_mortar_d_trans);
 
   /*--------------------------------------------------------------------------*/
   // add optional fluid linearization with respect to mesh motion block
@@ -956,7 +956,7 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::setup_system_matrix(
   }
 
   // finally assign fluid matrix to block (1,1)
-  mat.assign(1, 1, Core::LinAlg::DataAccess::View, aux_fluidblock);
+  mat.assign(1, 1, Core::LinAlg::DataAccess::Share, aux_fluidblock);
 
   // done. make sure all blocks are filled.
   mat.complete();

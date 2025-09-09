@@ -67,7 +67,7 @@ void Core::LinearSolver::TekoPreconditioner::setup(Epetra_Operator* matrix,
       auto crsA =
           std::dynamic_pointer_cast<Epetra_CrsMatrix>(Core::Utils::shared_ptr_from_ref(*matrix));
       Core::LinAlg::SparseMatrix sparseA =
-          Core::LinAlg::SparseMatrix(crsA, LinAlg::DataAccess::View);
+          Core::LinAlg::SparseMatrix(crsA, LinAlg::DataAccess::Share);
 
       A = Core::LinAlg::split_matrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
           sparseA, *extractor, *extractor);
