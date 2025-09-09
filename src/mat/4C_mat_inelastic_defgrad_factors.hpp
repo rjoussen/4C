@@ -593,7 +593,8 @@ namespace Mat
      * @param[in] numgp Number of Gauss points
      * @param[in] container Input parameter Container
      */
-    virtual void setup(const int numgp, const Core::IO::InputParameterContainer& container) = 0;
+    virtual void setup(const int numgp, const Discret::Elements::Fibers& fibers,
+        const std::optional<Discret::Elements::CoordinateSystem>& coord_system) = 0;
 
     /// update history variables of the inelastic defgrad factors for next time step
     virtual void update() = 0;
@@ -650,7 +651,8 @@ namespace Mat
 
     void update() override {};
 
-    void setup(const int numgp, const Core::IO::InputParameterContainer& container) override {};
+    void setup(const int numgp, const Discret::Elements::Fibers& fibers,
+        const std::optional<Discret::Elements::CoordinateSystem>& coord_system) override {};
 
     void pack_inelastic(Core::Communication::PackBuffer& data) const override {};
 
@@ -705,7 +707,8 @@ namespace Mat
 
     void update() override {};
 
-    void setup(const int numgp, const Core::IO::InputParameterContainer& container) override {};
+    void setup(const int numgp, const Discret::Elements::Fibers& fibers,
+        const std::optional<Discret::Elements::CoordinateSystem>& coord_system) override {};
 
     void pack_inelastic(Core::Communication::PackBuffer& data) const override {};
 
@@ -758,7 +761,8 @@ namespace Mat
 
     void update() override = 0;
 
-    void setup(const int numgp, const Core::IO::InputParameterContainer& container) override = 0;
+    void setup(const int numgp, const Discret::Elements::Fibers& fibers,
+        const std::optional<Discret::Elements::CoordinateSystem>& coord_system) override = 0;
 
     void pack_inelastic(Core::Communication::PackBuffer& data) const override = 0;
 
@@ -844,7 +848,8 @@ namespace Mat
 
     void update() override = 0;
 
-    void setup(const int numgp, const Core::IO::InputParameterContainer& container) override = 0;
+    void setup(const int numgp, const Discret::Elements::Fibers& fibers,
+        const std::optional<Discret::Elements::CoordinateSystem>& coord_system) override = 0;
 
     void pack_inelastic(Core::Communication::PackBuffer& data) const override = 0;
 
@@ -907,7 +912,8 @@ namespace Mat
 
     void update() override {};
 
-    void setup(const int numgp, const Core::IO::InputParameterContainer& container) override {};
+    void setup(const int numgp, const Discret::Elements::Fibers& fibers,
+        const std::optional<Discret::Elements::CoordinateSystem>& coord_system) override {};
 
     void pack_inelastic(Core::Communication::PackBuffer& data) const override {};
 
@@ -977,7 +983,8 @@ namespace Mat
 
     void update() override {};
 
-    void setup(const int numgp, const Core::IO::InputParameterContainer& container) override {};
+    void setup(const int numgp, const Discret::Elements::Fibers& fibers,
+        const std::optional<Discret::Elements::CoordinateSystem>& coord_system) override {};
 
     void pack_inelastic(Core::Communication::PackBuffer& data) const override {};
 
@@ -1040,7 +1047,8 @@ namespace Mat
 
     void update() override {};
 
-    void setup(const int numgp, const Core::IO::InputParameterContainer& container) override {};
+    void setup(const int numgp, const Discret::Elements::Fibers& fibers,
+        const std::optional<Discret::Elements::CoordinateSystem>& coord_system) override {};
 
     void pack_inelastic(Core::Communication::PackBuffer& data) const override {};
 
@@ -1104,7 +1112,8 @@ namespace Mat
 
     void update() override {};
 
-    void setup(const int numgp, const Core::IO::InputParameterContainer& container) override {};
+    void setup(const int numgp, const Discret::Elements::Fibers& fibers,
+        const std::optional<Discret::Elements::CoordinateSystem>& coord_system) override {};
 
     void pack_inelastic(Core::Communication::PackBuffer& data) const override {};
 
@@ -1156,7 +1165,8 @@ namespace Mat
 
     void update() override {};
 
-    void setup(const int numgp, const Core::IO::InputParameterContainer& container) override {};
+    void setup(const int numgp, const Discret::Elements::Fibers& fibers,
+        const std::optional<Discret::Elements::CoordinateSystem>& coord_system) override {};
 
     void pack_inelastic(Core::Communication::PackBuffer& data) const override {};
 
@@ -1358,7 +1368,8 @@ namespace Mat
           Mat::InelasticDefgradFactors::parameter());
     }
 
-    void setup(const int numgp, const Core::IO::InputParameterContainer& container) override;
+    void setup(const int numgp, const Discret::Elements::Fibers& fibers,
+        const std::optional<Discret::Elements::CoordinateSystem>& coord_system) override;
 
     void pre_evaluate(const Teuchos::ParameterList& params, int gp, int eleGID) override;
 

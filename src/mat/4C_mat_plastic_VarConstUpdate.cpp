@@ -176,10 +176,11 @@ void Mat::PlasticElastHyperVCU::unpack(Core::Communication::UnpackBuffer& buffer
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::PlasticElastHyperVCU::setup(int numgp, const Core::IO::InputParameterContainer& container)
+void Mat::PlasticElastHyperVCU::setup(int numgp, const Discret::Elements::Fibers& fibers,
+    const std::optional<Discret::Elements::CoordinateSystem>& coord_system)
 {
   // setup the plasticelasthyper data
-  PlasticElastHyper::setup(numgp, container);
+  PlasticElastHyper::setup(numgp, fibers, coord_system);
 
   // setup history
   plastic_defgrd_inverse_.resize(numgp);

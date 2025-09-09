@@ -22,6 +22,7 @@
 #include "4C_mat_material_factory.hpp"
 #include "4C_mat_par_bundle.hpp"
 #include "4C_mat_service.hpp"
+#include "4C_solid_3D_ele_fibers.hpp"
 #include "4C_utils_enum.hpp"
 
 #include <Teuchos_SerialDenseSolver.hpp>
@@ -401,12 +402,12 @@ void Mat::GrowthRemodelElastHyper::unpack(Core::Communication::UnpackBuffer& buf
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::GrowthRemodelElastHyper::setup(
-    int numgp, const Core::IO::InputParameterContainer& container)
+void Mat::GrowthRemodelElastHyper::setup(int numgp, const Discret::Elements::Fibers& fibers,
+    const std::optional<Discret::Elements::CoordinateSystem>& coord_system)
 {
   // read anisotropy
   anisotropy_.set_number_of_gauss_points(numgp);
-  anisotropy_.read_anisotropy_from_element(container);
+  anisotropy_.read_anisotropy_from_element(fibers, coord_system);
 
   // Initialize some variables
   v_.resize(numgp, 1.0);
@@ -425,22 +426,22 @@ void Mat::GrowthRemodelElastHyper::setup(
 
   // Setup summands
   // remodelfiber
-  for (auto& p : potsumrf_) p->setup(numgp, params_->density_, container);
+  for (auto& p : potsumrf_) p->setup(numgp, params_->density_, fibers, coord_system);
 
   // 2D elastin matrix
-  for (auto& p : potsumelmem_) p->setup(numgp, container);
+  for (auto& p : potsumelmem_) p->setup(numgp, fibers, coord_system);
 
   if (params_->membrane_ != 1)
   {
     // 3D elastin matrix
-    for (auto& p : potsumeliso_) p->setup(numgp, container);
+    for (auto& p : potsumeliso_) p->setup(numgp, fibers, coord_system);
 
     // volpenalty
-    potsumelpenalty_->setup(numgp, container);
+    potsumelpenalty_->setup(numgp, fibers, coord_system);
   }
 
   // Setup circumferential, radial and axial structural tensor
-  setup_axi_cir_rad_structural_tensor(container);
+  setup_axi_cir_rad_structural_tensor(coord_system);
 
   // Setup growth tensors in the case of anisotropic growth (--> growth in thickness direction)
   if (params_->growthtype_ == 1) setup_aniso_growth_tensors();
@@ -461,31 +462,37 @@ void Mat::GrowthRemodelElastHyper::post_setup(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Mat::GrowthRemodelElastHyper::setup_axi_cir_rad_structural_tensor(
-    const Core::IO::InputParameterContainer& container)
+    const std::optional<Discret::Elements::CoordinateSystem>& coord_system)
 {
   // CIR-AXI-RAD nomenclature
-  if (container.get<std::optional<std::vector<double>>>("RAD").has_value() and
-      container.get<std::optional<std::vector<double>>>("AXI").has_value() and
-      container.get<std::optional<std::vector<double>>>("CIR").has_value())
+  if (coord_system.has_value())
   {
+    for (int i = 0; i < 3; ++i)
+    {
+      for (int j = 0; j < 3; ++j)
+      {
+        radaxicirc_(i, j) = coord_system->element_system[j](i);
+      }
+    }
     // Read in of data
     // read local (cylindrical) cosy-directions at current element
-    Core::LinAlg::Matrix<3, 1> dir;
-
     // Axial direction
-    read_dir(container, "AXI", dir);
-    for (int i = 0; i < 3; ++i) radaxicirc_(i, 1) = dir(i);
-    aax_m_.multiply_nt(1.0, dir, dir, 0.0);
+    aax_m_ = Core::LinAlg::Matrix<3, 3>(
+        Core::LinAlg::dyadic(coord_system->element_system[1], coord_system->element_system[1])
+            .data(),
+        /*view=*/false);
 
     // Circumferential direction
-    read_dir(container, "CIR", dir);
-    for (int i = 0; i < 3; ++i) radaxicirc_(i, 2) = dir(i);
-    acir_m_.multiply_nt(1.0, dir, dir, 0.0);
+    acir_m_ = Core::LinAlg::Matrix<3, 3>(
+        Core::LinAlg::dyadic(coord_system->element_system[2], coord_system->element_system[2])
+            .data(),
+        /*view=*/false);
 
     // Radial direction
-    read_dir(container, "RAD", dir);
-    for (int i = 0; i < 3; ++i) radaxicirc_(i, 0) = dir(i);
-    arad_m_.multiply_nt(1.0, dir, dir, 0.0);
+    arad_m_ = Core::LinAlg::Matrix<3, 3>(
+        Core::LinAlg::dyadic(coord_system->element_system[0], coord_system->element_system[0])
+            .data(),
+        /*view=*/false);
 
     // radial structural tensor in "stress-like" Voigt notation
     Core::LinAlg::Voigt::Stresses::matrix_to_vector(arad_m_, aradv_);
@@ -519,29 +526,6 @@ void Mat::GrowthRemodelElastHyper::setup_aniso_growth_tensors()
   for (int i = 0; i < 3; ++i) id(i, i) = 1.0;
   apl_m_.update(1.0, arad_m_, 0.0);
   apl_m_.update(1.0, id, -1.0);
-}
-
-
-/*----------------------------------------------------------------------*
- * Function which reads in the AXI CIR RAD directions
- *----------------------------------------------------------------------*/
-void Mat::GrowthRemodelElastHyper::read_dir(const Core::IO::InputParameterContainer& container,
-    const std::string& specifier, Core::LinAlg::Matrix<3, 1>& dir)
-{
-  const auto& fiber_opt = container.get<std::optional<std::vector<double>>>(specifier);
-  FOUR_C_ASSERT(fiber_opt.has_value(), "Internal error: fiber vector not found.");
-  const auto& fiber = *fiber_opt;
-
-  double fnorm = 0.;
-  // normalization
-  for (int i = 0; i < 3; ++i)
-  {
-    fnorm += fiber[i] * fiber[i];
-  }
-  fnorm = sqrt(fnorm);
-
-  // fill final normalized vector
-  for (int i = 0; i < 3; ++i) dir(i) = fiber[i] / fnorm;
 }
 
 

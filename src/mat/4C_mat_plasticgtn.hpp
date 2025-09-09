@@ -133,7 +133,8 @@ namespace Mat
 
     std::shared_ptr<Material> clone() const override { return std::make_shared<PlasticGTN>(*this); }
 
-    void setup(int numgp, const Core::IO::InputParameterContainer& container) override;
+    void setup(int numgp, const Discret::Elements::Fibers& fibers,
+        const std::optional<Discret::Elements::CoordinateSystem>& coord_system) override;
     void update() override;
 
     void evaluate(const Core::LinAlg::Tensor<double, 3, 3>* defgrad,

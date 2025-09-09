@@ -939,21 +939,22 @@ Core::LinAlg::Matrix<6, 6> Mat::MultiplicativeSplitDefgradElastHyper::evaluate_a
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void Mat::MultiplicativeSplitDefgradElastHyper::setup(
-    const int numgp, const Core::IO::InputParameterContainer& container)
+void Mat::MultiplicativeSplitDefgradElastHyper::setup(const int numgp,
+    const Discret::Elements::Fibers& fibers,
+    const std::optional<Discret::Elements::CoordinateSystem>& coord_system)
 {
   // Read anisotropy
   anisotropy_->set_number_of_gauss_points(numgp);
-  anisotropy_->read_anisotropy_from_element(container);
+  anisotropy_->read_anisotropy_from_element(fibers, coord_system);
 
   // elastic materials
-  for (const auto& summand : potsumel_) summand->setup(numgp, container);
+  for (const auto& summand : potsumel_) summand->setup(numgp, fibers, coord_system);
   for (const std::shared_ptr<Mat::Elastic::CoupTransverselyIsotropic>& summand :
       potsumel_transviso_)
-    summand->setup(numgp, container);
+    summand->setup(numgp, fibers, coord_system);
 
   // setup inelastic materials
-  inelastic_->setup(numgp, container);
+  inelastic_->setup(numgp, fibers, coord_system);
 }
 
 /*--------------------------------------------------------------------*
@@ -1167,13 +1168,13 @@ void Mat::InelasticFactorsHandler::update()
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void Mat::InelasticFactorsHandler::setup(
-    const int numgp, const Core::IO::InputParameterContainer& container)
+void Mat::InelasticFactorsHandler::setup(const int numgp, const Discret::Elements::Fibers& fibers,
+    const std::optional<Discret::Elements::CoordinateSystem>& coord_system)
 {
   // loop over all inelastic contributions
   for (int i = 0; i < num_inelastic_def_grad(); ++i)
   {
-    facdefgradin_[i].second->setup(numgp, container);
+    facdefgradin_[i].second->setup(numgp, fibers, coord_system);
   }
 }
 

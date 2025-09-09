@@ -132,11 +132,12 @@ void Mixture::MixtureConstituentSolidMaterial::unpack_constituent(
 
 Core::Materials::MaterialType material_type() { return Core::Materials::mix_solid_material; }
 
-void Mixture::MixtureConstituentSolidMaterial::read_element(
-    int numgp, const Core::IO::InputParameterContainer& container)
+void Mixture::MixtureConstituentSolidMaterial::read_element(int numgp,
+    const Discret::Elements::Fibers& fibers,
+    const std::optional<Discret::Elements::CoordinateSystem>& coord_system)
 {
-  MixtureConstituent::read_element(numgp, container);
-  material_->setup(numgp, container);
+  MixtureConstituent::read_element(numgp, fibers, coord_system);
+  material_->setup(numgp, fibers, coord_system);
 }
 
 void Mixture::MixtureConstituentSolidMaterial::update() { material_->update(); }

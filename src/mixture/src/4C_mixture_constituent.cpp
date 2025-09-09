@@ -98,8 +98,8 @@ Mixture::MixtureConstituent::MixtureConstituent(Mixture::PAR::MixtureConstituent
 }
 
 //! Init is called once at the beginning to setup the number of GPs and the Parameter List
-void Mixture::MixtureConstituent::read_element(
-    int numgp, const Core::IO::InputParameterContainer& container)
+void Mixture::MixtureConstituent::read_element(int numgp, const Discret::Elements::Fibers& fibers,
+    const std::optional<Discret::Elements::CoordinateSystem>& coord_system)
 {
   // Init must only be called once
   if (has_read_element_)

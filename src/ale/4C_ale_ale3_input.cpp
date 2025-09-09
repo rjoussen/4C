@@ -68,7 +68,7 @@ bool Discret::Elements::Ale3::read_element(const std::string& eletype, const std
 
   const Core::FE::IntegrationPoints3D intpoints(gaussrule);
   const int numgp = intpoints.nquad;
-  so3mat->setup(numgp, container);
+  so3mat->setup(numgp, {}, {});
 
   return true;
 }

@@ -185,7 +185,8 @@ namespace Mat
         Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& cmat, int gp, int eleGID) override;
 
     /// setup
-    void setup(int numgp, const Core::IO::InputParameterContainer& container) override;
+    void setup(int numgp, const Discret::Elements::Fibers& fibers,
+        const std::optional<Discret::Elements::CoordinateSystem>& coord_system) override;
 
     /// Return quick accessible material parameter data
     Core::Mat::PAR::Parameter* parameter() const override { return params_; }

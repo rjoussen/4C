@@ -232,7 +232,8 @@ namespace Mat
 
     //! Initialize internal variables
     virtual void poro_setup(int numgp,  //!< number of Gauss points
-        const Core::IO::InputParameterContainer& container);
+        const Discret::Elements::Fibers& fibers,
+        const std::optional<Discret::Elements::CoordinateSystem>& coord_system);
 
     /*!
      * @brief Calculate coupling part of homogenized 2 Piola-Kirchhoff stress (3D)
@@ -323,11 +324,12 @@ namespace Mat
     //! @name Handling of Gauss point data. Here, the poro material just calls the underlying
     //! material
 
-    void setup(int numgp, const Core::IO::InputParameterContainer& container) override
+    void setup(int numgp, const Discret::Elements::Fibers& fibers,
+        const std::optional<Discret::Elements::CoordinateSystem>& coord_system) override
     {
       // setup the underlying material
       // Note: poro material itself is setup when calling poro_setup()
-      mat_->setup(numgp, container);
+      mat_->setup(numgp, fibers, coord_system);
     }
 
     void post_setup(const Teuchos::ParameterList& params, const int eleGID) override;

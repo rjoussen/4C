@@ -182,7 +182,8 @@ namespace Mat
         int eleGID) override;  ///< Constitutive matrix
 
     /// setup material description
-    void setup(int numgp, const Core::IO::InputParameterContainer& container) override;
+    void setup(int numgp, const Discret::Elements::Fibers& fibers,
+        const std::optional<Discret::Elements::CoordinateSystem>& coord_system) override;
 
     /// update history variables
     void update() override;

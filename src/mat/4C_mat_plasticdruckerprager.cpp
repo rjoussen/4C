@@ -138,7 +138,8 @@ void Mat::PlasticDruckerPrager::unpack(Core::Communication::UnpackBuffer& buffer
     }
   }
 }
-void Mat::PlasticDruckerPrager::setup(int numgp, const Core::IO::InputParameterContainer& container)
+void Mat::PlasticDruckerPrager::setup(int numgp, const Discret::Elements::Fibers& fibers,
+    const std::optional<Discret::Elements::CoordinateSystem>& coord_system)
 {
   strainpllast_.resize(numgp);
   strainplcurr_.resize(numgp);

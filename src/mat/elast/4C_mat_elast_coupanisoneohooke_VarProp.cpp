@@ -51,8 +51,9 @@ void Mat::Elastic::CoupAnisoNeoHookeVarProp::unpack_summand(
   extract_from_pack(buffer, structural_tensor_);
 }
 
-void Mat::Elastic::CoupAnisoNeoHookeVarProp::setup(
-    int numgp, const Core::IO::InputParameterContainer& container)
+void Mat::Elastic::CoupAnisoNeoHookeVarProp::setup(int numgp,
+    const Discret::Elements::Fibers& fibers,
+    const std::optional<Discret::Elements::CoordinateSystem>& coord_system)
 {
   // path if fibers aren't given in input file
   if (params_->init_ == 0)
@@ -98,13 +99,11 @@ void Mat::Elastic::CoupAnisoNeoHookeVarProp::setup(
   else if (params_->init_ == 1)
   {
     // CIR-AXI-RAD nomenclature
-    if (container.get<std::optional<std::vector<double>>>("RAD").has_value() and
-        container.get<std::optional<std::vector<double>>>("AXI").has_value() and
-        container.get<std::optional<std::vector<double>>>("CIR").has_value())
+    if (coord_system.has_value())
     {
       // Read in of data
       Core::LinAlg::Tensor<double, 3, 3> locsys{};
-      read_rad_axi_cir(container, locsys);
+      read_rad_axi_cir(*coord_system, locsys);
       Core::LinAlg::Matrix<3, 3> Id(Core::LinAlg::Initialization::zero);
       for (int i = 0; i < 3; i++) Id(i, i) = 1.0;
       // final setup of fiber data
@@ -113,10 +112,10 @@ void Mat::Elastic::CoupAnisoNeoHookeVarProp::setup(
     }
 
     // FIBER1 nomenclature
-    else if (container.get<std::optional<std::vector<double>>>("FIBER1").has_value())
+    else if (fibers.element_fibers.size() >= 1)
     {
       // Read in of fiber data and setting fiber data
-      read_fiber(container, "FIBER1", a_);
+      a_ = fibers.element_fibers[0];
       params_->structural_tensor_strategy()->setup_structural_tensor(a_, structural_tensor_);
     }
 

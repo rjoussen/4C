@@ -298,7 +298,8 @@ namespace Mat
 
     //! @}
 
-    void setup(int numgp, const Core::IO::InputParameterContainer& container) override;
+    void setup(int numgp, const Discret::Elements::Fibers& fibers,
+        const std::optional<Discret::Elements::CoordinateSystem>& coord_system) override;
 
     /*!
      * @brief computes isotropic elasticity tensor in matrix notion for 3d

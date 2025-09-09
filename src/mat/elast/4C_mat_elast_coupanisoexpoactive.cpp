@@ -65,8 +65,8 @@ void Mat::Elastic::CoupAnisoExpoActive::unpack_summand(Core::Communication::Unpa
   d_p_iact_ = evaluated_psi_active();
 }
 
-void Mat::Elastic::CoupAnisoExpoActive::setup(
-    int numgp, const Core::IO::InputParameterContainer& container)
+void Mat::Elastic::CoupAnisoExpoActive::setup(int numgp, const Discret::Elements::Fibers& fibers,
+    const std::optional<Discret::Elements::CoordinateSystem>& coord_system)
 {
   // setup first derivative of active fiber potential w.r.t. active fiber stretch (const during the
   // whole simulation)

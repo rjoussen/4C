@@ -201,7 +201,8 @@ void Mat::ViscoAnisotropic::unpack(Core::Communication::UnpackBuffer& buffer)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mat::ViscoAnisotropic::setup(int numgp, const Core::IO::InputParameterContainer& container)
+void Mat::ViscoAnisotropic::setup(int numgp, const Discret::Elements::Fibers& fibers,
+    const std::optional<Discret::Elements::CoordinateSystem>& coord_system)
 {
   /*fiber directions can be defined in the element line
     or by element thickness direction.
@@ -217,34 +218,19 @@ void Mat::ViscoAnisotropic::setup(int numgp, const Core::IO::InputParameterConta
   const double gamma = (params_->gamma_ * std::numbers::pi) / 180.;  // convert
 
   // read local (cylindrical) cosy-directions at current element
-  auto rad_opt = container.get<std::optional<std::vector<double>>>("RAD");
-  auto axi_opt = container.get<std::optional<std::vector<double>>>("AXI");
-  auto cir_opt = container.get<std::optional<std::vector<double>>>("CIR");
-  FOUR_C_ASSERT_ALWAYS(rad_opt && axi_opt && cir_opt, "Require RAD, AXI and CIR parameters.");
-
-  const auto& rad = *rad_opt;
-  const auto& axi = *axi_opt;
-  const auto& cir = *cir_opt;
+  FOUR_C_ASSERT_ALWAYS(coord_system, "Require RAD, AXI and CIR parameters.");
 
   Core::LinAlg::Matrix<3, 3> locsys;
   // basis is local cosy with third vec e3 = circumferential dir and e2 = axial dir
-  double radnorm = 0.;
-  double axinorm = 0.;
-  double cirnorm = 0.;
+  double radnorm = std::sqrt(Core::LinAlg::norm2(coord_system->element_system[0]));
+  double axinorm = std::sqrt(Core::LinAlg::norm2(coord_system->element_system[1]));
+  double cirnorm = std::sqrt(Core::LinAlg::norm2(coord_system->element_system[2]));
+
   for (int i = 0; i < 3; ++i)
   {
-    radnorm += rad[i] * rad[i];
-    axinorm += axi[i] * axi[i];
-    cirnorm += cir[i] * cir[i];
-  }
-  radnorm = sqrt(radnorm);
-  axinorm = sqrt(axinorm);
-  cirnorm = sqrt(cirnorm);
-  for (int i = 0; i < 3; ++i)
-  {
-    locsys(i, 0) = rad[i] / radnorm;
-    locsys(i, 1) = axi[i] / axinorm;
-    locsys(i, 2) = cir[i] / cirnorm;
+    locsys(i, 0) = coord_system->element_system[0](i) / radnorm;
+    locsys(i, 1) = coord_system->element_system[1](i) / axinorm;
+    locsys(i, 2) = coord_system->element_system[2](i) / cirnorm;
   }
   for (int gp = 0; gp < numgp; ++gp)
   {

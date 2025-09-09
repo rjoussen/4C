@@ -226,8 +226,8 @@ void Mat::ThermoPlasticLinElast::unpack(Core::Communication::UnpackBuffer& buffe
 /*---------------------------------------------------------------------*
  | initialise / allocate internal stress variables (public) dano 08/11 |
  *---------------------------------------------------------------------*/
-void Mat::ThermoPlasticLinElast::setup(
-    int numgp, const Core::IO::InputParameterContainer& container)
+void Mat::ThermoPlasticLinElast::setup(int numgp, const Discret::Elements::Fibers& fibers,
+    const std::optional<Discret::Elements::CoordinateSystem>& coord_system)
 {
   // initialise history variables
   strainpllast_ = std::make_shared<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();

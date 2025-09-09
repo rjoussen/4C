@@ -15,6 +15,7 @@
 #include "4C_mat_par_bundle.hpp"
 #include "4C_mat_service.hpp"
 #include "4C_utils_enum.hpp"
+#include "4C_utils_exceptions.hpp"
 
 #include <Teuchos_ENull.hpp>
 
@@ -297,7 +298,8 @@ void Mat::CrystalPlasticity::unpack(Core::Communication::UnpackBuffer& buffer)
 /*---------------------------------------------------------------------*
  | initialize / allocate internal variables (public)                   |
  *---------------------------------------------------------------------*/
-void Mat::CrystalPlasticity::setup(int numgp, const Core::IO::InputParameterContainer& container)
+void Mat::CrystalPlasticity::setup(int numgp, const Discret::Elements::Fibers& fibers,
+    const std::optional<Discret::Elements::CoordinateSystem>& coord_system)
 {
   // import material / model parameters and calculate derived values
 
@@ -328,7 +330,7 @@ void Mat::CrystalPlasticity::setup(int numgp, const Core::IO::InputParameterCont
   this->setup_lattice_vectors();
 
   //  read Lattice orientation matrix from input file
-  this->setup_lattice_orientation(container);
+  this->setup_lattice_orientation(fibers);
 
   // rotate lattice vectors according to lattice orientation
   for (int i = 0; i < slip_system_count_; i++)
@@ -1093,29 +1095,21 @@ void Mat::CrystalPlasticity::setup_lattice_vectors()
  | Read Lattice orientation matrix from input file                                    |
  *---------------------------------------------------------------------------------*/
 
-void Mat::CrystalPlasticity::setup_lattice_orientation(
-    const Core::IO::InputParameterContainer& container)
+void Mat::CrystalPlasticity::setup_lattice_orientation(const Discret::Elements::Fibers& fibers)
 {
-  // extract fiber vectors as columns of the rotation matrix
-  const auto& fiber1 = container.get<std::optional<std::vector<double>>>("FIBER1");
-  const auto& fiber2 = container.get<std::optional<std::vector<double>>>("FIBER2");
-  const auto& fiber3 = container.get<std::optional<std::vector<double>>>("FIBER3");
+  FOUR_C_ASSERT_ALWAYS(fibers.element_fibers.size() == 3,
+      "No lattice orientation matrix provided! Please add 3 fibers as columns of the rotation "
+      "matrix that relates the lattice orientation to the global coordinate system");
 
-  if (fiber1 and fiber2 and fiber3)
+
+  // assemble rotation matrix
+  for (int i = 0; i < 3; i++)
   {
-    // assemble rotation matrix
-    for (int i = 0; i < 3; i++)
+    for (int j = 0; j < 3; j++)
     {
-      lattice_orientation_(i, 0) = (*fiber1)[i];
-      lattice_orientation_(i, 1) = (*fiber2)[i];
-      lattice_orientation_(i, 2) = (*fiber3)[i];
+      lattice_orientation_(j, i) = fibers.element_fibers[i](j);
     }
   }
-  else
-    FOUR_C_THROW(
-        "No lattice orientation matrix provided! Please add 'FIBER1', 'FIBER2' and 'FIBER3' as "
-        "columns of the rotation matrix that relates the lattice orientation to the global "
-        "coordinate system");
 }
 
 

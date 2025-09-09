@@ -57,7 +57,8 @@ namespace Mixture
 
     Core::Materials::MaterialType material_type() const override;
 
-    void read_element(int numgp, const Core::IO::InputParameterContainer& container) override;
+    void read_element(int numgp, const Discret::Elements::Fibers& fibers,
+        const std::optional<Discret::Elements::CoordinateSystem>& coord_system) override;
 
     void update(Core::LinAlg::Tensor<double, 3, 3> const& defgrd,
         const Teuchos::ParameterList& params, const int gp, const int eleGID) override;

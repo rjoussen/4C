@@ -105,8 +105,8 @@ void Mixture::MixtureRule::unpack_mixture_rule(Core::Communication::UnpackBuffer
 }
 
 // reads the element definition and set up all quantities
-void Mixture::MixtureRule::read_element(
-    int numgp, const Core::IO::InputParameterContainer& container)
+void Mixture::MixtureRule::read_element(int numgp, const Discret::Elements::Fibers& fibers,
+    const std::optional<Discret::Elements::CoordinateSystem>& coord_system)
 {
   // Init must only be called once
   if (has_read_element_)

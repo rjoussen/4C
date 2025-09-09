@@ -17,33 +17,6 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-void Mat::read_anisotropy_fiber(const Core::IO::InputParameterContainer& container,
-    std::string specifier, Core::LinAlg::Tensor<double, 3>& fiber_vector)
-{
-  const auto& fiber_opt = container.get<std::optional<std::vector<double>>>(std::move(specifier));
-  FOUR_C_ASSERT(fiber_opt.has_value(), "Internal error: fiber vector not found.");
-  const auto& fiber = *fiber_opt;
-
-  double f1norm = 0.;
-  // normalization
-  for (std::vector<double>::size_type i = 0; i < 3; ++i)
-  {
-    f1norm += fiber[i] * fiber[i];
-  }
-  f1norm = std::sqrt(f1norm);
-
-  if (f1norm < 1e-9)
-  {
-    FOUR_C_THROW("The given fiber is not a vector but zero.");
-  }
-
-  // fill final fiber vector
-  for (std::vector<double>::size_type i = 0; i < 3; ++i)
-  {
-    fiber_vector(i) = fiber[i] / f1norm;
-  }
-}
-
 template <typename T, unsigned int numfib>
 void Mat::compute_structural_tensors(
     std::vector<std::array<Core::LinAlg::Tensor<double, 3>, numfib>>& fibers,

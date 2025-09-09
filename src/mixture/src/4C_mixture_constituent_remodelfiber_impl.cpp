@@ -115,10 +115,11 @@ void Mixture::MixtureConstituentRemodelFiberImpl::initialize()
   }
 }
 
-void Mixture::MixtureConstituentRemodelFiberImpl::read_element(
-    int numgp, const Core::IO::InputParameterContainer& container)
+void Mixture::MixtureConstituentRemodelFiberImpl::read_element(int numgp,
+    const Discret::Elements::Fibers& fibers,
+    const std::optional<Discret::Elements::CoordinateSystem>& coord_system)
 {
-  Mixture::MixtureConstituent::read_element(numgp, container);
+  Mixture::MixtureConstituent::read_element(numgp, fibers, coord_system);
   initialize();
 }
 

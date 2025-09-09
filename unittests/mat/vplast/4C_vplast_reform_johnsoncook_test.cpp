@@ -45,12 +45,9 @@ namespace
       vplast_law_reformulated_JC_ = std::make_shared<Mat::Viscoplastic::ReformulatedJohnsonCook>(
           params_vplast_law_reformulated_JC_.get());
 
-      // define setup parameter for InelasticDefGradTransvIsotropElastViscoplast
-      Core::IO::InputParameterContainer setup_vplast_law_reformulated_JC;  // can stay empty
-
       // call setup method for ReformulatedJohnsonCook
       int numgp = 8;  // HEX8 element, although not really relevant for the tested methods
-      vplast_law_reformulated_JC_->setup(numgp, setup_vplast_law_reformulated_JC);
+      vplast_law_reformulated_JC_->setup(numgp, {}, {});
 
       // call pre_evaluate
       vplast_law_reformulated_JC_->pre_evaluate(0);

@@ -161,7 +161,8 @@ void Mat::ViscoNeoHooke::unpack(Core::Communication::UnpackBuffer& buffer)
 /*----------------------------------------------------------------------*
  |  Initialise/allocate internal stress variables (public)         05/08|
  *----------------------------------------------------------------------*/
-void Mat::ViscoNeoHooke::setup(int numgp, const Core::IO::InputParameterContainer& container)
+void Mat::ViscoNeoHooke::setup(int numgp, const Discret::Elements::Fibers& fibers,
+    const std::optional<Discret::Elements::CoordinateSystem>& coord_system)
 {
   histstresscurr_ = std::make_shared<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
   artstresscurr_ = std::make_shared<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();

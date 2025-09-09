@@ -344,14 +344,15 @@ void Mat::ViscoElastHyper::unpack(Core::Communication::UnpackBuffer& buffer)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::ViscoElastHyper::setup(int numgp, const Core::IO::InputParameterContainer& container)
+void Mat::ViscoElastHyper::setup(int numgp, const Discret::Elements::Fibers& fibers,
+    const std::optional<Discret::Elements::CoordinateSystem>& coord_system)
 {
   // read anisotropy
   anisotropy_.set_number_of_gauss_points(numgp);
-  anisotropy_.read_anisotropy_from_element(container);
+  anisotropy_.read_anisotropy_from_element(fibers, coord_system);
 
   // Setup summands
-  for (auto& p : potsum_) p->setup(numgp, container);
+  for (auto& p : potsum_) p->setup(numgp, fibers, coord_system);
 
   // find out which formulations are used
   isovisco_ = false;

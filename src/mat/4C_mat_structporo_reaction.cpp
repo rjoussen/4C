@@ -62,9 +62,10 @@ Mat::StructPoroReaction::StructPoroReaction(Mat::PAR::StructPoroReaction* params
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mat::StructPoroReaction::setup(int numgp, const Core::IO::InputParameterContainer& container)
+void Mat::StructPoroReaction::setup(int numgp, const Discret::Elements::Fibers& fibers,
+    const std::optional<Discret::Elements::CoordinateSystem>& coord_system)
 {
-  StructPoro::setup(numgp, container);
+  StructPoro::setup(numgp, fibers, coord_system);
   refporosity_ = params_->init_porosity_;
 }
 

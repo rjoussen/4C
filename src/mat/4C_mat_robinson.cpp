@@ -225,7 +225,8 @@ void Mat::Robinson::unpack(Core::Communication::UnpackBuffer& buffer)
 /*---------------------------------------------------------------------*
  | initialise / allocate internal stress variables (public) dano 11/11 |
  *---------------------------------------------------------------------*/
-void Mat::Robinson::setup(const int numgp, const Core::IO::InputParameterContainer& container)
+void Mat::Robinson::setup(const int numgp, const Discret::Elements::Fibers& fibers,
+    const std::optional<Discret::Elements::CoordinateSystem>& coord_system)
 {
   // temporary variable for read-in
   std::string buffer;

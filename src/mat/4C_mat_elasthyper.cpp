@@ -237,16 +237,17 @@ void Mat::ElastHyper::setup_aaa(const Teuchos::ParameterList& params, const int 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::ElastHyper::setup(int numgp, const Core::IO::InputParameterContainer& container)
+void Mat::ElastHyper::setup(int numgp, const Discret::Elements::Fibers& fibers,
+    const std::optional<Discret::Elements::CoordinateSystem>& coord_system)
 {
   // Read anisotropy
   anisotropy_.set_number_of_gauss_points(numgp);
-  anisotropy_.read_anisotropy_from_element(container);
+  anisotropy_.read_anisotropy_from_element(fibers, coord_system);
 
   // Setup summands
   for (auto& p : potsum_)
   {
-    p->setup(numgp, container);
+    p->setup(numgp, fibers, coord_system);
   }
   summandProperties_.clear();
   elast_hyper_properties(potsum_, summandProperties_);

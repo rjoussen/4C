@@ -113,7 +113,8 @@ namespace Mat
       //@}
 
       /// Setup of summand
-      void setup(int numgp, const Core::IO::InputParameterContainer& container) override;
+      void setup(int numgp, const Discret::Elements::Fibers& fibers,
+          const std::optional<Discret::Elements::CoordinateSystem>& coord_system) override;
 
       /// Add anisotropic principal stresses
       void add_stress_aniso_principal(

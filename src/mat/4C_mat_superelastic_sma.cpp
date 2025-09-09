@@ -245,7 +245,8 @@ void Mat::SuperElasticSMA::unpack(Core::Communication::UnpackBuffer& buffer)
 /*---------------------------------------------------------------------*
  | initialize / allocate internal variables (public)     hemmler 09/16 |
  *---------------------------------------------------------------------*/
-void Mat::SuperElasticSMA::setup(int numgp, const Core::IO::InputParameterContainer& container)
+void Mat::SuperElasticSMA::setup(int numgp, const Discret::Elements::Fibers& fibers,
+    const std::optional<Discret::Elements::CoordinateSystem>& coord_system)
 {
   druckerpragerloadingcurr_ = std::make_shared<std::vector<double>>();
   druckerpragerloadinglast_ = std::make_shared<std::vector<double>>();

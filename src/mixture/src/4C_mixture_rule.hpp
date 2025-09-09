@@ -14,6 +14,7 @@
 #include "4C_linalg_symmetric_tensor.hpp"
 #include "4C_linalg_tensor.hpp"
 #include "4C_material_parameter_base.hpp"
+#include "4C_solid_3D_ele_fibers.hpp"
 #include "4C_utils_exceptions.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
@@ -139,7 +140,8 @@ namespace Mixture
      * @param numgp (in) Number of Gauss-points
      * @param params (in/out) : Parameter list for exchange of parameters
      */
-    virtual void read_element(int numgp, const Core::IO::InputParameterContainer& container);
+    virtual void read_element(int numgp, const Discret::Elements::Fibers& fibers,
+        const std::optional<Discret::Elements::CoordinateSystem>& coord_system);
 
     /*!
      * Returns whether the constituent is already set up

@@ -206,11 +206,12 @@ void Mat::MuscleCombo::unpack(Core::Communication::UnpackBuffer& buffer)
   anisotropy_extension_.unpack_anisotropy(buffer);
 }
 
-void Mat::MuscleCombo::setup(int numgp, const Core::IO::InputParameterContainer& container)
+void Mat::MuscleCombo::setup(int numgp, const Discret::Elements::Fibers& fibers,
+    const std::optional<Discret::Elements::CoordinateSystem>& coord_system)
 {
   // Read anisotropy
   anisotropy_.set_number_of_gauss_points(numgp);
-  anisotropy_.read_anisotropy_from_element(container);
+  anisotropy_.read_anisotropy_from_element(fibers, coord_system);
 
   activation_evaluator_ = std::visit(ActivationParamsVisitor(), params_->activationParams_);
 }

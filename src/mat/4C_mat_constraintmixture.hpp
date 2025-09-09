@@ -230,10 +230,8 @@ namespace Mat
       return std::make_shared<ConstraintMixture>(*this);
     }
 
-    /// Setup
-    void setup(int numgp,                                   ///< number of Gauss points
-        const Core::IO::InputParameterContainer& container  ///< input parameter container
-        ) override;
+    void setup(int numgp, const Discret::Elements::Fibers& fibers,
+        const std::optional<Discret::Elements::CoordinateSystem>& coord_system) override;
 
     /// SetupHistory
     void reset_all(const int numgp);

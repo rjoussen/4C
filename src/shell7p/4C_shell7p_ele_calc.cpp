@@ -45,7 +45,8 @@ void Discret::Elements::Shell7pEleCalc<distype>::setup(Core::Elements::Element& 
   // initialize current thickness at all gp
   cur_thickness_.resize(intpoints_midsurface_.num_points(), shell_data_.thickness);
   //  set up of materials with GP data (e.g., history variables)
-  solid_material.setup(intpoints_midsurface_.num_points(), container);
+  solid_material.setup(intpoints_midsurface_.num_points(), read_fibers(container),
+      read_coordinate_system(container));
 }
 
 template <Core::FE::CellType distype>

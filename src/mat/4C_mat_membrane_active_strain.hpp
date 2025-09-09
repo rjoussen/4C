@@ -160,7 +160,8 @@ namespace Mat
     double density() const override { return params_->density_; }
 
     /// setup
-    void setup(int numgp, const Core::IO::InputParameterContainer& container) override;
+    void setup(int numgp, const Discret::Elements::Fibers& fibers,
+        const std::optional<Discret::Elements::CoordinateSystem>& coord_system) override;
 
     /// Standard SO3 evaluate (not meant to be used)
     void evaluate(const Core::LinAlg::Tensor<double, 3, 3>* defgrad,
@@ -217,11 +218,8 @@ namespace Mat
     bool isinit_;
 
     // setup fiber vectors
-    void setup_fiber_vectors(int numgp, const Core::IO::InputParameterContainer& container);
-
-    // read RAD-AXI-CIR
-    void read_dir(const Core::IO::InputParameterContainer& container, std::string specifier,
-        Core::LinAlg::Matrix<3, 1>& dir);
+    void setup_fiber_vectors(int numgp, const Discret::Elements::Fibers& fibers,
+        const std::optional<Discret::Elements::CoordinateSystem>& coord_system);
 
     // calculate normal direction from FIBER1 and FIBER2
     void setup_normal_direction();

@@ -153,7 +153,8 @@ void Mat::Damage::unpack(Core::Communication::UnpackBuffer& buffer)
 /*---------------------------------------------------------------------*
  | initialise / allocate internal stress variables (public)      04/11 |
  *---------------------------------------------------------------------*/
-void Mat::Damage::setup(int numgp, const Core::IO::InputParameterContainer& container)
+void Mat::Damage::setup(int numgp, const Discret::Elements::Fibers& fibers,
+    const std::optional<Discret::Elements::CoordinateSystem>& coord_system)
 {
   // initialise history variables
 

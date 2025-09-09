@@ -62,7 +62,8 @@ Mat::ScalarDepInterp::ScalarDepInterp(Mat::PAR::ScalarDepInterp* params)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::ScalarDepInterp::setup(int numgp, const Core::IO::InputParameterContainer& container)
+void Mat::ScalarDepInterp::setup(int numgp, const Discret::Elements::Fibers& fibers,
+    const std::optional<Discret::Elements::CoordinateSystem>& coord_system)
 {
   if (isinit_)
     FOUR_C_THROW("This function should just be called, if the material is jet not initialized.");
@@ -70,12 +71,12 @@ void Mat::ScalarDepInterp::setup(int numgp, const Core::IO::InputParameterContai
   // Setup of elastic material for zero concentration
   lambda_zero_mat_ =
       std::dynamic_pointer_cast<Mat::So3Material>(Mat::factory(params_->id_lambda_zero_));
-  lambda_zero_mat_->setup(numgp, container);
+  lambda_zero_mat_->setup(numgp, fibers, coord_system);
 
   // Setup of elastic material for zero concentration
   lambda_unit_mat_ =
       std::dynamic_pointer_cast<Mat::So3Material>(Mat::factory(params_->id_lambda_unit_));
-  lambda_unit_mat_->setup(numgp, container);
+  lambda_unit_mat_->setup(numgp, fibers, coord_system);
 
   // Some safety check
   const double density1 = lambda_zero_mat_->density();
@@ -84,10 +85,7 @@ void Mat::ScalarDepInterp::setup(int numgp, const Core::IO::InputParameterContai
     FOUR_C_THROW(
         "The densities of the materials specified in IDMATZEROSC and IDMATUNITSC must be equal!");
 
-  // Read lambda from input file, if available
-  auto lambda = container.get_or<double>("lambda", 1.0);
-
-  lambda_ = std::vector<double>(numgp, lambda);
+  lambda_ = std::vector<double>(numgp, 1.0);
 
   // initialization done
   isinit_ = true;
