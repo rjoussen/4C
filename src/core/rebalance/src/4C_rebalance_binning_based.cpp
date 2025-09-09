@@ -421,8 +421,8 @@ void Core::Rebalance::match_element_distribution_of_matching_conditioned_element
     // fill vector with processor local conditioned node gids for template dis
     for (int lid = 0; lid < dis_template.node_col_map()->num_my_elements(); ++lid)
     {
-      if (dis_template.g_node(dis_template.node_col_map()->gid(lid))
-              ->get_condition(condname_template) != nullptr)
+      const int gid = dis_template.node_col_map()->gid(lid);
+      if (!dis_template.get_conditions_on_node(condname_template, dis_template.g_node(gid)).empty())
         my_template_nodegid_vec.push_back(dis_template.node_col_map()->gid(lid));
     }
 
@@ -484,24 +484,20 @@ void Core::Rebalance::match_element_distribution_of_matching_conditioned_element
     // ALSO APPEND UNCONDITIONED  NODES
     ////////////////////////////////////////
     // add row nodes
-    for (int lid = 0; lid < dis_to_rebalance.node_row_map()->num_my_elements(); lid++)
+    for (auto node : dis_to_rebalance.my_row_node_range())
     {
-      Core::Conditions::Condition* testcond =
-          dis_to_rebalance.g_node(dis_to_rebalance.node_row_map()->gid(lid))
-              ->get_condition(condname_rebalance);
-      if (testcond == nullptr)
-        rebalance_rownodegid_vec.push_back(
-            dis_to_rebalance.g_node(dis_to_rebalance.node_row_map()->gid(lid))->id());
+      const int gid = node.global_id();
+      if (dis_to_rebalance.get_conditions_on_node(condname_rebalance, dis_to_rebalance.g_node(gid))
+              .empty())
+        rebalance_rownodegid_vec.push_back(gid);
     }
     // add col nodes
-    for (int lid = 0; lid < dis_to_rebalance.node_col_map()->num_my_elements(); lid++)
+    for (auto node : dis_to_rebalance.my_col_node_range())
     {
-      Core::Conditions::Condition* testcond =
-          dis_to_rebalance.g_node(dis_to_rebalance.node_col_map()->gid(lid))
-              ->get_condition(condname_rebalance);
-      if (testcond == nullptr)
-        rebalance_colnodegid_vec.push_back(
-            dis_to_rebalance.g_node(dis_to_rebalance.node_col_map()->gid(lid))->id());
+      const int gid = node.global_id();
+      if (dis_to_rebalance.get_conditions_on_node(condname_rebalance, dis_to_rebalance.g_node(gid))
+              .empty())
+        rebalance_colnodegid_vec.push_back(gid);
     }
 
     // construct rebalanced node row map

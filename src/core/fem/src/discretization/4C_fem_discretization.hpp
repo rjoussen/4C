@@ -1436,6 +1436,12 @@ namespace Core::FE
         const std::string& name, std::vector<const Core::Conditions::Condition*>& out) const;
 
     /**
+     * @brief Get all conditions with a certain @p name that are defined on a given @p node
+     */
+    std::vector<const Core::Conditions::Condition*> get_conditions_on_node(
+        const std::string& name, const Core::Nodes::Node* node) const;
+
+    /**
      * Return true if a Condition with the given @p name exists.
      */
     [[nodiscard]] bool has_condition(const std::string& name) const;

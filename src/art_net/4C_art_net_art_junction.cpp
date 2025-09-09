@@ -119,7 +119,8 @@ Arteries::Utils::ArtJunctionWrapper::ArtJunctionWrapper(
 
         // find whether the nodes is at the inlet or at the outlet of the element
         std::string terminalType =
-            nd->get_condition("ArtInOutCond")->parameters().get<std::string>("terminaltype");
+            actdis->get_conditions_on_node("ArtInOutCond", nd)[0]->parameters().get<std::string>(
+                "terminaltype");
         if (terminalType == "inlet")
           IOart[i] = -1;
         else if (terminalType == "outlet")

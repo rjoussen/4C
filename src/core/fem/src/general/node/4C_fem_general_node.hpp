@@ -78,16 +78,6 @@ namespace Core::Nodes
     Node(int id, std::span<const double> coords, int owner);
 
     /*!
-    \brief Copy Constructor
-
-    Makes a deep copy of a Node
-
-    */
-    Node(const Node& old);
-
-    Node& operator=(const Node&) = default;
-
-    /*!
     \brief Deep copy the derived class and return pointer to it
 
     */
@@ -240,20 +230,6 @@ namespace Core::Nodes
     */
     void get_condition(
         const std::string& name, std::vector<Core::Conditions::Condition*>& out) const;
-
-    /*!
-    \brief Get a condition with a certain name
-
-    Returns the first condition with name name found in the multimap.
-    If multiple conditions with the same name exist, the first condition is
-    returned and behaviour is therefore non-deterministic. This method should
-    therefore only be used in cases where the user is sure that name is unique.
-
-    \param name (in): Name of condition
-
-    \return Returns nullptr if condition with that name does not exist
-    */
-    Core::Conditions::Condition* get_condition(const std::string& name) const;
 
     /*!
     \brief Delete all conditions set to this node

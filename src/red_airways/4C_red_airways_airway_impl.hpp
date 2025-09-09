@@ -163,7 +163,9 @@ namespace Discret
           Core::FE::Discretization& discretization, std::vector<int>& lm,
           std::shared_ptr<Core::Mat::Material> material) override;
 
-     private:
+      static const Core::Conditions::Condition* get_first_condition(
+          const Core::FE::Discretization& discretization, const Core::Nodes::Node* node,
+          const std::string& name);
     };
 
   }  // namespace Elements

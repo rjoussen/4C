@@ -205,6 +205,14 @@ int Discret::Elements::AcinusImpl<distype>::evaluate(RedAcinus* ele, Teuchos::Pa
   return 0;
 }
 
+static const Core::Conditions::Condition* get_first_condition(
+    const Core::FE::Discretization& discretization, const Core::Nodes::Node* node,
+    const std::string& name)
+{
+  auto conds = discretization.get_conditions_on_node(name, node);
+  return conds.empty() ? nullptr : conds.front();
+}
+
 
 /*----------------------------------------------------------------------*
  |  calculate element matrix and right hand side (private)  ismail 01/10|
@@ -244,7 +252,7 @@ void Discret::Elements::AcinusImpl<distype>::initial(RedAcinus* ele, Teuchos::Pa
   // Get the generation numbers
   for (int i = 0; i < 2; i++)
   {
-    if (ele->nodes()[i]->get_condition("RedAirwayEvalLungVolCond"))
+    if (get_first_condition(discretization, ele->nodes()[i], "RedAirwayEvalLungVolCond"))
     {
       // find the acinus condition
       int gid = ele->id();
@@ -306,16 +314,16 @@ void Discret::Elements::AcinusImpl<distype>::evaluate_terminal_bc(RedAcinus* ele
   {
     if (ele->nodes()[i]->owner() == myrank)
     {
-      if (ele->nodes()[i]->get_condition("RedAirwayPrescribedCond") ||
-          ele->nodes()[i]->get_condition("Art_redD_3D_CouplingCond") ||
-          ele->nodes()[i]->get_condition("RedAcinusVentilatorCond"))
+      if (get_first_condition(discretization, ele->nodes()[i], "RedAirwayPrescribedCond") ||
+          get_first_condition(discretization, ele->nodes()[i], "Art_redD_3D_CouplingCond") ||
+          get_first_condition(discretization, ele->nodes()[i], "RedAcinusVentilatorCond"))
       {
         std::string Bc;
         double BCin = 0.0;
-        if (ele->nodes()[i]->get_condition("RedAirwayPrescribedCond"))
+        if (get_first_condition(discretization, ele->nodes()[i], "RedAirwayPrescribedCond"))
         {
-          Core::Conditions::Condition* condition =
-              ele->nodes()[i]->get_condition("RedAirwayPrescribedCond");
+          const Core::Conditions::Condition* condition =
+              get_first_condition(discretization, ele->nodes()[i], "RedAirwayPrescribedCond");
           // Get the type of prescribed bc
           Bc = (condition->parameters().get<std::string>("boundarycond"));
 
@@ -370,10 +378,10 @@ void Discret::Elements::AcinusImpl<distype>::evaluate_terminal_bc(RedAcinus* ele
         /**
          * For Art_redD_3D_CouplingCond bc
          **/
-        else if (ele->nodes()[i]->get_condition("Art_redD_3D_CouplingCond"))
+        else if (get_first_condition(discretization, ele->nodes()[i], "Art_redD_3D_CouplingCond"))
         {
           const Core::Conditions::Condition* condition =
-              ele->nodes()[i]->get_condition("Art_redD_3D_CouplingCond");
+              get_first_condition(discretization, ele->nodes()[i], "Art_redD_3D_CouplingCond");
 
           std::shared_ptr<Teuchos::ParameterList> CoupledTo3DParams =
               params.get<std::shared_ptr<Teuchos::ParameterList>>("coupling with 3D fluid params");
@@ -436,10 +444,10 @@ void Discret::Elements::AcinusImpl<distype>::evaluate_terminal_bc(RedAcinus* ele
         /**
          * For RedAcinusVentilatorCond bc
          **/
-        else if (ele->nodes()[i]->get_condition("RedAcinusVentilatorCond"))
+        else if (get_first_condition(discretization, ele->nodes()[i], "RedAcinusVentilatorCond"))
         {
-          Core::Conditions::Condition* condition =
-              ele->nodes()[i]->get_condition("RedAcinusVentilatorCond");
+          const Core::Conditions::Condition* condition =
+              get_first_condition(discretization, ele->nodes()[i], "RedAcinusVentilatorCond");
           // Get the type of prescribed bc
           Bc = (condition->parameters().get<std::string>("phase1"));
 
@@ -491,8 +499,8 @@ void Discret::Elements::AcinusImpl<distype>::evaluate_terminal_bc(RedAcinus* ele
         {
           if (Bc == "VolumeDependentPleuralPressure")
           {
-            Core::Conditions::Condition* pplCond =
-                ele->nodes()[i]->get_condition("RedAirwayVolDependentPleuralPressureCond");
+            const Core::Conditions::Condition* pplCond = get_first_condition(
+                discretization, ele->nodes()[i], "RedAirwayVolDependentPleuralPressureCond");
             double Pp_np = 0.0;
             if (pplCond)
             {
@@ -825,10 +833,10 @@ void Discret::Elements::AcinusImpl<distype>::get_coupled_values(RedAcinus* ele,
   {
     if (ele->nodes()[i]->owner() == myrank)
     {
-      if (ele->nodes()[i]->get_condition("Art_redD_3D_CouplingCond"))
+      if (get_first_condition(discretization, ele->nodes()[i], "Art_redD_3D_CouplingCond"))
       {
         const Core::Conditions::Condition* condition =
-            ele->nodes()[i]->get_condition("Art_redD_3D_CouplingCond");
+            get_first_condition(discretization, ele->nodes()[i], "Art_redD_3D_CouplingCond");
         std::shared_ptr<Teuchos::ParameterList> CoupledTo3DParams =
             params.get<std::shared_ptr<Teuchos::ParameterList>>("coupling with 3D fluid params");
         // -----------------------------------------------------------------

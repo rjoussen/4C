@@ -106,7 +106,7 @@ namespace Discret
           std::shared_ptr<Core::Mat::Material> mat);
 
       virtual void evaluate_scatra_bc(Artery* ele, Teuchos::ParameterList& params,
-          Core::FE::Discretization& disctretization, std::vector<int>& lm,
+          Core::FE::Discretization& discretization, std::vector<int>& lm,
           std::shared_ptr<Core::Mat::Material> material);
 
       virtual void calc_postprocessing_values(Artery* ele, Teuchos::ParameterList& params,

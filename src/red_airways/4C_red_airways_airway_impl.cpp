@@ -62,8 +62,9 @@ namespace
   |                                                                      |
   *----------------------------------------------------------------------*/
   template <Core::FE::CellType distype>
-  bool get_curve_val_at_cond(double& bcVal, Core::Nodes::Node* node, std::string condName,
-      std::string optionName, std::string condType, double time)
+  bool get_curve_val_at_cond(const Core::FE::Discretization& discretization, double& bcVal,
+      Core::Nodes::Node* node, std::string condName, std::string optionName, std::string condType,
+      double time)
   {
     // initialize bc value
     bcVal = 0.0;
@@ -76,9 +77,11 @@ namespace
     }
 
     // check if condition exists
-    if (node->get_condition(condName))
+    if (Discret::Elements::AirwayImpl<distype>::get_first_condition(discretization, node, condName))
     {
-      Core::Conditions::Condition* condition = node->get_condition(condName);
+      const Core::Conditions::Condition* condition =
+          Discret::Elements::AirwayImpl<distype>::get_first_condition(
+              discretization, node, condName);
       // Get the type of prescribed bc
       std::string Bc = (condition->parameters().get<std::string>(optionName));
       if (Bc == condType)
@@ -141,11 +144,11 @@ namespace
   \param compute_awacinter(i) computing airway-acinus interdependency
   */
   template <Core::FE::CellType distype>
-  void sysmat(Discret::Elements::RedAirway* ele, Core::LinAlg::SerialDenseVector& epnp,
-      Core::LinAlg::SerialDenseVector& epn, Core::LinAlg::SerialDenseVector& epnm,
-      Core::LinAlg::SerialDenseMatrix& sysmat, Core::LinAlg::SerialDenseVector& rhs,
-      std::shared_ptr<const Core::Mat::Material> material, Discret::ReducedLung::ElemParams& params,
-      double time, double dt, bool compute_awacinter)
+  void sysmat(const Core::FE::Discretization& discretization, Discret::Elements::RedAirway* ele,
+      Core::LinAlg::SerialDenseVector& epnp, Core::LinAlg::SerialDenseVector& epn,
+      Core::LinAlg::SerialDenseVector& epnm, Core::LinAlg::SerialDenseMatrix& sysmat,
+      Core::LinAlg::SerialDenseVector& rhs, std::shared_ptr<const Core::Mat::Material> material,
+      Discret::ReducedLung::ElemParams& params, double time, double dt, bool compute_awacinter)
   {
     const auto airway_params = ele->get_airway_params();
 
@@ -451,12 +454,12 @@ namespace
     {
       double pextVal = 0.0;
       // get Pext at time step n
-      get_curve_val_at_cond<distype>(pextVal, ele->nodes()[i],
+      get_curve_val_at_cond<distype>(discretization, pextVal, ele->nodes()[i],
           "RedAirwayPrescribedExternalPressure", "boundarycond", "ExternalPressure", time - dt);
       pextn += pextVal / double(ele->num_node());
 
       // get Pext at time step n+1e
-      get_curve_val_at_cond<distype>(pextVal, ele->nodes()[i],
+      get_curve_val_at_cond<distype>(discretization, pextVal, ele->nodes()[i],
           "RedAirwayPrescribedExternalPressure", "boundarycond", "ExternalPressure", time);
       pextnp += pextVal / double(ele->num_node());
     }
@@ -667,8 +670,8 @@ int Discret::Elements::AirwayImpl<distype>::evaluate(RedAirway* ele, Teuchos::Pa
   // ---------------------------------------------------------------------
   // call routine for calculating element matrix and right hand side
   // ---------------------------------------------------------------------
-  sysmat<distype>(ele, epnp, epn, epnm, elemat1, elevec1, mat, elem_params, time, dt,
-      evaluation_data.compute_awacinter);
+  sysmat<distype>(discretization, ele, epnp, epn, epnm, elemat1, elevec1, mat, elem_params, time,
+      dt, evaluation_data.compute_awacinter);
 
   return 0;
 }
@@ -880,23 +883,23 @@ void Discret::Elements::AirwayImpl<distype>::evaluate_terminal_bc(RedAirway* ele
   {
     if (ele->nodes()[i]->owner() == myrank)
     {
-      if (ele->nodes()[i]->get_condition("RedAirwayPrescribedCond") ||
-          ele->nodes()[i]->get_condition("Art_redD_3D_CouplingCond"))
+      if (get_first_condition(discretization, ele->nodes()[i], "RedAirwayPrescribedCond") ||
+          get_first_condition(discretization, ele->nodes()[i], "Art_redD_3D_CouplingCond"))
       {
         std::string Bc;
         double BCin = 0.0;
-        if (ele->nodes()[i]->get_condition("RedAirwayPrescribedCond"))
+        if (get_first_condition(discretization, ele->nodes()[i], "RedAirwayPrescribedCond"))
         {
-          Core::Conditions::Condition* condition =
-              ele->nodes()[i]->get_condition("RedAirwayPrescribedCond");
+          const Core::Conditions::Condition* condition =
+              get_first_condition(discretization, ele->nodes()[i], "RedAirwayPrescribedCond");
           // Get the type of prescribed bc
           Bc = (condition->parameters().get<std::string>("boundarycond"));
 
           if (Bc == "switchFlowPressure")
           {
             // get switch condition variables
-            Core::Conditions::Condition* switchCondition =
-                ele->nodes()[i]->get_condition("RedAirwaySwitchFlowPressureCond");
+            const Core::Conditions::Condition* switchCondition = get_first_condition(
+                discretization, ele->nodes()[i], "RedAirwaySwitchFlowPressureCond");
 
             const int funct_id_flow = switchCondition->parameters().get<int>("FUNCT_ID_FLOW");
             const int funct_id_pressure =
@@ -992,10 +995,10 @@ void Discret::Elements::AirwayImpl<distype>::evaluate_terminal_bc(RedAirway* ele
                 Core::Communication::my_mpi_rank(discretization.get_comm()));
           }
         }
-        else if (ele->nodes()[i]->get_condition("Art_redD_3D_CouplingCond"))
+        else if (get_first_condition(discretization, ele->nodes()[i], "Art_redD_3D_CouplingCond"))
         {
           const Core::Conditions::Condition* condition =
-              ele->nodes()[i]->get_condition("Art_redD_3D_CouplingCond");
+              get_first_condition(discretization, ele->nodes()[i], "Art_redD_3D_CouplingCond");
 
           std::shared_ptr<Teuchos::ParameterList> CoupledTo3DParams =
               params.get<std::shared_ptr<Teuchos::ParameterList>>("coupling with 3D fluid params");
@@ -1230,8 +1233,8 @@ void Discret::Elements::AirwayImpl<distype>::calc_flow_rates(RedAirway* ele,
   // ---------------------------------------------------------------------
   // call routine for calculating element matrix and right hand side
   // ---------------------------------------------------------------------
-  sysmat<distype>(ele, epnp, epn, epnm, system_matrix, rhs, material, elem_params, time, dt,
-      evaluation_data.compute_awacinter);
+  sysmat<distype>(discretization, ele, epnp, epn, epnm, system_matrix, rhs, material, elem_params,
+      time, dt, evaluation_data.compute_awacinter);
 
   double qinnp = -1.0 * (system_matrix(0, 0) * epnp(0) + system_matrix(0, 1) * epnp(1) - rhs(0));
   double qoutnp = 1.0 * (system_matrix(1, 0) * epnp(0) + system_matrix(1, 1) * epnp(1) - rhs(1));
@@ -1350,10 +1353,10 @@ void Discret::Elements::AirwayImpl<distype>::get_coupled_values(RedAirway* ele,
   {
     if (ele->nodes()[i]->owner() == myrank)
     {
-      if (ele->nodes()[i]->get_condition("Art_redD_3D_CouplingCond"))
+      if (get_first_condition(discretization, ele->nodes()[i], "Art_redD_3D_CouplingCond"))
       {
         const Core::Conditions::Condition* condition =
-            ele->nodes()[i]->get_condition("Art_redD_3D_CouplingCond");
+            get_first_condition(discretization, ele->nodes()[i], "Art_redD_3D_CouplingCond");
         std::shared_ptr<Teuchos::ParameterList> CoupledTo3DParams =
             params.get<std::shared_ptr<Teuchos::ParameterList>>("coupling with 3D fluid params");
         // -----------------------------------------------------------------
@@ -1433,6 +1436,16 @@ void Discret::Elements::AirwayImpl<distype>::get_coupled_values(RedAirway* ele,
       }
     }  // END of if node is available on this processor
   }  // End of node i has a condition
+}
+
+
+template <Core::FE::CellType distype>
+const Core::Conditions::Condition* Discret::Elements::AirwayImpl<distype>::get_first_condition(
+    const Core::FE::Discretization& discretization, const Core::Nodes::Node* node,
+    const std::string& name)
+{
+  auto conds = discretization.get_conditions_on_node(name, node);
+  return conds.empty() ? nullptr : conds.front();
 }
 
 FOUR_C_NAMESPACE_CLOSE

@@ -902,6 +902,15 @@ void Discret::Elements::ArteryEleCalcLinExp<distype>::scatra_sysmat(Artery* ele,
 }
 
 
+static const Core::Conditions::Condition* get_first_condition(
+    const Core::FE::Discretization& discretization, const Core::Nodes::Node* node,
+    const std::string& name)
+{
+  auto conds = discretization.get_conditions_on_node(name, node);
+  return conds.empty() ? nullptr : conds.front();
+}
+
+
 /*----------------------------------------------------------------------*
  |  Solve the Riemann problem at the terminal elements      ismail 07/09|
  |                                                                      |
@@ -1050,14 +1059,14 @@ bool Discret::Elements::ArteryEleCalcLinExp<distype>::solve_riemann(Artery* ele,
   // loop over the terminal nodes
   for (int i = 0; i < 2; i++)
   {
-    if (ele->nodes()[i]->get_condition("ArtInOutCond"))
+    if (get_first_condition(discretization, ele->nodes()[i], "ArtInOutCond"))
     {
       double TermIO = 0.0;
       // Get the in/out terminal condition
-      std::string TerminalType = (ele->nodes()[i]
-              ->get_condition("ArtInOutCond")
+      std::string TerminalType =
+          get_first_condition(discretization, ele->nodes()[i], "ArtInOutCond")
               ->parameters()
-              .get<std::string>("terminaltype"));
+              .get<std::string>("terminaltype");
       if (TerminalType == "inlet")
         TermIO = -1.0;
       else if (TerminalType == "outlet")
@@ -1112,7 +1121,7 @@ bool Discret::Elements::ArteryEleCalcLinExp<distype>::solve_riemann(Artery* ele,
       // -----------------------------------------------------------------------------
       // Update the information needed for solving the junctions
       // -----------------------------------------------------------------------------
-      if (ele->nodes()[i]->get_condition("ArtJunctionCond"))
+      if (get_first_condition(discretization, ele->nodes()[i], "ArtJunctionCond"))
       {
         // Update the characteristic wave speed
         std::shared_ptr<std::map<const int, std::shared_ptr<Arteries::Utils::JunctionNodeParams>>>
@@ -1253,14 +1262,14 @@ void Discret::Elements::ArteryEleCalcLinExp<distype>::evaluate_terminal_bc(Arter
   // IO_BC_HERE
   for (int i = 0; i < 2; i++)
   {
-    if (ele->nodes()[i]->get_condition("ArtInOutCond"))
+    if (get_first_condition(discretization, ele->nodes()[i], "ArtInOutCond"))
     {
       double TermIO = 0.0;
       // Get the in/out terminal condition
-      std::string TerminalType = (ele->nodes()[i]
-              ->get_condition("ArtInOutCond")
-              ->parameters()
-              .get<std::string>("terminaltype"));
+      std::string TerminalType =
+          (get_first_condition(discretization, ele->nodes()[i], "ArtInOutCond")
+                  ->parameters()
+                  .get<std::string>("terminaltype"));
       if (TerminalType == "inlet")
         TermIO = -1.0;
       else if (TerminalType == "outlet")
@@ -1315,10 +1324,10 @@ void Discret::Elements::ArteryEleCalcLinExp<distype>::evaluate_terminal_bc(Arter
       // -----------------------------------------------------------------------------
       // Solve any possible prescribed boundary condition
       // -----------------------------------------------------------------------------
-      if (ele->nodes()[i]->get_condition("ArtPrescribedCond"))
+      if (get_first_condition(discretization, ele->nodes()[i], "ArtPrescribedCond"))
       {
         const Core::Conditions::Condition* condition =
-            ele->nodes()[i]->get_condition("ArtPrescribedCond");
+            get_first_condition(discretization, ele->nodes()[i], "ArtPrescribedCond");
         Cparams.set<std::string>("Condition Name", "ArtPrescribedCond");
         Arteries::Utils::solve_prescribed_terminal_bc(discretization, condition, Cparams);
       }
@@ -1326,12 +1335,12 @@ void Discret::Elements::ArteryEleCalcLinExp<distype>::evaluate_terminal_bc(Arter
       // -----------------------------------------------------------------------------
       // Solve any possible 3-D/reduced-D coupled boundary condition
       // -----------------------------------------------------------------------------
-      if (ele->nodes()[i]->get_condition("Art_redD_3D_CouplingCond"))
+      if (get_first_condition(discretization, ele->nodes()[i], "Art_redD_3D_CouplingCond"))
       {
         std::shared_ptr<Teuchos::ParameterList> CoupledTo3DParams =
             params.get<std::shared_ptr<Teuchos::ParameterList>>("coupling with 3D fluid params");
         const Core::Conditions::Condition* condition =
-            ele->nodes()[i]->get_condition("Art_redD_3D_CouplingCond");
+            get_first_condition(discretization, ele->nodes()[i], "Art_redD_3D_CouplingCond");
         Cparams.set<std::shared_ptr<Teuchos::ParameterList>>(
             "coupling with 3D fluid params", CoupledTo3DParams);
         Cparams.set<std::string>("Condition Name", "Art_redD_3D_CouplingCond");
@@ -1342,18 +1351,20 @@ void Discret::Elements::ArteryEleCalcLinExp<distype>::evaluate_terminal_bc(Arter
       // -----------------------------------------------------------------------------
       // Solve any possible reflection boundary condition
       // -----------------------------------------------------------------------------
-      if (ele->nodes()[i]->get_condition("ArtRfCond"))
+      if (get_first_condition(discretization, ele->nodes()[i], "ArtRfCond"))
       {
-        const Core::Conditions::Condition* condition = ele->nodes()[i]->get_condition("ArtRfCond");
+        const Core::Conditions::Condition* condition =
+            get_first_condition(discretization, ele->nodes()[i], "ArtRfCond");
         Arteries::Utils::solve_reflective_terminal(discretization, condition, Cparams);
       }
 
       // -----------------------------------------------------------------------------
       // Solve any possible windkessel boundary condition
       // -----------------------------------------------------------------------------
-      if (ele->nodes()[i]->get_condition("ArtWkCond"))
+      if (get_first_condition(discretization, ele->nodes()[i], "ArtWkCond"))
       {
-        const Core::Conditions::Condition* condition = ele->nodes()[i]->get_condition("ArtWkCond");
+        const Core::Conditions::Condition* condition =
+            get_first_condition(discretization, ele->nodes()[i], "ArtWkCond");
         Cparams.set<double>("time step size", dt);
         Cparams.set<double>("external pressure", pext_(i));
         Cparams.set<double>("terminal volumetric flow rate", qn_(i));
@@ -1365,7 +1376,7 @@ void Discret::Elements::ArteryEleCalcLinExp<distype>::evaluate_terminal_bc(Arter
       // break the for loop if the boundary condition is a junction,
       // since it will be solved later
       // -----------------------------------------------------------------------------
-      if (ele->nodes()[i]->get_condition("ArtJunctionCond") == nullptr)
+      if (get_first_condition(discretization, ele->nodes()[i], "ArtJunctionCond") == nullptr)
       {
         Wf = Cparams.get<double>("forward characteristic wave speed");
         Wb = Cparams.get<double>("backward characteristic wave speed");
@@ -1423,7 +1434,7 @@ void Discret::Elements::ArteryEleCalcLinExp<distype>::evaluate_terminal_bc(Arter
   // ---------------------------------------------------------------------------------
   for (int i = 0; i < 2; i++)
   {
-    if (ele->nodes()[i]->get_condition("ArtJunctionCond"))
+    if (get_first_condition(discretization, ele->nodes()[i], "ArtJunctionCond"))
     {
       std::shared_ptr<std::map<const int, std::shared_ptr<Arteries::Utils::JunctionNodeParams>>>
           junc_nodal_vals;
@@ -1467,7 +1478,7 @@ void Discret::Elements::ArteryEleCalcLinExp<distype>::evaluate_terminal_bc(Arter
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 void Discret::Elements::ArteryEleCalcLinExp<distype>::evaluate_scatra_bc(Artery* ele,
-    Teuchos::ParameterList& params, Core::FE::Discretization& disctretization, std::vector<int>& lm,
+    Teuchos::ParameterList& params, Core::FE::Discretization& discretization, std::vector<int>& lm,
     std::shared_ptr<Core::Mat::Material> material)
 {
   //  const int numnode = my::iel_;
@@ -1475,7 +1486,7 @@ void Discret::Elements::ArteryEleCalcLinExp<distype>::evaluate_scatra_bc(Artery*
   // loop over the nodes
   for (int i = 0; i < 2; i++)
   {
-    if (ele->nodes()[i]->get_condition("ArtInOutCond"))
+    if (get_first_condition(discretization, ele->nodes()[i], "ArtInOutCond"))
     {
       std::shared_ptr<Core::LinAlg::Vector<double>> bcval =
           params.get<std::shared_ptr<Core::LinAlg::Vector<double>>>("bcval");
@@ -1486,7 +1497,7 @@ void Discret::Elements::ArteryEleCalcLinExp<distype>::evaluate_scatra_bc(Artery*
       //
       // calculating Q at node i
       const Core::Conditions::Condition* condition =
-          ele->nodes()[i]->get_condition("ArtPrescribedScatraCond");
+          get_first_condition(discretization, ele->nodes()[i], "ArtPrescribedScatraCond");
 
       const auto* curve = condition->parameters().get_if<int>("curve");
 
@@ -1501,10 +1512,10 @@ void Discret::Elements::ArteryEleCalcLinExp<distype>::evaluate_scatra_bc(Artery*
       }
 
 
-      std::string TerminalType = (ele->nodes()[i]
-              ->get_condition("ArtInOutCond")
-              ->parameters()
-              .get<std::string>("terminaltype"));
+      std::string TerminalType =
+          (get_first_condition(discretization, ele->nodes()[i], "ArtInOutCond")
+                  ->parameters()
+                  .get<std::string>("terminaltype"));
       int dof = 0;
       if (TerminalType == "inlet")
       {

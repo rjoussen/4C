@@ -38,24 +38,6 @@ Core::Nodes::Node::Node(const int id, std::span<const double> coords, const int 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Core::Nodes::Node::Node(const Core::Nodes::Node& old)
-    : ParObject(old),
-      id_(old.id_),
-      lid_(old.lid_),
-      owner_(old.owner_),
-      x_(old.x_),
-      element_(old.element_)
-{
-  // we do NOT want a deep copy of the condition_ a condition is
-  // only a reference in the node anyway
-  std::map<std::string, std::shared_ptr<Core::Conditions::Condition>>::const_iterator fool;
-  for (fool = old.condition_.begin(); fool != old.condition_.end(); ++fool)
-    set_condition(fool->first, fool->second);
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 Core::Nodes::Node* Core::Nodes::Node::clone() const
 {
   auto* newnode = new Core::Nodes::Node(*this);
@@ -126,17 +108,6 @@ void Core::Nodes::Node::get_condition(
   std::multimap<std::string, std::shared_ptr<Core::Conditions::Condition>>::const_iterator curr;
   for (curr = startit; curr != endit; ++curr) out[count++] = curr->second.get();
   if (count != num) FOUR_C_THROW("Mismatch in number of conditions found");
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-Core::Conditions::Condition* Core::Nodes::Node::get_condition(const std::string& name) const
-{
-  auto curr = condition_.find(name);
-  if (curr == condition_.end()) return nullptr;
-  curr = condition_.lower_bound(name);
-  return curr->second.get();
 }
 
 
