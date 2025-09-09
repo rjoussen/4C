@@ -33,6 +33,9 @@ STRUCTURAL DYNAMIC:
 STRUCTURAL DYNAMIC/ONESTEPTHETA:
   THETA: 1
 porofluid_dynamic:
+  output:
+    volfrac_blood_lung: true
+    determinant_of_deformation_gradient: true
   initial_condition:
     type: by_condition
 porofluid_elasticity_dynamic:
@@ -280,6 +283,30 @@ RESULT DESCRIPTION:
       NODE: 23
       QUANTITY: "phi1"
       VALUE: 1.40467727617359633e-02
+      TOLERANCE: 1e-08
+  - POROFLUIDMULTIPHASE:
+      DIS: "porofluid"
+      NODE: 8
+      QUANTITY: "det_def_grad"
+      VALUE: 1.02954297733447486e+00
+      TOLERANCE: 1e-08
+  - POROFLUIDMULTIPHASE:
+      DIS: "porofluid"
+      NODE: 3
+      QUANTITY: "det_def_grad"
+      VALUE: 1.02733986975627234e+00
+      TOLERANCE: 1e-08
+  - POROFLUIDMULTIPHASE:
+      DIS: "porofluid"
+      NODE: 8
+      QUANTITY: "volfrac_blood_lung"
+      VALUE: 9.91303541813164935e-02
+      TOLERANCE: 1e-08
+  - POROFLUIDMULTIPHASE:
+      DIS: "porofluid"
+      NODE: 3
+      QUANTITY: "volfrac_blood_lung"
+      VALUE: 9.91940858042239804e-02
       TOLERANCE: 1e-08
   - SCATRA:
       DIS: "scatra"

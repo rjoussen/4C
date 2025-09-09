@@ -283,6 +283,15 @@ namespace PoroPressureBased
       return phase_velocities_;
     }
 
+    //! return volfac_blood_lung at time n+1
+    std::shared_ptr<Core::LinAlg::Vector<double>> volfrac_blood_lung() const
+    {
+      return volfrac_blood_lung_;
+    }
+
+    //! return determinant of deformation gradient at time n+1
+    std::shared_ptr<Core::LinAlg::Vector<double>> det_def_grad() const { return det_def_grad_; }
+
     //! return number of dof set associated with solid pressure
     int get_dof_set_number_of_solid_pressure() const override { return nds_solidpressure_; };
 
@@ -397,6 +406,12 @@ namespace PoroPressureBased
     //! reconstruct porosity from current solution
     void reconstruct_porosity();
 
+    //! reconstruct volfrac blood lung from current solution
+    void reconstruct_volfrac_blood_lung();
+
+    //! reconstruct determinant of deformation gradient from current solution
+    void reconstruct_determinant_of_derformation_gradient();
+
     //! evaluate domain integrals
     void evaluate_domain_integrals();
 
@@ -484,6 +499,12 @@ namespace PoroPressureBased
 
     //! flag if porosity should be output
     bool output_porosity_;
+
+    //! flag if volfrac blood lung should be output
+    bool output_volfrac_blood_lung_;
+
+    //! flag if determinant of deformation gradient should be output
+    bool output_det_def_grad_;
 
     //! flag if phase velocities should be written to output
     bool output_phase_velocities_;
@@ -610,6 +631,12 @@ namespace PoroPressureBased
 
     //! porosity at time n+1
     std::shared_ptr<Core::LinAlg::Vector<double>> porosity_;
+
+    //! volfrac of additional porous network with closing relation blood lung at time n+1
+    std::shared_ptr<Core::LinAlg::Vector<double>> volfrac_blood_lung_;
+
+    //! determinant of deformation gradient at time n+1
+    std::shared_ptr<Core::LinAlg::Vector<double>> det_def_grad_;
 
     //! vector with valid volume fraction pressure dofs, this vector identifies volume fraction
     //! pressure DOFs,
