@@ -68,11 +68,12 @@ namespace ReducedLung
     int n_terminal_units = 0;
     // Loop over all elements in actdis and create the new element data layout (for airways and
     // terminal units). Adds all information directly given in the row element range.
-    for (auto* ele : actdis->my_row_element_range())
+    for (auto ele : actdis->my_row_element_range())
     {
-      int element_id = ele->id();
+      auto* user_ele = ele.user_element();
+      int element_id = ele.global_id();
       int local_element_id = actdis->element_row_map()->lid(element_id);
-      if (ele->element_type() == Discret::Elements::RedAirwayType::instance())
+      if (user_ele->element_type() == Discret::Elements::RedAirwayType::instance())
       {
         // Number of equations still missing! Needs to be changed when compliant airways are
         // implemented.
@@ -80,19 +81,20 @@ namespace ReducedLung
         dof_per_ele[element_id] = 3;
         n_airways++;
       }
-      else if (ele->element_type() == Discret::Elements::RedAcinusType::instance())
+      else if (user_ele->element_type() == Discret::Elements::RedAcinusType::instance())
       {
-        if (ele->material(0)->material_type() == Core::Materials::m_0d_maxwell_acinus_neohookean)
+        if (user_ele->material(0)->material_type() ==
+            Core::Materials::m_0d_maxwell_acinus_neohookean)
         {
           ReducedLungParameters::LungTree::TerminalUnits::RheologicalModel::RheologicalModelType
               rheological_model_name =
                   parameters.lung_tree.terminal_units.rheological_model.rheological_model_type.at(
-                      ele->id(), "rheological_model_type");
+                      ele.global_id(), "rheological_model_type");
 
           ReducedLungParameters::LungTree::TerminalUnits::ElasticityModel::ElasticityModelType
               elasticity_model_name =
                   parameters.lung_tree.terminal_units.elasticity_model.elasticity_model_type.at(
-                      ele->id(), "elasticity_model_type");
+                      ele.global_id(), "elasticity_model_type");
 
           if (rheological_model_name == ReducedLungParameters::LungTree::TerminalUnits::
                                             RheologicalModel::RheologicalModelType::KelvinVoigt)
@@ -101,13 +103,13 @@ namespace ReducedLung
                                              ElasticityModel::ElasticityModelType::Linear)
             {
               add_terminal_unit_ele<KelvinVoigt, LinearElasticity>(
-                  terminal_units, ele, local_element_id, parameters.lung_tree.terminal_units);
+                  terminal_units, user_ele, local_element_id, parameters.lung_tree.terminal_units);
             }
             else if (elasticity_model_name == ReducedLungParameters::LungTree::TerminalUnits::
                                                   ElasticityModel::ElasticityModelType::Ogden)
             {
               add_terminal_unit_ele<KelvinVoigt, OgdenHyperelasticity>(
-                  terminal_units, ele, local_element_id, parameters.lung_tree.terminal_units);
+                  terminal_units, user_ele, local_element_id, parameters.lung_tree.terminal_units);
             }
           }
           else if (rheological_model_name ==
@@ -118,13 +120,13 @@ namespace ReducedLung
                                              ElasticityModel::ElasticityModelType::Linear)
             {
               add_terminal_unit_ele<FourElementMaxwell, LinearElasticity>(
-                  terminal_units, ele, local_element_id, parameters.lung_tree.terminal_units);
+                  terminal_units, user_ele, local_element_id, parameters.lung_tree.terminal_units);
             }
             else if (elasticity_model_name == ReducedLungParameters::LungTree::TerminalUnits::
                                                   ElasticityModel::ElasticityModelType::Ogden)
             {
               add_terminal_unit_ele<FourElementMaxwell, OgdenHyperelasticity>(
-                  terminal_units, ele, local_element_id, parameters.lung_tree.terminal_units);
+                  terminal_units, user_ele, local_element_id, parameters.lung_tree.terminal_units);
             }
           }
         }
@@ -222,27 +224,28 @@ namespace ReducedLung
     // Loop over all local elements, get their nodes, create associated entity. This way, they are
     // created on the same ranks as at least one of their connected elements. This reduces the
     // amount of communication of dofs between ranks.
-    for (const auto* ele : actdis->my_row_element_range())
+    for (auto ele : actdis->my_row_element_range())
     {
-      const auto* nodes = ele->nodes();
+      const auto nodes = ele.nodes();
       // WARNING: if node ordering is wrong (inlet in nodes[1]), the whole logic doesn't apply in
       // the same way as assumed throughout this implementation! A top-down ordering of nodes needs
       // to be enforced during tree creation. This is to a large amount asserted during creation of
       // the coupling entities. However, special cases might slip through.
-      const auto& node_in = *nodes[0];
-      const auto& node_out = *nodes[1];
-      const auto node_in_n_eles = global_ele_ids_per_node[node_in.id()].size();
-      const auto node_out_n_eles = global_ele_ids_per_node[node_out.id()].size();
+      auto node_in = nodes[0];
+      auto node_out = nodes[1];
+      const auto node_in_n_eles = global_ele_ids_per_node[node_in.global_id()].size();
+      const auto node_out_n_eles = global_ele_ids_per_node[node_out.global_id()].size();
       // Check whether element is starting point of tree (trachea in full lungs, lobe inlets for
       // single lobes, etc.)
       if (node_in_n_eles == 1)
       {
-        FOUR_C_ASSERT_ALWAYS(red_airway_prescribed_conditions.count(node_in.id()) == 1,
+        FOUR_C_ASSERT_ALWAYS(red_airway_prescribed_conditions.count(node_in.global_id()) == 1,
             "Node {} is located at the boundary and needs to have exactly one boundary condition "
             "but it has {} conditions.",
-            node_in.id(), red_airway_prescribed_conditions.count(node_in.id()));
+            node_in.global_id(), red_airway_prescribed_conditions.count(node_in.global_id()));
 
-        const auto* bc_condition = red_airway_prescribed_conditions.find(node_in.id())->second;
+        const auto* bc_condition =
+            red_airway_prescribed_conditions.find(node_in.global_id())->second;
         const std::string bc_type = bc_condition->parameters().get<std::string>("boundarycond");
         const std::optional<int> funct_num =
             bc_condition->parameters().get<std::vector<std::optional<int>>>("curve")[0];
@@ -250,9 +253,9 @@ namespace ReducedLung
         {
           if (funct_num.has_value())
           {
-            boundary_conditions.push_back(BoundaryCondition{ele->id(), 0, 0, n_boundary_conditions,
-                BoundaryConditionType::pressure_in, first_global_dof_of_ele[ele->id()],
-                funct_num.value()});
+            boundary_conditions.push_back(BoundaryCondition{ele.global_id(), 0, 0,
+                n_boundary_conditions, BoundaryConditionType::pressure_in,
+                first_global_dof_of_ele[ele.global_id()], funct_num.value()});
             n_boundary_conditions++;
           }
         }
@@ -265,12 +268,13 @@ namespace ReducedLung
       // entities).
       if (node_out_n_eles == 1)
       {
-        FOUR_C_ASSERT_ALWAYS(red_airway_prescribed_conditions.count(node_out.id()) == 1,
+        FOUR_C_ASSERT_ALWAYS(red_airway_prescribed_conditions.count(node_out.global_id()) == 1,
             "Node {} is located at the boundary and needs to have exactly one boundary condition "
             "but it has {} conditions.",
-            node_out.id(), red_airway_prescribed_conditions.count(node_out.id()));
+            node_out.global_id(), red_airway_prescribed_conditions.count(node_out.global_id()));
 
-        const auto* bc_condition = red_airway_prescribed_conditions.find(node_out.id())->second;
+        const auto* bc_condition =
+            red_airway_prescribed_conditions.find(node_out.global_id())->second;
         const std::string bc_type = bc_condition->parameters().get<std::string>("boundarycond");
         const std::optional<int> funct_num =
             bc_condition->parameters().get<std::vector<std::optional<int>>>("curve")[0];
@@ -279,9 +283,9 @@ namespace ReducedLung
           if (funct_num.has_value())
           {
             // Pressure bc at outlet node, so p2 (2nd dof of ele).
-            boundary_conditions.push_back(BoundaryCondition{ele->id(), 0, 0, n_boundary_conditions,
-                BoundaryConditionType::pressure_out, first_global_dof_of_ele[ele->id()] + 1,
-                funct_num.value()});
+            boundary_conditions.push_back(BoundaryCondition{ele.global_id(), 0, 0,
+                n_boundary_conditions, BoundaryConditionType::pressure_out,
+                first_global_dof_of_ele[ele.global_id()] + 1, funct_num.value()});
             n_boundary_conditions++;
           }
         }
@@ -292,8 +296,8 @@ namespace ReducedLung
       }
       else if (node_out_n_eles == 2)
       {
-        std::array<int, 2> global_ele_ids{
-            global_ele_ids_per_node[node_out.id()][0], global_ele_ids_per_node[node_out.id()][1]};
+        std::array<int, 2> global_ele_ids{global_ele_ids_per_node[node_out.global_id()][0],
+            global_ele_ids_per_node[node_out.global_id()][1]};
         // Check that each element only owns one connection at the outlet and that the same
         // connection isn't instantiated a second time from the other element.
         for (const auto& conn : connections)
@@ -323,8 +327,9 @@ namespace ReducedLung
       }
       else if (node_out_n_eles == 3)
       {
-        std::array<int, 3> global_ele_ids{global_ele_ids_per_node[node_out.id()][0],
-            global_ele_ids_per_node[node_out.id()][1], global_ele_ids_per_node[node_out.id()][2]};
+        std::array<int, 3> global_ele_ids{global_ele_ids_per_node[node_out.global_id()][0],
+            global_ele_ids_per_node[node_out.global_id()][1],
+            global_ele_ids_per_node[node_out.global_id()][2]};
         // Check that each element only owns one bifurcation at the outlet and that the same
         // bifurcation isn't instantiated a second time from another element.
         for (const auto& bif : bifurcations)

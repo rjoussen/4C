@@ -80,8 +80,9 @@ void Core::FE::Discretization::evaluate(Teuchos::ParameterList& params,
   Core::Elements::LocationArray la(dofsets_.size());
 
   // loop over column elements
-  for (auto* actele : my_col_element_range())
+  for (auto ele : my_col_element_range())
   {
+    auto* actele = ele.user_element();
     // get element location vector, dirichlet flags and ownerships
     actele->location_vector(*this, la);
 
@@ -119,10 +120,10 @@ void Core::FE::Discretization::evaluate(
   // test only for Filled()!Dof information is not required
   if (!filled()) FOUR_C_THROW("fill_complete() was not called");
 
-  for (auto* actele : my_col_element_range())
+  for (auto actele : my_col_element_range())
   {
     // call the element evaluate method
-    element_action(*actele);
+    element_action(*actele.user_element());
   }
 }
 
@@ -484,8 +485,9 @@ void Core::FE::Discretization::evaluate_scalars(
   Core::LinAlg::SerialDenseVector elevector3;
 
   // loop over _row_ elements
-  for (const auto& actele : my_row_element_range())
+  for (auto ele : my_row_element_range())
   {
+    auto* actele = ele.user_element();
     // get element location vector
     Core::Elements::LocationArray la(dofsets_.size());
     actele->location_vector(*this, la);

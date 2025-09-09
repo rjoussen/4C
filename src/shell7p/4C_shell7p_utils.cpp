@@ -614,14 +614,15 @@ void Solid::Utils::Shell::Director::average_directors_at_nodes(
 void Solid::Utils::Shell::Director::setup_shell_element_directors(
     const Core::Elements::ElementType& eletype, Core::FE::Discretization& dis)
 {
-  for (const auto& actele : dis.my_col_element_range())
+  for (auto ele : dis.my_col_element_range())
   {
+    auto* actele = ele.user_element();
     if (actele->element_type() != eletype) return;
     if (auto* scatra_ele = dynamic_cast<Discret::Elements::Shell7pScatra*>(actele))
     {
       // create matrix nodal_directors for nodal basis vector in thickness direction in material
       // configuration
-      const int num_node = scatra_ele->num_node();
+      const int num_node = ele.num_nodes();
       Core::LinAlg::SerialDenseMatrix nodal_directors(
           num_node, Discret::Elements::Shell::Internal::num_dim);
       setup_director_for_element(*scatra_ele, nodal_directors);
@@ -631,7 +632,7 @@ void Solid::Utils::Shell::Director::setup_shell_element_directors(
     {
       // create matrix nodal_directors for nodal basis vector in thickness direction in material
       // configuration
-      const int num_node = shell_ele->num_node();
+      const int num_node = ele.num_nodes();
       Core::LinAlg::SerialDenseMatrix nodal_directors(
           num_node, Discret::Elements::Shell::Internal::num_dim);
       setup_director_for_element(*shell_ele, nodal_directors);

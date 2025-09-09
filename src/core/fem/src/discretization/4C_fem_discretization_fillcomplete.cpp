@@ -217,6 +217,23 @@ void Core::FE::Discretization::build_element_row_map()
 void Core::FE::Discretization::build_element_col_map()
 {
   make_map_and_local_pointers(get_comm(), element_, elecolptr_, elecolmap_, /*local_only=*/false);
+
+  all_local_element_ids_.resize(elecolptr_.size());
+  locally_owned_local_element_ids_.resize(elerowptr_.size());
+
+  size_t count_locally_owned = 0;
+  int my_rank = Core::Communication::my_mpi_rank(get_comm());
+  for (size_t i = 0; i < elecolptr_.size(); ++i)
+  {
+    all_local_element_ids_[i] = i;
+    if (elecolptr_[i]->owner() == my_rank)
+    {
+      locally_owned_local_element_ids_[count_locally_owned] = i;
+      ++count_locally_owned;
+    }
+  }
+  FOUR_C_ASSERT(count_locally_owned == elerowptr_.size(), "Internal error: counted {}, expected {}",
+      count_locally_owned, elerowptr_.size());
 }
 
 
@@ -234,7 +251,11 @@ void Core::FE::Discretization::build_element_to_node_pointers()
     const int nnode = ele->num_node();
     element_connectivity[ele->lid()].resize(nnode);
     const int* nodes = ele->node_ids();
-    for (int j = 0; j < nnode; ++j) element_connectivity[ele->lid()][j] = nodes[j];
+    for (int j = 0; j < nnode; ++j)
+    {
+      auto* node = g_node(nodes[j]);
+      element_connectivity[ele->lid()][j] = node->lid();
+    }
   }
   element_connectivity_.from_nested(element_connectivity);
 }

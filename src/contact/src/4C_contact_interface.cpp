@@ -658,14 +658,14 @@ void CONTACT::Interface::extend_interface_ghosting_safely(const double meanVeloc
       // fill master and slave elements into bins
       std::map<int, std::set<int>> slavebinelemap;
       binningstrategy->distribute_elements_to_bins_using_ele_aabb(discret(),
-          std::views::filter(discret().my_col_element_range(), [](const auto* ele)
-              { return dynamic_cast<const Mortar::Element*>(ele)->is_slave(); }),
+          std::views::filter(discret().my_col_element_range(), [](auto ele)
+              { return dynamic_cast<const Mortar::Element*>(ele.user_element())->is_slave(); }),
           slavebinelemap);
 
       std::map<int, std::set<int>> masterbinelemap;
       binningstrategy->distribute_elements_to_bins_using_ele_aabb(discret(),
-          std::views::filter(discret().my_col_element_range(), [](const auto* ele)
-              { return !dynamic_cast<const Mortar::Element*>(ele)->is_slave(); }),
+          std::views::filter(discret().my_col_element_range(), [](auto ele)
+              { return !dynamic_cast<const Mortar::Element*>(ele.user_element())->is_slave(); }),
           masterbinelemap);
 
       // Extend ghosting of the master elements

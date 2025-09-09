@@ -348,10 +348,10 @@ std::shared_ptr<const Core::LinAlg::Graph> Core::Rebalance::build_monolithic_nod
       Core::LinAlg::Vector<double>(*(dis.dof_col_map()), true);
 
   std::vector<std::pair<int, Core::GeometricSearch::BoundingVolume>> bounding_boxes;
-  for (const auto* element : dis.my_row_element_range())
+  for (auto element : dis.my_row_element_range())
   {
-    bounding_boxes.emplace_back(
-        std::make_pair(element->id(), element->get_bounding_volume(dis, zero_vector, params)));
+    bounding_boxes.emplace_back(std::make_pair(element.global_id(),
+        element.user_element()->get_bounding_volume(dis, zero_vector, params)));
   }
 
   auto result = Core::GeometricSearch::global_collision_search(
@@ -394,17 +394,15 @@ std::shared_ptr<const Core::LinAlg::Graph> Core::Rebalance::build_monolithic_nod
   auto my_graph = std::make_shared<Core::LinAlg::Graph>(
       Copy, *dis.node_row_map(), 40, false, Core::LinAlg::Graph::GraphType::FE_GRAPH);
 
-  for (const auto* element : dis.my_row_element_range())
+  for (auto element : dis.my_row_element_range())
   {
-    for (int i_node = 0; i_node < element->num_node(); ++i_node)
+    // Extract all global IDs of the nodes
+    for (auto node_main : element.nodes())
     {
-      const auto* node_main = element->nodes()[i_node];
-      int index_main = node_main->id();
-      for (int j_node = 0; j_node < element->num_node(); ++j_node)
+      int index_main = node_main.global_id();
+      for (auto node_inner : element.nodes())
       {
-        const auto* node_inner = element->nodes()[j_node];
-        int index = node_inner->id();
-
+        int index = node_inner.global_id();
         my_graph->insert_global_indices(1, &index_main, 1, &index);
       }
     }

@@ -99,9 +99,12 @@ void Solid::ModelEvaluator::Structure::setup()
       // which output writers need to be initialized.
       const auto discretization =
           std::dynamic_pointer_cast<const Core::FE::Discretization>(discret_ptr());
-      int number_my_solid_elements = std::count_if(discretization->my_row_element_range().begin(),
-          discretization->my_row_element_range().end(), [](const auto* row_element)
-          { return dynamic_cast<const Discret::Elements::Beam3Base*>(row_element) == nullptr; });
+      int number_my_solid_elements = std::ranges::count_if(discretization->my_row_element_range(),
+          [](auto row_element)
+          {
+            return dynamic_cast<const Discret::Elements::Beam3Base*>(row_element.user_element()) ==
+                   nullptr;
+          });
       int number_my_beam_elements =
           discretization->num_my_row_elements() - number_my_solid_elements;
       int number_global_solid_elements = 0;

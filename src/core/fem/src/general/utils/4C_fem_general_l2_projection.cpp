@@ -48,11 +48,11 @@ std::shared_ptr<Core::LinAlg::MultiVector<double>> Core::FE::evaluate_and_solve_
 
   // loop column elements
 
-  for (auto* actele : dis.my_col_element_range())
+  for (auto actele : dis.my_col_element_range())
   {
-    const int numnode = actele->num_node();
+    const int numnode = actele.user_element()->num_node();
 
-    actele->location_vector(dis, la);
+    actele.user_element()->location_vector(dis, la);
     lmowner = la[0].lmowner_;
     lmstride = la[0].stride_;
     lm = la[0].lm_;
@@ -63,19 +63,19 @@ std::shared_ptr<Core::LinAlg::MultiVector<double>> Core::FE::evaluate_and_solve_
     elematrix2.shape(numnode, numvec);
 
     // call the element specific evaluate method (elemat1 = mass matrix, elemat2 = rhs)
-    int err = actele->evaluate(
+    int err = actele.user_element()->evaluate(
         params, dis, la, elematrix1, elematrix2, elevector1, elevector2, elevector3);
-    if (err) FOUR_C_THROW("Element {} returned err={}", actele->id(), err);
+    if (err) FOUR_C_THROW("Element {} returned err={}", actele.global_id(), err);
 
 
     // get element location vector for nodes
     lm.resize(numnode);
     lmowner.resize(numnode);
 
-    Core::Nodes::Node** nodes = actele->nodes();
-    for (int n = 0; n < numnode; ++n)
+    size_t n = 0;
+    for (auto node : actele.nodes())
     {
-      const int nodeid = nodes[n]->id();
+      const int nodeid = node.global_id();
       if (!slavetomastercolnodesmap.empty())
       {
         auto slavemasterpair = slavetomastercolnodesmap.find(nodeid);
@@ -88,11 +88,12 @@ std::shared_ptr<Core::LinAlg::MultiVector<double>> Core::FE::evaluate_and_solve_
         lm[n] = nodeid;
 
       // owner of pbc master and slave nodes are identical
-      lmowner[n] = nodes[n]->owner();
+      lmowner[n] = node.owner();
+      ++n;
     }
 
     // mass matrix assembling into node map
-    massmatrix.assemble(actele->id(), elematrix1, lm, lmowner);
+    massmatrix.assemble(actele.global_id(), elematrix1, lm, lmowner);
 
     // assemble numvec entries sequentially
     for (int n = 0; n < numvec; ++n)

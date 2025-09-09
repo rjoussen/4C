@@ -36,9 +36,9 @@ void Solid::ModelEvaluator::Multiscale::setup()
 void Solid::ModelEvaluator::Multiscale::write_restart(
     Core::IO::DiscretizationWriter& iowriter) const
 {
-  for (const auto& actele : discret().my_row_element_range())
+  for (auto actele : discret().my_row_element_range())
   {
-    std::shared_ptr<Core::Mat::Material> mat = actele->material();
+    std::shared_ptr<Core::Mat::Material> mat = actele.user_element()->material();
     if (mat->material_type() == Core::Materials::m_struct_multiscale)
     {
       Mat::MicroMaterial* micro = static_cast<Mat::MicroMaterial*>(mat.get());
@@ -55,16 +55,18 @@ void Solid::ModelEvaluator::Multiscale::read_restart(Core::IO::DiscretizationRea
 
   const int my_pid = Core::Communication::my_mpi_rank(
       Global::Problem::instance()->get_dis("structure")->get_comm());
-  for (const auto& actele : discret().my_col_element_range())
+  for (auto ele : discret().my_col_element_range())
   {
+    const auto* actele = ele.user_element();
     std::shared_ptr<Core::Mat::Material> mat = actele->material();
     if (mat->material_type() == Core::Materials::m_struct_multiscale)
     {
       auto* micro = dynamic_cast<Mat::MicroMaterial*>(mat.get());
-      const int eleID = actele->id();
-      const bool eleowner = my_pid == actele->owner();
+      const int eleID = ele.global_id();
+      const bool eleowner = my_pid == ele.owner();
 
-      Discret::Elements::Solid* solidele = dynamic_cast<Discret::Elements::Solid*>(actele);
+      const Discret::Elements::Solid* solidele =
+          dynamic_cast<const Discret::Elements::Solid*>(actele);
       const int numGaussPoints = solidele->get_gauss_rule().num_points();
 
       for (int gp = 0; gp < numGaussPoints; ++gp) micro->read_restart(gp, eleID, eleowner);
@@ -76,9 +78,9 @@ void Solid::ModelEvaluator::Multiscale::read_restart(Core::IO::DiscretizationRea
  *----------------------------------------------------------------------------*/
 void Solid::ModelEvaluator::Multiscale::post_setup()
 {
-  for (const auto& actele : discret().my_col_element_range())
+  for (auto actele : discret().my_col_element_range())
   {
-    std::shared_ptr<Core::Mat::Material> mat = actele->material();
+    std::shared_ptr<Core::Mat::Material> mat = actele.user_element()->material();
     if (mat->material_type() == Core::Materials::m_struct_multiscale)
     {
       Mat::MicroMaterial* micro = static_cast<Mat::MicroMaterial*>(mat.get());
@@ -91,9 +93,9 @@ void Solid::ModelEvaluator::Multiscale::post_setup()
  *----------------------------------------------------------------------------*/
 void Solid::ModelEvaluator::Multiscale::runtime_pre_output_step_state()
 {
-  for (const auto& actele : discret().my_row_element_range())
+  for (auto actele : discret().my_row_element_range())
   {
-    std::shared_ptr<Core::Mat::Material> mat = actele->material();
+    std::shared_ptr<Core::Mat::Material> mat = actele.user_element()->material();
     if (mat->material_type() == Core::Materials::m_struct_multiscale)
     {
       const auto* micro_mat = static_cast<Mat::MicroMaterial*>(mat.get());
@@ -119,9 +121,9 @@ void Solid::ModelEvaluator::Multiscale::runtime_output_step_state() const
         macro_visualization_params_, global_state().get_time_n(), global_state().get_step_n());
   }
 
-  for (const auto& actele : discret().my_row_element_range())
+  for (auto actele : discret().my_row_element_range())
   {
-    std::shared_ptr<Core::Mat::Material> mat = actele->material();
+    std::shared_ptr<Core::Mat::Material> mat = actele.user_element()->material();
     if (mat->material_type() == Core::Materials::m_struct_multiscale)
     {
       auto* micro_mat = static_cast<Mat::MicroMaterial*>(mat.get());

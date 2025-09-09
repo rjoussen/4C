@@ -848,13 +848,13 @@ namespace Core::Binstrategy
   {
     bin_to_ele_map.clear();
 
-    for (auto* eleptr : element_range)
+    for (auto ele : element_range)
     {
       // get corresponding bin ids in ijk range
       std::vector<int> bin_ids;
-      distribute_single_element_to_bins_using_ele_aabb(discret, eleptr, bin_ids, disnp);
+      distribute_single_element_to_bins_using_ele_aabb(discret, ele.user_element(), bin_ids, disnp);
 
-      for (const int b : bin_ids) bin_to_ele_map[b].insert(eleptr->id());
+      for (const int b : bin_ids) bin_to_ele_map[b].insert(ele.global_id());
     }
   }
 
