@@ -677,23 +677,6 @@ double NOX::Nln::LinearSystem::compute_serial_condition_number_of_jacobian(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void NOX::Nln::LinearSystem::compute_serial_eigenvalues_of_jacobian(
-    Core::LinAlg::SerialDenseVector& reigenvalues,
-    Core::LinAlg::SerialDenseVector& ieigenvalues) const
-{
-  if (Core::Communication::num_mpi_ranks(
-          Core::Communication::unpack_epetra_comm(jacobian().Comm())) > 1)
-    FOUR_C_THROW("Currently only one processor is supported!");
-
-  Core::LinAlg::SerialDenseMatrix dense_jac;
-  convert_jacobian_to_dense_matrix(dense_jac);
-
-  throw_if_zero_row(dense_jac);
-  solve_non_symm_eigen_value_problem(dense_jac, reigenvalues, ieigenvalues);
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 void NOX::Nln::LinearSystem::prepare_block_dense_matrix(
     const Core::LinAlg::BlockSparseMatrixBase& block_sparse,
     Core::LinAlg::SerialDenseMatrix& block_dense) const
@@ -704,20 +687,6 @@ void NOX::Nln::LinearSystem::prepare_block_dense_matrix(
   block_dense.reshape(grows, gcols);
   if (block_dense.numCols() != block_dense.numRows())
     FOUR_C_THROW("The complete block dense matrix is not quadratic!");
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void NOX::Nln::LinearSystem::throw_if_zero_row(
-    const Core::LinAlg::SerialDenseMatrix& block_dense) const
-{
-  for (int r = 0; r < block_dense.numCols(); ++r)
-  {
-    double csum = 0.0;
-    for (int c = 0; c < block_dense.numRows(); ++c) csum += std::abs(block_dense(r, c));
-
-    if (std::abs(csum) < std::numeric_limits<double>::epsilon()) FOUR_C_THROW("Zero row detected!");
-  }
 }
 
 /*----------------------------------------------------------------------*
@@ -814,91 +783,6 @@ void NOX::Nln::LinearSystem::convert_sparse_to_dense_matrix(
       dense(full_rlid, full_clid) = rvals[i];
     }
   }
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void NOX::Nln::LinearSystem::solve_non_symm_eigen_value_problem(
-    Core::LinAlg::SerialDenseMatrix& mat, Core::LinAlg::SerialDenseVector& reigenvalues,
-    Core::LinAlg::SerialDenseVector& ieigenvalues) const
-{
-  // start debugging
-  //  std::ofstream of("/home/hiermeier/Workspace/o/test/mat.csv",std::ios_base::out);
-  //  const int num_cols = mat.numRows();
-  //  for ( int r=0; r<mat.numCols(); ++r )
-  //    for ( int c=0; c<num_cols; ++c )
-  //      of << std::setprecision(16) << std::scientific << mat(r,c)
-  //         << ( c != num_cols-1 ? "," : "\n" );
-  //  of.close();
-  // end debugging
-
-  reigenvalues.size(mat.numCols());
-  ieigenvalues.size(mat.numCols());
-
-  call_geev(mat, reigenvalues, ieigenvalues);
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void NOX::Nln::LinearSystem::call_ggev(Core::LinAlg::SerialDenseMatrix& mat,
-    Core::LinAlg::SerialDenseVector& reigenvalues,
-    Core::LinAlg::SerialDenseVector& ieigenvalues) const
-{
-  int info = 0;
-  int lwork = 8.0 * mat.numCols();
-  std::vector<double> work(lwork);
-
-  if (mat.numCols() != mat.numRows())
-    FOUR_C_THROW("A N-by-N real non-symmetric matrix is expected by GGEV!");
-
-  // create dummy B matrix
-  static bool first_execution = true;
-  static Core::LinAlg::SerialDenseMatrix bmat;
-  if (first_execution or bmat.numCols() != mat.numCols())
-  {
-    bmat.reshape(mat.numCols(), mat.numCols());
-    for (int r = 0; r < bmat.numCols(); ++r) bmat(r, r) = 1.0;
-  }
-
-  Core::LinAlg::SerialDenseVector beta(reigenvalues);
-
-  Teuchos::LAPACK<int, double> lapack;
-  lapack.GGEV('N', 'N', mat.numCols(), mat.values(), mat.stride(), bmat.values(), bmat.stride(),
-      reigenvalues.values(), ieigenvalues.values(), beta.values(), nullptr, 1, nullptr, 1,
-      work.data(), lwork, &info);
-
-  // postprocess the actual eigenvalues
-  for (int i = 0; i < reigenvalues.numCols(); ++i)
-  {
-    if (beta(i) == 0.0)
-      FOUR_C_THROW(
-          "The BETA factor is equal to zero! The eigenvalues can not be"
-          " computed.");
-    reigenvalues(i) /= beta(i);
-    ieigenvalues(i) /= beta(i);
-  }
-
-  if (info) FOUR_C_THROW("GGEV failed! (info = {})", info);
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void NOX::Nln::LinearSystem::call_geev(Core::LinAlg::SerialDenseMatrix& mat,
-    Core::LinAlg::SerialDenseVector& reigenvalues,
-    Core::LinAlg::SerialDenseVector& ieigenvalues) const
-{
-  if (mat.numCols() != mat.numRows())
-    FOUR_C_THROW("A N-by-N real non-symmetric matrix is expected by GEEV!");
-
-  int info = 0;
-  int lwork = 3.0 * mat.numCols();
-  std::vector<double> work(lwork);
-
-  Teuchos::LAPACK<int, double> lapack;
-  lapack.GEEV('N', 'N', mat.numCols(), mat.values(), mat.stride(), reigenvalues.values(),
-      ieigenvalues.values(), nullptr, 1, nullptr, 1, work.data(), lwork, &info);
-
-  if (info) FOUR_C_THROW("GEEV failed!");
 }
 
 FOUR_C_NAMESPACE_CLOSE

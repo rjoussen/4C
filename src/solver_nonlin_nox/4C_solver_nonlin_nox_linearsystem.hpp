@@ -165,22 +165,6 @@ namespace NOX
       //! destroy the jacobian ptr
       bool destroy_jacobian();
 
-      //! compute the eigenvalues of the jacobian operator in serial mode
-      /**
-       *  \pre Not supported in parallel. The Jacobian matrix should be not too
-       *  large since the sparse matrix is transformed to a full matrix.
-       *
-       *  \note The computation can become quite expensive even for rather
-       *  small matrices. The underlying LAPACK routine computes all
-       *  eigenvalues of your system matrix. Therefore, if you are only interested
-       *  in an estimate for condition number think about the GMRES variant.
-       *  Nevertheless, the here computed eigenvalues are the exact ones.
-       *
-       *  \return the computed condition number.
-       *  */
-      void compute_serial_eigenvalues_of_jacobian(Core::LinAlg::SerialDenseVector& reigenvalues,
-          Core::LinAlg::SerialDenseVector& ieigenvalues) const;
-
       /// compute the respective condition number (only possible in serial mode)
       double compute_serial_condition_number_of_jacobian(
           const LinSystem::ConditionNumber condnum_type) const;
@@ -242,24 +226,6 @@ namespace NOX
       /// prepare the dense matrix in case of a block sparse matrix
       void prepare_block_dense_matrix(const Core::LinAlg::BlockSparseMatrixBase& block_sparse,
           Core::LinAlg::SerialDenseMatrix& block_dense) const;
-
-      /// throw an error if there is a row containing only zeros
-      void throw_if_zero_row(const Core::LinAlg::SerialDenseMatrix& block_dense) const;
-
-      /// solve the non-symmetric eigenvalue problem
-      void solve_non_symm_eigen_value_problem(Core::LinAlg::SerialDenseMatrix& mat,
-          Core::LinAlg::SerialDenseVector& reigenvalues,
-          Core::LinAlg::SerialDenseVector& ieigenvalues) const;
-
-      /// call GEEV from LAPACK
-      void call_geev(Core::LinAlg::SerialDenseMatrix& mat,
-          Core::LinAlg::SerialDenseVector& reigenvalues,
-          Core::LinAlg::SerialDenseVector& ieigenvalues) const;
-
-      /// call GGEV from LAPACK
-      void call_ggev(Core::LinAlg::SerialDenseMatrix& mat,
-          Core::LinAlg::SerialDenseVector& reigenvalues,
-          Core::LinAlg::SerialDenseVector& ieigenvalues) const;
 
      private:
       //! throws an error
