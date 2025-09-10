@@ -18,30 +18,11 @@ FOUR_C_NAMESPACE_OPEN
 
 void Core::FE::Discretization::boundary_conditions_geometry()
 {
-  // As a first step we delete ALL references to any conditions
-  // in the discretization
-  for (int i = 0; i < num_my_col_nodes(); ++i) l_col_node(i)->clear_conditions();
-
-  // now we delete all old geometries that are attached to any conditions
+  // delete all old geometries that are attached to any conditions
   // and set a communicator to the condition
   for (auto& [name, condition] : condition_)
   {
     condition->clear_geometry();
-  }
-
-  // for all conditions, we set a ptr in the nodes to the condition
-  for (auto& [name, condition] : condition_)
-  {
-    const std::vector<int>* nodes = condition->get_nodes();
-    // There might be conditions that do not have a nodal cloud
-    if (!nodes) continue;
-    for (int node : *nodes)
-    {
-      if (!node_col_map()->my_gid(node)) continue;
-      Core::Nodes::Node* actnode = g_node(node);
-      if (!actnode) FOUR_C_THROW("Cannot find global node");
-      actnode->set_condition(name, condition);
-    }
   }
 
   // create a map that holds the overall number of created elements
@@ -106,9 +87,25 @@ void Core::FE::Discretization::boundary_conditions_geometry()
         numele[name] = 0;
       }
 
-      // adjust the IDs of the elements associated with the active
-      // condition in order to obtain unique IDs within one condition type
-      condition->adjust_id(numele[name]);
+      // 1. adjust the IDs of the elements associated with the active
+      //    condition in order to obtain unique IDs within one condition type
+      // 2. let elements know the discretization they belong to
+      {
+        const auto shift = numele[name];
+        auto& geometry = condition->geometry();
+        std::map<int, std::shared_ptr<Core::Elements::Element>> geometry_new;
+
+        for (auto& [ele_id, ele] : geometry)
+        {
+          const auto new_id = ele_id + shift;
+          ele->set_id(new_id);
+          ele->discretization_ = this;
+
+          geometry_new.emplace(new_id, std::move(ele));
+        }
+
+        geometry = std::move(geometry_new);
+      }
 
       // adjust the number of elements associated with the current
       // condition type

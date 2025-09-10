@@ -191,12 +191,6 @@ namespace Core::Conditions
     //! Access the container that stores the input parameters.
     Core::IO::InputParameterContainer& parameters() { return container_; }
 
-    /*!
-    \brief Adjust IDs of associated elements in order to obtain global
-    unique IDs within one condition type
-    */
-    void adjust_id(const int shift);
-
     /**
      * Create a copy of this object but do not copy the geometry.
      */

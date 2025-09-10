@@ -46,19 +46,6 @@ void Core::Conditions::Condition::print(std::ostream& os) const
   }
 }
 
-void Core::Conditions::Condition::adjust_id(const int shift)
-{
-  std::map<int, std::shared_ptr<Core::Elements::Element>> geometry;
-
-  for (const auto& [ele_id, ele] : geometry_)
-  {
-    ele->set_id(ele_id + shift);
-    geometry[ele_id + shift] = (geometry_)[ele_id];
-  }
-
-  swap(geometry_, geometry);
-}
-
 std::shared_ptr<Core::Conditions::Condition> Core::Conditions::Condition::copy_without_geometry()
     const
 {
