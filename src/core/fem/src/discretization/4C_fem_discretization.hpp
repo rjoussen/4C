@@ -220,6 +220,11 @@ namespace Core::FE
     }
 
     /**
+     * Return the owning MPI rank of the element.
+     */
+    [[nodiscard]] int owner() const { return discretization_->elecolptr_[local_id_]->owner(); }
+
+    /**
      * Return the local id of the element in the discretization.
      */
     [[nodiscard]] int local_id() const { return local_id_; }
@@ -237,10 +242,23 @@ namespace Core::FE
       return discretization_->elecolptr_[local_id_];
     }
 
+    /**
+     * Return the nodes of this element as a range of (Const)NodeRef objects.
+     */
     [[nodiscard]] IteratorRange<DiscretizationIterator<NodeRefType>> nodes() const
     {
       return Internal::make_iterator_range<NodeRefType>(
           discretization_, discretization_->element_connectivity_[local_id_]);
+    }
+
+    /**
+     * Return the number of nodes of this element.
+     *
+     * @note nodes().size() == num_nodes()
+     */
+    [[nodiscard]] size_t num_nodes() const
+    {
+      return discretization_->element_connectivity_[local_id_].size();
     }
 
     /**
@@ -1059,27 +1077,55 @@ namespace Core::FE
     }
 
     /**
-     * This function is useful for range based for-loops over all row elements.
+     * @brief A range providing access to all local row elements.
      *
-     * \code
-     *      for (Core::Elements::Element* actele : my_row_element_range()) {}
-     * \endcode
+     * You may directly use this function in range based for-loops, e.g.
      *
-     * \return A range of all local row elements.
+     * @code
+     * for (auto element : my_row_element_range())
+     * {
+     *   ...
+     * }
+     * @endcode
+     *
      */
     [[nodiscard]] auto my_row_element_range() const
     {
       FOUR_C_ASSERT(filled(), "Discretization {} not Filled()!", name_);
-      return std::views::all(elerowptr_);
+      return Internal::make_iterator_range<ConstElementRef>(this, locally_owned_local_element_ids_);
     }
 
     /**
-     * This function is equivalent to my_row_element_range(), but applied to column elements
+     * @brief A range providing access to all local row elements.
+     *
+     * See the const overload for an example.
+     */
+    [[nodiscard]] auto my_row_element_range()
+    {
+      FOUR_C_ASSERT(filled(), "Discretization {} not Filled()!", name_);
+      return Internal::make_iterator_range<ElementRef>(this, locally_owned_local_element_ids_);
+    }
+
+    /**
+     * @brief A range providing access to all local column elements.
+     *
+     * See my_row_element_range() for an example.
      */
     [[nodiscard]] auto my_col_element_range() const
     {
       FOUR_C_ASSERT(filled(), "Discretization {} not Filled()!", name_);
-      return std::views::all(elecolptr_);
+      return Internal::make_iterator_range<ConstElementRef>(this, all_local_element_ids_);
+    }
+
+    /**
+     * @brief A range providing access to all local column elements.
+     *
+     * See my_row_element_range() for an example.
+     */
+    [[nodiscard]] auto my_col_element_range()
+    {
+      FOUR_C_ASSERT(filled(), "Discretization {} not Filled()!", name_);
+      return Internal::make_iterator_range<ElementRef>(this, all_local_element_ids_);
     }
 
     /*!
@@ -2421,9 +2467,6 @@ namespace Core::FE
 
     //! @}
 
-    //! @name Nodes
-    //! @{
-
     //! Unique distribution of nodal ownerships
     std::shared_ptr<Core::LinAlg::Map> noderowmap_;
 
@@ -2438,8 +2481,15 @@ namespace Core::FE
 
     //! Local IDs of the nodes in nodecolptr_. This is the range [0,numnodes-1].
     std::vector<int> all_local_node_ids_;
+
     //! Local IDs of the nodes in nodecolptr_ (!) that are owned by this rank.
     std::vector<int> locally_owned_local_node_ids_;
+
+    //! Local IDs of the elements in elecolptr_. This is the range [0,numelements-1].
+    std::vector<int> all_local_element_ids_;
+
+    //! Local IDs of the elements in elecolptr_ (!) that are owned by this rank.
+    std::vector<int> locally_owned_local_element_ids_;
 
     //! Local IDs (inner index) of the elements attached to a node (outer index)
     Utils::FlatVectorVector<int> node_to_element_lids_;
@@ -2449,8 +2499,6 @@ namespace Core::FE
 
     //! Map from nodal Gid to node pointers
     std::map<int, std::shared_ptr<Core::Nodes::Node>> node_;
-
-    //! @}
 
     //! Map of references to solution states
     std::vector<std::map<std::string, std::shared_ptr<const Core::LinAlg::Vector<double>>>> state_;

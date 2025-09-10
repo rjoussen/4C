@@ -133,8 +133,8 @@ std::shared_ptr<Core::LinAlg::MapExtractor> PoroElast::Utils::build_poro_splitte
   std::shared_ptr<Core::LinAlg::MapExtractor> porositysplitter = nullptr;
 
   // Loop through all elements on processor
-  int locporop1 = std::count_if(
-      dis.my_col_element_range().begin(), dis.my_col_element_range().end(), is_poro_p1_element);
+  int locporop1 = std::ranges::count_if(
+      dis.my_col_element_range(), is_poro_p1_element, [](auto ele) { return ele.user_element(); });
 
   // Was at least one PoroP1 found on one processor?
   int glonumporop1 = 0;

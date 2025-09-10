@@ -1307,17 +1307,17 @@ void Core::IO::DiscretizationWriter::write_element_data(bool writeowner)
     // loop all elements and build map of data names and dimensions
     if (writeowner == true)
     {
-      for (auto* ele : dis_->my_row_element_range())
+      for (auto ele : dis_->my_row_element_range())
       {
         // write owner of every element
-        ele->vis_owner(names);
+        ele.user_element()->vis_owner(names);
       }
     }
 
-    for (auto* ele : dis_->my_row_element_range())
+    for (auto ele : dis_->my_row_element_range())
     {
       // get names and dimensions from every element
-      ele->vis_names(names);
+      ele.user_element()->vis_names(names);
     }
 
     // By applying gather_all we get the combined map including all elemental values
@@ -1337,12 +1337,12 @@ void Core::IO::DiscretizationWriter::write_element_data(bool writeowner)
       Core::LinAlg::MultiVector<double> sysdata(*dis_->element_row_map(), dimension, true);
 
       int ele_counter = 0;
-      for (auto* ele : dis_->my_row_element_range())
+      for (auto ele : dis_->my_row_element_range())
       {
         std::fill(eledata.begin(), eledata.end(), 0.0);
 
         // get data for a given name from element & put in sysdata
-        ele->vis_data(name, eledata);
+        ele.user_element()->vis_data(name, eledata);
 
         FOUR_C_ASSERT_ALWAYS(
             (int)eledata.size() == dimension, "element manipulated size of visualization data");

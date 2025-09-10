@@ -51,9 +51,9 @@ namespace Core::IO
     // count number of nodes; output is completely independent of the number of processors involved
     unsigned int num_row_elements = discretization_->num_my_row_elements();
     unsigned int num_nodes = 0;
-    for (const Core::Elements::Element* ele : discretization_->my_row_element_range())
+    for (auto ele : discretization_->my_row_element_range())
     {
-      num_nodes += ele->num_node();
+      num_nodes += ele.num_nodes();
     }
 
     // do not need to store connectivity indices here because we create a
@@ -78,12 +78,12 @@ namespace Core::IO
     unsigned int pointcounter = 0;
     unsigned int num_skipped_eles = 0;
 
-    for (const Core::Elements::Element* ele : discretization_->my_row_element_range())
+    for (auto ele : discretization_->my_row_element_range())
     {
-      if (element_filter_(ele))
+      if (element_filter_(ele.user_element()))
       {
-        pointcounter +=
-            ele->append_visualization_geometry(*discretization_, cell_types, point_coordinates);
+        pointcounter += ele.user_element()->append_visualization_geometry(
+            *discretization_, cell_types, point_coordinates);
         cell_offsets.push_back(pointcounter);
       }
       else
@@ -229,9 +229,9 @@ namespace Core::IO
 
     // count number of nodes for this visualization
     unsigned int num_nodes = 0;
-    for (const Core::Elements::Element* ele : discretization_->my_row_element_range())
+    for (auto ele : discretization_->my_row_element_range())
     {
-      num_nodes += ele->num_node();
+      num_nodes += ele.num_nodes();
     }
 
     std::vector<double> point_result_data;
@@ -239,13 +239,13 @@ namespace Core::IO
 
     unsigned int pointcounter = 0;
 
-    for (const Core::Elements::Element* ele : discretization_->my_row_element_range())
+    for (auto ele : discretization_->my_row_element_range())
     {
-      if (element_filter_(ele))
+      if (element_filter_(ele.user_element()))
       {
-        pointcounter += ele->append_visualization_dof_based_result_data_vector(*discretization_,
-            result_data_dofbased_col_map, result_num_dofs_per_node, read_result_data_from_dofindex,
-            point_result_data);
+        pointcounter += ele.user_element()->append_visualization_dof_based_result_data_vector(
+            *discretization_, result_data_dofbased_col_map, result_num_dofs_per_node,
+            read_result_data_from_dofindex, point_result_data);
       }
     }
 
@@ -298,9 +298,9 @@ namespace Core::IO
 
     // count number of nodes
     unsigned int num_nodes = 0;
-    for (const Core::Elements::Element* ele : discretization_->my_row_element_range())
+    for (auto ele : discretization_->my_row_element_range())
     {
-      num_nodes += ele->num_node();
+      num_nodes += ele.num_nodes();
     }
 
     std::vector<double> point_result_data;
@@ -308,12 +308,13 @@ namespace Core::IO
 
     unsigned int pointcounter = 0;
 
-    for (const Core::Elements::Element* ele : discretization_->my_row_element_range())
+    for (auto ele : discretization_->my_row_element_range())
     {
-      if (element_filter_(ele))
+      if (element_filter_(ele.user_element()))
       {
-        pointcounter += ele->append_visualization_node_based_result_data_vector(*discretization_,
-            result_data_nodebased_col_map, result_num_components_per_node, point_result_data);
+        pointcounter +=
+            ele.user_element()->append_visualization_node_based_result_data_vector(*discretization_,
+                result_data_nodebased_col_map, result_num_components_per_node, point_result_data);
       }
     }
 
@@ -388,9 +389,9 @@ namespace Core::IO
     owner_of_row_elements.reserve(discretization_->num_my_row_elements());
 
     const int my_pid = Core::Communication::my_mpi_rank(discretization_->get_comm());
-    for (const Core::Elements::Element* ele : discretization_->my_row_element_range())
+    for (auto ele : discretization_->my_row_element_range())
     {
-      if (element_filter_(ele)) owner_of_row_elements.push_back(my_pid);
+      if (element_filter_(ele.user_element())) owner_of_row_elements.push_back(my_pid);
     }
 
     // Pass data to the output writer.
@@ -406,9 +407,9 @@ namespace Core::IO
     std::vector<double> gid_of_row_elements;
     gid_of_row_elements.reserve(discretization_->num_my_row_elements());
 
-    for (const Core::Elements::Element* ele : discretization_->my_row_element_range())
+    for (auto ele : discretization_->my_row_element_range())
     {
-      if (element_filter_(ele)) gid_of_row_elements.push_back(ele->id());
+      if (element_filter_(ele.user_element())) gid_of_row_elements.push_back(ele.global_id());
     }
 
     // Pass data to the output writer.
@@ -433,10 +434,10 @@ namespace Core::IO
     std::vector<int> material_id_of_row_elements;
     material_id_of_row_elements.reserve(discretization_->num_my_row_elements());
 
-    for (const Core::Elements::Element* ele : discretization_->my_row_element_range())
+    for (auto ele : discretization_->my_row_element_range())
     {
-      if (element_filter_(ele))
-        material_id_of_row_elements.push_back(ele->material(0)->parameter()->id());
+      if (element_filter_(ele.user_element()))
+        material_id_of_row_elements.push_back(ele.user_element()->material(0)->parameter()->id());
     }
 
     // Pass data to the output writer.
@@ -450,9 +451,9 @@ namespace Core::IO
   {
     // count number of nodes; output is completely independent of the number of processors involved
     int num_nodes = 0;
-    for (const Core::Elements::Element* ele : discretization_->my_row_element_range())
+    for (auto ele : discretization_->my_row_element_range())
     {
-      num_nodes += ele->num_node();
+      num_nodes += ele.num_nodes();
     }
 
     // Setup the vector with the GIDs of the nodes.
@@ -460,16 +461,15 @@ namespace Core::IO
     gid_of_nodes.reserve(num_nodes);
 
     // Loop over each element and add the node GIDs.
-    for (const Core::Elements::Element* ele : discretization_->my_row_element_range())
+    for (auto ele : discretization_->my_row_element_range())
     {
-      if (!element_filter_(ele)) continue;
+      if (!element_filter_(ele.user_element())) continue;
 
       // Add the node GIDs.
       const std::vector<int>& numbering =
-          Core::IO::get_vtk_cell_type_from_element_cell_type(ele->shape()).second;
-      const Core::Nodes::Node* const* nodes = ele->nodes();
-      for (int inode = 0; inode < ele->num_node(); ++inode)
-        gid_of_nodes.push_back(nodes[numbering[inode]]->id());
+          Core::IO::get_vtk_cell_type_from_element_cell_type(ele.user_element()->shape()).second;
+      auto nodes = ele.nodes();
+      for (const auto vtk_index : numbering) gid_of_nodes.push_back(nodes[vtk_index].global_id());
     }
 
     visualization_manager_->get_visualization_data().set_point_data_vector<int>(
@@ -502,12 +502,12 @@ namespace Core::IO
     std::vector<int> my_ghost_elements;
     my_ghost_elements.clear();
     int count = 0;
-    for (const Core::Elements::Element* ele : discretization.my_col_element_range())
+    for (auto ele : discretization.my_col_element_range())
     {
-      if (element_predicate(ele))
+      if (element_predicate(ele.user_element()))
       {
         count++;
-        if (ele->owner() != my_proc) my_ghost_elements.push_back(ele->id());
+        if (ele.owner() != my_proc) my_ghost_elements.push_back(ele.global_id());
       }
     }
 
@@ -522,11 +522,11 @@ namespace Core::IO
     // Output the ghosting data of the elements owned by this proc.
     std::vector<double> ghosted_elements;
     ghosted_elements.reserve(count * n_proc);
-    for (const Core::Elements::Element* ele : discretization.my_row_element_range())
+    for (auto ele : discretization.my_row_element_range())
     {
-      if (element_predicate(ele))
+      if (element_predicate(ele.user_element()))
       {
-        const int local_row = ghosting_information.get_map().lid(ele->id());
+        const int local_row = ghosting_information.get_map().lid(ele.global_id());
         if (local_row == -1) FOUR_C_THROW("The element has to exist in the row map.");
         for (int i_proc = 0; i_proc < n_proc; i_proc++)
           ghosted_elements.push_back(

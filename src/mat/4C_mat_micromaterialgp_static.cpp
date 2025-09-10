@@ -279,8 +279,9 @@ void Mat::MicroMaterialGP::extract_and_store_history_data()
   std::shared_ptr<Core::FE::Discretization> discret =
       (Global::Problem::instance(microdisnum_))->get_dis("structure");
 
-  for (Core::Elements::Element* actele : discret->my_col_element_range())
+  for (auto ele : discret->my_col_element_range())
   {
+    auto* actele = ele.user_element();
     // get the solid evaluator which holds potential internal variables
     const Discret::Elements::SolidCalcVariant& solid_evaluator =
         dynamic_cast<Discret::Elements::Solid*>(actele)->get_solid_element_evaluator();
@@ -300,8 +301,9 @@ void Mat::MicroMaterialGP::fill_history_data_into_elements()
     std::shared_ptr<Core::FE::Discretization> discret =
         (Global::Problem::instance(microdisnum_))->get_dis("structure");
 
-    for (Core::Elements::Element* actele : discret->my_col_element_range())
+    for (auto ele : discret->my_col_element_range())
     {
+      auto* actele = ele.user_element();
       // get the solid evaluator
       Discret::Elements::SolidCalcVariant& solid_evaluator =
           dynamic_cast<Discret::Elements::Solid*>(actele)->get_solid_element_evaluator();
@@ -425,9 +427,9 @@ void Mat::MicroMaterialGP::write_restart()
         (Global::Problem::instance(microdisnum_))->get_dis("structure");
 
     Core::Communication::PackBuffer data;
-    for (Core::Elements::Element* actele : discret->my_row_element_range())
+    for (auto ele : discret->my_row_element_range())
     {
-      add_to_pack(data, history_data_[actele->id()]);
+      add_to_pack(data, history_data_[ele.global_id()]);
     }
     micro_output_->write_vector(
         "history_data", data(), *discret->element_row_map(), Core::IO::VectorType::elementvector);

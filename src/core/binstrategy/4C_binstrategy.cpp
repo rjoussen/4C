@@ -1602,13 +1602,13 @@ double Core::Binstrategy::BinningStrategy::
     double loc_max_bin_size_lower_bound = 0.0;
 
     // loop over row elements of each proc
-    for (const auto* ele : discret[ndis]->my_row_element_range())
+    for (auto ele : discret[ndis]->my_row_element_range())
     {
       // get an axis-aligned bounding box for the element
       // ((x_min, y_min, z_min), (x_max, y_max, z_max))
       const std::pair<std::array<double, 3>, std::array<double, 3>> aabb =
           BinningStrategyImplementation::compute_aabb(
-              *discret[ndis], *ele, disnp[ndis], determine_relevant_points_);
+              *discret[ndis], *ele.user_element(), disnp[ndis], determine_relevant_points_);
 
       // compute lower bound for bin size as largest element in discret
       for (int dim = 0; dim < 3; ++dim)
