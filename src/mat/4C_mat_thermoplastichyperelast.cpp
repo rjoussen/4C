@@ -253,8 +253,8 @@ void Mat::ThermoPlasticHyperElast::unpack(Core::Communication::UnpackBuffer& buf
 /*---------------------------------------------------------------------*
  | initialise / allocate internal variables (public)                   |
  *---------------------------------------------------------------------*/
-void Mat::ThermoPlasticHyperElast::setup(
-    int numgp, const Core::IO::InputParameterContainer& container)
+void Mat::ThermoPlasticHyperElast::setup(int numgp, const Discret::Elements::Fibers& fibers,
+    const std::optional<Discret::Elements::CoordinateSystem>& coord_system)
 {
   // initialise hist variables
   defgrdlast_ = std::make_shared<std::vector<Core::LinAlg::Tensor<double, 3, 3>>>();

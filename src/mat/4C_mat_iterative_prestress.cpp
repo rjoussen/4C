@@ -189,12 +189,13 @@ void Mat::IterativePrestressMaterial::update(Core::LinAlg::Tensor<double, 3, 3> 
   child_material_->update(elastic_deformation_gradient, gp, params, eleGID);
 }
 
-void Mat::IterativePrestressMaterial::setup(
-    const int numgp, const Core::IO::InputParameterContainer& container)
+void Mat::IterativePrestressMaterial::setup(const int numgp,
+    const Discret::Elements::Fibers& fibers,
+    const std::optional<Discret::Elements::CoordinateSystem>& coord_system)
 {
   prestretch_tensor_.resize(numgp, Core::LinAlg::TensorGenerators::identity<double, 3, 3>);
 
-  child_material_->setup(numgp, container);
+  child_material_->setup(numgp, fibers, coord_system);
 }
 
 void Mat::IterativePrestressMaterial::vis_names(std::map<std::string, int>& names) const

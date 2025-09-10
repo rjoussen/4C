@@ -44,8 +44,8 @@ void Mat::Elastic::CoupAnisoPow::unpack_summand(Core::Communication::UnpackBuffe
   extract_from_pack(buffer, structural_tensor_);
 }
 
-void Mat::Elastic::CoupAnisoPow::setup(
-    int numgp, const Core::IO::InputParameterContainer& container)
+void Mat::Elastic::CoupAnisoPow::setup(int numgp, const Discret::Elements::Fibers& fibers,
+    const std::optional<Discret::Elements::CoordinateSystem>& coord_system)
 {
   // path if fibers aren't given in input file
   if (params_->init_ == 0)
@@ -59,27 +59,22 @@ void Mat::Elastic::CoupAnisoPow::setup(
   // path if fibers are given in input file
   else if (params_->init_ == 1)
   {
-    std::ostringstream ss;
-    ss << params_->fibernumber_;
-    std::string fibername = "FIBER" + ss.str();  // FIBER Name
     // CIR-AXI-RAD nomenclature
-    if (container.get<std::optional<std::vector<double>>>("RAD").has_value() and
-        container.get<std::optional<std::vector<double>>>("AXI").has_value() and
-        container.get<std::optional<std::vector<double>>>("CIR").has_value())
+    if (coord_system.has_value())
     {
       // Read in of data
       Core::LinAlg::Tensor<double, 3, 3> locsys{};
-      read_rad_axi_cir(container, locsys);
+      read_rad_axi_cir(*coord_system, locsys);
       constexpr auto id =
           Core::LinAlg::get_full(Core::LinAlg::TensorGenerators::identity<double, 3, 3>);
       // final setup of fiber data
       set_fiber_vecs(0.0, locsys, id);
     }
     // FIBERi nomenclature
-    else if (container.get<std::optional<std::vector<double>>>(fibername).has_value())
+    else if (fibers.element_fibers.size() > 0)
     {
       // Read in of data
-      read_fiber(container, fibername, a_);
+      a_ = fibers.element_fibers[0];
       params_->structural_tensor_strategy()->setup_structural_tensor(a_, structural_tensor_);
     }
 

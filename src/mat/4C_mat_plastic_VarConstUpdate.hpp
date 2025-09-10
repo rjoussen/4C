@@ -144,7 +144,8 @@ namespace Mat
         int eleGID) override;  ///< Element GID
 
     /// setup material data
-    void setup(int numgp, const Core::IO::InputParameterContainer& container) override;
+    void setup(int numgp, const Discret::Elements::Fibers& fibers,
+        const std::optional<Discret::Elements::CoordinateSystem>& coord_system) override;
 
     /// update sumands
     void update() override;

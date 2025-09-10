@@ -15,6 +15,7 @@
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_mat_inelastic_defgrad_factors_service.hpp"
 #include "4C_material_parameter_base.hpp"
+#include "4C_solid_3D_ele_fibers.hpp"
 #include "4C_utils_exceptions.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
@@ -156,7 +157,8 @@ namespace Mat
        * @param[in] numgp Number of Gauss points
        * @param[in] container Input parameter Container
        */
-      virtual void setup(const int numgp, const Core::IO::InputParameterContainer& container) = 0;
+      virtual void setup(const int numgp, const Discret::Elements::Fibers& fibers,
+          const std::optional<Discret::Elements::CoordinateSystem>& coord_system) = 0;
 
       /*!
        * @brief Pre-evaluation, intended to be used for stuff that has to be done only once per

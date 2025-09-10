@@ -100,7 +100,8 @@ namespace Mixture
      * @param numgp (in) Number of Gauss-points
      * @param params (in/out) Parameter list for exchange of parameters
      */
-    void read_element(int numgp, const Core::IO::InputParameterContainer& container) override;
+    void read_element(int numgp, const Discret::Elements::Fibers& fibers,
+        const std::optional<Discret::Elements::CoordinateSystem>& coord_system) override;
 
     /*!
      * \brief Updates the material and all its summands

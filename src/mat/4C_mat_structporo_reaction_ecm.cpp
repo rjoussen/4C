@@ -69,10 +69,10 @@ Mat::StructPoroReactionECM::StructPoroReactionECM(Mat::PAR::StructPoroReactionEC
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mat::StructPoroReactionECM::setup(
-    int numgp, const Core::IO::InputParameterContainer& container)
+void Mat::StructPoroReactionECM::setup(int numgp, const Discret::Elements::Fibers& fibers,
+    const std::optional<Discret::Elements::CoordinateSystem>& coord_system)
 {
-  StructPoroReaction::setup(numgp, container);
+  StructPoroReaction::setup(numgp, fibers, coord_system);
   refporosity_old_ = params_->init_porosity_;
 
   double dpsidphiref = 0.0;

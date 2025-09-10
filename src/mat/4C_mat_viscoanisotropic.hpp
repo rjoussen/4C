@@ -140,9 +140,8 @@ namespace Mat
       return std::make_shared<ViscoAnisotropic>(*this);
     }
 
-    /// Setup and Initialize internal stress variables
-    void setup(int numgp,  ///< number of Gauss points
-        const Core::IO::InputParameterContainer& container) override;
+    void setup(int numgp, const Discret::Elements::Fibers& fibers,
+        const std::optional<Discret::Elements::CoordinateSystem>& coord_system) override;
 
     /// Setup and Initialize internal stress variables and align fibers based on a given vector
     void setup(const int numgp,             ///< number of Gauss points

@@ -204,14 +204,15 @@ void Mat::MembraneActiveStrain::unpack(Core::Communication::UnpackBuffer& buffer
 /*----------------------------------------------------------------------*
  |                                                 brandstaeter 05/2018 |
  *----------------------------------------------------------------------*/
-void Mat::MembraneActiveStrain::setup(int numgp, const Core::IO::InputParameterContainer& container)
+void Mat::MembraneActiveStrain::setup(int numgp, const Discret::Elements::Fibers& fibers,
+    const std::optional<Discret::Elements::CoordinateSystem>& coord_system)
 {
   // setup fibervectors
-  setup_fiber_vectors(numgp, container);
+  setup_fiber_vectors(numgp, fibers, coord_system);
 
   // setup of passive material
   matpassive_ = std::dynamic_pointer_cast<Mat::So3Material>(Mat::factory(params_->matid_passive_));
-  matpassive_->setup(numgp, container);
+  matpassive_->setup(numgp, fibers, coord_system);
 
   // setup internal variables
   voltage_ = std::make_shared<std::vector<double>>();
@@ -406,40 +407,26 @@ bool Mat::MembraneActiveStrain::vis_data(
 /*----------------------------------------------------------------------*
  | setup fiber vectors                                                  |
  *----------------------------------------------------------------------*/
-void Mat::MembraneActiveStrain::setup_fiber_vectors(
-    int numgp, const Core::IO::InputParameterContainer& container)
+void Mat::MembraneActiveStrain::setup_fiber_vectors(int numgp,
+    const Discret::Elements::Fibers& fibers,
+    const std::optional<Discret::Elements::CoordinateSystem>& coord_system)
 {
   Core::LinAlg::Matrix<3, 1> dir;
 
   // CIR-AXI-RAD nomenclature
-  if (container.get<std::optional<std::vector<double>>>("RAD").has_value() and
-      container.get<std::optional<std::vector<double>>>("AXI").has_value() and
-      container.get<std::optional<std::vector<double>>>("CIR").has_value())
+  if (coord_system.has_value())
   {
-    // Axial direction
-    read_dir(container, "AXI", dir);
-    fibervecs_.push_back(dir);
-
-    // Circumferential direction
-    read_dir(container, "CIR", dir);
-    fibervecs_.push_back(dir);
-
-    // Radial direction
-    read_dir(container, "RAD", dir);
-    fibervecs_.push_back(dir);
+    fibervecs_.emplace_back(coord_system->element_system[1].data(), /*view=*/false);
+    fibervecs_.emplace_back(coord_system->element_system[2].data(), /*view=*/false);
+    fibervecs_.emplace_back(coord_system->element_system[0].data(), /*view=*/false);
   }
   // FIBER nomenclature
-  else if (container.get<std::optional<std::vector<double>>>("FIBER1").has_value() and
-           container.get<std::optional<std::vector<double>>>("FIBER2").has_value())
+  else if (fibers.element_fibers.size() >= 2)
   {
-    for (int i = 1; i < 3; ++i)
+    fibervecs_.resize(2);
+    for (int i = 0; i < 2; ++i)
     {
-      std::ostringstream ss;
-      ss << i;
-      std::string fibername = "FIBER" + ss.str();  // FIBER Name
-                                                   // FiberN direction
-      read_dir(container, fibername, dir);
-      fibervecs_.push_back(dir);
+      fibervecs_[i] = Core::LinAlg::Matrix<3, 1>(fibers.element_fibers[i].data(), /*view=*/false);
     }
 
     setup_normal_direction();
@@ -470,30 +457,6 @@ void Mat::MembraneActiveStrain::setup_fiber_vectors(
   }
 
 }  // Mat::MembraneActiveStrain::setup_fiber_vectors
-
-/*----------------------------------------------------------------------*
- * Function which reads in the fiber direction
- *----------------------------------------------------------------------*/
-void Mat::MembraneActiveStrain::read_dir(const Core::IO::InputParameterContainer& container,
-    std::string specifier, Core::LinAlg::Matrix<3, 1>& dir)
-{
-  const auto& fiber_opt = container.get<std::optional<std::vector<double>>>(specifier);
-  FOUR_C_ASSERT(fiber_opt.has_value(), "Internal error: fiber vector not found.");
-  const auto& fiber = *fiber_opt;
-
-  double fnorm = 0.;
-  // normalization
-  for (int i = 0; i < 3; ++i)
-  {
-    fnorm += fiber[i] * fiber[i];
-  }
-  fnorm = sqrt(fnorm);
-
-  // fill final normalized vector
-  for (int i = 0; i < 3; ++i) dir(i) = fiber[i] / fnorm;
-
-  return;
-}  // Mat::MembraneActiveStrain::read_dir
 
 void Mat::MembraneActiveStrain::setup_normal_direction()
 {

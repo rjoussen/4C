@@ -83,22 +83,11 @@ void Mat::Anisotropy::unpack_anisotropy(Core::Communication::UnpackBuffer& buffe
 
 void Mat::Anisotropy::set_number_of_gauss_points(int numgp) { numgp_ = numgp; }
 
-void Mat::Anisotropy::read_anisotropy_from_element(
-    const Core::IO::InputParameterContainer& container)
+void Mat::Anisotropy::read_anisotropy_from_element(const Discret::Elements::Fibers& fibers,
+    const std::optional<Discret::Elements::CoordinateSystem>& coord_system)
 {
-  // This method might be called even though there is no anisotropy possible for the element.
-  // In this case, we just return without doing anything.
-  using OptionalFiber = std::optional<std::vector<double>>;
-  const bool any_fibers_found =
-      container.get_if<OptionalFiber>("FIBER1") or container.get_if<OptionalFiber>("RAD") or
-      container.get_if<OptionalFiber>("AXI") or container.get_if<OptionalFiber>("CIR");
-  if (!any_fibers_found) return;
-
-
   // Read coordinate system
-  if (container.get<std::optional<std::vector<double>>>("RAD").has_value() and
-      container.get<std::optional<std::vector<double>>>("AXI").has_value() and
-      container.get<std::optional<std::vector<double>>>("CIR").has_value())
+  if (coord_system.has_value())
   {
     // read fibers in RAD AXI CIR notation
     if (!element_cylinder_coordinate_system_manager_)
@@ -106,28 +95,11 @@ void Mat::Anisotropy::read_anisotropy_from_element(
       element_cylinder_coordinate_system_manager_ = CylinderCoordinateSystemManager();
     }
 
-    element_cylinder_coordinate_system_manager_->read_from_element_line_definition(container);
+    element_cylinder_coordinate_system_manager_->read_from_element_line_definition(*coord_system);
   }
 
-  else
-  {
-    // read fibers in FIBERi notation and determine number of fibers
-    for (int fiber_index = 1;; ++fiber_index)
-    {
-      std::string fiber_name = "FIBER" + std::to_string(fiber_index);
+  element_fibers_ = fibers.element_fibers;
 
-      // We count up until we hit a fiber that we do not know about. Thus we need to use the
-      // get_if mechanism.
-      auto* fiber_ptr = container.get_if<std::optional<std::vector<double>>>(fiber_name);
-      if (!fiber_ptr or !fiber_ptr->has_value())
-      {
-        break;
-      }
-
-      element_fibers_.resize(fiber_index);
-      read_anisotropy_fiber(container, fiber_name, element_fibers_[fiber_index - 1]);
-    }
-  }
   on_element_fibers_initialized();
 }
 

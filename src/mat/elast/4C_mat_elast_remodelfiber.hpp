@@ -403,8 +403,8 @@ namespace Mat
       void register_anisotropy_extensions(Anisotropy& anisotropy) override;
 
       /// Setup of summand
-      virtual void setup(
-          int numgp, double rho_tot, const Core::IO::InputParameterContainer& container);
+      virtual void setup(int numgp, double rho_tot, const Discret::Elements::Fibers& fibers,
+          const std::optional<Discret::Elements::CoordinateSystem>& coord_system);
 
       /// Update fiber directions with new local coordinate system (radaxicirc_)
       void update_fiber_dirs(

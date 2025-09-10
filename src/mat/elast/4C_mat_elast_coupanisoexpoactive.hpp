@@ -121,7 +121,8 @@ namespace Mat
       //@}
 
       /// Setup of active summand
-      void setup(int numgp, const Core::IO::InputParameterContainer& container) override;
+      void setup(int numgp, const Discret::Elements::Fibers& fibers,
+          const std::optional<Discret::Elements::CoordinateSystem>& coord_system) override;
 
       void register_anisotropy_extensions(Mat::Anisotropy& anisotropy) override;
 

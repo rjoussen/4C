@@ -173,7 +173,7 @@ bool Discret::Elements::Wall1Poro<distype>::read_element(const std::string& elet
   // setup poro material
   std::shared_ptr<Mat::StructPoro> poromat = std::dynamic_pointer_cast<Mat::StructPoro>(material());
   if (poromat == nullptr) FOUR_C_THROW("material assigned to poro element is not a poro material!");
-  poromat->poro_setup(numgpt_, container);
+  poromat->poro_setup(numgpt_, {}, {});
 
   read_anisotropic_permeability_directions_from_element_line_definition(container);
   read_anisotropic_permeability_nodal_coeffs_from_element_line_definition(container);

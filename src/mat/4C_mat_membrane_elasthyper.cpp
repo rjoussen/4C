@@ -96,10 +96,11 @@ void Mat::MembraneElastHyper::unpack(Core::Communication::UnpackBuffer& buffer)
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
-void Mat::MembraneElastHyper::setup(int numgp, const Core::IO::InputParameterContainer& container)
+void Mat::MembraneElastHyper::setup(int numgp, const Discret::Elements::Fibers& fibers,
+    const std::optional<Discret::Elements::CoordinateSystem>& coord_system)
 {
   // call setup of base class
-  Mat::ElastHyper::setup(numgp, container);
+  Mat::ElastHyper::setup(numgp, fibers, coord_system);
 
   get_fiber_vecs(fibervecs_);
 

@@ -41,8 +41,8 @@ void Mat::Elastic::CoupAnisoNeoHooke::unpack_summand(Core::Communication::Unpack
   extract_from_pack(buffer, structural_tensor_);
 }
 
-void Mat::Elastic::CoupAnisoNeoHooke::setup(
-    int numgp, const Core::IO::InputParameterContainer& container)
+void Mat::Elastic::CoupAnisoNeoHooke::setup(int numgp, const Discret::Elements::Fibers& fibers,
+    const std::optional<Discret::Elements::CoordinateSystem>& coord_system)
 {
   // warning message
   std::cout << "Material does not respect a stress free reference state" << std::endl;
@@ -62,23 +62,21 @@ void Mat::Elastic::CoupAnisoNeoHooke::setup(
   else if (params_->init_ == 1)
   {
     // CIR-AXI-RAD nomenclature
-    if (container.get<std::optional<std::vector<double>>>("RAD").has_value() and
-        container.get<std::optional<std::vector<double>>>("AXI").has_value() and
-        container.get<std::optional<std::vector<double>>>("CIR").has_value())
+    if (coord_system.has_value())
     {
       // Read in of data
       Core::LinAlg::Tensor<double, 3, 3> locsys{};
-      read_rad_axi_cir(container, locsys);
+      read_rad_axi_cir(*coord_system, locsys);
       // final setup of fiber data
       set_fiber_vecs(0.0, locsys,
           Core::LinAlg::get_full(Core::LinAlg::TensorGenerators::identity<double, 3, 3>));
     }
 
     // FIBER1 nomenclature
-    else if (container.get<std::optional<std::vector<double>>>("FIBER1").has_value())
+    else if (fibers.element_fibers.size() > 0)
     {
       // Read in of fiber data and setting fiber data
-      read_fiber(container, "FIBER1", a_);
+      a_ = fibers.element_fibers[0];
       params_->structural_tensor_strategy()->setup_structural_tensor(a_, structural_tensor_);
     }
 

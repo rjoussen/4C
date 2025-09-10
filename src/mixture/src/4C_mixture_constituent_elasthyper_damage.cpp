@@ -70,10 +70,11 @@ void Mixture::MixtureConstituentElastHyperDamage::unpack_constituent(
 }
 
 // Reads the element from the input file
-void Mixture::MixtureConstituentElastHyperDamage::read_element(
-    int numgp, const Core::IO::InputParameterContainer& container)
+void Mixture::MixtureConstituentElastHyperDamage::read_element(int numgp,
+    const Discret::Elements::Fibers& fibers,
+    const std::optional<Discret::Elements::CoordinateSystem>& coord_system)
 {
-  MixtureConstituentElastHyperBase::read_element(numgp, container);
+  MixtureConstituentElastHyperBase::read_element(numgp, fibers, coord_system);
 
   current_reference_growth_.resize(numgp, 1.0);
 }

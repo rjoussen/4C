@@ -142,8 +142,9 @@ void Mat::ViscoPlasticNoYieldSurface::unpack(Core::Communication::UnpackBuffer& 
 
 /*---------------------------------------------------------------------*
  *---------------------------------------------------------------------*/
-void Mat::ViscoPlasticNoYieldSurface::setup(
-    const int numgp, const Core::IO::InputParameterContainer& container)
+void Mat::ViscoPlasticNoYieldSurface::setup(const int numgp,
+    const Discret::Elements::Fibers& fibers,
+    const std::optional<Discret::Elements::CoordinateSystem>& coord_system)
 {
   // read initial flow resistance from input parameter container
   last_flowres_isotropic_.resize(numgp, params_->init_flow_res());

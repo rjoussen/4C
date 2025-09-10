@@ -318,8 +318,8 @@ void Mat::PlasticNlnLogNeoHooke::unpack(Core::Communication::UnpackBuffer& buffe
 /*---------------------------------------------------------------------*
  | initialise / allocate internal variables (public)                   |
  *---------------------------------------------------------------------*/
-void Mat::PlasticNlnLogNeoHooke::setup(
-    int numgp, const Core::IO::InputParameterContainer& container)
+void Mat::PlasticNlnLogNeoHooke::setup(int numgp, const Discret::Elements::Fibers& fibers,
+    const std::optional<Discret::Elements::CoordinateSystem>& coord_system)
 {
   // Extract the function for hardening only once because this is expensive.
   const int functionID_hardening =

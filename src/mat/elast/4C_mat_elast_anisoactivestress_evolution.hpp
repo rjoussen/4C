@@ -15,6 +15,7 @@
 #include "4C_mat_elast_summand.hpp"
 #include "4C_mat_par_aniso.hpp"
 #include "4C_material_parameter_base.hpp"
+#include "4C_solid_3D_ele_fibers.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -148,7 +149,8 @@ namespace Mat
       void register_anisotropy_extensions(Mat::Anisotropy& anisotropy) override;
 
       /// Setup of summand
-      void setup(int numgp, const Core::IO::InputParameterContainer& container) override;
+      void setup(int numgp, const Discret::Elements::Fibers& fibers,
+          const std::optional<Discret::Elements::CoordinateSystem>& coord_system) override;
 
       /*!
        * \brief post_setup routine of the element

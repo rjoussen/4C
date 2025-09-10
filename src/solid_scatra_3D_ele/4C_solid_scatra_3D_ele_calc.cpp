@@ -739,7 +739,8 @@ template <Core::FE::CellType celltype, typename SolidFormulation>
 void Discret::Elements::SolidScatraEleCalc<celltype, SolidFormulation>::setup(
     Mat::So3Material& solid_material, const Core::IO::InputParameterContainer& container)
 {
-  solid_material.setup(stiffness_matrix_integration_.num_points(), container);
+  solid_material.setup(stiffness_matrix_integration_.num_points(), read_fibers(container),
+      read_coordinate_system(container));
 }
 
 template <Core::FE::CellType celltype, typename SolidFormulation>

@@ -226,14 +226,15 @@ namespace Mat
     //-----------------------------------------------------------------------------
 
     //! setup and initialize internal and variables
-    void setup(int numgp, const Core::IO::InputParameterContainer& container) override;
+    void setup(int numgp, const Discret::Elements::Fibers& fibers,
+        const std::optional<Discret::Elements::CoordinateSystem>& coord_system) override;
 
     //! set up the slip/twinning directions and slip/twinning plane normals for the given lattice
     //! type
     void setup_lattice_vectors();
 
     //! read lattice orientation matrix from an input file
-    void setup_lattice_orientation(const Core::IO::InputParameterContainer& container);
+    void setup_lattice_orientation(const Discret::Elements::Fibers& fibers);
 
     //! update internal variables
     void update() override;

@@ -9,6 +9,7 @@
 #include "4C_mat_material_factory.hpp"
 #include "4C_mat_so3_material.hpp"
 #include "4C_membrane.hpp"
+#include "4C_solid_3D_ele_fibers.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -25,7 +26,8 @@ bool Discret::Elements::Membrane<distype>::read_element(const std::string& elety
   set_material(0, Mat::factory(material_id));
 
   // set up of materials with GP data (e.g., history variables)
-  solid_material()->setup(intpoints_.nquad, container);
+  solid_material()->setup(intpoints_.nquad, Discret::Elements::read_fibers(container),
+      Discret::Elements::read_coordinate_system(container));
 
   // read element thickness
   thickness_ = container.get<double>("THICK");

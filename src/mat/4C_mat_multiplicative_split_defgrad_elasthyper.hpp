@@ -126,7 +126,8 @@ namespace Mat
     void update();
 
     /// Set initial conditions for the history variables of all Gauss points
-    void setup(const int numgp, const Core::IO::InputParameterContainer& container);
+    void setup(const int numgp, const Discret::Elements::Fibers& fibers,
+        const std::optional<Discret::Elements::CoordinateSystem>& coord_system);
 
     /// Pack
     void pack_inelastic(Core::Communication::PackBuffer& data) const;
@@ -279,7 +280,8 @@ namespace Mat
     void evaluate_linearization_od(const Core::LinAlg::Tensor<double, 3, 3>& defgrd,
         double concentration, Core::LinAlg::Matrix<9, 1>& d_F_dx) override;
 
-    void setup(int numgp, const Core::IO::InputParameterContainer& container) override;
+    void setup(int numgp, const Discret::Elements::Fibers& fibers,
+        const std::optional<Discret::Elements::CoordinateSystem>& coord_system) override;
 
     void update() override;
 

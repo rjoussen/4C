@@ -17,6 +17,7 @@
 #include "4C_linalg_symmetric_tensor.hpp"
 #include "4C_linalg_tensor.hpp"
 #include "4C_linalg_vector.hpp"
+#include "4C_solid_3D_ele_fibers.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -108,7 +109,8 @@ namespace Mat
        * @param numgp Number of Gauss points
        * @param linedef Input line of the element
        */
-      virtual void setup(int numgp, const Core::IO::InputParameterContainer& container) {};
+      virtual void setup(int numgp, const Discret::Elements::Fibers& fibers,
+          const std::optional<Discret::Elements::CoordinateSystem>& coord_system) {};
 
       //! Dummy routine for setup of patient-specific materials
       virtual void setup_aaa(const Teuchos::ParameterList& params, const int eleGID) {};
@@ -711,12 +713,8 @@ namespace Mat
           std::vector<Core::LinAlg::Tensor<double, 3>>& fibervecs  ///< vector of all fiber vectors
       ) const {};
 
-      //! Read FIBERn
-      void read_fiber(const Core::IO::InputParameterContainer& container,
-          const std::string& specifier, Core::LinAlg::Tensor<double, 3>& fiber_vector);
-
       //! Read RAD-AXI-CIR
-      void read_rad_axi_cir(const Core::IO::InputParameterContainer& container,
+      void read_rad_axi_cir(const Discret::Elements::CoordinateSystem& coord_system,
           Core::LinAlg::Tensor<double, 3, 3>& locsys);
 
       //! Indicator for the chosen formulations

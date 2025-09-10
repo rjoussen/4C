@@ -109,7 +109,8 @@ Mat::StructPoro::StructPoro(Mat::PAR::StructPoro* params)
     FOUR_C_THROW("Mat::StructPoro: underlying material should be of type Mat::So3Material");
 }
 
-void Mat::StructPoro::poro_setup(int numgp, const Core::IO::InputParameterContainer& container)
+void Mat::StructPoro::poro_setup(int numgp, const Discret::Elements::Fibers& fibers,
+    const std::optional<Discret::Elements::CoordinateSystem>& coord_system)
 {
   porosity_ = std::make_shared<std::vector<double>>(numgp, params_->init_porosity_);
   surf_porosity_ = std::make_shared<std::map<int, std::vector<double>>>();

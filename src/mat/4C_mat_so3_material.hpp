@@ -15,6 +15,7 @@
 #include "4C_linalg_symmetric_tensor.hpp"
 #include "4C_linalg_tensor.hpp"
 #include "4C_material_base.hpp"
+#include "4C_solid_3D_ele_fibers.hpp"
 
 #include <Teuchos_ParameterList.hpp>
 
@@ -147,9 +148,14 @@ namespace Mat
      * @brief Set up for materials with GP data (e.g., history variables)
      *
      * @param[in] numgp   Current Gauss point
-     * @param[in] container Input parameter container
+     * @param[in] fibers A struct containing fiber directions
+     * @param[in] coord_system A struct containing local coordinate system information (if
+     * available)
      */
-    virtual void setup(int numgp, const Core::IO::InputParameterContainer& container) {}
+    virtual void setup(int numgp, const Discret::Elements::Fibers& fibers,
+        const std::optional<Discret::Elements::CoordinateSystem>& coord_system)
+    {
+    }
 
     /*!
      * @brief Post setup routine which will be called after all elements were read and set up

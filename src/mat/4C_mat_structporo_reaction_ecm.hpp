@@ -125,7 +125,8 @@ namespace Mat
 
     /// Initialize internal variables
     void setup(int numgp,  ///< number of Gauss points
-        const Core::IO::InputParameterContainer& container) override;
+        const Discret::Elements::Fibers& fibers,
+        const std::optional<Discret::Elements::CoordinateSystem>& coord_system) override;
 
     /// Return quick accessible material parameter data
     Core::Mat::PAR::Parameter* parameter() const override { return params_; }

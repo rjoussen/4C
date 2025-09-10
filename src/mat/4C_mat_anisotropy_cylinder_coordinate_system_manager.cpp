@@ -34,17 +34,12 @@ void Mat::CylinderCoordinateSystemManager::unpack(Core::Communication::UnpackBuf
 }
 
 void Mat::CylinderCoordinateSystemManager::read_from_element_line_definition(
-    const Core::IO::InputParameterContainer& container)
+    const Discret::Elements::CoordinateSystem& coord_system)
 {
-  if (container.get<std::optional<std::vector<double>>>("RAD").has_value() and
-      container.get<std::optional<std::vector<double>>>("AXI").has_value() and
-      container.get<std::optional<std::vector<double>>>("CIR").has_value())
-  {
-    read_anisotropy_fiber(container, "RAD", radial_);
-    read_anisotropy_fiber(container, "AXI", axial_);
-    read_anisotropy_fiber(container, "CIR", circumferential_);
-    is_defined_ = true;
-  }
+  radial_ = coord_system.element_system[0];
+  axial_ = coord_system.element_system[1];
+  circumferential_ = coord_system.element_system[2];
+  is_defined_ = true;
 }
 
 void Mat::CylinderCoordinateSystemManager::evaluate_local_coordinate_system(

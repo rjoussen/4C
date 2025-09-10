@@ -31,7 +31,8 @@ void Discret::Elements::SolidPoroPressureBasedEleCalc<celltype>::poro_setup(
 {
   // attention: Make sure to use the same gauss integration rule as in the solid elements in case
   // you use a material, in which the fluid terms are dependent on solid history terms
-  porostructmat.poro_setup(gauss_integration_.num_points(), container);
+  porostructmat.poro_setup(
+      gauss_integration_.num_points(), read_fibers(container), read_coordinate_system(container));
 }
 
 template <Core::FE::CellType celltype>

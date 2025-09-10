@@ -320,7 +320,8 @@ void Mat::ConstraintMixture::unpack(Core::Communication::UnpackBuffer& buffer)
 /*----------------------------------------------------------------------*
  |  Setup                                         (public)         12/10|
  *----------------------------------------------------------------------*/
-void Mat::ConstraintMixture::setup(int numgp, const Core::IO::InputParameterContainer& container)
+void Mat::ConstraintMixture::setup(int numgp, const Discret::Elements::Fibers& fibers,
+    const std::optional<Discret::Elements::CoordinateSystem>& coord_system)
 {
   if (params_->integration_ != "Implicit" && params_->integration_ != "Explicit")
     FOUR_C_THROW("unknown option for integration");
@@ -373,35 +374,22 @@ void Mat::ConstraintMixture::setup(int numgp, const Core::IO::InputParameterCont
   a4_ = std::make_shared<std::vector<Core::LinAlg::Matrix<3, 1>>>(numgp);
 
   // read local (cylindrical) cosy-directions at current element
-  auto rad_opt = container.get<std::optional<std::vector<double>>>("RAD");
-  auto axi_opt = container.get<std::optional<std::vector<double>>>("AXI");
-  auto cir_opt = container.get<std::optional<std::vector<double>>>("CIR");
-  FOUR_C_ASSERT_ALWAYS(rad_opt && axi_opt && cir_opt, "Require RAD, AXI and CIR parameters.");
-
-  const auto& rad = *rad_opt;
-  const auto& axi = *axi_opt;
-  const auto& cir = *cir_opt;
-
+  FOUR_C_ASSERT_ALWAYS(coord_system, "Require coordinate system parameters (RAD, AXI, CIR).");
 
   Core::LinAlg::Matrix<3, 3> locsys;
   // basis is local cosy with third vec e3 = circumferential dir and e2 = axial dir
-  double radnorm = 0.;
-  double axinorm = 0.;
-  double cirnorm = 0.;
-  for (int i = 0; i < 3; i++)
-  {
-    radnorm += rad[i] * rad[i];
-    axinorm += axi[i] * axi[i];
-    cirnorm += cir[i] * cir[i];
-  }
+  double radnorm = Core::LinAlg::norm2(coord_system.value().element_system[0]);
+  double axinorm = Core::LinAlg::norm2(coord_system.value().element_system[1]);
+  double cirnorm = Core::LinAlg::norm2(coord_system.value().element_system[2]);
+
   radnorm = sqrt(radnorm);
   axinorm = sqrt(axinorm);
   cirnorm = sqrt(cirnorm);
   for (int i = 0; i < 3; i++)
   {
-    locsys(i, 0) = rad[i] / radnorm;
-    locsys(i, 1) = axi[i] / axinorm;
-    locsys(i, 2) = cir[i] / cirnorm;
+    locsys(i, 0) = coord_system.value().element_system[0](i) / radnorm;
+    locsys(i, 1) = coord_system.value().element_system[1](i) / axinorm;
+    locsys(i, 2) = coord_system.value().element_system[2](i) / cirnorm;
   }
 
   const double gamma = (45.0 * std::numbers::pi) / 180.;  // angle for diagonal fibers

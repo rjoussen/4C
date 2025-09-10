@@ -113,7 +113,8 @@ namespace Mat
           const bool log_substep, Mat::ViscoplastErrorType& err_status,
           const bool update_hist_var) override;
 
-      void setup(const int numgp, const Core::IO::InputParameterContainer& container) override {};
+      void setup(const int numgp, const Discret::Elements::Fibers& fibers,
+          const std::optional<Discret::Elements::CoordinateSystem>& coord_system) override {};
 
       void pre_evaluate(int gp) override {};
 

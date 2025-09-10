@@ -174,7 +174,8 @@ namespace Mat
 
     void unpack(Core::Communication::UnpackBuffer& buffer) override;
 
-    void setup(int numgp, const Core::IO::InputParameterContainer& container) override;
+    void setup(int numgp, const Discret::Elements::Fibers& fibers,
+        const std::optional<Discret::Elements::CoordinateSystem>& coord_system) override;
 
     bool uses_extended_update() override { return true; };
 

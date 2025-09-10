@@ -186,7 +186,8 @@ void Mat::PlasticGTN::unpack(Core::Communication::UnpackBuffer& buffer)
   }
 }
 
-void Mat::PlasticGTN::setup(int numgp, const Core::IO::InputParameterContainer& container)
+void Mat::PlasticGTN::setup(int numgp, const Discret::Elements::Fibers& fibers,
+    const std::optional<Discret::Elements::CoordinateSystem>& coord_system)
 {
   elastic_strain_n_.resize(numgp);
   elastic_strain_n1_.resize(numgp);

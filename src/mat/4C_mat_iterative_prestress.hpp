@@ -80,7 +80,8 @@ namespace Mat
       return Core::Materials::m_iterative_prestress;
     }
 
-    void setup(const int numgp, const Core::IO::InputParameterContainer& container) override;
+    void setup(int numgp, const Discret::Elements::Fibers& fibers,
+        const std::optional<Discret::Elements::CoordinateSystem>& coord_system) override;
 
     [[nodiscard]] double density() const override { return child_material_->density(); }
 

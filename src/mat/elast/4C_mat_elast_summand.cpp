@@ -52,6 +52,7 @@
 #include "4C_mat_elast_volpow.hpp"
 #include "4C_mat_elast_volsussmanbathe.hpp"
 #include "4C_mat_par_bundle.hpp"
+#include "4C_solid_3D_ele_fibers.hpp"
 #include "4C_utils_enum.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -334,46 +335,19 @@ void Mat::Elastic::Summand::pack(Core::Communication::PackBuffer& data) const { 
 
 void Mat::Elastic::Summand::unpack(Core::Communication::UnpackBuffer& buffer) { return; };
 
-
-// Function which reads in the given fiber value due to the FIBER1 nomenclature
-void Mat::Elastic::Summand::read_fiber(const Core::IO::InputParameterContainer& container,
-    const std::string& specifier, Core::LinAlg::Tensor<double, 3>& fiber_vector)
-{
-  const auto& fiber_opt = container.get<std::optional<std::vector<double>>>(specifier);
-  FOUR_C_ASSERT(fiber_opt.has_value(), "Internal error: fiber vector not found.");
-  const auto& fiber1 = *fiber_opt;
-
-  double f1norm = 0.;
-  // normalization
-  for (int i = 0; i < 3; ++i)
-  {
-    f1norm += fiber1[i] * fiber1[i];
-  }
-  f1norm = sqrt(f1norm);
-
-  // fill final fiber vector
-  for (int i = 0; i < 3; ++i) fiber_vector(i) = fiber1[i] / f1norm;
-}
-
 // Function which reads in the given fiber value due to the CIR-AXI-RAD nomenclature
 void Mat::Elastic::Summand::read_rad_axi_cir(
-    const Core::IO::InputParameterContainer& container, Core::LinAlg::Tensor<double, 3, 3>& locsys)
+    const Discret::Elements::CoordinateSystem& coord_system,
+    Core::LinAlg::Tensor<double, 3, 3>& locsys)
 {
   // read local (cylindrical) cosy-directions at current element
   // basis is local cosy with third vec e3 = circumferential dir and e2 = axial dir
-  Core::LinAlg::Tensor<double, 3> fiber_rad;
-  Core::LinAlg::Tensor<double, 3> fiber_axi;
-  Core::LinAlg::Tensor<double, 3> fiber_cir;
-
-  read_fiber(container, "RAD", fiber_rad);
-  read_fiber(container, "AXI", fiber_axi);
-  read_fiber(container, "CIR", fiber_cir);
-
   for (int i = 0; i < 3; ++i)
   {
-    locsys(i, 0) = fiber_rad(i);
-    locsys(i, 1) = fiber_axi(i);
-    locsys(i, 2) = fiber_cir(i);
+    for (int j = 0; j < 3; ++j)
+    {
+      locsys(i, j) = coord_system.element_system[j](i);
+    }
   }
 }
 

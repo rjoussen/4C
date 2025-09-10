@@ -14,6 +14,7 @@
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_linalg_tensor.hpp"
 #include "4C_mat_anisotropy_cylinder_coordinate_system_manager.hpp"
+#include "4C_solid_3D_ele_fibers.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
 #include <optional>
@@ -150,7 +151,8 @@ namespace Mat
      *
      * @param container (in) : a container of data to create the corresponding element
      */
-    void read_anisotropy_from_element(const Core::IO::InputParameterContainer& container);
+    void read_anisotropy_from_element(const Discret::Elements::Fibers& fibers,
+        const std::optional<Discret::Elements::CoordinateSystem>& coord_system);
 
     /*!
      * This method extracts the Gauss-point fibers written by the elements into the ParameterList

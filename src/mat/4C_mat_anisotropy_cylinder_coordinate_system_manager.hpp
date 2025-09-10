@@ -13,6 +13,7 @@
 #include "4C_io_input_parameter_container.hpp"
 #include "4C_linalg_tensor.hpp"
 #include "4C_mat_anisotropy_cylinder_coordinate_system_provider.hpp"
+#include "4C_solid_3D_ele_fibers.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -58,9 +59,9 @@ namespace Mat
      * Reads the input parameter container of an element to get the coordinate system defined on the
      * element
      *
-     * @param container (in) : a container of data to create the corresponding element
+     * @param coord_system (in) : A coordinate system
      */
-    void read_from_element_line_definition(const Core::IO::InputParameterContainer& container);
+    void read_from_element_line_definition(const Discret::Elements::CoordinateSystem& coord_system);
 
     /*!
      * \brief Flag
@@ -117,7 +118,6 @@ namespace Mat
      * \brief unit vector in axial direction
      */
     Core::LinAlg::Tensor<double, 3> axial_;
-
 
     /*!
      * \brief unit vector in circumferential direction

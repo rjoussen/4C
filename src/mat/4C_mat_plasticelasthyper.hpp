@@ -379,7 +379,8 @@ namespace Mat
         const int eleGID, const double temp);
 
     /// setup material data
-    void setup(int numgp, const Core::IO::InputParameterContainer& container) override;
+    void setup(int numgp, const Discret::Elements::Fibers& fibers,
+        const std::optional<Discret::Elements::CoordinateSystem>& coord_system) override;
 
     /*!
      * \brief Post setup routine, will be called after the complete inout is already before the
@@ -395,7 +396,7 @@ namespace Mat
         const TSI::DissipationMode mode);
 
     /// setup plastic orthotropy tensor H
-    virtual void setup_hill_plasticity(const Core::IO::InputParameterContainer& container);
+    virtual void setup_hill_plasticity(const Discret::Elements::Fibers& fibers);
 
     /// update sumands
     void update() override

@@ -224,7 +224,7 @@ int Discret::Elements::Ale3::evaluate(Teuchos::ParameterList& params,
       if (so3mat->material_type() == Core::Materials::m_elasthyper)
       {
         so3mat = std::dynamic_pointer_cast<Mat::ElastHyper>(mat);
-        so3mat->setup(0, Core::IO::InputParameterContainer());
+        so3mat->setup(0, {}, {});
       }
       break;  // no setup for St-Venant
     }

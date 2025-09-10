@@ -31,7 +31,7 @@ bool Discret::Elements::Ale2::read_element(const std::string& eletype, const std
   std::shared_ptr<Mat::So3Material> so3mat = std::dynamic_pointer_cast<Mat::So3Material>(mat);
 
   // call material setup
-  so3mat->setup(numgp, container);
+  so3mat->setup(numgp, {}, {});
   return true;
 }
 

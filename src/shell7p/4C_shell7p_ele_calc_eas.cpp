@@ -120,7 +120,8 @@ void Discret::Elements::Shell7pEleCalcEas<distype>::setup(Core::Elements::Elemen
       locking_types_.total, Shell::Internal::numdofperelement<distype>);
 
   //  set up of materials with GP data (e.g., history variables)
-  solid_material.setup(intpoints_midsurface_.num_points(), container);
+  solid_material.setup(intpoints_midsurface_.num_points(), read_fibers(container),
+      read_coordinate_system(container));
 }
 
 template <Core::FE::CellType distype>

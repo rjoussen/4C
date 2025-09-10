@@ -295,7 +295,8 @@ namespace Mat
     }
 
     /// setup
-    void setup(int numgp, const Core::IO::InputParameterContainer& container) override;
+    void setup(int numgp, const Discret::Elements::Fibers& fibers,
+        const std::optional<Discret::Elements::CoordinateSystem>& coord_system) override;
 
     /*!
      * Post setup routine that is executed after the input. This class will forward the call to all

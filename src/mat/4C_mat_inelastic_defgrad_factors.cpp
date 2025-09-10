@@ -2548,8 +2548,9 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::update()
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void Mat::InelasticDefgradTransvIsotropElastViscoplast::setup(
-    const int numgp, const Core::IO::InputParameterContainer& container)
+void Mat::InelasticDefgradTransvIsotropElastViscoplast::setup(const int numgp,
+    const Discret::Elements::Fibers& fibers,
+    const std::optional<Discret::Elements::CoordinateSystem>& coord_system)
 {
   // auxiliaries
   std::vector<Core::LinAlg::Tensor<double, 3>> temp_vec;
@@ -2580,13 +2581,13 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::setup(
   time_step_quantities_.current_defgrad_.resize(numgp, time_step_quantities_.current_defgrad_[0]);
 
   // call corresponding method of the viscoplastic law
-  viscoplastic_law_->setup(numgp, container);
+  viscoplastic_law_->setup(numgp, fibers, coord_system);
 
   // read fiber and structural tensor in the case of transverse isotropy
   if (parameter()->bool_transv_isotropy())
   {
     // read fiber via the fiber reader (hyperelastic transversely isotropic material)
-    fiber_reader_.setup(numgp, container);
+    fiber_reader_.setup(numgp, fibers, coord_system);
     fiber_reader_.get_fiber_vecs(temp_vec);
     m_ = Core::LinAlg::make_matrix<3, 1>(temp_vec.back());
   }

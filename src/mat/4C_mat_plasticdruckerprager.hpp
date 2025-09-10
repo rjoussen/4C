@@ -105,7 +105,8 @@ namespace Mat
     {
       return std::make_shared<PlasticDruckerPrager>(*this);
     }
-    void setup(int numgp, const Core::IO::InputParameterContainer& container) override;
+    void setup(int numgp, const Discret::Elements::Fibers& fibers,
+        const std::optional<Discret::Elements::CoordinateSystem>& coord_system) override;
     void update() override;
     /**
      * \brief Evaluate the stresses from the strains in the material
