@@ -28,6 +28,8 @@ function(_set_up_benchmark_test_target _module_under_test _target)
 
   target_link_libraries(${_target} PRIVATE benchmark::benchmark)
 
+  target_link_libraries(${_target} PRIVATE unittests_common)
+
   add_test(
     NAME ${_target}
     COMMAND

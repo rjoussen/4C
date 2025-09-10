@@ -7,8 +7,8 @@
 
 #include <gtest/gtest.h>
 
-#include "4C_deal_ii_create_discretization_helper_test.hpp"
 #include "4C_deal_ii_triangulation.hpp"
+#include "4C_unittest_utils_create_discretization_helper_test.hpp"
 
 #include <deal.II/distributed/fully_distributed_tria.h>
 #include <deal.II/fe/fe_q.h>
