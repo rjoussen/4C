@@ -83,8 +83,8 @@ namespace PoroElast
   //@}
 
 
-  /// set the poroelast parameters
-  Core::IO::InputSpec set_valid_parameters();
+  /// poroelast parameters
+  Core::IO::InputSpec valid_parameters();
 
 }  // namespace PoroElast
 

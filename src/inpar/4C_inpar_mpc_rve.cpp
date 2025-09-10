@@ -13,7 +13,7 @@
 #include "4C_io_input_spec_builders.hpp"
 FOUR_C_NAMESPACE_OPEN
 // set the mpc specific parameters
-Core::IO::InputSpec Inpar::RveMpc::set_valid_parameters()
+Core::IO::InputSpec Inpar::RveMpc::valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
   Core::IO::InputSpec spec = group("MULTI POINT CONSTRAINTS",

@@ -11,7 +11,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-Core::IO::InputSpec Core::GeometricSearch::set_valid_parameters()
+Core::IO::InputSpec Core::GeometricSearch::valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
   Core::IO::InputSpec spec = group("BOUNDINGVOLUME STRATEGY",

@@ -12,7 +12,7 @@ FOUR_C_NAMESPACE_OPEN
 
 
 
-Core::IO::InputSpec Inpar::Wear::set_valid_parameters()
+Core::IO::InputSpec Inpar::Wear::valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
 

@@ -100,7 +100,7 @@ namespace BeamInteraction::Potential
   };
 
 
-  Core::IO::InputSpec set_valid_parameters();
+  Core::IO::InputSpec valid_parameters();
 
   void set_valid_conditions(std::vector<Core::Conditions::ConditionDefinition>& condlist);
 

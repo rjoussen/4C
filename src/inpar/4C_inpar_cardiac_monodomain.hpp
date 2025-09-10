@@ -26,8 +26,8 @@ namespace Inpar
 {
   namespace ElectroPhysiology
   {
-    /// set the elch parameters
-    Core::IO::InputSpec set_valid_parameters();
+    /// elch parameters
+    Core::IO::InputSpec valid_parameters();
 
     /// set specific elch conditions
     void set_valid_conditions(std::vector<Core::Conditions::ConditionDefinition>& condlist);

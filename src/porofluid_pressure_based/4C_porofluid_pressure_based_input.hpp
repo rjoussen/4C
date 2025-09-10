@@ -56,8 +56,8 @@ namespace PoroPressureBased
     continue_anyway  ///< continue anyway
   };
 
-  /// set the valid parameters
-  std::vector<Core::IO::InputSpec> set_valid_parameters_porofluid();
+  /// valid parameters
+  std::vector<Core::IO::InputSpec> valid_parameters_porofluid();
 
 }  // namespace PoroPressureBased
 

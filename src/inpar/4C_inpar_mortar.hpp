@@ -136,8 +136,8 @@ namespace Inpar
       consistent_all,       ///< use triangulation GPs for all elements
     };
 
-    /// set the mortar parameters
-    std::vector<Core::IO::InputSpec> set_valid_parameters();
+    /// mortar parameters
+    std::vector<Core::IO::InputSpec> valid_parameters();
 
     /// set specific mortar conditions
     void set_valid_conditions(std::vector<Core::Conditions::ConditionDefinition>& condlist);

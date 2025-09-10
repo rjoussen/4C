@@ -185,8 +185,8 @@ namespace Inpar
     void beam_interaction_conditions_get_all(
         std::vector<Inpar::BeamInteraction::BeamInteractionConditions>& interactions);
 
-    /// set the beam interaction parameters
-    std::vector<Core::IO::InputSpec> set_valid_parameters();
+    /// beam interaction parameters
+    std::vector<Core::IO::InputSpec> valid_parameters();
 
     /// set beam interaction specific conditions
     void set_valid_conditions(std::vector<Core::Conditions::ConditionDefinition>& condlist);

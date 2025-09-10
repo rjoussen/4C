@@ -14,7 +14,7 @@ FOUR_C_NAMESPACE_OPEN
 
 
 
-std::vector<Core::IO::InputSpec> Inpar::XFEM::set_valid_parameters()
+std::vector<Core::IO::InputSpec> Inpar::XFEM::valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
   std::vector<Core::IO::InputSpec> specs;

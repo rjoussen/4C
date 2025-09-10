@@ -47,8 +47,8 @@ namespace ArtDyn
     impltype_pressure_based
   };
 
-  /// set the arterial dynamic parameters
-  Core::IO::InputSpec set_valid_parameters();
+  /// arterial dynamic parameters
+  Core::IO::InputSpec valid_parameters();
 }  // namespace ArtDyn
 
 namespace ArteryNetwork
@@ -76,8 +76,8 @@ namespace ArteryNetwork
     node_to_point            // 1D node-to-point in 2D/3D
   };
 
-  /// set the artnet parameters
-  Core::IO::InputSpec set_valid_parameters();
+  /// artnet parameters
+  Core::IO::InputSpec valid_parameters();
 
   /// set specific artnet conditions
   void set_valid_conditions(std::vector<Core::Conditions::ConditionDefinition>& condlist);

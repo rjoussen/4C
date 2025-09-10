@@ -15,7 +15,7 @@ FOUR_C_NAMESPACE_OPEN
 
 
 
-std::vector<Core::IO::InputSpec> BeamContact::set_valid_parameters()
+std::vector<Core::IO::InputSpec> BeamContact::valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
 

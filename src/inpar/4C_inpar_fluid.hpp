@@ -424,8 +424,8 @@ namespace Inpar
       gradreco_l2
     };
 
-    /// set the fluid parameters
-    std::vector<Core::IO::InputSpec> set_valid_parameters();
+    /// fluid parameters
+    std::vector<Core::IO::InputSpec> valid_parameters();
 
     /// set fluid-specific conditions
     void set_valid_conditions(std::vector<Core::Conditions::ConditionDefinition>& condlist);
@@ -434,8 +434,8 @@ namespace Inpar
 
   namespace LowMach
   {
-    /// set the low mach number parameters
-    Core::IO::InputSpec set_valid_parameters();
+    /// low mach number parameters
+    Core::IO::InputSpec valid_parameters();
   }  // namespace LowMach
 
 }  // namespace Inpar

@@ -14,7 +14,7 @@ FOUR_C_NAMESPACE_OPEN
 
 
 
-std::vector<Core::IO::InputSpec> Inpar::FLUID::set_valid_parameters()
+std::vector<Core::IO::InputSpec> Inpar::FLUID::valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
 
@@ -1454,7 +1454,7 @@ std::vector<Core::IO::InputSpec> Inpar::FLUID::set_valid_parameters()
 
 
 
-Core::IO::InputSpec Inpar::LowMach::set_valid_parameters()
+Core::IO::InputSpec Inpar::LowMach::valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
   Core::IO::InputSpec spec = group("LOMA CONTROL",

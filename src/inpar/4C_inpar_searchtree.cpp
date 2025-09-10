@@ -12,7 +12,7 @@ FOUR_C_NAMESPACE_OPEN
 
 
 
-Core::IO::InputSpec Inpar::Geo::set_valid_parameters()
+Core::IO::InputSpec Inpar::Geo::valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
   Core::IO::InputSpec spec = group("SEARCH TREE",

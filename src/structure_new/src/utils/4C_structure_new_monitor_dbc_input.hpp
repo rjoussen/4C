@@ -32,8 +32,8 @@ namespace Solid
       data
     };
 
-    /// set the valid parameters related to writing of output at runtime
-    Core::IO::InputSpec set_valid_parameters();
+    /// valid parameters related to writing of output at runtime
+    Core::IO::InputSpec valid_parameters();
 
   }  // namespace IOMonitorStructureDBC
 }  // namespace Solid

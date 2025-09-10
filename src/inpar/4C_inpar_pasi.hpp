@@ -34,8 +34,8 @@ namespace Inpar
       partitioned_twowaycoup_disprelaxaitken  //!< two-way coupling with dynamic aitken relaxation
     };
 
-    //! set valid parameters for particle structure interaction
-    Core::IO::InputSpec set_valid_parameters();
+    //! valid parameters for particle structure interaction
+    Core::IO::InputSpec valid_parameters();
 
   }  // namespace PaSI
 

@@ -79,8 +79,8 @@ namespace EHL
   };
 
 
-  /// set the ehl parameters
-  std::vector<Core::IO::InputSpec> set_valid_parameters();
+  /// ehl parameters
+  std::vector<Core::IO::InputSpec> valid_parameters();
 
   /// set specific ehl conditions
   void set_valid_conditions(std::vector<Core::Conditions::ConditionDefinition>& condlist);

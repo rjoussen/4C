@@ -23,10 +23,8 @@ namespace Inpar
   namespace IO
   {
     /*! \brief Define valid parameter for global IO control
-     *
-     * @param[in/out] list Parameter list to be filled with valid parameters and their defaults
      */
-    std::vector<Core::IO::InputSpec> set_valid_parameters();
+    std::vector<Core::IO::InputSpec> valid_parameters();
 
   }  // namespace IO
 }  // namespace Inpar

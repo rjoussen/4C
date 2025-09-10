@@ -14,7 +14,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Core::IO::InputSpec Inpar::PROBLEMTYPE::set_valid_parameters()
+Core::IO::InputSpec Inpar::PROBLEMTYPE::valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
 

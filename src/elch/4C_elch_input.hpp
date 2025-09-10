@@ -81,8 +81,8 @@ namespace ElCh
     initial_relaxation  //!< initial relaxation mode
   };
 
-  /// set the elch parameters
-  std::vector<Core::IO::InputSpec> set_valid_parameters();
+  /// elch parameters
+  std::vector<Core::IO::InputSpec> valid_parameters();
 
   /// set specific elch conditions
   void set_valid_conditions(std::vector<Core::Conditions::ConditionDefinition>& condlist);

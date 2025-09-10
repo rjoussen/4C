@@ -22,8 +22,8 @@ namespace Inpar
 {
   namespace VolMortar
   {
-    /// set the volmortar parameters
-    Core::IO::InputSpec set_valid_parameters();
+    /// volmortar parameters
+    Core::IO::InputSpec valid_parameters();
 
   }  // namespace VolMortar
 }  // namespace Inpar

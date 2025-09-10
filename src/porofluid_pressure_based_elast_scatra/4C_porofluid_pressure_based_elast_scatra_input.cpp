@@ -18,7 +18,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-std::vector<Core::IO::InputSpec> PoroPressureBased::set_valid_parameters_porofluid_elast_scatra()
+std::vector<Core::IO::InputSpec> PoroPressureBased::valid_parameters_porofluid_elast_scatra()
 {
   using namespace Core::IO::InputSpecBuilders;
   std::vector<Core::IO::InputSpec> specs;

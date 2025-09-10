@@ -77,8 +77,8 @@ namespace BeamContact
     boct_spbb   ///< spherical bounding boxes
   };
 
-  /// set the beam contact parameters
-  std::vector<Core::IO::InputSpec> set_valid_parameters();
+  /// beam contact parameters
+  std::vector<Core::IO::InputSpec> valid_parameters();
 
   /**
    * \brief Set beam beam-to-beam specific conditions.

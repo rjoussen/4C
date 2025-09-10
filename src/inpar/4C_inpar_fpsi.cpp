@@ -13,7 +13,7 @@ FOUR_C_NAMESPACE_OPEN
 
 
 
-Core::IO::InputSpec Inpar::FPSI::set_valid_parameters()
+Core::IO::InputSpec Inpar::FPSI::valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
   Core::IO::InputSpec spec = group("FPSI DYNAMIC",

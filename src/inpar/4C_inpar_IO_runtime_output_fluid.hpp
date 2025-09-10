@@ -26,8 +26,8 @@ namespace Inpar
   {
     namespace FLUID
     {
-      /// set the valid parameters related to writing of output at runtime
-      Core::IO::InputSpec set_valid_parameters();
+      /// valid parameters related to writing of output at runtime
+      Core::IO::InputSpec valid_parameters();
 
     }  // namespace FLUID
   }  // namespace IORuntimeOutput

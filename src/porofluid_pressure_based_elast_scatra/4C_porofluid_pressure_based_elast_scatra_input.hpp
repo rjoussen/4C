@@ -36,8 +36,8 @@ namespace PoroPressureBased
     twoway_monolithic
   };
 
-  /// set valid parameters for porofluid-elasticity with scalar transport problems
-  std::vector<Core::IO::InputSpec> set_valid_parameters_porofluid_elast_scatra();
+  /// valid parameters for porofluid-elasticity with scalar transport problems
+  std::vector<Core::IO::InputSpec> valid_parameters_porofluid_elast_scatra();
 
   /// set valid conditions for porofluid-elasticity with scalar transport problems
   void set_valid_conditions_porofluid_elast_scatra(

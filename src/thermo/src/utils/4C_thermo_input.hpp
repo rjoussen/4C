@@ -172,8 +172,8 @@ namespace Thermo
     calcerror_byfunct
   };
 
-  /// set the thermo parameters
-  std::vector<Core::IO::InputSpec> set_valid_parameters();
+  /// thermo parameters
+  std::vector<Core::IO::InputSpec> valid_parameters();
 
   /// set thermo specific conditions
   void set_valid_conditions(std::vector<Core::Conditions::ConditionDefinition>& condlist);

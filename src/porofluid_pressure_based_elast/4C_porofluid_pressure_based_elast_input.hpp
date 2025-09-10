@@ -41,8 +41,8 @@ namespace PoroPressureBased
     aitken
   };
 
-  /// set the valid parameters for porofluid-elasticity problems
-  std::vector<Core::IO::InputSpec> set_valid_parameters_porofluid_elast();
+  /// valid parameters for porofluid-elasticity problems
+  std::vector<Core::IO::InputSpec> valid_parameters_porofluid_elast();
 
 }  // namespace PoroPressureBased
 

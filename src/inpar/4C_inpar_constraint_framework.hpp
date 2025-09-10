@@ -64,9 +64,9 @@ namespace Inpar::Constraints
   };
 
   /**
-  \brief Set constraint parameters
+  \brief Constraint parameters
   */
-  Core::IO::InputSpec set_valid_parameters();
+  Core::IO::InputSpec valid_parameters();
 }  // namespace Inpar::Constraints
 
 FOUR_C_NAMESPACE_CLOSE

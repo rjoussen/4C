@@ -16,7 +16,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-std::vector<Core::IO::InputSpec> SSTI::set_valid_parameters()
+std::vector<Core::IO::InputSpec> SSTI::valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
 

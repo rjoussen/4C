@@ -95,8 +95,8 @@ namespace Inpar::S2I
     regularization_trigonometrical
   };
 
-  //! set valid parameters for scatra-scatra interface coupling
-  std::vector<Core::IO::InputSpec> set_valid_parameters();
+  //! valid parameters for scatra-scatra interface coupling
+  std::vector<Core::IO::InputSpec> valid_parameters();
 
   //! set valid conditions for scatra-scatra interface coupling
   void set_valid_conditions(std::vector<Core::Conditions::ConditionDefinition>& condlist);

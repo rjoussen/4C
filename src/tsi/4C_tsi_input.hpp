@@ -96,8 +96,8 @@ namespace TSI
 
   //@}
 
-  /// set the tsi parameters
-  std::vector<Core::IO::InputSpec> set_valid_parameters();
+  /// tsi parameters
+  std::vector<Core::IO::InputSpec> valid_parameters();
 
 }  // namespace TSI
 

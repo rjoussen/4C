@@ -15,7 +15,7 @@
 #include "4C_linalg_sparseoperator.hpp"
 FOUR_C_NAMESPACE_OPEN
 
-std::vector<Core::IO::InputSpec> SSI::set_valid_parameters()
+std::vector<Core::IO::InputSpec> SSI::valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
 

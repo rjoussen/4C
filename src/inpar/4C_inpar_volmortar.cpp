@@ -13,7 +13,7 @@ FOUR_C_NAMESPACE_OPEN
 
 
 
-Core::IO::InputSpec Inpar::VolMortar::set_valid_parameters()
+Core::IO::InputSpec Inpar::VolMortar::valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
 

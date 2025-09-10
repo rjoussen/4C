@@ -24,7 +24,7 @@ void Inpar::BeamInteraction::beam_interaction_conditions_get_all(
       Inpar::BeamInteraction::BeamInteractionConditions::beam_to_solid_surface_contact};
 }
 
-std::vector<Core::IO::InputSpec> Inpar::BeamInteraction::set_valid_parameters()
+std::vector<Core::IO::InputSpec> Inpar::BeamInteraction::valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
 
@@ -195,7 +195,7 @@ std::vector<Core::IO::InputSpec> Inpar::BeamInteraction::set_valid_parameters()
 
   /*----------------------------------------------------------------------*/
   /* parameters for beam to solid contact */
-  std::vector<Core::IO::InputSpec> beam_to_solid_contact = BeamToSolid::set_valid_parameters();
+  std::vector<Core::IO::InputSpec> beam_to_solid_contact = BeamToSolid::valid_parameters();
   specs.insert(specs.end(), beam_to_solid_contact.begin(), beam_to_solid_contact.end());
   return specs;
 }

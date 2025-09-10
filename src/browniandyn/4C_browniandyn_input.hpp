@@ -27,8 +27,8 @@ namespace BrownianDynamics
     vague
   };
 
-  /// set the brownian dynamic parameters
-  Core::IO::InputSpec set_valid_parameters();
+  /// brownian dynamic parameters
+  Core::IO::InputSpec valid_parameters();
 
 }  // namespace BrownianDynamics
 

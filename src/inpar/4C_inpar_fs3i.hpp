@@ -45,8 +45,8 @@ namespace Inpar
       coupling_nonmatch
     };
 
-    /// set the fs3i parameters
-    std::vector<Core::IO::InputSpec> set_valid_parameters();
+    /// fs3i parameters
+    std::vector<Core::IO::InputSpec> valid_parameters();
 
   }  // namespace FS3I
 

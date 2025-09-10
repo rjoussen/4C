@@ -25,8 +25,8 @@ namespace Beam
 {
   namespace IORuntimeOutput
   {
-    /// set the valid parameters related to writing of output at runtime
-    Core::IO::InputSpec set_valid_parameters();
+    /// valid parameters related to writing of output at runtime
+    Core::IO::InputSpec valid_parameters();
 
   }  // namespace IORuntimeOutput
 }  // namespace Beam

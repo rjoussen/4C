@@ -14,7 +14,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-Core::IO::InputSpec ArtDyn::set_valid_parameters()
+Core::IO::InputSpec ArtDyn::valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
   Core::IO::InputSpec spec = group("ARTERIAL DYNAMIC",
@@ -67,7 +67,7 @@ Core::IO::InputSpec ArtDyn::set_valid_parameters()
 
 
 
-Core::IO::InputSpec ArteryNetwork::set_valid_parameters()
+Core::IO::InputSpec ArteryNetwork::valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
   Core::IO::InputSpec spec = group("COUPLED REDUCED-D AIRWAYS AND TISSUE DYNAMIC",

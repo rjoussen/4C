@@ -21,7 +21,7 @@ namespace Inpar
     {
       /*----------------------------------------------------------------------*
        *----------------------------------------------------------------------*/
-      Core::IO::InputSpec set_valid_parameters()
+      Core::IO::InputSpec valid_parameters()
       {
         using namespace Core::IO::InputSpecBuilders;
 

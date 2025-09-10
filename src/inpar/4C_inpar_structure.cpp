@@ -60,7 +60,7 @@ namespace Inpar
       FOUR_C_THROW("Unknown kinematic type {}", kinem_type);
     }
 
-    std::vector<Core::IO::InputSpec> set_valid_parameters()
+    std::vector<Core::IO::InputSpec> valid_parameters()
     {
       using namespace Core::IO::InputSpecBuilders;
 

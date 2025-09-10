@@ -69,8 +69,8 @@ namespace Inpar
                            ///< steps
     };
 
-    /// set the wear parameters
-    Core::IO::InputSpec set_valid_parameters();
+    /// wear parameters
+    Core::IO::InputSpec valid_parameters();
   }  // namespace Wear
 }  // namespace Inpar
 

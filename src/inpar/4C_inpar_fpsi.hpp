@@ -62,8 +62,8 @@ namespace Inpar
       porofluid
     };
 
-    /// set the fpsi parameters
-    Core::IO::InputSpec set_valid_parameters();
+    /// fpsi parameters
+    Core::IO::InputSpec valid_parameters();
 
     /// set specific fpsi conditions
     void set_valid_conditions(std::vector<Core::Conditions::ConditionDefinition>& condlist);

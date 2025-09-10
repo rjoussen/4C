@@ -13,7 +13,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-Core::IO::InputSpec PoroElast::set_valid_parameters()
+Core::IO::InputSpec PoroElast::valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
   Core::IO::InputSpec spec = group("POROELASTICITY DYNAMIC",

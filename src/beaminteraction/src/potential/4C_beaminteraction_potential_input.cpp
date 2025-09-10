@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
 
 
 
-Core::IO::InputSpec BeamInteraction::Potential::set_valid_parameters()
+Core::IO::InputSpec BeamInteraction::Potential::valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
   using namespace Core::IO::InputSpecBuilders::Validators;

@@ -60,7 +60,7 @@ namespace ALE
   };
 
   /// Defines all valid parameters for ale problem
-  Core::IO::InputSpec set_valid_parameters();
+  Core::IO::InputSpec valid_parameters();
 
   /// Defines ale specific conditions
   void set_valid_conditions(std::vector<Core::Conditions::ConditionDefinition>& condlist);

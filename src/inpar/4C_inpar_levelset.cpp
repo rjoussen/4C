@@ -13,7 +13,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-std::vector<Core::IO::InputSpec> Inpar::LevelSet::set_valid_parameters()
+std::vector<Core::IO::InputSpec> Inpar::LevelSet::valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
 

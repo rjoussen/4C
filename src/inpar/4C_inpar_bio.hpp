@@ -26,8 +26,8 @@ namespace Inpar
 {
   namespace BioFilm
   {
-    /// set the biofilm parameters
-    Core::IO::InputSpec set_valid_parameters();
+    /// biofilm parameters
+    Core::IO::InputSpec valid_parameters();
 
     /// set specific biofilm conditions
     void set_valid_conditions(std::vector<Core::Conditions::ConditionDefinition>& condlist);

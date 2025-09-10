@@ -14,7 +14,7 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | set the particle parameters                                               |
  *---------------------------------------------------------------------------*/
-std::vector<Core::IO::InputSpec> Inpar::PARTICLE::set_valid_parameters()
+std::vector<Core::IO::InputSpec> Inpar::PARTICLE::valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
   using namespace Core::IO::InputSpecBuilders::Validators;

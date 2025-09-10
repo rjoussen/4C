@@ -23,10 +23,8 @@ namespace Inpar
   namespace PROBLEMTYPE
   {
     /*! \brief Define valid parameters
-     *
-     * @param[in/out] list Parameter list to be filled with valid parameters and their defaults
      */
-    Core::IO::InputSpec set_valid_parameters();
+    Core::IO::InputSpec valid_parameters();
 
     /// create map of problem name and problem type enum
     std::map<std::string, Core::ProblemType> string_to_problem_type_map();

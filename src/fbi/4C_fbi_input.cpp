@@ -13,7 +13,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-std::vector<Core::IO::InputSpec> FBI::set_valid_parameters()
+std::vector<Core::IO::InputSpec> FBI::valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
 
@@ -71,7 +71,7 @@ std::vector<Core::IO::InputSpec> FBI::set_valid_parameters()
               .default_value = FBI::BeamToFluidMeshtingMortarShapefunctions::none}),
   };
   // Add the geometry pair input parameters.
-  GeometryPair::set_valid_parameters_line_to3_d(beam_to_fluid_meshtying);
+  GeometryPair::valid_parameters_line_to3_d(beam_to_fluid_meshtying);
   specs.push_back(group("FLUID BEAM INTERACTION/BEAM TO FLUID MESHTYING", beam_to_fluid_meshtying,
       {.required = false}));
 

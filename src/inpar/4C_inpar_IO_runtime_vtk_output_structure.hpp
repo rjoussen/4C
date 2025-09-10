@@ -26,8 +26,8 @@ namespace Inpar
   {
     namespace Solid
     {
-      /// set the valid parameters related to writing of VTK output at runtime
-      Core::IO::InputSpec set_valid_parameters();
+      /// valid parameters related to writing of VTK output at runtime
+      Core::IO::InputSpec valid_parameters();
 
     }  // namespace Solid
   }  // namespace IORuntimeOutput

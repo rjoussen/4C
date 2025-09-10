@@ -29,8 +29,8 @@ namespace Inpar
       Quadtree2D
     };
 
-    /// set the searchtree parameters
-    Core::IO::InputSpec set_valid_parameters();
+    /// searchtree parameters
+    Core::IO::InputSpec valid_parameters();
 
   }  // namespace Geo
 

@@ -60,8 +60,8 @@ namespace Lubrication
     norm_inf         //!< Maximum/infinity norm
   };
 
-  /// set the lubrication parameters
-  Core::IO::InputSpec set_valid_parameters();
+  /// lubrication parameters
+  Core::IO::InputSpec valid_parameters();
 
 }  // namespace Lubrication
 

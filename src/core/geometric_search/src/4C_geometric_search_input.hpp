@@ -17,8 +17,8 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Core::GeometricSearch
 {
-  //! set the parameters for the geometric search strategy
-  Core::IO::InputSpec set_valid_parameters();
+  //! the parameters for the geometric search strategy
+  Core::IO::InputSpec valid_parameters();
 
 }  // namespace Core::GeometricSearch
 

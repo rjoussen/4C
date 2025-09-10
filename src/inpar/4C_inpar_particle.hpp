@@ -250,8 +250,8 @@ namespace Inpar
       LogNormalRadiusDistribution
     };
 
-    //! set the particle parameters
-    std::vector<Core::IO::InputSpec> set_valid_parameters();
+    //! particle parameters
+    std::vector<Core::IO::InputSpec> valid_parameters();
 
     //! set the particle conditions
     void set_valid_conditions(std::vector<Core::Conditions::ConditionDefinition>& condlist);

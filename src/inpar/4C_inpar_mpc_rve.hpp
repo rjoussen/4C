@@ -70,8 +70,8 @@ namespace Inpar::RveMpc
     Gamma_ym,
 
   };
-  /// set the multi point constraint parameters
-  Core::IO::InputSpec set_valid_parameters();
+  /// multi point constraint parameters
+  Core::IO::InputSpec valid_parameters();
 
   /// set multi point constraint specific conditions
   void set_valid_conditions(std::vector<Core::Conditions::ConditionDefinition>& condlist);

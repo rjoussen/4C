@@ -11,7 +11,7 @@
 #include "4C_rebalance.hpp"
 FOUR_C_NAMESPACE_OPEN
 
-Core::IO::InputSpec Core::Rebalance::set_valid_parameters()
+Core::IO::InputSpec Core::Rebalance::valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
   Core::IO::InputSpec spec = group("MESH PARTITIONING",

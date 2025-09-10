@@ -36,8 +36,8 @@ namespace SSTI
     elch
   };
 
-  /// set the ssti parameters
-  std::vector<Core::IO::InputSpec> set_valid_parameters();
+  /// ssti parameters
+  std::vector<Core::IO::InputSpec> valid_parameters();
 
   /// set specific ssti conditions
   void set_valid_conditions(std::vector<Core::Conditions::ConditionDefinition>& condlist);

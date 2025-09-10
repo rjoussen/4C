@@ -12,7 +12,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-Core::IO::InputSpec Inpar::BioFilm::set_valid_parameters()
+Core::IO::InputSpec Inpar::BioFilm::valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
   Core::IO::InputSpec spec = group("BIOFILM CONTROL",

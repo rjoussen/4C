@@ -19,8 +19,8 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Core::LinearSolver
 {
-  //! set the parameters for the linear solver
-  std::vector<Core::IO::InputSpec> set_valid_parameters();
+  //! the parameters for the linear solver
+  std::vector<Core::IO::InputSpec> valid_parameters();
 
 }  // namespace Core::LinearSolver
 

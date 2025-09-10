@@ -122,8 +122,8 @@ namespace CONTACT
     partitioning  ///< partitioning approach
   };
 
-  /// set the contact parameters
-  Core::IO::InputSpec set_valid_parameters();
+  /// contact parameters
+  Core::IO::InputSpec valid_parameters();
 
 }  // namespace CONTACT
 

@@ -109,8 +109,8 @@ namespace Inpar
 
   namespace LevelSet
   {
-    /// set the levelset parameters
-    std::vector<Core::IO::InputSpec> set_valid_parameters();
+    /// levelset parameters
+    std::vector<Core::IO::InputSpec> valid_parameters();
 
     /// set specific level set conditions
     void set_valid_conditions(std::vector<Core::Conditions::ConditionDefinition>& condlist);

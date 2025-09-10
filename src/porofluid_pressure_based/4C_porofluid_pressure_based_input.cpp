@@ -14,7 +14,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-std::vector<Core::IO::InputSpec> PoroPressureBased::set_valid_parameters_porofluid()
+std::vector<Core::IO::InputSpec> PoroPressureBased::valid_parameters_porofluid()
 {
   using namespace Core::IO::InputSpecBuilders;
 

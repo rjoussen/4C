@@ -11,9 +11,9 @@
 FOUR_C_NAMESPACE_OPEN
 
 /*---------------------------------------------------------------------------*
- | set valid parameters for pasi                                             |
+ | valid parameters for pasi                                             |
  *---------------------------------------------------------------------------*/
-Core::IO::InputSpec Inpar::PaSI::set_valid_parameters()
+Core::IO::InputSpec Inpar::PaSI::valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
   Core::IO::InputSpec spec = group("PASI DYNAMIC",

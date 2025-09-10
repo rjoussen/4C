@@ -12,7 +12,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-Core::IO::InputSpec BrownianDynamics::set_valid_parameters()
+Core::IO::InputSpec BrownianDynamics::valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
   Core::IO::InputSpec spec = group("BROWNIAN DYNAMICS",

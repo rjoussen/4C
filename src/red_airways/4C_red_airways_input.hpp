@@ -38,8 +38,8 @@ namespace Airway
     Nonlinear,
   };
 
-  /// set the reduced airways parameters
-  Core::IO::InputSpec set_valid_parameters();
+  /// reduced airways parameters
+  Core::IO::InputSpec valid_parameters();
 
   /// set specific reduced airways conditions
   void set_valid_conditions(std::vector<Core::Conditions::ConditionDefinition>& condlist);

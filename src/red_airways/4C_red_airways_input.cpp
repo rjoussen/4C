@@ -128,7 +128,7 @@ bool Discret::Elements::RedInterAcinarDep::read_element(const std::string& elety
   return true;
 }
 
-Core::IO::InputSpec Airway::set_valid_parameters()
+Core::IO::InputSpec Airway::valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
   Core::IO::InputSpec spec = group("REDUCED DIMENSIONAL AIRWAYS DYNAMIC",

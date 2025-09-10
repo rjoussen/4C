@@ -52,8 +52,8 @@ namespace Inpar
       resp_standard
     };
 
-    /// set the 0Dcardiovascular parameters
-    std::vector<Core::IO::InputSpec> set_valid_parameters();
+    /// 0Dcardiovascular parameters
+    std::vector<Core::IO::InputSpec> valid_parameters();
 
     /// set specific 0Dcardiovascular conditions
     void set_valid_conditions(std::vector<Core::Conditions::ConditionDefinition>& condlist);

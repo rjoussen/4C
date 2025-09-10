@@ -12,9 +12,9 @@
 FOUR_C_NAMESPACE_OPEN
 
 /*------------------------------------------------------------------------*
- | set valid parameters for scatra-scatra interface coupling   fang 01/16 |
+ | valid parameters for scatra-scatra interface coupling   fang 01/16 |
  *------------------------------------------------------------------------*/
-std::vector<Core::IO::InputSpec> Inpar::S2I::set_valid_parameters()
+std::vector<Core::IO::InputSpec> Inpar::S2I::valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
 

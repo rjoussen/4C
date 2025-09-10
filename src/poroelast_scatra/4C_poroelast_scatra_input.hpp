@@ -27,8 +27,8 @@ namespace PoroElastScaTra
     Part_TwoWay
   };
 
-  /// set the poroscatra parameters
-  Core::IO::InputSpec set_valid_parameters();
+  /// poroscatra parameters
+  Core::IO::InputSpec valid_parameters();
 
 }  // namespace PoroElastScaTra
 

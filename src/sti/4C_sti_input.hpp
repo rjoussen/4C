@@ -47,8 +47,8 @@ namespace STI
     elch
   };
 
-  //! set valid parameters for scatra-thermo interaction
-  std::vector<Core::IO::InputSpec> set_valid_parameters();
+  //! valid parameters for scatra-thermo interaction
+  std::vector<Core::IO::InputSpec> valid_parameters();
 
   //! set valid conditions for scatra-thermo interaction
   void set_valid_conditions(std::vector<Core::Conditions::ConditionDefinition>& condlist);

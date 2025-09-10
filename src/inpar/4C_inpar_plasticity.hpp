@@ -20,8 +20,8 @@ namespace Inpar
 {
   namespace Plasticity
   {
-    /// set the plasticity parameters
-    Core::IO::InputSpec set_valid_parameters();
+    /// plasticity parameters
+    Core::IO::InputSpec valid_parameters();
 
   }  // namespace Plasticity
 

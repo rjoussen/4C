@@ -13,7 +13,7 @@
 #include "4C_thermo_input.hpp"
 FOUR_C_NAMESPACE_OPEN
 
-std::vector<Core::IO::InputSpec> Inpar::IO::set_valid_parameters()
+std::vector<Core::IO::InputSpec> Inpar::IO::valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
 

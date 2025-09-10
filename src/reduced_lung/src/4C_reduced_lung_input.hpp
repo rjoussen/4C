@@ -161,8 +161,8 @@ namespace ReducedLung
       double viscosity;
     } air_properties;
   };
-  /// set the reduced airways parameters
-  Core::IO::InputSpec set_valid_parameters();
+  /// reduced airways parameters
+  Core::IO::InputSpec valid_parameters();
 
 }  // namespace ReducedLung
 

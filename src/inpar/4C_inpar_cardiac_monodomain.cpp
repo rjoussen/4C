@@ -11,7 +11,7 @@
 #include "4C_io_input_spec_builders.hpp"
 FOUR_C_NAMESPACE_OPEN
 
-Core::IO::InputSpec Inpar::ElectroPhysiology::set_valid_parameters()
+Core::IO::InputSpec Inpar::ElectroPhysiology::valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
   Core::IO::InputSpec spec = group("CARDIAC MONODOMAIN CONTROL",

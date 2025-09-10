@@ -221,7 +221,7 @@ namespace Inpar
     /**
     \brief Set the beam-to-solid parameters
     */
-    std::vector<Core::IO::InputSpec> set_valid_parameters();
+    std::vector<Core::IO::InputSpec> valid_parameters();
 
     /**
      * \brief Set beam beam-to-solid specific conditions.

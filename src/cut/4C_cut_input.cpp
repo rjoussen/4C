@@ -15,7 +15,7 @@ FOUR_C_NAMESPACE_OPEN
 
 
 
-Core::IO::InputSpec Cut::set_valid_parameters()
+Core::IO::InputSpec Cut::valid_parameters()
 {
   using namespace Cut;
   using namespace Core::IO::InputSpecBuilders;

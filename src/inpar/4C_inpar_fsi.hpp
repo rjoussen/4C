@@ -144,8 +144,8 @@ namespace Inpar
 
     //@}
 
-    /// set the fsi parameters
-    std::vector<Core::IO::InputSpec> set_valid_parameters();
+    /// fsi parameters
+    std::vector<Core::IO::InputSpec> valid_parameters();
 
     /// set specific fsi conditions
     void set_valid_conditions(std::vector<Core::Conditions::ConditionDefinition>& condlist);

@@ -143,9 +143,9 @@ namespace Core::LinearSolver
   }
 
 
-  std::vector<Core::IO::InputSpec> set_valid_parameters()
+  std::vector<Core::IO::InputSpec> valid_parameters()
   {
-    // set valid parameters for solver blocks
+    // valid parameters for solver blocks
 
     // Note: the maximum number of solver blocks is hardwired here. If you change this,
     // don't forget to edit the corresponding parts in globalproblems.cpp, too.

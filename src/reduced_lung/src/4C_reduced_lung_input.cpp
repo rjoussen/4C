@@ -19,7 +19,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-Core::IO::InputSpec ReducedLung::set_valid_parameters()
+Core::IO::InputSpec ReducedLung::valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
 

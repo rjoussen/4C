@@ -14,7 +14,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-std::vector<Core::IO::InputSpec> ElCh::set_valid_parameters()
+std::vector<Core::IO::InputSpec> ElCh::valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
 

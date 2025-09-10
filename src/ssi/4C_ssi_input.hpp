@@ -56,8 +56,8 @@ namespace SSI
     elch
   };
 
-  /// set the ssi parameters
-  std::vector<Core::IO::InputSpec> set_valid_parameters();
+  /// ssi parameters
+  std::vector<Core::IO::InputSpec> valid_parameters();
 
   /// set specific ssi conditions
   void set_valid_conditions(std::vector<Core::Conditions::ConditionDefinition>& condlist);

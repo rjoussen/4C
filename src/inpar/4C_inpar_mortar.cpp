@@ -13,7 +13,7 @@ FOUR_C_NAMESPACE_OPEN
 
 
 
-std::vector<Core::IO::InputSpec> Inpar::Mortar::set_valid_parameters()
+std::vector<Core::IO::InputSpec> Inpar::Mortar::valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
 

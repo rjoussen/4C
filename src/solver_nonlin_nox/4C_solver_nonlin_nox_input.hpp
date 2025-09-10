@@ -19,8 +19,8 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace NOX
 {
-  /// set the nonlinear solver parameters
-  std::vector<Core::IO::InputSpec> set_valid_parameters();
+  /// nonlinear solver parameters
+  std::vector<Core::IO::InputSpec> valid_parameters();
 
 }  // namespace NOX
 

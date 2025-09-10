@@ -12,7 +12,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-std::vector<Core::IO::InputSpec> TSI::set_valid_parameters()
+std::vector<Core::IO::InputSpec> TSI::valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
 

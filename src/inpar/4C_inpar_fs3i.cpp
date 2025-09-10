@@ -13,7 +13,7 @@ FOUR_C_NAMESPACE_OPEN
 
 
 
-std::vector<Core::IO::InputSpec> Inpar::FS3I::set_valid_parameters()
+std::vector<Core::IO::InputSpec> Inpar::FS3I::valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
 

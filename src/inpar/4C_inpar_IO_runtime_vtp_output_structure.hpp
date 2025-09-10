@@ -32,8 +32,8 @@ namespace Inpar
       vague
     };
 
-    /// set the valid parameters related to writing of VTP output at runtime
-    Core::IO::InputSpec set_valid_parameters();
+    /// valid parameters related to writing of VTP output at runtime
+    Core::IO::InputSpec valid_parameters();
 
   }  // namespace IORuntimeVTPStructure
 }  // namespace Inpar
