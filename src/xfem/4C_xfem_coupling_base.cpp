@@ -279,13 +279,13 @@ void XFEM::CouplingBase::set_element_conditions()
       if (cond_type == Inpar::XFEM::CouplingCond_NONE) continue;
 
       // get all conditions with given condition name
-      std::vector<Core::Conditions::Condition*> mycond;
+      std::vector<const Core::Conditions::Condition*> mycond;
       Core::Conditions::find_element_conditions(cutele, conditions_to_copy_[cond], mycond);
 
-      std::vector<Core::Conditions::Condition*> mynewcond;
+      std::vector<const Core::Conditions::Condition*> mynewcond;
       get_condition_by_coupling_id(mycond, coupling_id_, mynewcond);
 
-      Core::Conditions::Condition* cond_unique = nullptr;
+      const Core::Conditions::Condition* cond_unique = nullptr;
 
       // safety checks
       if (mynewcond.size() == 0)
@@ -330,8 +330,8 @@ void XFEM::CouplingBase::set_element_conditions()
 }
 
 void XFEM::CouplingBase::get_condition_by_coupling_id(
-    const std::vector<Core::Conditions::Condition*>& mycond, const int coupling_id,
-    std::vector<Core::Conditions::Condition*>& mynewcond)
+    const std::vector<const Core::Conditions::Condition*>& mycond, const int coupling_id,
+    std::vector<const Core::Conditions::Condition*>& mynewcond)
 {
   mynewcond.clear();
 

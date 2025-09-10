@@ -4237,9 +4237,8 @@ void FLD::FluidImplicitTimeInt::set_initial_flow_field(
         std::vector<int> nodedofset = discret_->dof(lnode);
 
         // check whether we have a pbc condition on this node
-        std::vector<Core::Conditions::Condition*> mypbc;
-
-        lnode->get_condition("SurfacePeriodic", mypbc);
+        std::vector<const Core::Conditions::Condition*> mypbc =
+            discret_->get_conditions_on_node("SurfacePeriodic", lnode);
 
         // check whether a periodic boundary condition is active on this node
         if (mypbc.size() > 0)

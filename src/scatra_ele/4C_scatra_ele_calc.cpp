@@ -117,7 +117,7 @@ int Discret::Elements::ScaTraEleCalc<distype, probdim>::setup_calc(
   ele_ = ele;
 
   // rotationally symmetric periodic bc's: do setup for current element
-  rotsymmpbc_->setup(ele);
+  rotsymmpbc_->setup(discretization, ele);
 
   std::shared_ptr<Core::Mat::Material> material = ele->material();
   if (material->material_type() == Core::Materials::m_scatra)
@@ -837,7 +837,7 @@ template <Core::FE::CellType distype, int probdim>
 void Discret::Elements::ScaTraEleCalc<distype, probdim>::body_force(
     const Core::Elements::Element* ele)
 {
-  std::vector<Core::Conditions::Condition*> myneumcond;
+  std::vector<const Core::Conditions::Condition*> myneumcond;
 
   // check whether all nodes have a unique Neumann condition
   switch (nsd_ele_)

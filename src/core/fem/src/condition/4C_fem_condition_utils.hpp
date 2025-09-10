@@ -164,7 +164,8 @@ namespace Core::Conditions
     \param condition (out) all conditions that cover all element nodes
   */
   void find_element_conditions(const Core::Elements::Element* ele,
-      const std::string& condition_name, std::vector<Core::Conditions::Condition*>& condition);
+      const std::string& condition_name,
+      std::vector<const Core::Conditions::Condition*>& condition);
 
   /// row map with nodes from condition
   std::shared_ptr<Core::LinAlg::Map> condition_node_row_map(

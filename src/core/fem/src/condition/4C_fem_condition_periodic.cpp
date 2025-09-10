@@ -645,12 +645,13 @@ void Core::Conditions::PeriodicBoundaryConditions::add_connectivity(
           Core::Nodes::Node* actnode = discret_->g_node(masterid);
 
           // get all periodic boundary conditions on this node
-          std::vector<Core::Conditions::Condition*> thiscond;
-          actnode->get_condition("SurfacePeriodic", thiscond);
+
+          std::vector<const Core::Conditions::Condition*> thiscond =
+              discret_->get_conditions_on_node("SurfacePeriodic", actnode);
 
           if (thiscond.empty())
           {
-            actnode->get_condition("LinePeriodic", thiscond);
+            thiscond = discret_->get_conditions_on_node("LinePeriodic", actnode);
           }
 
           // loop them and check, whether this is a pbc pure master node

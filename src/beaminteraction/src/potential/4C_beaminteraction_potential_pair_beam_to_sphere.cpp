@@ -100,7 +100,8 @@ bool BeamInteraction::BeamToSpherePotentialPair<numnodes, numnodalvalues>::evalu
     Core::LinAlg::SerialDenseVector* forcevec1, Core::LinAlg::SerialDenseVector* forcevec2,
     Core::LinAlg::SerialDenseMatrix* stiffmat11, Core::LinAlg::SerialDenseMatrix* stiffmat12,
     Core::LinAlg::SerialDenseMatrix* stiffmat21, Core::LinAlg::SerialDenseMatrix* stiffmat22,
-    const std::vector<Core::Conditions::Condition*> chargeconds, const double k, const double m)
+    const std::vector<const Core::Conditions::Condition*> chargeconds, const double k,
+    const double m)
 {
   // nothing to do in case of k==0.0
   if (k == 0.0) return false;

@@ -178,7 +178,7 @@ int Discret::Elements::FluidEleCalcPoro<distype>::evaluate(Discret::Elements::Fl
 
   // rotationally symmetric periodic bc's: do setup for current element
   // (only required to be set up for routines "extract_values_from_global_vector")
-  Base::rotsymmpbc_->setup(ele);
+  Base::rotsymmpbc_->setup(discretization, ele);
 
   // ---------------------------------------------------------------------
   // call routine for calculation of body force in element nodes,
@@ -334,7 +334,7 @@ int Discret::Elements::FluidEleCalcPoro<distype>::evaluate_od(Discret::Elements:
 
   // rotationally symmetric periodic bc's: do setup for current element
   // (only required to be set up for routines "extract_values_from_global_vector")
-  Base::rotsymmpbc_->setup(ele);
+  Base::rotsymmpbc_->setup(discretization, ele);
 
   // construct views
   Core::LinAlg::Matrix<(nsd_ + 1) * nen_, nsd_ * nen_> elemat_1(elemat1, true);

@@ -218,20 +218,6 @@ namespace Core::Nodes
     }
 
     /*!
-    \brief Get all conditions with a certain name
-
-    Get all conditions with a certain name. A vector of ptrs to all conditions
-    with name name is returned in out. The number of conditions found with name
-    name is out.size(). out.size() is 0 if no condition with that name is found.
-
-    \param name (in): Name of condition
-    \param out  (out): vector of pointers to all conditions with that name
-
-    */
-    void get_condition(
-        const std::string& name, std::vector<Core::Conditions::Condition*>& out) const;
-
-    /*!
     \brief Delete all conditions set to this node
     */
     void clear_conditions() { condition_.clear(); }

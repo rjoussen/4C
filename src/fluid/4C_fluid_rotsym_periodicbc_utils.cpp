@@ -47,12 +47,14 @@ double FLD::get_component_of_rotated_vector_field(const int idf,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool FLD::is_slave_node_of_rot_sym_pbc(const Core::Nodes::Node* node, double& rotangle)
+bool FLD::is_slave_node_of_rot_sym_pbc(
+    const Core::FE::Discretization& discretization, const Core::Nodes::Node* node, double& rotangle)
 {
   // get periodic surface/line boundary conditions
-  std::vector<Core::Conditions::Condition*> pbc;
-  node->get_condition("SurfacePeriodic", pbc);
-  if (pbc.empty()) node->get_condition("LinePeriodic", pbc);
+  std::vector<const Core::Conditions::Condition*> pbc =
+      discretization.get_conditions_on_node("SurfacePeriodic", node);
+  if (pbc.empty()) pbc = discretization.get_conditions_on_node("LinePeriodic", node);
+
 
   bool isrotsymslave(false);
   for (unsigned int j = 0; j < pbc.size(); ++j)

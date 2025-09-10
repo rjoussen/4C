@@ -65,7 +65,7 @@ namespace FLD
     }
 
     /// prepare the class for this element
-    void setup(Core::Elements::Element* ele)
+    void setup(const Core::FE::Discretization& discretization, Core::Elements::Element* ele)
     {
       // clean everything
       rotangle_ = 0.0;
@@ -77,7 +77,7 @@ namespace FLD
 
       for (int inode = 0; inode < elenumnodereal; inode++)
       {
-        if (FLD::is_slave_node_of_rot_sym_pbc(nodes[inode], rotangle_))
+        if (FLD::is_slave_node_of_rot_sym_pbc(discretization, nodes[inode], rotangle_))
         {
           // store the lid of this node
           slavenodelids_.push_back(inode);

@@ -1066,11 +1066,11 @@ void XFEM::MeshCouplingNeumann::do_condition_specific_setup()
 
   // Check if Inflow Stabilisation is active
   if (!cutterele_conds_.size()) FOUR_C_THROW("cutterele_conds_.size = 0!");
-  Core::Conditions::Condition* cond = (cutterele_conds_[0]).second;
+  const Core::Conditions::Condition* cond = (cutterele_conds_[0]).second;
   auto inflow_stab = cond->parameters().get<bool>("INFLOW_STAB");
   for (auto& cutterele_cond : cutterele_conds_)
   {
-    Core::Conditions::Condition* cond = cutterele_cond.second;
+    const Core::Conditions::Condition* cond = cutterele_cond.second;
     auto this_inflow = cond->parameters().get<bool>("INFLOW_STAB");
     if (inflow_stab != this_inflow)
       FOUR_C_THROW(

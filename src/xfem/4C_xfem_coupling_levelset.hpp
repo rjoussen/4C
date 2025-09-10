@@ -498,7 +498,7 @@ namespace XFEM
 
     void set_condition_specific_parameters() override;
 
-    void get_condition_by_robin_id(const std::vector<Core::Conditions::Condition*>& mycond,
+    void get_condition_by_robin_id(const std::vector<const Core::Conditions::Condition*>& mycond,
         const int coupling_id, std::vector<const Core::Conditions::Condition*>& mynewcond);
 
     //! Initializes configurationmap

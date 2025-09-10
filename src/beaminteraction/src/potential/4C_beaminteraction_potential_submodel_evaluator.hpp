@@ -164,8 +164,8 @@ namespace BeamInteraction
 
       void get_beam_potential_conditions_applied_to_this_element_pair(
           BeamInteraction::BeamPotentialPair const& elementpair,
-          std::vector<Core::Conditions::Condition*>& conditions_element1,
-          std::vector<Core::Conditions::Condition*>& conditions_element2) const;
+          std::vector<const Core::Conditions::Condition*>& conditions_element1,
+          std::vector<const Core::Conditions::Condition*>& conditions_element2) const;
 
       //! @}
 

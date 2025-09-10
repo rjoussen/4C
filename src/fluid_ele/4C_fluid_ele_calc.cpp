@@ -228,7 +228,7 @@ int Discret::Elements::FluidEleCalc<distype, enrtype>::evaluate(Discret::Element
   // TEUCHOS_FUNC_TIME_MONITOR( "FLD::FluidEleCalc::Evaluate" );
 
   // rotationally symmetric periodic bc's: do setup for current element
-  rotsymmpbc_->setup(ele);
+  rotsymmpbc_->setup(discretization, ele);
 
   // construct views
   Core::LinAlg::Matrix<(nsd_ + 1) * nen_, (nsd_ + 1) * nen_> elemat_1(elemat1, true);
@@ -1409,7 +1409,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::body_force(Discret::Elem
     Core::LinAlg::Matrix<nsd_, nen_>& ebofoaf, Core::LinAlg::Matrix<nsd_, nen_>& eprescpgaf,
     Core::LinAlg::Matrix<nen_, 1>& escabofoaf)
 {
-  std::vector<Core::Conditions::Condition*> myneumcond;
+  std::vector<const Core::Conditions::Condition*> myneumcond;
 
   // check whether all nodes have a unique Neumann condition
   if (nsd_ == 3)
@@ -1505,7 +1505,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::body_force(Discret::Elem
   // at low Mach number
   if (physicaltype == Inpar::FLUID::loma)
   {
-    std::vector<Core::Conditions::Condition*> myscatraneumcond;
+    std::vector<const Core::Conditions::Condition*> myscatraneumcond;
 
     // check whether all nodes have a unique Neumann condition
     if (nsd_ == 3)
@@ -8482,7 +8482,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::inflow_element(Core::Ele
 {
   is_inflow_ele_ = false;
 
-  std::vector<Core::Conditions::Condition*> myinflowcond;
+  std::vector<const Core::Conditions::Condition*> myinflowcond;
 
   // check whether all nodes have a unique inflow condition
   Core::Conditions::find_element_conditions(ele, "TurbulentInflowSection", myinflowcond);

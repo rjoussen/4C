@@ -229,7 +229,7 @@ void XFEM::LevelSetCoupling::set_level_set_boolean_type()
     FOUR_C_THROW(
         "no element condition for LevelSetCouplingBC set. Not possible to extract BOOLEANTYPE!");
 
-  Core::Conditions::Condition* cond = (cutterele_conds_[0]).second;
+  const Core::Conditions::Condition* cond = (cutterele_conds_[0]).second;
   const std::string& booleantype = cond->parameters().get<std::string>("BOOLEANTYPE");
 
   if (booleantype == "none")
@@ -255,7 +255,7 @@ bool XFEM::LevelSetCoupling::apply_complementary_operator()
     FOUR_C_THROW(
         "no element condition for LevelSetCouplingBC set. Not possible to extract BOOLEANTYPE!");
 
-  Core::Conditions::Condition* cond = (cutterele_conds_[0]).second;
+  const Core::Conditions::Condition* cond = (cutterele_conds_[0]).second;
   bool complementary = cond->parameters().get<bool>("COMPLEMENTARY");
 
   return complementary;
@@ -379,7 +379,7 @@ bool XFEM::LevelSetCoupling::set_level_set_field(const double time)
 
   // get the function from the first element
   const int lid = 0;
-  Core::Conditions::Condition* cond = cutterele_conds_[lid].second;
+  const Core::Conditions::Condition* cond = cutterele_conds_[lid].second;
   const int func_no = cond->parameters().get<int>("LEVELSETFIELDNO");
 
   // loop all nodes on the processor
@@ -1085,11 +1085,11 @@ void XFEM::LevelSetCouplingNeumann::do_condition_specific_setup()
 
   // Check if Inflow Stabilisation is active
   if (!cutterele_conds_.size()) FOUR_C_THROW("cutterele_conds_.size = 0!");
-  Core::Conditions::Condition* cond = (cutterele_conds_[0]).second;
+  const Core::Conditions::Condition* cond = (cutterele_conds_[0]).second;
   auto inflow_stab = cond->parameters().get<bool>("INFLOW_STAB");
   for (auto& cutterele_cond : cutterele_conds_)
   {
-    Core::Conditions::Condition* cond = cutterele_cond.second;
+    const Core::Conditions::Condition* cond = cutterele_cond.second;
     auto this_inflow = cond->parameters().get<bool>("INFLOW_STAB");
     if (inflow_stab != this_inflow)
       FOUR_C_THROW(
@@ -1230,7 +1230,8 @@ void XFEM::LevelSetCouplingNavierSlip::set_element_conditions()
 
   if (cutterele_conds_.size() == 0) FOUR_C_THROW("call set_element_conditions() first!");
 
-  Core::Conditions::Condition* cond = cutterele_conds_[0].second;  // get condition of first element
+  const Core::Conditions::Condition* cond =
+      cutterele_conds_[0].second;  // get condition of first element
 
   // Get robin coupling IDs
   const auto maybe_robin_dirichlet_id =
@@ -1292,7 +1293,7 @@ void XFEM::LevelSetCouplingNavierSlip::set_element_specific_conditions(
     Core::Elements::Element* cutele = cutter_dis_->l_col_element(lid);
 
     // get all conditions with given condition name
-    std::vector<Core::Conditions::Condition*> mycond;
+    std::vector<const Core::Conditions::Condition*> mycond;
     Core::Conditions::find_element_conditions(cutele, cond_name, mycond);
 
     std::vector<const Core::Conditions::Condition*> mynewcond;
@@ -1387,7 +1388,8 @@ void XFEM::LevelSetCouplingNavierSlip::set_condition_specific_parameters()
 {
   if (cutterele_conds_.size() == 0) FOUR_C_THROW("call set_element_conditions() first!");
 
-  Core::Conditions::Condition* cond = cutterele_conds_[0].second;  // get condition of first element
+  const Core::Conditions::Condition* cond =
+      cutterele_conds_[0].second;  // get condition of first element
 
   // Get the scaling factor for the slip length
   sliplength_ = cond->parameters().get<double>("SLIPCOEFFICIENT");
@@ -1407,7 +1409,7 @@ void XFEM::LevelSetCouplingNavierSlip::set_condition_specific_parameters()
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
 void XFEM::LevelSetCouplingNavierSlip::get_condition_by_robin_id(
-    const std::vector<Core::Conditions::Condition*>& mycond, const int coupling_id,
+    const std::vector<const Core::Conditions::Condition*>& mycond, const int coupling_id,
     std::vector<const Core::Conditions::Condition*>& mynewcond)
 {
   mynewcond.clear();
@@ -1415,7 +1417,7 @@ void XFEM::LevelSetCouplingNavierSlip::get_condition_by_robin_id(
   // select the conditions with specified "ROBIN_ID"
   for (size_t i = 0; i < mycond.size(); ++i)
   {
-    Core::Conditions::Condition* cond = mycond[i];
+    const Core::Conditions::Condition* cond = mycond[i];
     const auto maybe_id = cond->parameters().get<std::optional<int>>("ROBIN_ID");
     const int id = maybe_id.value_or(-1) - 1;
 
