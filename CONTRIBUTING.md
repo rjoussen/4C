@@ -35,7 +35,7 @@ To ensure a high quality of the repository, we enforce some pre-commit hooks in 
 
 ### 3. Code development
 
-Add your changes to the codebase. Please add unit tests or input-file tests that capture your changes. For further information, see our documentation on [testing](https://4c-multiphysics.github.io/4C/documentation/4Ctesting.html).
+Add your changes to the codebase. Please add unit tests or input-file tests that capture your changes. For further information, see our documentation on [testing](https://4c-multiphysics.github.io/4C/documentation/developer_guide/testing.html).
 
 #### Coding style
 Your changes are checked for a number of coding style conventions when creating a commit. These conventions are also verified when you submit a pull request. Please annotate your C++ source code with [Doxygen](https://doxygen.nl/index.html) comments.
@@ -44,7 +44,7 @@ Your changes are checked for a number of coding style conventions when creating 
 Please provide meaningful commit messages.
 
 ### 5. Submit a pull request
-Once you submitted your pull request, checks will run automatically to verify that you changes do not break existing functionality. We will review your changes before it can be merged into the `main` branch.
+Once you submitted your pull request, checks will run automatically to verify that your changes do not break existing functionality. We will review your changes before it can be merged into the `main` branch.
 We desire a clean commit history. This may require rebasing the commits before merging.
 
 ## Documentation
