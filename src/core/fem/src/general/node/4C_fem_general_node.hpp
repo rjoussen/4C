@@ -302,6 +302,13 @@ namespace Core::Nodes
       element_[size] = eleptr;
     }
 
+    /**
+     * Access the discretization managing this node. This may be a nullptr if the node is not
+     * part of a discretization.
+     */
+    const FE::Discretization* discretization() const { return discretization_; }
+    FE::Discretization* discretization() { return discretization_; }
+
    protected:
     //! a unique global id
     int id_;
@@ -316,6 +323,8 @@ namespace Core::Nodes
     //! some conditions e.g. BCs
     std::multimap<std::string, std::shared_ptr<Core::Conditions::Condition>> condition_;
 
+    //! Refer to discretization managing this node
+    FE::Discretization* discretization_{};
   };  // class Node
 }  // namespace Core::Nodes
 
