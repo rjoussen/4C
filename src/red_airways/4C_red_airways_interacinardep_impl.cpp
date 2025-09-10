@@ -25,6 +25,14 @@
 FOUR_C_NAMESPACE_OPEN
 
 
+static const Core::Conditions::Condition* get_first_condition(
+    const Core::FE::Discretization& discretization, const Core::Nodes::Node* node,
+    const std::string& name)
+{
+  auto conds = discretization.get_conditions_on_node(name, node);
+  return conds.empty() ? nullptr : conds.front();
+}
+
 /*----------------------------------------------------------------------*
  |                                                         ismail 01/10 |
  *----------------------------------------------------------------------*/
@@ -187,14 +195,14 @@ void Discret::Elements::InterAcinarDepImpl<distype>::evaluate_terminal_bc(RedInt
   {
     if (ele->nodes()[i]->owner() == myrank)
     {
-      if (ele->nodes()[i]->get_condition("RedAirwayPrescribedCond"))
+      if (get_first_condition(discretization, ele->nodes()[i], "RedAirwayPrescribedCond"))
       {
         std::string Bc;
         double BCin = 0.0;
-        if (ele->nodes()[i]->get_condition("RedAirwayPrescribedCond"))
+        if (get_first_condition(discretization, ele->nodes()[i], "RedAirwayPrescribedCond"))
         {
-          Core::Conditions::Condition* condition =
-              ele->nodes()[i]->get_condition("RedAirwayPrescribedCond");
+          const Core::Conditions::Condition* condition =
+              get_first_condition(discretization, ele->nodes()[i], "RedAirwayPrescribedCond");
           // Get the type of prescribed bc
           Bc = (condition->parameters().get<std::string>("boundarycond"));
 
@@ -255,8 +263,8 @@ void Discret::Elements::InterAcinarDepImpl<distype>::evaluate_terminal_bc(RedInt
         {
           if (Bc == "VolumeDependentPleuralPressure")
           {
-            Core::Conditions::Condition* pplCond =
-                ele->nodes()[i]->get_condition("RedAirwayVolDependentPleuralPressureCond");
+            const Core::Conditions::Condition* pplCond = get_first_condition(
+                discretization, ele->nodes()[i], "RedAirwayVolDependentPleuralPressureCond");
             double Pp_np = 0.0;
             if (pplCond)
             {

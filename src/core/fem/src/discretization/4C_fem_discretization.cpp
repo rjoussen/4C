@@ -603,6 +603,18 @@ void Core::FE::Discretization::get_condition(
       count == num, "Mismatch in number of conditions found in discretization {}!", name_);
 }
 
+std::vector<const Core::Conditions::Condition*> Core::FE::Discretization::get_conditions_on_node(
+    const std::string& name, const Core::Nodes::Node* node) const
+{
+  std::vector<const Core::Conditions::Condition*> out;
+  for (auto [begin, end] = condition_.equal_range(name);
+      const auto& cond : std::ranges::subrange(begin, end) | std::views::values)
+  {
+    if (cond->contains_node(node->id())) out.emplace_back(cond.get());
+  }
+  return out;
+}
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 bool Core::FE::Discretization::has_condition(const std::string& name) const
