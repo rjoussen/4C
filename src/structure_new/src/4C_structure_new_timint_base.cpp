@@ -368,8 +368,7 @@ void Solid::TimeInt::Base::select_energy_types_to_be_written()
             dynamic_cast<Solid::ModelEvaluator::Constraint const&>(
                 int_ptr_->model_eval_ptr()->evaluator(Inpar::Solid::model_constraints));
 
-        if (constraints_evaluator.have_sub_model_type(
-                Constraints::SubModelType::submodel_embeddedmesh))
+        if (constraints_evaluator.have_sub_model_type(Constraints::SubModelType::embeddedmesh))
         {
           evaldata.insert_energy_type_to_be_considered(Solid::embedded_mesh_penalty_potential);
         }

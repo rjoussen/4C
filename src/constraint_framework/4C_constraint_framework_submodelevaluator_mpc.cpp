@@ -151,12 +151,6 @@ void Constraints::SubmodelEvaluator::RveMultiPointConstraintManager::check_input
 
       break;
     }
-    case Constraints::EnforcementStrategy::none:
-    {
-      FOUR_C_THROW("The constraint enforcement method needs to be specified.");
-
-      break;
-    }
   }
 
   // Conditions definition

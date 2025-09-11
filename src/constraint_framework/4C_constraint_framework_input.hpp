@@ -26,30 +26,23 @@ namespace Constraints
   /// type of the submodel for constraintmodels
   enum class SubModelType
   {
-    submodel_undefined,    ///< default
-    submodel_pbc_rve,      ///< apply periodic displacement bcs on
-    submodel_embeddedmesh  ///< apply embedded mesh bcs
+    undefined,    ///< default
+    pbc_rve,      ///< apply periodic displacement bcs on
+    embeddedmesh  ///< apply embedded mesh bcs
   };
 
   /// type of employed constraint enforcement strategy
   enum class EnforcementStrategy
   {
-    //! Default value.
-    none,
-    //! Penalty method.
-    penalty,
-    //! Lagrange Multiplier approach
-    lagrange
+    penalty,  ///< Penalty based constraint enforcement
+    lagrange  ///< Lagrange Multiplier based constraint enforcement
   };
 
   namespace EmbeddedMesh
   {
     enum class CouplingStrategy
     {
-      //! Default value
-      none,
-      //! Mortar method
-      mortar
+      mortar  ///< Mortar based coupling
     };
 
     /**
@@ -58,14 +51,10 @@ namespace Constraints
      */
     enum class SolidToSolidMortarShapefunctions
     {
-      //! Default value.
-      none,
-      //! Linear Lagrange elements.
-      quad4,
-      //! Quadratic Lagrange elements.
-      quad9,
-      //! Quadratic NURBS elements.
-      nurbs9
+
+      quad4,  ///< Linear Lagrange elements
+      quad9,  ///< Quadratic Lagrange elements
+      nurbs9  ///< Quadratic NURBS elements
     };
   }  // namespace EmbeddedMesh
 
@@ -75,10 +64,8 @@ namespace Constraints
     /// Definition Type of the MultiPoint Constraint
     enum ConstraintType
     {
-      none,
       coupled_equation,  ///< Manually enter the dofs as coupled equation
       periodic_rve       ///< Automatically apply the MPCs that describe periodicity
-
     };
 
     /// Definition Type of Coupled Equation

@@ -344,11 +344,6 @@ void Constraints::EmbeddedMesh::mortar_shape_functions_to_number_of_lagrange_val
 {
   switch (shape_function)
   {
-    case Constraints::EmbeddedMesh::SolidToSolidMortarShapefunctions::none:
-    {
-      n_lambda_node = 0;
-      return;
-    }
     case Constraints::EmbeddedMesh::SolidToSolidMortarShapefunctions::quad4:
     {
       n_lambda_node = 1 * 3;

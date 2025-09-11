@@ -27,20 +27,17 @@ std::vector<Core::IO::InputSpec> Constraints::valid_parameters()
       {
 
           parameter<EmbeddedMesh::CouplingStrategy>("COUPLING_STRATEGY",
-              {.description = "Strategy to couple background and overlapping mesh",
-                  .default_value = EmbeddedMesh::CouplingStrategy::none}),
+              {.description = "Strategy to couple background and overlapping mesh"}),
 
 
           parameter<EmbeddedMesh::SolidToSolidMortarShapefunctions>("MORTAR_SHAPE_FUNCTION",
               {.description = "Shape functions that should be use in case of coupling using the "
-                              "Mortar/Lagrange  Multiplier method ",
-                  .default_value = EmbeddedMesh::SolidToSolidMortarShapefunctions::none}),
+                              "Mortar/Lagrange  Multiplier method "}),
 
 
           parameter<EnforcementStrategy>("CONSTRAINT_ENFORCEMENT",
               {.description =
-                      "Apply a constraint enforcement in the embedded mesh coupling strategy",
-                  .default_value = EnforcementStrategy::none}),
+                      "Apply a constraint enforcement in the embedded mesh coupling strategy"}),
 
           parameter<double>("CONSTRAINT_ENFORCEMENT_PENALTYPARAM",
               {.description =
@@ -58,13 +55,9 @@ std::vector<Core::IO::InputSpec> Constraints::valid_parameters()
               {.description = "Method of definition of the reference points of an RVE",
                   .default_value = MultiPoint::RveReferenceDeformationDefinition::automatic}),
 
-          deprecated_selection<EnforcementStrategy>("ENFORCEMENT",
-              {
-                  {"penalty_method", EnforcementStrategy::penalty},
-                  {"lagrange_multiplier_method", EnforcementStrategy::lagrange},
-              },
-              {.description = "Method to enforce the multi point constraint",
-                  .default_value = EnforcementStrategy::penalty}),
+          parameter<EnforcementStrategy>(
+              "ENFORCEMENT", {.description = "Method to enforce the multi point constraint",
+                                 .default_value = EnforcementStrategy::penalty}),
 
           parameter<double>("PENALTY_PARAM",
               {.description = "Value of the penalty parameter", .default_value = 1e5})},

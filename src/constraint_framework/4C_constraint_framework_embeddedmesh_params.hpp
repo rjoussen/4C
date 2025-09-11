@@ -23,18 +23,16 @@ namespace Constraints::EmbeddedMesh
   struct EmbeddedMeshParams
   {
     //! Strategy for coupling the embedded meshes
-    CouplingStrategy embedded_mesh_coupling_strategy_ = CouplingStrategy::none;
+    CouplingStrategy embedded_mesh_coupling_strategy_;
 
     //! Constraint enforcement method
-    EnforcementStrategy embedded_mesh_constraint_enforcement_ = EnforcementStrategy::none;
+    EnforcementStrategy embedded_mesh_constraint_enforcement_;
 
     //! Penalty parameter for coupling enforcement
     double embedded_mesh_constraint_penalty_parameter_ = 0.0;
 
     //! Shape function for the mortar Lagrange-multiplicators
-    enum Constraints::EmbeddedMesh::SolidToSolidMortarShapefunctions
-        embedded_mesh_mortar_shape_function_ =
-            Constraints::EmbeddedMesh::SolidToSolidMortarShapefunctions::none;
+    SolidToSolidMortarShapefunctions embedded_mesh_mortar_shape_function_;
 
     //! Nodal Dof set strategy for XFEM
     Cut::NodalDofSetStrategy xfem_nodal_dof_set_strategy_ =

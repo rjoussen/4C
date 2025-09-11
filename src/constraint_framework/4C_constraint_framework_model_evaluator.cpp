@@ -67,11 +67,11 @@ void Solid::ModelEvaluator::Constraint::set_sub_model_types()
   if (linePeriodicRve.size() > 0 || surfPeriodicRve.size() > 0 ||
       pointLinearCoupledEquation.size() > 0)
   {
-    submodeltypes_.insert(Constraints::SubModelType::submodel_pbc_rve);
+    submodeltypes_.insert(Constraints::SubModelType::pbc_rve);
   }
   if (embeddedMeshConditions.size() > 0)
   {
-    submodeltypes_.insert(Constraints::SubModelType::submodel_embeddedmesh);
+    submodeltypes_.insert(Constraints::SubModelType::embeddedmesh);
   }
 }
 
@@ -86,7 +86,7 @@ void Solid::ModelEvaluator::Constraint::create_sub_model_evaluators()
   {
     switch (submodeltype)
     {
-      case Constraints::SubModelType::submodel_pbc_rve:
+      case Constraints::SubModelType::pbc_rve:
       {
         sub_model_vec_ptr_.emplace_back(
             std::make_shared<Constraints::SubmodelEvaluator::RveMultiPointConstraintManager>(
@@ -94,7 +94,7 @@ void Solid::ModelEvaluator::Constraint::create_sub_model_evaluators()
 
         break;
       }
-      case Constraints::SubModelType::submodel_embeddedmesh:
+      case Constraints::SubModelType::embeddedmesh:
       {
         sub_model_vec_ptr_.emplace_back(
             std::make_shared<Constraints::SubmodelEvaluator::EmbeddedMeshConstraintManager>(
