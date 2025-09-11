@@ -23,20 +23,20 @@ namespace Constraints::EmbeddedMesh
   struct EmbeddedMeshParams
   {
     //! Strategy for coupling the embedded meshes
-    enum Inpar::Constraints::EmbeddedMeshCouplingStrategy embedded_mesh_coupling_strategy_ =
-        Inpar::Constraints::EmbeddedMeshCouplingStrategy::none;
+    enum Inpar::Constraints::EmbeddedMesh::CouplingStrategy embedded_mesh_coupling_strategy_ =
+        Inpar::Constraints::EmbeddedMesh::CouplingStrategy::none;
 
     //! Constraint enforcement method
-    enum Inpar::Constraints::EmbeddedMeshConstraintEnforcement
-        embedded_mesh_constraint_enforcement_ =
-            Inpar::Constraints::EmbeddedMeshConstraintEnforcement::none;
+    enum Inpar::Constraints::EnforcementStrategy embedded_mesh_constraint_enforcement_ =
+        Inpar::Constraints::EnforcementStrategy::none;
 
     //! Penalty parameter for coupling enforcement
     double embedded_mesh_constraint_penalty_parameter_ = 0.0;
 
     //! Shape function for the mortar Lagrange-multiplicators
-    enum Inpar::Constraints::SolidToSolidMortarShapefunctions embedded_mesh_mortar_shape_function_ =
-        Inpar::Constraints::SolidToSolidMortarShapefunctions::none;
+    enum Inpar::Constraints::EmbeddedMesh::SolidToSolidMortarShapefunctions
+        embedded_mesh_mortar_shape_function_ =
+            Inpar::Constraints::EmbeddedMesh::SolidToSolidMortarShapefunctions::none;
 
     //! Nodal Dof set strategy for XFEM
     Cut::NodalDofSetStrategy xfem_nodal_dof_set_strategy_ =

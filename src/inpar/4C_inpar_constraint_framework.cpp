@@ -12,6 +12,8 @@
 
 FOUR_C_NAMESPACE_OPEN
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 std::vector<Core::IO::InputSpec> Inpar::Constraints::valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
@@ -24,21 +26,21 @@ std::vector<Core::IO::InputSpec> Inpar::Constraints::valid_parameters()
   spec.push_back(group("EMBEDDED MESH COUPLING",
       {
 
-          parameter<EmbeddedMeshCouplingStrategy>("COUPLING_STRATEGY",
+          parameter<EmbeddedMesh::CouplingStrategy>("COUPLING_STRATEGY",
               {.description = "Strategy to couple background and overlapping mesh",
-                  .default_value = EmbeddedMeshCouplingStrategy::none}),
+                  .default_value = EmbeddedMesh::CouplingStrategy::none}),
 
 
-          parameter<SolidToSolidMortarShapefunctions>("MORTAR_SHAPE_FUNCTION",
+          parameter<EmbeddedMesh::SolidToSolidMortarShapefunctions>("MORTAR_SHAPE_FUNCTION",
               {.description = "Shape functions that should be use in case of coupling using the "
                               "Mortar/Lagrange  Multiplier method ",
-                  .default_value = SolidToSolidMortarShapefunctions::none}),
+                  .default_value = EmbeddedMesh::SolidToSolidMortarShapefunctions::none}),
 
 
-          parameter<EmbeddedMeshConstraintEnforcement>("CONSTRAINT_ENFORCEMENT",
+          parameter<EnforcementStrategy>("CONSTRAINT_ENFORCEMENT",
               {.description =
                       "Apply a constraint enforcement in the embedded mesh coupling strategy",
-                  .default_value = EmbeddedMeshConstraintEnforcement::none}),
+                  .default_value = EnforcementStrategy::none}),
 
           parameter<double>("CONSTRAINT_ENFORCEMENT_PENALTYPARAM",
               {.description =
@@ -52,14 +54,14 @@ std::vector<Core::IO::InputSpec> Inpar::Constraints::valid_parameters()
   spec.push_back(group("MULTI POINT CONSTRAINTS",
       {
 
-          parameter<RveReferenceDeformationDefinition>("RVE_REFERENCE_POINTS",
+          parameter<MultiPoint::RveReferenceDeformationDefinition>("RVE_REFERENCE_POINTS",
               {.description = "Method of definition of the reference points of an RVE",
-                  .default_value = RveReferenceDeformationDefinition::automatic}),
+                  .default_value = MultiPoint::RveReferenceDeformationDefinition::automatic}),
 
           deprecated_selection<EnforcementStrategy>("ENFORCEMENT",
               {
                   {"penalty_method", EnforcementStrategy::penalty},
-                  {"lagrange_multiplier_method", EnforcementStrategy::lagrangeMultiplier},
+                  {"lagrange_multiplier_method", EnforcementStrategy::lagrange},
               },
               {.description = "Method to enforce the multi point constraint",
                   .default_value = EnforcementStrategy::penalty}),
@@ -72,6 +74,8 @@ std::vector<Core::IO::InputSpec> Inpar::Constraints::valid_parameters()
 }
 
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void Inpar::Constraints::set_valid_conditions(
     std::vector<Core::Conditions::ConditionDefinition>& condlist)
 {

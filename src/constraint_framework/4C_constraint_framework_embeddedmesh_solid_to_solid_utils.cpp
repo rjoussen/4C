@@ -339,22 +339,22 @@ void Constraints::EmbeddedMesh::change_gauss_rule_of_cut_elements(
 
 
 void Constraints::EmbeddedMesh::mortar_shape_functions_to_number_of_lagrange_values(
-    const Inpar::Constraints::SolidToSolidMortarShapefunctions shape_function,
+    const Inpar::Constraints::EmbeddedMesh::SolidToSolidMortarShapefunctions shape_function,
     unsigned int& n_lambda_node)
 {
   switch (shape_function)
   {
-    case Inpar::Constraints::SolidToSolidMortarShapefunctions::none:
+    case Inpar::Constraints::EmbeddedMesh::SolidToSolidMortarShapefunctions::none:
     {
       n_lambda_node = 0;
       return;
     }
-    case Inpar::Constraints::SolidToSolidMortarShapefunctions::quad4:
+    case Inpar::Constraints::EmbeddedMesh::SolidToSolidMortarShapefunctions::quad4:
     {
       n_lambda_node = 1 * 3;
       return;
     }
-    case Inpar::Constraints::SolidToSolidMortarShapefunctions::nurbs9:
+    case Inpar::Constraints::EmbeddedMesh::SolidToSolidMortarShapefunctions::nurbs9:
     {
       n_lambda_node = 1 * 3;
       return;
@@ -484,17 +484,17 @@ Core::FE::GaussIntegration Constraints::EmbeddedMesh::create_gauss_integration_f
   return Core::FE::GaussIntegration(gp);
 }
 
-Inpar::Constraints::SolidToSolidMortarShapefunctions
+Inpar::Constraints::EmbeddedMesh::SolidToSolidMortarShapefunctions
 Constraints::EmbeddedMesh::define_shape_functions_lagrange_multipliers(Core::FE::CellType celltype)
 {
   switch (celltype)
   {
     case Core::FE::CellType::quad4:
-      return Inpar::Constraints::SolidToSolidMortarShapefunctions::quad4;
+      return Inpar::Constraints::EmbeddedMesh::SolidToSolidMortarShapefunctions::quad4;
     case Core::FE::CellType::quad9:
-      return Inpar::Constraints::SolidToSolidMortarShapefunctions::quad9;
+      return Inpar::Constraints::EmbeddedMesh::SolidToSolidMortarShapefunctions::quad9;
     case Core::FE::CellType::nurbs9:
-      return Inpar::Constraints::SolidToSolidMortarShapefunctions::nurbs9;
+      return Inpar::Constraints::EmbeddedMesh::SolidToSolidMortarShapefunctions::nurbs9;
     default:
       FOUR_C_THROW("Shape functions not implemented for this type of cell.");
   }

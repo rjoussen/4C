@@ -113,7 +113,7 @@ namespace Constraints::EmbeddedMesh
    * @param n_lambda_node (out) Number of Lagrange multiplicators per node.
    */
   void mortar_shape_functions_to_number_of_lagrange_values(
-      const Inpar::Constraints::SolidToSolidMortarShapefunctions shape_function,
+      const Inpar::Constraints::EmbeddedMesh::SolidToSolidMortarShapefunctions shape_function,
       unsigned int& n_lambda_node);
 
   /**
@@ -182,8 +182,8 @@ namespace Constraints::EmbeddedMesh
   /**
    * \brief Returns the shape function for the mortar Lagrange multipliers.
    */
-  Inpar::Constraints::SolidToSolidMortarShapefunctions define_shape_functions_lagrange_multipliers(
-      Core::FE::CellType celltype);
+  Inpar::Constraints::EmbeddedMesh::SolidToSolidMortarShapefunctions
+  define_shape_functions_lagrange_multipliers(Core::FE::CellType celltype);
 
 }  // namespace Constraints::EmbeddedMesh
 
