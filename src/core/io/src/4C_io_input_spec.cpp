@@ -105,4 +105,10 @@ const Core::IO::Internal::InputSpecImpl& Core::IO::InputSpec::impl() const
   return *pimpl_;
 }
 
+const std::string& Core::IO::InputSpec::name() const
+{
+  FOUR_C_ASSERT(pimpl_, "InputSpec is empty.");
+  return impl().name();
+}
+
 FOUR_C_NAMESPACE_CLOSE

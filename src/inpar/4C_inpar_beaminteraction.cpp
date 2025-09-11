@@ -24,11 +24,12 @@ void Inpar::BeamInteraction::beam_interaction_conditions_get_all(
       Inpar::BeamInteraction::BeamInteractionConditions::beam_to_solid_surface_contact};
 }
 
-void Inpar::BeamInteraction::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
+std::vector<Core::IO::InputSpec> Inpar::BeamInteraction::valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
 
-  list["BEAM INTERACTION"] = group("BEAM INTERACTION",
+  std::vector<Core::IO::InputSpec> specs;
+  specs.push_back(group("BEAM INTERACTION",
       {
 
           deprecated_selection<Inpar::BeamInteraction::RepartitionStrategy>("REPARTITIONSTRATEGY",
@@ -44,11 +45,10 @@ void Inpar::BeamInteraction::set_valid_parameters(std::map<std::string, Core::IO
           parameter<SearchStrategy>("SEARCH_STRATEGY",
               {.description = "Type of search strategy used for finding coupling pairs",
                   .default_value = SearchStrategy::bruteforce_with_binning})},
-      {.required =
-              false}); /*----------------------------------------------------------------------*/
+      {.required = false}));
+  /*----------------------------------------------------------------------*/
   /* parameters for crosslinking submodel */
-
-  list["BEAM INTERACTION/CROSSLINKING"] = group("BEAM INTERACTION/CROSSLINKING",
+  specs.push_back(group("BEAM INTERACTION/CROSSLINKING",
       {
 
           // remove this some day
@@ -107,13 +107,12 @@ void Inpar::BeamInteraction::set_valid_parameters(std::map<std::string, Core::IO
           parameter<std::string>("FILAMENTBSPOTRANGELOCAL",
               {.description = "Lower and upper arc parameter bound for binding spots on a filament",
                   .default_value = "0.0 1.0"})},
-      {.required = false});
+      {.required = false}));
 
 
   /*----------------------------------------------------------------------*/
   /* parameters for sphere beam link submodel */
-
-  list["BEAM INTERACTION/SPHERE BEAM LINK"] = group("BEAM INTERACTION/SPHERE BEAM LINK",
+  specs.push_back(group("BEAM INTERACTION/SPHERE BEAM LINK",
       {
 
           parameter<bool>(
@@ -152,7 +151,7 @@ void Inpar::BeamInteraction::set_valid_parameters(std::map<std::string, Core::IO
           parameter<std::string>("FILAMENTBSPOTRANGELOCAL",
               {.description = "Lower and upper arc parameter bound for binding spots on a filament",
                   .default_value = "0.0 1.0"})},
-      {.required = false});
+      {.required = false}));
 
   /*----------------------------------------------------------------------*/
   /* parameters for beam to ? contact submodel*/
@@ -160,8 +159,7 @@ void Inpar::BeamInteraction::set_valid_parameters(std::map<std::string, Core::IO
 
   /*----------------------------------------------------------------------*/
   /* parameters for beam to beam contact */
-
-  list["BEAM INTERACTION/BEAM TO BEAM CONTACT"] = group("BEAM INTERACTION/BEAM TO BEAM CONTACT",
+  specs.push_back(group("BEAM INTERACTION/BEAM TO BEAM CONTACT",
       {
 
           deprecated_selection<Inpar::BeamInteraction::Strategy>("STRATEGY",
@@ -172,14 +170,13 @@ void Inpar::BeamInteraction::set_valid_parameters(std::map<std::string, Core::IO
                   {"penalty", bstr_penalty},
               },
               {.description = "Type of employed solving strategy", .default_value = bstr_none})},
-      {.required = false});
+      {.required = false}));
 
   // ...
 
   /*----------------------------------------------------------------------*/
   /* parameters for beam to sphere contact */
-
-  list["BEAM INTERACTION/BEAM TO SPHERE CONTACT"] = group("BEAM INTERACTION/BEAM TO SPHERE CONTACT",
+  specs.push_back(group("BEAM INTERACTION/BEAM TO SPHERE CONTACT",
       {
 
           deprecated_selection<Inpar::BeamInteraction::Strategy>("STRATEGY",
@@ -194,13 +191,13 @@ void Inpar::BeamInteraction::set_valid_parameters(std::map<std::string, Core::IO
           parameter<double>("PENALTY_PARAMETER",
               {.description = "Penalty parameter for beam-to-rigidsphere contact",
                   .default_value = 0.0})},
-      {.required = false});
-
-  // ...
+      {.required = false}));
 
   /*----------------------------------------------------------------------*/
   /* parameters for beam to solid contact */
-  BeamToSolid::set_valid_parameters(list);
+  std::vector<Core::IO::InputSpec> beam_to_solid_contact = BeamToSolid::valid_parameters();
+  specs.insert(specs.end(), beam_to_solid_contact.begin(), beam_to_solid_contact.end());
+  return specs;
 }
 
 void Inpar::BeamInteraction::set_valid_conditions(

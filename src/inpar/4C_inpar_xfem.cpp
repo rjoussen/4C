@@ -14,11 +14,11 @@ FOUR_C_NAMESPACE_OPEN
 
 
 
-void Inpar::XFEM::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
+std::vector<Core::IO::InputSpec> Inpar::XFEM::valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
-
-  list["XFEM GENERAL"] = group("XFEM GENERAL",
+  std::vector<Core::IO::InputSpec> specs;
+  specs.push_back(group("XFEM GENERAL",
       {
 
           // OUTPUT options
@@ -81,8 +81,8 @@ void Inpar::XFEM::set_valid_parameters(std::map<std::string, Core::IO::InputSpec
               {.description = "Method for finding Gauss Points for the boundary cells",
                   .default_value = Cut::BCellGaussPts_Tessellation})},
       {.required =
-              false}); /*----------------------------------------------------------------------*/
-  list["XFLUID DYNAMIC/GENERAL"] = group("XFLUID DYNAMIC/GENERAL",
+              false})); /*----------------------------------------------------------------------*/
+  specs.push_back(group("XFLUID DYNAMIC/GENERAL",
       {
 
           // Do we use more than one fluid discretization?
@@ -147,10 +147,10 @@ void Inpar::XFEM::set_valid_parameters(std::map<std::string, Core::IO::InputSpec
           parameter<bool>("XFLUID_TIMEINT_CHECK_SLIDINGONSURFACE",
               {.description = "Xfluid TimeIntegration Special Check if node is sliding on surface!",
                   .default_value = true})},
-      {.required = false});
+      {.required = false}));
 
   /*----------------------------------------------------------------------*/
-  list["XFLUID DYNAMIC/STABILIZATION"] = group("XFLUID DYNAMIC/STABILIZATION",
+  specs.push_back(group("XFLUID DYNAMIC/STABILIZATION",
       {
 
           // Boundary-Coupling options
@@ -316,10 +316,10 @@ void Inpar::XFEM::set_valid_parameters(std::map<std::string, Core::IO::InputSpec
                       "Apply ghost penalty stabilization also for inner faces if this is possible "
                       "due to the dofsets",
                   .default_value = false})},
-      {.required = false});
+      {.required = false}));
 
   /*----------------------------------------------------------------------*/
-  list["XFLUID DYNAMIC/XFPSI MONOLITHIC"] = group("XFLUID DYNAMIC/XFPSI MONOLITHIC",
+  specs.push_back(group("XFLUID DYNAMIC/XFPSI MONOLITHIC",
       {
 
           parameter<int>("ITEMIN",
@@ -372,9 +372,10 @@ void Inpar::XFEM::set_valid_parameters(std::map<std::string, Core::IO::InputSpec
                   .default_value = 0.0}),
           parameter<bool>("USE_PORO_PRESSURE",
               {.description = "the extrapolation of the fluid stress in the contact "
-                              "zone is relaxed to zero after a certtain distance",
+                              "zone is relaxed to zero after a certain distance",
                   .default_value = true})},
-      {.required = false});
+      {.required = false}));
+  return specs;
 }
 
 

@@ -12,11 +12,10 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-void Lubrication::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
+Core::IO::InputSpec Lubrication::valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
-
-  list["LUBRICATION DYNAMIC"] = group("LUBRICATION DYNAMIC",
+  Core::IO::InputSpec spec = group("LUBRICATION DYNAMIC",
       {
 
           parameter<double>(
@@ -166,6 +165,7 @@ void Lubrication::set_valid_parameters(std::map<std::string, Core::IO::InputSpec
           parameter<bool>("PURE_LUB",
               {.description = "the problem is pure lubrication", .default_value = false})},
       {.required = false});
+  return spec;
 }
 
 FOUR_C_NAMESPACE_CLOSE

@@ -18,12 +18,12 @@ namespace Inpar
   {
     /*----------------------------------------------------------------------*
      *----------------------------------------------------------------------*/
-    void set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
+    Core::IO::InputSpec valid_parameters()
     {
       using namespace Core::IO::InputSpecBuilders;
 
       // related sublist
-      list["IO/RUNTIME VTK OUTPUT"] = group("IO/RUNTIME VTK OUTPUT",
+      Core::IO::InputSpec spec = group("IO/RUNTIME VTK OUTPUT",
           {
 
               // output interval regarding steps: write output every INTERVAL_STEPS steps
@@ -81,6 +81,7 @@ namespace Inpar
                                   "visualization data to disk",
                       .default_value = Core::IO::OutputWriter::vtu_per_rank})},
           {.required = false});
+      return spec;
     }
 
 

@@ -14,7 +14,6 @@
 #include "4C_utils_exceptions.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
-#include <map>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -61,8 +60,8 @@ namespace Lubrication
     norm_inf         //!< Maximum/infinity norm
   };
 
-  /// set the lubrication parameters
-  void set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list);
+  /// lubrication parameters
+  Core::IO::InputSpec valid_parameters();
 
 }  // namespace Lubrication
 

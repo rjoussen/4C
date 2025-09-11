@@ -12,7 +12,6 @@
 
 #include "4C_io_input_spec.hpp"
 
-#include <map>
 #include <vector>
 
 FOUR_C_NAMESPACE_OPEN
@@ -37,8 +36,8 @@ namespace SSTI
     elch
   };
 
-  /// set the ssti parameters
-  void set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list);
+  /// ssti parameters
+  std::vector<Core::IO::InputSpec> valid_parameters();
 
   /// set specific ssti conditions
   void set_valid_conditions(std::vector<Core::Conditions::ConditionDefinition>& condlist);

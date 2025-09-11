@@ -13,11 +13,10 @@ FOUR_C_NAMESPACE_OPEN
 
 
 
-void Inpar::FPSI::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
+Core::IO::InputSpec Inpar::FPSI::valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
-
-  list["FPSI DYNAMIC"] = group("FPSI DYNAMIC",
+  Core::IO::InputSpec spec = group("FPSI DYNAMIC",
       {
 
           parameter<FpsiCouplingType>(
@@ -134,6 +133,7 @@ void Inpar::FPSI::set_valid_parameters(std::map<std::string, Core::IO::InputSpec
                               "Fluid-Porous-Interface (0.1-4)",
                   .default_value = 1.0})},
       {.required = false});
+  return spec;
 }
 
 

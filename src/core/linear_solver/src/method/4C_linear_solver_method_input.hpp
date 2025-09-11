@@ -13,13 +13,14 @@
 #include "4C_io_input_spec.hpp"
 
 #include <map>
+#include <vector>
 
 FOUR_C_NAMESPACE_OPEN
 
 namespace Core::LinearSolver
 {
-  //! set the parameters for the linear solver
-  void set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list);
+  //! the parameters for the linear solver
+  std::vector<Core::IO::InputSpec> valid_parameters();
 
 }  // namespace Core::LinearSolver
 

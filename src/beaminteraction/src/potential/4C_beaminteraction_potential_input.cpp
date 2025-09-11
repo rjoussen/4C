@@ -19,13 +19,11 @@ FOUR_C_NAMESPACE_OPEN
 
 
 
-void BeamInteraction::Potential::set_valid_parameters(
-    std::map<std::string, Core::IO::InputSpec>& list)
+Core::IO::InputSpec BeamInteraction::Potential::valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
   using namespace Core::IO::InputSpecBuilders::Validators;
-
-  list["beam_potential"] = group<BeamPotentialParameters>("beam_potential",
+  Core::IO::InputSpec spec = group<BeamPotentialParameters>("beam_potential",
       {
           parameter<std::vector<double>>("potential_law_exponents",
               {.description = "Negative(!) exponent(s)  $m_i$ of potential law $\\Phi(r) = \\sum_i "
@@ -144,6 +142,7 @@ void BeamInteraction::Potential::set_valid_parameters(
       {.description = "Parameters for beam interactions based on potentials. Beam-to-beam and "
                       "beam-to-sphere interactions are available.",
           .required = false});
+  return spec;
 };
 
 void BeamInteraction::Potential::set_valid_conditions(

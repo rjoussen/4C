@@ -13,7 +13,6 @@
 #include "4C_io_input_spec.hpp"
 #include "4C_io_visualization_parameters.hpp"
 
-#include <map>
 #include <optional>
 #include <unordered_map>
 #include <vector>
@@ -101,7 +100,7 @@ namespace BeamInteraction::Potential
   };
 
 
-  void set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list);
+  Core::IO::InputSpec valid_parameters();
 
   void set_valid_conditions(std::vector<Core::Conditions::ConditionDefinition>& condlist);
 

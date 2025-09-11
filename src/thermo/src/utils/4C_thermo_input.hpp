@@ -10,6 +10,7 @@
 
 #include "4C_config.hpp"
 
+#include "4C_io_input_parameter_container.hpp"
 #include "4C_io_input_spec.hpp"
 #include "4C_utils_exceptions.hpp"
 
@@ -171,8 +172,8 @@ namespace Thermo
     calcerror_byfunct
   };
 
-  /// set the thermo parameters
-  void set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list);
+  /// thermo parameters
+  std::vector<Core::IO::InputSpec> valid_parameters();
 
   /// set thermo specific conditions
   void set_valid_conditions(std::vector<Core::Conditions::ConditionDefinition>& condlist);

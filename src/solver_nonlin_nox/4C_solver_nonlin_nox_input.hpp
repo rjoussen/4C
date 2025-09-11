@@ -12,14 +12,15 @@
 
 #include "4C_io_input_spec.hpp"
 
-#include <map>
+#include <vector>
+
 
 FOUR_C_NAMESPACE_OPEN
 
 namespace NOX
 {
-  /// set the nonlinear solver parameters
-  void set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list);
+  /// nonlinear solver parameters
+  std::vector<Core::IO::InputSpec> valid_parameters();
 
 }  // namespace NOX
 

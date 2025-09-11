@@ -7,6 +7,7 @@
 
 #include "4C_linear_solver_method_input.hpp"
 
+#include "4C_io_input_spec.hpp"
 #include "4C_io_input_spec_builders.hpp"
 #include "4C_linear_solver_method.hpp"
 
@@ -142,22 +143,24 @@ namespace Core::LinearSolver
   }
 
 
-  void set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
+  std::vector<Core::IO::InputSpec> valid_parameters()
   {
-    // set valid parameters for solver blocks
+    // valid parameters for solver blocks
 
     // Note: the maximum number of solver blocks is hardwired here. If you change this,
     // don't forget to edit the corresponding parts in globalproblems.cpp, too.
     auto spec_solver = make_valid_solver_parameters();
+    std::vector<Core::IO::InputSpec> specs;
     for (int i = 1; i < 10; i++)
     {
       std::stringstream ss;
       ss << "SOLVER " << i;
       std::stringstream ss_description;
       ss_description << "solver parameters for solver block " << i;
-      list[ss.str()] = Core::IO::InputSpecBuilders::group(
-          ss.str(), {spec_solver}, {.description = ss_description.str(), .required = false});
+      specs.push_back(Core::IO::InputSpecBuilders::group(
+          ss.str(), {spec_solver}, {.description = ss_description.str(), .required = false}));
     }
+    return specs;
   }
 
 }  // namespace Core::LinearSolver

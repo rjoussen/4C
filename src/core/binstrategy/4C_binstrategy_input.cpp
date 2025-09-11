@@ -13,11 +13,10 @@ FOUR_C_NAMESPACE_OPEN
 
 
 
-void Core::Binstrategy::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
+Core::IO::InputSpec Core::Binstrategy::valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
-
-  list["BINNING STRATEGY"] = group("BINNING STRATEGY",
+  Core::IO::InputSpec spec = group("BINNING STRATEGY",
       {
 
           parameter<double>("BIN_SIZE_LOWER_BOUND",
@@ -48,6 +47,7 @@ void Core::Binstrategy::set_valid_parameters(std::map<std::string, Core::IO::Inp
               "WRITEBINS", {.description = "Write none, row or column bins for visualization",
                                .default_value = Core::Binstrategy::WriteBins::none})},
       {.required = false});
+  return spec;
 }
 
 FOUR_C_NAMESPACE_CLOSE

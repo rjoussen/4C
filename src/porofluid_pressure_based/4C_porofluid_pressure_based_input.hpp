@@ -13,6 +13,7 @@
 #include "4C_io_input_spec.hpp"
 
 #include <map>
+#include <vector>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -55,8 +56,8 @@ namespace PoroPressureBased
     continue_anyway  ///< continue anyway
   };
 
-  /// set the valid parameters
-  void set_valid_parameters_porofluid(std::map<std::string, Core::IO::InputSpec>& list);
+  /// valid parameters
+  std::vector<Core::IO::InputSpec> valid_parameters_porofluid();
 
 }  // namespace PoroPressureBased
 

@@ -15,7 +15,6 @@
 
 #include "4C_io_input_spec.hpp"
 
-#include <map>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -35,8 +34,8 @@ namespace Inpar
       partitioned_twowaycoup_disprelaxaitken  //!< two-way coupling with dynamic aitken relaxation
     };
 
-    //! set valid parameters for particle structure interaction
-    void set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list);
+    //! valid parameters for particle structure interaction
+    Core::IO::InputSpec valid_parameters();
 
   }  // namespace PaSI
 

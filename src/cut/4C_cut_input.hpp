@@ -13,15 +13,14 @@
 #include "4C_io_input_spec.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
-#include <map>
 
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 namespace Cut
 {
-  /// set the cut parameters
-  void set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list);
+  /// cut parameters
+  Core::IO::InputSpec valid_parameters();
 
 }  // namespace Cut
 

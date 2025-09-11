@@ -13,13 +13,15 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-void FBI::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
+std::vector<Core::IO::InputSpec> FBI::valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
 
   /*----------------------------------------------------------------------*/
   /* parameters for beam to fluid meshtying */
-  list["FLUID BEAM INTERACTION"] = group("FLUID BEAM INTERACTION",
+
+  std::vector<Core::IO::InputSpec> specs;
+  specs.push_back(group("FLUID BEAM INTERACTION",
       {
           deprecated_selection<BeamToFluidCoupling>("COUPLING",
               {
@@ -40,7 +42,7 @@ void FBI::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
                                       .default_value = BeamToFluidPreSortStrategy::bruteforce}),
 
       },
-      {.required = false});
+      {.required = false}));
 
   /*----------------------------------------------------------------------*/
   std::vector<Core::IO::InputSpec> beam_to_fluid_meshtying = {
@@ -69,19 +71,16 @@ void FBI::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
               .default_value = FBI::BeamToFluidMeshtingMortarShapefunctions::none}),
   };
   // Add the geometry pair input parameters.
-  GeometryPair::set_valid_parameters_line_to3_d(beam_to_fluid_meshtying);
-
-  list["FLUID BEAM INTERACTION/BEAM TO FLUID MESHTYING"] =
-      group("FLUID BEAM INTERACTION/BEAM TO FLUID MESHTYING", beam_to_fluid_meshtying,
-          {.required = false});
+  GeometryPair::valid_parameters_line_to3_d(beam_to_fluid_meshtying);
+  specs.push_back(group("FLUID BEAM INTERACTION/BEAM TO FLUID MESHTYING", beam_to_fluid_meshtying,
+      {.required = false}));
 
 
 
   /*----------------------------------------------------------------------*/
 
   // Create subsection for runtime output.
-  list["FLUID BEAM INTERACTION/BEAM TO FLUID MESHTYING/RUNTIME VTK OUTPUT"] = group(
-      "FLUID BEAM INTERACTION/BEAM TO FLUID MESHTYING/RUNTIME VTK OUTPUT",
+  specs.push_back(group("FLUID BEAM INTERACTION/BEAM TO FLUID MESHTYING/RUNTIME VTK OUTPUT",
       {
           // Whether to write visualization output at all for beam to fluid meshtying.
           parameter<bool>(
@@ -125,7 +124,8 @@ void FBI::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
                   .default_value = 5}),
 
       },
-      {.required = false});
+      {.required = false}));
+  return specs;
 }
 
 void FBI::set_valid_conditions(std::vector<Core::Conditions::ConditionDefinition>& condlist)

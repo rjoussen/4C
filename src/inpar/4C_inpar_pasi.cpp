@@ -11,13 +11,12 @@
 FOUR_C_NAMESPACE_OPEN
 
 /*---------------------------------------------------------------------------*
- | set valid parameters for pasi                                             |
+ | valid parameters for pasi                                             |
  *---------------------------------------------------------------------------*/
-void Inpar::PaSI::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
+Core::IO::InputSpec Inpar::PaSI::valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
-
-  list["PASI DYNAMIC"] = group("PASI DYNAMIC",
+  Core::IO::InputSpec spec = group("PASI DYNAMIC",
       {
 
           // time loop control
@@ -78,6 +77,7 @@ void Inpar::PaSI::set_valid_parameters(std::map<std::string, Core::IO::InputSpec
               "MINOMEGA", {.description = "smallest omega allowed for Aitken relaxation",
                               .default_value = 0.1})},
       {.required = false});
+  return spec;
 }
 
 FOUR_C_NAMESPACE_CLOSE

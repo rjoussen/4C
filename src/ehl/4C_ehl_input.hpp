@@ -14,7 +14,6 @@
 #include "4C_io_input_spec.hpp"
 #include "4C_utils_exceptions.hpp"
 
-#include <map>
 #include <vector>
 
 FOUR_C_NAMESPACE_OPEN
@@ -80,8 +79,8 @@ namespace EHL
   };
 
 
-  /// set the ehl parameters
-  void set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list);
+  /// ehl parameters
+  std::vector<Core::IO::InputSpec> valid_parameters();
 
   /// set specific ehl conditions
   void set_valid_conditions(std::vector<Core::Conditions::ConditionDefinition>& condlist);

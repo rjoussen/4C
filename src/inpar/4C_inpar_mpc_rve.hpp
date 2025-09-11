@@ -13,7 +13,6 @@
 #include "4C_fem_general_utils_integration.hpp"
 #include "4C_io_input_spec.hpp"
 
-#include <map>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -71,8 +70,8 @@ namespace Inpar::RveMpc
     Gamma_ym,
 
   };
-  /// set the multi point constraint parameters
-  void set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list);
+  /// multi point constraint parameters
+  Core::IO::InputSpec valid_parameters();
 
   /// set multi point constraint specific conditions
   void set_valid_conditions(std::vector<Core::Conditions::ConditionDefinition>& condlist);

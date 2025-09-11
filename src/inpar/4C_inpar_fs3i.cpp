@@ -13,11 +13,12 @@ FOUR_C_NAMESPACE_OPEN
 
 
 
-void Inpar::FS3I::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
+std::vector<Core::IO::InputSpec> Inpar::FS3I::valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
 
-  list["FS3I DYNAMIC"] = group("FS3I DYNAMIC",
+  std::vector<Core::IO::InputSpec> specs;
+  specs.push_back(group("FS3I DYNAMIC",
       {
 
           parameter<double>("TIMESTEP", {.description = "Time increment dt", .default_value = 0.1}),
@@ -113,12 +114,12 @@ void Inpar::FS3I::set_valid_parameters(std::map<std::string, Core::IO::InputSpec
                   .default_value = false}),
 
       },
-      {.required = false});
+      {.required = false}));
 
   /*----------------------------------------------------------------------*/
   /* parameters for partitioned FS3I */
   /*----------------------------------------------------------------------*/
-  list["FS3I DYNAMIC/PARTITIONED"] = group("FS3I DYNAMIC/PARTITIONED",
+  specs.push_back(group("FS3I DYNAMIC/PARTITIONED",
       {
 
           // Coupling strategy for partitioned FS3I
@@ -134,7 +135,7 @@ void Inpar::FS3I::set_valid_parameters(std::map<std::string, Core::IO::InputSpec
 
           parameter<int>("ITEMAX",
               {.description = "Maximum number of outer iterations", .default_value = 10})},
-      {.required = false});
+      {.required = false}));
 
   /*----------------------------------------------------------------------  */
   /* parameters for stabilization of the structure-scalar field             */
@@ -142,10 +143,9 @@ void Inpar::FS3I::set_valid_parameters(std::map<std::string, Core::IO::InputSpec
 
   /// HACK!
   /// reuse the parameters from scatra
-
-  list["FS3I DYNAMIC/STRUCTURE SCALAR STABILIZATION"] =
-      group("FS3I DYNAMIC/STRUCTURE SCALAR STABILIZATION",
-          {Inpar::ScaTra::all_specs_for_scatra_stabilization()}, {.required = false});
+  specs.push_back(group("FS3I DYNAMIC/STRUCTURE SCALAR STABILIZATION",
+      {Inpar::ScaTra::all_specs_for_scatra_stabilization()}, {.required = false}));
+  return specs;
 }
 
 FOUR_C_NAMESPACE_CLOSE

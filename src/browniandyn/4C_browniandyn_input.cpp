@@ -12,11 +12,10 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-void BrownianDynamics::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
+Core::IO::InputSpec BrownianDynamics::valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
-
-  list["BROWNIAN DYNAMICS"] = group("BROWNIAN DYNAMICS",
+  Core::IO::InputSpec spec = group("BROWNIAN DYNAMICS",
       {
 
           parameter<bool>("BROWNDYNPROB",
@@ -61,6 +60,7 @@ void BrownianDynamics::set_valid_parameters(std::map<std::string, Core::IO::Inpu
                       "beam axis, rotational around axis",
                   .default_value = "0.0 0.0 0.0"})},
       {.required = false});
+  return spec;
 }
 
 FOUR_C_NAMESPACE_CLOSE

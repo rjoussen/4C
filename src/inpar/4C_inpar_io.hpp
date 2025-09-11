@@ -12,7 +12,8 @@
 
 #include "4C_io_input_spec.hpp"
 
-#include <map>
+#include <vector>
+
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -22,10 +23,8 @@ namespace Inpar
   namespace IO
   {
     /*! \brief Define valid parameter for global IO control
-     *
-     * @param[in/out] list Parameter list to be filled with valid parameters and their defaults
      */
-    void set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list);
+    std::vector<Core::IO::InputSpec> valid_parameters();
 
   }  // namespace IO
 }  // namespace Inpar

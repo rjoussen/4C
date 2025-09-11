@@ -12,7 +12,6 @@
 
 #include "4C_io_input_spec.hpp"
 
-#include <map>
 #include <utility>
 #include <vector>
 
@@ -252,8 +251,8 @@ namespace Inpar
       coupling_volmortar
     };
 
-    /// set the scatra parameters
-    void set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list);
+    /// scatra parameters
+    std::vector<Core::IO::InputSpec> valid_parameters();
 
     /// set additional scatra conditions
     void set_valid_conditions(std::vector<Core::Conditions::ConditionDefinition>& condlist);

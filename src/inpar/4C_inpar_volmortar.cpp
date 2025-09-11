@@ -13,12 +13,12 @@ FOUR_C_NAMESPACE_OPEN
 
 
 
-void Inpar::VolMortar::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
+Core::IO::InputSpec Inpar::VolMortar::valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
 
   /* parameters for volmortar */
-  list["VOLMORTAR COUPLING"] = group("VOLMORTAR COUPLING",
+  Core::IO::InputSpec spec = group("VOLMORTAR COUPLING",
       {
 
           deprecated_selection<Coupling::VolMortar::IntType>("INTTYPE",
@@ -86,6 +86,7 @@ void Inpar::VolMortar::set_valid_parameters(std::map<std::string, Core::IO::Inpu
               {.description = "If chosen, extended ghosting is kept for simulation",
                   .default_value = true})},
       {.required = false});
+  return spec;
 }
 
 FOUR_C_NAMESPACE_CLOSE

@@ -13,7 +13,6 @@
 #include "4C_io_input_spec.hpp"
 #include "4C_utils_exceptions.hpp"
 
-#include <map>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -84,8 +83,8 @@ namespace PoroElast
   //@}
 
 
-  /// set the poroelast parameters
-  void set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list);
+  /// poroelast parameters
+  Core::IO::InputSpec valid_parameters();
 
 }  // namespace PoroElast
 

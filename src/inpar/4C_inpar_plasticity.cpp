@@ -13,13 +13,13 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-void Inpar::Plasticity::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
+Core::IO::InputSpec Inpar::Plasticity::valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
 
   /*----------------------------------------------------------------------*/
   /* parameters for semi-smooth Newton plasticity algorithm */
-  list["SEMI-SMOOTH PLASTICITY"] = group("SEMI-SMOOTH PLASTICITY",
+  Core::IO::InputSpec spec = group("SEMI-SMOOTH PLASTICITY",
       {
 
           parameter<double>("SEMI_SMOOTH_CPL",
@@ -84,6 +84,7 @@ void Inpar::Plasticity::set_valid_parameters(std::map<std::string, Core::IO::Inp
               "DISSIPATION_MODE", {.description = "method to calculate the plastic dissipation",
                                       .default_value = TSI::pl_multiplier})},
       {.required = false});
+  return spec;
 }
 
 FOUR_C_NAMESPACE_CLOSE

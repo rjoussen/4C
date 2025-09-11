@@ -19,12 +19,12 @@ namespace Beam
   {
     /*----------------------------------------------------------------------*
      *----------------------------------------------------------------------*/
-    void set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
+    Core::IO::InputSpec valid_parameters()
     {
       using namespace Core::IO::InputSpecBuilders;
 
       // related sublist
-      list["IO/RUNTIME VTK OUTPUT/BEAMS"] = group("IO/RUNTIME VTK OUTPUT/BEAMS",
+      Core::IO::InputSpec spec = group("IO/RUNTIME VTK OUTPUT/BEAMS",
           {
 
               // whether to write special output for beam elements
@@ -122,6 +122,7 @@ namespace Beam
                           "Number of subsegments along a single beam element for visualization",
                       .default_value = 5})},
           {.required = false});
+      return spec;
     }
   }  // namespace IORuntimeOutput
 }  // namespace Beam

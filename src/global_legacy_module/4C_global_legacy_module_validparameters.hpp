@@ -13,18 +13,18 @@
 #include "4C_io_input_spec.hpp"
 
 #include <iostream>
-#include <map>
 #include <memory>
 #include <string>
+#include <vector>
 
 FOUR_C_NAMESPACE_OPEN
 
 namespace Global
 {
   /**
-   * The valid parameters per section.
+   * The valid parameters as a vector of InputSpec.
    */
-  std::map<std::string, Core::IO::InputSpec> valid_parameters();
+  std::vector<Core::IO::InputSpec> valid_parameters();
 
 }  // namespace Global
 

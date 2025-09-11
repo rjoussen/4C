@@ -13,11 +13,10 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-void PoroElast::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
+Core::IO::InputSpec PoroElast::valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
-
-  list["POROELASTICITY DYNAMIC"] = group("POROELASTICITY DYNAMIC",
+  Core::IO::InputSpec spec = group("POROELASTICITY DYNAMIC",
       {
 
           // Coupling strategy for (monolithic) porous media solvers
@@ -178,6 +177,7 @@ void PoroElast::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>&
               {.description = "flag for equilibration of global system of equations",
                   .default_value = Core::LinAlg::EquilibrationMethod::none})},
       {.required = false});
+  return spec;
 }
 
 FOUR_C_NAMESPACE_CLOSE

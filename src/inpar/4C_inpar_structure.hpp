@@ -370,8 +370,8 @@ namespace Inpar
     std::string kinem_type_string(const KinemType kinem_type);
     //!@}
 
-    /// set the structure parameters
-    void set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list);
+    /// structure parameters
+    std::vector<typename Core::IO::InputSpec> valid_parameters();
 
     /// set structure-specific conditions
     void set_valid_conditions(std::vector<Core::Conditions::ConditionDefinition>& condlist);

@@ -12,10 +12,10 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-void Inpar::BioFilm::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
+Core::IO::InputSpec Inpar::BioFilm::valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
-  list["BIOFILM CONTROL"] = group("BIOFILM CONTROL",
+  Core::IO::InputSpec spec = group("BIOFILM CONTROL",
       {
 
           parameter<bool>("BIOFILMGROWTH",
@@ -45,6 +45,7 @@ void Inpar::BioFilm::set_valid_parameters(std::map<std::string, Core::IO::InputS
               "OUTPUT_GMSH", {.description = "Do you want to write Gmsh postprocessing files?",
                                  .default_value = false})},
       {.required = false});
+  return spec;
 }
 
 

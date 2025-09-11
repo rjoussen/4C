@@ -73,9 +73,10 @@ struct ModuleCallbacks
   /**
    * A callback to return parameters known by the module.
    *
-   * @return A map from section name to corresponding InputSpec.
+   * @return A vector of InputSpecs, each representing a valid top-level section in the
+   * input file.
    */
-  std::function<std::map<std::string, Core::IO::InputSpec>()> parameters;
+  std::function<std::vector<Core::IO::InputSpec>()> parameters;
 };
 
 FOUR_C_NAMESPACE_CLOSE

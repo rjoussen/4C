@@ -12,7 +12,6 @@
 
 #include "4C_io_input_spec.hpp"
 
-#include <map>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -65,9 +64,9 @@ namespace Inpar::Constraints
   };
 
   /**
-  \brief Set constraint parameters
+  \brief Constraint parameters
   */
-  void set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list);
+  Core::IO::InputSpec valid_parameters();
 }  // namespace Inpar::Constraints
 
 FOUR_C_NAMESPACE_CLOSE

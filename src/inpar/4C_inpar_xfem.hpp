@@ -315,8 +315,8 @@ namespace Inpar
                  // for two phase flow atm)
     };
 
-    /// set the xfem parameters
-    void set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list);
+    /// xfem parameters
+    std::vector<Core::IO::InputSpec> valid_parameters();
 
     /// set specific xfem conditions
     void set_valid_conditions(std::vector<Core::Conditions::ConditionDefinition>& condlist);

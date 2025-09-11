@@ -12,7 +12,6 @@
 
 #include "4C_io_input_spec.hpp"
 
-#include <map>
 #include <vector>
 
 FOUR_C_NAMESPACE_OPEN
@@ -145,8 +144,8 @@ namespace Inpar
 
     //@}
 
-    /// set the fsi parameters
-    void set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list);
+    /// fsi parameters
+    std::vector<Core::IO::InputSpec> valid_parameters();
 
     /// set specific fsi conditions
     void set_valid_conditions(std::vector<Core::Conditions::ConditionDefinition>& condlist);

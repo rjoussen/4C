@@ -48,7 +48,7 @@ void Inpar::BeamToSolid::beam_to_solid_interaction_get_string(
 /**
  *
  */
-void Inpar::BeamToSolid::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
+std::vector<Core::IO::InputSpec> Inpar::BeamToSolid::valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
 
@@ -109,16 +109,15 @@ void Inpar::BeamToSolid::set_valid_parameters(std::map<std::string, Core::IO::In
               .default_value = 0.0}),
   };
   // Add the geometry pair input parameters.
-  GeometryPair::set_valid_parameters_line_to3_d(beam_to_solid_volume_mestying);
+  GeometryPair::valid_parameters_line_to3_d(beam_to_solid_volume_mestying);
 
-  list["BEAM INTERACTION/BEAM TO SOLID VOLUME MESHTYING"] =
-      group("BEAM INTERACTION/BEAM TO SOLID VOLUME MESHTYING", beam_to_solid_volume_mestying,
-          {.required = false});
+  std::vector<Core::IO::InputSpec> specs;
+  specs.push_back(group("BEAM INTERACTION/BEAM TO SOLID VOLUME MESHTYING",
+      beam_to_solid_volume_mestying, {.required = false}));
 
 
   // Beam to solid volume mesh tying output parameters.
-  list["BEAM INTERACTION/BEAM TO SOLID VOLUME MESHTYING/RUNTIME VTK OUTPUT"] = group(
-      "BEAM INTERACTION/BEAM TO SOLID VOLUME MESHTYING/RUNTIME VTK OUTPUT",
+  specs.push_back(group("BEAM INTERACTION/BEAM TO SOLID VOLUME MESHTYING/RUNTIME VTK OUTPUT",
       {
           // Whether to write visualization output at all for btsvmt.
           parameter<bool>("WRITE_OUTPUT",
@@ -165,7 +164,7 @@ void Inpar::BeamToSolid::set_valid_parameters(std::map<std::string, Core::IO::In
                                             "for testing of created VTK files).",
                                 .default_value = false}),
       },
-      {.required = false});
+      {.required = false}));
 
 
   // Beam to solid surface mesh tying parameters.
@@ -204,13 +203,12 @@ void Inpar::BeamToSolid::set_valid_parameters(std::map<std::string, Core::IO::In
               .default_value = BeamToSolidSurfaceRotationCoupling::none}),
   };
   // Add the geometry pair input parameters.
-  GeometryPair::set_valid_parameters_line_to3_d(beam_to_solid_surface_meshtying);
+  GeometryPair::valid_parameters_line_to3_d(beam_to_solid_surface_meshtying);
 
   // Add the surface options.
-  GeometryPair::set_valid_parameters_line_to_surface(beam_to_solid_surface_meshtying);
-  list["BEAM INTERACTION/BEAM TO SOLID SURFACE MESHTYING"] =
-      group("BEAM INTERACTION/BEAM TO SOLID SURFACE MESHTYING", beam_to_solid_surface_meshtying,
-          {.required = false});
+  GeometryPair::valid_parameters_line_to_surface(beam_to_solid_surface_meshtying);
+  specs.push_back(group("BEAM INTERACTION/BEAM TO SOLID SURFACE MESHTYING",
+      beam_to_solid_surface_meshtying, {.required = false}));
 
 
   // Beam to solid surface contact parameters.
@@ -252,19 +250,16 @@ void Inpar::BeamToSolid::set_valid_parameters(std::map<std::string, Core::IO::In
               .default_value = BeamToSolidMortarShapefunctions::none}),
   };
   // Add the geometry pair input parameters.
-  GeometryPair::set_valid_parameters_line_to3_d(beam_to_solid_surface_contact);
+  GeometryPair::valid_parameters_line_to3_d(beam_to_solid_surface_contact);
 
   // Add the surface options.
-  GeometryPair::set_valid_parameters_line_to_surface(beam_to_solid_surface_contact);
-
-  list["BEAM INTERACTION/BEAM TO SOLID SURFACE CONTACT"] =
-      group("BEAM INTERACTION/BEAM TO SOLID SURFACE CONTACT", beam_to_solid_surface_contact,
-          {.required = false});
+  GeometryPair::valid_parameters_line_to_surface(beam_to_solid_surface_contact);
+  specs.push_back(group("BEAM INTERACTION/BEAM TO SOLID SURFACE CONTACT",
+      beam_to_solid_surface_contact, {.required = false}));
 
 
   // Beam to solid surface output parameters.
-  list["BEAM INTERACTION/BEAM TO SOLID SURFACE/RUNTIME VTK OUTPUT"] = group(
-      "BEAM INTERACTION/BEAM TO SOLID SURFACE/RUNTIME VTK OUTPUT",
+  specs.push_back(group("BEAM INTERACTION/BEAM TO SOLID SURFACE/RUNTIME VTK OUTPUT",
       {
           // Whether to write visualization output at all.
           parameter<bool>("WRITE_OUTPUT",
@@ -310,7 +305,8 @@ void Inpar::BeamToSolid::set_valid_parameters(std::map<std::string, Core::IO::In
                                             "for testing of created VTK files).",
                                 .default_value = false}),
       },
-      {.required = false});
+      {.required = false}));
+  return specs;
 }
 
 /**

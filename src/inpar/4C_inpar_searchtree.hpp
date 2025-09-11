@@ -12,7 +12,6 @@
 
 #include "4C_io_input_spec.hpp"
 
-#include <map>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -30,8 +29,8 @@ namespace Inpar
       Quadtree2D
     };
 
-    /// set the searchtree parameters
-    void set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list);
+    /// searchtree parameters
+    Core::IO::InputSpec valid_parameters();
 
   }  // namespace Geo
 

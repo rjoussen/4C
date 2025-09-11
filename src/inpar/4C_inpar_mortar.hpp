@@ -12,7 +12,6 @@
 
 #include "4C_io_input_spec.hpp"
 
-#include <map>
 #include <vector>
 
 FOUR_C_NAMESPACE_OPEN
@@ -137,8 +136,8 @@ namespace Inpar
       consistent_all,       ///< use triangulation GPs for all elements
     };
 
-    /// set the mortar parameters
-    void set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list);
+    /// mortar parameters
+    std::vector<Core::IO::InputSpec> valid_parameters();
 
     /// set specific mortar conditions
     void set_valid_conditions(std::vector<Core::Conditions::ConditionDefinition>& condlist);

@@ -68,21 +68,20 @@ namespace
 
     MPI_Comm comm(MPI_COMM_WORLD);
     Core::IO::InputFile input(
-        {{"INCLUDED SECTION 2", group("INCLUDED SECTION 2",
-                                    {
-                                        parameter<int>("a"),
-                                        parameter<double>("b"),
-                                        parameter<bool>("c"),
-                                    })},
-            {"SECTION WITH SUBSTRUCTURE", list("SECTION WITH SUBSTRUCTURE",
-                                              all_of({
+        {group("INCLUDED SECTION 2",
+             {
+                 parameter<int>("a"),
+                 parameter<double>("b"),
+                 parameter<bool>("c"),
+             }),
+            list("SECTION WITH SUBSTRUCTURE", all_of({
                                                   parameter<int>("MAT"),
                                                   group("THERMO",
                                                       {
                                                           parameter<std::vector<double>>("COND"),
                                                           parameter<double>("CAPA"),
                                                       }),
-                                              }))}},
+                                              }))},
         {
             "MAIN SECTION",
         },
@@ -101,6 +100,39 @@ namespace
     container.clear();
     input.match_section("SECTION WITH SUBSTRUCTURE", container);
     EXPECT_EQ(container.get_list("SECTION WITH SUBSTRUCTURE")[0].get<int>("MAT"), 1);
+  }
+
+  TEST(InputFile, InputSpecMustHaveName)
+  {
+    using namespace Core::IO::InputSpecBuilders;
+    MPI_Comm comm(MPI_COMM_WORLD);
+
+    FOUR_C_EXPECT_THROW_WITH_MESSAGE(
+        Core::IO::InputFile input(
+            {
+                all_of(
+                    {parameter<int>("param1")}),  // This has no name and should trigger assertion
+            },
+            {}, comm),
+        Core::Exception, "You are trying to add an unnamed InputSpec for a top-level section. ");
+  }
+
+  TEST(InputFile, InputSpecNamesMustBeUnique)
+  {
+    using namespace Core::IO::InputSpecBuilders;
+    MPI_Comm comm(MPI_COMM_WORLD);
+
+    FOUR_C_EXPECT_THROW_WITH_MESSAGE(
+        Core::IO::InputFile input(
+            {
+                group("DUPLICATE_NAME", {parameter<int>("param1")}),
+                group("DUPLICATE_NAME",
+                    {parameter<double>("param2")}),  // Duplicate name should trigger assertion
+            },
+            {}, comm),
+        Core::Exception,
+        "You are trying to add multiple InputSpecs with the same name 'DUPLICATE_NAME' on the top "
+        "level. ");
   }
 
 }  // namespace

@@ -14,13 +14,12 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-void PoroPressureBased::set_valid_parameters_porofluid_elast(
-    std::map<std::string, Core::IO::InputSpec>& list)
+std::vector<Core::IO::InputSpec> PoroPressureBased::valid_parameters_porofluid_elast()
 {
   using namespace Core::IO::InputSpecBuilders;
-
+  std::vector<Core::IO::InputSpec> specs;
   // general control parameters
-  list["porofluid_elasticity_dynamic"] = group("porofluid_elasticity_dynamic",
+  specs.push_back(group("porofluid_elasticity_dynamic",
       {
           parameter<double>("total_simulation_time",
               {.description = "total simulation time", .default_value = -1.0}),
@@ -74,10 +73,10 @@ void PoroPressureBased::set_valid_parameters_porofluid_elast(
           parameter<bool>("artery_coupling_active",
               {.description = "Coupling with 1D blood vessels.", .default_value = false}),
       },
-      {.required = false});
+      {.required = false}));
 
   // monolithic parameters
-  list["porofluid_elasticity_dynamic/monolithic"] = group("porofluid_elasticity_dynamic/monolithic",
+  specs.push_back(group("porofluid_elasticity_dynamic/monolithic",
       {
           // nonlinear solver
           group("nonlinear_solver",
@@ -134,37 +133,37 @@ void PoroPressureBased::set_valid_parameters_porofluid_elast(
           // finite difference check
           parameter<bool>("fd_check", {.description = "FD check active", .default_value = false}),
       },
-      {.required = false});
+      {.required = false}));
 
   // partitioned parameters
-  list["porofluid_elasticity_dynamic/partitioned"] =
-      group("porofluid_elasticity_dynamic/partitioned",
-          {
-              // convergence tolerance of outer iteration loop
-              parameter<double>("convergence_tolerance",
-                  {.description = "tolerance for convergence check of outer iteration",
-                      .default_value = 1e-6}),
+  specs.push_back(group("porofluid_elasticity_dynamic/partitioned",
+      {
+          // convergence tolerance of outer iteration loop
+          parameter<double>("convergence_tolerance",
+              {.description = "tolerance for convergence check of outer iteration",
+                  .default_value = 1e-6}),
 
-              // relaxation of partitioned scheme
-              group("relaxation",
-                  {
-                      parameter<RelaxationMethods>(
-                          "type", {.description = "type relaxation of partitioned scheme",
-                                      .default_value = RelaxationMethods::none}),
+          // relaxation of partitioned scheme
+          group("relaxation",
+              {
+                  parameter<RelaxationMethods>(
+                      "type", {.description = "type relaxation of partitioned scheme",
+                                  .default_value = RelaxationMethods::none}),
 
-                      // parameters for relaxation of partitioned coupling
-                      parameter<double>("start_omega",
-                          {.description = "fixed relaxation parameter", .default_value = 1.0}),
-                      parameter<double>("minimum_omega",
-                          {.description = "smallest omega allowed for Aitken relaxation",
-                              .default_value = 0.1}),
-                      parameter<double>("maximum_omega",
-                          {.description = "largest omega allowed for Aitken relaxation",
-                              .default_value = 10.0}),
-                  },
-                  {.required = false}),
-          },
-          {.required = false});
+                  // parameters for relaxation of partitioned coupling
+                  parameter<double>("start_omega",
+                      {.description = "fixed relaxation parameter", .default_value = 1.0}),
+                  parameter<double>("minimum_omega",
+                      {.description = "smallest omega allowed for Aitken relaxation",
+                          .default_value = 0.1}),
+                  parameter<double>("maximum_omega",
+                      {.description = "largest omega allowed for Aitken relaxation",
+                          .default_value = 10.0}),
+              },
+              {.required = false}),
+      },
+      {.required = false}));
+  return specs;
 }
 
 FOUR_C_NAMESPACE_CLOSE

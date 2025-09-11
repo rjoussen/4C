@@ -86,14 +86,27 @@
 
 FOUR_C_NAMESPACE_OPEN
 
+// helper overloads: accept either a single InputSpec or a vector of InputSpec
+namespace
+{
+  inline void push_specs(std::vector<Core::IO::InputSpec>& specs, const Core::IO::InputSpec& s)
+  {
+    specs.push_back(s);
+  }
+  inline void push_specs(
+      std::vector<Core::IO::InputSpec>& specs, const std::vector<Core::IO::InputSpec>& v)
+  {
+    specs.insert(specs.end(), v.begin(), v.end());
+  }
+}  // unnamed namespace
 
 
-std::map<std::string, Core::IO::InputSpec> Global::valid_parameters()
+std::vector<Core::IO::InputSpec> Global::valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
-  std::map<std::string, Core::IO::InputSpec> specs;
+  std::vector<Core::IO::InputSpec> specs;
   /*----------------------------------------------------------------------*/
-  specs["DISCRETISATION"] = group("DISCRETISATION",
+  specs.push_back(group("DISCRETISATION",
       {
 
           parameter<int>("NUMFLUIDDIS",
@@ -109,9 +122,9 @@ std::map<std::string, Core::IO::InputSpec> Global::valid_parameters()
           parameter<int>("NUMAIRWAYSDIS",
               {.description = "Number of meshes in reduced dimensional airways network field",
                   .default_value = 1})},
-      {.required = false});
+      {.required = false}));
 
-  specs["PROBLEM SIZE"] = group("PROBLEM SIZE",
+  specs.push_back(group("PROBLEM SIZE",
       {
 
           parameter<int>("DIM", {.description = "2d or 3d problem", .default_value = 3}),
@@ -130,12 +143,12 @@ std::map<std::string, Core::IO::InputSpec> Global::valid_parameters()
           parameter<int>("MATERIALS", {.description = "number of materials", .default_value = 0}),
           parameter<int>("NUMDF",
               {.description = "maximum number of degrees of freedom", .default_value = 3})},
-      {.required = false});
-  Inpar::PROBLEMTYPE::set_valid_parameters(specs);
+      {.required = false}));
+  specs.push_back(Inpar::PROBLEMTYPE::valid_parameters());
 
   /*----------------------------------------------------------------------*/
 
-  specs["NURBS"] = group("NURBS",
+  specs.push_back(group("NURBS",
       {
 
           parameter<bool>("DO_LS_DBC_PROJECTION",
@@ -147,14 +160,14 @@ std::map<std::string, Core::IO::InputSpec> Global::valid_parameters()
               {.description = "Number of linear solver for the projection of least squares "
                               "Dirichlet boundary conditions for NURBS discretizations",
                   .default_value = -1})},
-      {.required = false});
+      {.required = false}));
 
   const Core::Elements::ElementDefinition element_definition;
   auto all_possible_elements_spec = element_definition.element_data_spec();
 
   const auto add_geometry_section = [&](auto& specs, const std::string& field_identifier)
   {
-    specs[field_identifier + " GEOMETRY"] = group(field_identifier + " GEOMETRY",
+    specs.push_back(group(field_identifier + " GEOMETRY",
         {
             parameter<std::filesystem::path>(
                 "FILE", {.description = "Path to the external geometry file. Either absolute or "
@@ -176,23 +189,23 @@ std::map<std::string, Core::IO::InputSpec> Global::valid_parameters()
                 })),
         },
         {.description = "Settings related to the geometry of discretization " + field_identifier,
-            .required = false});
+            .required = false}));
   };
 
   const auto add_domain_section = [spec = Core::IO::GridGenerator::RectangularCuboidInputs::spec()](
                                       auto& specs, const std::string& field_identifier)
   {
-    specs[field_identifier + " DOMAIN"] = group(field_identifier + " DOMAIN", {spec},
+    specs.push_back(group(field_identifier + " DOMAIN", {spec},
         {.description = "Generate a mesh for discretization " + field_identifier,
-            .required = false});
+            .required = false}));
   };
 
   const auto add_knotvector_section = [spec = Core::FE::Nurbs::Knotvector::spec()](
                                           auto& specs, const std::string& field_identifier)
   {
-    specs[field_identifier + " KNOTVECTORS"] = group(field_identifier + " KNOTVECTORS", {spec},
+    specs.push_back(group(field_identifier + " KNOTVECTORS", {spec},
         {.description = "Knot vector description for NURBS discretization of " + field_identifier,
-            .required = false});
+            .required = false}));
   };
 
   const std::vector known_fields = {"STRUCTURE", "FLUID", "LUBRICATION", "TRANSPORT", "TRANSPORT2",
@@ -204,7 +217,7 @@ std::map<std::string, Core::IO::InputSpec> Global::valid_parameters()
     add_knotvector_section(specs, field);
   }
 
-  specs["fields"] = list("fields",
+  specs.push_back(list("fields",
       all_of({
           parameter<std::string>("name",
               {.description =
@@ -223,76 +236,76 @@ std::map<std::string, Core::IO::InputSpec> Global::valid_parameters()
           .description = "Define a field that can be used in the simulation. "
                          "You can refer to a field by its name in other places.",
           .required = false,
-      });
+      }));
 
-  Inpar::Solid::set_valid_parameters(specs);
-  Inpar::IO::set_valid_parameters(specs);
-  Solid::IOMonitorStructureDBC::set_valid_parameters(specs);
-  Inpar::IORuntimeOutput::set_valid_parameters(specs);
-  Inpar::IORuntimeVTPStructure::set_valid_parameters(specs);
-  Inpar::Mortar::set_valid_parameters(specs);
-  CONTACT::set_valid_parameters(specs);
-  Inpar::VolMortar::set_valid_parameters(specs);
-  Inpar::Wear::set_valid_parameters(specs);
-  Inpar::IORuntimeOutput::FLUID::set_valid_parameters(specs);
-  Inpar::IORuntimeOutput::Solid::set_valid_parameters(specs);
-  Beam::IORuntimeOutput::set_valid_parameters(specs);
-  BeamContact::set_valid_parameters(specs);
-  BeamInteraction::Potential::set_valid_parameters(specs);
-  Inpar::BeamInteraction::set_valid_parameters(specs);
-  Inpar::RveMpc::set_valid_parameters(specs);
-  BrownianDynamics::set_valid_parameters(specs);
+  push_specs(specs, Inpar::Solid::valid_parameters());
+  push_specs(specs, Inpar::IO::valid_parameters());
+  push_specs(specs, Solid::IOMonitorStructureDBC::valid_parameters());
+  push_specs(specs, Inpar::IORuntimeOutput::valid_parameters());
+  push_specs(specs, Inpar::IORuntimeVTPStructure::valid_parameters());
+  push_specs(specs, Inpar::Mortar::valid_parameters());
+  push_specs(specs, CONTACT::valid_parameters());
+  push_specs(specs, Inpar::VolMortar::valid_parameters());
+  push_specs(specs, Inpar::Wear::valid_parameters());
+  push_specs(specs, Inpar::IORuntimeOutput::FLUID::valid_parameters());
+  push_specs(specs, Inpar::IORuntimeOutput::Solid::valid_parameters());
+  push_specs(specs, Beam::IORuntimeOutput::valid_parameters());
+  push_specs(specs, BeamContact::valid_parameters());
+  push_specs(specs, BeamInteraction::Potential::valid_parameters());
+  push_specs(specs, Inpar::BeamInteraction::valid_parameters());
+  push_specs(specs, Inpar::RveMpc::valid_parameters());
+  push_specs(specs, BrownianDynamics::valid_parameters());
 
-  Inpar::Plasticity::set_valid_parameters(specs);
+  push_specs(specs, Inpar::Plasticity::valid_parameters());
 
-  Thermo::set_valid_parameters(specs);
-  TSI::set_valid_parameters(specs);
+  push_specs(specs, Thermo::valid_parameters());
+  push_specs(specs, TSI::valid_parameters());
 
-  Inpar::FLUID::set_valid_parameters(specs);
-  Inpar::LowMach::set_valid_parameters(specs);
-  Cut::set_valid_parameters(specs);
-  Inpar::XFEM::set_valid_parameters(specs);
-  Inpar::Constraints::set_valid_parameters(specs);
+  push_specs(specs, Inpar::FLUID::valid_parameters());
+  push_specs(specs, Inpar::LowMach::valid_parameters());
+  push_specs(specs, Cut::valid_parameters());
+  push_specs(specs, Inpar::XFEM::valid_parameters());
+  push_specs(specs, Inpar::Constraints::valid_parameters());
 
-  Lubrication::set_valid_parameters(specs);
-  Inpar::ScaTra::set_valid_parameters(specs);
-  Inpar::LevelSet::set_valid_parameters(specs);
-  ElCh::set_valid_parameters(specs);
-  Inpar::ElectroPhysiology::set_valid_parameters(specs);
-  STI::set_valid_parameters(specs);
+  push_specs(specs, Lubrication::valid_parameters());
+  push_specs(specs, Inpar::ScaTra::valid_parameters());
+  push_specs(specs, Inpar::LevelSet::valid_parameters());
+  push_specs(specs, ElCh::valid_parameters());
+  push_specs(specs, Inpar::ElectroPhysiology::valid_parameters());
+  push_specs(specs, STI::valid_parameters());
 
-  Inpar::S2I::set_valid_parameters(specs);
-  Inpar::FS3I::set_valid_parameters(specs);
-  PoroElast::set_valid_parameters(specs);
-  PoroElastScaTra::set_valid_parameters(specs);
-  PoroPressureBased::set_valid_parameters_porofluid(specs);
-  PoroPressureBased::set_valid_parameters_porofluid_elast_scatra(specs);
-  PoroPressureBased::set_valid_parameters_porofluid_elast(specs);
-  EHL::set_valid_parameters(specs);
-  SSI::set_valid_parameters(specs);
-  SSTI::set_valid_parameters(specs);
-  ALE::set_valid_parameters(specs);
-  Inpar::FSI::set_valid_parameters(specs);
+  push_specs(specs, Inpar::S2I::valid_parameters());
+  push_specs(specs, Inpar::FS3I::valid_parameters());
+  push_specs(specs, PoroElast::valid_parameters());
+  push_specs(specs, PoroElastScaTra::valid_parameters());
+  push_specs(specs, PoroPressureBased::valid_parameters_porofluid());
+  push_specs(specs, PoroPressureBased::valid_parameters_porofluid_elast_scatra());
+  push_specs(specs, PoroPressureBased::valid_parameters_porofluid_elast());
+  push_specs(specs, EHL::valid_parameters());
+  push_specs(specs, SSI::valid_parameters());
+  push_specs(specs, SSTI::valid_parameters());
+  push_specs(specs, ALE::valid_parameters());
+  push_specs(specs, Inpar::FSI::valid_parameters());
 
-  ArtDyn::set_valid_parameters(specs);
-  ArteryNetwork::set_valid_parameters(specs);
-  Inpar::BioFilm::set_valid_parameters(specs);
-  Airway::set_valid_parameters(specs);
-  ReducedLung::set_valid_parameters(specs);
-  Inpar::Cardiovascular0D::set_valid_parameters(specs);
-  Inpar::FPSI::set_valid_parameters(specs);
-  FBI::set_valid_parameters(specs);
+  push_specs(specs, ArtDyn::valid_parameters());
+  push_specs(specs, ArteryNetwork::valid_parameters());
+  push_specs(specs, Inpar::BioFilm::valid_parameters());
+  push_specs(specs, Airway::valid_parameters());
+  push_specs(specs, ReducedLung::valid_parameters());
+  push_specs(specs, Inpar::Cardiovascular0D::valid_parameters());
+  push_specs(specs, Inpar::FPSI::valid_parameters());
+  push_specs(specs, FBI::valid_parameters());
 
-  Inpar::PARTICLE::set_valid_parameters(specs);
+  push_specs(specs, Inpar::PARTICLE::valid_parameters());
 
-  Inpar::Geo::set_valid_parameters(specs);
-  Core::Binstrategy::set_valid_parameters(specs);
-  Core::GeometricSearch::set_valid_parameters(specs);
-  Inpar::PaSI::set_valid_parameters(specs);
+  push_specs(specs, Inpar::Geo::valid_parameters());
+  push_specs(specs, Core::Binstrategy::valid_parameters());
+  push_specs(specs, Core::GeometricSearch::valid_parameters());
+  push_specs(specs, Inpar::PaSI::valid_parameters());
 
-  Core::Rebalance::set_valid_parameters(specs);
-  Core::LinearSolver::set_valid_parameters(specs);
-  NOX::set_valid_parameters(specs);
+  push_specs(specs, Core::Rebalance::valid_parameters());
+  push_specs(specs, Core::LinearSolver::valid_parameters());
+  push_specs(specs, NOX::valid_parameters());
 
   return specs;
 }

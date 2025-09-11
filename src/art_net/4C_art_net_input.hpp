@@ -12,7 +12,6 @@
 
 #include "4C_io_input_spec.hpp"
 
-#include <map>
 #include <vector>
 
 FOUR_C_NAMESPACE_OPEN
@@ -48,8 +47,8 @@ namespace ArtDyn
     impltype_pressure_based
   };
 
-  /// set the arterial dynamic parameters
-  void set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list);
+  /// arterial dynamic parameters
+  Core::IO::InputSpec valid_parameters();
 }  // namespace ArtDyn
 
 namespace ArteryNetwork
@@ -77,8 +76,8 @@ namespace ArteryNetwork
     node_to_point            // 1D node-to-point in 2D/3D
   };
 
-  /// set the artnet parameters
-  void set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list);
+  /// artnet parameters
+  Core::IO::InputSpec valid_parameters();
 
   /// set specific artnet conditions
   void set_valid_conditions(std::vector<Core::Conditions::ConditionDefinition>& condlist);

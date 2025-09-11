@@ -12,7 +12,6 @@
 
 #include "4C_io_input_spec.hpp"
 
-#include <map>
 #include <vector>
 
 FOUR_C_NAMESPACE_OPEN
@@ -53,8 +52,8 @@ namespace Inpar
       resp_standard
     };
 
-    /// set the 0Dcardiovascular parameters
-    void set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list);
+    /// 0Dcardiovascular parameters
+    std::vector<Core::IO::InputSpec> valid_parameters();
 
     /// set specific 0Dcardiovascular conditions
     void set_valid_conditions(std::vector<Core::Conditions::ConditionDefinition>& condlist);

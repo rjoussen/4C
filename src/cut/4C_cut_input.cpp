@@ -15,12 +15,11 @@ FOUR_C_NAMESPACE_OPEN
 
 
 
-void Cut::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
+Core::IO::InputSpec Cut::valid_parameters()
 {
   using namespace Cut;
   using namespace Core::IO::InputSpecBuilders;
-
-  list["CUT GENERAL"] = group("CUT GENERAL",
+  Core::IO::InputSpec spec = group("CUT GENERAL",
       {
 
           // intersection precision (double or cln)
@@ -109,6 +108,7 @@ void Cut::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
               {.description = "Should the integration be done on inside cells",
                   .default_value = true})},
       {.required = false});
+  return spec;
 }
 
 FOUR_C_NAMESPACE_CLOSE

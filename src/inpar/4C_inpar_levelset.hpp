@@ -12,7 +12,6 @@
 
 #include "4C_io_input_spec.hpp"
 
-#include <map>
 #include <vector>
 
 FOUR_C_NAMESPACE_OPEN
@@ -110,8 +109,8 @@ namespace Inpar
 
   namespace LevelSet
   {
-    /// set the levelset parameters
-    void set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list);
+    /// levelset parameters
+    std::vector<Core::IO::InputSpec> valid_parameters();
 
     /// set specific level set conditions
     void set_valid_conditions(std::vector<Core::Conditions::ConditionDefinition>& condlist);

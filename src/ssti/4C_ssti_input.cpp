@@ -16,11 +16,12 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-void SSTI::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
+std::vector<Core::IO::InputSpec> SSTI::valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
 
-  list["SSTI CONTROL"] = group("SSTI CONTROL",
+  std::vector<Core::IO::InputSpec> specs;
+  specs.push_back(group("SSTI CONTROL",
       {
 
           parameter<double>("RESTARTEVERYTIME",
@@ -67,11 +68,11 @@ void SSTI::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list
                   .default_value = ScaTraTimIntType::elch}),
           parameter<bool>("ADAPTIVE_TIMESTEPPING",
               {.description = "flag for adaptive time stepping", .default_value = false})},
-      {.required =
-              false}); /*----------------------------------------------------------------------*/
+      {.required = false}));
+  /*----------------------------------------------------------------------*/
   /* parameters for monolithic SSTI                                       */
   /*----------------------------------------------------------------------*/
-  list["SSTI CONTROL/MONOLITHIC"] = group("SSTI CONTROL/MONOLITHIC",
+  specs.push_back(group("SSTI CONTROL/MONOLITHIC",
       {
 
           parameter<double>(
@@ -110,12 +111,12 @@ void SSTI::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list
                       "use equilibration method of ScaTra to equilibrate initial calculation "
                       "of potential",
                   .default_value = false})},
-      {.required = false});
+      {.required = false}));
 
   /*----------------------------------------------------------------------*/
   /* parameters for thermo                                                */
   /*----------------------------------------------------------------------*/
-  list["SSTI CONTROL/THERMO"] = group("SSTI CONTROL/THERMO",
+  specs.push_back(group("SSTI CONTROL/THERMO",
       {
 
           parameter<int>("INITTHERMOFUNCT",
@@ -129,7 +130,8 @@ void SSTI::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list
               },
               {.description = "defines, how to set the initial field",
                   .default_value = Inpar::ScaTra::InitialField::initfield_field_by_function})},
-      {.required = false});
+      {.required = false}));
+  return specs;
 }
 
 

@@ -14,7 +14,7 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | set the particle parameters                                               |
  *---------------------------------------------------------------------------*/
-void Inpar::PARTICLE::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
+std::vector<Core::IO::InputSpec> Inpar::PARTICLE::valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
   using namespace Core::IO::InputSpecBuilders::Validators;
@@ -22,7 +22,9 @@ void Inpar::PARTICLE::set_valid_parameters(std::map<std::string, Core::IO::Input
   /*-------------------------------------------------------------------------*
    | general control parameters for particle simulations                     |
    *-------------------------------------------------------------------------*/
-  list["PARTICLE DYNAMIC"] = group("PARTICLE DYNAMIC",
+
+  std::vector<Core::IO::InputSpec> specs;
+  specs.push_back(group("PARTICLE DYNAMIC",
       {
 
           // type of particle time integration
@@ -120,12 +122,11 @@ void Inpar::PARTICLE::set_valid_parameters(std::map<std::string, Core::IO::Input
           parameter<double>("RIGID_BODY_PHASECHANGE_RADIUS",
               {.description = "search radius for neighboring rigid bodies in case of phase change",
                   .default_value = -1.0})},
-      {.required =
-              false}); /*-------------------------------------------------------------------------*
-| control parameters for initial/boundary conditions |
-*-------------------------------------------------------------------------*/
-  list["PARTICLE DYNAMIC/INITIAL AND BOUNDARY CONDITIONS"] = group(
-      "PARTICLE DYNAMIC/INITIAL AND BOUNDARY CONDITIONS",
+      {.required = false}));
+  /*-------------------------------------------------------------------------*
+ | control parameters for initial/boundary conditions |
+ *-------------------------------------------------------------------------*/
+  specs.push_back(group("PARTICLE DYNAMIC/INITIAL AND BOUNDARY CONDITIONS",
       {
 
           // initial temperature field of particle phase given by function
@@ -175,12 +176,12 @@ void Inpar::PARTICLE::set_valid_parameters(std::map<std::string, Core::IO::Input
                       "Refer to the function ID describing the temperature boundary condition of "
                       "particle phase",
                   .default_value = "none"})},
-      {.required = false});
+      {.required = false}));
 
   /*-------------------------------------------------------------------------*
    | smoothed particle hydrodynamics (SPH) specific control parameters       |
    *-------------------------------------------------------------------------*/
-  list["PARTICLE DYNAMIC/SPH"] = group("PARTICLE DYNAMIC/SPH",
+  specs.push_back(group("PARTICLE DYNAMIC/SPH",
       {
 
           // write particle-wall interaction output
@@ -422,12 +423,12 @@ void Inpar::PARTICLE::set_valid_parameters(std::map<std::string, Core::IO::Input
               {.description = "rigid particle contact stiffness", .default_value = -1.0}),
           parameter<double>("RIGIDPARTICLECONTACTDAMP",
               {.description = "rigid particle contact damping parameter", .default_value = 0.0})},
-      {.required = false});
+      {.required = false}));
 
   /*-------------------------------------------------------------------------*
    | discrete element method (DEM) specific control parameters               |
    *-------------------------------------------------------------------------*/
-  list["PARTICLE DYNAMIC/DEM"] = group("PARTICLE DYNAMIC/DEM",
+  specs.push_back(group("PARTICLE DYNAMIC/DEM",
       {
 
           // write particle energy output
@@ -550,7 +551,8 @@ void Inpar::PARTICLE::set_valid_parameters(std::map<std::string, Core::IO::Input
           parameter<double>("ADHESION_SURFACE_ENERGY_FACTOR",
               {.description = "factor to calculate minimum adhesion surface energy",
                   .default_value = 1.0})},
-      {.required = false});
+      {.required = false}));
+  return specs;
 }
 
 /*---------------------------------------------------------------------------*

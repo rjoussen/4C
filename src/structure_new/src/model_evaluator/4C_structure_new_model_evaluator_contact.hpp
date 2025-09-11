@@ -195,7 +195,7 @@ namespace Solid
      private:
       void post_setup(Teuchos::ParameterList& cparams);
 
-      /// Set the correct time integration parameters within the contact strategy
+      /// correct time integration parameters within the contact strategy
       void set_time_integration_info(CONTACT::AbstractStrategy& strategy) const;
 
       void post_update_step_state();

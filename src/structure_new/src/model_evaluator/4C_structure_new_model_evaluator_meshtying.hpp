@@ -221,7 +221,7 @@ namespace Solid
 
      protected:
      private:
-      /// Set the correct time integration parameters within the meshtying strategy
+      /// correct time integration parameters within the meshtying strategy
       void set_time_integration_info(CONTACT::MtAbstractStrategy& strategy) const;
 
       //! meshtying strategy

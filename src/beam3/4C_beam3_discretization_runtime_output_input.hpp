@@ -15,7 +15,6 @@
 
 #include "4C_io_input_spec.hpp"
 
-#include <map>
 #include <memory>
 
 FOUR_C_NAMESPACE_OPEN
@@ -26,8 +25,8 @@ namespace Beam
 {
   namespace IORuntimeOutput
   {
-    /// set the valid parameters related to writing of output at runtime
-    void set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list);
+    /// valid parameters related to writing of output at runtime
+    Core::IO::InputSpec valid_parameters();
 
   }  // namespace IORuntimeOutput
 }  // namespace Beam

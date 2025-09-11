@@ -11,11 +11,10 @@
 #include "4C_rebalance.hpp"
 FOUR_C_NAMESPACE_OPEN
 
-void Core::Rebalance::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
+Core::IO::InputSpec Core::Rebalance::valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
-
-  list["MESH PARTITIONING"] = group("MESH PARTITIONING",
+  Core::IO::InputSpec spec = group("MESH PARTITIONING",
       {
 
           parameter<Core::Rebalance::RebalanceType>("METHOD",
@@ -37,6 +36,7 @@ void Core::Rebalance::set_valid_parameters(std::map<std::string, Core::IO::Input
                       "of a subdomain.",
                   .default_value = 0})},
       {.required = false});
+  return spec;
 }
 
 FOUR_C_NAMESPACE_CLOSE

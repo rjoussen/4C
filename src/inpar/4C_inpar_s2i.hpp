@@ -12,7 +12,6 @@
 
 #include "4C_io_input_spec.hpp"
 
-#include <map>
 #include <vector>
 
 FOUR_C_NAMESPACE_OPEN
@@ -96,8 +95,8 @@ namespace Inpar::S2I
     regularization_trigonometrical
   };
 
-  //! set valid parameters for scatra-scatra interface coupling
-  void set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list);
+  //! valid parameters for scatra-scatra interface coupling
+  std::vector<Core::IO::InputSpec> valid_parameters();
 
   //! set valid conditions for scatra-scatra interface coupling
   void set_valid_conditions(std::vector<Core::Conditions::ConditionDefinition>& condlist);

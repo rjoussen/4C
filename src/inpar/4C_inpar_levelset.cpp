@@ -13,11 +13,12 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-void Inpar::LevelSet::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
+std::vector<Core::IO::InputSpec> Inpar::LevelSet::valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
 
-  list["LEVEL-SET CONTROL"] = group("LEVEL-SET CONTROL",
+  std::vector<Core::IO::InputSpec> specs;
+  specs.push_back(group("LEVEL-SET CONTROL",
       {
 
           parameter<int>(
@@ -49,9 +50,9 @@ void Inpar::LevelSet::set_valid_parameters(std::map<std::string, Core::IO::Input
               {.description = "number of layers around the interface which keep their computed "
                               "convective velocity",
                   .default_value = -1})},
-      {.required =
-              false}); /*----------------------------------------------------------------------*/
-  list["LEVEL-SET CONTROL/REINITIALIZATION"] = group("LEVEL-SET CONTROL/REINITIALIZATION",
+      {.required = false}));
+  /*----------------------------------------------------------------------*/
+  specs.push_back(group("LEVEL-SET CONTROL/REINITIALIZATION",
       {
 
           deprecated_selection<Inpar::ScaTra::ReInitialAction>("REINITIALIZATION",
@@ -214,7 +215,8 @@ void Inpar::LevelSet::set_valid_parameters(std::map<std::string, Core::IO::Input
           parameter<Inpar::ScaTra::DiffFunc>(
               "DIFF_FUNC", {.description = "function for diffusivity",
                                .default_value = Inpar::ScaTra::hyperbolic})},
-      {.required = false});
+      {.required = false}));
+  return specs;
 }
 
 

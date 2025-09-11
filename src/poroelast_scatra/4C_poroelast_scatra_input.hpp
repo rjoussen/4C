@@ -12,7 +12,6 @@
 
 #include "4C_io_input_spec.hpp"
 
-#include <map>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -28,8 +27,8 @@ namespace PoroElastScaTra
     Part_TwoWay
   };
 
-  /// set the poroscatra parameters
-  void set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list);
+  /// poroscatra parameters
+  Core::IO::InputSpec valid_parameters();
 
 }  // namespace PoroElastScaTra
 

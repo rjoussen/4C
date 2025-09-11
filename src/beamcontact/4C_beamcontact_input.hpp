@@ -14,6 +14,8 @@
 #include "4C_io_input_spec.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
+#include <vector>
+
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
@@ -75,8 +77,8 @@ namespace BeamContact
     boct_spbb   ///< spherical bounding boxes
   };
 
-  /// set the beam contact parameters
-  void set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list);
+  /// beam contact parameters
+  std::vector<Core::IO::InputSpec> valid_parameters();
 
   /**
    * \brief Set beam beam-to-beam specific conditions.

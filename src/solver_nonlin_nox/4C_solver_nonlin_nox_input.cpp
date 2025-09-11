@@ -13,14 +13,16 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
+std::vector<Core::IO::InputSpec> NOX::valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
 
   /*----------------------------------------------------------------------*
    * parameters for NOX - non-linear solution
    *----------------------------------------------------------------------*/
-  list["STRUCT NOX"] = group("STRUCT NOX",
+
+  std::vector<Core::IO::InputSpec> specs;
+  specs.push_back(group("STRUCT NOX",
       {
 
           deprecated_selection<std::string>("Nonlinear Solver",
@@ -28,10 +30,10 @@ void NOX::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
                   "Inexact Trust Region Based", "Tensor Based", "Single Step"},
               {.description = "Choose a nonlinear solver method.",
                   .default_value = "Line Search Based"})},
-      {.required = false});
+      {.required = false}));
 
   // sub-list direction
-  list["STRUCT NOX/Direction"] = group("STRUCT NOX/Direction",
+  specs.push_back(group("STRUCT NOX/Direction",
       {
 
           deprecated_selection<std::string>("Method",
@@ -43,10 +45,10 @@ void NOX::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
           deprecated_selection<std::string>("User Defined Method", {"Newton", "Modified Newton"},
               {.description = "Choose a user-defined direction method.",
                   .default_value = "Modified Newton"})},
-      {.required = false});
+      {.required = false}));
 
   // sub-sub-list "Newton"
-  list["STRUCT NOX/Direction/Newton"] = group("STRUCT NOX/Direction/Newton",
+  specs.push_back(group("STRUCT NOX/Direction/Newton",
       {
 
           deprecated_selection<std::string>("Forcing Term Method", {"Constant", "Type 1", "Type 2"},
@@ -67,19 +69,19 @@ void NOX::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
                       "If set to true, we will use the computed direction even if the linear "
                       "solve does not achieve the tolerance specified by the forcing term",
                   .default_value = true})},
-      {.required = false});
+      {.required = false}));
 
   // sub-sub-list "Steepest Descent"
-  list["STRUCT NOX/Direction/Steepest Descent"] = group("STRUCT NOX/Direction/Steepest Descent",
+  specs.push_back(group("STRUCT NOX/Direction/Steepest Descent",
       {
 
           deprecated_selection<std::string>("Scaling Type",
               {"2-Norm", "Quadratic Model Min", "F 2-Norm", "None"},
               {.description = "", .default_value = "None"})},
-      {.required = false});
+      {.required = false}));
 
   // sub-list "Pseudo Transient"
-  list["STRUCT NOX/Pseudo Transient"] = group("STRUCT NOX/Pseudo Transient",
+  specs.push_back(group("STRUCT NOX/Pseudo Transient",
       {
 
           parameter<double>("deltaInit",
@@ -123,10 +125,10 @@ void NOX::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
               {"every iter", "every timestep"},
               {.description = "Build scaling operator in every iteration or timestep",
                   .default_value = "every timestep"})},
-      {.required = false});
+      {.required = false}));
 
   // sub-list "Line Search"
-  list["STRUCT NOX/Line Search"] = group("STRUCT NOX/Line Search",
+  specs.push_back(group("STRUCT NOX/Line Search",
       {
 
           deprecated_selection<std::string>("Method",
@@ -138,18 +140,18 @@ void NOX::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
           parameter<::NOX::StatusTest::CheckType>("Inner Status Test Check Type",
               {.description = "Specify the check type for the inner status tests.",
                   .default_value = ::NOX::StatusTest::Minimal})},
-      {.required = false});
+      {.required = false}));
 
   // sub-sub-list "Full Step"
-  list["STRUCT NOX/Line Search/Full Step"] = group("STRUCT NOX/Line Search/Full Step",
+  specs.push_back(group("STRUCT NOX/Line Search/Full Step",
       {
 
           parameter<double>(
               "Full Step", {.description = "length of a full step", .default_value = 1.0})},
-      {.required = false});
+      {.required = false}));
 
   // sub-sub-list "Backtrack"
-  list["STRUCT NOX/Line Search/Backtrack"] = group("STRUCT NOX/Line Search/Backtrack",
+  specs.push_back(group("STRUCT NOX/Line Search/Backtrack",
       {
 
           parameter<double>(
@@ -171,10 +173,10 @@ void NOX::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
                       "Set to true, if exceptions during the force evaluation and backtracking "
                       "routine should be allowed.",
                   .default_value = false})},
-      {.required = false});
+      {.required = false}));
 
   // sub-sub-list "Polynomial"
-  list["STRUCT NOX/Line Search/Polynomial"] = group("STRUCT NOX/Line Search/Polynomial",
+  specs.push_back(group("STRUCT NOX/Line Search/Polynomial",
       {
 
           parameter<double>(
@@ -242,10 +244,10 @@ void NOX::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
 
           parameter<double>(
               "Allowed Relative Increase", {.description = "", .default_value = 100.0})},
-      {.required = false});
+      {.required = false}));
 
   // sub-sub-list "More'-Thuente"
-  list["STRUCT NOX/Line Search/More'-Thuente"] = group("STRUCT NOX/Line Search/More'-Thuente",
+  specs.push_back(group("STRUCT NOX/Line Search/More'-Thuente",
       {
 
           parameter<double>("Sufficient Decrease",
@@ -294,10 +296,10 @@ void NOX::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
                       "method. Setting this to true eliminates having to compute the Jacobian at "
                       "each inner iteration of the More'-Thuente line search",
                   .default_value = false})},
-      {.required = false});
+      {.required = false}));
 
   // sub-list "Trust Region"
-  list["STRUCT NOX/Trust Region"] = group("STRUCT NOX/Trust Region",
+  specs.push_back(group("STRUCT NOX/Trust Region",
       {
 
           parameter<double>("Minimum Trust Region Radius",
@@ -326,10 +328,10 @@ void NOX::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
           parameter<double>("Expansion Factor", {.description = "", .default_value = 4.0}),
 
           parameter<double>("Recovery Step", {.description = "", .default_value = 1.0})},
-      {.required = false});
+      {.required = false}));
 
   // sub-list "Printing"
-  list["STRUCT NOX/Printing"] = group("STRUCT NOX/Printing",
+  specs.push_back(group("STRUCT NOX/Printing",
       {
 
           parameter<bool>("Error", {.description = "", .default_value = false}),
@@ -351,18 +353,18 @@ void NOX::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
           parameter<bool>("Test Details", {.description = "", .default_value = false}),
 
           parameter<bool>("Debug", {.description = "", .default_value = false})},
-      {.required = false});
+      {.required = false}));
 
   // sub-list "Status Test"
-  list["STRUCT NOX/Status Test"] = group("STRUCT NOX/Status Test",
+  specs.push_back(group("STRUCT NOX/Status Test",
       {
 
           Core::IO::InputSpecBuilders::parameter<std::optional<std::filesystem::path>>("XML File",
               {.description = "Filename of XML file with configuration of nox status test"})},
-      {.required = false});
+      {.required = false}));
 
   // sub-list "Solver Options"
-  list["STRUCT NOX/Solver Options"] = group("STRUCT NOX/Solver Options",
+  specs.push_back(group("STRUCT NOX/Solver Options",
       {
 
           deprecated_selection<NOX::Nln::MeritFunction::MeritFctName>("Merit Function",
@@ -373,11 +375,10 @@ void NOX::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
 
           deprecated_selection<std::string>("Status Test Check Type",
               {"Complete", "Minimal", "None"}, {.description = "", .default_value = "Complete"})},
-      {.required = false});
+      {.required = false}));
 
   // sub-sub-sub-list "Linear Solver"
-  list["STRUCT NOX/Direction/Newton/Linear Solver"] = group(
-      "STRUCT NOX/Direction/Newton/Linear Solver",
+  specs.push_back(group("STRUCT NOX/Direction/Newton/Linear Solver",
       {
 
           // convergence criteria adaptivity
@@ -400,7 +401,8 @@ void NOX::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
           parameter<bool>("Output Solver Details",
               {.description = "Switch the linear solver output on and off.",
                   .default_value = true})},
-      {.required = false});
+      {.required = false}));
+  return specs;
 }
 
 FOUR_C_NAMESPACE_CLOSE

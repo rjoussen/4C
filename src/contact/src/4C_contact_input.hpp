@@ -12,7 +12,6 @@
 
 #include "4C_io_input_spec.hpp"
 
-#include <map>
 #include <string>
 
 FOUR_C_NAMESPACE_OPEN
@@ -123,8 +122,8 @@ namespace CONTACT
     partitioning  ///< partitioning approach
   };
 
-  /// set the contact parameters
-  void set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list);
+  /// contact parameters
+  Core::IO::InputSpec valid_parameters();
 
 }  // namespace CONTACT
 

@@ -12,7 +12,6 @@
 
 #include "4C_io_input_spec.hpp"
 
-#include <map>
 #include <vector>
 
 FOUR_C_NAMESPACE_OPEN
@@ -61,7 +60,7 @@ namespace ALE
   };
 
   /// Defines all valid parameters for ale problem
-  void set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list);
+  Core::IO::InputSpec valid_parameters();
 
   /// Defines ale specific conditions
   void set_valid_conditions(std::vector<Core::Conditions::ConditionDefinition>& condlist);

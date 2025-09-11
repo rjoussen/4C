@@ -15,7 +15,6 @@
 
 #include "4C_io_input_spec.hpp"
 
-#include <map>
 #include <vector>
 
 FOUR_C_NAMESPACE_OPEN
@@ -251,8 +250,8 @@ namespace Inpar
       LogNormalRadiusDistribution
     };
 
-    //! set the particle parameters
-    void set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list);
+    //! particle parameters
+    std::vector<Core::IO::InputSpec> valid_parameters();
 
     //! set the particle conditions
     void set_valid_conditions(std::vector<Core::Conditions::ConditionDefinition>& condlist);

@@ -12,7 +12,8 @@
 
 #include "4C_io_input_spec.hpp"
 
-#include <map>
+#include <vector>
+
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -44,8 +45,8 @@ namespace Inpar
       coupling_nonmatch
     };
 
-    /// set the fs3i parameters
-    void set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list);
+    /// fs3i parameters
+    std::vector<Core::IO::InputSpec> valid_parameters();
 
   }  // namespace FS3I
 

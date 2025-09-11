@@ -12,7 +12,6 @@
 
 #include "4C_io_input_spec.hpp"
 
-#include <map>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -70,8 +69,8 @@ namespace Inpar
                            ///< steps
     };
 
-    /// set the wear parameters
-    void set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list);
+    /// wear parameters
+    Core::IO::InputSpec valid_parameters();
   }  // namespace Wear
 }  // namespace Inpar
 
