@@ -509,10 +509,9 @@ void Solid::Utils::Shell::Director::export_director_map_from_row_to_col_map(
   {
     auto curr = director_map.find(actnode.global_id());
     FOUR_C_ASSERT(curr != director_map.end(), "Cannot find director map entry");
-    for (int j = 0; j < actnode.user_node()->num_element(); ++j)
+    for (auto ele : actnode.adjacent_elements())
     {
-      Core::Elements::Element* tmpele = actnode.user_node()->elements()[j];
-      if (!tmpele) continue;
+      auto* tmpele = ele.user_element();
       if (tmpele->element_type() != eletype) continue;
       if (auto* scatra_ele = dynamic_cast<Discret::Elements::Shell7pScatra*>(tmpele))
       {
@@ -555,9 +554,9 @@ void Solid::Utils::Shell::Director::average_directors_at_nodes(
   for (const auto& act_node : dis.my_row_node_range())
   {
     int num_directors = 0;
-    for (int j = 0; j < act_node.user_node()->num_element(); ++j)
+    for (auto ele : act_node.adjacent_elements())
     {
-      const Core::Elements::Element* tmpele = act_node.user_node()->elements()[j];
+      auto* tmpele = ele.user_element();
       if (tmpele->element_type() != eletype) continue;
       if (auto* scatra_ele = dynamic_cast<const Discret::Elements::Shell7pScatra*>(tmpele))
       {

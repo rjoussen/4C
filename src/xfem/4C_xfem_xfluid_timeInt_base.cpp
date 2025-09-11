@@ -202,15 +202,9 @@ bool XFEM::XfluidTimeintBase::changed_side_same_time(
           break;
         }
 
-        const int numele = n->num_element();
-
-        Core::Elements::Element** elements = n->elements();
-
-        for (int e_it = 0; e_it < numele; e_it++)
+        for (auto ele : n->adjacent_elements())
         {
-          Core::Elements::Element* ele = elements[e_it];
-
-          eids.insert(ele->id());
+          eids.insert(ele.global_id());
 
 #ifdef DEBUG_TIMINT_STD
           Core::IO::cout << "\n\t\t\t\t\t add element " << ele->Id() << Core::IO::endl;
@@ -660,27 +654,6 @@ void XFEM::XfluidTimeintBase::add_pb_celements(
     const Core::Nodes::Node* node, std::vector<const Core::Elements::Element*>& eles) const
 {
   FOUR_C_THROW("what to do in add_pb_celements?");
-
-  const Core::Elements::Element* const* elements = node->elements();  // element around current node
-
-  for (int iele = 0; iele < node->num_element(); iele++) eles.push_back(elements[iele]);
-
-  // get pbcnode
-  bool pbcnodefound = false;  // boolean indicating whether this node is a pbc node
-  Core::Nodes::Node* pbcnode = nullptr;
-  find_pbc_node(node, pbcnode, pbcnodefound);
-
-  // add elements located around the coupled pbc node
-  if (pbcnodefound)
-  {
-    // get adjacent elements of this node
-    const Core::Elements::Element* const* pbcelements = pbcnode->elements();
-    // add elements to list
-    for (int iele = 0; iele < pbcnode->num_element(); iele++)  // = ptToNode->Elements();
-    {
-      eles.push_back(pbcelements[iele]);
-    }
-  }  // end if pbcnode true
 }
 
 
@@ -1506,10 +1479,9 @@ void XFEM::XfluidStd::project_and_trackback(TimeIntData& data)
 
         for (int i = 0; i < side_1->num_node(); i++)
         {
-          Core::Elements::Element** surr_sides = nodes[i]->elements();
-          for (int s = 0; s < nodes[i]->num_element(); s++)
+          for (auto ele : nodes[i]->adjacent_elements())
           {
-            neighbor_sides.insert(surr_sides[s]->id());
+            neighbor_sides.insert(ele.global_id());
           }
         }
 
@@ -1638,13 +1610,11 @@ void XFEM::XfluidStd::project_and_trackback(TimeIntData& data)
     // get the node
     Core::Nodes::Node* node = boundarydis_->g_node(proj_nid_np);
 
-    // get all surrounding sides
-    Core::Elements::Element** node_sides = node->elements();
 
-    for (int s = 0; s < node->num_element(); s++)
+    for (auto ele : node->adjacent_elements())
     {
       // side geometry at initial state t^0
-      Core::Elements::Element* side = node_sides[s];
+      Core::Elements::Element* side = ele.user_element();
       const int numnodes = side->num_node();
       Core::Nodes::Node** nodes = side->nodes();
       Core::LinAlg::SerialDenseMatrix side_xyze(3, numnodes);

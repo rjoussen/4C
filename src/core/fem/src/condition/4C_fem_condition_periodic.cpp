@@ -1203,9 +1203,8 @@ void Core::Conditions::PeriodicBoundaryConditions::balance_load()
       double weight = 1.0;
 
       // loop over adjacent elements of this node and find element with highest cost
-      Core::Elements::Element** surrele = node->elements();
-      for (int k = 0; k < node->num_element(); ++k)
-        weight = std::max(weight, surrele[k]->evaluation_cost());
+      for (auto ele : node->adjacent_elements())
+        weight = std::max(weight, ele.user_element()->evaluation_cost());
 
       node_weights->replace_local_value(node_lid, weight);
     }

@@ -696,7 +696,7 @@ void Core::Binstrategy::BinningStrategy::write_bin_output(int const step, double
   for (int i = 0; i < bindis_->num_my_col_elements(); ++i)
   {
     Core::Elements::Element* ele = bindis_->l_col_element(i);
-    if (!ele) FOUR_C_THROW("Cannot find element with lid %", i);
+    if (!ele) FOUR_C_THROW("Cannot find element with local id {}", i);
 
     // get corner position as node positions
     const int numcorner = 8;
@@ -1772,9 +1772,8 @@ void Core::Binstrategy::BinningStrategy::transfer_nodes_and_elements(
         // set new owner of node
         currnode->set_owner(hostbinowner);
         // in case myrank is owner of associated element, add it to set
-        Core::Elements::Element** curreles = currnode->elements();
-        for (int j = 0; j < currnode->num_element(); ++j)
-          if (curreles[j]->owner() == myrank_) elestoupdate.insert(curreles[j]);
+        for (auto ele : currnode->adjacent_elements())
+          if (ele.owner() == myrank_) elestoupdate.insert(ele.user_element());
       }
     }
     /*else: in this case myrank was not owner of node and a corresponding element had and

@@ -806,18 +806,11 @@ void CONTACT::SelfBinaryTree::calculate_dual_graph(
       Core::Nodes::Node* node = nodes[j];
       if (!node) FOUR_C_THROW("Null pointer!");
 
-      // adjacent elements of current node
-      int numE = node->num_element();
-      Core::Elements::Element** adjElements = node->elements();
-      if (!adjElements) FOUR_C_THROW("Null pointer!");
-
       // loop over all adjacent elements of current node
-      for (int k = 0; k < numE; ++k)
+      for (auto ele : node->adjacent_elements())
       {
-        Core::Elements::Element* adjElementk = adjElements[k];
-
         calculate_adjacent_tree_nodes_and_dual_edges(
-            possadjids, gid, adjElementk, node1, adjtreenodes, adjdualedges);
+            possadjids, gid, ele.user_element(), node1, adjtreenodes, adjdualedges);
       }  // all adjacent elements
     }  // all nodes
 

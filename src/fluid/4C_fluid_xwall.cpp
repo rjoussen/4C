@@ -299,11 +299,10 @@ void FLD::XWall::init_x_wall_maps()
       bool enriched = false;
 
       // check if one of the surrounding elements is xwall element
-      Core::Elements::Element** surrele = xwallnode->elements();
-      for (int k = 0; k < xwallnode->num_element(); ++k)
+      for (auto ele : xwallnode->adjacent_elements())
       {
         Discret::Elements::FluidXWall* xwallele =
-            dynamic_cast<Discret::Elements::FluidXWall*>(surrele[k]);
+            dynamic_cast<Discret::Elements::FluidXWall*>(ele.user_element());
 
         if (xwallele) enriched = true;
       }
@@ -381,7 +380,7 @@ void FLD::XWall::init_wall_dist()
   for (int i = 0; i < (discret_->node_col_map())->num_my_elements(); ++i)
   {
     Core::Nodes::Node* node = discret_->l_col_node(i);
-    if (!node) FOUR_C_THROW("Cannot find node with lid %", i);
+    if (!node) FOUR_C_THROW("Cannot find node with local id {}", i);
     std::shared_ptr<Core::Nodes::Node> newnode(node->clone());
     commondis->add_node(newnode);
   }
@@ -389,7 +388,7 @@ void FLD::XWall::init_wall_dist()
   for (int i = 0; i < (discret_->element_col_map())->num_my_elements(); ++i)
   {
     Core::Elements::Element* node = discret_->l_col_element(i);
-    if (!node) FOUR_C_THROW("Cannot find ele with lid %", i);
+    if (!node) FOUR_C_THROW("Cannot find ele with local id {}", i);
     std::shared_ptr<Core::Elements::Element> newnode(node->clone());
     commondis->add_element(newnode);
   }
@@ -408,14 +407,13 @@ void FLD::XWall::init_wall_dist()
   {
     int gid = commondis->node_col_map()->gid(i);
     Core::Nodes::Node* xwallnode = commondis->l_col_node(i);
-    if (!xwallnode) FOUR_C_THROW("Cannot find node with lid %", i);
+    if (!xwallnode) FOUR_C_THROW("Cannot find node with local id {}", i);
     int enriched = 0;
 
-    Core::Elements::Element** surrele = xwallnode->elements();
-    for (int k = 0; k < xwallnode->num_element(); ++k)
+    for (auto ele : xwallnode->adjacent_elements())
     {
       Discret::Elements::FluidXWall* xwallele =
-          dynamic_cast<Discret::Elements::FluidXWall*>(surrele[k]);
+          dynamic_cast<Discret::Elements::FluidXWall*>(ele.user_element());
 
       if (xwallele) enriched = 1;
     }
@@ -525,11 +523,10 @@ void FLD::XWall::init_toggle_vector()
       if (not mortarcond.empty()) fullyenriched = false;
 
       // get all surrounding elements
-      Core::Elements::Element** surrele = xwallnode->elements();
-      for (int k = 0; k < xwallnode->num_element(); ++k)
+      for (auto ele : xwallnode->adjacent_elements())
       {
         Discret::Elements::FluidXWall* xwallele =
-            dynamic_cast<Discret::Elements::FluidXWall*>(surrele[k]);
+            dynamic_cast<Discret::Elements::FluidXWall*>(ele.user_element());
 
         if (!xwallele) fullyenriched = false;
       }
@@ -583,7 +580,7 @@ void FLD::XWall::setup_x_wall_dis()
     if (xwallcolnodemap_->my_gid(gid))
     {
       Core::Nodes::Node* node = discret_->l_col_node(i);
-      if (!node) FOUR_C_THROW("Cannot find node with lid %", i);
+      if (!node) FOUR_C_THROW("Cannot find node with local id {}", i);
       std::shared_ptr<Core::Nodes::Node> newnode(node->clone());
       xwdiscret_->add_node(newnode);
     }
@@ -592,7 +589,7 @@ void FLD::XWall::setup_x_wall_dis()
   for (int i = 0; i < discret_->num_my_col_elements(); ++i)
   {
     Core::Elements::Element* ele = discret_->l_col_element(i);
-    if (!ele) FOUR_C_THROW("Cannot find ele with lid %", i);
+    if (!ele) FOUR_C_THROW("Cannot find ele with local id {}", i);
 
     Discret::Elements::FluidXWall* xwallele = dynamic_cast<Discret::Elements::FluidXWall*>(ele);
 
@@ -1508,7 +1505,7 @@ std::shared_ptr<Core::LinAlg::Vector<double>> FLD::XWall::fix_dirichlet_inflow(
               // the new node has to be on these as well
               //  std::vector<Core::Conditions::Condition*> dircond;
               //    discret_->GetCondition("FluidStressCalc",dircond);
-              Core::Elements::Element** surrele = xwallnode->elements();
+              auto surrele = xwallnode->adjacent_elements();
 
               // loop over all surrounding elements and find indices of node k, l which is closes
               // while fulfilling all criteria
@@ -1517,24 +1514,27 @@ std::shared_ptr<Core::LinAlg::Vector<double>> FLD::XWall::fix_dirichlet_inflow(
               int foundl = -1;
               for (int k = 0; k < (xwallnode->num_element()); ++k)  // loop over elements
               {
-                Core::Nodes::Node** test = surrele[k]->nodes();
-                for (int l = 0; l < surrele[k]->num_node(); ++l)  // loop over nodes of element
+                auto test = surrele[k].nodes();
+                for (size_t l = 0; l < surrele[k].num_nodes(); ++l)  // loop over nodes of element
                 {
+                  auto* current_node = test[l].user_node();
                   // it has to be on fluidstresscalc
                   // it may not be a dirichlet inflow node
                   // get Dirichlet conditions
                   std::vector<const Core::Conditions::Condition*> stresscond =
-                      test[l]->discretization()->get_conditions_on_node("FluidStressCalc", test[l]);
-                  int numdf = discret_->num_dof(test[l]);
+                      current_node->discretization()->get_conditions_on_node(
+                          "FluidStressCalc", current_node);
+                  int numdf = discret_->num_dof(current_node);
                   if (not stresscond.empty() and numdf > 5)
                   {
                     std::vector<const Core::Conditions::Condition*> dircond =
-                        test[l]->discretization()->get_conditions_on_node("Dirichlet", test[l]);
+                        current_node->discretization()->get_conditions_on_node(
+                            "Dirichlet", current_node);
                     bool isuglydirnode = false;
                     if (dircond.empty())
                     {
-                      dircond =
-                          test[l]->discretization()->get_conditions_on_node("FSICoupling", test[l]);
+                      dircond = current_node->discretization()->get_conditions_on_node(
+                          "FSICoupling", current_node);
                       if (dircond.empty())
                         FOUR_C_THROW("this should be a Dirichlet or fsi coupling node");
                     }
@@ -1549,7 +1549,7 @@ std::shared_ptr<Core::LinAlg::Vector<double>> FLD::XWall::fix_dirichlet_inflow(
 
                     if (not isuglydirnode)
                     {
-                      const auto& x = test[l]->x();
+                      const auto& x = current_node->x();
                       double dist = abs(x[0] - xwallnode->x()[0]) + abs(x[1] - xwallnode->x()[1]) +
                                     abs(x[2] - xwallnode->x()[2]);
                       if (founddist > dist)
@@ -1565,12 +1565,12 @@ std::shared_ptr<Core::LinAlg::Vector<double>> FLD::XWall::fix_dirichlet_inflow(
 
               if (foundk < 0 or foundl < 0) FOUR_C_THROW("haven't found required node");
 
-              Core::Nodes::Node** test = surrele[foundk]->nodes();
+              auto test = surrele[foundk].nodes();
 
               int firstglobaldofidtoreplace = discret_->dof(xwallnode, 0);
               int secondglobaldofidtoreplace = discret_->dof(xwallnode, 0) + 1;
               int thirdglobaldofidtoreplace = discret_->dof(xwallnode, 0) + 2;
-              int firstglobaldofidnewvalue = discret_->dof(test[foundl], 0);
+              int firstglobaldofidnewvalue = discret_->dof(test[foundl].user_node(), 0);
 
               int firstlocaldofidnewvalue = discret_->dof_col_map()->lid(firstglobaldofidnewvalue);
               // half because the area is half on a boundary node compared to an inner node

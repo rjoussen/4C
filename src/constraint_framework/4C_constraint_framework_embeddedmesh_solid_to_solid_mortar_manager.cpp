@@ -589,7 +589,7 @@ bool Constraints::EmbeddedMesh::SolidToSolidMortarManager::is_cut_node(
   {
     bool is_node_in_cut_ele =
         std::find(cut_elements_col_vector_.begin(), cut_elements_col_vector_.end(),
-            node.elements()[num_ele]) != cut_elements_col_vector_.end();
+            node.adjacent_elements()[num_ele].user_element()) != cut_elements_col_vector_.end();
     if (is_node_in_cut_ele) is_cut_node = true;
   }
 

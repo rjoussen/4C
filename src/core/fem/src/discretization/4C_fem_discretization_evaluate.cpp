@@ -299,13 +299,9 @@ void Core::FE::Discretization::evaluate_neumann(Teuchos::ParameterList& params,
       Core::Nodes::Node* actnode = g_node(nodeid);
       if (!actnode) FOUR_C_THROW("Cannot find global node {}", nodeid);
 
-      // get elements attached to global node
-      Core::Elements::Element** curreleptr = actnode->elements();
-
-      // find element from pointer
       // please note, that external force will be applied to the first element [0] attached to a
       // node this needs to be done, otherwise it will be applied several times on several elements.
-      Core::Elements::Element* currele = curreleptr[0];
+      auto currele = actnode->adjacent_elements()[0].user_element();
 
       // get information from location
       currele->location_vector(*this, lm, lmowner, lmstride);

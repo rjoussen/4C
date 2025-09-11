@@ -466,7 +466,7 @@ void CONTACT::Beam3cmanager::init_beam_contact_discret()
   for (int i = 0; i < (problem_discret().node_col_map())->num_my_elements(); ++i)
   {
     Core::Nodes::Node* node = problem_discret().l_col_node(i);
-    if (!node) FOUR_C_THROW("Cannot find node with lid %", i);
+    if (!node) FOUR_C_THROW("Cannot find node with local id {}", i);
     std::shared_ptr<Core::Nodes::Node> newnode = std::shared_ptr<Core::Nodes::Node>(node->clone());
     if (BeamInteraction::Utils::is_beam_node(*newnode))
     {
@@ -492,7 +492,7 @@ void CONTACT::Beam3cmanager::init_beam_contact_discret()
   for (int i = 0; i < (problem_discret().element_col_map())->num_my_elements(); ++i)
   {
     Core::Elements::Element* ele = problem_discret().l_col_element(i);
-    if (!ele) FOUR_C_THROW("Cannot find element with lid %", i);
+    if (!ele) FOUR_C_THROW("Cannot find element with local id {}", i);
     std::shared_ptr<Core::Elements::Element> newele =
         std::shared_ptr<Core::Elements::Element>(ele->clone());
     if (BeamInteraction::Utils::is_beam_element(*newele) or
@@ -866,13 +866,15 @@ void CONTACT::Beam3cmanager::set_state(std::map<int, Core::LinAlg::Matrix<3, 1>>
       Core::LinAlg::Matrix<3, 1> currtan(Core::LinAlg::Initialization::zero);
       for (int i = 0; i < numnodes_;
           i++)  // TODO for now, use number of centerline nodes numnodes_ (=2) (no matter how many
-                // nodes the function call node->Elements()[0]->num_node() would tell you)
+                // nodes the function call node->adjacent_elements()[0].user_element()->num_node()
+                // would tell you)
       {
-        if (node->elements()[0]->nodes()[i]->id() == node->id() and
-            node->elements()[0]->element_type() == Discret::Elements::Beam3ebType::instance())
+        if (node->adjacent_elements()[0].user_element()->nodes()[i]->id() == node->id() and
+            node->adjacent_elements()[0].user_element()->element_type() ==
+                Discret::Elements::Beam3ebType::instance())
         {
-          const Discret::Elements::Beam3eb* ele =
-              dynamic_cast<const Discret::Elements::Beam3eb*>(node->elements()[0]);
+          const Discret::Elements::Beam3eb* ele = dynamic_cast<const Discret::Elements::Beam3eb*>(
+              node->adjacent_elements()[0].user_element());
           currtan(0) =
               ((ele->tref())[i])(0) + disccol[bt_sol_discret().dof_col_map()->lid(dofnode[3])];
           currtan(1) =
@@ -880,11 +882,12 @@ void CONTACT::Beam3cmanager::set_state(std::map<int, Core::LinAlg::Matrix<3, 1>>
           currtan(2) =
               ((ele->tref())[i])(2) + disccol[bt_sol_discret().dof_col_map()->lid(dofnode[5])];
         }
-        else if (node->elements()[0]->nodes()[i]->id() == node->id() and
-                 node->elements()[0]->element_type() == Discret::Elements::Beam3kType::instance())
+        else if (node->adjacent_elements()[0].user_element()->nodes()[i]->id() == node->id() and
+                 node->adjacent_elements()[0].user_element()->element_type() ==
+                     Discret::Elements::Beam3kType::instance())
         {
-          const Discret::Elements::Beam3k* ele =
-              dynamic_cast<const Discret::Elements::Beam3k*>(node->elements()[0]);
+          const Discret::Elements::Beam3k* ele = dynamic_cast<const Discret::Elements::Beam3k*>(
+              node->adjacent_elements()[0].user_element());
           currtan(0) =
               ((ele->tref())[i])(0) + disccol[bt_sol_discret().dof_col_map()->lid(dofnode[3])];
           currtan(1) =
@@ -892,11 +895,12 @@ void CONTACT::Beam3cmanager::set_state(std::map<int, Core::LinAlg::Matrix<3, 1>>
           currtan(2) =
               ((ele->tref())[i])(2) + disccol[bt_sol_discret().dof_col_map()->lid(dofnode[5])];
         }
-        else if (node->elements()[0]->nodes()[i]->id() == node->id() and
-                 node->elements()[0]->element_type() == Discret::Elements::Beam3rType::instance())
+        else if (node->adjacent_elements()[0].user_element()->nodes()[i]->id() == node->id() and
+                 node->adjacent_elements()[0].user_element()->element_type() ==
+                     Discret::Elements::Beam3rType::instance())
         {
-          const Discret::Elements::Beam3r* ele =
-              dynamic_cast<const Discret::Elements::Beam3r*>(node->elements()[0]);
+          const Discret::Elements::Beam3r* ele = dynamic_cast<const Discret::Elements::Beam3r*>(
+              node->adjacent_elements()[0].user_element());
           currtan(0) =
               ((ele->tref())[i])(0) + disccol[bt_sol_discret().dof_col_map()->lid(dofnode[6])];
           currtan(1) =
@@ -1361,11 +1365,10 @@ std::vector<std::vector<Core::Elements::Element*>> CONTACT::Beam3cmanager::brute
     std::vector<int> NearNodesGIDs;
 
     // get the elements 'firstnode' is linked to
-    Core::Elements::Element** neighboureles = firstnode->elements();
     // loop over all adjacent elements and their nodes
-    for (int j = 0; j < firstnode->num_element(); ++j)
+    for (auto ele : firstnode->adjacent_elements())
     {
-      Core::Elements::Element* thisele = neighboureles[j];
+      Core::Elements::Element* thisele = ele.user_element();
       for (int k = 0; k < thisele->num_node(); ++k)
       {
         int nodeid = thisele->node_ids()[k];
@@ -1429,13 +1432,10 @@ std::vector<std::vector<Core::Elements::Element*>> CONTACT::Beam3cmanager::brute
     std::vector<int> FirstElesGIDs;
     std::vector<int> SecondElesGIDs;
     // loop over all elements adjacent to firstnode
-    for (int j = 0; j < firstnode->num_element(); ++j)
+    for (auto ele : firstnode->adjacent_elements())
     {
-      // element pointer
-      Core::Elements::Element* ele1 = neighboureles[j];
-
       // insert into element vector
-      FirstElesGIDs.push_back(ele1->id());
+      FirstElesGIDs.push_back(ele.global_id());
     }
 
     // loop over ALL nodes close to first node
@@ -1443,16 +1443,10 @@ std::vector<std::vector<Core::Elements::Element*>> CONTACT::Beam3cmanager::brute
     {
       // node pointer
       Core::Nodes::Node* tempnode = bt_sol_discret().g_node(NearNodesGIDs[j]);
-      // getting the elements tempnode is linked to
-      Core::Elements::Element** TempEles = tempnode->elements();
-
       // loop over all elements adjacent to tempnode
-      for (int k = 0; k < tempnode->num_element(); ++k)
+      for (auto ele : tempnode->adjacent_elements())
       {
-        // element pointer
-        Core::Elements::Element* ele2 = TempEles[k];
-        // insert into element vector
-        SecondElesGIDs.push_back(ele2->id());
+        SecondElesGIDs.push_back(ele.global_id());
       }
     }
     // AT THIS POINT WE HAVE FOUND AND STORED ALL ELEMENTS CLOSE TO FIRSTNODE!

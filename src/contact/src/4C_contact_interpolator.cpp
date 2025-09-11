@@ -11,6 +11,7 @@
 #include "4C_contact_element.hpp"
 #include "4C_contact_friction_node.hpp"
 #include "4C_contact_integrator.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 #include "4C_mortar_defines.hpp"
@@ -104,13 +105,10 @@ void NTS::Interpolator::interpolate_2d(Mortar::Node& snode, std::vector<Mortar::
 
   // calculate area -- simplified version
   double area = 0.0;
-  //  for (int ele=0;ele<snode.NumElement();++ele)
-  //    area+=dynamic_cast<CONTACT::Element*>(snode.Elements()[ele])->MoData().Area();
-  //
-  //  area=area/snode.NumElement();
 
   // get first element (this is a dummy to use established algorithms)
-  Mortar::Element* sele = dynamic_cast<Mortar::Element*>(snode.elements()[0]);
+  Mortar::Element* sele =
+      dynamic_cast<Mortar::Element*>(snode.adjacent_elements()[0].user_element());
 
   CONTACT::Node& mynode = dynamic_cast<CONTACT::Node&>(snode);
 
@@ -247,7 +245,8 @@ bool NTS::Interpolator::interpolate_3d(Mortar::Node& snode, std::vector<Mortar::
   bool kink_projection = false;
 
   // get first element (this is a dummy to use established algorithms)
-  Mortar::Element* sele = dynamic_cast<Mortar::Element*>(snode.elements()[0]);
+  Mortar::Element* sele =
+      dynamic_cast<Mortar::Element*>(snode.adjacent_elements()[0].user_element());
 
   CONTACT::Node& mynode = dynamic_cast<CONTACT::Node&>(snode);
 
@@ -1896,7 +1895,8 @@ void NTS::MTInterpolatorCalc<distype_m>::interpolate_3d(
   double sxi[2] = {0.0, 0.0};
 
   // get local id
-  Mortar::Element* sele = dynamic_cast<Mortar::Element*>(snode.elements()[0]);
+  Mortar::Element* sele =
+      dynamic_cast<Mortar::Element*>(snode.adjacent_elements()[0].user_element());
 
   int lid = -1;
   for (int i = 0; i < sele->num_node(); ++i)

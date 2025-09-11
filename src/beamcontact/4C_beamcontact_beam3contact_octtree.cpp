@@ -265,8 +265,8 @@ bool Beam3ContactOctTree::intersect_b_boxes_with(
   octants.clear();
   // get the octants for two bounding boxes (element) GIDs adjacent to each given node LID
   for (int i = 0; i < nodeLID.numRows(); i++)
-    octants.push_back(
-        in_which_octant_lies(searchdis_.l_col_node((int)nodeLID(i, 0))->elements()[0]->id()));
+    octants.push_back(in_which_octant_lies(
+        searchdis_.l_col_node((int)nodeLID(i, 0))->adjacent_elements()[0].global_id()));
 
   // intersection of given bounding box with all other bounding boxes in given octant
   for (int ibox = 0; ibox < (int)octants.size(); ibox++)

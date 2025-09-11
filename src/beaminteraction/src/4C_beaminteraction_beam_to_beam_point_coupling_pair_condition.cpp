@@ -83,7 +83,7 @@ void BeamInteraction::BeamToBeamPointCouplingCondition::build_id_sets(
 
     Core::Nodes::Node* node = discretization->g_node(node_id);
 
-    Core::Elements::Element* element = node->elements()[0];
+    Core::Elements::Element* element = node->adjacent_elements()[0].user_element();
     element_ids[i - 1] = element->id();
     if (element->node_ids()[0] == node_id)
       position_in_parameter_space[i - 1] = -1;

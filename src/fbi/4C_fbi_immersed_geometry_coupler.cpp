@@ -100,12 +100,9 @@ std::shared_ptr<std::map<int, std::vector<int>>> FBI::FBIGeometryCoupler::search
         closefluideles != closeeles.end(); closefluideles++)
     {
       const Core::Nodes::Node* const beamnode = discretizations[0]->g_node(beamnodeiterator->first);
-      const Core::Elements::Element* const* beamelements = beamnode->elements();
-
       // loop over the set of beam elements adjacent to the current beam node (this leads to
       // duplicate pairs)
-      for (int beamelementsnumber = 0; beamelementsnumber < beamnode->num_element();
-          beamelementsnumber++)
+      for (auto ele : beamnode->adjacent_elements())
       {
         // loop over the gids of the fluid elements
         for (std::set<int>::const_iterator fluideleIter = (closefluideles->second).begin();
@@ -116,7 +113,7 @@ std::shared_ptr<std::map<int, std::vector<int>>> FBI::FBIGeometryCoupler::search
           {
             // store pairs because we have to create them on the beam element owner and we are
             // currently on the fluid element owner
-            (*pairids)[beamelements[beamelementsnumber]->id()].push_back(*fluideleIter);
+            (*pairids)[ele.global_id()].push_back(*fluideleIter);
           }
         }
       }

@@ -3196,13 +3196,15 @@ bool Wear::WearInterface::build_active_set_master()
     for (int u = 0; u < (int)frinode->num_element(); ++u)
     {
       // all found MASTER elements:
-      for (int k = 0; k < (int)dynamic_cast<Mortar::Element*>(frinode->elements()[u])
-                              ->mo_data()
-                              .num_search_elements();
+      for (int k = 0;
+          k < (int)dynamic_cast<Mortar::Element*>(frinode->adjacent_elements()[u].user_element())
+                  ->mo_data()
+                  .num_search_elements();
           ++k)
       {
-        int gid2 =
-            dynamic_cast<Mortar::Element*>(frinode->elements()[u])->mo_data().search_elements()[k];
+        int gid2 = dynamic_cast<Mortar::Element*>(frinode->adjacent_elements()[u].user_element())
+                       ->mo_data()
+                       .search_elements()[k];
         Core::Elements::Element* ele2 = discret().g_element(gid2);
         if (!ele2) FOUR_C_THROW("Cannot find master element with gid %", gid2);
         Mortar::Element* celement = dynamic_cast<Mortar::Element*>(ele2);

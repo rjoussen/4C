@@ -538,7 +538,8 @@ std::shared_ptr<std::list<int>> BeamInteraction::BeamCrosslinkerHandler::transfe
 #endif
 
     Core::FE::MeshFree::MeshfreeMultiBin* currbin =
-        dynamic_cast<Core::FE::MeshFree::MeshfreeMultiBin*>(currlinker->elements()[0]);
+        dynamic_cast<Core::FE::MeshFree::MeshfreeMultiBin*>(
+            currlinker->adjacent_elements()[0].user_element());
     // as checked above, there is only one element in currele array
     const int binId = currbin->id();
     const int rlid = binstrategy_->bin_discret()->element_row_map()->lid(binId);

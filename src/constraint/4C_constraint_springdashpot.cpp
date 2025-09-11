@@ -529,8 +529,8 @@ void Constraints::SpringDashpot::evaluate_robin(std::shared_ptr<Core::LinAlg::Sp
         // get adjacent element of this node and check if it's just one -> get this element and cast
         // it to truss element
         if (node->num_element() != 1) FOUR_C_THROW("Node may only have one element");
-        auto* ele = node->elements();
-        auto* truss_ele = dynamic_cast<Discret::Elements::Truss3*>(ele[0]);
+        auto* truss_ele =
+            dynamic_cast<Discret::Elements::Truss3*>(node->adjacent_elements()[0].user_element());
         if (truss_ele == nullptr)
         {
           FOUR_C_THROW(

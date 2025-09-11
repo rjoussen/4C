@@ -7,6 +7,7 @@
 
 #include "4C_beaminteraction_beam_to_beam_contact_tangentsmoothing.hpp"
 
+#include "4C_fem_discretization.hpp"
 #include "4C_fem_general_element.hpp"
 #include "4C_fem_general_node.hpp"
 #include "4C_fem_general_utils_fem_shapefunctions.hpp"
@@ -61,25 +62,16 @@ BeamInteraction::Beam3TangentSmoothing::determine_neighbors(const Core::Elements
         "per node");
   }
 
-  // loop over all elements adjacent to the left node of element 1
-  for (int y = 0; y < (**(element1->nodes())).num_element(); ++y)
+  // Loop over all elements adjacent to the left node of element1
+  for (auto neighbor_element : element1->nodes()[0]->adjacent_elements())
   {
-    globalneighborId = (*((**(element1->nodes())).elements() + y))->id();
-
-    if (globalneighborId != element1->id())
+    if (neighbor_element.global_id() != element1->id())
     {
-      left_neighbor = (*((**(element1->nodes())).elements() + y));
+      left_neighbor = neighbor_element.user_element();
 
-      // if node 1 of the left neighbor is the connecting node:
-      if (*((*((**(element1->nodes())).elements() + y))->node_ids()) == globalnodeId)
-      {
-        connecting_node_left = 0;
-      }
-      // otherwise node n_right of the left neighbor is the connecting node
-      else
-      {
-        connecting_node_left = n_right;
-      }
+      // Determine the connecting node
+      connecting_node_left =
+          (neighbor_element.user_element()->node_ids()[0] == globalnodeId) ? 0 : n_right;
     }
   }
 
@@ -94,22 +86,21 @@ BeamInteraction::Beam3TangentSmoothing::determine_neighbors(const Core::Elements
         "per node");
   }
 
-  // loop over all elements adjacent to the right node of element 1
-  for (int y = 0; y < (**(element1->nodes() + n_right)).num_element(); ++y)
+  // loop over all elements adjacent to the right node of element1
+  const auto rightNode = element1->nodes()[n_right];
+  for (auto neighbor : rightNode->adjacent_elements())
   {
-    globalneighborId = (*((**(element1->nodes() + n_right)).elements() + y))->id();
+    globalneighborId = neighbor.global_id();
 
     if (globalneighborId != element1->id())
     {
-      right_neighbor = (*((**(element1->nodes() + n_right)).elements() + y));
+      right_neighbor = neighbor.user_element();
 
-      // if node 1 of the right neighbor is the connecting node:
-      if (*((*((**(element1->nodes() + n_right)).elements() + y))->node_ids()) == globalnodeId)
+      // if node 0 of the right neighbor is the connecting node:
+      if (neighbor.user_element()->node_ids()[0] == globalnodeId)
       {
         connecting_node_right = 0;
       }
-
-      // otherwise node n_right of the right neighbor is the connecting node
       else
       {
         connecting_node_right = n_right;

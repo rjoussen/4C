@@ -242,9 +242,9 @@ bool Core::FE::Discretization::build_lines_in_condition(
   for (const auto& [node_id, actnode] : colnodes)
   {
     // loop all elements attached to actnode
-    std::span<Core::Elements::Element*> elements(actnode->elements(), actnode->num_element());
-    for (const auto& element : elements)
+    for (auto ele : actnode->adjacent_elements())
     {
+      auto* element = ele.user_element();
       // loop all lines of all elements attached to actnode
       const int numlines = element->num_line();
       if (!numlines) continue;
@@ -350,15 +350,13 @@ bool Core::FE::Discretization::build_surfaces_in_condition(
   // look at row nodes but the considered face has no row node.
   for (const auto& [node_id, actnode] : mycolnodes)
   {
-    Core::Elements::Element** elements = actnode->elements();
-
-    // loop all elements attached to actnode
-    for (int i = 0; i < actnode->num_element(); ++i)
+    for (auto ele : actnode->adjacent_elements())
     {
+      auto* element = ele.user_element();
       // loop all surfaces of all elements attached to actnode
-      const int numsurfs = elements[i]->num_surface();
+      const int numsurfs = element->num_surface();
       if (!numsurfs) continue;
-      std::vector<std::shared_ptr<Core::Elements::Element>> surfs = elements[i]->surfaces();
+      std::vector<std::shared_ptr<Core::Elements::Element>> surfs = element->surfaces();
       if (surfs.size() == 0) FOUR_C_THROW("Element does not return any surfaces");
 
       // loop all surfaces of all elements attached to actnode
@@ -399,7 +397,7 @@ bool Core::FE::Discretization::build_surfaces_in_condition(
               {
                 auto surf = std::shared_ptr<Core::Elements::Element>(actsurf->clone());
                 // Set owning processor of surface owner of underlying volume element.
-                surf->set_owner(elements[i]->owner());
+                surf->set_owner(ele.owner());
                 surfmap[nodes] = surf;
               }  // if surface not yet in map
             }  // if all nodes of surface belong to condition (is_conditioned_surface == true)

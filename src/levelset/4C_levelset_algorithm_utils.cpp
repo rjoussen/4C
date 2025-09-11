@@ -323,19 +323,16 @@ void ScaTra::LevelSetAlgorithm::apply_contact_point_boundary_condition()
         // which are only available for nodes belonging to the this proc
         if (actnode->owner() == myrank_)
         {
-          // get adjacent elements
-          const Core::Elements::Element* const* adjelements = actnode->elements();
-
           // initialize vector for averaged center velocity
           // note: velocity in scatra algorithm has three components (see also basic constructor)
           std::vector<double> averagedvel(3);
           for (int rr = 0; rr < 3; rr++) averagedvel[rr] = 0.0;
 
           // loop all adjacent elements
-          for (int iele = 0; iele < actnode->num_element(); iele++)
+          for (auto adj_ele : actnode->adjacent_elements())
           {
             // get discretization type
-            if ((adjelements[iele])->shape() != Core::FE::CellType::hex8)
+            if (adj_ele.user_element()->shape() != Core::FE::CellType::hex8)
               FOUR_C_THROW("Currently only hex8 supported");
             const Core::FE::CellType distype = Core::FE::CellType::hex8;
 
@@ -348,7 +345,7 @@ void ScaTra::LevelSetAlgorithm::apply_contact_point_boundary_condition()
 
               // get nodal values of velocity field from secondary dofset
               Core::Elements::LocationArray la(discret_->num_dof_sets());
-              adjelements[iele]->location_vector(*discret_, la);
+              adj_ele.user_element()->location_vector(*discret_, la);
               const std::vector<int>& lmvel = la[nds_vel()].lm_;
               std::vector<double> myconvel(lmvel.size());
 

@@ -391,14 +391,12 @@ void Mortar::Node::initialize_data_container()
   // get maximum size of nodal D-entries
   dentries_ = 0;
   std::set<int> sIdCheck;
-  std::pair<std::set<int>::iterator, bool> check;
-  for (int i = 0; i < num_element(); ++i)
+  for (auto ele : adjacent_elements())
   {
-    const int* snodeIds = elements()[i]->node_ids();
-    for (int j = 0; j < elements()[i]->num_node(); ++j)
+    for (auto node : ele.nodes())
     {
-      check = sIdCheck.insert(snodeIds[j]);
-      if (check.second) dentries_ += elements()[i]->num_dof_per_node(*(elements()[i]->nodes()[j]));
+      auto check = sIdCheck.insert(node.global_id());
+      if (check.second) dentries_ += ele.user_element()->num_dof_per_node(*(node.user_node()));
     }
   }
 
@@ -423,8 +421,7 @@ void Mortar::Node::build_averaged_normal()
   // reset normal and tangents when this method is called
   for (int j = 0; j < 3; ++j) mo_data().n()[j] = 0.0;
 
-  int nseg = num_element();
-  Core::Elements::Element** adjeles = elements();
+  const int nseg = num_element();
 
   // we need to store some stuff here
   //**********************************************************************
@@ -438,9 +435,10 @@ void Mortar::Node::build_averaged_normal()
   Core::LinAlg::SerialDenseMatrix elens(6, nseg);
 
   // loop over all adjacent elements
-  for (int i = 0; i < nseg; ++i)
+  int i = 0;
+  for (auto ele : adjacent_elements())
   {
-    auto* adjmrtrele = dynamic_cast<Mortar::Element*>(adjeles[i]);
+    auto* adjmrtrele = dynamic_cast<Mortar::Element*>(ele.user_element());
 
     // build element normal at current node
     // (we have to pass in the index i to be able to store the
@@ -449,6 +447,7 @@ void Mortar::Node::build_averaged_normal()
 
     // add (weighted) element normal to nodal normal n
     for (int j = 0; j < 3; ++j) mo_data().n()[j] += elens(j, i) / elens(4, i);
+    ++i;
   }
 
   // create unit normal vector
@@ -508,12 +507,12 @@ bool Mortar::Node::check_mesh_distortion(double& relocation, const double& limit
   bool ok = true;
 
   // loop over all adjacent elements of this node
-  for (int i = 0; i < num_element(); ++i)
+  for (auto ele : adjacent_elements())
   {
     // get the current element
-    Core::Elements::Element* ele = elements()[i];
-    if (!ele) FOUR_C_THROW("Cannot find element with lid %", i);
-    auto* mrtrele = dynamic_cast<Mortar::Element*>(ele);
+    Core::Elements::Element* eleptr = ele.user_element();
+    if (!eleptr) FOUR_C_THROW("Cannot find element with lid {}", ele.local_id());
+    auto* mrtrele = dynamic_cast<Mortar::Element*>(eleptr);
 
     // minimal edge size of the current element
     const double minedgesize = mrtrele->min_edge_size();

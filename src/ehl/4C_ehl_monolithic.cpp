@@ -1679,7 +1679,8 @@ void EHL::Monolithic::lin_couette_force_disp(
     const double p = lubrication_->lubrication_field()->prenp()->operator[](
         lubrication_->lubrication_field()->prenp()->get_map().lid(lub_dis.dof(0, lnode, 0)));
 
-    std::shared_ptr<Core::Mat::Material> mat = lnode->elements()[0]->material(0);
+    std::shared_ptr<Core::Mat::Material> mat =
+        lnode->adjacent_elements()[0].user_element()->material(0);
     if (!mat) FOUR_C_THROW("null pointer");
     std::shared_ptr<Mat::LubricationMat> lmat = std::dynamic_pointer_cast<Mat::LubricationMat>(mat);
     const double visc = lmat->compute_viscosity(p);
@@ -1829,7 +1830,8 @@ void EHL::Monolithic::lin_couette_force_pres(
     const double p = lubrication_->lubrication_field()->prenp()->operator[](
         lubrication_->lubrication_field()->prenp()->get_map().lid(lub_dis.dof(0, lnode, 0)));
 
-    std::shared_ptr<Core::Mat::Material> mat = lnode->elements()[0]->material(0);
+    std::shared_ptr<Core::Mat::Material> mat =
+        lnode->adjacent_elements()[0].user_element()->material(0);
     if (!mat) FOUR_C_THROW("null pointer");
     std::shared_ptr<Mat::LubricationMat> lmat = std::dynamic_pointer_cast<Mat::LubricationMat>(mat);
     const double visc = lmat->compute_viscosity(p);

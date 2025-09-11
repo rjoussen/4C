@@ -1531,7 +1531,8 @@ void CONTACT::Interface::assemble_g(Core::LinAlg::Vector<double>& gglobal)
         bool node_has_quad_element = false;
         for (int i = 0; i < cnode->num_element(); i++)
         {
-          if (dynamic_cast<Mortar::Element*>(cnode->elements()[i])->is_quad() == true)
+          if (dynamic_cast<Mortar::Element*>(cnode->adjacent_elements()[i].user_element())
+                  ->is_quad() == true)
           {
             node_has_quad_element = true;
             break;

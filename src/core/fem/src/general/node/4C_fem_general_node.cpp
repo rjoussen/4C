@@ -8,6 +8,7 @@
 #include "4C_fem_general_node.hpp"
 
 #include "4C_comm_pack_helpers.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_utils_exceptions.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -50,6 +51,23 @@ std::ostream& operator<<(std::ostream& os, const Core::Nodes::Node& node)
 {
   node.print(os);
   return os;
+}
+
+
+int Core::Nodes::Node::num_element() const { return adjacent_elements().size(); }
+
+
+Core::FE::IteratorRange<Core::FE::DiscretizationIterator<Core::FE::ElementRef>>
+Core::Nodes::Node::adjacent_elements()
+{
+  return FE::NodeRef(discretization_, lid_).adjacent_elements();
+}
+
+
+Core::FE::IteratorRange<Core::FE::DiscretizationIterator<Core::FE::ConstElementRef>>
+Core::Nodes::Node::adjacent_elements() const
+{
+  return FE::ConstNodeRef(discretization_, lid_).adjacent_elements();
 }
 
 

@@ -319,31 +319,28 @@ void BeamInteraction::condition_to_element_ids(
   element_ids.reserve(condition.geometry().size());
   for (const auto& item : condition.geometry())
   {
-    int n_nodes = item.second->num_node();
+    size_t n_nodes = item.second->num_node();
 
     // Create the node sets and store the node IDs from the condition element in it.
     std::set<int> nodes_condition;
     std::set<int> nodes_element;
-    for (int i = 0; i < n_nodes; i++) nodes_condition.insert(item.second->nodes()[i]->id());
+    for (size_t i = 0; i < n_nodes; i++) nodes_condition.insert(item.second->nodes()[i]->id());
 
     // Loop over all elements connected to a node and check if the nodal IDs are the same. Use the
     // last node, since if there are nodes connected to fewer elements, those are usually at the
     // end of the list.
     int local_node_id = n_nodes - 1;
-    Core::Elements::Element** elements = item.second->nodes()[local_node_id]->elements();
-    for (int i_element = 0; i_element < item.second->nodes()[local_node_id]->num_element();
-        i_element++)
+    for (auto ele : item.second->nodes()[local_node_id]->adjacent_elements())
     {
-      if (elements[i_element]->num_node() != n_nodes) continue;
+      if (ele.num_nodes() != n_nodes) continue;
 
       // Fill up the node ID map.
       nodes_element.clear();
-      for (int i_nodes = 0; i_nodes < n_nodes; i_nodes++)
-        nodes_element.insert(elements[i_element]->nodes()[i_nodes]->id());
+      for (auto node : ele.nodes()) nodes_element.insert(node.global_id());
 
       // Check if the maps are equal.
       if (std::equal(nodes_condition.begin(), nodes_condition.end(), nodes_element.begin()))
-        element_ids.push_back(elements[i_element]->id());
+        element_ids.push_back(ele.global_id());
     }
   }
 

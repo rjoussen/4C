@@ -268,8 +268,8 @@ void BeamInteraction::SubmodelEvaluator::Crosslinking::set_filament_types()
 
     for (int i = 0; i < currnode->num_element(); ++i)
     {
-      Discret::Elements::Beam3Base* beamele =
-          dynamic_cast<Discret::Elements::Beam3Base*>(currnode->elements()[i]);
+      Discret::Elements::Beam3Base* beamele = dynamic_cast<Discret::Elements::Beam3Base*>(
+          currnode->adjacent_elements()[i].user_element());
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
       if (beamele == nullptr)
@@ -2279,7 +2279,7 @@ void BeamInteraction::SubmodelEvaluator::Crosslinking::find_potential_binding_ev
 #endif
 
     // get bin that contains this crosslinker (can only be one)
-    Core::Elements::Element* currentbin = currcrosslinker->elements()[0];
+    Core::Elements::Element* currentbin = currcrosslinker->adjacent_elements()[0].user_element();
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
     if (currentbin->id() < 0) FOUR_C_THROW(" negative bin id number {} ", currentbin->id());

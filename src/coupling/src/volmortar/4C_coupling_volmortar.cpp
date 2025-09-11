@@ -741,7 +741,8 @@ void Coupling::VolMortar::VolMortarCoupl::evaluate_consistent_interpolation()
     Core::Nodes::Node* anode = dis1_->g_node(gid);
 
     // get found elements from other discr.
-    std::vector<int> found = search(*anode->elements()[0], SearchTreeB, CurrentDOPsB);
+    std::vector<int> found =
+        search(*anode->adjacent_elements()[0].user_element(), SearchTreeB, CurrentDOPsB);
 
     assemble_consistent_interpolation_p12(anode, found);
   }  // end node loop
@@ -754,7 +755,8 @@ void Coupling::VolMortar::VolMortarCoupl::evaluate_consistent_interpolation()
     Core::Nodes::Node* bnode = dis2_->g_node(gid);
 
     // get found elements from other discr.
-    std::vector<int> found = search(*bnode->elements()[0], SearchTreeA, CurrentDOPsA);
+    std::vector<int> found =
+        search(*bnode->adjacent_elements()[0].user_element(), SearchTreeA, CurrentDOPsA);
 
     assemble_consistent_interpolation_p21(bnode, found);
   }  // end node loop

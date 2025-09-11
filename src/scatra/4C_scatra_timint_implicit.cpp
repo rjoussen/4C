@@ -3433,7 +3433,8 @@ void ScaTra::ScaTraTimIntImpl::evaluate_macro_micro_coupling()
             {
               // access material of electrode
               std::shared_ptr<const Mat::Electrode> matelectrode =
-                  std::dynamic_pointer_cast<const Mat::Electrode>(node->elements()[0]->material());
+                  std::dynamic_pointer_cast<const Mat::Electrode>(
+                      node->adjacent_elements()[0].user_element()->material());
               if (matelectrode == nullptr)
                 FOUR_C_THROW("Invalid electrode material for multi-scale coupling!");
 

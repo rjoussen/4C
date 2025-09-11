@@ -688,13 +688,13 @@ void Mortar::Interface::initialize_cross_points()
       if (node->is_slave() && node->num_element() == 1)
       {
         // case1: linear shape functions, boundary nodes already found
-        if ((node->elements()[0])->num_node() == 2)
+        if ((node->adjacent_elements()[0].user_element())->num_node() == 2)
         {
           node->set_bound() = true;
           node->set_slave() = false;
         }
         // case2: quad. shape functions, middle nodes must be sorted out
-        else if (node->id() != (node->elements()[0])->node_ids()[2])
+        else if (node->id() != (node->adjacent_elements()[0].user_element())->node_ids()[2])
         {
           node->set_bound() = true;
           node->set_slave() = false;
@@ -732,7 +732,7 @@ void Mortar::Interface::initialize_lag_mult_lin()
       if (node->is_slave())
       {
         // search the first adjacent element
-        Core::FE::CellType shape = (node->elements()[0])->shape();
+        Core::FE::CellType shape = (node->adjacent_elements()[0].user_element())->shape();
 
         // which discretization type
         switch (shape)
@@ -741,8 +741,8 @@ void Mortar::Interface::initialize_lag_mult_lin()
           case Core::FE::CellType::line3:
           {
             // case1: vertex nodes remain SLAVE
-            if (node->id() == (node->elements()[0])->node_ids()[0] ||
-                node->id() == (node->elements()[0])->node_ids()[1])
+            if (node->id() == (node->adjacent_elements()[0].user_element())->node_ids()[0] ||
+                node->id() == (node->adjacent_elements()[0].user_element())->node_ids()[1])
             {
               // do nothing
             }
@@ -761,9 +761,9 @@ void Mortar::Interface::initialize_lag_mult_lin()
           case Core::FE::CellType::tri6:
           {
             // case1: vertex nodes remain SLAVE
-            if (node->id() == (node->elements()[0])->node_ids()[0] ||
-                node->id() == (node->elements()[0])->node_ids()[1] ||
-                node->id() == (node->elements()[0])->node_ids()[2])
+            if (node->id() == (node->adjacent_elements()[0].user_element())->node_ids()[0] ||
+                node->id() == (node->adjacent_elements()[0].user_element())->node_ids()[1] ||
+                node->id() == (node->adjacent_elements()[0].user_element())->node_ids()[2])
             {
               // do nothing
             }
@@ -784,10 +784,10 @@ void Mortar::Interface::initialize_lag_mult_lin()
           case Core::FE::CellType::quad9:
           {
             // case1: vertex nodes remain SLAVE
-            if (node->id() == (node->elements()[0])->node_ids()[0] ||
-                node->id() == (node->elements()[0])->node_ids()[1] ||
-                node->id() == (node->elements()[0])->node_ids()[2] ||
-                node->id() == (node->elements()[0])->node_ids()[3])
+            if (node->id() == (node->adjacent_elements()[0].user_element())->node_ids()[0] ||
+                node->id() == (node->adjacent_elements()[0].user_element())->node_ids()[1] ||
+                node->id() == (node->adjacent_elements()[0].user_element())->node_ids()[2] ||
+                node->id() == (node->adjacent_elements()[0].user_element())->node_ids()[3])
             {
               // do nothing
             }
@@ -837,7 +837,7 @@ void Mortar::Interface::initialize_lag_mult_const()
       if (node->is_slave())
       {
         // search the first adjacent element
-        Core::FE::CellType shape = (node->elements()[0])->shape();
+        Core::FE::CellType shape = (node->adjacent_elements()[0].user_element())->shape();
 
         // which discretization type
         switch (shape)
@@ -846,8 +846,8 @@ void Mortar::Interface::initialize_lag_mult_const()
           case Core::FE::CellType::line3:
           {
             // case1: vertex nodes must be set to MASTER
-            if (node->id() == (node->elements()[0])->node_ids()[0] ||
-                node->id() == (node->elements()[0])->node_ids()[1])
+            if (node->id() == (node->adjacent_elements()[0].user_element())->node_ids()[0] ||
+                node->id() == (node->adjacent_elements()[0].user_element())->node_ids()[1])
             {
               node->set_bound() = true;
               node->set_slave() = false;
@@ -862,7 +862,7 @@ void Mortar::Interface::initialize_lag_mult_const()
             break;
           }
           case Core::FE::CellType::quad9:
-            if (node->id() == (node->elements()[0])->node_ids()[8])
+            if (node->id() == (node->adjacent_elements()[0].user_element())->node_ids()[8])
             {
               // do nothing
             }
@@ -2541,15 +2541,12 @@ void Mortar::Interface::find_master_elements(
   // clear vector
   meles.clear();
 
-  // get adjacent elements for this node
-  const Core::Elements::Element* const* adjeles = mrtrnode.elements();
-
   // empty vector of master element pointers
   std::set<int> donebefore;
 
-  for (int j = 0; j < mrtrnode.num_element(); ++j)
+  for (auto ele : mrtrnode.adjacent_elements())
   {
-    auto* adjcele = dynamic_cast<const Mortar::Element*>(adjeles[j]);
+    auto* adjcele = dynamic_cast<const Mortar::Element*>(ele.user_element());
 
     // skip zero-sized nurbs elements (slave)
     if (adjcele->zero_sized()) continue;
@@ -3614,7 +3611,7 @@ void Mortar::Interface::assemble_trafo(Core::LinAlg::SparseMatrix& trafo,
     double theta = 0.0;
 
     // search within the first adjacent element
-    auto* mrtrele = dynamic_cast<Mortar::Element*>(mrtrnode->elements()[0]);
+    auto* mrtrele = dynamic_cast<Mortar::Element*>(mrtrnode->adjacent_elements()[0].user_element());
     Core::FE::CellType shape = mrtrele->shape();
 
     // which discretization type
@@ -3856,7 +3853,8 @@ void Mortar::Interface::assemble_trafo(Core::LinAlg::SparseMatrix& trafo,
       NodeType nt = undefined;
 
       // search within the first adjacent element
-      auto* mrtrele = dynamic_cast<Mortar::Element*>(mrtrnode->elements()[0]);
+      auto* mrtrele =
+          dynamic_cast<Mortar::Element*>(mrtrnode->adjacent_elements()[0].user_element());
       Core::FE::CellType shape = mrtrele->shape();
 
       // real master nodes are easily identified

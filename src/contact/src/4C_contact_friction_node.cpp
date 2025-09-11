@@ -10,6 +10,7 @@
 #include "4C_comm_pack_helpers.hpp"
 #include "4C_contact_defines.hpp"
 #include "4C_contact_element.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_utils_exceptions.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -539,15 +540,12 @@ void CONTACT::FriNode::initialize_data_container()
 {
   // get maximum size of lin vectors
   linsize_ = 0;
-  for (int i = 0; i < num_element(); ++i)
-    for (int j = 0; j < elements()[i]->num_node(); ++j)
-      linsize_ += elements()[i]->num_dof_per_node(*(elements()[i]->nodes()[j]));
+  for (auto ele : adjacent_elements())
+    for (auto node : ele.nodes())
+      linsize_ += ele.user_element()->num_dof_per_node(*node.user_node());
 
   // get maximum size of lin vectors
-  dentries_ = 0;
-  for (int i = 0; i < num_element(); ++i)
-    for (int j = 0; j < elements()[i]->num_node(); ++j)
-      dentries_ += elements()[i]->num_dof_per_node(*(elements()[i]->nodes()[j]));
+  dentries_ = linsize_;
 
   // only initialize if not yet done
   if (modata_ == nullptr && codata_ == nullptr && fridata_ == nullptr)

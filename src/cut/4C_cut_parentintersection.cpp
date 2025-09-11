@@ -64,12 +64,9 @@ void Cut::ParentIntersection::create_nodal_dof_set(
     {
       Core::Nodes::Node* node = dis.g_node(n_gid);
 
-      // get adjacent elements for this node
-      const Core::Elements::Element* const* adjelements = node->elements();
-
-      for (int iele = 0; iele < node->num_element(); iele++)
+      for (auto ele : node->adjacent_elements())
       {
-        int adj_eid = adjelements[iele]->id();
+        int adj_eid = ele.global_id();
 
         // get its elementhandle
         Cut::ElementHandle* e = get_element(adj_eid);

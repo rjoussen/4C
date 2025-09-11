@@ -226,8 +226,8 @@ std::map<int, std::set<int>> Core::Geo::get_elements_in_radius(const Core::FE::D
 
       if (distance < (radius + Core::Geo::TOL7))
       {
-        for (int i = 0; i < dis.g_node(*nodeIter)->num_element(); i++)
-          elementMap[labelIter->first].insert(dis.g_node(*nodeIter)->elements()[i]->id());
+        for (auto ele : dis.g_node(*nodeIter)->adjacent_elements())
+          elementMap[labelIter->first].insert(ele.global_id());
       }
     }
 
@@ -427,7 +427,8 @@ int Core::Geo::nearest_3d_object_in_node(const Core::FE::Discretization& dis,
         min_distance = distance;
         nearestObject.set_node_object_type(
             *nodeIter, labelIter->first, currentpositions.find(node->id())->second);
-        surfid = node->elements()[0]->id();  // surf id of any of the adjacent elements
+        surfid =
+            node->adjacent_elements()[0].global_id();  // surf id of any of the adjacent elements
       }
     }
 
