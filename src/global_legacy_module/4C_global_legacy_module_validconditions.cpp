@@ -17,12 +17,12 @@
 #include "4C_inpar_bio.hpp"
 #include "4C_inpar_cardiac_monodomain.hpp"
 #include "4C_inpar_cardiovascular0d.hpp"
+#include "4C_inpar_constraint_framework.hpp"
 #include "4C_inpar_fluid.hpp"
 #include "4C_inpar_fpsi.hpp"
 #include "4C_inpar_fsi.hpp"
 #include "4C_inpar_levelset.hpp"
 #include "4C_inpar_mortar.hpp"
-#include "4C_inpar_mpc_rve.hpp"
 #include "4C_inpar_particle.hpp"
 #include "4C_inpar_s2i.hpp"
 #include "4C_inpar_scatra.hpp"
@@ -835,7 +835,7 @@ std::vector<Core::Conditions::ConditionDefinition> Global::valid_conditions()
   Inpar::PARTICLE::set_valid_conditions(condlist);
   Inpar::LevelSet::set_valid_conditions(condlist);
   BeamInteraction::Potential::set_valid_conditions(condlist);
-  Inpar::RveMpc::set_valid_conditions(condlist);
+  Inpar::Constraints::set_valid_conditions(condlist);
   Inpar::BeamInteraction::set_valid_conditions(condlist);
   EHL::set_valid_conditions(condlist);
   PoroPressureBased::set_valid_conditions_porofluid_elast_scatra(condlist);

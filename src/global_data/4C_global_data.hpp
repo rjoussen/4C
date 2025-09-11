@@ -241,7 +241,7 @@ namespace Global
     }
     const Teuchos::ParameterList& rve_multi_point_constraint_params() const
     {
-      return get_parameter_list()->sublist("MULTI POINT CONSTRAINTS");
+      return parameters_->sublist("MULTI POINT CONSTRAINTS");
     }
     const Teuchos::ParameterList& brownian_dynamics_params() const
     {

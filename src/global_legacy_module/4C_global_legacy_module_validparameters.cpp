@@ -38,7 +38,6 @@
 #include "4C_inpar_IO_runtime_vtp_output_structure.hpp"
 #include "4C_inpar_levelset.hpp"
 #include "4C_inpar_mortar.hpp"
-#include "4C_inpar_mpc_rve.hpp"
 #include "4C_inpar_particle.hpp"
 #include "4C_inpar_pasi.hpp"
 #include "4C_inpar_plasticity.hpp"
@@ -253,7 +252,6 @@ std::vector<Core::IO::InputSpec> Global::valid_parameters()
   push_specs(specs, BeamContact::valid_parameters());
   push_specs(specs, BeamInteraction::Potential::valid_parameters());
   push_specs(specs, Inpar::BeamInteraction::valid_parameters());
-  push_specs(specs, Inpar::RveMpc::valid_parameters());
   push_specs(specs, BrownianDynamics::valid_parameters());
 
   push_specs(specs, Inpar::Plasticity::valid_parameters());
