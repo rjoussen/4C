@@ -191,52 +191,6 @@ namespace Core::Nodes
     inline void set_owner(const int owner) { owner_ = owner; }
 
     /*!
-    \brief Set a condition with a certain name
-
-    Store a condition with a certain name in the node. The name need not
-    be unique, meaning multiple conditions with the same name can be stored.
-    Conditions can then be accessed with the GetCondition methods.
-
-    \param name : Name of condition
-    \param cond : The Condition class
-
-    \note Normally, This method would be called by the discretization to
-          set references to a Condition in the nodes. As the Condition is
-          std::shared_ptr, one can not say who actually owns the underlying object.
-          The node does not communicate any conditions through Pack/Unpack,
-          Conditions are therefore more of a reference here that will be
-          recreated after communications of nodes have been done.
-
-    \warning If a condition with the exact same name already exists, it will
-             NOT be overwritten but stored twice in the element
-
-    */
-    void set_condition(const std::string& name, std::shared_ptr<Core::Conditions::Condition> cond)
-    {
-      condition_.insert(
-          std::pair<std::string, std::shared_ptr<Core::Conditions::Condition>>(name, cond));
-    }
-
-    /*!
-    \brief Get all conditions with a certain name
-
-    Get all conditions with a certain name. A vector of ptrs to all conditions
-    with name name is returned in out. The number of conditions found with name
-    name is out.size(). out.size() is 0 if no condition with that name is found.
-
-    \param name (in): Name of condition
-    \param out  (out): vector of pointers to all conditions with that name
-
-    */
-    void get_condition(
-        const std::string& name, std::vector<Core::Conditions::Condition*>& out) const;
-
-    /*!
-    \brief Delete all conditions set to this node
-    */
-    void clear_conditions() { condition_.clear(); }
-
-    /*!
     \brief Change reference position by adding input vector to position
     */
     void change_pos(std::vector<double> nvector);
@@ -302,6 +256,13 @@ namespace Core::Nodes
       element_[size] = eleptr;
     }
 
+    /**
+     * Access the discretization managing this node. This may be a nullptr if the node is not
+     * part of a discretization.
+     */
+    const FE::Discretization* discretization() const { return discretization_; }
+    FE::Discretization* discretization() { return discretization_; }
+
    protected:
     //! a unique global id
     int id_;
@@ -313,9 +274,9 @@ namespace Core::Nodes
     std::vector<double> x_;
     //! pointers to adjacent elements
     std::vector<Core::Elements::Element*> element_;
-    //! some conditions e.g. BCs
-    std::multimap<std::string, std::shared_ptr<Core::Conditions::Condition>> condition_;
 
+    //! Refer to discretization managing this node
+    FE::Discretization* discretization_{};
   };  // class Node
 }  // namespace Core::Nodes
 

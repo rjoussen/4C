@@ -39,7 +39,8 @@ namespace FLD
   );
 
   //! Is given node a slave node of rotationally symmetric periodic boundary conditions?
-  bool is_slave_node_of_rot_sym_pbc(const Core::Nodes::Node* node,  ///< the node
+  bool is_slave_node_of_rot_sym_pbc(
+      const Core::FE::Discretization& discretization, const Core::Nodes::Node* node,  ///< the node
       double& rotangle  ///< the angle of slave plane rotation (RAD)
   );
 

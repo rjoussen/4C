@@ -225,8 +225,8 @@ bool BeamInteraction::SubmodelEvaluator::BeamPotential::evaluate_force()
     std::shared_ptr<BeamInteraction::BeamPotentialPair> elepairptr = *iter;
 
     // conditions applied to the elements of this pair
-    std::vector<Core::Conditions::Condition*> conditions_element1;
-    std::vector<Core::Conditions::Condition*> conditions_element2;
+    std::vector<const Core::Conditions::Condition*> conditions_element1;
+    std::vector<const Core::Conditions::Condition*> conditions_element2;
     get_beam_potential_conditions_applied_to_this_element_pair(
         *elepairptr, conditions_element1, conditions_element2);
 
@@ -240,7 +240,7 @@ bool BeamInteraction::SubmodelEvaluator::BeamPotential::evaluate_force()
 
         if (npotlaw1 == npotlaw2 and npotlaw1 > 0)
         {
-          std::vector<Core::Conditions::Condition*> currconds;
+          std::vector<const Core::Conditions::Condition*> currconds;
           currconds.clear();
           currconds.push_back(k);
           currconds.push_back(j);
@@ -314,8 +314,8 @@ bool BeamInteraction::SubmodelEvaluator::BeamPotential::evaluate_stiff()
     std::shared_ptr<BeamInteraction::BeamPotentialPair> elepairptr = *iter;
 
     // conditions applied to the elements of this pair
-    std::vector<Core::Conditions::Condition*> conditions_element1;
-    std::vector<Core::Conditions::Condition*> conditions_element2;
+    std::vector<const Core::Conditions::Condition*> conditions_element1;
+    std::vector<const Core::Conditions::Condition*> conditions_element2;
     get_beam_potential_conditions_applied_to_this_element_pair(
         *elepairptr, conditions_element1, conditions_element2);
 
@@ -329,7 +329,7 @@ bool BeamInteraction::SubmodelEvaluator::BeamPotential::evaluate_stiff()
 
         if (npotlaw1 == npotlaw2 and npotlaw1 > 0)
         {
-          std::vector<Core::Conditions::Condition*> currconds;
+          std::vector<const Core::Conditions::Condition*> currconds;
           currconds.clear();
           currconds.push_back(conditions_element1[k]);
           currconds.push_back(conditions_element2[j]);
@@ -414,8 +414,8 @@ bool BeamInteraction::SubmodelEvaluator::BeamPotential::evaluate_force_stiff()
     elegids[1] = elepairptr->element2()->id();
 
     // conditions applied to the elements of this pair
-    std::vector<Core::Conditions::Condition*> conditions_element1;
-    std::vector<Core::Conditions::Condition*> conditions_element2;
+    std::vector<const Core::Conditions::Condition*> conditions_element1;
+    std::vector<const Core::Conditions::Condition*> conditions_element2;
     get_beam_potential_conditions_applied_to_this_element_pair(
         *elepairptr, conditions_element1, conditions_element2);
 
@@ -429,7 +429,7 @@ bool BeamInteraction::SubmodelEvaluator::BeamPotential::evaluate_force_stiff()
 
         if (npotlaw1 == npotlaw2 and npotlaw1 > 0)
         {
-          std::vector<Core::Conditions::Condition*> currconds;
+          std::vector<const Core::Conditions::Condition*> currconds;
           currconds.clear();
           currconds.push_back(conditions_element1[k]);
           currconds.push_back(conditions_element2[j]);
@@ -739,7 +739,6 @@ void BeamInteraction::SubmodelEvaluator::BeamPotential::
     {
       // get the conditions applied to both elements of the pair and decide whether they need to be
       // evaluated
-      std::vector<Core::Conditions::Condition*> conds1, conds2;
 
       // since only the nodes know about their conditions, we need this workaround
       // we assume that a linecharge condition is always applied to the entire physical beam, i.e.
@@ -752,13 +751,14 @@ void BeamInteraction::SubmodelEvaluator::BeamPotential::
       FOUR_C_ASSERT(nodes1 != nullptr and nodes2 != nullptr, "pointer to nodes is nullptr!");
       FOUR_C_ASSERT(nodes1[0] != nullptr and nodes2[0] != nullptr, "pointer to nodes is nullptr!");
 
-      nodes1[0]->get_condition("BeamPotentialLineCharge", conds1);
+      auto conds1 = discret().get_conditions_on_node("BeamPotentialLineCharge", nodes1[0]);
 
+      std::vector<const Core::Conditions::Condition*> conds2;
       // get correct condition for beam or rigid sphere element
       if (BeamInteraction::Utils::is_beam_element(*currneighborele))
-        nodes2[0]->get_condition("BeamPotentialLineCharge", conds2);
+        conds2 = discret().get_conditions_on_node("BeamPotentialLineCharge", nodes2[0]);
       else if (BeamInteraction::Utils::is_rigid_sphere_element(*currneighborele))
-        nodes2[0]->get_condition("RigidspherePotentialPointCharge", conds2);
+        conds2 = discret().get_conditions_on_node("RigidspherePotentialPointCharge", nodes2[0]);
       else
         FOUR_C_THROW(
             "Only beam-to-beampotential or beam-to-sphere -based interaction is implemented yet. "
@@ -904,8 +904,8 @@ void BeamInteraction::SubmodelEvaluator::BeamPotential::print_all_beam_potential
 void BeamInteraction::SubmodelEvaluator::BeamPotential::
     get_beam_potential_conditions_applied_to_this_element_pair(
         BeamInteraction::BeamPotentialPair const& elementpair,
-        std::vector<Core::Conditions::Condition*>& conditions_element1,
-        std::vector<Core::Conditions::Condition*>& conditions_element2) const
+        std::vector<const Core::Conditions::Condition*>& conditions_element1,
+        std::vector<const Core::Conditions::Condition*>& conditions_element2) const
 {
   // since only the nodes know about their conditions, we need this workaround
   // we assume that a linecharge condition is always applied to the entire physical beam, i.e. it is
@@ -921,13 +921,14 @@ void BeamInteraction::SubmodelEvaluator::BeamPotential::
   FOUR_C_ASSERT(nodes1 != nullptr and nodes2 != nullptr, "pointer to nodes is nullptr!");
   FOUR_C_ASSERT(nodes1[0] != nullptr and nodes2[0] != nullptr, "pointer to nodes is nullptr!");
 
-  nodes1[0]->get_condition("BeamPotentialLineCharge", conditions_element1);
+  conditions_element1 = discret().get_conditions_on_node("BeamPotentialLineCharge", nodes1[0]);
 
   // get correct condition for beam or rigid sphere element
   if (BeamInteraction::Utils::is_beam_element(*ele2))
-    nodes2[0]->get_condition("BeamPotentialLineCharge", conditions_element2);
+    conditions_element2 = discret().get_conditions_on_node("BeamPotentialLineCharge", nodes2[0]);
   else if (BeamInteraction::Utils::is_rigid_sphere_element(*ele2))
-    nodes2[0]->get_condition("RigidspherePotentialPointCharge", conditions_element2);
+    conditions_element2 =
+        discret().get_conditions_on_node("RigidspherePotentialPointCharge", nodes2[0]);
   else
     FOUR_C_THROW(
         "Only beam-to-beam or beam-to-sphere potential-based interaction is implemented yet. "

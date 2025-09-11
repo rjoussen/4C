@@ -560,7 +560,7 @@ int Discret::Elements::Fluid::evaluate(Teuchos::ParameterList& params,
 
         bool is_inflow_ele = false;
 
-        std::vector<Core::Conditions::Condition*> myinflowcond;
+        std::vector<const Core::Conditions::Condition*> myinflowcond;
 
         // check whether all nodes have a unique inflow condition
         Core::Conditions::find_element_conditions(this, "TurbulentInflowSection", myinflowcond);

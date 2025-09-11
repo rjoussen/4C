@@ -242,6 +242,7 @@ void Core::FE::Discretization::build_element_to_node_pointers()
   for (const auto& ele : element_ | std::views::values)
   {
     bool success = ele->build_nodal_pointers(node_);
+    ele->discretization_ = this;
     if (!success) FOUR_C_THROW("Building element <-> node topology failed");
   }
 
@@ -263,7 +264,11 @@ void Core::FE::Discretization::build_element_to_node_pointers()
 
 void Core::FE::Discretization::build_node_to_element_pointers()
 {
-  for (const auto& node : node_ | std::views::values) node->clear_my_element_topology();
+  for (const auto& node : node_ | std::views::values)
+  {
+    node->clear_my_element_topology();
+    node->discretization_ = this;
+  }
 
   std::vector<std::vector<int>> node_to_element_ids(node_.size());
 

@@ -82,7 +82,7 @@ namespace BeamInteraction
         Core::LinAlg::SerialDenseVector* forcevec2, Core::LinAlg::SerialDenseMatrix* stiffmat11,
         Core::LinAlg::SerialDenseMatrix* stiffmat12, Core::LinAlg::SerialDenseMatrix* stiffmat21,
         Core::LinAlg::SerialDenseMatrix* stiffmat22,
-        const std::vector<Core::Conditions::Condition*> linechargeconds, const double k,
+        const std::vector<const Core::Conditions::Condition*> linechargeconds, const double k,
         const double m) = 0;
 
     /*

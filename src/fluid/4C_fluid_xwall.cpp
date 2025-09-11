@@ -520,8 +520,8 @@ void FLD::XWall::init_toggle_vector()
       bool fullyenriched = true;
 
       // Mortar interface
-      std::vector<Core::Conditions::Condition*> mortarcond;
-      xwallnode->get_condition("Mortar", mortarcond);
+      std::vector<const Core::Conditions::Condition*> mortarcond =
+          discret_->get_conditions_on_node("Mortar", xwallnode);
       if (not mortarcond.empty()) fullyenriched = false;
 
       // get all surrounding elements
@@ -685,8 +685,9 @@ void FLD::XWall::setup_l2_projection()
         Core::Nodes::Node* node = xwdiscret_->g_node(gid);
         if (!node) FOUR_C_THROW("ERROR: Cannot find off wall node with gid %", gid);
         // make sure that periodic nodes are not assembled twice
-        std::vector<Core::Conditions::Condition*> periodiccond;
-        node->get_condition("SurfacePeriodic", periodiccond);
+
+        std::vector<const Core::Conditions::Condition*> periodiccond =
+            xwdiscret_->get_conditions_on_node("SurfacePeriodic", node);
         // make sure that slave periodic bc are not included
         bool includedofs = true;
         if (not periodiccond.empty())
@@ -1400,14 +1401,13 @@ void FLD::XWall::overwrite_transferred_values()
       int xwallgid = discret_->node_row_map()->gid(i);
       Core::Nodes::Node* xwallnode = discret_->g_node(xwallgid);
       if (!xwallnode) FOUR_C_THROW("Cannot find node");
-      std::vector<Core::Conditions::Condition*> nodecloudstocouple;
-      xwallnode->get_condition("TransferTurbulentInflow", nodecloudstocouple);
+      std::vector<const Core::Conditions::Condition*> nodecloudstocouple =
+          discret_->get_conditions_on_node("TransferTurbulentInflow", xwallnode);
       if (not nodecloudstocouple.empty())
       {
         // usually we will only have one condition in nodecloudstocouple
         // but it doesn't hurt if there are several ones
-        for (std::vector<Core::Conditions::Condition*>::iterator cond = nodecloudstocouple.begin();
-            cond != nodecloudstocouple.end(); ++cond)
+        for (auto cond = nodecloudstocouple.begin(); cond != nodecloudstocouple.end(); ++cond)
         {
           const std::string& mytoggle = (*cond)->parameters().get<std::string>("toggle");
           if (mytoggle == "slave")
@@ -1464,8 +1464,8 @@ std::shared_ptr<Core::LinAlg::Vector<double>> FLD::XWall::fix_dirichlet_inflow(
 
       Core::Nodes::Node* xwallnode = discret_->g_node(xwallgid);
       if (!xwallnode) FOUR_C_THROW("Cannot find node");
-      std::vector<Core::Conditions::Condition*> periodiccond;
-      xwallnode->get_condition("SurfacePeriodic", periodiccond);
+      std::vector<const Core::Conditions::Condition*> periodiccond =
+          discret_->get_conditions_on_node("SurfacePeriodic", xwallnode);
 
       bool includedofs = true;
       if (not periodiccond.empty())
@@ -1484,11 +1484,11 @@ std::shared_ptr<Core::LinAlg::Vector<double>> FLD::XWall::fix_dirichlet_inflow(
       {
         if (discret_->node_row_map()->my_gid(xwallgid))
         {
-          std::vector<Core::Conditions::Condition*> dircond;
-          xwallnode->get_condition("Dirichlet", dircond);
+          std::vector<const Core::Conditions::Condition*> dircond =
+              discret_->get_conditions_on_node("Dirichlet", xwallnode);
 
-          std::vector<Core::Conditions::Condition*> stresscond;
-          xwallnode->get_condition("FluidStressCalc", stresscond);
+          std::vector<const Core::Conditions::Condition*> stresscond =
+              discret_->get_conditions_on_node("FluidStressCalc", xwallnode);
 
           int numdf = discret_->num_dof(xwallnode);
 
@@ -1523,17 +1523,18 @@ std::shared_ptr<Core::LinAlg::Vector<double>> FLD::XWall::fix_dirichlet_inflow(
                   // it has to be on fluidstresscalc
                   // it may not be a dirichlet inflow node
                   // get Dirichlet conditions
-                  std::vector<Core::Conditions::Condition*> stresscond;
-                  test[l]->get_condition("FluidStressCalc", stresscond);
+                  std::vector<const Core::Conditions::Condition*> stresscond =
+                      test[l]->discretization()->get_conditions_on_node("FluidStressCalc", test[l]);
                   int numdf = discret_->num_dof(test[l]);
                   if (not stresscond.empty() and numdf > 5)
                   {
-                    std::vector<Core::Conditions::Condition*> dircond;
-                    test[l]->get_condition("Dirichlet", dircond);
+                    std::vector<const Core::Conditions::Condition*> dircond =
+                        test[l]->discretization()->get_conditions_on_node("Dirichlet", test[l]);
                     bool isuglydirnode = false;
                     if (dircond.empty())
                     {
-                      test[l]->get_condition("FSICoupling", dircond);
+                      dircond =
+                          test[l]->discretization()->get_conditions_on_node("FSICoupling", test[l]);
                       if (dircond.empty())
                         FOUR_C_THROW("this should be a Dirichlet or fsi coupling node");
                     }

@@ -73,7 +73,7 @@ namespace BeamInteraction
         Core::LinAlg::SerialDenseVector* forcevec2, Core::LinAlg::SerialDenseMatrix* stiffmat11,
         Core::LinAlg::SerialDenseMatrix* stiffmat12, Core::LinAlg::SerialDenseMatrix* stiffmat21,
         Core::LinAlg::SerialDenseMatrix* stiffmat22,
-        const std::vector<Core::Conditions::Condition*> linechargeconds, const double k,
+        const std::vector<const Core::Conditions::Condition*> linechargeconds, const double k,
         const double m) override;
 
     /*
@@ -166,7 +166,7 @@ namespace BeamInteraction
     Discret::Elements::Rigidsphere const* sphere_element_;
 
     //! line and point charge condition
-    std::vector<Core::Conditions::Condition*> chargeconds_;
+    std::vector<const Core::Conditions::Condition*> chargeconds_;
 
     //! current time
     double time_;

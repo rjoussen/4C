@@ -415,7 +415,7 @@ std::shared_ptr<Core::LinAlg::MultiVector<double>> ScaTra::ScaTraTimIntImpl::cal
 
           // care for the slave nodes of rotationally symm. periodic boundary conditions
           double rotangle(0.0);
-          bool havetorotate = FLD::is_slave_node_of_rot_sym_pbc(actnode, rotangle);
+          bool havetorotate = FLD::is_slave_node_of_rot_sym_pbc(*discret_, actnode, rotangle);
 
           // do not insert slave node values here, since they would overwrite the
           // master node values owning the same dof
@@ -1168,7 +1168,7 @@ void ScaTra::ScaTraTimIntImpl::collect_output_flux_data(
       double zvalue = ((*flux)(2))[(flux->get_map()).lid(dofgid)];
       // care for the slave nodes of rotationally symm. periodic boundary conditions
       double rotangle(0.0);  // already converted to radians
-      bool havetorotate = FLD::is_slave_node_of_rot_sym_pbc(actnode, rotangle);
+      bool havetorotate = FLD::is_slave_node_of_rot_sym_pbc(*discret_, actnode, rotangle);
       if (havetorotate)
       {
         double xvalue_rot = (xvalue * cos(rotangle)) - (yvalue * sin(rotangle));

@@ -97,22 +97,6 @@ void Core::Nodes::Node::unpack(Core::Communication::UnpackBuffer& buffer)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::Nodes::Node::get_condition(
-    const std::string& name, std::vector<Core::Conditions::Condition*>& out) const
-{
-  const int num = condition_.count(name);
-  out.resize(num);
-  auto startit = condition_.lower_bound(name);
-  auto endit = condition_.upper_bound(name);
-  int count = 0;
-  std::multimap<std::string, std::shared_ptr<Core::Conditions::Condition>>::const_iterator curr;
-  for (curr = startit; curr != endit; ++curr) out[count++] = curr->second.get();
-  if (count != num) FOUR_C_THROW("Mismatch in number of conditions found");
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 void Core::Nodes::Node::change_pos(std::vector<double> nvector)
 {
   FOUR_C_ASSERT(x_.size() == nvector.size(),

@@ -159,6 +159,8 @@ namespace Core::Elements
     template <typename>
     friend class Core::FE::MeshFree::MeshfreeBin;
 
+    friend class Core::FE::Discretization;
+
     //! @name Constructors and destructors and related methods
 
     /*!
@@ -1133,6 +1135,13 @@ might become invalid after a redistribution of the discretization.
         const Core::GeometricSearch::GeometricSearchParams& params) const;
     /// @}
 
+    /**
+     * Access the discretization managing this element. This may be a nullptr if the element is not
+     * part of a discretization.
+     */
+    const FE::Discretization* discretization() const { return discretization_; }
+    FE::Discretization* discretization() { return discretization_; }
+
    private:
     //! \brief A unique global element id
     int id_;
@@ -1155,6 +1164,9 @@ might become invalid after a redistribution of the discretization.
 
     //! vector of material objects of element
     std::vector<std::shared_ptr<Core::Mat::Material>> mat_;
+
+    //! Refer to discretization managing this element
+    FE::Discretization* discretization_{};
   };  // class Element
 
 

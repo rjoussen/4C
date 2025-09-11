@@ -37,7 +37,8 @@ namespace Discret
 
 namespace XFEM
 {
-  using EleCoupCond = std::pair<Inpar::XFEM::EleCouplingCondType, Core::Conditions::Condition*>;
+  using EleCoupCond =
+      std::pair<Inpar::XFEM::EleCouplingCondType, const Core::Conditions::Condition*>;
 
   Inpar::XFEM::EleCouplingCondType cond_type_string_to_enum(const std::string& condname);
 
@@ -124,8 +125,8 @@ namespace XFEM
       step_ += 1;
     }
 
-    void get_condition_by_coupling_id(const std::vector<Core::Conditions::Condition*>& mycond,
-        const int coupling_id, std::vector<Core::Conditions::Condition*>& mynewcond);
+    void get_condition_by_coupling_id(const std::vector<const Core::Conditions::Condition*>& mycond,
+        const int coupling_id, std::vector<const Core::Conditions::Condition*>& mynewcond);
 
     void status(const int coupling_idx, const int side_start_gid);
 

@@ -2510,7 +2510,7 @@ template <Core::FE::CellType distype>
 void Discret::Elements::TemperImpl<distype>::radiation(
     const Core::Elements::Element* ele, const double time)
 {
-  std::vector<Core::Conditions::Condition*> myneumcond;
+  std::vector<const Core::Conditions::Condition*> myneumcond;
 
   // check whether all nodes have a unique VolumeNeumann condition
   switch (nsd_)

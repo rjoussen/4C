@@ -936,7 +936,7 @@ void Discret::Elements::ScaTraEleCalc<distype, probdim>::calc_subgr_velocity(
   //--------------------------------------------------------------------
   // get nodal values of fluid body force
   //--------------------------------------------------------------------
-  std::vector<Core::Conditions::Condition*> myfluidneumcond;
+  std::vector<const Core::Conditions::Condition*> myfluidneumcond;
 
   // check whether all nodes have a unique Fluid Neumann condition
   switch (nsd_)

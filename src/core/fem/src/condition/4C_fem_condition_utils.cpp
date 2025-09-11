@@ -320,7 +320,7 @@ void Core::Conditions::find_condition_objects(const Core::FE::Discretization& di
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void Core::Conditions::find_element_conditions(const Core::Elements::Element* ele,
-    const std::string& condition_name, std::vector<Condition*>& condition)
+    const std::string& condition_name, std::vector<const Condition*>& condition)
 {
   const Core::Nodes::Node* const* nodes = ele->nodes();
 
@@ -328,15 +328,15 @@ void Core::Conditions::find_element_conditions(const Core::Elements::Element* el
   // those.
 
   // the final set of conditions all nodes of this elements have in common
-  std::set<Condition*> fcond;
+  std::set<const Condition*> fcond;
 
+  const FE::Discretization& dis = *ele->discretization();
   // we assume to always have at least one node
   // the first vector of conditions
-  std::vector<Condition*> neumcond0;
-  nodes[0]->get_condition(condition_name, neumcond0);
+  std::vector<const Condition*> neumcond0 = dis.get_conditions_on_node(condition_name, nodes[0]);
 
   // the first set of conditions (copy vector to set)
-  std::set<Condition*> cond0;
+  std::set<const Condition*> cond0;
   std::copy(neumcond0.begin(), neumcond0.end(), std::inserter(cond0, cond0.begin()));
 
 
@@ -344,16 +344,15 @@ void Core::Conditions::find_element_conditions(const Core::Elements::Element* el
   int iel = ele->num_node();
   for (int inode = 1; inode < iel; ++inode)
   {
-    std::vector<Condition*> neumcondn;
-    nodes[inode]->get_condition(condition_name, neumcondn);
+    std::vector<const Condition*> neumcondn =
+        dis.get_conditions_on_node(condition_name, nodes[inode]);
 
     // the current set of conditions (copy vector to set)
-    std::set<Condition*> condn;
-    std::copy(neumcondn.begin(), neumcondn.end(), std::inserter(condn, condn.begin()));
+    std::set<const Condition*> condn;
+    std::ranges::copy(neumcondn, std::inserter(condn, condn.begin()));
 
     // intersect the first and the current conditions
-    std::set_intersection(
-        cond0.begin(), cond0.end(), condn.begin(), condn.end(), inserter(fcond, fcond.begin()));
+    std::ranges::set_intersection(cond0, condn, inserter(fcond, fcond.begin()));
 
     // make intersection to new starting condition
     cond0.clear();  // ensures that fcond is cleared in the next iteration
@@ -367,7 +366,7 @@ void Core::Conditions::find_element_conditions(const Core::Elements::Element* el
   }
 
   condition.clear();
-  std::copy(cond0.begin(), cond0.end(), back_inserter(condition));
+  std::ranges::copy(cond0, back_inserter(condition));
 }
 
 
