@@ -10,9 +10,9 @@
 
 #include "4C_config.hpp"
 
+#include "4C_constraint_framework_input.hpp"
 #include "4C_constraint_framework_submodelevaluator_base.hpp"
 #include "4C_fem_discretization.hpp"
-#include "4C_inpar_constraint_framework.hpp"
 #include "4C_io_pstream.hpp"
 #include "4C_structure_new_model_evaluator_generic.hpp"
 
@@ -74,10 +74,10 @@ namespace Constraints::SubmodelEvaluator
     Teuchos::ParameterList mpc_parameter_list_;
 
     //! Dimension of the rve boundary
-    enum Inpar::Constraints::MultiPoint::RveDimension rve_dim_;
+    enum Constraints::MultiPoint::RveDimension rve_dim_;
 
     //! Type of reference vector definition
-    enum Inpar::Constraints::MultiPoint::RveReferenceDeformationDefinition rve_ref_type_;
+    enum Constraints::MultiPoint::RveReferenceDeformationDefinition rve_ref_type_;
 
     //@}
 
@@ -100,8 +100,7 @@ namespace Constraints::SubmodelEvaluator
         const std::vector<int>* surf3);
 
     //! find the nodes contained i a mpc for the pbcs
-    int find_opposite_edge_node(const int nodeID,
-        Inpar::Constraints::MultiPoint::RveEdgeIdentifiers edge,
+    int find_opposite_edge_node(const int nodeID, Constraints::MultiPoint::RveEdgeIdentifiers edge,
         std::map<std::string, const std::vector<int>*>& rveBoundaryNodeIdMap_);
 
     //! find the corner nodes of the periodic rve

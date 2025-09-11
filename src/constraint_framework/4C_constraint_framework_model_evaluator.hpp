@@ -10,8 +10,8 @@
 
 #include "4C_config.hpp"
 
+#include "4C_constraint_framework_input.hpp"
 #include "4C_constraint_framework_submodelevaluator_base.hpp"
-#include "4C_inpar_constraint_framework.hpp"
 #include "4C_io_visualization_parameters.hpp"
 #include "4C_structure_new_model_evaluator_generic.hpp"
 
@@ -55,7 +55,7 @@ namespace Solid
       Inpar::Solid::ModelType type() const override { return Inpar::Solid::model_constraints; }
 
       /// check if the given model type is active.
-      bool have_sub_model_type(Inpar::Constraints::SubModelType const& submodeltype) const;
+      bool have_sub_model_type(Constraints::SubModelType const& submodeltype) const;
 
       void reset(const Core::LinAlg::Vector<double>& x) override;
 
@@ -147,7 +147,7 @@ namespace Solid
       //!@name data for submodel management
       //! @{
       /// active model types for the model evaluator
-      std::set<enum Inpar::Constraints::SubModelType> submodeltypes_;
+      std::set<Constraints::SubModelType> submodeltypes_;
 
       //! vector of submodelevaluators
       SubmodelevaluatorVector sub_model_vec_ptr_;

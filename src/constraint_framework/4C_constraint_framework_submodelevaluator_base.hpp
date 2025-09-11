@@ -11,7 +11,7 @@
 #include "4C_config.hpp"
 
 #include "4C_constraint_framework_equation_mpc.hpp"
-#include "4C_inpar_constraint_framework.hpp"
+#include "4C_constraint_framework_input.hpp"
 #include "4C_structure_new_enum_lists.hpp"
 #include "4C_structure_new_model_evaluator_generic.hpp"
 
@@ -78,8 +78,7 @@ namespace Constraints::SubmodelEvaluator
     Core::LinAlg::SparseMatrix* stiff_ptr_;
 
     //! Enforcement Strategy
-    enum Inpar::Constraints::EnforcementStrategy strategy_ =
-        Inpar::Constraints::EnforcementStrategy::penalty;
+    EnforcementStrategy strategy_ = EnforcementStrategy::penalty;
 
     //! Pointer to the discretization
     std::shared_ptr<const Core::FE::Discretization> discret_ptr_ = nullptr;

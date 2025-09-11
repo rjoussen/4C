@@ -51,7 +51,7 @@ void Solid::ModelEvaluator::Constraint::set_sub_model_types()
 {
   check_init();
 
-  submodeltypes_ = std::set<enum Inpar::Constraints::SubModelType>();
+  submodeltypes_ = std::set<Constraints::SubModelType>();
 
   // ---------------------------------------------------------------------------
   // check for multi point constraints
@@ -67,15 +67,13 @@ void Solid::ModelEvaluator::Constraint::set_sub_model_types()
   if (linePeriodicRve.size() > 0 || surfPeriodicRve.size() > 0 ||
       pointLinearCoupledEquation.size() > 0)
   {
-    submodeltypes_.insert(Inpar::Constraints::SubModelType::submodel_pbc_rve);
+    submodeltypes_.insert(Constraints::SubModelType::submodel_pbc_rve);
   }
   if (embeddedMeshConditions.size() > 0)
   {
-    submodeltypes_.insert(Inpar::Constraints::SubModelType::submodel_embeddedmesh);
+    submodeltypes_.insert(Constraints::SubModelType::submodel_embeddedmesh);
   }
 }
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -88,7 +86,7 @@ void Solid::ModelEvaluator::Constraint::create_sub_model_evaluators()
   {
     switch (submodeltype)
     {
-      case Inpar::Constraints::SubModelType::submodel_pbc_rve:
+      case Constraints::SubModelType::submodel_pbc_rve:
       {
         sub_model_vec_ptr_.emplace_back(
             std::make_shared<Constraints::SubmodelEvaluator::RveMultiPointConstraintManager>(
@@ -96,7 +94,7 @@ void Solid::ModelEvaluator::Constraint::create_sub_model_evaluators()
 
         break;
       }
-      case Inpar::Constraints::SubModelType::submodel_embeddedmesh:
+      case Constraints::SubModelType::submodel_embeddedmesh:
       {
         sub_model_vec_ptr_.emplace_back(
             std::make_shared<Constraints::SubmodelEvaluator::EmbeddedMeshConstraintManager>(
@@ -117,7 +115,7 @@ void Solid::ModelEvaluator::Constraint::create_sub_model_evaluators()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool Solid::ModelEvaluator::Constraint::have_sub_model_type(
-    Inpar::Constraints::SubModelType const& submodeltype) const
+    Constraints::SubModelType const& submodeltype) const
 {
   check_init();
   return (submodeltypes_.find(submodeltype) != submodeltypes_.end());

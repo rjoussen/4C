@@ -27,15 +27,15 @@ Constraints::SubmodelEvaluator::EmbeddedMeshConstraintManager::EmbeddedMeshConst
   auto cut_parameter_list = Global::Problem::instance()->cut_general_params();
 
   auto embedded_mesh_coupling_strategy =
-      Teuchos::getIntegralValue<Inpar::Constraints::EmbeddedMesh::CouplingStrategy>(
+      Teuchos::getIntegralValue<Constraints::EmbeddedMesh::CouplingStrategy>(
           embedded_mesh_parameter_list, "COUPLING_STRATEGY");
 
   auto embedded_mesh_constraint_enforcement =
-      Teuchos::getIntegralValue<Inpar::Constraints::EnforcementStrategy>(
+      Teuchos::getIntegralValue<Constraints::EnforcementStrategy>(
           embedded_mesh_parameter_list, "CONSTRAINT_ENFORCEMENT");
 
   auto embedded_mesh_mortar_shape_function =
-      Teuchos::getIntegralValue<Inpar::Constraints::EmbeddedMesh::SolidToSolidMortarShapefunctions>(
+      Teuchos::getIntegralValue<Constraints::EmbeddedMesh::SolidToSolidMortarShapefunctions>(
           embedded_mesh_parameter_list, "MORTAR_SHAPE_FUNCTION");
 
   auto embedded_mesh_constraint_penalty_parameter =

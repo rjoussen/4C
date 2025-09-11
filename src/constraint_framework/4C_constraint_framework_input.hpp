@@ -5,8 +5,8 @@
 //
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
-#ifndef FOUR_C_INPAR_CONSTRAINT_FRAMEWORK_HPP
-#define FOUR_C_INPAR_CONSTRAINT_FRAMEWORK_HPP
+#ifndef FOUR_C_CONSTRAINT_FRAMEWORK_INPUT_HPP
+#define FOUR_C_CONSTRAINT_FRAMEWORK_INPUT_HPP
 
 #include "4C_config.hpp"
 
@@ -21,7 +21,7 @@ namespace Core::Conditions
   class ConditionDefinition;
 }
 
-namespace Inpar::Constraints
+namespace Constraints
 {
   /// type of the submodel for constraintmodels
   enum class SubModelType
@@ -117,7 +117,7 @@ namespace Inpar::Constraints
   //! \brief Set constraint specific conditions
   void set_valid_conditions(std::vector<Core::Conditions::ConditionDefinition>& condlist);
 
-}  // namespace Inpar::Constraints
+}  // namespace Constraints
 
 FOUR_C_NAMESPACE_CLOSE
 

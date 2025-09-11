@@ -5,7 +5,7 @@
 //
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
-#include "4C_inpar_constraint_framework.hpp"
+#include "4C_constraint_framework_input.hpp"
 
 #include "4C_fem_condition_definition.hpp"
 #include "4C_io_input_spec_builders.hpp"
@@ -14,7 +14,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-std::vector<Core::IO::InputSpec> Inpar::Constraints::valid_parameters()
+std::vector<Core::IO::InputSpec> Constraints::valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
 
@@ -76,8 +76,7 @@ std::vector<Core::IO::InputSpec> Inpar::Constraints::valid_parameters()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Inpar::Constraints::set_valid_conditions(
-    std::vector<Core::Conditions::ConditionDefinition>& condlist)
+void Constraints::set_valid_conditions(std::vector<Core::Conditions::ConditionDefinition>& condlist)
 {
   using namespace Core::IO::InputSpecBuilders;
 

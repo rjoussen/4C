@@ -14,6 +14,7 @@
 #include "4C_beaminteraction_potential_input.hpp"
 #include "4C_binstrategy_input.hpp"
 #include "4C_browniandyn_input.hpp"
+#include "4C_constraint_framework_input.hpp"
 #include "4C_contact_input.hpp"
 #include "4C_cut_input.hpp"
 #include "4C_ehl_input.hpp"
@@ -26,7 +27,6 @@
 #include "4C_inpar_bio.hpp"
 #include "4C_inpar_cardiac_monodomain.hpp"
 #include "4C_inpar_cardiovascular0d.hpp"
-#include "4C_inpar_constraint_framework.hpp"
 #include "4C_inpar_fluid.hpp"
 #include "4C_inpar_fpsi.hpp"
 #include "4C_inpar_fs3i.hpp"
@@ -263,7 +263,7 @@ std::vector<Core::IO::InputSpec> Global::valid_parameters()
   push_specs(specs, Inpar::LowMach::valid_parameters());
   push_specs(specs, Cut::valid_parameters());
   push_specs(specs, Inpar::XFEM::valid_parameters());
-  push_specs(specs, Inpar::Constraints::valid_parameters());
+  push_specs(specs, Constraints::valid_parameters());
 
   push_specs(specs, Lubrication::valid_parameters());
   push_specs(specs, Inpar::ScaTra::valid_parameters());
