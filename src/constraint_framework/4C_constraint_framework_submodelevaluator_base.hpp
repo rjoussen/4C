@@ -37,7 +37,7 @@ namespace Constraints::SubmodelEvaluator
   {
    public:
     //! constructor
-    ConstraintBase() = default;
+    ConstraintBase();
 
     //! destructor
     virtual ~ConstraintBase() = default;
@@ -78,7 +78,7 @@ namespace Constraints::SubmodelEvaluator
     Core::LinAlg::SparseMatrix* stiff_ptr_;
 
     //! Enforcement Strategy
-    EnforcementStrategy strategy_ = EnforcementStrategy::penalty;
+    EnforcementStrategy strategy_;
 
     //! Pointer to the discretization
     std::shared_ptr<const Core::FE::Discretization> discret_ptr_ = nullptr;

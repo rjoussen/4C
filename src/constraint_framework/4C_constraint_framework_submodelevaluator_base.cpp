@@ -9,6 +9,7 @@
 
 #include "4C_constraint_framework_submodelevaluator_base.hpp"
 
+#include "4C_global_data.hpp"
 #include "4C_io_pstream.hpp"
 #include "4C_linalg_sparsematrix.hpp"
 #include "4C_linalg_sparseoperator.hpp"
@@ -17,8 +18,17 @@
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_structure_new_timint_base.hpp"
 
+#include <Teuchos_StandardParameterEntryValidators.hpp>
+
 FOUR_C_NAMESPACE_OPEN
 
+Constraints::SubmodelEvaluator::ConstraintBase::ConstraintBase()
+{
+  auto constraint_parameter_list = Global::Problem::instance()->constraint_params();
+
+  strategy_ = Teuchos::getIntegralValue<EnforcementStrategy>(
+      constraint_parameter_list, "CONSTRAINT_ENFORCEMENT");
+}
 
 bool Constraints::SubmodelEvaluator::ConstraintBase::evaluate_force_stiff(
     const Core::LinAlg::Vector<double>& displacement_vector,

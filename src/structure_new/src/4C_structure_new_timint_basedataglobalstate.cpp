@@ -9,6 +9,7 @@
 
 #include "4C_beam3_base.hpp"
 #include "4C_beaminteraction_str_model_evaluator.hpp"
+#include "4C_constraint_framework_model_evaluator.hpp"
 #include "4C_contact_input.hpp"
 #include "4C_contact_meshtying_abstract_strategy.hpp"
 #include "4C_fem_discretization_utils.hpp"
@@ -380,7 +381,6 @@ int Solid::TimeInt::BaseDataGlobalState::setup_block_information(
     case Inpar::Solid::model_springdashpot:
     case Inpar::Solid::model_beam_interaction_old:
     case Inpar::Solid::model_browniandyn:
-    case Inpar::Solid::model_constraints:
     {
       // structural block
       model_block_id_[mt] = 0;
@@ -407,6 +407,20 @@ int Solid::TimeInt::BaseDataGlobalState::setup_block_information(
     case Inpar::Solid::model_multiscale:
     {
       // do nothing
+      break;
+    }
+    case Inpar::Solid::model_constraints:
+    {
+      const auto& constraint_evaluator = dynamic_cast<const Solid::ModelEvaluator::Constraint&>(me);
+      if (constraint_evaluator.have_lagrange_dofs())
+      {
+        model_block_id_[mt] = max_block_num_;
+        ++max_block_num_;
+      }
+      else
+      {
+        model_block_id_[mt] = 0;
+      }
       break;
     }
     default:
@@ -816,6 +830,7 @@ void Solid::TimeInt::BaseDataGlobalState::assign_model_block(Core::LinAlg::Spars
           " two blocks! Seems wrong.");
 
     const int& b_id = model_block_id_.at(mt);
+
     switch (bt)
     {
       case MatBlockType::displ_displ:

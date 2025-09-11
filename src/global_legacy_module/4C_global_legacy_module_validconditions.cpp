@@ -804,6 +804,8 @@ std::vector<Core::Conditions::ConditionDefinition> Global::valid_conditions()
         "ONOFF", {.description = "", .size = from_parameter<int>("NUMMODES")}));
     cond.add_component(deprecated_selection<std::string>("WEIGHTVECDEF",
         {"integration", "pointvalues"}, {.description = "weight vector definition"}));
+    cond.add_component(deprecated_selection<std::string>("TYPE", {"projection", "constraint"},
+        {.description = "Type of krylov projection enforcement.", .default_value = "projection"}));
 
     condlist.emplace_back(cond);
   };

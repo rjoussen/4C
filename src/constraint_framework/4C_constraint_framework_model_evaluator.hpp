@@ -57,6 +57,9 @@ namespace Solid
       /// check if the given model type is active.
       bool have_sub_model_type(Constraints::SubModelType const& submodeltype) const;
 
+      //! check if lagrange formulation is active
+      bool have_lagrange_dofs() const;
+
       void reset(const Core::LinAlg::Vector<double>& x) override;
 
       bool evaluate_force() override;
@@ -143,7 +146,6 @@ namespace Solid
 
       //! @}
 
-     private:
       //!@name data for submodel management
       //! @{
       /// active model types for the model evaluator
