@@ -10,14 +10,15 @@
 
 #include "4C_config.hpp"
 
+#include "4C_fem_discretization.hpp"
 #include "4C_fem_dofset_base.hpp"
 #include "4C_fem_general_element.hpp"
 #include "4C_fem_general_node.hpp"
 #include "4C_linalg_map.hpp"
 #include "4C_utils_exceptions.hpp"
 
-#include <list>
 #include <memory>
+#include <ranges>
 #include <vector>
 
 FOUR_C_NAMESPACE_OPEN
@@ -319,11 +320,12 @@ namespace Core::DOFSets
     /// get number of nodal dofs
     int num_dof_per_node(const Core::Nodes::Node& node) const override
     {
-      const int numele = node.num_element();
-      const Core::Elements::Element* const* myele = node.elements();
-      int numdf = 0;
-      for (int j = 0; j < numele; ++j) numdf = std::max(numdf, num_dof_per_node(*myele[j], node));
-      return numdf;
+      auto adjacent_elements = node.adjacent_elements();
+      if (adjacent_elements.empty()) return 0;
+
+      return std::ranges::max(
+          adjacent_elements | std::views::transform([&](auto ele)
+                                  { return num_dof_per_node(*ele.user_element(), node); }));
     }
 
     /// get number of nodal dofs for this element at this node

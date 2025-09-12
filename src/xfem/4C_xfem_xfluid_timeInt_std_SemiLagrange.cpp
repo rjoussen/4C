@@ -1026,22 +1026,20 @@ void XFEM::XfluidSemiLagrange::new_iteration_nodal_data(
     }
 
     // check all surrounding elements
-    int numele = node->num_element();
-    Core::Elements::Element** eles = node->elements();
-
     // add surrounding std uncut elements for that no elementhandle is available
-    for (int i = 0; i < numele; i++)
+    for (auto ele : node->adjacent_elements())
     {
-      Cut::ElementHandle* eh = wizard_new_->get_element(eles[i]);
+      auto ele_ptr = ele.user_element();
+      Cut::ElementHandle* eh = wizard_new_->get_element(ele_ptr);
 
       if (eh != nullptr)
         continue;  // element and the right nds-vec should have been found using the for-loop before
 
       // if we are here, then the element is a standard uncut element
       // and it is ensured that it has not been added to eles_avg yet
-      std::vector<int> std_nds(eles[i]->num_node(), 0);
+      std::vector<int> std_nds(ele.num_nodes(), 0);
 
-      eles_avg.push_back(eles[i]);
+      eles_avg.push_back(ele_ptr);
       eles_avg_nds.push_back(std_nds);
     }
 
@@ -1452,22 +1450,20 @@ void XFEM::XfluidSemiLagrange::back_tracking(
     }
 
     // check all surrounding elements
-    int numele = node->num_element();
-    Core::Elements::Element** eles = node->elements();
-
     // add surrounding std uncut elements for that no elementhandle is available
-    for (int i = 0; i < numele; i++)
+    for (auto ele : node->adjacent_elements())
     {
-      Cut::ElementHandle* eh = wizard_old_->get_element(eles[i]);
+      auto ele_ptr = ele.user_element();
+      Cut::ElementHandle* eh = wizard_old_->get_element(ele_ptr);
 
       if (eh != nullptr)
         continue;  // element and the right nds-vec should have been found using the for-loop before
 
       // if we are here, then the element is a standard uncut element
       // and it is ensured that it has not been added to eles_avg yet
-      std::vector<int> std_nds(eles[i]->num_node(), 0);
+      std::vector<int> std_nds(ele.num_nodes(), 0);
 
-      eles_avg.push_back(eles[i]);
+      eles_avg.push_back(ele_ptr);
       eles_avg_nds.push_back(std_nds);
     }
 

@@ -13,6 +13,7 @@
 
 #include "4C_comm_parobject.hpp"
 #include "4C_comm_parobjectfactory.hpp"
+#include "4C_fem_discretization_iterator.hpp"
 
 #include <memory>
 
@@ -31,6 +32,8 @@ namespace Core::Conditions
 
 namespace Core::FE
 {
+  class ConstElementRef;
+  class ElementRef;
   class Discretization;
 }  // namespace Core::FE
 
@@ -140,33 +143,21 @@ namespace Core::Nodes
     */
     inline int n_dim() const { return x_.size(); }
 
-    /*!
-    \brief Return processor-local number of elements adjacent to this node
-    */
-    inline int num_element() const { return element_.size(); }
+    /**
+     * Return the number of elements adjacent to this node.
+     */
+    [[nodiscard]] int num_element() const;
 
-    /*!
-    \brief Return ptr to vector of element ptrs
-    */
-    inline Core::Elements::Element** elements()
-    {
-      if (num_element())
-        return element_.data();
-      else
-        return nullptr;
-    }
+    /**
+     * A range containing a ElementRef to all elements adjacent to this node.
+     */
+    [[nodiscard]] FE::IteratorRange<FE::DiscretizationIterator<FE::ElementRef>> adjacent_elements();
 
-    /*!
-    \brief Return const ptr to vector of const element ptrs
-    */
-    inline const Core::Elements::Element* const* elements() const
-    {
-      if (num_element())
-        return (const Core::Elements::Element* const*)(element_.data());
-      else
-        return nullptr;
-    }
-
+    /**
+     * A range containing a ConstElementRef to all elements adjacent to this node.
+     */
+    [[nodiscard]] FE::IteratorRange<FE::DiscretizationIterator<FE::ConstElementRef>>
+    adjacent_elements() const;
 
     /*!
     \brief Print this node
@@ -238,24 +229,6 @@ namespace Core::Nodes
      */
     virtual bool vis_data(const std::string& name, std::vector<double>& data);
 
-    /*!
-    \brief Clear vector of pointers to my elements
-
-    */
-    inline void clear_my_element_topology() { element_.clear(); }
-
-    /*!
-    \brief Add an element to my vector of pointers to elements
-
-    Resizes the element ptr vector and adds ptr at the end of vector
-    */
-    inline void add_element_ptr(Core::Elements::Element* eleptr)
-    {
-      const int size = element_.size();
-      element_.resize(size + 1);
-      element_[size] = eleptr;
-    }
-
     /**
      * Access the discretization managing this node. This may be a nullptr if the node is not
      * part of a discretization.
@@ -272,8 +245,6 @@ namespace Core::Nodes
     int owner_;
     //! nodal coords
     std::vector<double> x_;
-    //! pointers to adjacent elements
-    std::vector<Core::Elements::Element*> element_;
 
     //! Refer to discretization managing this node
     FE::Discretization* discretization_{};

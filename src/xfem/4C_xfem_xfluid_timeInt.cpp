@@ -860,17 +860,11 @@ std::map<int, std::set<int>>& XFEM::XFluidTimeInt::get_node_to_dof_map_for_recon
 // -------------------------------------------------------------------
 bool XFEM::XFluidTimeInt::non_intersected_elements(Core::Nodes::Node* n, Cut::CutWizard& wizard)
 {
-  const int numele = n->num_element();
-
-  Core::Elements::Element** elements = n->elements();
-
   // loop surrounding elements
-  for (int i = 0; i < numele; i++)
+  for (auto ele : n->adjacent_elements())
   {
-    Core::Elements::Element* e = elements[i];
-
     // we have to check elements and its sub-elements in case of quadratic elements
-    Cut::ElementHandle* ehandle = wizard.get_element(e);
+    Cut::ElementHandle* ehandle = wizard.get_element(ele.user_element());
 
     // elements which do not have an element-handle are non-intersected anyway
     if (ehandle == nullptr) continue;

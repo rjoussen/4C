@@ -366,7 +366,8 @@ void CONTACT::TSIInterface::assemble_dual_mass_lumped(
             "some inconsistency: for lagmult_const every slave node may only have one element "
             "attached (it's the center-node!)");
 
-      CONTACT::Element* coele = dynamic_cast<CONTACT::Element*>(conode->elements()[0]);
+      CONTACT::Element* coele =
+          dynamic_cast<CONTACT::Element*>(conode->adjacent_elements()[0].user_element());
       if (!coele) FOUR_C_THROW("this should be a contact element");
 
       Core::Gen::Pairedvector<int, double> derivArea(coele->num_node() * n_dim());

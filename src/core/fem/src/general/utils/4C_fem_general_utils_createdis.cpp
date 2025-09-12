@@ -132,7 +132,7 @@ Core::FE::DiscretizationCreatorBase::create_matching_discretization(
   for (int i = 0; i < sourcedis.node_col_map()->num_my_elements(); ++i)
   {
     Core::Nodes::Node* node = sourcedis.l_col_node(i);
-    if (!node) FOUR_C_THROW("Cannot find node with lid %", i);
+    if (!node) FOUR_C_THROW("Cannot find node with local id {}", i);
     std::shared_ptr<Core::Nodes::Node> newnode(node->clone());
     targetdis->add_node(newnode);
   }
@@ -141,7 +141,7 @@ Core::FE::DiscretizationCreatorBase::create_matching_discretization(
   for (int i = 0; i < sourcedis.element_col_map()->num_my_elements(); ++i)
   {
     Core::Elements::Element* ele = sourcedis.l_col_element(i);
-    if (!ele) FOUR_C_THROW("Cannot find element with lid %", i);
+    if (!ele) FOUR_C_THROW("Cannot find element with local id {}", i);
     std::shared_ptr<Core::Elements::Element> newele(ele->clone());
     targetdis->add_element(newele);
   }

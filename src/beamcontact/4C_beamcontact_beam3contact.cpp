@@ -5165,7 +5165,8 @@ std::vector<int> CONTACT::Beam3contact<numnodes, numnodalvalues>::get_global_dof
   // this loop is not entered in case of numnodalvalues=1
   for (int k = 3; k < 3 * numnodalvalues; ++k)
   {
-    if ((node->elements()[0])->element_type() != Discret::Elements::Beam3rType::instance())
+    if ((node->adjacent_elements()[0].user_element())->element_type() !=
+        Discret::Elements::Beam3rType::instance())
       pdofs[k] = (dofoffsetmap_.find(cdofs[k]))->second;
     else
       pdofs[k] = (dofoffsetmap_.find(cdofs[k + 3]))->second;

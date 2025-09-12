@@ -210,8 +210,8 @@ void ScaTra::MeshtyingStrategyS2IElch::evaluate_point_coupling()
       case Inpar::S2I::kinetics_butlervolmerreduced:
       {
         // access material of electrode
-        auto matelectrode =
-            std::dynamic_pointer_cast<const Mat::Electrode>(slave_node->elements()[0]->material());
+        auto matelectrode = std::dynamic_pointer_cast<const Mat::Electrode>(
+            slave_node->adjacent_elements()[0].user_element()->material());
         if (matelectrode == nullptr)
           FOUR_C_THROW("Invalid electrode material for multi-scale coupling!");
 

@@ -82,11 +82,14 @@ void Core::FE::do_initial_field(const Core::Utils::FunctionManager& function_man
     // Get native number of dofs at this node. There might be multiple dofsets
     // (in xfem cases), thus the size of the dofs vector might be a multiple
     // of this.
-    auto* const myeles = node->elements();
-    auto* ele_with_max_dof = std::max_element(myeles, myeles + node->num_element(),
-        [&](Core::Elements::Element* a, Core::Elements::Element* b)
-        { return a->num_dof_per_node(*node) < b->num_dof_per_node(*node); });
-    const int numdof = (*ele_with_max_dof)->num_dof_per_node(*node);
+    auto elements = node->adjacent_elements();
+    auto ele_with_max_dof = std::ranges::max_element(elements,
+        [&](ElementRef a, ElementRef b)
+        {
+          return a.user_element()->num_dof_per_node(*node) <
+                 b.user_element()->num_dof_per_node(*node);
+        });
+    const int numdof = ele_with_max_dof->user_element()->num_dof_per_node(*node);
 
     if ((total_numdof % numdof) != 0) FOUR_C_THROW("illegal dof set number");
 

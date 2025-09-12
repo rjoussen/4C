@@ -50,10 +50,9 @@ namespace
       for (auto const nodeid : *ArteryNodeIds)
       {
         Core::Nodes::Node* artnode = artsearchdis.g_node(nodeid);
-        Core::Elements::Element** artele = artnode->elements();
         // get Id of corresponding element; Note: in lung modeling only most distal nodes
         // are coupled, so coupling nodes can only belong to one element
-        const int elementID = artele[0]->id();
+        const int elementID = artnode->adjacent_elements()[0].global_id();
         // safety check if assertion is true
         FOUR_C_ASSERT(elementID >= 0, "It is not possible to have a negative element ID!");
         artEleGIDs_help.push_back(elementID);

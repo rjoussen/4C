@@ -69,22 +69,26 @@ namespace Core::FE
         // Here we check the first element type of the node. One node can be owned by several
         // elements we restrict the routine, that a node is only owned by elements with the same
         // physics
-        if (actnode->num_element() > 1)
+        auto adjacent_elements = actnode->adjacent_elements();
+        if (adjacent_elements.size() > 1)
         {
-          for (int i = 0; i < actnode->num_element() - 1; i++)
-          {
-            // if element types are different, check nullspace dimension and dofs
-            if (actnode->elements()[i + 1]->element_type() !=
-                actnode->elements()[i]->element_type())
-            {
-              int numdof1, dimnsp1;
-              actnode->elements()[i]->element_type().nodal_block_information(
-                  actnode->elements()[i], numdof1, dimnsp1);
-              int numdof2, dimnsp2;
-              actnode->elements()[i + 1]->element_type().nodal_block_information(
-                  actnode->elements()[i + 1], numdof2, dimnsp2);
+          // strip of the first element and compare the rest with it
+          ElementRef first = *adjacent_elements.begin();
+          auto& type_first = first.user_element()->element_type();
+          int numdof_first;
+          int dimnsp_first;
+          type_first.nodal_block_information(first.user_element(), numdof_first, dimnsp_first);
 
-              if (numdof1 != numdof2 || dimnsp1 != dimnsp2)
+          for (auto ele : adjacent_elements | std::views::drop(1))
+          {
+            auto* other = ele.user_element();
+            auto& type_other = other->element_type();
+            if (type_first != type_other)
+            {
+              int numdof_other;
+              int dimnsp_other;
+              type_other.nodal_block_information(other, numdof_other, dimnsp_other);
+              if (numdof_first != numdof_other || dimnsp_first != dimnsp_other)
                 FOUR_C_THROW(
                     "Node is owned by different element types, nullspace calculation aborted!");
             }
@@ -92,7 +96,7 @@ namespace Core::FE
         }
 
         Core::LinAlg::SerialDenseMatrix nodalNullspace =
-            actnode->elements()[0]->element_type().compute_null_space(
+            adjacent_elements[0].user_element()->element_type().compute_null_space(
                 *actnode, x0.data(), localLength, dimns);
 
         for (int dim = 0; dim < dimns; ++dim)

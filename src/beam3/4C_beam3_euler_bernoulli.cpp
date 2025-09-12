@@ -91,7 +91,8 @@ Core::LinAlg::SerialDenseMatrix Discret::Elements::Beam3ebType::compute_null_spa
   const auto& x = node.x();
 
   // getting pointer at current element
-  const auto* beam3eb = dynamic_cast<const Discret::Elements::Beam3eb*>(node.elements()[0]);
+  const auto* beam3eb =
+      dynamic_cast<const Discret::Elements::Beam3eb*>(node.adjacent_elements()[0].user_element());
   if (!beam3eb) FOUR_C_THROW("Cannot cast to Beam3eb");
 
   // Compute tangent vector with unit length from nodal coordinates.

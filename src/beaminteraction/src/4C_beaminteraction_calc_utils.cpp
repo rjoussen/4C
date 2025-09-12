@@ -60,9 +60,9 @@ namespace BeamInteraction
       bool beameles = false;
       bool othereles = false;
 
-      for (int i = 0; i < static_cast<int>(node.num_element()); ++i)
+      for (auto ele : node.adjacent_elements())
       {
-        if (is_beam_element(*(node.elements())[i]))
+        if (is_beam_element(*ele.user_element()))
           beameles = true;
         else
           othereles = true;
@@ -83,10 +83,10 @@ namespace BeamInteraction
       bool beamclnode = false;
 
       // TODO: actually we would have to check all elements of all processors!!! Gather?
-      for (int i = 0; i < static_cast<int>(node.num_element()); ++i)
+      for (auto ele : node.adjacent_elements())
       {
         const Discret::Elements::Beam3Base* beamele =
-            dynamic_cast<const Discret::Elements::Beam3Base*>(node.elements()[i]);
+            dynamic_cast<const Discret::Elements::Beam3Base*>(ele.user_element());
 
         if (beamele != nullptr and beamele->is_centerline_node(node)) beamclnode = true;
       }
@@ -101,9 +101,9 @@ namespace BeamInteraction
       bool othereles = false;
 
       // TODO: actually we would have to check all elements of all processors!!! Gather?
-      for (int i = 0; i < node.num_element(); ++i)
+      for (auto ele : node.adjacent_elements())
       {
-        if (is_rigid_sphere_element(*(node.elements())[i]))
+        if (is_rigid_sphere_element(*ele.user_element()))
           sphereele = true;
         else
           othereles = true;
@@ -359,7 +359,7 @@ namespace BeamInteraction
           // insert element cloud of current node
           Core::Nodes::Node* currnode = discret.g_node(requirednodes[i]);
           for (int j = 0; j < currnode->num_element(); ++j)
-            sdata.insert(currnode->elements()[j]->id());
+            sdata.insert(currnode->adjacent_elements()[j].global_id());
         }
 
         // gather and store information on iproc
@@ -430,15 +430,15 @@ namespace BeamInteraction
       {
         // insert element cloud of current node
         Core::Nodes::Node* node = discret.g_node((*nodeids)[nodei]);
-        for (int j = 0; j < node->num_element(); ++j)
+        for (auto ele : node->adjacent_elements())
         {
           // only if element has not yet been added to the filaments elements
-          if (std::find(sortedfilamenteles.begin(), sortedfilamenteles.end(),
-                  node->elements()[j]) != sortedfilamenteles.end())
+          if (std::find(sortedfilamenteles.begin(), sortedfilamenteles.end(), ele.user_element()) !=
+              sortedfilamenteles.end())
             continue;
 
           Discret::Elements::Beam3Base* currbeamele =
-              dynamic_cast<Discret::Elements::Beam3Base*>(node->elements()[j]);
+              dynamic_cast<Discret::Elements::Beam3Base*>(ele.user_element());
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
           if (currbeamele == nullptr)
@@ -448,7 +448,7 @@ namespace BeamInteraction
           // add element reference length of new element to filament reference length
           filreflength += currbeamele->ref_length();
           // add element
-          sortedfilamenteles.push_back(node->elements()[j]);
+          sortedfilamenteles.push_back(ele.user_element());
         }
       }
     }

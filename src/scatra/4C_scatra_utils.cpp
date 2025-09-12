@@ -264,76 +264,24 @@ ScaTra::ScaTraUtils::compute_gradient_at_nodes_mean_average(Core::FE::Discretiza
     std::vector<const Core::Elements::Element*> elements;
 
     // get adjacent elements for this node
-    const Core::Elements::Element* const* adjelements = ptToNode->elements();
+    auto adjelements = ptToNode->adjacent_elements();
 
-    const Core::FE::CellType DISTYPE = adjelements[0]->shape();  // Core::FE::CellType::hex8;
+    const Core::FE::CellType DISTYPE =
+        adjelements[0].user_element()->shape();  // Core::FE::CellType::hex8;
 
-    for (int iele = 0; iele < ptToNode->num_element(); iele++)
+    for (auto ele : adjelements)
     {
-      if (DISTYPE != adjelements[iele]->shape())
-        FOUR_C_THROW("discretization not with same elements!!!");
+      auto ele_ptr = ele.user_element();
+      if (DISTYPE != ele_ptr->shape()) FOUR_C_THROW("discretization not with same elements!!!");
 
-      elements.push_back(adjelements[iele]);
+      elements.push_back(ele_ptr);
     }
 
     // -------------------------------------------------------------
     //--------------------------------------
     // add elements along perodic boundaries
     //--------------------------------------
-    // boolean indicating whether this node is a pbc node
-    bool pbcnode = false;
     std::set<int> coupnodegid;
-    // loop all nodes with periodic boundary conditions (master nodes)
-    std::map<int, std::vector<int>>* pbccolmap = discret.get_all_pbc_coupled_col_nodes();
-
-    if (pbcnode)
-    {
-      for (const auto& [master_gid, slave_gids] : *pbccolmap)
-      {
-        if (master_gid == nodegid)  // node is a pbc master node
-        {
-          pbcnode = true;
-          // coupled node is the slave node; there can be more than one per master node
-          for (int i : slave_gids) coupnodegid.insert(i);
-        }
-        else
-        {
-          // loop all slave nodes
-          for (size_t islave = 0; islave < slave_gids.size(); islave++)
-          {
-            if (slave_gids[islave] == nodegid)  // node is a pbc slave node
-            {
-              pbcnode = true;
-              // coupled node is the master node
-              coupnodegid.insert(master_gid);
-
-              // there can be multiple slaves -> add all other slaves
-              for (size_t i = 0; i < slave_gids.size(); ++i)
-              {
-                if (slave_gids[islave] != slave_gids[i]) coupnodegid.insert(slave_gids[i]);
-              }
-            }
-          }
-        }
-      }
-    }
-
-    // add elements located around the coupled pbc node
-    if (pbcnode)
-    {
-      for (int icoupnode : coupnodegid)
-      {
-        // get coupled pbc node (master or slave)
-        const Core::Nodes::Node* ptToCoupNode = discret.g_node(icoupnode);
-        // get adjacent elements of this node
-        const Core::Elements::Element* const* pbcelements = ptToCoupNode->elements();
-        // add elements to list
-        for (int iele = 0; iele < ptToCoupNode->num_element(); iele++)  // = ptToNode->Elements();
-        {
-          elements.push_back(pbcelements[iele]);
-        }
-      }
-    }
 
     // -------------------------------------------------------------
 

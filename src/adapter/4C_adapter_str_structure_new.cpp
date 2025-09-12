@@ -155,7 +155,7 @@ void Adapter::StructureBaseAlgorithmNew::setup_tim_int()
     // bounding boxes.
     auto correct_node = [](const Core::Nodes::Node& node) -> decltype(auto)
     {
-      const Core::Elements::Element* element = node.elements()[0];
+      const Core::Elements::Element* element = node.adjacent_elements()[0].user_element();
       const auto* beamelement = dynamic_cast<const Discret::Elements::Beam3Base*>(element);
       if (beamelement != nullptr && !beamelement->is_centerline_node(node))
         return *element->nodes()[0];

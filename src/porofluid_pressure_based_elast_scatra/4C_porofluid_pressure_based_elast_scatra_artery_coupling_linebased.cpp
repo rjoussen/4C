@@ -11,6 +11,7 @@
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_general_extract_values.hpp"
 #include "4C_global_data.hpp"
+#include "4C_inpar_structure.hpp"
 #include "4C_linalg_fevector.hpp"
 #include "4C_linalg_utils_densematrix_communication.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
@@ -119,17 +120,14 @@ std::shared_ptr<Core::LinAlg::Map> PoroPressureBased::
   const int artery_element_material = homogenized_dis_->name() == "scatra" ? 1 : 0;
   std::vector<int> dirichlet_dofs;
 
-  const int num_row_nodes = artery_dis_->num_my_row_nodes();
   const Core::LinAlg::Map* dof_row_map = artery_dis_->dof_row_map();
 
-  for (int inode = 0; inode < num_row_nodes; ++inode)
+  for (auto node : artery_dis_->my_row_node_range())
   {
-    Core::Nodes::Node* current_node = artery_dis_->l_row_node(inode);
-    Core::Elements::Element** elements = current_node->elements();
     bool all_elements_collapsed = true;
-    for (int iele = 0; iele < (current_node->num_element()); iele++)
+    for (auto ele : node.adjacent_elements())
     {
-      const Core::Elements::Element* current_element = elements[iele];
+      const Core::Elements::Element* current_element = ele.user_element();
       const auto& artery_material = std::dynamic_pointer_cast<const Mat::Cnst1dArt>(
           current_element->material(artery_element_material));
       if (not artery_material->is_collapsed())
@@ -143,7 +141,7 @@ std::shared_ptr<Core::LinAlg::Map> PoroPressureBased::
     if (all_elements_collapsed)
     {
       // 1) insert all dofs of this node into Dirichlet dof vector
-      std::vector<int> dofs = artery_dis_->dof(0, current_node);
+      std::vector<int> dofs = artery_dis_->dof(0, node);
       dirichlet_dofs.insert(dirichlet_dofs.end(), dofs.begin(), dofs.end());
       // 2) insert the negative value of all dofs of this node into the rhs, with the employed
       // incremental form as this will force the value to zero
@@ -856,9 +854,8 @@ void PoroPressureBased::PorofluidElastScatraArteryCouplingLineBasedAlgorithm::
         {
           Core::Nodes::Node* current_node =
               artery_fully_overlapping_dis->g_node((connected_components[i])[j]);
-          Core::Elements::Element** current_element = current_node->elements();
-          for (int i_element = 0; i_element < current_node->num_element(); i_element++)
-            elements_to_be_deleted.push_back(current_element[i_element]->id());
+          for (auto ele : current_node->adjacent_elements())
+            elements_to_be_deleted.push_back(ele.global_id());
         }
         // user info
         if (my_mpi_rank_ == 0)
@@ -910,27 +907,24 @@ void PoroPressureBased::PorofluidElastScatraArteryCouplingLineBasedAlgorithm::de
   current_connected_component.push_back(current_node->id());
 
   // check all adjacent elements (edges)
-  Core::Elements::Element** elements = current_node->elements();
-  for (int i_element = 0; i_element < current_node->num_element(); i_element++)
+  for (auto ele : current_node->adjacent_elements())
   {
-    Core::Nodes::Node** nodes = elements[i_element]->nodes();
-
     // get diameter
-    const double diameter = (*artery_ele_diameters_fully_overlapping)[elements[i_element]->lid()];
+    const double diameter = (*artery_ele_diameters_fully_overlapping)[ele.local_id()];
 
     // get the artery-material
     std::shared_ptr<Mat::Cnst1dArt> artery_material =
-        std::dynamic_pointer_cast<Mat::Cnst1dArt>(elements[i_element]->material());
+        std::dynamic_pointer_cast<Mat::Cnst1dArt>(ele.user_element()->material());
     if (artery_material == nullptr) FOUR_C_THROW("cast to artery material failed");
 
     // if the element is not collapsed, it is connected to this node,
     // and we continue with the depth-first search with all nodes of this element
     if (diameter >= artery_material->collapse_threshold())
     {
-      for (int i_node = 0; i_node < elements[i_element]->num_node(); i_node++)
+      for (auto node : ele.nodes())
       {
-        if ((*checked_nodes)[nodes[i_node]->lid()] == 0)
-          depth_first_search(nodes[i_node], checked_nodes, artery_dis_fully_overlapping,
+        if ((*checked_nodes)[node.local_id()] == 0)
+          depth_first_search(node.user_node(), checked_nodes, artery_dis_fully_overlapping,
               artery_ele_diameters_fully_overlapping, current_connected_component);
       }
     }

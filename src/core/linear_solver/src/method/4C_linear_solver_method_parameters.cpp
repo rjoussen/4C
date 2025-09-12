@@ -59,7 +59,8 @@ void Core::LinearSolver::Parameters::compute_solver_parameters(
         if (localIndex == -1) continue;
 
         Core::Elements::Element* dwele = dis.l_row_element(localIndex);
-        actnode->elements()[0]->element_type().nodal_block_information(dwele, numdf, dimns);
+        actnode->adjacent_elements()[0].user_element()->element_type().nodal_block_information(
+            dwele, numdf, dimns);
         break;
       }
     }

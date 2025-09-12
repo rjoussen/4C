@@ -1702,7 +1702,8 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_nts(
     if (slavenode == nullptr) FOUR_C_THROW("Couldn't extract slave-side node from discretization!");
 
     // extract first slave-side element associated with current slave-side node
-    auto* const slaveelement = dynamic_cast<Mortar::Element* const>(slavenode->elements()[0]);
+    auto* const slaveelement =
+        dynamic_cast<Mortar::Element* const>(slavenode->adjacent_elements()[0].user_element());
     if (!slaveelement) FOUR_C_THROW("Invalid slave-side mortar element!");
 
     // extract master-side element associated with current slave-side node
@@ -2442,7 +2443,8 @@ void ScaTra::MeshtyingStrategyS2I::setup_meshtying()
             // element
             (*islavenodesimpltypes)[inode] = dynamic_cast<Discret::Elements::Transport*>(
                 std::dynamic_pointer_cast<Core::Elements::FaceElement>(
-                    kinetics_slave_cond.second->geometry().at(slavenode->elements()[0]->id()))
+                    kinetics_slave_cond.second->geometry().at(
+                        slavenode->adjacent_elements()[0].user_element()->id()))
                     ->parent_element())
                                                  ->impl_type();
           }

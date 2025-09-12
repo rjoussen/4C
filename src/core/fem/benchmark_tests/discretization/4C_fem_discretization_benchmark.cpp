@@ -81,6 +81,7 @@ namespace
   }
   BENCHMARK(discretization_loop_user_pointer);
 
+
   void discretization_loop_reference_nested(benchmark::State& state)
   {
     auto comm = MPI_COMM_WORLD;
@@ -95,6 +96,7 @@ namespace
         for (auto element : node.adjacent_elements())
         {
           count += element.local_id();
+          count += element.global_id();
         }
       }
       benchmark::DoNotOptimize(count);
@@ -117,11 +119,11 @@ namespace
       {
         const auto* node = discret.l_row_node(i);
         {
-          const int n_elements = node->num_element();
-          const auto* elements = node->elements();
-          for (int j = 0; j < n_elements; ++j)
+          // Use the new interface which return a range of ElementRef objects
+          for (auto ele : node->adjacent_elements())
           {
-            count += elements[j]->lid();
+            count += ele.local_id();
+            count += ele.global_id();
           }
         }
       }

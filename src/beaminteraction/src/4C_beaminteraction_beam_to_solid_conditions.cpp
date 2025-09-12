@@ -495,10 +495,9 @@ void BeamInteraction::BeamToSolidConditionSurface::setup(
     for (int i_node = 0; i_node < face_element_iterator.second->get_element()->num_node(); i_node++)
     {
       // Loop over the elements connected to that node and check if they are in this condition.
-      const Core::Elements::Element* const* elements = nodes[i_node]->elements();
-      for (int i_element = 0; i_element < nodes[i_node]->num_element(); i_element++)
+      for (auto ele : nodes[i_node]->adjacent_elements())
       {
-        const int element_id = elements[i_element]->id();
+        const int element_id = ele.global_id();
         auto find_in_condition = surface_ids_.find(element_id);
         if (find_in_condition != surface_ids_.end())
         {

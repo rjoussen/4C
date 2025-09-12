@@ -164,20 +164,20 @@ void GeometryPair::FaceElementPatchTemplate<Surface, ScalarType>::setup(
   {
     // Loop over all elements connected to a node of this face.
     const Core::Nodes::Node* node = this->core_element_->nodes()[i_node];
-    for (int i_element = 0; i_element < node->num_element(); i_element++)
+    for (auto element : node->adjacent_elements())
     {
-      const Core::Elements::Element* element = node->elements()[i_element];
+      auto element_id = element.global_id();
 
-      if (element->id() == element_uid) continue;
+      if (element_id == element_uid) continue;
 
       // Check if the element was already searched for.
-      if (connected_faces_.find(element->id()) == connected_faces_.end())
+      if (connected_faces_.find(element_id) == connected_faces_.end())
       {
         temp_connected_face.node_lid_map_.clear();
         temp_connected_face.my_node_patch_lid_.clear();
 
         // Check if the element is part of the surface condition.
-        auto find_in_faces = face_elements.find(element->id());
+        auto find_in_faces = face_elements.find(element_id);
         if (find_in_faces != face_elements.end())
         {
           // Add the node GIDs of this element.
@@ -226,7 +226,7 @@ void GeometryPair::FaceElementPatchTemplate<Surface, ScalarType>::setup(
           }
 
           // Add this element to the already searched connected elements.
-          connected_faces_[element->id()] = temp_connected_face;
+          connected_faces_[element_id] = temp_connected_face;
         }
       }
     }

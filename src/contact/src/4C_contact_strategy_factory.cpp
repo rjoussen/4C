@@ -846,10 +846,11 @@ void CONTACT::STRATEGY::Factory::build_interfaces(const Teuchos::ParameterList& 
               node->id());
         }
 
-        const bool nurbs = Core::FE::is_nurbs_celltype(node->elements()[0]->shape());
-        for (unsigned elid = 0; elid < static_cast<unsigned>(node->num_element()); ++elid)
+        const bool nurbs =
+            Core::FE::is_nurbs_celltype(node->adjacent_elements()[0].user_element()->shape());
+        for (auto ele : node->adjacent_elements())
         {
-          const Core::Elements::Element* adj_ele = node->elements()[elid];
+          const Core::Elements::Element* adj_ele = ele.user_element();
           if (nurbs != Core::FE::is_nurbs_celltype(adj_ele->shape()))
           {
             FOUR_C_THROW(

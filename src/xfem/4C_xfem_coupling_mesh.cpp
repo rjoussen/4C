@@ -376,20 +376,14 @@ void XFEM::MeshVolCoupling::redistribute_embedded_discretization()
     // a subset!)
     const Core::Nodes::Node* cond_node = cond_dis_->g_node(cond_node_gid);
 
-    // get associated elements
-    const Core::Elements::Element* const* cond_eles = cond_node->elements();
-    const int num_cond_ele = cond_node->num_element();
-
     // loop over associated elements
-    for (int ie = 0; ie < num_cond_ele; ++ie)
+    for (auto ele : cond_node->adjacent_elements())
     {
-      if (cond_eles[ie]->owner() == mypid) adj_eles_row.insert(cond_eles[ie]->id());
+      if (ele.owner() == mypid) adj_eles_row.insert(ele.global_id());
 
-      const int* node_ids = cond_eles[ie]->node_ids();
-      for (int in = 0; in < cond_eles[ie]->num_node(); ++in)
+      for (auto node : ele.nodes())
       {
-        if (cond_dis_->g_node(node_ids[in])->owner() == mypid)
-          adj_ele_nodes_row.insert(node_ids[in]);
+        if (node.owner() == mypid) adj_ele_nodes_row.insert(node.global_id());
       }
     }
   }

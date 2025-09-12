@@ -4581,8 +4581,8 @@ void FLD::XFluid::set_initial_flow_field(
     // arbitrarily take first node on this proc
     Core::Nodes::Node* lnode = discret_->l_row_node(0);
     // get list of adjacent elements of the first node
-    Core::Elements::Element** elelist = lnode->elements();
-    Core::Elements::Element* ele = elelist[0];  // (arbitrary!) first element
+    Core::Elements::Element* ele =
+        lnode->adjacent_elements()[0].user_element();  // (arbitrary!) first element
     // get material from first (arbitrary!) element adjacent to this node
     const std::shared_ptr<Core::Mat::Material> material = ele->material();
 #ifdef FOUR_C_ENABLE_ASSERTIONS

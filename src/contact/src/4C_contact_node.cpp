@@ -10,6 +10,7 @@
 #include "4C_comm_pack_helpers.hpp"
 #include "4C_contact_defines.hpp"
 #include "4C_contact_element.hpp"
+#include "4C_fem_discretization.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 #include "4C_utils_exceptions.hpp"
 
@@ -498,15 +499,13 @@ void CONTACT::Node::initialize_data_container()
   dentries_ = 0;
   std::set<int> sIdCheck;
   std::pair<std::set<int>::iterator, bool> check;
-  for (int i = 0; i < num_element(); ++i)
+  for (auto ele : adjacent_elements())
   {
-    const int* snodeIds = elements()[i]->node_ids();
-    const Core::Nodes::Node* const* nodes = elements()[i]->nodes();
-    for (int j = 0; j < elements()[i]->num_node(); ++j)
+    for (auto node : ele.nodes())
     {
-      const int numdof = elements()[i]->num_dof_per_node(*(nodes[j]));
+      const int numdof = ele.user_element()->num_dof_per_node(*(node.user_node()));
 
-      check = sIdCheck.insert(snodeIds[j]);
+      check = sIdCheck.insert(node.global_id());
       if (check.second)
       {
         dentries_ += numdof;
@@ -596,8 +595,6 @@ void CONTACT::Node::build_averaged_edge_tangent()
   {
     mo_data().edge_tangent()[j] = 0.0;
   }
-  int nseg = num_element();
-  Core::Elements::Element** adjeles = elements();
 
   //**************************************************
   //              CALCULATE EDGES
@@ -607,9 +604,9 @@ void CONTACT::Node::build_averaged_edge_tangent()
   std::set<std::pair<int, int>> donebefore;
 
   // loop over all surface elements
-  for (int surfele = 0; surfele < nseg; ++surfele)
+  for (auto ele : adjacent_elements())
   {
-    Element* cele = dynamic_cast<Element*>(adjeles[surfele]);
+    auto* cele = ele.user_element();
 
     if (cele->shape() == Core::FE::CellType::quad4)
     {
@@ -830,7 +827,6 @@ void CONTACT::Node::build_averaged_normal()
   }
 
   int nseg = num_element();
-  Core::Elements::Element** adjeles = elements();
 
   // temporary vector to store nodal normal
   std::array<double, 3> n_tmp = {0., 0., 0.};
@@ -847,9 +843,10 @@ void CONTACT::Node::build_averaged_normal()
   //**********************************************************************
 
   // loop over all adjacent elements
-  for (int i = 0; i < nseg; ++i)
+  int i = 0;
+  for (auto ele : adjacent_elements())
   {
-    Element* adjcele = dynamic_cast<Element*>(adjeles[i]);
+    auto* adjcele = dynamic_cast<Element*>(ele.user_element());
 
     // build element normal at current node
     // (we have to pass in the index i to be able to store the
@@ -858,6 +855,7 @@ void CONTACT::Node::build_averaged_normal()
 
     // add (weighted) element normal to nodal normal n
     for (int j = 0; j < 3; ++j) n_tmp[j] += elens(j, i) / elens(4, i);
+    ++i;
   }
 
   // modify normal in case of symmetry condition
@@ -961,21 +959,20 @@ void CONTACT::Node::build_averaged_normal()
 void CONTACT::Node::deriv_averaged_normal(
     Core::LinAlg::SerialDenseMatrix& elens, double length, double ltxi)
 {
-  int nseg = num_element();
-  Core::Elements::Element** adjeles = elements();
-
   // prepare nodal storage maps for derivative
   if ((int)data().get_deriv_n().size() == 0) data().get_deriv_n().resize(3, linsize_);
   if ((int)data().get_deriv_txi().size() == 0) data().get_deriv_txi().resize(3, linsize_);
   if ((int)data().get_deriv_teta().size() == 0) data().get_deriv_teta().resize(3, linsize_);
 
   // loop over all adjacent elements
-  for (int i = 0; i < nseg; ++i)
+  int i = 0;
+  for (auto ele : adjacent_elements())
   {
-    Element* adjcele = dynamic_cast<Element*>(adjeles[i]);
+    Element* adjcele = dynamic_cast<Element*>(ele.user_element());
 
     // build element normal derivative at current node
     adjcele->deriv_normal_at_node(id(), i, elens, data().get_deriv_n());
+    ++i;
   }
 
   // modify normal in case of symmetry condition

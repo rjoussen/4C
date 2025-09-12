@@ -185,9 +185,6 @@ std::shared_ptr<Core::LinAlg::MultiVector<double>> Core::FE::compute_superconver
         // we have an inner node here
         //---------------------------------------------
 
-        const Core::Elements::Element* const* adjacentele = node->elements();
-        const int numadjacent = node->num_element();
-
         // patch-recovery for each entry of the velocity gradient
         for (int j = 0; j < numvec; ++j)
         {
@@ -201,9 +198,9 @@ std::shared_ptr<Core::LinAlg::MultiVector<double>> Core::FE::compute_superconver
           b.clear();
 
           // loop over all surrounding elements
-          for (int k = 0; k < numadjacent; ++k)
+          for (auto adj_ele : node->adjacent_elements())
           {
-            const int elelid = elevec_toberecovered_col.get_map().lid(adjacentele[k]->id());
+            const int elelid = elevec_toberecovered_col.get_map().lid(adj_ele.global_id());
             for (int d = 0; d < dim; ++d)
               p(d + 1) = centercoords_col(d)[elelid] - node->x()[d] /* + ALE_DISP*/;
 
@@ -236,8 +233,7 @@ std::shared_ptr<Core::LinAlg::MultiVector<double>> Core::FE::compute_superconver
         std::vector<int> slavenodeids = masternode->second;
         const int numslavenodes = (int)(masternode->second.size());
         // containers for adjacent elements to slave+master nodes
-        std::vector<const Core::Elements::Element* const*> adjacenteles(numslavenodes + 1);
-        std::vector<int> numadjacenteles(numslavenodes + 1);
+        std::vector<IteratorRange<DiscretizationIterator<ConstElementRef>>> adjacenteles;
         std::vector<double> offset(dim, 0.0);
         std::vector<std::vector<double>> eleoffsets(numslavenodes + 1, offset);
         for (int s = 0; s < numslavenodes; ++s)
@@ -248,12 +244,10 @@ std::shared_ptr<Core::LinAlg::MultiVector<double>> Core::FE::compute_superconver
             eleoffsets[s][d] = (node->x()[d] - slavenode->x()[d]) /* + ALE DISP */;
 
           // add adjacent elements of slave nodes to vector
-          adjacenteles[s] = slavenode->elements();
-          numadjacenteles[s] = slavenode->num_element();
+          adjacenteles.emplace_back(slavenode->adjacent_elements());
         }
         // add elements connected to master node -> offset is zero for master elements
-        adjacenteles[numslavenodes] = node->elements();
-        numadjacenteles[numslavenodes] = node->num_element();
+        adjacenteles.emplace_back(node->adjacent_elements());
 
         // patch-recovery for each entry of the velocity gradient
         for (int j = 0; j < numvec; ++j)
@@ -270,9 +264,9 @@ std::shared_ptr<Core::LinAlg::MultiVector<double>> Core::FE::compute_superconver
           // loop over all surrounding elements
           for (size_t s = 0; s < adjacenteles.size(); ++s)
           {
-            for (int k = 0; k < numadjacenteles[s]; ++k)
+            for (auto ele : adjacenteles[s])
             {
-              const int elelid = elevec_toberecovered_col.get_map().lid(adjacenteles[s][k]->id());
+              const int elelid = elevec_toberecovered_col.get_map().lid(ele.global_id());
               for (int d = 0; d < dim; ++d)
                 p(d + 1) =
                     (centercoords_col(d))[elelid] + eleoffsets[s][d] - node->x()[d] /* + ALE_DISP*/;
@@ -308,27 +302,23 @@ std::shared_ptr<Core::LinAlg::MultiVector<double>> Core::FE::compute_superconver
         //---------------------------------------------
 
         // get all neighboring nodes of boundary node and find closest one
-        const Core::Elements::Element* const* adjacentele = node->elements();
-        const int numadjacentele = node->num_element();
         double distance = 1.0e12;
         int closestnodeid = -1;
-        for (int k = 0; k < numadjacentele; ++k)
+        for (auto adjacent_ele : node->adjacent_elements())
         {
-          const Core::Nodes::Node* const* adjacentnodes = adjacentele[k]->nodes();
-          const int numnode = adjacentele[k]->num_node();
-          for (int n = 0; n < numnode; ++n)
+          for (auto adjacent_node : adjacent_ele.nodes())
           {
             // continue with next node in case the neighbor is also on the boundary
-            if (conds[0]->contains_node(adjacentnodes[n]->id())) continue;
+            if (conds[0]->contains_node(adjacent_node.global_id())) continue;
 
-            const auto& pos = adjacentnodes[n]->x(); /* + ALE DISP */
+            const auto& pos = adjacent_node.x(); /* + ALE DISP */
             static Core::LinAlg::Matrix<dim, 1> dist;
             for (int d = 0; d < dim; ++d) dist(d) = pos[d] - node->x()[d]; /* + ALE DISP */
             const double tmp = dist.norm2();
             if (tmp < distance and tmp > 1.0e-14)
             {
               distance = tmp;
-              closestnodeid = adjacentnodes[n]->id();
+              closestnodeid = adjacent_node.global_id();
             }
           }
         }
@@ -340,8 +330,6 @@ std::shared_ptr<Core::LinAlg::MultiVector<double>> Core::FE::compute_superconver
 
         // build patch for closest node and evaluate patch at boundary node
         const Core::Nodes::Node* closestnode = dis.g_node(closestnodeid);
-        const Core::Elements::Element* const* closestnodeadjacentele = closestnode->elements();
-        const int numadjacent = closestnode->num_element();
 
         // leave here in case the closest node is a ghost node
         // only row nodes have all neighboring elements on this proc
@@ -361,10 +349,10 @@ std::shared_ptr<Core::LinAlg::MultiVector<double>> Core::FE::compute_superconver
           b.clear();
 
           // loop over all surrounding elements
-          for (int k = 0; k < numadjacent; ++k)
+          for (auto closest_node_adjacent_ele : closestnode->adjacent_elements())
           {
             const int elelid =
-                elevec_toberecovered_col.get_map().lid(closestnodeadjacentele[k]->id());
+                elevec_toberecovered_col.get_map().lid(closest_node_adjacent_ele.global_id());
             for (int d = 0; d < dim; ++d)
               p(d + 1) = (centercoords_col(d))[elelid] - closestnode->x()[d]; /* + ALE_DISP*/
 
@@ -397,33 +385,31 @@ std::shared_ptr<Core::LinAlg::MultiVector<double>> Core::FE::compute_superconver
         //---------------------------------------------
 
         // often bounds are axis aligned -> another pbc (master) node is closest node
-        const Core::Elements::Element* const* adjacentele = node->elements();
-        const int numadjacentele = node->num_element();
+        auto adjacentele = node->adjacent_elements();
 
         // leave here if the boundary node is a ghost node and has no adjacent elements on this proc
         // only boundary ghost nodes which have an inner node as a row node have all neighboring
         // elements on this proc this will result in off processor assembling (boundary ghost node
         // but closest node as row node)
-        if (node->owner() != myrank && numadjacentele == 0) continue;
+        if (node->owner() != myrank && adjacentele.size() == 0) continue;
 
         double distance = 1.0e12;
         int closestnodeid = -1;
-        for (int k = 0; k < numadjacentele; ++k)
+        for (auto ele : adjacentele)
         {
-          const Core::Nodes::Node* const* adjacentnodes = adjacentele[k]->nodes();
-          for (int n = 0; n < adjacentele[k]->num_node(); ++n)
+          for (auto adj_node : ele.nodes())
           {
             // continue with next node in case the neighbor is also on the boundary
-            if (conds[0]->contains_node(adjacentnodes[n]->id())) continue;
+            if (conds[0]->contains_node(adj_node.global_id())) continue;
 
-            const auto& pos = adjacentnodes[n]->x(); /* + ALE DISP */
+            const auto& pos = adj_node.x(); /* + ALE DISP */
             static Core::LinAlg::Matrix<dim, 1> dist;
             for (int d = 0; d < dim; ++d) dist(d) = pos[d] - node->x()[d]; /* + ALE DISP */
             const double tmp = dist.norm2();
             if (tmp < distance and tmp > 1.0e-14)
             {
               distance = tmp;
-              closestnodeid = adjacentnodes[n]->id();
+              closestnodeid = adj_node.global_id();
             }
           }
         }
@@ -436,7 +422,7 @@ std::shared_ptr<Core::LinAlg::MultiVector<double>> Core::FE::compute_superconver
         // build patch for closest node and evaluate patch at boundary node
 
         // get master nodes and corresponding slave nodes
-        Core::Nodes::Node* closestnode = dis.g_node(closestnodeid);
+        const Core::Nodes::Node* closestnode = dis.g_node(closestnodeid);
 
         // leave here in case the closest node is a ghost node
         // only row nodes have all neighboring elements on this proc
@@ -466,9 +452,7 @@ std::shared_ptr<Core::LinAlg::MultiVector<double>> Core::FE::compute_superconver
         }
 
         // containers for adjacent elements to slave+master nodes
-        std::vector<const Core::Elements::Element* const*> closestnodeadjacenteles(
-            numslavenodes + 1);
-        std::vector<int> numadjacenteles(numslavenodes + 1);
+        std::vector<IteratorRange<DiscretizationIterator<ConstElementRef>>> closestnodeadjacenteles;
         std::vector<double> offset(dim, 0.0);
         std::vector<std::vector<double>> eleoffsets(numslavenodes + 1, offset);
         for (int s = 0; s < numslavenodes; ++s)
@@ -479,12 +463,10 @@ std::shared_ptr<Core::LinAlg::MultiVector<double>> Core::FE::compute_superconver
             eleoffsets[s][d] = (closestnode->x()[d] - slavenode->x()[d]); /* + ALE DISP */
 
           // add adjacent elements of slave nodes to vectors
-          closestnodeadjacenteles[s] = slavenode->elements();
-          numadjacenteles[s] = slavenode->num_element();
+          closestnodeadjacenteles.emplace_back(slavenode->adjacent_elements());
         }
         // add elements connected to master node -> offset is zero for master elements
-        closestnodeadjacenteles[numslavenodes] = closestnode->elements();
-        numadjacenteles[numslavenodes] = closestnode->num_element();
+        closestnodeadjacenteles.emplace_back(closestnode->adjacent_elements());
 
         // patch-recovery for each entry of the velocity gradient
         for (int j = 0; j < numvec; ++j)
@@ -501,10 +483,9 @@ std::shared_ptr<Core::LinAlg::MultiVector<double>> Core::FE::compute_superconver
           // loop over all surrounding elements
           for (size_t s = 0; s < closestnodeadjacenteles.size(); ++s)
           {
-            for (int k = 0; k < numadjacenteles[s]; ++k)
+            for (auto ele : closestnodeadjacenteles[s])
             {
-              const int elelid =
-                  elevec_toberecovered_col.get_map().lid(closestnodeadjacenteles[s][k]->id());
+              const int elelid = elevec_toberecovered_col.get_map().lid(ele.global_id());
               for (int d = 0; d < dim; ++d)
                 p(d + 1) = (centercoords_col(d))[elelid] + eleoffsets[s][d] -
                            closestnode->x()[d]; /* + ALE_DISP*/

@@ -325,7 +325,7 @@ void CONTACT::Interface::set_cn_ct_values(const int& iter)
     Node* cnode = dynamic_cast<Node*>(node);
 
     // calculate characteristic edge length:
-    Core::Elements::Element* ele = cnode->elements()[0];
+    Core::Elements::Element* ele = cnode->adjacent_elements()[0].user_element();
     auto* cele = dynamic_cast<Element*>(ele);
     std::array<double, 3> pos1 = {0.0, 0.0, 0.0};
     std::array<double, 3> pos2 = {0.0, 0.0, 0.0};
@@ -855,16 +855,13 @@ void CONTACT::Interface::redistribute()
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
 
     // find adjacent elements first
-    for (int adjacentElement = 0; adjacentElement < node->num_element(); ++adjacentElement)
+    for (auto ele : node->adjacent_elements())
     {
       // store adjacent nodes
-      Core::Elements::Element* ele = node->elements()[adjacentElement];
-      int numnode = ele->num_node();
+      int numnode = ele.num_nodes();
       std::vector<int> nodeids(numnode);
-      for (int n = 0; n < numnode; ++n)
-      {
-        nodeids[n] = ele->node_ids()[n];
-      }
+      std::ranges::transform(
+          ele.nodes(), nodeids.begin(), [](auto node) { return node.global_id(); });
 
       graph->insert_global_indices(gid, numnode, nodeids.data());
     }
@@ -3660,7 +3657,6 @@ double CONTACT::Interface::compute_normal_node_to_edge(const Mortar::Node& snode
   // Orientation check:
   std::array<double, 3> slavebasednormal = {0.0, 0.0, 0.0};
   int nseg = snode.num_element();
-  const Core::Elements::Element* const* adjeles = snode.elements();
 
   // we need to store some stuff here
   //**********************************************************************
@@ -3672,7 +3668,8 @@ double CONTACT::Interface::compute_normal_node_to_edge(const Mortar::Node& snode
   // elens(5,i): length/area of element itself
   //**********************************************************************
   Core::LinAlg::SerialDenseMatrix elens(6, nseg);
-  const auto* adjmrtrele = dynamic_cast<const Mortar::Element*>(adjeles[0]);
+  const auto* adjmrtrele =
+      dynamic_cast<const Mortar::Element*>(snode.adjacent_elements()[0].user_element());
 
   // build element normal at current node
   // (we have to pass in the index i to be able to store the
@@ -3795,7 +3792,6 @@ double CONTACT::Interface::compute_normal_node_to_node(const Mortar::Node& snode
   // Orientation check:
   std::array<double, 3> slavebasednormal = {0.0, 0.0, 0.0};
   int nseg = snode.num_element();
-  const Core::Elements::Element* const* adjeles = snode.elements();
 
   // we need to store some stuff here
   //**********************************************************************
@@ -3807,7 +3803,8 @@ double CONTACT::Interface::compute_normal_node_to_node(const Mortar::Node& snode
   // elens(5,i): length/area of element itself
   //**********************************************************************
   Core::LinAlg::SerialDenseMatrix elens(6, nseg);
-  const auto* adjmrtrele = dynamic_cast<const Mortar::Element*>(adjeles[0]);
+  const auto* adjmrtrele =
+      dynamic_cast<const Mortar::Element*>(snode.adjacent_elements()[0].user_element());
 
   // build element normal at current node
   // (we have to pass in the index i to be able to store the

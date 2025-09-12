@@ -1101,7 +1101,7 @@ ScaTra::ScaTraTimIntElch::evaluate_single_electrode_info_point(
     }
 
     // get element attached to node
-    Core::Elements::Element* element = node->elements()[0];
+    Core::Elements::Element* element = node->adjacent_elements()[0].user_element();
 
     // determine location information
     Core::Elements::LocationArray la(discret_->num_dof_sets());
@@ -2697,7 +2697,7 @@ void ScaTra::ScaTraTimIntElch::evaluate_electrode_boundary_kinetics_point_condit
       }
 
       // get element attached to node
-      Core::Elements::Element* element = node->elements()[0];
+      Core::Elements::Element* element = node->adjacent_elements()[0].user_element();
 
       // determine location information
       Core::Elements::LocationArray la(discret_->num_dof_sets());

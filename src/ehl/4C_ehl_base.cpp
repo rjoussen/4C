@@ -377,7 +377,8 @@ void EHL::Base::add_couette_force(
     const double p = lubrication_->lubrication_field()->prenp()->operator[](
         lubrication_->lubrication_field()->prenp()->get_map().lid(lub_dis.dof(0, lnode, 0)));
 
-    std::shared_ptr<Core::Mat::Material> mat = lnode->elements()[0]->material(0);
+    std::shared_ptr<Core::Mat::Material> mat =
+        lnode->adjacent_elements()[0].user_element()->material(0);
     if (!mat) FOUR_C_THROW("null pointer");
     std::shared_ptr<Mat::LubricationMat> lmat = std::dynamic_pointer_cast<Mat::LubricationMat>(mat);
     const double visc = lmat->compute_viscosity(p);
@@ -512,7 +513,7 @@ void EHL::Base::setup_unprojectable_dbc()
     {
       for (int e = 0; e < cnode->num_element(); ++e)
       {
-        Core::Elements::Element* ele = cnode->elements()[e];
+        Core::Elements::Element* ele = cnode->adjacent_elements()[e].user_element();
         for (int nn = 0; nn < ele->num_node(); ++nn)
         {
           CONTACT::Node* cnn = dynamic_cast<CONTACT::Node*>(ele->nodes()[nn]);
@@ -802,7 +803,8 @@ void EHL::Base::output(bool forced_writerestart)
       const double p = lubrication_->lubrication_field()->prenp()->operator[](
           lubrication_->lubrication_field()->prenp()->get_map().lid(
               lubrication_->lubrication_field()->discretization()->dof(0, lnode, 0)));
-      std::shared_ptr<Core::Mat::Material> mat = lnode->elements()[0]->material(0);
+      std::shared_ptr<Core::Mat::Material> mat =
+          lnode->adjacent_elements()[0].user_element()->material(0);
       if (!mat) FOUR_C_THROW("null pointer");
       std::shared_ptr<Mat::LubricationMat> lmat =
           std::dynamic_pointer_cast<Mat::LubricationMat>(mat);

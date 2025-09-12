@@ -266,7 +266,6 @@ void Core::FE::Discretization::build_node_to_element_pointers()
 {
   for (const auto& node : node_ | std::views::values)
   {
-    node->clear_my_element_topology();
     node->discretization_ = this;
   }
 
@@ -282,7 +281,6 @@ void Core::FE::Discretization::build_node_to_element_pointers()
       FOUR_C_ASSERT_ALWAYS(
           node, "Node {} is not on this proc {}", j, Core::Communication::my_mpi_rank(get_comm()));
 
-      node->add_element_ptr(ele.get());
       node_to_element_ids[node->lid()].push_back(ele->lid());
     }
   }
