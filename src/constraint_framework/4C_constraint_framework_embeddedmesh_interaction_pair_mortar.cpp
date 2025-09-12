@@ -59,7 +59,7 @@ Constraints::EmbeddedMesh::SurfaceToBackgroundCouplingPairMortar<Interface, Back
     : SolidInteractionPair(element1, element2, params_ptr, cutwizard_ptr, boundary_cells)
 {
   // Check that the shape functions in the parameters are of the same shape as the element
-  FOUR_C_ASSERT(params_ptr.embedded_mesh_mortar_shape_function_ ==
+  FOUR_C_ASSERT(params_ptr.mortar_shape_function_ ==
                     define_shape_functions_lagrange_multipliers(this->element_1().shape()),
       "The interface element in the coupling pair doesn't have the same shape as defined in the "
       "input parameter MORTAR_SHAPE_FUNCTION.");
