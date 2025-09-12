@@ -186,6 +186,8 @@ namespace ReducedLung
       }
     }
 
+    create_terminal_unit_evaluators(terminal_units);
+
     // Build local map node id -> adjacent element id and distribute to all processors.
     std::map<int, std::vector<int>> ele_ids_per_node;
     for (const auto& node : actdis->my_row_node_range())
@@ -378,13 +380,15 @@ namespace ReducedLung
       Core::Communication::sum_all(&n_boundary_conditions, &n_total_boundary_conditions, 1, comm);
       if (Core::Communication::my_mpi_rank(comm) == 0)
       {
-        std::cout << "--------- Instantiated objects ---------"
+        // clang-format off
+        std::cout << "--------- Instantiated objects ---------" 
                   << "\nAirways:              |  " << n_total_airways
                   << "\nTerminal Units:       |  " << n_total_terminal_units
                   << "\nConnections:          |  " << n_total_connections
                   << "\nBifurcations:         |  " << n_total_bifurcations
                   << "\nBoundary Conditions:  |  " << n_total_boundary_conditions << "\n\n"
                   << std::flush;
+        // clang-format on
       }
     }
 

@@ -1,0 +1,6 @@
+{
+  "rheological_model_type": {
+    "4": "FourElementMaxwell",
+    "5": "KelvinVoigt"
+  }
+}

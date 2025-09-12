@@ -493,15 +493,8 @@ namespace ReducedLung
     new_model.rheological_model = R{};
     new_model.elasticity_model = E{};
 
-    // Create evaluators with the newly instantiated TerminalUnitModel as reference.
-    new_model.negative_residual_evaluator = std::visit(
-        MakeNegativeResidualEvaluator{new_model.elasticity_model}, new_model.rheological_model);
-
-    new_model.jacobian_evaluator =
-        std::visit(MakeJacobianEvaluator{new_model.elasticity_model}, new_model.rheological_model);
-
-    new_model.internal_state_updater =
-        std::visit(MakeInternalStateUpdater{}, new_model.rheological_model);
+    // Evaluators are assigned later to avoid capturing references into `terminal_units.models`
+    // while the vector may still reallocate during element registration.
 
     return new_model;
   }
@@ -608,6 +601,15 @@ namespace ReducedLung
    */
   void update_terminal_unit_jacobian(Core::LinAlg::SparseMatrix& jac, TerminalUnits& terminal_units,
       const Core::LinAlg::Vector<double>& locally_relevant_dofs, double dt);
+
+  /**
+   * @brief Creates evaluator functions for all terminal unit models.
+   *
+   * This function must be called after all terminal unit elements have been added.
+   * It initializes the evaluator function objects (residual, Jacobian, internal state updater)
+   * for each model, ensuring that references captured by these evaluators remain valid.
+   */
+  void create_terminal_unit_evaluators(TerminalUnits& terminal_units);
 
   /**
    * @brief Updates the internal state memory of each terminal unit model.
