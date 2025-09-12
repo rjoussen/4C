@@ -221,6 +221,19 @@ namespace ReducedLung
       model.internal_state_updater(model.data, locally_relevant_dofs, dt);
     }
   }
+
+  void create_terminal_unit_evaluators(TerminalUnits& terminal_units)
+  {
+    for (auto& model : terminal_units.models)
+    {
+      model.negative_residual_evaluator = std::visit(
+          MakeNegativeResidualEvaluator{model.elasticity_model}, model.rheological_model);
+      model.jacobian_evaluator =
+          std::visit(MakeJacobianEvaluator{model.elasticity_model}, model.rheological_model);
+      model.internal_state_updater =
+          std::visit(MakeInternalStateUpdater{}, model.rheological_model);
+    }
+  }
 }  // namespace ReducedLung
 
 
