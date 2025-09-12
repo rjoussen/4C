@@ -9,6 +9,7 @@
 
 #include "4C_constraint_framework_embeddedmesh_interaction_pair_mortar.hpp"
 #include "4C_constraint_framework_embeddedmesh_solid_to_solid_mortar_manager.hpp"
+#include "4C_constraint_framework_input.hpp"
 #include "4C_cut_boundarycell.hpp"
 #include "4C_cut_combintersection.hpp"
 #include "4C_cut_cutwizard.hpp"
@@ -17,7 +18,6 @@
 #include "4C_cut_point.hpp"
 #include "4C_cut_volumecell.hpp"
 #include "4C_geometry_pair_element.hpp"
-#include "4C_inpar_constraint_framework.hpp"
 #include "4C_linalg_sparsematrix.hpp"
 #include "4C_solid_3D_ele.hpp"
 #include "4C_solid_3D_ele_calc_lib.hpp"
@@ -339,22 +339,17 @@ void Constraints::EmbeddedMesh::change_gauss_rule_of_cut_elements(
 
 
 void Constraints::EmbeddedMesh::mortar_shape_functions_to_number_of_lagrange_values(
-    const Inpar::Constraints::SolidToSolidMortarShapefunctions shape_function,
+    const Constraints::EmbeddedMesh::SolidToSolidMortarShapefunctions shape_function,
     unsigned int& n_lambda_node)
 {
   switch (shape_function)
   {
-    case Inpar::Constraints::SolidToSolidMortarShapefunctions::none:
-    {
-      n_lambda_node = 0;
-      return;
-    }
-    case Inpar::Constraints::SolidToSolidMortarShapefunctions::quad4:
+    case Constraints::EmbeddedMesh::SolidToSolidMortarShapefunctions::quad4:
     {
       n_lambda_node = 1 * 3;
       return;
     }
-    case Inpar::Constraints::SolidToSolidMortarShapefunctions::nurbs9:
+    case Constraints::EmbeddedMesh::SolidToSolidMortarShapefunctions::nurbs9:
     {
       n_lambda_node = 1 * 3;
       return;
@@ -484,17 +479,17 @@ Core::FE::GaussIntegration Constraints::EmbeddedMesh::create_gauss_integration_f
   return Core::FE::GaussIntegration(gp);
 }
 
-Inpar::Constraints::SolidToSolidMortarShapefunctions
+Constraints::EmbeddedMesh::SolidToSolidMortarShapefunctions
 Constraints::EmbeddedMesh::define_shape_functions_lagrange_multipliers(Core::FE::CellType celltype)
 {
   switch (celltype)
   {
     case Core::FE::CellType::quad4:
-      return Inpar::Constraints::SolidToSolidMortarShapefunctions::quad4;
+      return SolidToSolidMortarShapefunctions::quad4;
     case Core::FE::CellType::quad9:
-      return Inpar::Constraints::SolidToSolidMortarShapefunctions::quad9;
+      return SolidToSolidMortarShapefunctions::quad9;
     case Core::FE::CellType::nurbs9:
-      return Inpar::Constraints::SolidToSolidMortarShapefunctions::nurbs9;
+      return SolidToSolidMortarShapefunctions::nurbs9;
     default:
       FOUR_C_THROW("Shape functions not implemented for this type of cell.");
   }

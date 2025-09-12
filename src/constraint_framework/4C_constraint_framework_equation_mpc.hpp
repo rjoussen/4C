@@ -10,12 +10,10 @@
 
 #include "4C_config.hpp"
 
-#include "4C_inpar_mpc_rve.hpp"
 #include "4C_linalg_sparsematrix.hpp"
 
-
-
 FOUR_C_NAMESPACE_OPEN
+
 namespace Constraints::SubmodelEvaluator
 {
   /*! \brief The MultiPointConstraintEquationBase class serves as a base interface

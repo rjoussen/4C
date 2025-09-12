@@ -54,7 +54,7 @@ Constraints::EmbeddedMesh::SolidToSolidMortarManager::SolidToSolidMortarManager(
   // Get the number of Lagrange multiplier DOF on a solid node and on a solid element
   unsigned int n_lambda_node_temp = 0;
   mortar_shape_functions_to_number_of_lagrange_values(
-      embedded_mesh_coupling_params_.embedded_mesh_mortar_shape_function_, n_lambda_node_temp);
+      embedded_mesh_coupling_params_.mortar_shape_function_, n_lambda_node_temp);
 
   n_lambda_node_ = n_lambda_node_temp;
 
@@ -489,8 +489,7 @@ Constraints::EmbeddedMesh::SolidToSolidMortarManager::penalty_invert_kappa() con
       std::make_shared<Core::LinAlg::Vector<double>>(*lambda_dof_rowmap_);
 
   // Get the penalty parameters.
-  const double penalty_params =
-      embedded_mesh_coupling_params_.embedded_mesh_constraint_penalty_parameter_;
+  const double penalty_params = embedded_mesh_coupling_params_.constraint_penalty_parameter_;
 
   // Calculate the local inverse of kappa.
   double penalty = 0.0;

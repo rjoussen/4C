@@ -27,15 +27,15 @@ Constraints::SubmodelEvaluator::EmbeddedMeshConstraintManager::EmbeddedMeshConst
   auto cut_parameter_list = Global::Problem::instance()->cut_general_params();
 
   auto embedded_mesh_coupling_strategy =
-      Teuchos::getIntegralValue<Inpar::Constraints::EmbeddedMeshCouplingStrategy>(
+      Teuchos::getIntegralValue<Constraints::EmbeddedMesh::CouplingStrategy>(
           embedded_mesh_parameter_list, "COUPLING_STRATEGY");
 
   auto embedded_mesh_constraint_enforcement =
-      Teuchos::getIntegralValue<Inpar::Constraints::EmbeddedMeshConstraintEnforcement>(
+      Teuchos::getIntegralValue<Constraints::EnforcementStrategy>(
           embedded_mesh_parameter_list, "CONSTRAINT_ENFORCEMENT");
 
   auto embedded_mesh_mortar_shape_function =
-      Teuchos::getIntegralValue<Inpar::Constraints::SolidToSolidMortarShapefunctions>(
+      Teuchos::getIntegralValue<Constraints::EmbeddedMesh::SolidToSolidMortarShapefunctions>(
           embedded_mesh_parameter_list, "MORTAR_SHAPE_FUNCTION");
 
   auto embedded_mesh_constraint_penalty_parameter =
@@ -53,10 +53,10 @@ Constraints::SubmodelEvaluator::EmbeddedMeshConstraintManager::EmbeddedMeshConst
 
   // Initialize embedded mesh coupling parameters
   Constraints::EmbeddedMesh::EmbeddedMeshParams embedded_mesh_coupling_params = {
-      .embedded_mesh_coupling_strategy_ = embedded_mesh_coupling_strategy,
-      .embedded_mesh_constraint_enforcement_ = embedded_mesh_constraint_enforcement,
-      .embedded_mesh_constraint_penalty_parameter_ = embedded_mesh_constraint_penalty_parameter,
-      .embedded_mesh_mortar_shape_function_ = embedded_mesh_mortar_shape_function,
+      .coupling_strategy_ = embedded_mesh_coupling_strategy,
+      .constraint_enforcement_ = embedded_mesh_constraint_enforcement,
+      .constraint_penalty_parameter_ = embedded_mesh_constraint_penalty_parameter,
+      .mortar_shape_function_ = embedded_mesh_mortar_shape_function,
       .xfem_nodal_dof_set_strategy_ = nodal_dofset_strategy,
       .xfem_volume_cell_gauss_point_by_ = volume_cell_gauss_point_by,
       .xfem_bcell_gauss_point_by_ = bound_cell_gauss_point_by,

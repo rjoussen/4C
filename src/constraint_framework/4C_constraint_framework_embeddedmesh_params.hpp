@@ -10,9 +10,9 @@
 
 #include "4C_config.hpp"
 
+#include "4C_constraint_framework_input.hpp"
 #include "4C_cut_enum.hpp"
 #include "4C_fem_general_cell_type.hpp"
-#include "4C_inpar_constraint_framework.hpp"
 
 #include <Teuchos_ParameterList.hpp>
 
@@ -23,20 +23,16 @@ namespace Constraints::EmbeddedMesh
   struct EmbeddedMeshParams
   {
     //! Strategy for coupling the embedded meshes
-    enum Inpar::Constraints::EmbeddedMeshCouplingStrategy embedded_mesh_coupling_strategy_ =
-        Inpar::Constraints::EmbeddedMeshCouplingStrategy::none;
+    CouplingStrategy coupling_strategy_;
 
     //! Constraint enforcement method
-    enum Inpar::Constraints::EmbeddedMeshConstraintEnforcement
-        embedded_mesh_constraint_enforcement_ =
-            Inpar::Constraints::EmbeddedMeshConstraintEnforcement::none;
+    EnforcementStrategy constraint_enforcement_;
 
     //! Penalty parameter for coupling enforcement
-    double embedded_mesh_constraint_penalty_parameter_ = 0.0;
+    double constraint_penalty_parameter_ = 0.0;
 
     //! Shape function for the mortar Lagrange-multiplicators
-    enum Inpar::Constraints::SolidToSolidMortarShapefunctions embedded_mesh_mortar_shape_function_ =
-        Inpar::Constraints::SolidToSolidMortarShapefunctions::none;
+    SolidToSolidMortarShapefunctions mortar_shape_function_;
 
     //! Nodal Dof set strategy for XFEM
     Cut::NodalDofSetStrategy xfem_nodal_dof_set_strategy_ =

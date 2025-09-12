@@ -5,45 +5,75 @@
 //
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
-#include "4C_config.hpp"
-
-#include "4C_inpar_mpc_rve.hpp"
+#include "4C_constraint_framework_input.hpp"
 
 #include "4C_fem_condition_definition.hpp"
 #include "4C_io_input_spec_builders.hpp"
+
 FOUR_C_NAMESPACE_OPEN
-// set the mpc specific parameters
-Core::IO::InputSpec Inpar::RveMpc::valid_parameters()
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+std::vector<Core::IO::InputSpec> Constraints::valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
-  Core::IO::InputSpec spec = group("MULTI POINT CONSTRAINTS",
+
+  std::vector<Core::IO::InputSpec> spec;
+
+  /*----------------------------------------------------------------------*/
+  /* parameters for embedded mesh constraint submodel */
+
+  spec.push_back(group("EMBEDDED MESH COUPLING",
       {
 
-          parameter<Inpar::RveMpc::RveReferenceDeformationDefinition>("RVE_REFERENCE_POINTS",
-              {.description = "Method of definition of the reference points of an RVE",
-                  .default_value = automatic}),
+          parameter<EmbeddedMesh::CouplingStrategy>("COUPLING_STRATEGY",
+              {.description = "Strategy to couple background and overlapping mesh"}),
 
-          deprecated_selection<Inpar::RveMpc::EnforcementStrategy>("ENFORCEMENT",
-              {
-                  {"penalty_method", penalty},
-                  {"lagrange_multiplier_method", lagrangeMultiplier},
-              },
-              {.description = "Method to enforce the multi point constraint",
-                  .default_value = penalty}),
+
+          parameter<EmbeddedMesh::SolidToSolidMortarShapefunctions>("MORTAR_SHAPE_FUNCTION",
+              {.description = "Shape functions that should be use in case of coupling using the "
+                              "Mortar/Lagrange  Multiplier method "}),
+
+
+          parameter<EnforcementStrategy>("CONSTRAINT_ENFORCEMENT",
+              {.description =
+                      "Apply a constraint enforcement in the embedded mesh coupling strategy"}),
+
+          parameter<double>("CONSTRAINT_ENFORCEMENT_PENALTYPARAM",
+              {.description =
+                      "Penalty parameter for the constraint enforcement in embedded mesh coupling",
+                  .default_value = 0.0})},
+      {.required = false}));
+
+  /*----------------------------------------------------------------------*/
+  /* parameters for multi point constraint submodel */
+
+  spec.push_back(group("MULTI POINT CONSTRAINTS",
+      {
+
+          parameter<MultiPoint::RveReferenceDeformationDefinition>("RVE_REFERENCE_POINTS",
+              {.description = "Method of definition of the reference points of an RVE",
+                  .default_value = MultiPoint::RveReferenceDeformationDefinition::automatic}),
+
+          parameter<EnforcementStrategy>(
+              "ENFORCEMENT", {.description = "Method to enforce the multi point constraint",
+                                 .default_value = EnforcementStrategy::penalty}),
 
           parameter<double>("PENALTY_PARAM",
               {.description = "Value of the penalty parameter", .default_value = 1e5})},
-      {.required = false});
+      {.required = false}));
+
   return spec;
 }
 
-// set mpc specific conditions
-void Inpar::RveMpc::set_valid_conditions(
-    std::vector<Core::Conditions::ConditionDefinition>& condlist)
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void Constraints::set_valid_conditions(std::vector<Core::Conditions::ConditionDefinition>& condlist)
 {
   using namespace Core::IO::InputSpecBuilders;
 
-  // ================================================================================================
+  /*----------------------------------------------------------------------*/
   Core::Conditions::ConditionDefinition rve_lineperiodic_condition(
       "DESIGN LINE PERIODIC RVE 2D BOUNDARY CONDITIONS", "LinePeriodicRve",
       "definition of edges forming 2D periodic boundary conditions",
@@ -55,7 +85,7 @@ void Inpar::RveMpc::set_valid_conditions(
 
   condlist.push_back(rve_lineperiodic_condition);
 
-  // ================================================================================================
+  /*----------------------------------------------------------------------*/
   Core::Conditions::ConditionDefinition rve_surfperiodic_condition(
       "DESIGN SURF PERIODIC RVE 3D BOUNDARY CONDITIONS", "SurfacePeriodicRve",
       "definition of surfaces forming 3D periodic boundary conditions",
@@ -67,7 +97,7 @@ void Inpar::RveMpc::set_valid_conditions(
 
   condlist.push_back(rve_surfperiodic_condition);
 
-  // ================================================================================================
+  /*----------------------------------------------------------------------*/
   Core::Conditions::ConditionDefinition rve_cornerpoint_condition(
       "DESIGN POINT PERIODIC RVE 2D BOUNDARY REFERENCE CONDITIONS", "PointPeriodicRveReferenceNode",
       "definition of reference points defining the reference vector of the periodic boundary"
@@ -80,7 +110,7 @@ void Inpar::RveMpc::set_valid_conditions(
 
   condlist.push_back(rve_cornerpoint_condition);
 
-  // ================================================================================================
+  /*----------------------------------------------------------------------*/
   Core::Conditions::ConditionDefinition linear_ce("DESIGN POINT COUPLED DOF EQUATION CONDITIONS",
       "PointLinearCoupledEquation",
       "definition of the term of a linear couple equation coupling different degrees of "
@@ -94,6 +124,7 @@ void Inpar::RveMpc::set_valid_conditions(
   linear_ce.add_component(parameter<double>("COEFFICIENT"));
 
   condlist.push_back(linear_ce);
-  /*--------------------------------------------------------------------*/
 }
+
+
 FOUR_C_NAMESPACE_CLOSE
