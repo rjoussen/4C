@@ -2348,7 +2348,7 @@ bool FLD::FluidImplicitTimeInt::convergence_check(int itnum, int itmax, const do
     if (msht_ == Inpar::FLUID::condensed_bmat_merged or msht_ == Inpar::FLUID::condensed_bmat)
       meshtying_->apply_pt_to_residual(*sysmat_, *residual_, *projector_);
     else
-      projector_->apply_pt(*residual_);
+      *residual_ = projector_->to_reduced(*residual_);
   }
 
 

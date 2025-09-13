@@ -5,12 +5,13 @@
 //
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
-#ifndef FOUR_C_LINEAR_SOLVER_PRECONDITIONER_KRYLOVPROJECTION_HPP
-#define FOUR_C_LINEAR_SOLVER_PRECONDITIONER_KRYLOVPROJECTION_HPP
+#ifndef FOUR_C_LINEAR_SOLVER_PRECONDITIONER_PROJECTION_HPP
+#define FOUR_C_LINEAR_SOLVER_PRECONDITIONER_PROJECTION_HPP
 
 #include "4C_config.hpp"
 
 #include "4C_linalg_krylov_projector.hpp"
+#include "4C_linear_solver_method_projector.hpp"
 #include "4C_linear_solver_preconditioner_type.hpp"
 
 #include <Epetra_Operator.h>
@@ -19,16 +20,14 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Core::LinearSolver
 {
-  /// krylov projection for undefined pressure value in incompressible fluids
   /*!
-    This is not a preconditioner in a mathematical sense, but it fits the
-    software framework nicely. A "real" preconditioner is wrapped.
-  */
-  class KrylovProjectionPreconditioner : public PreconditionerTypeBase
+   * A preconditioner that applies a linear projection first and then the usual preconditioner.
+   */
+  class ProjectionPreconditioner : public PreconditionerTypeBase
   {
    public:
-    KrylovProjectionPreconditioner(std::shared_ptr<PreconditionerTypeBase> preconditioner,
-        std::shared_ptr<Core::LinAlg::KrylovProjector> projector);
+    ProjectionPreconditioner(std::shared_ptr<PreconditionerTypeBase> preconditioner,
+        std::shared_ptr<Core::LinAlg::LinearSystemProjector> projector);
 
     void setup(Core::LinAlg::SparseOperator& matrix, const Core::LinAlg::MultiVector<double>& x,
         Core::LinAlg::MultiVector<double>& b) override;
@@ -39,8 +38,8 @@ namespace Core::LinearSolver
    private:
     std::shared_ptr<PreconditionerTypeBase> preconditioner_;
 
-    /// Peter's projector object that does the actual work
-    std::shared_ptr<Core::LinAlg::KrylovProjector> projector_;
+    /// projector object that does the actual work
+    std::shared_ptr<Core::LinAlg::LinearSystemProjector> projector_;
 
     std::shared_ptr<Epetra_Operator> p_;
   };

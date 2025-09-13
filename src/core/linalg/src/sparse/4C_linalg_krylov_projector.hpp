@@ -11,6 +11,7 @@
 #include "4C_config.hpp"
 
 #include "4C_linalg_multi_vector.hpp"
+#include "4C_linear_solver_method_projector.hpp"
 
 #include <memory>
 #include <vector>
@@ -30,7 +31,7 @@ namespace Core::LinAlg
 
   */
 
-  class KrylovProjector
+  class KrylovProjector : public LinearSystemProjector
   {
    public:
     /*!
@@ -65,13 +66,16 @@ namespace Core::LinAlg
     Core::LinAlg::SparseMatrix get_pt();
 
     //! wrapper for applying projector to vector for iterative solver
-    int apply_p(Core::LinAlg::MultiVector<double>& Y) const;
+    [[nodiscard]] Core::LinAlg::Vector<double> to_full(
+        const Core::LinAlg::Vector<double>& Y) const override;
 
     //! wrapper for applying transpose of projector to vector for iterative solver
-    int apply_pt(Core::LinAlg::MultiVector<double>& Y) const;
+    [[nodiscard]] Core::LinAlg::Vector<double> to_reduced(
+        const Core::LinAlg::Vector<double>& Y) const override;
 
     //! give out projection P^T A P
-    std::shared_ptr<Core::LinAlg::SparseMatrix> project(const Core::LinAlg::SparseMatrix& A) const;
+    [[nodiscard]] Core::LinAlg::SparseMatrix to_reduced(
+        const Core::LinAlg::SparseMatrix& A) const override;
 
     //! return dimension of nullspace
     int nsdim() const { return nsdim_; }
@@ -84,24 +88,24 @@ namespace Core::LinAlg
 
    private:
     //! creates actual projector matrix P (or its transpose) for use in direct solver
-    void create_projector(std::shared_ptr<Core::LinAlg::SparseMatrix>& P,
-        const std::shared_ptr<Core::LinAlg::MultiVector<double>>& v1,
-        const std::shared_ptr<Core::LinAlg::MultiVector<double>>& v2,
-        const std::shared_ptr<Core::LinAlg::SerialDenseMatrix>& inv_v1Tv2);
+    Core::LinAlg::SparseMatrix create_projector(const Core::LinAlg::MultiVector<double>& v1,
+        const Core::LinAlg::MultiVector<double>& v2,
+        const Core::LinAlg::SerialDenseMatrix& inv_v1Tv2);
 
     //! applies projector (or its transpose) to vector for iterative solver
-    int apply_projector(Core::LinAlg::MultiVector<double>& Y, Core::LinAlg::MultiVector<double>& v1,
-        Core::LinAlg::MultiVector<double>& v2, Core::LinAlg::SerialDenseMatrix& inv_v1Tv2) const;
+    Core::LinAlg::Vector<double> apply_projector(const Core::LinAlg::Vector<double>& Y,
+        const Core::LinAlg::MultiVector<double>& v1, const Core::LinAlg::MultiVector<double>& v2,
+        const Core::LinAlg::SerialDenseMatrix& inv_v1Tv2) const;
 
     //! multiplies MultiVector times Core::LinAlg::SerialDenseMatrix
-    std::shared_ptr<Core::LinAlg::MultiVector<double>> multiply_multi_vector_dense_matrix(
-        const std::shared_ptr<Core::LinAlg::MultiVector<double>>& mv,
-        const std::shared_ptr<Core::LinAlg::SerialDenseMatrix>& dm) const;
+    Core::LinAlg::MultiVector<double> multiply_multi_vector_dense_matrix(
+        const Core::LinAlg::MultiVector<double>& mv,
+        const Core::LinAlg::SerialDenseMatrix& dm) const;
 
     //! outer product of two MultiVectors
-    std::shared_ptr<Core::LinAlg::SparseMatrix> multiply_multi_vector_multi_vector(
-        const std::shared_ptr<Core::LinAlg::MultiVector<double>>& mv1,  //! first MultiVector
-        const std::shared_ptr<Core::LinAlg::MultiVector<double>>& mv2,  //! second MultiVector
+    Core::LinAlg::SparseMatrix multiply_multi_vector_multi_vector(
+        const Core::LinAlg::MultiVector<double>& mv1,  //! first MultiVector
+        const Core::LinAlg::MultiVector<double>& mv2,  //! second MultiVector
         const int id = 1,  //! id of MultiVector form which sparsity of output matrix is estimated
         const bool fill = true  //! bool for completing matrix after computation
     ) const;

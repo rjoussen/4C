@@ -12,6 +12,7 @@
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "4C_linalg_vector.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
+#include "4C_linear_solver_method_projector.hpp"
 #include "4C_solver_nonlin_nox_aux.hpp"
 #include "4C_solver_nonlin_nox_interface_jacobian.hpp"
 #include "4C_solver_nonlin_nox_interface_required.hpp"
@@ -302,7 +303,8 @@ bool NOX::Nln::LinearSystem::applyJacobianInverse(Teuchos::ParameterList& linear
     if (currSolver->params().isParameter("Projector"))
     {
       auto projector =
-          currSolver->params().get<std::shared_ptr<Core::LinAlg::KrylovProjector>>("Projector");
+          currSolver->params().get<std::shared_ptr<Core::LinAlg::LinearSystemProjector>>(
+              "Projector");
       solver_params.projector = projector;
     }
 

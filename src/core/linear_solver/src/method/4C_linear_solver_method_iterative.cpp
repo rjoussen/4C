@@ -9,9 +9,10 @@
 
 #include "4C_linalg_map.hpp"
 #include "4C_linear_solver_amgnxn_preconditioner.hpp"
+#include "4C_linear_solver_method_projector.hpp"
 #include "4C_linear_solver_preconditioner_ifpack.hpp"
-#include "4C_linear_solver_preconditioner_krylovprojection.hpp"
 #include "4C_linear_solver_preconditioner_muelu.hpp"
+#include "4C_linear_solver_preconditioner_projection.hpp"
 #include "4C_linear_solver_preconditioner_teko.hpp"
 #include "4C_utils_exceptions.hpp"
 
@@ -44,7 +45,7 @@ Core::LinearSolver::IterativeSolver::IterativeSolver(MPI_Comm comm, Teuchos::Par
 void Core::LinearSolver::IterativeSolver::setup(std::shared_ptr<Core::LinAlg::SparseOperator> A,
     std::shared_ptr<Core::LinAlg::MultiVector<double>> x,
     std::shared_ptr<Core::LinAlg::MultiVector<double>> b, const bool refactor, const bool reset,
-    std::shared_ptr<Core::LinAlg::KrylovProjector> projector)
+    std::shared_ptr<Core::LinAlg::LinearSystemProjector> projector)
 {
   if (!params().isSublist("Belos Parameters")) FOUR_C_THROW("Do not have belos parameter list");
   Teuchos::ParameterList& belist = params().sublist("Belos Parameters");
@@ -267,8 +268,8 @@ bool Core::LinearSolver::IterativeSolver::allow_reuse_preconditioner(
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
 std::shared_ptr<Core::LinearSolver::PreconditionerTypeBase>
-Core::LinearSolver::IterativeSolver::create_preconditioner(
-    Teuchos::ParameterList& solverlist, std::shared_ptr<Core::LinAlg::KrylovProjector> projector)
+Core::LinearSolver::IterativeSolver::create_preconditioner(Teuchos::ParameterList& solverlist,
+    std::shared_ptr<Core::LinAlg::LinearSystemProjector> projector)
 {
   TEUCHOS_FUNC_TIME_MONITOR("Core::LinAlg::Solver:  1.1)   create_preconditioner");
 
@@ -296,8 +297,8 @@ Core::LinearSolver::IterativeSolver::create_preconditioner(
 
   if (projector != nullptr)
   {
-    preconditioner = std::make_shared<Core::LinearSolver::KrylovProjectionPreconditioner>(
-        preconditioner, projector);
+    preconditioner =
+        std::make_shared<Core::LinearSolver::ProjectionPreconditioner>(preconditioner, projector);
   }
 
   return preconditioner;

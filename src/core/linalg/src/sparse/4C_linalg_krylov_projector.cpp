@@ -198,7 +198,7 @@ Core::LinAlg::SparseMatrix Core::LinAlg::KrylovProjector::get_p()
 
   if (p_ == nullptr)
   {
-    create_projector(p_, w_, c_, invw_tc_);
+    p_ = std::make_shared<Core::LinAlg::SparseMatrix>(create_projector(*w_, *c_, *invw_tc_));
   }
 
   return *p_;
@@ -228,9 +228,8 @@ Core::LinAlg::SparseMatrix Core::LinAlg::KrylovProjector::get_pt()
     }
     else
     {
-      std::shared_ptr<Core::LinAlg::SerialDenseMatrix> invwTcT =
-          std::make_shared<Core::LinAlg::SerialDenseMatrix>(invw_tc_->base(), Teuchos::TRANS);
-      create_projector(pt_, c_, w_, invwTcT);
+      Core::LinAlg::SerialDenseMatrix invwTcT(invw_tc_->base(), Teuchos::TRANS);
+      pt_ = std::make_shared<Core::LinAlg::SparseMatrix>(create_projector(*c_, *w_, invwTcT));
     }
   }
 
@@ -240,7 +239,8 @@ Core::LinAlg::SparseMatrix Core::LinAlg::KrylovProjector::get_pt()
 /* --------------------------------------------------------------------
                   Apply projector P(^T) (for iterative solvers)
    -------------------------------------------------------------------- */
-int Core::LinAlg::KrylovProjector::apply_p(Core::LinAlg::MultiVector<double>& Y) const
+Core::LinAlg::Vector<double> Core::LinAlg::KrylovProjector::to_full(
+    const Core::LinAlg::Vector<double>& Y) const
 {
   /*
    *                  / T   \ -1   T
@@ -257,7 +257,8 @@ int Core::LinAlg::KrylovProjector::apply_p(Core::LinAlg::MultiVector<double>& Y)
   return apply_projector(Y, *w_, *c_, *invw_tc_);
 }
 
-int Core::LinAlg::KrylovProjector::apply_pt(Core::LinAlg::MultiVector<double>& Y) const
+Core::LinAlg::Vector<double> Core::LinAlg::KrylovProjector::to_reduced(
+    const Core::LinAlg::Vector<double>& Y) const
 {
   /*
    *  T                / T   \ -1   T
@@ -278,7 +279,7 @@ int Core::LinAlg::KrylovProjector::apply_pt(Core::LinAlg::MultiVector<double>& Y
 /* --------------------------------------------------------------------
                   give out projection P^T A P
    -------------------------------------------------------------------- */
-std::shared_ptr<Core::LinAlg::SparseMatrix> Core::LinAlg::KrylovProjector::project(
+Core::LinAlg::SparseMatrix Core::LinAlg::KrylovProjector::to_reduced(
     const Core::LinAlg::SparseMatrix& A) const
 {
   /*
@@ -297,44 +298,35 @@ std::shared_ptr<Core::LinAlg::SparseMatrix> Core::LinAlg::KrylovProjector::proje
 
   // auxiliary preliminary products
 
-  std::shared_ptr<Core::LinAlg::MultiVector<double>> w_invwTc =
-      multiply_multi_vector_dense_matrix(w_, invw_tc_);
+  Core::LinAlg::MultiVector<double> w_invwTc = multiply_multi_vector_dense_matrix(*w_, *invw_tc_);
 
   // here: matvec = A c_;
-  std::shared_ptr<Core::LinAlg::MultiVector<double>> matvec =
-      std::make_shared<Core::LinAlg::MultiVector<double>>(c_->get_map(), nsdim_, false);
-  A.multiply(false, *c_, *matvec);
+  Core::LinAlg::MultiVector<double> matvec(c_->get_map(), nsdim_, false);
+  A.multiply(false, *c_, matvec);
 
   // compute serial dense matrix c^T A c
-  std::shared_ptr<Core::LinAlg::SerialDenseMatrix> cTAc =
-      std::make_shared<Core::LinAlg::SerialDenseMatrix>(nsdim_, nsdim_, false);
+  Core::LinAlg::SerialDenseMatrix cTAc(nsdim_, nsdim_, false);
   for (int i = 0; i < nsdim_; ++i)
-    for (int j = 0; j < nsdim_; ++j) (*c_)(i).dot((*matvec)(j), &((*cTAc)(i, j)));
-  // std::cout << *matvec << std::endl;
-  // std::cout << A << std::endl;
+    for (int j = 0; j < nsdim_; ++j) (*c_)(i).dot(matvec(j), &(cTAc(i, j)));
 
-  // std::cout << *w_invwTc << std::endl;
   // compute and add matrices
-  std::shared_ptr<Core::LinAlg::SparseMatrix> mat1 =
-      multiply_multi_vector_multi_vector(matvec, w_invwTc, 1, false);
+  Core::LinAlg::SparseMatrix mat1 = multiply_multi_vector_multi_vector(matvec, w_invwTc, 1, false);
   {
     // put in brackets to delete mat2 immediately after being added to mat1
     // here: matvec = A^T c_;
-    A.multiply(true, *c_, *matvec);
-    std::shared_ptr<Core::LinAlg::SparseMatrix> mat2 =
-        multiply_multi_vector_multi_vector(w_invwTc, matvec, 2, true);
-    mat1->add(*mat2, false, 1.0, 1.0);
-    mat1->complete();
+    A.multiply(true, *c_, matvec);
+    Core::LinAlg::SparseMatrix mat2 = multiply_multi_vector_multi_vector(w_invwTc, matvec, 2, true);
+    mat1.add(mat2, false, 1.0, 1.0);
+    mat1.complete();
   }
 
   // here: matvec = w (c^T w)^-1 (c^T A c);
   matvec = multiply_multi_vector_dense_matrix(w_invwTc, cTAc);
-  std::shared_ptr<Core::LinAlg::SparseMatrix> mat3 =
-      multiply_multi_vector_multi_vector(matvec, w_invwTc, 1, false);
-  mat3->add(*mat1, false, -1.0, 1.0);
-  mat3->add(A, false, 1.0, 1.0);
+  Core::LinAlg::SparseMatrix mat3 = multiply_multi_vector_multi_vector(matvec, w_invwTc, 1, false);
+  mat3.add(mat1, false, -1.0, 1.0);
+  mat3.add(A, false, 1.0, 1.0);
 
-  mat3->complete();
+  mat3.complete();
   return mat3;
 }
 
@@ -345,10 +337,9 @@ std::shared_ptr<Core::LinAlg::SparseMatrix> Core::LinAlg::KrylovProjector::proje
 /* --------------------------------------------------------------------
                     Create projector (for direct solvers)
    -------------------------------------------------------------------- */
-void Core::LinAlg::KrylovProjector::create_projector(std::shared_ptr<Core::LinAlg::SparseMatrix>& P,
-    const std::shared_ptr<Core::LinAlg::MultiVector<double>>& v1,
-    const std::shared_ptr<Core::LinAlg::MultiVector<double>>& v2,
-    const std::shared_ptr<Core::LinAlg::SerialDenseMatrix>& inv_v1Tv2)
+Core::LinAlg::SparseMatrix Core::LinAlg::KrylovProjector::create_projector(
+    const Core::LinAlg::MultiVector<double>& v1, const Core::LinAlg::MultiVector<double>& v2,
+    const Core::LinAlg::SerialDenseMatrix& inv_v1Tv2)
 {
   /*
    *               /  T  \ -1    T
@@ -359,30 +350,30 @@ void Core::LinAlg::KrylovProjector::create_projector(std::shared_ptr<Core::LinAl
    */
 
   // compute temp1
-  std::shared_ptr<Core::LinAlg::MultiVector<double>> temp1 =
-      multiply_multi_vector_dense_matrix(v2, inv_v1Tv2);
-  temp1->Scale(-1.0);
+  Core::LinAlg::MultiVector<double> temp1 = multiply_multi_vector_dense_matrix(v2, inv_v1Tv2);
+  temp1.Scale(-1.0);
 
 
   // compute P by multiplying upright temp1 with lying v1^T:
-  P = Core::LinAlg::KrylovProjector::multiply_multi_vector_multi_vector(temp1, v1, 1, false);
+  Core::LinAlg::SparseMatrix P =
+      Core::LinAlg::KrylovProjector::multiply_multi_vector_multi_vector(temp1, v1, 1, false);
 
   //--------------------------------------------------------
   // Add identity matrix
   //--------------------------------------------------------
-  const int nummyrows = v1->MyLength();
+  const int nummyrows = v1.MyLength();
   const double one = 1.0;
   // loop over all proc-rows
   for (int rr = 0; rr < nummyrows; ++rr)
   {
     // get global row id of current local row id
-    const int grid = P->global_row_index(rr);
+    const int grid = P.global_row_index(rr);
 
     // add identity matrix by adding 1 on diagonal entries
-    int err = P->insert_global_values(grid, 1, &one, &grid);
+    int err = P.insert_global_values(grid, 1, &one, &grid);
     if (err < 0)
     {
-      err = P->sum_into_global_values(grid, 1, &one, &grid);
+      err = P.sum_into_global_values(grid, 1, &one, &grid);
       if (err < 0)
       {
         FOUR_C_THROW("insertion error when trying to computekrylov projection matrix.");
@@ -391,31 +382,21 @@ void Core::LinAlg::KrylovProjector::create_projector(std::shared_ptr<Core::LinAl
   }
 
   // call fill complete
-  P->complete();
+  P.complete();
 
-  return;
+  return P;
 }
 
 
 /* --------------------------------------------------------------------
                   Apply projector P(T) (for iterative solvers)
    -------------------------------------------------------------------- */
-int Core::LinAlg::KrylovProjector::apply_projector(Core::LinAlg::MultiVector<double>& Y,
-    Core::LinAlg::MultiVector<double>& v1, Core::LinAlg::MultiVector<double>& v2,
-    Core::LinAlg::SerialDenseMatrix& inv_v1Tv2) const
+Core::LinAlg::Vector<double> Core::LinAlg::KrylovProjector::apply_projector(
+    const Core::LinAlg::Vector<double>& Y, const Core::LinAlg::MultiVector<double>& v1,
+    const Core::LinAlg::MultiVector<double>& v2,
+    const Core::LinAlg::SerialDenseMatrix& inv_v1Tv2) const
 {
   if (!complete_) FOUR_C_THROW("Krylov space projector is not complete. Call fill_complete().");
-
-  int ierr = 0;
-
-  // if necessary, project out matrix kernel to maintain well-posedness
-  // of problem
-  // there is only one solution vector --- so solution
-  // vector index is zero
-  if (Y.NumVectors() != 1)
-  {
-    FOUR_C_THROW("expecting only one solution vector during iterative solver Apply call\n");
-  }
 
   /*
    *  (T)                /  T  \ -1    T
@@ -432,7 +413,7 @@ int Core::LinAlg::KrylovProjector::apply_projector(Core::LinAlg::MultiVector<dou
   Core::LinAlg::SerialDenseVector temp1(nsdim_);
   for (int rr = 0; rr < nsdim_; ++rr)
   {
-    (Y(0)).dot((v1)(rr), &(temp1(rr)));
+    Y.dot((v1)(rr), &(temp1(rr)));
   }
 
   // compute temp2 from matrix-vector-product:
@@ -441,41 +422,36 @@ int Core::LinAlg::KrylovProjector::apply_projector(Core::LinAlg::MultiVector<dou
   Core::LinAlg::multiply(temp2, inv_v1Tv2, temp1);
 
   // loop
+  Core::LinAlg::Vector<double> result = Y;
   for (int rr = 0; rr < nsdim_; ++rr)
   {
-    Y(0).update(-temp2(rr), v2(rr), 1.0);
+    result.update(-temp2(rr), v2(rr), 1.0);
   }
 
-  return (ierr);
+  return result;
 }  // Core::LinAlg::KrylovProjector::apply_projector
 
 
 
 /* --------------------------------------------------------------------
    -------------------------------------------------------------------- */
-std::shared_ptr<Core::LinAlg::MultiVector<double>>
-Core::LinAlg::KrylovProjector::multiply_multi_vector_dense_matrix(
-    const std::shared_ptr<Core::LinAlg::MultiVector<double>>& mv,
-    const std::shared_ptr<Core::LinAlg::SerialDenseMatrix>& dm) const
+Core::LinAlg::MultiVector<double> Core::LinAlg::KrylovProjector::multiply_multi_vector_dense_matrix(
+    const Core::LinAlg::MultiVector<double>& mv, const Core::LinAlg::SerialDenseMatrix& dm) const
 {
-  if (mv == nullptr or dm == nullptr)
-    FOUR_C_THROW("Either the multivector or the densematrix point to nullptr");
-
   // create empty multivector mvout
-  std::shared_ptr<Core::LinAlg::MultiVector<double>> mvout =
-      std::make_shared<Core::LinAlg::MultiVector<double>>(mv->get_map(), nsdim_);
+  Core::LinAlg::MultiVector<double> mvout(mv.get_map(), nsdim_);
 
   // loop over all vectors of mvout
   for (int rr = 0; rr < nsdim_; ++rr)
   {
     // extract i-th (rr-th) vector of mvout
-    auto& mvouti = (*mvout)(rr);
+    auto& mvouti = mvout(rr);
     // loop over all vectors of mv
     for (int mm = 0; mm < nsdim_; ++mm)
     {
       // scale j-th (mm-th) vector of mv with corresponding entry of dm
       // and add to i-th (rr-th) vector of mvout
-      mvouti.update((*dm)(mm, rr), (*mv)(mm), 1.0);
+      mvouti.update(dm(mm, rr), mv(mm), 1.0);
     }
   }
 
@@ -485,26 +461,23 @@ Core::LinAlg::KrylovProjector::multiply_multi_vector_dense_matrix(
 /* --------------------------------------------------------------------
                   outer product of two Epetra_MultiVectors
    -------------------------------------------------------------------- */
-std::shared_ptr<Core::LinAlg::SparseMatrix>
-Core::LinAlg::KrylovProjector::multiply_multi_vector_multi_vector(
-    const std::shared_ptr<Core::LinAlg::MultiVector<double>>& mv1,
-    const std::shared_ptr<Core::LinAlg::MultiVector<double>>& mv2, const int id,
-    const bool fill) const
+Core::LinAlg::SparseMatrix Core::LinAlg::KrylovProjector::multiply_multi_vector_multi_vector(
+    const Core::LinAlg::MultiVector<double>& mv1, const Core::LinAlg::MultiVector<double>& mv2,
+    const int id, const bool fill) const
 {
-  if (mv1 == nullptr or mv2 == nullptr)
-    FOUR_C_THROW("At least one multi-vector points to nullptr.");
-
   // compute information about density of P^T A P
-  std::shared_ptr<Core::LinAlg::MultiVector<double>> temp = nullptr;
-  if (id == 1)
-    temp = mv1;
-  else if (id == 2)
-    temp = mv2;
-  else
-    FOUR_C_THROW("id must be 1 or 2");
+  const Core::LinAlg::MultiVector<double>& temp = [&]()
+  {
+    if (id == 1)
+      return mv1;
+    else if (id == 2)
+      return mv2;
+    else
+      FOUR_C_THROW("id must be 1 or 2");
+  }();
 
-  Core::LinAlg::Vector<double> prod((*temp)(0));
-  for (int i = 1; i < nsdim_; ++i) prod.multiply(1.0, (*temp)(i), prod, 1.0);
+  Core::LinAlg::Vector<double> prod(temp(0));
+  for (int i = 1; i < nsdim_; ++i) prod.multiply(1.0, temp(i), prod, 1.0);
   int numnonzero = 0;
   for (int i = 0; i < prod.local_length(); ++i)
     if (prod[i] != 0.0) numnonzero++;
@@ -512,30 +485,29 @@ Core::LinAlg::KrylovProjector::multiply_multi_vector_multi_vector(
   int glob_numnonzero = 0;
   Core::Communication::sum_all(&numnonzero, &glob_numnonzero, 1, prod.get_comm());
 
-  Core::LinAlg::Map mv1map(mv1->get_map().num_global_elements(), mv1->get_map().num_my_elements(),
-      mv1->get_map().my_global_elements(), 0, mv1->get_map().get_comm());
+  Core::LinAlg::Map mv1map(mv1.get_map().num_global_elements(), mv1.get_map().num_my_elements(),
+      mv1.get_map().my_global_elements(), 0, mv1.get_map().get_comm());
   // initialization of mat with map of mv1
-  std::shared_ptr<Core::LinAlg::SparseMatrix> mat =
-      std::make_shared<Core::LinAlg::SparseMatrix>(mv1map, glob_numnonzero, false);
+  Core::LinAlg::SparseMatrix mat(mv1map, glob_numnonzero, false);
 
   //-------------------------------
   // make mv2 redundant on all procs:
   //-------------------------------
   // auxiliary variables
-  const int nummyrows = mv1->MyLength();
-  const int numvals = mv2->GlobalLength();
+  const int nummyrows = mv1.MyLength();
+  const int numvals = mv2.GlobalLength();
 
-  Core::LinAlg::Map mv2map(mv2->get_map().num_global_elements(), mv2->get_map().num_my_elements(),
-      mv2->get_map().my_global_elements(), 0, mv2->get_map().get_comm());
+  Core::LinAlg::Map mv2map(mv2.get_map().num_global_elements(), mv2.get_map().num_my_elements(),
+      mv2.get_map().my_global_elements(), 0, mv2.get_map().get_comm());
 
   // fully redundant/overlapping map
   std::shared_ptr<Core::LinAlg::Map> redundant_map = Core::LinAlg::allreduce_e_map(mv2map);
   // initialize global mv2 without setting to 0
   Core::LinAlg::MultiVector<double> mv2glob(*redundant_map, nsdim_);
   // create importer with redundant target map and distributed source map
-  Core::LinAlg::Import importer(*redundant_map, mv2->get_map());
+  Core::LinAlg::Import importer(*redundant_map, mv2.get_map());
   // import values to global mv2
-  mv2glob.Import(*mv2, importer, Insert);
+  mv2glob.Import(mv2, importer, Insert);
 
   //--------------------------------------------------------
   // compute mat by multiplying upright mv1 with lying mv2^T:
@@ -544,7 +516,7 @@ Core::LinAlg::KrylovProjector::multiply_multi_vector_multi_vector(
   for (int rr = 0; rr < nummyrows; ++rr)
   {
     // get global row id of current local row id
-    const int grid = mat->global_row_index(rr);
+    const int grid = mat.global_row_index(rr);
 
     // vector of all row values - prevented from growing in following loops
     std::vector<double> rowvals;
@@ -561,7 +533,7 @@ Core::LinAlg::KrylovProjector::multiply_multi_vector_multi_vector(
       // loop over all kernel/weight vector
       for (int vv = 0; vv < nsdim_; ++vv)
       {
-        sum += (*mv1)(vv)[rr] * mv2glob(vv)[mm];
+        sum += mv1(vv)[rr] * mv2glob(vv)[mm];
       }
 
       // add value to vector only if non-zero
@@ -573,7 +545,7 @@ Core::LinAlg::KrylovProjector::multiply_multi_vector_multi_vector(
     }
 
     // insert values in mat
-    int err = mat->insert_global_values(grid, indices.size(), rowvals.data(), indices.data());
+    int err = mat.insert_global_values(grid, indices.size(), rowvals.data(), indices.data());
     if (err < 0)
     {
       FOUR_C_THROW(
@@ -582,7 +554,7 @@ Core::LinAlg::KrylovProjector::multiply_multi_vector_multi_vector(
   }
 
   // call fill complete
-  if (fill) mat->complete();
+  if (fill) mat.complete();
 
   return mat;
 }

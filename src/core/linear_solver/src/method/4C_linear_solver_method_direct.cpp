@@ -7,8 +7,10 @@
 
 #include "4C_linear_solver_method_direct.hpp"
 
-#include "4C_linalg_krylov_projector.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
+#include "4C_linear_solver_method_projector.hpp"
+
+#include <memory>
 
 #if FOUR_C_TRILINOS_INTERNAL_VERSION_GE(2025, 3)
 #else
@@ -37,7 +39,7 @@ Core::LinearSolver::DirectSolver::DirectSolver(std::string solvertype)
 void Core::LinearSolver::DirectSolver::setup(std::shared_ptr<Core::LinAlg::SparseOperator> matrix,
     std::shared_ptr<Core::LinAlg::MultiVector<double>> x,
     std::shared_ptr<Core::LinAlg::MultiVector<double>> b, const bool refactor, const bool reset,
-    std::shared_ptr<Core::LinAlg::KrylovProjector> projector)
+    std::shared_ptr<Core::LinAlg::LinearSystemProjector> projector)
 {
   auto crsA = std::dynamic_pointer_cast<Core::LinAlg::SparseMatrix>(matrix);
 
@@ -59,9 +61,13 @@ void Core::LinearSolver::DirectSolver::setup(std::shared_ptr<Core::LinAlg::Spars
   if (projector_ != nullptr)
   {
     Core::LinAlg::SparseMatrix A_view(*crsA);
-    crsA = projector_->project(A_view);
+    crsA = std::make_shared<Core::LinAlg::SparseMatrix>(projector_->to_reduced(A_view));
 
-    projector_->apply_pt(*b);
+
+    FOUR_C_ASSERT_ALWAYS(b->NumVectors() == 1,
+        "Expecting only one solution vector during projector call! Got {} vectors.",
+        b->NumVectors());
+    (*b)(0) = projector_->to_reduced((*b)(0));
   }
 
   x_ = x;
@@ -156,7 +162,13 @@ int Core::LinearSolver::DirectSolver::solve()
   solver_->Solve();
 #endif
 
-  if (projector_ != nullptr) projector_->apply_p(*x_);
+  if (projector_ != nullptr)
+  {
+    FOUR_C_ASSERT_ALWAYS(x_->NumVectors() == 1,
+        "Expecting only one solution vector during projector call! Got {} vectors.",
+        x_->NumVectors());
+    (*x_)(0) = projector_->to_full((*x_)(0));
+  }
 
   return 0;
 }

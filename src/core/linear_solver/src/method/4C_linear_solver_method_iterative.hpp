@@ -12,6 +12,7 @@
 
 #include "4C_linalg_sparseoperator.hpp"
 #include "4C_linear_solver_method.hpp"
+#include "4C_linear_solver_method_projector.hpp"
 #include "4C_linear_solver_preconditioner_type.hpp"
 #include "4C_utils_exceptions.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
@@ -41,7 +42,7 @@ namespace Core::LinearSolver
     void setup(std::shared_ptr<Core::LinAlg::SparseOperator> A,
         std::shared_ptr<Core::LinAlg::MultiVector<double>> x,
         std::shared_ptr<Core::LinAlg::MultiVector<double>> b, const bool refactor, const bool reset,
-        std::shared_ptr<Core::LinAlg::KrylovProjector> projector) override;
+        std::shared_ptr<Core::LinAlg::LinearSystemProjector> projector) override;
 
     //! Actual call to the underlying Belos solver
     int solve() override;
@@ -77,7 +78,7 @@ namespace Core::LinearSolver
      */
     std::shared_ptr<Core::LinearSolver::PreconditionerTypeBase> create_preconditioner(
         Teuchos::ParameterList& solverlist,
-        std::shared_ptr<Core::LinAlg::KrylovProjector> projector);
+        std::shared_ptr<Core::LinAlg::LinearSystemProjector> projector);
 
     //! a communicator
     MPI_Comm comm_;

@@ -12,6 +12,7 @@
 #include "4C_config.hpp"
 
 #include "4C_comm_mpi_utils.hpp"
+#include "4C_linear_solver_method_projector.hpp"
 
 #include <Epetra_Operator.h>
 
@@ -53,7 +54,7 @@ namespace Core::LinAlg
 
     */
     LinalgPrecondOperator(std::shared_ptr<Epetra_Operator> precond, bool project,
-        std::shared_ptr<Core::LinAlg::KrylovProjector> projector);
+        std::shared_ptr<Core::LinAlg::LinearSystemProjector> projector);
 
 
 
@@ -189,8 +190,8 @@ namespace Core::LinAlg
     //! the actual preconditioner
     std::shared_ptr<Epetra_Operator> precond_;
 
-    //! Krylov space projector
-    std::shared_ptr<Core::LinAlg::KrylovProjector> projector_;
+    //! projector
+    std::shared_ptr<Core::LinAlg::LinearSystemProjector> projector_;
   };
 
 }  // namespace Core::LinAlg
