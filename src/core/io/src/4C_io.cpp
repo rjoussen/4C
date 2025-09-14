@@ -829,7 +829,7 @@ void Core::IO::DiscretizationWriter::write_multi_vector(
   if (binio_)
   {
     std::string valuename = name + ".values";
-    double* data = vec.Values();
+    const double* data = vec.Values();
     const hsize_t size = vec.MyLength() * vec.NumVectors();
     if (size != 0)
     {

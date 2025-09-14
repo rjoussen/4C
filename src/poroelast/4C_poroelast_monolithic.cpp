@@ -1822,7 +1822,7 @@ void PoroElast::Monolithic::set_poro_contact_states()
                   *fluid_field()->velocity_row_map(), true);
 
           int* mygids = fpres->get_map().my_global_elements();
-          double* val = fpres->get_values();
+          const double* val = fpres->get_values();
           const int ndim = Global::Problem::instance()->n_dim();
           for (int i = 0; i < fpres->local_length(); ++i)
           {

@@ -552,7 +552,7 @@ int Core::LinAlg::insert_my_row_diagonal_into_unfilled_matrix(
   const int my_num_entries = diag.get_map().num_my_elements();
   const int* my_gids = diag.get_map().my_global_elements();
 
-  double* diag_values = diag.get_values();
+  const double* diag_values = diag.get_values();
 
   for (int lid = 0; lid < my_num_entries; ++lid)
   {

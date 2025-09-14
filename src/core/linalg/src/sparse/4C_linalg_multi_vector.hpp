@@ -136,7 +136,8 @@ namespace Core::LinAlg
       return vector_->ReplaceMyValue(MyRow, VectorIndex, ScalarValue);
     }
 
-    double* Values() const { return vector_->Values(); }
+    const double* Values() const { return vector_->Values(); }
+    double* Values() { return vector_->Values(); }
 
     /**
      * Replace map, only if new map has same point-structure as current map.

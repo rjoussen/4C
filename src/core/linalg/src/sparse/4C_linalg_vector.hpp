@@ -155,7 +155,8 @@ namespace Core::LinAlg
     //! Returns the global vector length of vectors in the multi-vector.
     int global_length() const { return vector_->GlobalLength(); }
 
-    double* get_values() const { return vector_->Values(); }
+    const double* get_values() const { return vector_->Values(); }
+    double* get_values() { return vector_->Values(); }
 
     /**
      * Replace map, only if new map has same point-structure as current map.
