@@ -50,27 +50,24 @@ namespace NOX
           const Teuchos::RCP<::NOX::Epetra::Vector>& x,
           const Teuchos::RCP<Core::LinAlg::SparseOperator>& A);
 
-      //! destructor
-      virtual ~Problem() = default;
-
-      //! initialize stuff (can be overloaded in derived classes)
-      virtual void initialize(const Teuchos::RCP<::NOX::Epetra::Vector>& x,
+      //! initialize stuff
+      void initialize(const Teuchos::RCP<::NOX::Epetra::Vector>& x,
           const Teuchos::RCP<Core::LinAlg::SparseOperator>& A);
 
       //! create the linear system for the NOX framework
-      virtual Teuchos::RCP<::NOX::Epetra::LinearSystem> create_linear_system() const;
+      Teuchos::RCP<::NOX::Epetra::LinearSystem> create_linear_system() const;
 
       //! create a nox group
-      virtual Teuchos::RCP<::NOX::Abstract::Group> create_group(
+      Teuchos::RCP<::NOX::Abstract::Group> create_group(
           const Teuchos::RCP<::NOX::Epetra::LinearSystem>& linSys) const;
 
       void create_outer_status_test(Teuchos::RCP<::NOX::StatusTest::Generic>& outerTests) const;
 
-      virtual void create_status_tests(Teuchos::RCP<::NOX::StatusTest::Generic>& outerTest,
+      void create_status_tests(Teuchos::RCP<::NOX::StatusTest::Generic>& outerTest,
           Teuchos::RCP<NOX::Nln::Inner::StatusTest::Generic>& innerTest) const;
 
       //! check final status of the non-linear solving procedure
-      virtual void check_final_status(const ::NOX::StatusTest::StatusType& finalStatus) const;
+      void check_final_status(const ::NOX::StatusTest::StatusType& finalStatus) const;
 
       /// access the global data object
       NOX::Nln::GlobalData& nln_global_data() { return *noxNlnGlobalData_; }
@@ -78,7 +75,7 @@ namespace NOX
       /// access the global data object ptr
       Teuchos::RCP<NOX::Nln::GlobalData> nln_global_data_ptr() { return noxNlnGlobalData_; }
 
-     protected:
+     private:
       inline void check_init() const
       {
         if (not isinit_)
@@ -89,7 +86,6 @@ namespace NOX
 
       inline bool is_jacobian() const { return isjac_; };
 
-     protected:
       bool isinit_;
 
       bool isjac_;
