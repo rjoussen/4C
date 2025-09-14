@@ -70,10 +70,10 @@ namespace NOX
       void check_final_status(const ::NOX::StatusTest::StatusType& finalStatus) const;
 
       /// access the global data object
-      NOX::Nln::GlobalData& nln_global_data() { return *noxNlnGlobalData_; }
+      NOX::Nln::GlobalData& nln_global_data() { return *nox_global_data_; }
 
       /// access the global data object ptr
-      Teuchos::RCP<NOX::Nln::GlobalData> nln_global_data_ptr() { return noxNlnGlobalData_; }
+      Teuchos::RCP<NOX::Nln::GlobalData> nln_global_data_ptr() { return nox_global_data_; }
 
      private:
       inline void check_init() const
@@ -90,17 +90,17 @@ namespace NOX
 
       bool isjac_;
 
-      Teuchos::RCP<NOX::Nln::GlobalData> noxNlnGlobalData_;
+      Teuchos::RCP<NOX::Nln::GlobalData> nox_global_data_;
 
       /** ptr to the state vector RCP. In this way the strong_count is neither lost
        *  nor increased. */
-      const Teuchos::RCP<::NOX::Epetra::Vector>* xVector_;
+      const Teuchos::RCP<::NOX::Epetra::Vector>* x_vector_;
 
       /** ptr to the state matrix RCP. In this way the strong_count is neither lost
        *  nor increased. */
       const Teuchos::RCP<Core::LinAlg::SparseOperator>* jac_;
 
-      Teuchos::RCP<Core::LinAlg::SparseOperator> precMat_;
+      Teuchos::RCP<Core::LinAlg::SparseOperator> preconditionner_;
     };
   }  // namespace Nln
 }  // namespace NOX
