@@ -11,28 +11,18 @@
 #include "4C_structure_new_nln_solver_nox.hpp"
 #include "4C_structure_new_nln_solver_utils.hpp"
 #include "4C_structure_new_timint_base.hpp"
-#include "4C_utils_enum.hpp"
 
 #include <NOX_Utils.H>
 
 FOUR_C_NAMESPACE_OPEN
 
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-Solid::Nln::SOLVER::Factory::Factory()
-{
-  // empty
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-std::shared_ptr<Solid::Nln::SOLVER::Generic> Solid::Nln::SOLVER::Factory::build_nln_solver(
+std::shared_ptr<Solid::Nln::SOLVER::Generic> Solid::Nln::SOLVER::build_nln_solver(
     const enum Inpar::Solid::NonlinSolTech& nlnSolType,
     const std::shared_ptr<Solid::TimeInt::BaseDataGlobalState>& gstate,
     const std::shared_ptr<Solid::TimeInt::BaseDataSDyn>& sdyn,
     const std::shared_ptr<Solid::TimeInt::NoxInterface>& noxinterface,
     const std::shared_ptr<Solid::Integrator>& integrator,
-    const std::shared_ptr<const Solid::TimeInt::Base>& timint) const
+    const std::shared_ptr<const Solid::TimeInt::Base>& timint)
 {
   Teuchos::ParameterList nox_params;
 
@@ -160,20 +150,6 @@ std::shared_ptr<Solid::Nln::SOLVER::Generic> Solid::Nln::SOLVER::Factory::build_
 
   return std::make_shared<Solid::Nln::SOLVER::Nox>(
       nox_params, gstate, sdyn, noxinterface, integrator, timint);
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-std::shared_ptr<Solid::Nln::SOLVER::Generic> Solid::Nln::SOLVER::build_nln_solver(
-    const enum Inpar::Solid::NonlinSolTech& nlnSolType,
-    const std::shared_ptr<Solid::TimeInt::BaseDataGlobalState>& gstate,
-    const std::shared_ptr<Solid::TimeInt::BaseDataSDyn>& sdyn,
-    const std::shared_ptr<Solid::TimeInt::NoxInterface>& noxinterface,
-    const std::shared_ptr<Solid::Integrator>& integrator,
-    const std::shared_ptr<const Solid::TimeInt::Base>& timint)
-{
-  Factory factory;
-  return factory.build_nln_solver(nlnSolType, gstate, sdyn, noxinterface, integrator, timint);
 }
 
 FOUR_C_NAMESPACE_CLOSE
