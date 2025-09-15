@@ -218,13 +218,6 @@ void Solid::Integrator::compute_mass_matrix_and_init_acc()
   if (not model_eval().apply_initial_force(*disnp_ptr, rhs_full))
     FOUR_C_THROW("apply_initial_force failed!");
 
-  // add inertial and viscous contributions to rhs
-  /* note: this needs to be done 'manually' here because in the RHS evaluation
-   * routine of an ordinary time step, these contributions are scaled by weighting
-   * factors inside the time integration scheme (e.g. alpha_f/m for GenAlpha) */
-  rhs_full.update(1.0, *global_state().get_finertial_np(), 1.0);
-  rhs_full.update(1.0, *global_state().get_fvisco_np(), 1.0);
-
   // ---------------------------------------------------------------------------
   // build a NOX::Nln::Solid::LinearSystem
   // ---------------------------------------------------------------------------
@@ -257,6 +250,13 @@ void Solid::Integrator::compute_mass_matrix_and_init_acc()
   // extract the solid part of the rhs
   std::shared_ptr rhs_solid =
       global_state().extract_model_entries(Inpar::Solid::model_structure, rhs_full);
+
+  // add inertial and viscous contributions to rhs
+  /* note: this needs to be done 'manually' here because in the RHS evaluation
+   * routine of an ordinary time step, these contributions are scaled by weighting
+   * factors inside the time integration scheme (e.g. alpha_f/m for GenAlpha) */
+  rhs_solid->update(1.0, *global_state().get_finertial_np(), 1.0);
+  rhs_solid->update(1.0, *global_state().get_fvisco_np(), 1.0);
 
   // Note 1: We create a copy of the mass matrix here since the solid linear solver applies the
   // dirichlet conditions to the matrix. We will, however, need the full matrix later on (without
