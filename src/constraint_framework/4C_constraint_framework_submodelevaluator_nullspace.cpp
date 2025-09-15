@@ -25,20 +25,21 @@ Constraints::SubmodelEvaluator::NullspaceConstraintManager::NullspaceConstraintM
 {
   discret_ptr_ = discret_ptr;
 
-  std::vector<const Core::Conditions::Condition*> KSPcond;
-  discret_ptr_->get_condition("KrylovSpaceProjection", KSPcond);
-  int numcond = KSPcond.size();
+  std::vector<const Core::Conditions::Condition*> nullspace_constraint_conditions;
+  discret_ptr_->get_condition("KrylovSpaceProjection", nullspace_constraint_conditions);
+  int numcond = nullspace_constraint_conditions.size();
   int numsolid = 0;
 
-  const Core::Conditions::Condition* kspcond = nullptr;
+  const Core::Conditions::Condition* structure_nullspace_constraint_condition = nullptr;
   // check if for solid Krylov projection is required
   for (int icond = 0; icond < numcond; icond++)
   {
-    const std::string& name = KSPcond[icond]->parameters().get<std::string>("DIS");
+    const std::string& name =
+        nullspace_constraint_conditions[icond]->parameters().get<std::string>("DIS");
     if (name == "structure")
     {
       numsolid++;
-      kspcond = KSPcond[icond];
+      structure_nullspace_constraint_condition = nullspace_constraint_conditions[icond];
     }
   }
 
@@ -49,15 +50,16 @@ Constraints::SubmodelEvaluator::NullspaceConstraintManager::NullspaceConstraintM
         "the structure field is necessary.");
   }
 
-  const auto type = kspcond->parameters().get<std::string>("TYPE");
+  const auto type = structure_nullspace_constraint_condition->parameters().get<std::string>("TYPE");
 
   if (type != "constraint")
   {
     FOUR_C_THROW(
-        "The KrylovSpaceCondition needs to be of type constraint to be properly enforced.");
+        "The KrylovSpaceCondition needs to be of type 'constraint' to be properly enforced.");
   }
 
-  nullspace_dimension_ = kspcond->parameters().get<int>("NUMMODES");
+  nullspace_dimension_ =
+      structure_nullspace_constraint_condition->parameters().get<int>("NUMMODES");
 
   // just grab the block information on the first element that appears and check with given number
   Core::Elements::Element* dwele = discret_ptr->l_row_element(0);
@@ -73,14 +75,12 @@ Constraints::SubmodelEvaluator::NullspaceConstraintManager::NullspaceConstraintM
         nullspace_dimension_, nullspace_dimension);
   }
 
-  const auto* mode_flags = &kspcond->parameters().get<std::vector<int>>("ONOFF");
+  const auto mode_flags =
+      structure_nullspace_constraint_condition->parameters().get<std::vector<int>>("ONOFF");
 
   for (int rr = 0; rr < nullspace_dimension_; ++rr)
   {
-    if (((*mode_flags)[rr]) != 0)
-    {
-      active_mode_ids_.push_back(rr);
-    }
+    if (mode_flags[rr] != 0) active_mode_ids_.push_back(rr);
   }
 
   const int max_gid_structure = discret_ptr_->dof_row_map()->max_all_gid();
@@ -129,8 +129,8 @@ void Constraints::SubmodelEvaluator::NullspaceConstraintManager::evaluate_coupli
     auto& constraint_space_column = constraint_space(mode);
     auto& nullspace_column = (*nullspace)(active_mode_ids_[mode]);
 
-    const size_t myLength = constraint_space_column.local_length();
-    for (size_t j = 0; j < myLength; j++)
+    const size_t my_length = constraint_space_column.local_length();
+    for (size_t j = 0; j < my_length; j++)
     {
       constraint_space_column.get_values()[j] = nullspace_column.get_values()[j];
     }

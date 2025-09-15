@@ -21,9 +21,9 @@ namespace Constraints::SubmodelEvaluator
    *
    * Pure Neumann problems are of singular nature, due to the missing Dirichlet boundary condition.
    * Such type of systems can be solved by using the kernel / nullspace B as constraint, imposing
-   * Bu = 0. The approach implemented here enforces this constraint by adding the given condition
-   * by the means of a Lagrange Multiplier. This results in a sparse saddle point system to be
-   * solved.
+   * Bu = 0 for any solution vector u. The approach implemented here enforces this constraint by
+   * adding the given condition by the means of a Lagrange Multiplier. This results in a sparse
+   * saddle point system to be solved.
    *
    * P. Bochev and R. B. Lehoucq: On the Finite Element Solution of the Pure Neumann Problem,
    * SIAM Review, 47(1):50-66, 2005, http://dx.doi.org/10.1137/S0036144503426074
@@ -61,7 +61,7 @@ namespace Constraints::SubmodelEvaluator
         std::shared_ptr<Core::LinAlg::SparseMatrix> me_stiff_ptr,
         std::shared_ptr<Core::LinAlg::Vector<double>> me_force_ptr) override;
 
-    //! Evaluate the matrices of the saddle-point system
+    //! Evaluate the off-diagonal matrix blocks of the saddle-point system
     void evaluate_coupling_terms(Solid::TimeInt::BaseDataGlobalState& gstate) override;
 
     std::map<Solid::EnergyType, double> get_energy() const override;

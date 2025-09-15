@@ -161,8 +161,7 @@ bool Solid::ModelEvaluator::Constraint::have_lagrange_dofs() const
       if (sub_model_vec_ptr_.size() > 1)
         FOUR_C_THROW(
             "Currently Lagrange multipliers within constraint framework are exclusively supported "
-            "for "
-            "nullspace constraints.");
+            "for nullspace constraints.");
     }
   }
 

@@ -29,7 +29,7 @@ namespace Constraints
     undefined,     ///< default
     pbc_rve,       ///< apply periodic displacement bcs on
     embeddedmesh,  ///< apply embedded mesh bcs
-    nullspace      ///< apply nullspace constraint
+    nullspace      ///< apply nullspace constraint Bu=0 with nullspace B and solution vector u
   };
 
   /// type of employed constraint enforcement strategy
