@@ -26,9 +26,10 @@ namespace Constraints
   /// type of the submodel for constraintmodels
   enum class SubModelType
   {
-    undefined,    ///< default
-    pbc_rve,      ///< apply periodic displacement bcs on
-    embeddedmesh  ///< apply embedded mesh bcs
+    undefined,     ///< default
+    pbc_rve,       ///< apply periodic displacement bcs on
+    embeddedmesh,  ///< apply embedded mesh bcs
+    nullspace      ///< apply nullspace constraint Bu=0 with nullspace B and solution vector u
   };
 
   /// type of employed constraint enforcement strategy

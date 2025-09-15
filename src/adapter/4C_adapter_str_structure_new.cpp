@@ -558,14 +558,17 @@ void Adapter::StructureBaseAlgorithmNew::set_model_types(
   // check for constraints
   // ---------------------------------------------------------------------------
   std::vector<const Core::Conditions::Condition*> linePeriodicRve, surfPeriodicRve,
-      pointLinearCoupledEquation, embeddedMeshConditions;
+      pointLinearCoupledEquation, embeddedMeshConditions, nullspaceCondition;
+
   actdis_->get_condition("LinePeriodicRve", linePeriodicRve);
   actdis_->get_condition("SurfacePeriodicRve", surfPeriodicRve);
   actdis_->get_condition("PointLinearCoupledEquation", pointLinearCoupledEquation);
   actdis_->get_condition("EmbeddedMeshSolidSurfCoupling", embeddedMeshConditions);
+  actdis_->get_condition("KrylovSpaceProjection", nullspaceCondition);
 
   if (linePeriodicRve.size() > 0 || surfPeriodicRve.size() > 0 ||
-      pointLinearCoupledEquation.size() > 0 || embeddedMeshConditions.size() > 0)
+      pointLinearCoupledEquation.size() > 0 || embeddedMeshConditions.size() > 0 ||
+      nullspaceCondition.size() > 0)
     modeltypes.insert(Inpar::Solid::model_constraints);
 
   // ---------------------------------------------------------------------------

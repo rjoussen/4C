@@ -11,6 +11,7 @@
 
 #include "4C_constraint_framework_submodelevaluator_embeddedmesh.hpp"
 #include "4C_constraint_framework_submodelevaluator_mpc.hpp"
+#include "4C_constraint_framework_submodelevaluator_nullspace.hpp"
 #include "4C_coupling_adapter_converter.hpp"
 #include "4C_fem_general_utils_createdis.hpp"
 #include "4C_global_data.hpp"
@@ -19,6 +20,8 @@
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
 #include "4C_structure_new_model_evaluator_data.hpp"
 #include "4C_structure_new_timint_base.hpp"
+
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -57,12 +60,13 @@ void Solid::ModelEvaluator::Constraint::set_sub_model_types()
   // check for multi point constraints
   // ---------------------------------------------------------------------------
   std::vector<const Core::Conditions::Condition*> linePeriodicRve, surfPeriodicRve,
-      pointLinearCoupledEquation, embeddedMeshConditions;
+      pointLinearCoupledEquation, embeddedMeshConditions, nullspaceCondition;
 
   discret_ptr()->get_condition("LinePeriodicRve", linePeriodicRve);
   discret_ptr()->get_condition("SurfacePeriodicRve", surfPeriodicRve);
   discret_ptr()->get_condition("PointLinearCoupledEquation", pointLinearCoupledEquation);
   discret_ptr()->get_condition("EmbeddedMeshSolidSurfCoupling", embeddedMeshConditions);
+  discret_ptr()->get_condition("KrylovSpaceProjection", nullspaceCondition);
 
   if (linePeriodicRve.size() > 0 || surfPeriodicRve.size() > 0 ||
       pointLinearCoupledEquation.size() > 0)
@@ -72,6 +76,11 @@ void Solid::ModelEvaluator::Constraint::set_sub_model_types()
   if (embeddedMeshConditions.size() > 0)
   {
     submodeltypes_.insert(Constraints::SubModelType::embeddedmesh);
+  }
+  if (nullspaceCondition.size() > 0)
+  {
+    if (nullspaceCondition[0]->parameters().get<std::string>("TYPE") == "constraint")
+      submodeltypes_.insert(Constraints::SubModelType::nullspace);
   }
 }
 
@@ -102,6 +111,14 @@ void Solid::ModelEvaluator::Constraint::create_sub_model_evaluators()
 
         break;
       }
+      case Constraints::SubModelType::nullspace:
+      {
+        sub_model_vec_ptr_.emplace_back(
+            std::make_shared<Constraints::SubmodelEvaluator::NullspaceConstraintManager>(
+                discret_ptr()));
+
+        break;
+      }
       default:
       {
         FOUR_C_THROW(
@@ -119,6 +136,36 @@ bool Solid::ModelEvaluator::Constraint::have_sub_model_type(
 {
   check_init();
   return (submodeltypes_.find(submodeltype) != submodeltypes_.end());
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+bool Solid::ModelEvaluator::Constraint::have_lagrange_dofs() const
+{
+  bool lagrange_flag = false;
+  for (std::size_t i = 0; i < sub_model_vec_ptr_.size(); ++i)
+  {
+    auto constraint_model =
+        std::dynamic_pointer_cast<FourC::Constraints::SubmodelEvaluator::ConstraintBase>(
+            sub_model_vec_ptr_[i]);
+
+    if (!constraint_model) continue;
+
+    auto params = Global::Problem::instance()->constraint_params();
+    auto strategy = Teuchos::getIntegralValue<Constraints::EnforcementStrategy>(
+        params, "CONSTRAINT_ENFORCEMENT");
+
+    if (strategy == Constraints::EnforcementStrategy::lagrange)
+    {
+      lagrange_flag = true;
+      if (sub_model_vec_ptr_.size() > 1)
+        FOUR_C_THROW(
+            "Currently Lagrange multipliers within constraint framework are exclusively supported "
+            "for nullspace constraints.");
+    }
+  }
+
+  return lagrange_flag;
 }
 
 /*----------------------------------------------------------------------------*
@@ -314,7 +361,17 @@ void Solid::ModelEvaluator::Constraint::runtime_output_step_state() const
 std::shared_ptr<const Core::LinAlg::Map>
 Solid::ModelEvaluator::Constraint::get_block_dof_row_map_ptr() const
 {
-  return global_state().dof_row_map();
+  if (have_lagrange_dofs())
+  {
+    auto constraint_model = std::dynamic_pointer_cast<
+        FourC::Constraints::SubmodelEvaluator::NullspaceConstraintManager>(sub_model_vec_ptr_[0]);
+
+    return constraint_model->get_constraint_map();
+  }
+  else
+  {
+    return global_state().dof_row_map();
+  }
 }
 
 /*----------------------------------------------------------------------------*

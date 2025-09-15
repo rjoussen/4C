@@ -131,58 +131,71 @@ std::shared_ptr<Core::LinAlg::Solver> Solid::SOLVER::Factory::build_structure_li
 
     if (numsolid == 1)
     {
-      if (Core::Communication::my_mpi_rank(actdis.get_comm()) == 0)
-        std::cout << "\nSetup of KrylovSpaceProjection in solid field.\n";
-
-      const int nummodes = kspcond->parameters().get<int>("NUMMODES");
-
-      // get rigid body mode flags for a 3-D solid: [transx transy transz rotx roty rotz]
-      const auto* modeflags = &kspcond->parameters().get<std::vector<int>>("ONOFF");
-
-      // get actual active mode ids given in input file
-      std::vector<int> activemodeids;
-      for (int rr = 0; rr < nummodes; ++rr)
+      const auto type = kspcond->parameters().get<std::string>("TYPE");
+      if (type == "projection")
       {
-        if (((*modeflags)[rr]) != 0)
+        if (Core::Communication::my_mpi_rank(actdis.get_comm()) == 0)
+          std::cout << "\nSetup of KrylovSpaceProjection in solid field.\n";
+
+        const int nummodes = kspcond->parameters().get<int>("NUMMODES");
+
+        // get rigid body mode flags for a 3-D solid: [transx transy transz rotx roty rotz]
+        // Euler-Bernoulli beams have a similar ordering: [transx transy transz rot1 rot2]
+        const auto* modeflags = &kspcond->parameters().get<std::vector<int>>("ONOFF");
+
+        // get actual active mode ids given in input file
+        std::vector<int> activemodeids;
+        for (int rr = 0; rr < nummodes; ++rr)
         {
-          activemodeids.push_back(rr);
+          if (((*modeflags)[rr]) != 0)
+          {
+            activemodeids.push_back(rr);
+          }
         }
-      }
 
-      const std::string* weighttype = &kspcond->parameters().get<std::string>("WEIGHTVECDEF");
+        const std::string* weighttype = &kspcond->parameters().get<std::string>("WEIGHTVECDEF");
 
-      projector = std::make_shared<Core::LinAlg::KrylovProjector>(
-          activemodeids, weighttype, actdis.dof_row_map());
-      weighttype = projector->weight_type();
+        projector = std::make_shared<Core::LinAlg::KrylovProjector>(
+            activemodeids, weighttype, actdis.dof_row_map());
+        weighttype = projector->weight_type();
 
-      if (*weighttype == "integration")
-        FOUR_C_THROW("Krylov projection can currently only be done pointwise.");
+        if (*weighttype == "integration")
+          FOUR_C_THROW("Krylov projection can currently only be done pointwise.");
 
-      std::shared_ptr<Core::LinAlg::MultiVector<double>> c = projector->get_non_const_kernel();
-      c->PutScalar(0.0);
+        std::shared_ptr<Core::LinAlg::MultiVector<double>> c = projector->get_non_const_kernel();
+        c->PutScalar(0.0);
 
-      Core::LinAlg::Map nullspace_map(*actdis.dof_row_map());
+        Core::LinAlg::Map nullspace_map(*actdis.dof_row_map());
 
-      std::shared_ptr<Core::LinAlg::MultiVector<double>> nullspace =
-          Core::FE::compute_null_space(actdis, 3, 6, nullspace_map);
-
-      if (nullspace == nullptr) FOUR_C_THROW("Nullspace could not be computed successfully.");
-
-      // sort vector of nullspace data into kernel vector c_
-      std::vector<int> mode_ids = projector->modes();
-
-      for (size_t i = 0; i < Teuchos::as<size_t>(mode_ids.size()); i++)
-      {
-        auto& ci = (*c)(i);
-        auto& ni = (*nullspace)(mode_ids[i]);
-        const size_t myLength = ci.local_length();
-        for (size_t j = 0; j < myLength; j++)
+        int numdof;
+        int dimns;
         {
-          ci.get_values()[j] = ni.get_values()[j];
+          // just grab the block information on the first element that appears
+          Core::Elements::Element* dwele = actdis.l_row_element(0);
+          dwele->element_type().nodal_block_information(dwele, numdof, dimns);
         }
-      }
 
-      projector->fill_complete();
+        std::shared_ptr<Core::LinAlg::MultiVector<double>> nullspace =
+            Core::FE::compute_null_space(actdis, numdof, dimns, nullspace_map);
+
+        if (nullspace == nullptr) FOUR_C_THROW("Nullspace could not be computed successfully.");
+
+        // sort vector of nullspace data into kernel vector c_
+        std::vector<int> mode_ids = projector->modes();
+
+        for (size_t i = 0; i < Teuchos::as<size_t>(mode_ids.size()); i++)
+        {
+          auto& ci = (*c)(i);
+          auto& ni = (*nullspace)(mode_ids[i]);
+          const size_t myLength = ci.local_length();
+          for (size_t j = 0; j < myLength; j++)
+          {
+            ci.get_values()[j] = ni.get_values()[j];
+          }
+        }
+
+        projector->fill_complete();
+      }
     }
     else if (numsolid == 0)
     {
