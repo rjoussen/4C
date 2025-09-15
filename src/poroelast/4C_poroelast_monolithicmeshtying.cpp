@@ -70,7 +70,7 @@ void PoroElast::MonolithicMeshtying::evaluate(
 
   const int ndim = Global::Problem::instance()->n_dim();
   int* mygids = fpres->get_map().my_global_elements();
-  double* val = fpres->get_values();
+  const double* val = fpres->get_values();
   for (int i = 0; i < fpres->local_length(); ++i)
   {
     int gid = mygids[i] - ndim;
