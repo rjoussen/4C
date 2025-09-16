@@ -9349,7 +9349,7 @@ void inline CONTACT::Integrator::gp_3d_dm_quad_lin(bool& duallin, Mortar::Elemen
 /*----------------------------------------------------------------------*
  |  Lin D and M matrix entries at GP                         farah 09/13|
  *----------------------------------------------------------------------*/
-void inline CONTACT::Integrator::gp_3d_dm_lin(Mortar::Element& sele, Mortar::Element& mele,
+void CONTACT::Integrator::gp_3d_dm_lin(Mortar::Element& sele, Mortar::Element& mele,
     Core::LinAlg::SerialDenseVector& sval, Core::LinAlg::SerialDenseVector& mval,
     Core::LinAlg::SerialDenseVector& lmval, Core::LinAlg::SerialDenseMatrix& sderiv,
     Core::LinAlg::SerialDenseMatrix& mderiv, Core::LinAlg::SerialDenseMatrix& lmderiv, double& wgt,
