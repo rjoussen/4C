@@ -232,16 +232,6 @@ void StructureFilter::write_stress(
     name = "cauchy_stresses_xyz";
     out = "Cauchy stresses";
   }
-  else if (groupname == "gauss_2PK_coupling_stresses_xyz")
-  {
-    name = "2PK_coupling_stresses_xyz";
-    out = "2nd Piola-Kirchhoff coupling stresses";
-  }
-  else if (groupname == "gauss_cauchy_coupling_stresses_xyz")
-  {
-    name = "cauchy_coupling_stresses_xyz";
-    out = "Cauchy coupling stresses";
-  }
   else if (groupname == "gauss_GL_strains_xyz")
   {
     name = "GL_strains_xyz";
@@ -573,26 +563,6 @@ void StructureFilter::write_eigen_stress(
     name[4] = "cauchy_stresses_eigenvec2";
     name[5] = "cauchy_stresses_eigenvec3";
     out = "principal Cauchy stresses";
-  }
-  else if (groupname == "gauss_2PK_coupling_stresses_xyz")
-  {
-    name[0] = "2PK_coupling_stresses_eigenval1";
-    name[1] = "2PK_coupling_stresses_eigenval2";
-    name[2] = "2PK_coupling_stresses_eigenval3";
-    name[3] = "2PK_coupling_stresses_eigenvec1";
-    name[4] = "2PK_coupling_stresses_eigenvec2";
-    name[5] = "2PK_coupling_stresses_eigenvec3";
-    out = "principal 2nd Piola-Kirchhoff coupling stresses";
-  }
-  else if (groupname == "gauss_cauchy_coupling_stresses_xyz")
-  {
-    name[0] = "cauchy_coupling_stresses_eigenval1";
-    name[1] = "cauchy_coupling_stresses_eigenval2";
-    name[2] = "cauchy_coupling_stresses_eigenval3";
-    name[3] = "cauchy_coupling_stresses_eigenvec1";
-    name[4] = "cauchy_coupling_stresses_eigenvec2";
-    name[5] = "cauchy_coupling_stresses_eigenvec3";
-    out = "principal Cauchy coupling stresses";
   }
   else if (groupname == "gauss_GL_strains_xyz")
   {

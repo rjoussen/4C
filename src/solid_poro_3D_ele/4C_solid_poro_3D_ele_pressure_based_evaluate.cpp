@@ -183,15 +183,6 @@ int Discret::Elements::SolidPoroPressureBased::evaluate(Teuchos::ParameterList& 
           },
           solid_calc_variant_);
 
-      if (la.size() > 2)
-      {
-        if (discretization.has_state(1, "porofluid"))
-        {
-          std::visit([&](auto& interface)
-              { interface->coupling_stress(*this, discretization, la[0].lm_, params); },
-              solidporo_press_based_calc_variant_);
-        }
-      }
       return 0;
     }
     case Core::Elements::struct_init_gauss_point_data_output:
