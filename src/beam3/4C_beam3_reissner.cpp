@@ -74,11 +74,11 @@ void Discret::Elements::Beam3rType::nodal_block_information(
   Discret::Elements::Beam3r* currele = dynamic_cast<Discret::Elements::Beam3r*>(dwele);
   if (!currele) FOUR_C_THROW("cast to Beam3r* failed");
 
-  if (currele->hermite_centerline_interpolation() or currele->num_node() > 2)
+  if (!currele->hermite_centerline_interpolation() or currele->num_node() > 3)
   {
     FOUR_C_THROW(
-        "method nodal_block_information not implemented for element type beam3r in case of Hermite "
-        "interpolation or higher order Lagrange interpolation!");
+        "method nodal_block_information not implemented for element type beam3r in case of higher "
+        "order Lagrange interpolation!");
   }
   else
   {
@@ -92,8 +92,169 @@ void Discret::Elements::Beam3rType::nodal_block_information(
 Core::LinAlg::SerialDenseMatrix Discret::Elements::Beam3rType::compute_null_space(
     Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  Core::LinAlg::SerialDenseMatrix nullspace;
-  FOUR_C_THROW("method ComputeNullSpace not implemented for element type beam3r!");
+  // getting pointer at current element
+  const auto* beam3r =
+      dynamic_cast<const Discret::Elements::Beam3r*>(node.adjacent_elements()[0].user_element());
+  if (!beam3r) FOUR_C_THROW("Cannot cast current element to type Beam3r.");
+
+  if (beam3r->is_centerline_node(node))
+  {
+    if (numdof != 9)
+      FOUR_C_THROW(
+          "The computation of the Simo-Reissner beam nullspace in three dimensions requires nine "
+          "DOFs per centerline node, however the current node carries {} DOFs.",
+          numdof);
+  }
+  else
+  {
+    if (numdof != 3)
+      FOUR_C_THROW(
+          "The computation of the Simo-Reissner beam nullspace in three dimensions requires three "
+          "DOFs per node, however the current node carries {} DOFs.",
+          numdof);
+  }
+
+  if (dimnsp != 6)
+    FOUR_C_THROW(
+        "The computation of the Simo-Reissner beam nullspace in three dimensions requires six "
+        "nullspace vectors per node, however the current node carries {} vectors.",
+        dimnsp);
+
+  constexpr std::size_t spacedim = 3;
+
+  // get coordinates of current node
+  const auto& x = node.x();
+
+  // get the tangent of the current node
+  Core::LinAlg::Matrix<spacedim, 1> tangent;
+  const auto firstnode = beam3r->nodes()[0];
+
+  beam3r->get_ref_tangent_at_node(tangent, firstnode->id() == node.id() ? 0 : 1);
+  tangent.scale(1.0 / tangent.norm2());
+
+  // Form a Cartesian basis
+  std::array<Core::LinAlg::Matrix<spacedim, 1>, spacedim> basis;
+  Core::LinAlg::Matrix<spacedim, 1> e1(Core::LinAlg::Initialization::zero);
+  e1(0) = 1.0;
+  Core::LinAlg::Matrix<spacedim, 1> e2(Core::LinAlg::Initialization::zero);
+  e2(1) = 1.0;
+  Core::LinAlg::Matrix<spacedim, 1> e3(Core::LinAlg::Initialization::zero);
+  e3(2) = 1.0;
+  basis[0] = e1;
+  basis[1] = e2;
+  basis[2] = e3;
+
+  Core::LinAlg::Matrix<3, 1> nodeCoords(Core::LinAlg::Initialization::zero);
+  for (std::size_t dim = 0; dim < 3; ++dim) nodeCoords(dim) = x[dim] - x0[dim];
+
+  // Compute rotations in displacement DOFs
+  Core::LinAlg::Matrix<spacedim, 1> rotOne(Core::LinAlg::Initialization::zero);
+  Core::LinAlg::Matrix<spacedim, 1> rotTwo(Core::LinAlg::Initialization::zero);
+  Core::LinAlg::Matrix<spacedim, 1> rotThree(Core::LinAlg::Initialization::zero);
+  rotOne.cross_product(e1, nodeCoords);
+  rotTwo.cross_product(e2, nodeCoords);
+  rotThree.cross_product(e3, nodeCoords);
+
+  // Compute rotations in tangent DOFs
+  Core::LinAlg::Matrix<spacedim, 1> rotTangOne(Core::LinAlg::Initialization::zero);
+  Core::LinAlg::Matrix<spacedim, 1> rotTangTwo(Core::LinAlg::Initialization::zero);
+  Core::LinAlg::Matrix<spacedim, 1> rotTangThree(Core::LinAlg::Initialization::zero);
+  rotTangOne.cross_product(e1, tangent);
+  rotTangTwo.cross_product(e2, tangent);
+  rotTangThree.cross_product(e3, tangent);
+
+  Core::LinAlg::SerialDenseMatrix nullspace(numdof, dimnsp);
+  if (beam3r->is_centerline_node(node))
+  {
+    // x-modes
+    nullspace(0, 0) = 1.0;
+    nullspace(0, 1) = 0.0;
+    nullspace(0, 2) = 0.0;
+    nullspace(0, 3) = rotOne(0);
+    nullspace(0, 4) = rotTwo(0);
+    nullspace(0, 5) = rotThree(0);
+    // y-modes
+    nullspace(1, 0) = 0.0;
+    nullspace(1, 1) = 1.0;
+    nullspace(1, 2) = 0.0;
+    nullspace(1, 3) = rotOne(1);
+    nullspace(1, 4) = rotTwo(1);
+    nullspace(1, 5) = rotThree(1);
+    // z-modes
+    nullspace(2, 0) = 0.0;
+    nullspace(2, 1) = 0.0;
+    nullspace(2, 2) = 1.0;
+    nullspace(2, 3) = rotOne(2);
+    nullspace(2, 4) = rotTwo(2);
+    nullspace(2, 5) = rotThree(2);
+    // rotx-modes
+    nullspace(3, 0) = 0.0;
+    nullspace(3, 1) = 0.0;
+    nullspace(3, 2) = 0.0;
+    nullspace(3, 3) = 1.0;
+    nullspace(3, 4) = 0.0;
+    nullspace(3, 5) = 0.0;
+    // roty-modes
+    nullspace(4, 0) = 0.0;
+    nullspace(4, 1) = 0.0;
+    nullspace(4, 2) = 0.0;
+    nullspace(4, 3) = 0.0;
+    nullspace(4, 4) = 1.0;
+    nullspace(4, 5) = 0.0;
+    // rotz-modes
+    nullspace(5, 0) = 0.0;
+    nullspace(5, 1) = 0.0;
+    nullspace(5, 2) = 0.0;
+    nullspace(5, 3) = 0.0;
+    nullspace(5, 4) = 0.0;
+    nullspace(5, 5) = 1.0;
+    // dx-modes
+    nullspace(6, 0) = 0.0;
+    nullspace(6, 1) = 0.0;
+    nullspace(6, 2) = 0.0;
+    nullspace(6, 3) = rotTangOne(0);
+    nullspace(6, 4) = rotTangTwo(0);
+    nullspace(6, 5) = rotTangThree(0);
+    // dy-modes
+    nullspace(7, 0) = 0.0;
+    nullspace(7, 1) = 0.0;
+    nullspace(7, 2) = 0.0;
+    nullspace(7, 3) = rotTangOne(1);
+    nullspace(7, 4) = rotTangTwo(1);
+    nullspace(7, 5) = rotTangThree(1);
+    // dz-modes
+    nullspace(8, 0) = 0.0;
+    nullspace(8, 1) = 0.0;
+    nullspace(8, 2) = 0.0;
+    nullspace(8, 3) = rotTangOne(2);
+    nullspace(8, 4) = rotTangTwo(2);
+    nullspace(8, 5) = rotTangThree(2);
+  }
+  else
+  {
+    // rotx-modes
+    nullspace(0, 0) = 0.0;
+    nullspace(0, 1) = 0.0;
+    nullspace(0, 2) = 0.0;
+    nullspace(0, 3) = 1.0;
+    nullspace(0, 4) = 0.0;
+    nullspace(0, 5) = 0.0;
+    // roty-modes
+    nullspace(1, 0) = 0.0;
+    nullspace(1, 1) = 0.0;
+    nullspace(1, 2) = 0.0;
+    nullspace(1, 3) = 0.0;
+    nullspace(1, 4) = 1.0;
+    nullspace(1, 5) = 0.0;
+    // rotz-modes
+    nullspace(2, 0) = 0.0;
+    nullspace(2, 1) = 0.0;
+    nullspace(2, 2) = 0.0;
+    nullspace(2, 3) = 0.0;
+    nullspace(2, 4) = 0.0;
+    nullspace(2, 5) = 1.0;
+  }
+
   return nullspace;
 }
 
