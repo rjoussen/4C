@@ -1104,7 +1104,7 @@ std::shared_ptr<Core::LinAlg::Map> Core::Binstrategy::BinningStrategy::
     // fillcomplete discret with extended ghosting
     discret[i]->fill_complete();
     if (myrank_ == 0) std::cout << "parallel distribution with extended ghosting\n";
-    Core::Rebalance::Utils::print_parallel_distribution(*discret[i]);
+    Core::Rebalance::print_parallel_distribution(*discret[i]);
   }
 
   return newrowbins;
@@ -1461,7 +1461,7 @@ void Core::Binstrategy::BinningStrategy::standard_discretization_ghosting(
   // print distribution after standard ghosting
   // some output after standard ghosting
   if (myrank_ == 0) std::cout << "parallel distribution with standard ghosting" << std::endl;
-  Core::Rebalance::Utils::print_parallel_distribution(*discret);
+  Core::Rebalance::print_parallel_distribution(*discret);
 #endif
 }
 
@@ -1541,7 +1541,7 @@ void Core::Binstrategy::BinningStrategy::revert_extended_ghosting(
     // fillcomplete discret with standard ghosting
     dis[i]->fill_complete();
     if (myrank_ == 0) std::cout << "parallel distribution with reverted ghosting\n";
-    Core::Rebalance::Utils::print_parallel_distribution(*dis[i]);
+    Core::Rebalance::print_parallel_distribution(*dis[i]);
   }
 }
 

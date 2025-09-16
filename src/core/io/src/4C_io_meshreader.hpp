@@ -11,6 +11,7 @@
 #include "4C_config.hpp"
 
 #include "4C_linalg_graph.hpp"
+#include "4C_rebalance.hpp"
 
 #include <Teuchos_ParameterList.hpp>
 
@@ -45,27 +46,6 @@ namespace Core::IO
   {
    public:
     /**
-     * Additional parameters that govern the reading process.
-     */
-    struct MeshReaderParameters
-    {
-      /**
-       * How to partition then mesh among processes.
-       */
-      Teuchos::ParameterList mesh_partitioning_parameters;
-
-      /**
-       * Geometric search parameters for certain partitioning methods.
-       */
-      Teuchos::ParameterList geometric_search_parameters;
-
-      /**
-       * General verbosity settings and I/O parameters.
-       */
-      Teuchos::ParameterList io_parameters;
-    };
-
-    /**
      * Destructor.
      */
     ~MeshReader();
@@ -75,7 +55,8 @@ namespace Core::IO
      * The optional @p parameters can be used to set additional options for the reader.
      * Note that you need to call attach_discretization() before calling read_and_partition().
      */
-    MeshReader(const Core::IO::InputFile& input, MeshReaderParameters parameters = {});
+    MeshReader(
+        const Core::IO::InputFile& input, Core::Rebalance::RebalanceParameters parameters = {});
 
     /**
      * Add a discretization to be filled with the mesh data. The @p section_prefix is used to
@@ -116,8 +97,8 @@ namespace Core::IO
     /// The input file to read the mesh from.
     const Core::IO::InputFile& input_;
 
-    /// Additional parameters for reading meshes.
-    MeshReaderParameters parameters_;
+    /// Additional parameters for rebalancing meshes.
+    Core::Rebalance::RebalanceParameters parameters_;
 
     /// The discretizations to be filled. The key is an identifier for the sections in the input.
     /// Multiple discretizations might be filled from the same section.

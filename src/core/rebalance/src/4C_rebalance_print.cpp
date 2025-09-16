@@ -13,7 +13,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-void Core::Rebalance::Utils::print_parallel_distribution(const Core::FE::Discretization& dis)
+void Core::Rebalance::print_parallel_distribution(const Core::FE::Discretization& dis)
 {
   const int numproc = Core::Communication::num_mpi_ranks(dis.get_comm());
   const int myrank = Core::Communication::my_mpi_rank(dis.get_comm());

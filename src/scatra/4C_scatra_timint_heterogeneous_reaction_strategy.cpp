@@ -156,7 +156,7 @@ void ScaTra::HeterogeneousReactionStrategy::setup_meshtying()
 
     if (Core::Communication::my_mpi_rank(com) == 0 and Core::Communication::num_mpi_ranks(com) > 1)
       std::cout << "parallel distribution of auxiliary discr. with standard ghosting" << std::endl;
-    Core::Rebalance::Utils::print_parallel_distribution(*discret_);
+    Core::Rebalance::print_parallel_distribution(*discret_);
   }
 
   set_is_setup(true);

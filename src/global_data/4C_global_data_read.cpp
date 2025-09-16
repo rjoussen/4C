@@ -226,7 +226,7 @@ std::unique_ptr<Core::IO::MeshReader> Global::read_discretization(
 
   // the basic mesh reader. now add desired node and element readers to it!
   auto meshreader_out = std::make_unique<Core::IO::MeshReader>(
-      input, Core::IO::MeshReader::MeshReaderParameters{
+      input, Core::Rebalance::RebalanceParameters{
                  .mesh_partitioning_parameters = Problem::instance()->mesh_partitioning_params(),
                  .geometric_search_parameters = Problem::instance()->geometric_search_params(),
                  .io_parameters = Problem::instance()->io_params(),

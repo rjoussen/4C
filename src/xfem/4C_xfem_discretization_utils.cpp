@@ -231,10 +231,8 @@ void XFEM::Utils::XFEMDiscretizationBuilder::setup_xfem_discretization(
 
   setup_xfem_discretization(xgen_params, xdis, numdof);
 
-  Core::Rebalance::Utils::print_parallel_distribution(*dis);
-  Core::Rebalance::Utils::print_parallel_distribution(embedded_dis);
-
-  return;
+  Core::Rebalance::print_parallel_distribution(*dis);
+  Core::Rebalance::print_parallel_distribution(embedded_dis);
 }
 
 
