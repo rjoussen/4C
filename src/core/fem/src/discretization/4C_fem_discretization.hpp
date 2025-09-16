@@ -44,6 +44,11 @@ namespace Core::LinAlg
   class SerialDenseMatrix;
 }  // namespace Core::LinAlg
 
+namespace Core::Rebalance
+{
+  struct RebalanceParameters;
+}
+
 namespace Core::FE
 {
   class AssembleStrategy;
@@ -72,6 +77,12 @@ namespace Core::Utils
 
 namespace Core::IO
 {
+  namespace MeshInput
+  {
+    template <unsigned dim>
+    struct Mesh;
+  }  // namespace MeshInput
+
   class DiscretizationWriter;
 }  // namespace Core::IO
 
@@ -1269,6 +1280,18 @@ namespace Core::FE
     \note Sets Filled()=false
     */
     void add_node(std::shared_ptr<Core::Nodes::Node> node);
+
+    /**
+     * @brief Construct a discretization from a mesh.
+     *
+     * In contrast to add_node() and add_element(), this method builds a full discretization
+     * at once and redistributes it according to the settings in @p params. This is a collective
+     * call.
+     *
+     * @note This only works if the discretization is empty, i.e., contains no nodes or elements.
+     */
+    void fill_from_mesh(
+        const IO::MeshInput::Mesh<3>& mesh, const Rebalance::RebalanceParameters& params);
 
     /*!
     \brief Delete an node from the discretization (Filled()==true NOT prerequisite)

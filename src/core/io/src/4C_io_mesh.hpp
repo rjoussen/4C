@@ -11,6 +11,7 @@
 #include "4C_config.hpp"
 
 #include "4C_fem_general_cell_type_traits.hpp"
+#include "4C_io_input_parameter_container.hpp"
 #include "4C_utils_exceptions.hpp"
 
 #include <cstddef>
@@ -108,6 +109,13 @@ namespace Core::IO::MeshInput
      * @note Not every file formats provides std::string-names for cell blocks.
      */
     std::optional<std::string> name{};
+
+    /**
+     * Optional specific data for the cell block.
+     *
+     * This data can be used to construct specialized user elements for this block.
+     */
+    std::optional<Core::IO::InputParameterContainer> specific_data{};
 
     CellBlock(FE::CellType cell_type) : cell_type(cell_type) {}
 
