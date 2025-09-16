@@ -1808,7 +1808,7 @@ void ScaTra::ScaTraTimIntImpl::fd_check()
     // check whether current column index is a valid global column index and continue loop if not
     int collid(sysmat_original->col_map().lid(colgid));
     int maxcollid(-1);
-    Core::Communication::max_all(&collid, &maxcollid, 1, discret_->get_comm());
+    maxcollid = Core::Communication::max_all(collid, discret_->get_comm());
     if (maxcollid < 0) continue;
 
     // fill state vector with original state variables
@@ -1934,9 +1934,9 @@ void ScaTra::ScaTraTimIntImpl::fd_check()
   int counterglobal(0);
   Core::Communication::sum_all(&counter, &counterglobal, 1, discret_->get_comm());
   double maxabserrglobal(0.);
-  Core::Communication::max_all(&maxabserr, &maxabserrglobal, 1, discret_->get_comm());
+  maxabserrglobal = Core::Communication::max_all(maxabserr, discret_->get_comm());
   double maxrelerrglobal(0.);
-  Core::Communication::max_all(&maxrelerr, &maxrelerrglobal, 1, discret_->get_comm());
+  maxrelerrglobal = Core::Communication::max_all(maxrelerr, discret_->get_comm());
 
   // final screen output
   if (myrank_ == 0)
@@ -2852,7 +2852,7 @@ void ScaTra::ScalarHandler::setup(const ScaTraTimIntImpl* const scatratimint)
   // number of different numbers of dofs on this procs
   int mysize = static_cast<int>(mynumdofpernode.size());
   // communicate
-  Core::Communication::max_all(&mysize, &maxsize, 1, discret->get_comm());
+  maxsize = Core::Communication::max_all(mysize, discret->get_comm());
 
   // copy mynumdofpernode into std::vector for communication
   std::vector<int> vecmynumdofpernode(mynumdofpernode.begin(), mynumdofpernode.end());
@@ -2914,7 +2914,7 @@ int ScaTra::ScalarHandler::num_dof_per_node_in_condition(
   // number of different numbers of dofs on this procs
   int mysize = static_cast<int>(mynumdofpernode.size());
   // communicate
-  Core::Communication::max_all(&mysize, &maxsize, 1, discret.get_comm());
+  maxsize = Core::Communication::max_all(mysize, discret.get_comm());
 
   // copy mynumdofpernode into std::vector for communication
   std::vector<int> vecmynumdofpernode(mynumdofpernode.begin(), mynumdofpernode.end());

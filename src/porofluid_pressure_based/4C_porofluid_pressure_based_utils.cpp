@@ -381,7 +381,7 @@ std::map<int, std::set<int>> PoroPressureBased::oct_tree_search(Core::FE::Discre
     {
       double mydtsearch = timersearch.wallTime() - dtcpu;
       double maxdtsearch = 0.0;
-      Core::Communication::max_all(&mydtsearch, &maxdtsearch, 1, contdis.get_comm());
+      maxdtsearch = Core::Communication::max_all(mydtsearch, contdis.get_comm());
       if (Core::Communication::my_mpi_rank(contdis.get_comm()) == 0)
         std::cout << "Estimated duration: " << 20.0 * (maxdtsearch) << "s" << std::endl;
     }
@@ -390,7 +390,7 @@ std::map<int, std::set<int>> PoroPressureBased::oct_tree_search(Core::FE::Discre
   // *********** time measurement ***********
   double mydtsearch = timersearch.wallTime() - dtcpu;
   double maxdtsearch = 0.0;
-  Core::Communication::max_all(&mydtsearch, &maxdtsearch, 1, contdis.get_comm());
+  maxdtsearch = Core::Communication::max_all(mydtsearch, contdis.get_comm());
   // *********** time measurement ***********
   if (Core::Communication::my_mpi_rank(contdis.get_comm()) == 0)
     std::cout << "Completed in " << maxdtsearch << "s" << std::endl;

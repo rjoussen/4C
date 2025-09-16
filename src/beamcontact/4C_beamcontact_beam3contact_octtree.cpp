@@ -577,7 +577,7 @@ void Beam3ContactOctTree::create_bounding_boxes(
   double bbgentimelocal = Teuchos::Time::wallTime() - t_AABB;
   double bbgentimeglobal = 0.0;
 
-  Core::Communication::max_all(&bbgentimelocal, &bbgentimeglobal, 1, searchdis_.Comm());
+  bbgentimeglobal = Core::Communication::max_all(bbgentimelocal, searchdis_.Comm());
 
   if (!Core::Communication::my_mpi_rank(searchdis_.Comm()))
     std::cout << "\n\nBBox creation time:\t\t" << bbgentimeglobal << " seconds" << std::endl;
@@ -979,7 +979,7 @@ bool Beam3ContactOctTree::locate_all()
   }
 
   // communicate bbox2octant_ to all Procs
-  Core::Communication::max_all(&maxnumoctlocal, &maxnumoctglobal, 1, searchdis_.get_comm());
+  maxnumoctglobal = Core::Communication::max_all(maxnumoctlocal, searchdis_.get_comm());
   bbox2octant_ = std::make_shared<Core::LinAlg::MultiVector<double>>(
       *(searchdis_.element_col_map()), maxnumoctglobal, true);
 
@@ -994,8 +994,8 @@ bool Beam3ContactOctTree::locate_all()
       *(searchdis_.element_row_map()), maxnumoctglobal, true);
   communicate_multi_vector(bbox2octantrow, *bbox2octant_);
 
-  Core::Communication::max_all(&maxdepthlocal, &maxdepthglobal, 1, searchdis_.get_comm());
-  Core::Communication::max_all(&bboxlengthlocal, &bboxlengthglobal, 1, searchdis_.get_comm());
+  maxdepthglobal = Core::Communication::max_all(maxdepthlocal, searchdis_.get_comm());
+  bboxlengthglobal = Core::Communication::max_all(bboxlengthlocal, searchdis_.get_comm());
 
   /* build temporary, fully overlapping map and row map for octree
    * Note: maxdepthglobal does not occur for a converging Newton iteration. Yet, in some cases, when
@@ -1558,7 +1558,7 @@ void Beam3ContactOctTree::bounding_box_intersection(
   double isectimelocal = Teuchos::Time::wallTime() - t_search;
   double isectimeglobal = 0.0;
 
-  Core::Communication::max_all(&isectimelocal, &isectimeglobal, 1, searchdis_.Comm());
+  isectimeglobal = Core::Communication::max_all(isectimelocal, searchdis_.Comm());
   Core::Communication::barrier(discret_.Comm());
   if (!Core::Communication::my_mpi_rank(searchdis_.Comm()))
     std::cout << "intersection time:\t\t" << isectimeglobal << " seconds" << std::endl;

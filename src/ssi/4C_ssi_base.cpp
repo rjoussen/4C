@@ -324,7 +324,7 @@ void SSI::SSIBase::init_discretizations(MPI_Comm comm, const std::string& struct
           my_node_ids[lid] = scatra_manifold_dis->node_row_map()->gid(lid);
 
         int max_num_nodes = 0;
-        Core::Communication::max_all(&num_my_nodes, &max_num_nodes, 1, get_comm());
+        max_num_nodes = Core::Communication::max_all(num_my_nodes, get_comm());
 
         // resize vector and fill with place holders (-1)
         my_node_ids.resize(max_num_nodes, -1);

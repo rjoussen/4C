@@ -24,6 +24,7 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+#include <array>
 #include <utility>
 
 FOUR_C_NAMESPACE_OPEN
@@ -1617,8 +1618,8 @@ double Core::Binstrategy::BinningStrategy::
     }
 
     double globmax_bin_size_lower_bound = 0.0;
-    Core::Communication::max_all(
-        &loc_max_bin_size_lower_bound, &globmax_bin_size_lower_bound, 1, discret[ndis]->get_comm());
+    globmax_bin_size_lower_bound =
+        Core::Communication::max_all(loc_max_bin_size_lower_bound, discret[ndis]->get_comm());
     // this is necessary if more than one discret is relevant
     bin_size_lower_bound = std::max(globmax_bin_size_lower_bound, bin_size_lower_bound);
   }
@@ -1715,13 +1716,13 @@ void Core::Binstrategy::BinningStrategy::
 
   // local bounding box on each proc
   double locmin[3] = {XAABB(0, 0), XAABB(1, 0), XAABB(2, 0)};
-  double locmax[3] = {XAABB(0, 1), XAABB(1, 1), XAABB(2, 1)};
+  std::array<double, 3> locmax = {XAABB(0, 1), XAABB(1, 1), XAABB(2, 1)};
   // global bounding box over all procs
   double globmin[3];
-  double globmax[3];
+  std::array<double, 3> globmax{};
   // do the necessary communication
   Core::Communication::min_all(locmin, globmin, 3, discret.get_comm());
-  Core::Communication::max_all(locmax, globmax, 3, discret.get_comm());
+  globmax = Core::Communication::max_all(locmax, discret.get_comm());
 
   // set global XAABB for discret
   for (int dim = 0; dim < 3; ++dim)
@@ -1734,8 +1735,8 @@ void Core::Binstrategy::BinningStrategy::
   if (set_bin_size_lower_bound_)
   {
     double globmax_set_bin_size_lower_bound = 0.0;
-    Core::Communication::max_all(
-        &locmax_set_bin_size_lower_bound, &globmax_set_bin_size_lower_bound, 1, discret.get_comm());
+    globmax_set_bin_size_lower_bound =
+        Core::Communication::max_all(locmax_set_bin_size_lower_bound, discret.get_comm());
     // this is necessary if more than one discret is relevant
     bin_size_lower_bound_ = std::max(globmax_set_bin_size_lower_bound, bin_size_lower_bound_);
   }

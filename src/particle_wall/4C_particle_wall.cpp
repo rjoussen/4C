@@ -224,8 +224,8 @@ void PARTICLEWALL::WallHandlerBase::get_max_wall_position_increment(
       FOUR_C_THROW("a wall node traveled more than one bin on this processor!");
 
     // get maximum position increment on all processors
-    Core::Communication::max_all(
-        &maxpositionincrement, &allprocmaxpositionincrement, 1, walldiscretization_->get_comm());
+    allprocmaxpositionincrement =
+        Core::Communication::max_all(maxpositionincrement, walldiscretization_->get_comm());
   }
 }
 

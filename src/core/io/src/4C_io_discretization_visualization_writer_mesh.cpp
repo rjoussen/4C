@@ -117,8 +117,7 @@ namespace Core::IO
         ((not noderowmap_last_geometry_set_->same_as(*discretization_->node_row_map())) or
             (not nodecolmap_last_geometry_set_->same_as(*discretization_->node_col_map())));
     int map_changed_allproc(0);
-    Core::Communication::max_all(
-        &map_changed, &map_changed_allproc, 1, discretization_->get_comm());
+    map_changed_allproc = Core::Communication::max_all(map_changed, discretization_->get_comm());
 
     // reset geometry of visualization writer
     if (map_changed_allproc) set_geometry_from_discretization();

@@ -68,7 +68,7 @@ void Core::LinearSolver::Parameters::compute_solver_parameters(
     // communicate data to procs without row element
     std::array<int, 2> ldata{numdf, dimns};
     std::array<int, 2> gdata{0, 0};
-    Core::Communication::max_all(ldata.data(), gdata.data(), ldata.size(), dis.get_comm());
+    gdata = Core::Communication::max_all(ldata, dis.get_comm());
     numdf = gdata[0];
     dimns = gdata[1];
 

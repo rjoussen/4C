@@ -3477,8 +3477,8 @@ bool FLD::XFluid::x_timint_changed_dofsets(Core::FE::Discretization& dis,  ///< 
   int changed_dofsets_glob_max = 0;
 
   // check if at least one proc has changed dofsets? (maximum or sum of counts > 0)
-  Core::Communication::max_all(
-      &changed_dofsets_proc_count, &changed_dofsets_glob_max, 1, dis.get_comm());
+  changed_dofsets_glob_max =
+      Core::Communication::max_all(changed_dofsets_proc_count, dis.get_comm());
   const bool changed_dofsets_glob = (changed_dofsets_glob_max > 0);
 
   return changed_dofsets_glob;

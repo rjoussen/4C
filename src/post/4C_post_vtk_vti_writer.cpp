@@ -16,6 +16,7 @@
 #include "4C_post_common.hpp"
 #include "4C_utils_exceptions.hpp"
 
+#include <array>
 #include <sstream>
 
 FOUR_C_NAMESPACE_OPEN
@@ -403,7 +404,8 @@ void PostVtiWriter::writer_prep_timestep()
   }
 
   // determine local and global domain size
-  double lorigin[3], lextent[3], gorigin[3], gextent[3];
+  double lorigin[3], gorigin[3];
+  std::array<double, 3> lextent{}, gextent{};
   for (int i = 0; i < 3; ++i)
   {
     lorigin[i] = *collected_coords[i].begin();
@@ -411,8 +413,7 @@ void PostVtiWriter::writer_prep_timestep()
   }
   Core::Communication::min_all(
       lorigin, gorigin, sizeof(lorigin) / sizeof(lorigin[0]), field_->discretization()->get_comm());
-  Core::Communication::max_all(
-      lextent, gextent, sizeof(lextent) / sizeof(lextent[0]), field_->discretization()->get_comm());
+  gextent = Core::Communication::max_all(lextent, field_->discretization()->get_comm());
 
   // determine spacing and check whether it is consistent for ImageData
   for (int i = 0; i < 3; ++i)

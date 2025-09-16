@@ -297,7 +297,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
     {
       double max;
 
-      Core::Communication::max_all(&((*boundingbox_)(1, row)), &max, 1, discret_->get_comm());
+      max = Core::Communication::max_all(((*boundingbox_)(1, row)), discret_->get_comm());
       (*boundingbox_)(1, row) = max;
     }
 
@@ -649,7 +649,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
     {
       double max;
 
-      Core::Communication::max_all(&((*boundingbox_)(1, row)), &max, 1, discret_->get_comm());
+      max = Core::Communication::max_all(((*boundingbox_)(1, row)), discret_->get_comm());
       (*boundingbox_)(1, row) = max;
     }
   }

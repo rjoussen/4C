@@ -430,7 +430,7 @@ void PoroPressureBased::PorofluidElastScatraMonolithicAlgorithm::evaluate(
 
   // *********** time measurement ***********
   double mydtele = timernewton_.wallTime() - dtcpu;
-  Core::Communication::max_all(&mydtele, &dtele_, 1, get_comm());
+  dtele_ = Core::Communication::max_all(mydtele, get_comm());
   // *********** time measurement ***********
 }
 
@@ -823,7 +823,7 @@ void PoroPressureBased::PorofluidElastScatraMonolithicAlgorithm::linear_solve()
 
   // *********** time measurement ***********
   double mydtsolve = timernewton_.wallTime() - dtcpu;
-  Core::Communication::max_all(&mydtsolve, &dtsolve_, 1, get_comm());
+  dtsolve_ = Core::Communication::max_all(mydtsolve, get_comm());
   // *********** time measurement ***********
 }
 

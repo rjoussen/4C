@@ -2419,8 +2419,8 @@ void TSI::Monolithic::calculate_necking_tsi_results()
   std::vector<int> one_dof_in_dbc_global(1);
   one_dof_in_dbc_global.at(0) = -1;
 
-  Core::Communication::max_all(&one_dof_in_dbc.at(0), &one_dof_in_dbc_global.at(0), 1,
-      structure_field()->discretization()->get_comm());
+  one_dof_in_dbc_global.at(0) = Core::Communication::max_all(
+      one_dof_in_dbc.at(0), structure_field()->discretization()->get_comm());
 
   // extract axial displacements (here z-displacements) of top surface
   if (structure_field()->discretization()->dof_row_map()->my_gid(one_dof_in_dbc_global.at(0)))

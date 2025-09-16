@@ -4226,7 +4226,7 @@ void FLD::FluidImplicitTimeInt::set_initial_flow_field(
       // the noise is proportional to the bulk mean velocity of the
       // undisturbed initial field (=2/3*maximum velocity)
       mybmvel = (2.0 / 3.0) * mybmvel;
-      Core::Communication::max_all(&mybmvel, &bmvel, 1, discret_->get_comm());
+      bmvel = Core::Communication::max_all(mybmvel, discret_->get_comm());
 
       // loop all nodes on the processor
       for (int lnodeid = 0; lnodeid < discret_->num_my_row_nodes(); ++lnodeid)

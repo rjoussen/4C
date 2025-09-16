@@ -721,7 +721,7 @@ void PARTICLEENGINE::ParticleEngine::relate_all_particles_to_all_procs(
 
   // get maximum global id on all processors
   int allprocmaxglobalid(0);
-  Core::Communication::max_all(&thisprocmaxglobalid, &allprocmaxglobalid, 1, comm_);
+  allprocmaxglobalid = Core::Communication::max_all(thisprocmaxglobalid, comm_);
 
   // resize to hold all particles
   const int vecsize = allprocmaxglobalid + 1;

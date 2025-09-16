@@ -279,7 +279,7 @@ void STI::Algorithm::time_loop()
     // determine time spent by nonlinear solver and take maximum over all processors via
     // communication
     double mydtnonlinsolve(timer_->wallTime() - time), dtnonlinsolve(0.);
-    Core::Communication::max_all(&mydtnonlinsolve, &dtnonlinsolve, 1, get_comm());
+    dtnonlinsolve = Core::Communication::max_all(mydtnonlinsolve, get_comm());
 
     // output performance statistics associated with nonlinear solver into *.csv file if applicable
     if (fieldparameters_->get<bool>("OUTPUTNONLINSOLVERSTATS"))

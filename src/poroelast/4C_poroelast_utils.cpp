@@ -138,7 +138,7 @@ std::shared_ptr<Core::LinAlg::MapExtractor> PoroElast::Utils::build_poro_splitte
 
   // Was at least one PoroP1 found on one processor?
   int glonumporop1 = 0;
-  Core::Communication::max_all(&locporop1, &glonumporop1, 1, dis.get_comm());
+  glonumporop1 = Core::Communication::max_all(locporop1, dis.get_comm());
   // Yes, it was. Go ahead for all processors (even if they do not carry any PoroP1 elements)
   if (glonumporop1 > 0)
   {

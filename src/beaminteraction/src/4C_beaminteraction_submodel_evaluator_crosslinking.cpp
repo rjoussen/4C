@@ -184,7 +184,7 @@ bool BeamInteraction::SubmodelEvaluator::Crosslinking::post_partition_problem()
   int loc_newlinks = static_cast<int>(newlinker.size() > 0);
   // global flag
   int g_newlinks = 0;
-  Core::Communication::max_all(&loc_newlinks, &g_newlinks, 1, bin_discret().get_comm());
+  g_newlinks = Core::Communication::max_all(loc_newlinks, bin_discret().get_comm());
 
   newlinker.clear();
 
