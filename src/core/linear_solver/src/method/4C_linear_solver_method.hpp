@@ -10,8 +10,8 @@
 
 #include "4C_config.hpp"
 
-#include "4C_linalg_krylov_projector.hpp"
 #include "4C_linalg_sparseoperator.hpp"
+#include "4C_linear_solver_method_projector.hpp"
 #include "4C_utils_exceptions.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -86,7 +86,7 @@ namespace Core::LinearSolver
     virtual void setup(std::shared_ptr<Core::LinAlg::SparseOperator> A,
         std::shared_ptr<Core::LinAlg::MultiVector<double>> x,
         std::shared_ptr<Core::LinAlg::MultiVector<double>> b, const bool refactor, const bool reset,
-        std::shared_ptr<Core::LinAlg::KrylovProjector> projector) = 0;
+        std::shared_ptr<Core::LinAlg::LinearSystemProjector> projector) = 0;
 
     virtual int solve() = 0;
 

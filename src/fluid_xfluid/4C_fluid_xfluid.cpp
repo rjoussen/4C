@@ -2476,7 +2476,7 @@ void FLD::XFluid::solve()
 
     // remove contributions of pressure mode
     // that would not vanish due to the projection
-    if (projector_ != nullptr) projector_->apply_pt(*state_->residual());
+    if (projector_ != nullptr) *state_->residual() = projector_->to_reduced(*state_->residual());
 
     if (convergence_check(itnum, itemax_, velrestol, velinctol, presrestol, presinctol)) break;
 

@@ -1558,7 +1558,7 @@ int Solid::TimIntImpl::newton_full()
 
     // cancel in residual those forces that would excite rigid body modes and
     // that thus vanish in the Krylov space projection
-    if (projector_ != nullptr) projector_->apply_pt(*fres_);
+    if (projector_ != nullptr) *fres_ = projector_->to_reduced(*fres_);
 
     // decide which norms have to be evaluated
     bool bPressure = pressure_ != nullptr;
@@ -1940,7 +1940,7 @@ int Solid::TimIntImpl::newton_ls()
 
     // cancel in residual those forces that would excite rigid body modes and
     // that thus vanish in the Krylov space projection
-    if (projector_ != nullptr) projector_->apply_pt(*fres_);
+    if (projector_ != nullptr) *fres_ = projector_->to_reduced(*fres_);
 
     /**************************************************************
     ***           merit function (current iteration)            ***
@@ -2179,7 +2179,7 @@ void Solid::TimIntImpl::ls_update_structural_rh_sand_stiff(bool& isexcept, doubl
 
   // cancel in residual those forces that would excite rigid body modes and
   // that thus vanish in the Krylov space projection
-  if (projector_ != nullptr) projector_->apply_pt(*fres_);
+  if (projector_ != nullptr) *fres_ = projector_->to_reduced(*fres_);
 
   /**************************************************************
   ***          merit function (current iteration)             ***

@@ -13,6 +13,7 @@
 #include "4C_io_pstream.hpp"
 #include "4C_linalg_sparseoperator.hpp"
 #include "4C_linalg_vector.hpp"
+#include "4C_linear_solver_method_projector.hpp"
 #include "4C_utils_exceptions.hpp"
 
 #include <Teuchos_ParameterList.hpp>
@@ -48,7 +49,7 @@ namespace Core::LinAlg
     bool reset = false;
 
     //! Krylov space projector
-    std::shared_ptr<Core::LinAlg::KrylovProjector> projector = nullptr;
+    std::shared_ptr<Core::LinAlg::LinearSystemProjector> projector = nullptr;
 
     //! for adaptivity of the tolerance: tolerance of the nonlinear solver
     double nonlin_tolerance = {};

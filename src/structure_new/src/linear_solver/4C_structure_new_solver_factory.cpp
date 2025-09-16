@@ -16,10 +16,12 @@
 #include "4C_global_data.hpp"
 #include "4C_inpar_cardiovascular0d.hpp"
 #include "4C_inpar_structure.hpp"
+#include "4C_linalg_krylov_projector.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linear_solver_method.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
 #include "4C_linear_solver_method_parameters.hpp"
+#include "4C_linear_solver_method_projector.hpp"
 #include "4C_utils_enum.hpp"
 
 #include <Teuchos_ParameterList.hpp>
@@ -106,7 +108,7 @@ std::shared_ptr<Core::LinAlg::Solver> Solid::SOLVER::Factory::build_structure_li
 
 
   // setup Krylov projection if necessary
-  std::shared_ptr<Core::LinAlg::KrylovProjector> projector = nullptr;
+  std::shared_ptr<Core::LinAlg::LinearSystemProjector> projector = nullptr;
   {
     // Matrix might be singular, e.g. when solid is not fully supported in a static simulation.
     // In this case, we need a basis vector for the nullspace/kernel.
@@ -155,14 +157,15 @@ std::shared_ptr<Core::LinAlg::Solver> Solid::SOLVER::Factory::build_structure_li
 
         const std::string* weighttype = &kspcond->parameters().get<std::string>("WEIGHTVECDEF");
 
-        projector = std::make_shared<Core::LinAlg::KrylovProjector>(
+        auto krylov_projector = std::make_shared<Core::LinAlg::KrylovProjector>(
             activemodeids, weighttype, actdis.dof_row_map());
-        weighttype = projector->weight_type();
+        weighttype = krylov_projector->weight_type();
 
         if (*weighttype == "integration")
           FOUR_C_THROW("Krylov projection can currently only be done pointwise.");
 
-        std::shared_ptr<Core::LinAlg::MultiVector<double>> c = projector->get_non_const_kernel();
+        std::shared_ptr<Core::LinAlg::MultiVector<double>> c =
+            krylov_projector->get_non_const_kernel();
         c->PutScalar(0.0);
 
         Core::LinAlg::Map nullspace_map(*actdis.dof_row_map());
@@ -174,14 +177,12 @@ std::shared_ptr<Core::LinAlg::Solver> Solid::SOLVER::Factory::build_structure_li
           Core::Elements::Element* dwele = actdis.l_row_element(0);
           dwele->element_type().nodal_block_information(dwele, numdof, dimns);
         }
-
         std::shared_ptr<Core::LinAlg::MultiVector<double>> nullspace =
             Core::FE::compute_null_space(actdis, numdof, dimns, nullspace_map);
-
         if (nullspace == nullptr) FOUR_C_THROW("Nullspace could not be computed successfully.");
 
         // sort vector of nullspace data into kernel vector c_
-        std::vector<int> mode_ids = projector->modes();
+        std::vector<int> mode_ids = krylov_projector->modes();
 
         for (size_t i = 0; i < Teuchos::as<size_t>(mode_ids.size()); i++)
         {
@@ -193,8 +194,8 @@ std::shared_ptr<Core::LinAlg::Solver> Solid::SOLVER::Factory::build_structure_li
             ci.get_values()[j] = ni.get_values()[j];
           }
         }
-
-        projector->fill_complete();
+        krylov_projector->fill_complete();
+        projector = std::move(krylov_projector);
       }
     }
     else if (numsolid == 0)

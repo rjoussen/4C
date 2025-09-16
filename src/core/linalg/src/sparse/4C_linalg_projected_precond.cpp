@@ -9,6 +9,7 @@
 
 #include "4C_linalg_krylov_projector.hpp"
 #include "4C_linalg_vector.hpp"
+#include "4C_linear_solver_method_projector.hpp"
 #include "4C_utils_exceptions.hpp"
 
 
@@ -18,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
                           Constructor
    -------------------------------------------------------------------- */
 Core::LinAlg::LinalgPrecondOperator::LinalgPrecondOperator(std::shared_ptr<Epetra_Operator> precond,
-    bool project, std::shared_ptr<Core::LinAlg::KrylovProjector> projector)
+    bool project, std::shared_ptr<Core::LinAlg::LinearSystemProjector> projector)
     : project_(project), precond_(precond), projector_(projector)
 {
   if (project_ && (projector == nullptr))
@@ -44,7 +45,11 @@ int Core::LinAlg::LinalgPrecondOperator::ApplyInverse(
   if (project_)
   {
     View Y_view(Y);
-    projector_->apply_p(Y_view);
+
+    FOUR_C_ASSERT_ALWAYS(Y.NumVectors() == 1,
+        "Expecting only one solution vector during projector call! Got {} vectors.",
+        Y.NumVectors());
+    Y_view.underlying()(0) = projector_->to_full(Y_view.underlying()(0));
   }
 
   return (ierr);

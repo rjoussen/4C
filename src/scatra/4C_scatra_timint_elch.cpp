@@ -1953,7 +1953,7 @@ void ScaTra::ScaTraTimIntElch::calc_initial_potential_field()
     strategy_->condense_mat_and_rhs(sysmat_, residual_);
 
     // project residual, such that only part orthogonal to nullspace is considered
-    if (projector_ != nullptr) projector_->apply_pt(*residual_);
+    if (projector_ != nullptr) *residual_ = projector_->to_reduced(*residual_);
 
     // apply actual Dirichlet boundary conditions to system of equations
     Core::LinAlg::apply_dirichlet_to_system(

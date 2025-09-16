@@ -2954,7 +2954,7 @@ void ScaTra::ScaTraTimIntImpl::nonlinear_solve()
     if (fdcheck_ == Inpar::ScaTra::fdcheck_global) fd_check();
 
     // project residual such that only part orthogonal to nullspace is considered
-    if (projector_ != nullptr) projector_->apply_pt(*residual_);
+    if (projector_ != nullptr) *residual_ = projector_->to_reduced(*residual_);
 
     // Apply Dirichlet boundary conditions to system of equations
     // residual values are supposed to be zero at Dirichlet boundaries

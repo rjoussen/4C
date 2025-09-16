@@ -514,7 +514,7 @@ void FLD::Meshtying::apply_pt_to_residual(Core::LinAlg::SparseOperator& sysmat,
   split_vector_based_on3x3(residual, *res);
 
   // apply projector
-  projector.apply_pt(*res);
+  *res = projector.to_reduced(*res);
 
   // export residual back to original vector
   Core::LinAlg::export_to(*res, residual);
