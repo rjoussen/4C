@@ -161,16 +161,17 @@ PoroPressureBased::setup_discretizations_and_field_coupling_porofluid_elast_scat
     const std::string& scatra_disname, int& ndsporo_disp, int& ndsporo_vel,
     int& ndsporo_solidpressure, int& ndsporofluid_scatra, const bool artery_coupl)
 {
-  // Scheme   : the structure discretization is received from the input.
-  //            Then, a poro fluid disc. is cloned.
-  //            Then, a scatra disc. is cloned.
+  // Discretization initialization scheme:
+  // 1. Structural discretization - provided as input
+  // 2. Poro-fluid discretization - cloned from structural discretization
+  // 3. Scatra discretization - cloned from structural discretization
+  //
+  // For artery-coupled simulations:
+  // 4. Artery discretization - provided as input
+  // 5. Artery-scatra discretization - cloned from artery discretization
 
-  // If artery coupling is present:
-  // artery_scatra discretization is cloned from artery discretization
-
-  std::map<int, std::set<int>> nearby_ele_pairs =
-      PoroPressureBased::setup_discretizations_and_field_coupling_porofluid_elast(
-          comm, struct_disname, fluid_disname, ndsporo_disp, ndsporo_vel, ndsporo_solidpressure);
+  setup_discretizations_and_field_coupling_porofluid_elast(
+      struct_disname, fluid_disname, ndsporo_disp, ndsporo_vel, ndsporo_solidpressure);
 
   Global::Problem* problem = Global::Problem::instance();
 
@@ -208,8 +209,11 @@ PoroPressureBased::setup_discretizations_and_field_coupling_porofluid_elast_scat
   fluiddis->fill_complete(true, false, false);
   scatradis->fill_complete(true, false, false);
 
+  std::map<int, std::set<int>> nearby_ele_pairs;
   if (artery_coupl)
   {
+    nearby_ele_pairs = setup_discretizations_and_field_coupling_artery(struct_disname);
+
     std::shared_ptr<Core::FE::Discretization> artdis = problem->get_dis("artery");
     std::shared_ptr<Core::FE::Discretization> artscatradis = problem->get_dis("artery_scatra");
 

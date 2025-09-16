@@ -47,9 +47,15 @@ void porofluid_elast_dyn(int restart)
   int nds_solidpressure(-1);
 
   // Setup discretizations and coupling. Assign the dof sets and return the numbers
-  std::map<int, std::set<int>> nearby_ele_pairs =
-      PoroPressureBased::setup_discretizations_and_field_coupling_porofluid_elast(
-          comm, struct_disname, fluid_disname, nds_disp, nds_vel, nds_solidpressure);
+  PoroPressureBased::setup_discretizations_and_field_coupling_porofluid_elast(
+      struct_disname, fluid_disname, nds_disp, nds_vel, nds_solidpressure);
+
+  std::map<int, std::set<int>> nearby_ele_pairs;
+  if (Global::Problem::instance()->does_exist_dis("artery"))
+  {
+    nearby_ele_pairs =
+        PoroPressureBased::setup_discretizations_and_field_coupling_artery(struct_disname);
+  }
 
   // Parameter reading
   const Teuchos::ParameterList& poroparams = problem->poro_multi_phase_dynamic_params();
