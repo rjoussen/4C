@@ -231,8 +231,8 @@ void Solid::ModelEvaluator::BeamInteraction::setup()
   if (not Global::Problem::instance()->restart()) post_setup_submodels();
 
   // some screen output
-  Core::Rebalance::Utils::print_parallel_distribution(*ia_discret_);
-  Core::Rebalance::Utils::print_parallel_distribution(*bindis_);
+  Core::Rebalance::print_parallel_distribution(*ia_discret_);
+  Core::Rebalance::print_parallel_distribution(*bindis_);
 
   issetup_ = true;
 }

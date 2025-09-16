@@ -247,7 +247,7 @@ void redistribute(const std::vector<int>& rank_to_hold_condition,
     std::cout << "\nparallel redistributed discretization due to point coupling condition(s)"
               << std::endl;
 
-  Core::Rebalance::Utils::print_parallel_distribution(discret);
+  Core::Rebalance::print_parallel_distribution(discret);
 }
 
 FOUR_C_NAMESPACE_CLOSE

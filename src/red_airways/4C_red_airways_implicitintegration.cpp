@@ -128,7 +128,7 @@ Airway::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(
 
     // fill and inform user (not fully overlapping anymore at this point
     discret_->fill_complete();
-    Core::Rebalance::Utils::print_parallel_distribution(*discret_);
+    Core::Rebalance::print_parallel_distribution(*discret_);
 
     // Neighbouring acinus
     airway_acinus_dep_ = Core::LinAlg::create_vector(*discret_->element_col_map(), true);

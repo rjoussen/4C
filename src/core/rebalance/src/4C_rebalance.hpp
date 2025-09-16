@@ -10,7 +10,20 @@
 
 #include "4C_config.hpp"
 
+#include <mpi.h>
+#include <Teuchos_ParameterList.hpp>
+
 FOUR_C_NAMESPACE_OPEN
+
+namespace Core::FE
+{
+  class Discretization;
+}
+
+namespace Core::LinAlg
+{
+  class Map;
+}
 
 namespace Core::Rebalance
 {
@@ -24,7 +37,41 @@ namespace Core::Rebalance
     monolithic  //< hypergraph based partitioning by using a global monolithic graph constructed
                 // via a global collision search
   };
-}
+
+
+  /**
+   * Additional parameters that govern the rebalancing process.
+   */
+  struct RebalanceParameters
+  {
+    /**
+     * How to partition then mesh among processes.
+     */
+    Teuchos::ParameterList mesh_partitioning_parameters;
+
+    /**
+     * Geometric search parameters for certain partitioning methods.
+     */
+    Teuchos::ParameterList geometric_search_parameters;
+
+    /**
+     * General verbosity settings and I/O parameters.
+     */
+    Teuchos::ParameterList io_parameters;
+  };
+
+
+  /**
+   * @brief Rebalance a discretization.
+   *
+   * The @p discretization is expected to have its elements distributed according to the @p
+   * row_elements. This function will compute a new distribution of the elements and nodes of the
+   * discretization according to the rebalancing parameters specified in @p parameters.
+   * This is a collective call over all ranks in @p comm.
+   */
+  void rebalance_discretization(Core::FE::Discretization& discretization,
+      const Core::LinAlg::Map& row_elements, const RebalanceParameters& parameters, MPI_Comm comm);
+}  // namespace Core::Rebalance
 
 FOUR_C_NAMESPACE_CLOSE
 

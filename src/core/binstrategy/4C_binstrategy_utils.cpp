@@ -57,7 +57,7 @@ namespace Core::Binstrategy::Utils
     // print distribution after standard ghosting
     if (Core::Communication::my_mpi_rank(discret.get_comm()) == 0)
       std::cout << "parallel distribution with extended ghosting" << std::endl;
-    Core::Rebalance::Utils::print_parallel_distribution(discret);
+    Core::Rebalance::print_parallel_distribution(discret);
 #endif
 
     return;

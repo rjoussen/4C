@@ -270,7 +270,7 @@ std::map<int, std::set<int>> PoroPressureBased::extended_ghosting_artery_discret
 
   // fill and inform user
   artdis->fill_complete();
-  Core::Rebalance::Utils::print_parallel_distribution(*artdis);
+  Core::Rebalance::print_parallel_distribution(*artdis);
 
   // user output
   if (Core::Communication::my_mpi_rank(contdis.get_comm()) == 0)
