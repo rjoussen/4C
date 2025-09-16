@@ -1076,6 +1076,7 @@ four_c_test(TEST_FILE porofluid_pressure_based_3D_tet10.4C.yaml NP 2 RESTART_STE
 four_c_test(TEST_FILE porofluid_pressure_based_3D_tet4.4C.yaml NP 2 RESTART_STEP 14)
 four_c_test(TEST_FILE porofluid_pressure_based_elast_2D_quad4_3_fluids_2_volfrac_mono_FD.4C.yaml)
 four_c_test(TEST_FILE porofluid_pressure_based_elast_2D_quad4_linebased_artery_coupling_mono_MP.4C.yaml)
+four_c_test(TEST_FILE porofluid_pressure_based_elast_2D_quad4_linebased_artery_coupling_mono_MP_teko.4C.yaml)
 four_c_test(TEST_FILE porofluid_pressure_based_elast_2D_quad4_mono.4C.yaml NP 2 RESTART_STEP 4)
 four_c_test(TEST_FILE porofluid_pressure_based_elast_2D_quad4_mono_FD.4C.yaml)
 four_c_test(TEST_FILE porofluid_pressure_based_elast_2D_quad4_part.4C.yaml NP 2 RESTART_STEP 4)
