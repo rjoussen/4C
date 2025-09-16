@@ -1715,13 +1715,13 @@ void Core::Binstrategy::BinningStrategy::
   }
 
   // local bounding box on each proc
-  double locmin[3] = {XAABB(0, 0), XAABB(1, 0), XAABB(2, 0)};
+  std::array<double, 3> locmin = {XAABB(0, 0), XAABB(1, 0), XAABB(2, 0)};
   std::array<double, 3> locmax = {XAABB(0, 1), XAABB(1, 1), XAABB(2, 1)};
   // global bounding box over all procs
-  double globmin[3];
+  std::array<double, 3> globmin{};
   std::array<double, 3> globmax{};
   // do the necessary communication
-  Core::Communication::min_all(locmin, globmin, 3, discret.get_comm());
+  globmin = Core::Communication::min_all(locmin, discret.get_comm());
   globmax = Core::Communication::max_all(locmax, discret.get_comm());
 
   // set global XAABB for discret

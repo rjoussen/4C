@@ -597,7 +597,7 @@ void ScaTra::LevelSetAlgorithm::reinit_geo(
       }
       globalmins.resize(planenormal.size());
       globalmaxs.resize(planenormal.size());
-      Core::Communication::min_all(&min, &(globalmins.back()), 1, discret_->get_comm());
+      (globalmins.back()) = Core::Communication::min_all(min, discret_->get_comm());
       (globalmaxs.back()) = Core::Communication::max_all(max, discret_->get_comm());
     }
   }  // end loop over all surfacepbcs

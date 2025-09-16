@@ -1530,8 +1530,8 @@ void EnsightWriter::write_dof_result_step(std::ofstream& file, PostResult& resul
   int min_gid_glob_datamap = std::numeric_limits<int>::max();
   int min_gid_glob_dofrowmap = std::numeric_limits<int>::max();
 
-  Core::Communication::min_all(&min_gid_my_datamap, &min_gid_glob_datamap, 1, dis->get_comm());
-  Core::Communication::min_all(&min_gid_my_dofrowmap, &min_gid_glob_dofrowmap, 1, dis->get_comm());
+  min_gid_glob_datamap = Core::Communication::min_all(min_gid_my_datamap, dis->get_comm());
+  min_gid_glob_dofrowmap = Core::Communication::min_all(min_gid_my_dofrowmap, dis->get_comm());
 
   // get offset in dofs
   const int offset = min_gid_glob_datamap - min_gid_glob_dofrowmap;

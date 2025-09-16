@@ -636,7 +636,7 @@ bool PARTICLEENGINE::ParticleEngine::have_valid_particle_connectivity() const
 
   // check among all processors
   int globalcheck = 0;
-  Core::Communication::min_all(&localcheck, &globalcheck, 1, comm_);
+  globalcheck = Core::Communication::min_all(localcheck, comm_);
 
   return globalcheck;
 }
@@ -647,7 +647,7 @@ bool PARTICLEENGINE::ParticleEngine::have_valid_particle_neighbors() const
 
   // check among all processors
   int globalcheck = 0;
-  Core::Communication::min_all(&localcheck, &globalcheck, 1, comm_);
+  globalcheck = Core::Communication::min_all(localcheck, comm_);
 
   return globalcheck;
 }

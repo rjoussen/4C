@@ -57,7 +57,7 @@ void Core::FE::Discretization::check_filled_globally()
   /*the global filled flag is set to the minimal value of any local filled flag
    * i.e. if on any processor filled_ == false, the flag globalfilled is set to
    * zero*/
-  Core::Communication::min_all(&localfilled, &globalfilled, 1, get_comm());
+  globalfilled = Core::Communication::min_all(localfilled, get_comm());
 
   // if not Filled() == true on all the processors call reset()
   if (!globalfilled) reset();

@@ -288,7 +288,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
     {
       double min;
 
-      Core::Communication::min_all(&((*boundingbox_)(0, row)), &min, 1, discret_->get_comm());
+      min = Core::Communication::min_all(((*boundingbox_)(0, row)), discret_->get_comm());
       (*boundingbox_)(0, row) = min;
     }
 
@@ -640,7 +640,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
     {
       double min;
 
-      Core::Communication::min_all(&((*boundingbox_)(0, row)), &min, 1, discret_->get_comm());
+      min = Core::Communication::min_all(((*boundingbox_)(0, row)), discret_->get_comm());
       (*boundingbox_)(0, row) = min;
     }
 

@@ -129,7 +129,7 @@ bool Coupling::Adapter::MatrixLogicalSplitAndTransform::operator()(
       }
 
     int gsubset = 0;
-    Core::Communication::min_all(&subset, &gsubset, 1, logical_range_map.get_comm());
+    gsubset = Core::Communication::min_all(subset, logical_range_map.get_comm());
 
     // need communication -> call import on permuted map
     if (!gsubset)

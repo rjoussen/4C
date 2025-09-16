@@ -58,7 +58,7 @@ namespace Constraints
       int lmin = dofrowmap_->min_my_gid();
       if (dofrowmap_->num_my_elements() == 0) lmin = std::numeric_limits<int>::max();
       int gmin = std::numeric_limits<int>::max();
-      Core::Communication::min_all(&lmin, &gmin, 1, dofrowmap_->get_comm());
+      gmin = Core::Communication::min_all(lmin, dofrowmap_->get_comm());
       return gmin;
     };
 

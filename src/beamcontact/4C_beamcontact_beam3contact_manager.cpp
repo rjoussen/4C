@@ -2002,12 +2002,12 @@ void CONTACT::Beam3cmanager::update_constr_norm()
   maxallgap_cp = Core::Communication::max_all(maxgap_cp, get_comm());
   maxallgap_gp = Core::Communication::max_all(maxgap_gp, get_comm());
   maxallgap_ep = Core::Communication::max_all(maxgap_ep, get_comm());
-  Core::Communication::min_all(&mingap, &minallgap, 1, get_comm());
-  Core::Communication::min_all(&mingap_cp, &minallgap_cp, 1, get_comm());
-  Core::Communication::min_all(&mingap_gp, &minallgap_gp, 1, get_comm());
-  Core::Communication::min_all(&mingap_ep, &minallgap_ep, 1, get_comm());
+  minallgap = Core::Communication::min_all(mingap, get_comm());
+  minallgap_cp = Core::Communication::min_all(mingap_cp, get_comm());
+  minallgap_gp = Core::Communication::min_all(mingap_gp, get_comm());
+  minallgap_ep = Core::Communication::min_all(mingap_ep, get_comm());
   maxallrelgap = Core::Communication::max_all(maxrelgap, get_comm());
-  Core::Communication::min_all(&minrelgap, &minallrelgap, 1, get_comm());
+  minallrelgap = Core::Communication::min_all(minrelgap, get_comm());
 
   Core::Communication::sum_all(&proclocal_penaltyenergy, &totpenaltyenergy_, 1, get_comm());
 
@@ -2268,10 +2268,10 @@ void CONTACT::Beam3cmanager::console_output()
     int sumpro_numperpc_transitions = 0;
 
     sumpro_maxangle = Core::Communication::max_all(maxangle, get_comm());
-    Core::Communication::min_all(&minangle, &sumpro_minangle, 1, get_comm());
-    Core::Communication::min_all(&mincpgap, &sumpro_mincpgap, 1, get_comm());
-    Core::Communication::min_all(&mingpgap, &sumpro_mingpgap, 1, get_comm());
-    Core::Communication::min_all(&minepgap, &sumpro_minepgap, 1, get_comm());
+    sumpro_minangle = Core::Communication::min_all(minangle, get_comm());
+    sumpro_mincpgap = Core::Communication::min_all(mincpgap, get_comm());
+    sumpro_mingpgap = Core::Communication::min_all(mingpgap, get_comm());
+    sumpro_minepgap = Core::Communication::min_all(minepgap, get_comm());
     sumpro_maxcpgap = Core::Communication::max_all(maxcpgap, get_comm());
     sumpro_maxgpgap = Core::Communication::max_all(maxgpgap, get_comm());
     sumpro_maxepgap = Core::Communication::max_all(maxepgap, get_comm());

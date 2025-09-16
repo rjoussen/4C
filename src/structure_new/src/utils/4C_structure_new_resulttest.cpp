@@ -473,7 +473,7 @@ void Solid::ResultTest::test_node_on_geometry(const Core::IO::InputParameterCont
         result = Core::Communication::max_all(tmp_result, disc.get_comm());
         break;
       case TestOp::min:
-        Core::Communication::min_all(&tmp_result, &result, 1, disc.get_comm());
+        result = Core::Communication::min_all(tmp_result, disc.get_comm());
         break;
       default:
         break;

@@ -357,7 +357,7 @@ int Core::DOFSets::DofSet::assign_degrees_of_freedom(
 
     // communication to ensure that all procs know if an error occurred on certain procs
     int allononeproc_global;
-    Core::Communication::min_all(&allononeproc, &allononeproc_global, 1, dis.get_comm());
+    allononeproc_global = Core::Communication::min_all(allononeproc, dis.get_comm());
     if (allononeproc_global == 0)
     {
       throw NodalDistributionException(
