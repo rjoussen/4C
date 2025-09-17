@@ -17,6 +17,7 @@
 #include "4C_inpar_fluid.hpp"
 #include "4C_io_control.hpp"
 #include "4C_linalg_mapextractor.hpp"
+#include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
 #include "4C_linear_solver_method_parameters.hpp"
@@ -951,9 +952,12 @@ void FLD::Utils::project_gradient_and_set_param(Core::FE::Discretization& discre
 
   // store multi vector in parameter list after export to col layout
   if (projected_velgrad != nullptr)
-    discret.add_multi_vector_to_parameter_list(eleparams, paraname, projected_velgrad);
-
-  return;
+  {
+    auto tmp = std::make_shared<Core::LinAlg::MultiVector<double>>(
+        *discret.node_col_map(), projected_velgrad->NumVectors());
+    Core::LinAlg::export_to(*projected_velgrad, *tmp);
+    eleparams.set(paraname, tmp);
+  }
 }
 
 

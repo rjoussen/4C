@@ -1688,17 +1688,6 @@ namespace Core::FE
     void proc_zero_distribute_elements_to_all(Core::LinAlg::Map& target, std::vector<int>& gidlist);
 
     /*!
-    \brief Export the nodes from proc 0 to a different parallel row layout
-          (Filled()==true NOT prerequisite)
-
-    This routine is mainly useful for input read on proc 0
-
-    \param target (in): desired distribution of elements
-
-    */
-    void proc_zero_distribute_nodes_to_all(Core::LinAlg::Map& target);
-
-    /*!
     \brief Export the elements to a different parallel row layout
           (Filled()==true NOT prerequisite)
 
@@ -1907,23 +1896,6 @@ namespace Core::FE
      */
     bool has_state(const std::string& name) const { return has_state(0, name); }
 
-
-    /*!
-    \brief Export a node based Core::LinAlg::MultiVector<double> to column layout
-           and store it in the given ParameterList
-
-    Using this method, the node based vector is exported to column
-    layout and stored in the given ParameterList. The elements can access
-    this vector by using the name of that vector in the corresponding
-    ParameterList.
-
-    \param nds (in): ParameterList in which vector is stored
-    \param name (in): Name of data
-    \param state (in): vector of some data
-
-    */
-    void add_multi_vector_to_parameter_list(Teuchos::ParameterList& p, const std::string name,
-        std::shared_ptr<const Core::LinAlg::MultiVector<double>> vec);
 
     /*!
     \brief Call elements to evaluate

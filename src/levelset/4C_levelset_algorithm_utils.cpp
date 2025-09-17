@@ -44,6 +44,15 @@ void ScaTra::LevelSetAlgorithm::set_velocity_field(bool init)
 void ScaTra::LevelSetAlgorithm::add_problem_specific_parameters_and_vectors(
     Teuchos::ParameterList& params)
 {
+  const auto add_multi_vector =
+      [&](const std::string& name, std::shared_ptr<const Core::LinAlg::MultiVector<double>> vec)
+  {
+    auto tmp = std::make_shared<Core::LinAlg::MultiVector<double>>(
+        *discret_->node_col_map(), vec->NumVectors());
+    Core::LinAlg::export_to(*vec, *tmp);
+    params.set(name, tmp);
+  };
+
   // set only special parameters of the solution of the reinitialization equation
   // otherwise we take the standard parameters only
   if (switchreinit_)
@@ -65,14 +74,12 @@ void ScaTra::LevelSetAlgorithm::add_problem_specific_parameters_and_vectors(
 
       // add nodal velocity field, if required
       if (useprojectedreinitvel_ == Inpar::ScaTra::vel_reinit_node_based)
-        discret_->add_multi_vector_to_parameter_list(
-            params, "reinitialization velocity field", nb_grad_val_);
+        add_multi_vector("reinitialization velocity field", nb_grad_val_);
     }
     else if (reinitaction_ == Inpar::ScaTra::reinitaction_ellipticeq)
     {
       // add node-based gradient, if required
-      if (projection_ == true)
-        discret_->add_multi_vector_to_parameter_list(params, "gradphi", nb_grad_val_);
+      if (projection_ == true) add_multi_vector("gradphi", nb_grad_val_);
 
       // add interface integration cells
       params.set<std::shared_ptr<std::map<int, Core::Geo::BoundaryIntCells>>>(

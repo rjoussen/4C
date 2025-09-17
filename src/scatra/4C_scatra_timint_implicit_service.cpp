@@ -858,7 +858,11 @@ void ScaTra::ScaTraTimIntImpl::add_flux_approx_to_parameter_list(Teuchos::Parame
       fluxk->ReplaceMyValue(i, 1, ((*flux)(1))[(flux->get_map()).lid(dofgid)]);
       fluxk->ReplaceMyValue(i, 2, ((*flux)(2))[(flux->get_map()).lid(dofgid)]);
     }
-    discret_->add_multi_vector_to_parameter_list(p, name, fluxk);
+
+    auto tmp = std::make_shared<Core::LinAlg::MultiVector<double>>(
+        *discret_->node_col_map(), fluxk->NumVectors());
+    Core::LinAlg::export_to(*fluxk, *tmp);
+    p.set(name, tmp);
   }
 }
 
