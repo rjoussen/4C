@@ -31,7 +31,6 @@ void Core::FE::Discretization::reset(bool killdofs, bool killcond)
   elecolptr_.clear();
   noderowmap_ = nullptr;
   nodecolmap_ = nullptr;
-  noderowptr_.clear();
   nodecolptr_.clear();
 
   // delete all old geometries that are attached to any conditions
@@ -181,7 +180,7 @@ static void make_map_and_local_pointers(MPI_Comm comm,
 
 void Core::FE::Discretization::build_node_row_map()
 {
-  make_map_and_local_pointers(get_comm(), node_, noderowptr_, noderowmap_, /*local_only=*/true);
+  make_map_and_local_pointers(get_comm(), node_, nodecolptr_, noderowmap_, /*local_only=*/true);
 }
 
 void Core::FE::Discretization::build_node_col_map()
@@ -191,7 +190,7 @@ void Core::FE::Discretization::build_node_col_map()
   // Build an index into the nodecolptr_ data
 
   all_local_node_ids_.resize(nodecolptr_.size());
-  locally_owned_local_node_ids_.resize(noderowptr_.size());
+  locally_owned_local_node_ids_.resize(nodecolptr_.size());
 
   size_t count_locally_owned = 0;
   int my_rank = Core::Communication::my_mpi_rank(get_comm());
@@ -204,8 +203,7 @@ void Core::FE::Discretization::build_node_col_map()
       ++count_locally_owned;
     }
   }
-  FOUR_C_ASSERT(count_locally_owned == noderowptr_.size(),
-      "Internal error: counted {}, expected {}", count_locally_owned, noderowptr_.size());
+  locally_owned_local_node_ids_.resize(count_locally_owned);
 }
 
 

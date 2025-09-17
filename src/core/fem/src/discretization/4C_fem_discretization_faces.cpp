@@ -748,18 +748,16 @@ void Core::FE::DiscretizationFaces::build_faces(const bool verbose)
           int counter = 0;
           for (std::size_t kk = 0; kk < mymasternodeids.size(); kk++)
           {
-            std::vector<Core::Nodes::Node*>::iterator nofool;
-            for (nofool = noderowptr_.begin(); nofool != noderowptr_.end(); ++nofool)
+            for (auto node : my_row_node_range())
             {
-              if ((*nofool)->id() == mymasternodeids[kk]) counter++;
+              if (node.local_id() == mymasternodeids[kk]) counter++;
             }
           }
           for (std::size_t kk = 0; kk < myfurthermasternodeids.size(); kk++)
           {
-            std::vector<Core::Nodes::Node*>::iterator nofool;
-            for (nofool = noderowptr_.begin(); nofool != noderowptr_.end(); ++nofool)
+            for (auto node : my_row_node_range())
             {
-              if ((*nofool)->id() == myfurthermasternodeids[kk]) counter++;
+              if (node.local_id() == myfurthermasternodeids[kk]) counter++;
             }
           }
           if (counter == 0)

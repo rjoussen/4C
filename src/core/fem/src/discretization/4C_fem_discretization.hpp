@@ -1172,7 +1172,9 @@ namespace Core::FE
     [[nodiscard]] Core::Nodes::Node* l_row_node(int row_id) const
     {
       FOUR_C_ASSERT(filled(), "Discretization {} not filled", name_);
-      return noderowptr_[row_id];
+      FOUR_C_ASSERT(row_id >= 0 && row_id < static_cast<int>(locally_owned_local_node_ids_.size()),
+          "Row ID {} out of range.", row_id);
+      return nodecolptr_[locally_owned_local_node_ids_[row_id]];
     }
 
     /**
@@ -2467,9 +2469,6 @@ namespace Core::FE
 
     //! Distribution of nodes including ghost nodes
     std::shared_ptr<Core::LinAlg::Map> nodecolmap_;
-
-    //! Vector of pointers to row nodes for faster access
-    std::vector<Core::Nodes::Node*> noderowptr_;
 
     //! Vector of pointers to column nodes for faster access
     std::vector<Core::Nodes::Node*> nodecolptr_;

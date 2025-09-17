@@ -725,7 +725,7 @@ std::shared_ptr<std::vector<char>> Core::FE::Discretization::pack_my_nodes() con
 
   Core::Communication::PackBuffer buffer;
 
-  for (auto* node : noderowptr_) node->pack(buffer);
+  for (auto node : my_row_node_range()) node.user_node()->pack(buffer);
 
   auto block = std::make_shared<std::vector<char>>();
   std::swap(*block, buffer());
