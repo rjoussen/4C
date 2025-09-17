@@ -635,8 +635,8 @@ void Solid::ModelEvaluator::BrownianDyn::random_numbers_per_element()
   // results of each processor and store the maximal one in
   // maxrandnumelement_
   // -------------------------------------------------------------------------
-  Core::Communication::max_all(
-      &randomnumbersperlocalelement, &maxrandnumelement_, 1, discret_ptr()->get_comm());
+  maxrandnumelement_ =
+      Core::Communication::max_all(randomnumbersperlocalelement, discret_ptr()->get_comm());
 }
 
 /*----------------------------------------------------------------------------*

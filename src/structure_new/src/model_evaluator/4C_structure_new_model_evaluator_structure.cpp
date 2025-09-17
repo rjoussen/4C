@@ -109,10 +109,10 @@ void Solid::ModelEvaluator::Structure::setup()
           discretization->num_my_row_elements() - number_my_solid_elements;
       int number_global_solid_elements = 0;
       int number_global_beam_elements = 0;
-      Core::Communication::max_all(
-          &number_my_solid_elements, &number_global_solid_elements, 1, discretization->get_comm());
-      Core::Communication::max_all(
-          &number_my_beam_elements, &number_global_beam_elements, 1, discretization->get_comm());
+      number_global_solid_elements =
+          Core::Communication::max_all(number_my_solid_elements, discretization->get_comm());
+      number_global_beam_elements =
+          Core::Communication::max_all(number_my_beam_elements, discretization->get_comm());
 
       if (global_in_output().get_runtime_output_params()->output_structure() &&
           number_global_solid_elements > 0)

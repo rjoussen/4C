@@ -79,7 +79,7 @@ void ParticleInteraction::ParticleInteractionBase::
   // get maximum particle interaction distance
   double allprocmaxinteractiondistance = 0.0;
   double maxinteractiondistance = max_interaction_distance();
-  Core::Communication::max_all(&maxinteractiondistance, &allprocmaxinteractiondistance, 1, comm_);
+  allprocmaxinteractiondistance = Core::Communication::max_all(maxinteractiondistance, comm_);
 
   // bin size safety check
   if (allprocmaxinteractiondistance > particleengineinterface_->min_bin_size())

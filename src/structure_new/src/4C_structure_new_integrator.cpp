@@ -551,7 +551,7 @@ double Solid::Integrator::get_condensed_global_norm(
     }
     case ::NOX::Abstract::Vector::MaxNorm:
     {
-      Core::Communication::max_all(&mynorm, &gnorm, 1, gstate_ptr_->get_comm());
+      gnorm = Core::Communication::max_all(mynorm, gstate_ptr_->get_comm());
       break;
     }
   }

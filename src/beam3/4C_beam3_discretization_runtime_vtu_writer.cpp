@@ -1640,7 +1640,7 @@ int BeamDiscretizationRuntimeOutputWriter::get_global_number_of_gauss_points_per
 {
   int my_num_gp_signed = (int)my_num_gp;
   int global_num_gp = 0;
-  Core::Communication::max_all(&my_num_gp_signed, &global_num_gp, 1, discretization_->get_comm());
+  global_num_gp = Core::Communication::max_all(my_num_gp_signed, discretization_->get_comm());
 
   // Safety checks.
   if (my_num_gp_signed > 0 and my_num_gp_signed != global_num_gp)

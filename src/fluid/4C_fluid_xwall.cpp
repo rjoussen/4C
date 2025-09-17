@@ -460,7 +460,7 @@ void FLD::XWall::init_wall_dist()
       }
     }
 
-    Core::Communication::min_all(&mydist, &gdist, 1, discret_->get_comm());
+    gdist = Core::Communication::min_all(mydist, discret_->get_comm());
 
     // now write this value in the node based vector
     if (xwallrownodemap_->my_gid(xwallgid))

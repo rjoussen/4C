@@ -1009,16 +1009,16 @@ std::shared_ptr<Core::Binstrategy::BinningStrategy> Mortar::Interface::setup_bin
   }
 
   // local bounding box
-  double locmin[3] = {XAABB(0, 0), XAABB(1, 0), XAABB(2, 0)};
-  double locmax[3] = {XAABB(0, 1), XAABB(1, 1), XAABB(2, 1)};
+  std::array<double, 3> locmin = {XAABB(0, 0), XAABB(1, 0), XAABB(2, 0)};
+  std::array<double, 3> locmax = {XAABB(0, 1), XAABB(1, 1), XAABB(2, 1)};
 
   // global bounding box
-  double globmin[3];
-  double globmax[3];
+  std::array<double, 3> globmin{};
+  std::array<double, 3> globmax{};
 
   // do the necessary communication
-  Core::Communication::min_all(locmin, globmin, 3, get_comm());
-  Core::Communication::max_all(locmax, globmax, 3, get_comm());
+  globmin = Core::Communication::min_all(locmin, get_comm());
+  globmax = Core::Communication::max_all(locmax, get_comm());
 
   // compute cutoff radius:
   double global_slave_max_edge_size = -1.0;
@@ -1037,7 +1037,7 @@ std::shared_ptr<Core::Binstrategy::BinningStrategy> Mortar::Interface::setup_bin
   }
 
   double cutoff = -1.0;
-  Core::Communication::max_all(&global_slave_max_edge_size, &cutoff, 1, get_comm());
+  cutoff = Core::Communication::max_all(global_slave_max_edge_size, get_comm());
 
   // extend cutoff based on problem interface velocity
   // --> only for contact problems

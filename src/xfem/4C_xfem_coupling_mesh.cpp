@@ -1852,7 +1852,7 @@ void XFEM::MeshCouplingFSI::set_condition_specific_parameters()
       else
         FOUR_C_THROW("Element type != hex8, add it here!");
     }
-    Core::Communication::max_all(&hmax, &h_scaling_, 1, bg_dis_->get_comm());
+    h_scaling_ = Core::Communication::max_all(hmax, bg_dis_->get_comm());
     std::cout << "==| XFEM::MeshCouplingFSI: Computed h_scaling for fluidele is: " << h_scaling_
               << "(Proc: " << Core::Communication::my_mpi_rank(bg_dis_->get_comm())
               << ")! |==" << std::endl;

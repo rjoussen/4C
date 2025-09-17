@@ -293,7 +293,7 @@ void Arteries::ArtNetImplStationary::assemble_mat_and_rhs()
 
   // end time measurement for element
   double mydtele = Teuchos::Time::wallTime() - tcpuele;
-  Core::Communication::max_all(&mydtele, &dtele_, 1, discret_->get_comm());
+  dtele_ = Core::Communication::max_all(mydtele, discret_->get_comm());
 
 }  // ArtNetExplicitTimeInt::assemble_mat_and_rhs
 
@@ -326,7 +326,7 @@ void Arteries::ArtNetImplStationary::linear_solve()
 
   // end time measurement for solver
   double mydtsolve = Teuchos::Time::wallTime() - tcpusolve;
-  Core::Communication::max_all(&mydtsolve, &dtsolve_, 1, discret_->get_comm());
+  dtsolve_ = Core::Communication::max_all(mydtsolve, discret_->get_comm());
 
 }  // ArtNetImplStationary::linear_solve
 

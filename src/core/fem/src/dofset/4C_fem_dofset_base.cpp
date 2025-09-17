@@ -92,7 +92,7 @@ int Core::DOFSets::DofSetBase::max_gid_in_list(MPI_Comm comm) const
     }
   }
   int max;
-  Core::Communication::max_all(&count, &max, 1, comm);
+  max = Core::Communication::max_all(count, comm);
   return max;
 }
 

@@ -764,7 +764,7 @@ void ScaTra::TimIntHDG::fd_check()
       // check whether current column index is a valid global column index and continue loop if not
       int collid(sysmatcopy.col_map().lid(colgid));
       int maxcollid(-1);
-      Core::Communication::max_all(&collid, &maxcollid, 1, discret_->get_comm());
+      maxcollid = Core::Communication::max_all(collid, discret_->get_comm());
       if (maxcollid < 0) continue;
 
       strategy.zero();

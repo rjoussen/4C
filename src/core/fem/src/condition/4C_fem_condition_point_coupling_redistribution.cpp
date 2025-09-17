@@ -127,8 +127,8 @@ void put_all_slaves_to_masters_proc(
     }
     // communicate such that all processor know which one owns the master node
     int rank_with_master_id_global;
-    Core::Communication::max_all(
-        &rank_with_master_id, &rank_with_master_id_global, 1, discret.get_comm());
+    rank_with_master_id_global =
+        Core::Communication::max_all(rank_with_master_id, discret.get_comm());
     rank_to_hold_condition.push_back(rank_with_master_id_global);
   }
 

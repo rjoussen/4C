@@ -134,7 +134,7 @@ FSI::Utils::SlideAleUtils::SlideAleUtils(std::shared_ptr<Core::FE::Discretizatio
     }
   }
 
-  Core::Communication::max_all(&max_id, &maxid_, 1, structdis->get_comm());
+  maxid_ = Core::Communication::max_all(max_id, structdis->get_comm());
 
   // declare fluid objects in interface
   std::map<int, std::map<int, std::shared_ptr<Core::Elements::Element>>> fluidelements;

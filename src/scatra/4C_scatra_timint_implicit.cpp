@@ -1561,7 +1561,7 @@ void ScaTra::ScaTraTimIntImpl::time_loop()
     // determine time spent by nonlinear solver and take maximum over all processors via
     // communication
     double mydtnonlinsolve(Teuchos::Time::wallTime() - time), dtnonlinsolve(0.);
-    Core::Communication::max_all(&mydtnonlinsolve, &dtnonlinsolve, 1, discret_->get_comm());
+    dtnonlinsolve = Core::Communication::max_all(mydtnonlinsolve, discret_->get_comm());
 
     // output performance statistics associated with nonlinear solver into *.csv file if applicable
     if (params_->get<bool>("OUTPUTNONLINSOLVERSTATS"))
@@ -2823,7 +2823,7 @@ void ScaTra::ScaTraTimIntImpl::assemble_mat_and_rhs()
 
   // end time measurement for element and take average over all processors via communication
   double mydtele = Teuchos::Time::wallTime() - tcpuele;
-  Core::Communication::max_all(&mydtele, &dtele_, 1, discret_->get_comm());
+  dtele_ = Core::Communication::max_all(mydtele, discret_->get_comm());
 }
 
 /*----------------------------------------------------------------------*
@@ -2999,7 +2999,7 @@ void ScaTra::ScaTraTimIntImpl::nonlinear_solve()
 
       // end time measurement for solver and take average over all processors via communication
       double mydtsolve = Teuchos::Time::wallTime() - tcpusolve;
-      Core::Communication::max_all(&mydtsolve, &dtsolve_, 1, discret_->get_comm());
+      dtsolve_ = Core::Communication::max_all(mydtsolve, discret_->get_comm());
 
       // output performance statistics associated with linear solver into text file if applicable
       if (params_->get<bool>("OUTPUTLINSOLVERSTATS"))

@@ -855,7 +855,7 @@ void SSI::SsiMono::newton_loop()
 
     // time needed for evaluating elements and assembling global system of equations
     double my_evaluation_time = timer_->wallTime() - time_before_evaluate;
-    Core::Communication::max_all(&my_evaluation_time, &dt_eval_, 1, get_comm());
+    dt_eval_ = Core::Communication::max_all(my_evaluation_time, get_comm());
 
     // safety check
     if (!ssi_matrices_->system_matrix()->filled())
@@ -874,7 +874,7 @@ void SSI::SsiMono::newton_loop()
 
     // time needed for solving global system of equations
     double my_solve_time = timer_->wallTime() - time_before_solving;
-    Core::Communication::max_all(&my_solve_time, &dt_solve_, 1, get_comm());
+    dt_solve_ = Core::Communication::max_all(my_solve_time, get_comm());
 
     // output performance statistics associated with linear solver into text file if
     // applicable
@@ -910,7 +910,7 @@ void SSI::SsiMono::timeloop()
     // determine time spent by nonlinear solver and take maximum over all processors via
     // communication
     double mydtnonlinsolve(timer_->wallTime() - time), dtnonlinsolve(0.);
-    Core::Communication::max_all(&mydtnonlinsolve, &dtnonlinsolve, 1, get_comm());
+    dtnonlinsolve = Core::Communication::max_all(mydtnonlinsolve, get_comm());
 
     // output performance statistics associated with nonlinear solver into *.csv file if
     // applicable
@@ -1239,7 +1239,7 @@ void SSI::SsiMono::calc_initial_potential_field()
 
     // time needed for evaluating elements and assembling global system of equations
     double my_evaluation_time = timer_->wallTime() - time_before_evaluate;
-    Core::Communication::max_all(&my_evaluation_time, &dt_eval_, 1, get_comm());
+    dt_eval_ = Core::Communication::max_all(my_evaluation_time, get_comm());
 
     if (strategy_convcheck_->exit_newton_raphson_init_pot_calc(*this)) break;
 
@@ -1253,7 +1253,7 @@ void SSI::SsiMono::calc_initial_potential_field()
 
     // time needed for solving global system of equations
     double my_solve_time = timer_->wallTime() - time_before_solving;
-    Core::Communication::max_all(&my_solve_time, &dt_solve_, 1, get_comm());
+    dt_solve_ = Core::Communication::max_all(my_solve_time, get_comm());
 
     // update potential dofs in scatra and manifold fields
     update_iter_scatra();

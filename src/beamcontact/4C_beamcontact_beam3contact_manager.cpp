@@ -1072,7 +1072,7 @@ void CONTACT::Beam3cmanager::evaluate_all_pairs(Teuchos::ParameterList timeintpa
     }
   }
 
-  Core::Communication::max_all(&kappa_max, &global_kappa_max_, 1, get_comm());
+  global_kappa_max_ = Core::Communication::max_all(kappa_max, get_comm());
   //  std::cout << "global_kappa_max_: " << global_kappa_max_ << std::endl;
   timeintparams.set("kappa_max", global_kappa_max_);
   // End: Determine maximal curvature occurring in complete beam discretization
@@ -1573,7 +1573,7 @@ void CONTACT::Beam3cmanager::compute_search_radius()
     charactlength = maxelelength;
 
   // communicate among all procs to find the global maximum
-  Core::Communication::max_all(&charactlength, &globalcharactlength, 1, get_comm());
+  globalcharactlength = Core::Communication::max_all(charactlength, get_comm());
 
   // Compute the search radius. This one is only applied to determine
   // close pairs considering the node-to-node distances.
@@ -1998,16 +1998,16 @@ void CONTACT::Beam3cmanager::update_constr_norm()
   // As long as the beam contact discretization is full overlapping, all pairs are stored in all
   // procs and don't need this procedure. However, for future applications (i.e. when abstain from a
   // fully overlapping discretization) it might be useful.
-  Core::Communication::max_all(&maxgap, &maxallgap, 1, get_comm());
-  Core::Communication::max_all(&maxgap_cp, &maxallgap_cp, 1, get_comm());
-  Core::Communication::max_all(&maxgap_gp, &maxallgap_gp, 1, get_comm());
-  Core::Communication::max_all(&maxgap_ep, &maxallgap_ep, 1, get_comm());
-  Core::Communication::min_all(&mingap, &minallgap, 1, get_comm());
-  Core::Communication::min_all(&mingap_cp, &minallgap_cp, 1, get_comm());
-  Core::Communication::min_all(&mingap_gp, &minallgap_gp, 1, get_comm());
-  Core::Communication::min_all(&mingap_ep, &minallgap_ep, 1, get_comm());
-  Core::Communication::max_all(&maxrelgap, &maxallrelgap, 1, get_comm());
-  Core::Communication::min_all(&minrelgap, &minallrelgap, 1, get_comm());
+  maxallgap = Core::Communication::max_all(maxgap, get_comm());
+  maxallgap_cp = Core::Communication::max_all(maxgap_cp, get_comm());
+  maxallgap_gp = Core::Communication::max_all(maxgap_gp, get_comm());
+  maxallgap_ep = Core::Communication::max_all(maxgap_ep, get_comm());
+  minallgap = Core::Communication::min_all(mingap, get_comm());
+  minallgap_cp = Core::Communication::min_all(mingap_cp, get_comm());
+  minallgap_gp = Core::Communication::min_all(mingap_gp, get_comm());
+  minallgap_ep = Core::Communication::min_all(mingap_ep, get_comm());
+  maxallrelgap = Core::Communication::max_all(maxrelgap, get_comm());
+  minallrelgap = Core::Communication::min_all(minrelgap, get_comm());
 
   Core::Communication::sum_all(&proclocal_penaltyenergy, &totpenaltyenergy_, 1, get_comm());
 
@@ -2267,14 +2267,14 @@ void CONTACT::Beam3cmanager::console_output()
     int sumpro_numepc = 0;
     int sumpro_numperpc_transitions = 0;
 
-    Core::Communication::max_all(&maxangle, &sumpro_maxangle, 1, get_comm());
-    Core::Communication::min_all(&minangle, &sumpro_minangle, 1, get_comm());
-    Core::Communication::min_all(&mincpgap, &sumpro_mincpgap, 1, get_comm());
-    Core::Communication::min_all(&mingpgap, &sumpro_mingpgap, 1, get_comm());
-    Core::Communication::min_all(&minepgap, &sumpro_minepgap, 1, get_comm());
-    Core::Communication::max_all(&maxcpgap, &sumpro_maxcpgap, 1, get_comm());
-    Core::Communication::max_all(&maxgpgap, &sumpro_maxgpgap, 1, get_comm());
-    Core::Communication::max_all(&maxepgap, &sumpro_maxepgap, 1, get_comm());
+    sumpro_maxangle = Core::Communication::max_all(maxangle, get_comm());
+    sumpro_minangle = Core::Communication::min_all(minangle, get_comm());
+    sumpro_mincpgap = Core::Communication::min_all(mincpgap, get_comm());
+    sumpro_mingpgap = Core::Communication::min_all(mingpgap, get_comm());
+    sumpro_minepgap = Core::Communication::min_all(minepgap, get_comm());
+    sumpro_maxcpgap = Core::Communication::max_all(maxcpgap, get_comm());
+    sumpro_maxgpgap = Core::Communication::max_all(maxgpgap, get_comm());
+    sumpro_maxepgap = Core::Communication::max_all(maxepgap, get_comm());
     Core::Communication::sum_all(&numperpc, &sumpro_numperpc, 1, get_comm());
     Core::Communication::sum_all(&numparc, &sumpro_numparc, 1, get_comm());
     Core::Communication::sum_all(&numepc, &sumpro_numepc, 1, get_comm());

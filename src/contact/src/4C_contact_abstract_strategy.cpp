@@ -1227,8 +1227,8 @@ void CONTACT::AbstractStrategy::update_parallel_distribution_status(const double
   // divided by the minimum local processor time)
   double maxall = 0.0;
   double minall = 0.0;
-  Core::Communication::max_all(&t_end_for_maxall, &maxall, 1, get_comm());
-  Core::Communication::min_all(&t_end_for_minall, &minall, 1, get_comm());
+  maxall = Core::Communication::max_all(t_end_for_maxall, get_comm());
+  minall = Core::Communication::min_all(t_end_for_minall, get_comm());
 
   // check for plausibility before storing
   if (maxall == 0.0 && minall == 1.0e12)

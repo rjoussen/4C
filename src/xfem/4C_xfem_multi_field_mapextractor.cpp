@@ -546,7 +546,7 @@ void XFEM::MultiFieldMapExtractor::build_interface_coupling_dof_set()
     // communicate the number of standard DoF's
     // Supposed to be the same value on all discretizations and all nodes.
     if (g_num_std_dof == -1)
-      Core::Communication::max_all(&my_num_std_dof, &g_num_std_dof, 1, get_comm());
+      g_num_std_dof = Core::Communication::max_all(my_num_std_dof, get_comm());
 
     if (my_num_std_dof != -1 and g_num_std_dof != my_num_std_dof)
       FOUR_C_THROW(

@@ -7185,7 +7185,7 @@ bool CONTACT::Interface::update_active_set_semi_smooth()
 
   // broadcast convergence status among processors
   int convcheck = 0;
-  Core::Communication::min_all(&localcheck, &convcheck, 1, get_comm());
+  convcheck = Core::Communication::min_all(localcheck, get_comm());
 
   return convcheck;
 }

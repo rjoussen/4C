@@ -545,8 +545,8 @@ void Solid::TimIntImpl::prepare_line_search()
         solid != nullptr && solid->have_eas())
       haveCondensationLocal = 1;
   }
-  Core::Communication::max_all(
-      &haveCondensationLocal, &haveCondensationGlobal, 1, discret_->get_comm());
+  haveCondensationGlobal =
+      Core::Communication::max_all(haveCondensationLocal, discret_->get_comm());
   if (haveCondensationGlobal)
   {
     fresn_str_ = Core::LinAlg::create_vector(*dof_row_map_view(), true);
@@ -1405,7 +1405,7 @@ Inpar::Solid::ConvergenceStatus Solid::TimIntImpl::solve()
   // since it is possible that the nonlinear solution fails only on some procs
   // we need to communicate the error
   int lnonlin_error = nonlin_error;
-  Core::Communication::max_all(&lnonlin_error, &nonlin_error, 1, discretization()->get_comm());
+  nonlin_error = Core::Communication::max_all(lnonlin_error, discretization()->get_comm());
 
   Inpar::Solid::ConvergenceStatus status =
       static_cast<Inpar::Solid::ConvergenceStatus>(nonlin_error);

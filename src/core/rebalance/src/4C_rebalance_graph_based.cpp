@@ -256,7 +256,7 @@ std::shared_ptr<const Core::LinAlg::Graph> Core::Rebalance::build_graph(
       if (smaxband < (int)fool->second.size()) smaxband = (int)fool->second.size();
     for (fool = remotes.begin(); fool != remotes.end(); ++fool)
       if (smaxband < (int)fool->second.size()) smaxband = (int)fool->second.size();
-    Core::Communication::max_all(&smaxband, &maxband, 1, dis.get_comm());
+    maxband = Core::Communication::max_all(smaxband, dis.get_comm());
   }
 
   std::shared_ptr<Core::LinAlg::Graph> graph =

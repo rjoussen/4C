@@ -4018,8 +4018,7 @@ void ScaTra::MeshtyingStrategyS2I::fd_check(
     // check whether current column index is a valid global column index and continue loop if not
     int collid(sysmat_original.col_map().lid(colgid));
     int maxcollid(-1);
-    Core::Communication::max_all(
-        &collid, &maxcollid, 1, scatratimint_->discretization()->get_comm());
+    maxcollid = Core::Communication::max_all(collid, scatratimint_->discretization()->get_comm());
     if (maxcollid < 0) continue;
 
     // fill global state vector with original state variables
@@ -4141,11 +4140,11 @@ void ScaTra::MeshtyingStrategyS2I::fd_check(
   Core::Communication::sum_all(
       &counter, &counterglobal, 1, scatratimint_->discretization()->get_comm());
   double maxabserrglobal(0.);
-  Core::Communication::max_all(
-      &maxabserr, &maxabserrglobal, 1, scatratimint_->discretization()->get_comm());
+  maxabserrglobal =
+      Core::Communication::max_all(maxabserr, scatratimint_->discretization()->get_comm());
   double maxrelerrglobal(0.);
-  Core::Communication::max_all(
-      &maxrelerr, &maxrelerrglobal, 1, scatratimint_->discretization()->get_comm());
+  maxrelerrglobal =
+      Core::Communication::max_all(maxrelerr, scatratimint_->discretization()->get_comm());
 
   // final screen output
   if (Core::Communication::my_mpi_rank(scatratimint_->discretization()->get_comm()) == 0)

@@ -1031,7 +1031,7 @@ int SSI::Utils::SSIMeshTying::has_gid(
   int my_return_value = has_gid_partial(gid, lower_bound, upper_bound, matching_nodes);
   int glob_return_value;
 
-  Core::Communication::max_all(&my_return_value, &glob_return_value, 1, comm_);
+  glob_return_value = Core::Communication::max_all(my_return_value, comm_);
 
   return glob_return_value;
 }

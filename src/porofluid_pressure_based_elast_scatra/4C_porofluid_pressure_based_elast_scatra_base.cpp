@@ -222,7 +222,7 @@ void PoroPressureBased::PorofluidElastScatraBaseAlgorithm::time_loop()
     time_step();
     // *********** time measurement ***********
     double mydttimestep = timer_timestep_.wallTime() - dtcpu;
-    Core::Communication::max_all(&mydttimestep, &dt_timestep_, 1, get_comm());
+    dt_timestep_ = Core::Communication::max_all(mydttimestep, get_comm());
     // *********** time measurement ***********
 
     update_and_output();

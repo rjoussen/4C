@@ -975,8 +975,8 @@ void Core::Conditions::PeriodicBoundaryConditions::redistribute_and_create_dof_c
       }
 
       Core::Communication::sum_all(&myallcouplednodes, &allcouplednodes, 1, discret_->get_comm());
-      Core::Communication::max_all(&mymax, &max, 1, discret_->get_comm());
-      Core::Communication::min_all(&mymin, &min, 1, discret_->get_comm());
+      max = Core::Communication::max_all(mymax, discret_->get_comm());
+      min = Core::Communication::min_all(mymin, discret_->get_comm());
 
       if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0 && verbose_)
       {

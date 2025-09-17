@@ -16,6 +16,8 @@
 #include <Epetra_Comm.h>
 #include <mpi.h>
 
+#include <array>
+#include <cstddef>
 #include <functional>
 #include <map>
 #include <numeric>
@@ -122,20 +124,32 @@ namespace Core::Communication
   void sum_all(T* partial, T* global, int count, MPI_Comm comm);
 
   /**
-   * Compute the maximum of all values in the array @p partial on all MPI ranks and store the result
-   * in @p global. The arrays @p partial and @p global are assumed to have @p count elements. The
-   * result is distributed to all ranks.
+   * Return the maximum of value of @p partial across all MPI ranks.
+   * The result is distributed to all ranks.
    */
   template <IsNativeMpiType T>
-  void max_all(T* partial, T* global, int count, MPI_Comm comm);
+  T max_all(const T& partial, MPI_Comm comm);
 
   /**
-   * Compute the minimum of all values in the array @p partial on all MPI ranks and store the result
-   * in @p global. The arrays @p partial and @p global are assumed to have @p count elements. The
-   * result is distributed to all ranks.
+   * Return the element-wise maximum value of the vector @p partial across all MPI ranks.
+   * The result is distributed to all ranks.
+   */
+  template <IsNativeMpiType T, unsigned long size>
+  std::array<T, size> max_all(const std::array<T, size>& partial, MPI_Comm comm);
+
+  /**
+   * Return the minimum of value of @p partial across all MPI ranks.
+   * The result is distributed to all ranks.
    */
   template <IsNativeMpiType T>
-  void min_all(T* partial, T* global, int count, MPI_Comm comm);
+  T min_all(const T& partial, MPI_Comm comm);
+
+  /**
+   * Return the element-wise minimum value of the vector @p partial across all MPI ranks.
+   * The result is distributed to all ranks.
+   */
+  template <IsNativeMpiType T, unsigned long size>
+  std::array<T, size> min_all(const std::array<T, size>& partial, MPI_Comm comm);
 
   /**
    * Gather values @p my_values from all procs to @p all_values. The array @p my_values must have
@@ -321,15 +335,35 @@ void Core::Communication::sum_all(T* partial, T* global, int count, MPI_Comm com
 }
 
 template <Core::Communication::IsNativeMpiType T>
-void Core::Communication::max_all(T* partial, T* global, int count, MPI_Comm comm)
+T Core::Communication::max_all(const T& partial, MPI_Comm comm)
 {
-  MPI_Allreduce(partial, global, count, Internal::to_mpi_type<T>(), MPI_MAX, comm);
+  T global{};
+  MPI_Allreduce(&partial, &global, 1, Internal::to_mpi_type<T>(), MPI_MAX, comm);
+  return global;
+}
+
+template <Core::Communication::IsNativeMpiType T, unsigned long size>
+std::array<T, size> Core::Communication::max_all(const std::array<T, size>& partial, MPI_Comm comm)
+{
+  std::array<T, size> global{};
+  MPI_Allreduce(partial.data(), global.data(), size, Internal::to_mpi_type<T>(), MPI_MAX, comm);
+  return global;
 }
 
 template <Core::Communication::IsNativeMpiType T>
-void Core::Communication::min_all(T* partial, T* global, int count, MPI_Comm comm)
+T Core::Communication::min_all(const T& partial, MPI_Comm comm)
 {
-  MPI_Allreduce(partial, global, count, Internal::to_mpi_type<T>(), MPI_MIN, comm);
+  T global{};
+  MPI_Allreduce(&partial, &global, 1, Internal::to_mpi_type<T>(), MPI_MIN, comm);
+  return global;
+}
+
+template <Core::Communication::IsNativeMpiType T, unsigned long size>
+std::array<T, size> Core::Communication::min_all(const std::array<T, size>& partial, MPI_Comm comm)
+{
+  std::array<T, size> global{};
+  MPI_Allreduce(partial.data(), global.data(), size, Internal::to_mpi_type<T>(), MPI_MIN, comm);
+  return global;
 }
 
 template <Core::Communication::IsNativeMpiType T>

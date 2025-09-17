@@ -81,8 +81,8 @@ void ScaTra::MeshtyingStrategyS2IElch::compute_time_step_size(double& dt)
     // communicate minimum interfacial overpotential associated with scatra-scatra interface layer
     // growth
     double etagrowthmin(0.0);
-    Core::Communication::min_all(&condparams.get<double>("etagrowthmin"), &etagrowthmin, 1,
-        scatratimint_->discretization()->get_comm());
+    etagrowthmin = Core::Communication::min_all(
+        condparams.get<double>("etagrowthmin"), scatratimint_->discretization()->get_comm());
 
     // adaptive time stepping for scatra-scatra interface layer growth is currently inactive
     if (not intlayergrowth_timestep_active_)
@@ -103,8 +103,8 @@ void ScaTra::MeshtyingStrategyS2IElch::compute_time_step_size(double& dt)
       // communicate maximum interfacial overpotential associated with scatra-scatra interface layer
       // growth
       double etagrowthmax(0.0);
-      Core::Communication::max_all(&condparams.get<double>("etagrowthmax"), &etagrowthmax, 1,
-          scatratimint_->discretization()->get_comm());
+      etagrowthmax = Core::Communication::max_all(
+          condparams.get<double>("etagrowthmax"), scatratimint_->discretization()->get_comm());
 
       // check whether maximum interfacial overpotential has become negative
       if (etagrowthmax < 0.0 and intlayergrowth_startstep_ < 0)

@@ -1123,7 +1123,7 @@ ScaTra::ScaTraTimIntElch::evaluate_single_electrode_info_point(
 
   // communicate number of processor owning conditioned node
   int ownerid(-1);
-  Core::Communication::max_all(&procid, &ownerid, 1, discret_->get_comm());
+  ownerid = Core::Communication::max_all(procid, discret_->get_comm());
 
   // broadcast results from processor owning conditioned node to all other processors
   Core::Communication::broadcast(scalars->values(), numscalars, ownerid, discret_->get_comm());

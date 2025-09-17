@@ -904,7 +904,7 @@ void PoroPressureBased::PorofluidAlgorithm::assemble_mat_and_rhs()
 
   // end time measurement for element
   double mydtele = Teuchos::Time::wallTime() - tcpuele;
-  Core::Communication::max_all(&mydtele, &dtele_, 1, discret_->get_comm());
+  dtele_ = Core::Communication::max_all(mydtele, discret_->get_comm());
 }
 
 
@@ -1240,7 +1240,7 @@ void PoroPressureBased::PorofluidAlgorithm::linear_solve(
 
   // end time measurement for solver
   double mydtsolve = Teuchos::Time::wallTime() - tcpusolve;
-  Core::Communication::max_all(&mydtsolve, &dtsolve_, 1, discret_->get_comm());
+  dtsolve_ = Core::Communication::max_all(mydtsolve, discret_->get_comm());
 }
 
 
@@ -2118,7 +2118,7 @@ void PoroPressureBased::PorofluidAlgorithm::fd_check()
     // check whether current column index is a valid global column index and continue loop if not
     int collid(sysmat_original->col_map().lid(colgid));
     int maxcollid(-1);
-    Core::Communication::max_all(&collid, &maxcollid, 1, discret_->get_comm());
+    maxcollid = Core::Communication::max_all(collid, discret_->get_comm());
     if (maxcollid < 0) continue;
 
     // fill state vector with original state variables
@@ -2241,9 +2241,9 @@ void PoroPressureBased::PorofluidAlgorithm::fd_check()
   int counterglobal(0);
   Core::Communication::sum_all(&counter, &counterglobal, 1, discret_->get_comm());
   double maxabserrglobal(0.);
-  Core::Communication::max_all(&maxabserr, &maxabserrglobal, 1, discret_->get_comm());
+  maxabserrglobal = Core::Communication::max_all(maxabserr, discret_->get_comm());
   double maxrelerrglobal(0.);
-  Core::Communication::max_all(&maxrelerr, &maxrelerrglobal, 1, discret_->get_comm());
+  maxrelerrglobal = Core::Communication::max_all(maxrelerr, discret_->get_comm());
 
   // final screen output
   if (myrank_ == 0)
