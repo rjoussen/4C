@@ -801,43 +801,4 @@ void Core::FE::Discretization::compute_null_space_if_necessary(
   Core::LinearSolver::Parameters::compute_solver_parameters(*this, mllist);
 }
 
-/*----------------------------------------------------------------------*
- |  set_state surrogate for node based vectors                  (public) |
- |                                                            gjb 06/09 |
- *----------------------------------------------------------------------*/
-void Core::FE::Discretization::add_multi_vector_to_parameter_list(Teuchos::ParameterList& p,
-    const std::string name, std::shared_ptr<const Core::LinAlg::MultiVector<double>> vec)
-{
-  // provide data in node-based multi-vector for usage on element level
-  // -> export to column map is necessary for parallel evaluation
-  // set_state cannot be used since this multi-vector is nodebased and not dofbased!
-  if (vec != nullptr)
-  {
-    const Core::LinAlg::Map* nodecolmap = node_col_map();
-    const int numcol = vec->NumVectors();
-
-    // if it's already in column map just copy it
-    // This is a rough test, but it might be ok at this place.
-    if (vec->get_map().point_same_as(*nodecolmap))
-    {
-      // make a copy as in parallel such that no additional RCP points to the state vector
-      std::shared_ptr<Core::LinAlg::MultiVector<double>> tmp =
-          std::make_shared<Core::LinAlg::MultiVector<double>>(*nodecolmap, numcol);
-      tmp->Update(1.0, *vec, 0.0);
-      p.set(name, tmp);
-    }
-    else  // if it's not in column map export and allocate
-    {
-      std::shared_ptr<Core::LinAlg::MultiVector<double>> tmp =
-          std::make_shared<Core::LinAlg::MultiVector<double>>(*nodecolmap, numcol);
-      Core::LinAlg::export_to(*vec, *tmp);
-      p.set(name, tmp);
-    }
-  }
-  else
-    p.set(name, nullptr);
-
-  return;
-}
-
 FOUR_C_NAMESPACE_CLOSE

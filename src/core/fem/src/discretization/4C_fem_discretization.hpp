@@ -1898,23 +1898,6 @@ namespace Core::FE
 
 
     /*!
-    \brief Export a node based Core::LinAlg::MultiVector<double> to column layout
-           and store it in the given ParameterList
-
-    Using this method, the node based vector is exported to column
-    layout and stored in the given ParameterList. The elements can access
-    this vector by using the name of that vector in the corresponding
-    ParameterList.
-
-    \param nds (in): ParameterList in which vector is stored
-    \param name (in): Name of data
-    \param state (in): vector of some data
-
-    */
-    void add_multi_vector_to_parameter_list(Teuchos::ParameterList& p, const std::string name,
-        std::shared_ptr<const Core::LinAlg::MultiVector<double>> vec);
-
-    /*!
     \brief Call elements to evaluate
 
     Call element routines to perform integration and return element contributions to
