@@ -26,10 +26,13 @@ namespace Core::FE
 
 namespace PoroPressureBased
 {
-  /// setup discretizations and dofsets
-  std::map<int, std::set<int>> setup_discretizations_and_field_coupling_porofluid_elast(
-      MPI_Comm comm, const std::string& struct_disname, const std::string& fluid_disname,
-      int& nds_disp, int& nds_vel, int& nds_solidpressure);
+  /// setup discretizations and dofsets of porofluid and structure
+  void setup_discretizations_and_field_coupling_porofluid_elast(const std::string& struct_disname,
+      const std::string& fluid_disname, int& nds_disp, int& nds_vel, int& nds_solidpressure);
+
+  /// setup discretizations and dofsets artery
+  std::map<int, std::set<int>> setup_discretizations_and_field_coupling_artery(
+      const std::string& struct_disname);
 
   //! exchange material pointers of both discretizations
   void assign_material_pointers_porofluid_elast(

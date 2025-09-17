@@ -74,7 +74,7 @@ SOLVER 1:
   SOLVER: "Belos"
   AZPREC: "Teko"
   SOLVER_XML_FILE: "xml/linear_solver/iterative_gmres_porofluid_pressure_based.xml"
-  TEKO_XML_FILE: "xml/block_preconditioner/porofluid_elast_scatra_artery_5field.xml"
+  TEKO_XML_FILE: "xml/block_preconditioner/porofluid_pressure_based_elast_scatra_artery_BGS-AMG_5x5.xml"
   AZREUSE: 10
 SOLVER 2:
   SOLVER: "UMFPACK"
