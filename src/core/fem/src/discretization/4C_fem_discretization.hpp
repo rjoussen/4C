@@ -1688,17 +1688,6 @@ namespace Core::FE
     void proc_zero_distribute_elements_to_all(Core::LinAlg::Map& target, std::vector<int>& gidlist);
 
     /*!
-    \brief Export the nodes from proc 0 to a different parallel row layout
-          (Filled()==true NOT prerequisite)
-
-    This routine is mainly useful for input read on proc 0
-
-    \param target (in): desired distribution of elements
-
-    */
-    void proc_zero_distribute_nodes_to_all(Core::LinAlg::Map& target);
-
-    /*!
     \brief Export the elements to a different parallel row layout
           (Filled()==true NOT prerequisite)
 
