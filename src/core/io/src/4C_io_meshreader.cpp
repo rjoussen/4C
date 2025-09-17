@@ -547,19 +547,13 @@ namespace
     TEUCHOS_FUNC_TIME_MONITOR("Core::IO::MeshReader::read_external_mesh");
     auto my_rank = Core::Communication::my_mpi_rank(comm);
 
-    // We cannot create the map right away. First, we need to figure out how many elements there
-    // are. Since the code is rather different on rank 0 and other ranks, we will set this pointer
-    // to nullptr and create it later.
-    std::unique_ptr<Core::LinAlg::Map> linear_element_map;
-
-    // All the work is done on rank 0. The other ranks will receive the data.
     if (my_rank == 0)
     {
-      // Initial implementation:
-      // - read all information on rank 0, construct discretization, rebalance afterwards
-
       FOUR_C_ASSERT(mesh_reader.mesh_on_rank_zero != nullptr, "Internal error.");
-      const auto& mesh = *mesh_reader.mesh_on_rank_zero;
+      auto& mesh = *mesh_reader.mesh_on_rank_zero;
+
+      // Clean up specific data
+      std::ranges::for_each(mesh.cell_blocks, [](auto& eb) { eb.second.specific_data.reset(); });
 
       Core::IO::InputParameterContainer data;
       input.match_section(mesh_reader.section_name, data);
@@ -570,8 +564,7 @@ namespace
       Core::Elements::ElementDefinition element_definition;
 
       std::vector<int> skipped_blocks;
-      int ele_count_before = ele_count;
-      for (const auto& [eb_id, eb] : mesh.cell_blocks)
+      for (auto& [eb_id, eb] : mesh.cell_blocks)
       {
         // Look into the input file to find out which elements we need to assign to this block.
         const int eb_id_copy = eb_id;  // work around compiler warning in clang18
@@ -583,74 +576,19 @@ namespace
           continue;
         }
 
-        const auto [element_name, cell_type, specific_data] =
-            element_definition.unpack_element_data(*current_block_data);
-        const std::string cell_type_string = Core::FE::cell_type_to_string(eb.cell_type);
-
-        FOUR_C_ASSERT_ALWAYS(cell_type == eb.cell_type,
-            "Element block '{}' has cell type '{}' but your given element definition for '{}' has "
-            "cell type '{}'.",
-            eb_id, eb.cell_type, element_name, cell_type);
-
-        for (const auto& cell : eb.cells())
-        {
-          // Do not yet use the external cell ID. 4C is not yet prepared to deal with this!
-          // replace ele_count with cell.external_id once possible
-          auto ele = Core::Communication::factory(element_name, cell_type_string, ele_count, 0);
-          if (!ele) FOUR_C_THROW("element creation failed");
-          ele->set_node_ids(cell.size(), cell.data());
-          ele->read_element(element_name, cell_type_string, specific_data);
-          mesh_reader.target_discretization.add_element(ele);
-
-          ele_count++;
-        }
+        // Store the element specific data in the block for later use
+        eb.specific_data = *current_block_data;
       }
 
-      int num_read_ele = ele_count - ele_count_before;
-      FOUR_C_ASSERT_ALWAYS(num_read_ele > 0,
-          "No element block of the mesh was used. This does not make any sense. "
-          "If you supply an Exodus mesh file, you need to use at least one of its blocks.");
-
-      int first_ele_id = ele_count_before;
-      Core::Communication::broadcast(num_read_ele, 0, comm);
-      Core::Communication::broadcast(first_ele_id, 0, comm);
-      linear_element_map =
-          std::make_unique<Core::LinAlg::Map>(num_read_ele, ele_count_before, comm);
-
-      std::vector<int> gid_list(num_read_ele);
-      std::iota(gid_list.begin(), gid_list.end(), ele_count_before);
-      mesh_reader.target_discretization.proc_zero_distribute_elements_to_all(
-          *linear_element_map, gid_list);
-
-      // Now add all the nodes to the discretization on rank 0. They are distributed later during
-      // the rebalancing process.
-      std::size_t id = 0;
-      for (const auto& point : mesh.points)
-      {
-        // for now, discard external id of the node. 4C is not yet prepared to deal with this!
-        // replace id with point.external_id once possible
-        auto node = std::make_shared<Core::Nodes::Node>(id, point, 0);
-        mesh_reader.target_discretization.add_node(node);
-        ++id;
-      }
+      // Rank zero provides the actual data.
+      mesh_reader.target_discretization.fill_from_mesh(mesh, parameters);
     }
     // Other ranks
     else
     {
-      int num_read_ele;
-      int first_ele_id;
-      Core::Communication::broadcast(num_read_ele, 0, comm);
-      Core::Communication::broadcast(first_ele_id, 0, comm);
-      linear_element_map = std::make_unique<Core::LinAlg::Map>(num_read_ele, first_ele_id, comm);
-
-      std::vector<int> gid_list;
-      mesh_reader.target_discretization.proc_zero_distribute_elements_to_all(
-          *linear_element_map, gid_list);
+      Core::IO::MeshInput::Mesh<3> empty_mesh_other_ranks;
+      mesh_reader.target_discretization.fill_from_mesh(empty_mesh_other_ranks, parameters);
     }
-
-    FOUR_C_ASSERT(linear_element_map, "Internal error: nullptr.");
-    Core::Rebalance::rebalance_discretization(
-        mesh_reader.target_discretization, *linear_element_map, parameters, comm);
   }
 }  // namespace
 

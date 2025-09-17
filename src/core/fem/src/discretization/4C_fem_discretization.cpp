@@ -12,10 +12,13 @@
 #include "4C_fem_condition.hpp"
 #include "4C_fem_dofset_pbc.hpp"
 #include "4C_fem_dofset_proxy.hpp"
+#include "4C_fem_general_element_definition.hpp"
 #include "4C_fem_general_elementtype.hpp"
+#include "4C_io_mesh.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "4C_linear_solver_method_parameters.hpp"
+#include "4C_rebalance.hpp"
 #include "4C_utils_exceptions.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
@@ -66,6 +69,69 @@ void Core::FE::Discretization::add_node(std::shared_ptr<Core::Nodes::Node> node)
 {
   node_[node->id()] = node;
   reset();
+}
+
+
+void Core::FE::Discretization::fill_from_mesh(
+    const IO::MeshInput::Mesh<3>& mesh, const Rebalance::RebalanceParameters& params)
+{
+  FOUR_C_ASSERT_ALWAYS(!filled() && element_.empty() && node_.empty(),
+      "Discretization must be empty before calling fill_from_mesh().");
+
+  const int my_rank = Core::Communication::my_mpi_rank(comm_);
+  if (my_rank == 0)
+  {
+    Core::Elements::ElementDefinition element_definition;
+
+    unsigned ele_count = 0;
+    for (const auto& [eb_id, eb] : mesh.cell_blocks)
+    {
+      // Remove this once we support pure geometry meshes without user elements
+      if (!eb.specific_data) continue;
+
+      const auto [element_name, cell_type, specific_data] =
+          element_definition.unpack_element_data(*eb.specific_data);
+
+      const std::string cell_type_string = Core::FE::cell_type_to_string(eb.cell_type);
+
+      FOUR_C_ASSERT_ALWAYS(cell_type == eb.cell_type,
+          "Element block '{}' has cell type '{}' but your given element definition for '{}' has "
+          "cell type '{}'.",
+          eb_id, eb.cell_type, element_name, cell_type);
+
+      for (const auto& cell : eb.cells())
+      {
+        // Do not yet use the external cell ID. 4C is not yet prepared to deal with this!
+        // replace ele_count with cell.external_id once possible
+        auto ele = Core::Communication::factory(element_name, cell_type_string, ele_count, 0);
+        if (!ele) FOUR_C_THROW("element creation failed");
+        ele->set_node_ids(cell.size(), cell.data());
+        ele->read_element(element_name, cell_type_string, specific_data);
+        add_element(ele);
+
+        ele_count++;
+      }
+    }
+
+    // Now add all the nodes to the discretization on rank 0. They are distributed later during
+    // the rebalancing process.
+    std::size_t id = 0;
+    for (const auto& point : mesh.points)
+    {
+      // for now, discard external id of the node. 4C is not yet prepared to deal with this!
+      // replace id with point.external_id once possible
+      auto node = std::make_shared<Core::Nodes::Node>(id, point, 0);
+      add_node(node);
+      ++id;
+    }
+  }
+
+  // Currently, all elements live on rank 0. Create a map for this situation.
+  const int num_my_elements = (my_rank == 0) ? element_.size() : 0;
+  Core::LinAlg::Map element_map(-1, num_my_elements, 0, comm_);
+
+  // Now rebalance the discretization
+  Core::Rebalance::rebalance_discretization(*this, element_map, params, comm_);
 }
 
 /*----------------------------------------------------------------------*
