@@ -1,8 +1,9 @@
 <ParameterList name="Teko">
   <!--
-  For cardiovascular-solid interaction problems in saddle point form, these are the recommended settings for the block preconditioner
-  consisting of a block Gauss-Seidel from Teko, using MueLu as multigrid preconditioner for the solid field and Ifpack for an
-  incomplete factorization on the cardiovascular 0d field.
+  These are the recommended settings for the block preconditioner for cardiovascular-solid
+  interaction problems consisting of a block Gauss-Seidel from Teko, using MueLu as multigrid
+  preconditioner for the solid field and Amesos Klu for an incomplete factorization on the
+  cardiovascular0d field.
   -->
   <!-- ===========  BLOCK PRECONDITIONER ================ -->
   <!-- Definition of the block preconditioner, which has to be defined under sub-list "Preconditioner",
@@ -11,9 +12,10 @@
   <Parameter name="Inverse Type" type="string" value="Preconditioner"/>
   <ParameterList name="Inverse Factory Library">
     <ParameterList name="Preconditioner">
-      <Parameter name="Type" type="string" value="NS SIMPLE"/>
-      <Parameter name="Inverse Velocity Type" type="string" value="Inverse1"/>
-      <Parameter name="Inverse Pressure Type" type="string" value="Inverse2"/>
+      <Parameter name="Type" type="string" value="Block Gauss-Seidel"/>
+      <Parameter name="Use Upper Triangle" type="bool" value="false"/>
+      <Parameter name="Inverse Type 1" type="string" value="Inverse1"/>
+      <Parameter name="Inverse Type 2" type="string" value="Inverse2"/>
     </ParameterList>
     <!-- ===========  SINGLE FIELD PRECONDITIONER FOR SOLID ================ -->
     <ParameterList name="Inverse1">
@@ -28,9 +30,13 @@
         <Parameter name="relaxation: damping factor" type="double" value="0.8"/>
       </ParameterList>
     </ParameterList>
-    <!-- ===========  SINGLE FIELD PRECONDITIONER FOR CARDIOVASCULAR ================ -->
+    <!-- ===========  SINGLE FIELD PRECONDITIONER FOR CARDIOVASCULAR 0D ================ -->
     <ParameterList name="Inverse2">
-      <Parameter name="Type" type="string" value="Ifpack"/>
+      <Parameter name="Type" type="string" value="Amesos"/>
+      <Parameter name="Solver Type" type="string" value="Klu"/>
+      <ParameterList name="Amesos Settings">
+        <Parameter name="Reindex" type="bool" value="true"/>
+      </ParameterList>
     </ParameterList>
   </ParameterList>
 </ParameterList>
