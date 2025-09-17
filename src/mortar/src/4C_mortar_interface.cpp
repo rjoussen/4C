@@ -502,7 +502,7 @@ void Mortar::Interface::print_parallel_distribution() const
  *----------------------------------------------------------------------*/
 void Mortar::Interface::add_mortar_node(std::shared_ptr<Mortar::Node> mrtrnode)
 {
-  idiscret_->add_node(mrtrnode);
+  idiscret_->add_node(mrtrnode->x(), mrtrnode->id(), mrtrnode);
 }
 
 /*----------------------------------------------------------------------*

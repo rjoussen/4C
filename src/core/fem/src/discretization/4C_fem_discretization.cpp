@@ -65,9 +65,20 @@ void Core::FE::Discretization::check_filled_globally()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::FE::Discretization::add_node(std::shared_ptr<Core::Nodes::Node> node)
+void Core::FE::Discretization::add_node(
+    std::span<const double, 3> x, GlobalIndexType gid, std::shared_ptr<Core::Nodes::Node> user_node)
 {
-  node_[node->id()] = node;
+  // As long as user nodes are required, we need to ensure that a node exists, so we create one.
+  // Once we can live without user nodes, this fixup may be removed.
+  if (user_node == nullptr)
+    user_node = std::make_shared<Core::Nodes::Node>(gid, x, Communication::my_mpi_rank(comm_));
+
+  node_[gid] = user_node;
+  FOUR_C_ASSERT(node_gid_.size() * 3 == node_coordinates_.size(),
+      "Internal error: mismatch in size of node data.");
+
+  node_gid_.emplace_back() = gid;
+  node_coordinates_.insert(node_coordinates_.end(), x.begin(), x.end());
   reset();
 }
 
@@ -115,13 +126,12 @@ void Core::FE::Discretization::fill_from_mesh(
 
     // Now add all the nodes to the discretization on rank 0. They are distributed later during
     // the rebalancing process.
-    std::size_t id = 0;
+    int id = 0;
     for (const auto& point : mesh.points)
     {
       // for now, discard external id of the node. 4C is not yet prepared to deal with this!
       // replace id with point.external_id once possible
-      auto node = std::make_shared<Core::Nodes::Node>(id, point, 0);
-      add_node(node);
+      add_node(point, id, nullptr);
       ++id;
     }
   }
@@ -725,7 +735,10 @@ std::shared_ptr<std::vector<char>> Core::FE::Discretization::pack_my_nodes() con
 
   Core::Communication::PackBuffer buffer;
 
-  for (auto node : my_row_node_range()) node.user_node()->pack(buffer);
+  for (auto node : my_row_node_range())
+  {
+    node.user_node()->pack(buffer);
+  }
 
   auto block = std::make_shared<std::vector<char>>();
   std::swap(*block, buffer());
@@ -763,7 +776,7 @@ void Core::FE::Discretization::unpack_my_nodes(std::vector<char>& e)
     FOUR_C_ASSERT_ALWAYS(
         node != nullptr, "Failed to build a node from the node data for discretization {}", name_);
     node->set_owner(Core::Communication::my_mpi_rank(comm_));
-    add_node(std::shared_ptr<Core::Nodes::Node>(node));
+    add_node(node->x(), node->id(), std::shared_ptr<Core::Nodes::Node>(node));
   }
   // in case add_node forgets...
   reset();

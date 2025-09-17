@@ -477,7 +477,7 @@ bool BeamInteraction::BeamCrosslinkerHandler::place_node_correctly(
           // update ownership
           node->set_owner(myrank_);
           // add node
-          binstrategy_->bin_discret()->add_node(node);
+          binstrategy_->bin_discret()->add_node(node->x(), node->id(), node);
           // assign node to the correct bin
           currbin->add_node(node.get());
 
@@ -489,7 +489,7 @@ bool BeamInteraction::BeamCrosslinkerHandler::place_node_correctly(
       {
         // change owner of the node to this proc and add it to the discretization
         node->set_owner(myrank_);
-        binstrategy_->bin_discret()->add_node(node);
+        binstrategy_->bin_discret()->add_node(node->x(), node->id(), node);
         //        std::cout << "on proc: " << myrank_ << " node " << node->Id() << " is added to the
         //        discretization and assigned to element: " << currbin->Id() << std::endl;
         // assign node to the correct bin

@@ -28,12 +28,12 @@ namespace
 
       // create hex8 element and store it in the test discretization
       const std::array<int, 8> nodeidshex8 = {0, 1, 2, 3, 4, 5, 6, 7};
-      const std::vector<std::vector<double>> coordshex8 = {{-0.10, -0.20, -0.50},
+      const std::vector<std::array<double, 3>> coordshex8 = {{-0.10, -0.20, -0.50},
           {1.25, 0.23, 0.66}, {1.20, 0.99, 0.50}, {-0.11, 1.20, 0.66}, {-0.10, -0.20, 1.90},
           {1.00, 0.00, 1.90}, {1.20, 0.99, 1.50}, {-0.11, -0.20, 1.66}};
       for (int i = 0; i < 8; ++i)
       {
-        testdis_->add_node(std::make_shared<Core::Nodes::Node>(nodeidshex8[i], coordshex8[i], 0));
+        testdis_->add_node(coordshex8[i], nodeidshex8[i], nullptr);
       }
       std::shared_ptr<Discret::Elements::Solid> testhex8ele =
           std::make_shared<Discret::Elements::Solid>(0, 0);
@@ -48,11 +48,11 @@ namespace
 
       // create tet4 element and store it in the test discretization
       const std::array<int, 4> nodeidstet4 = {8, 9, 10, 11};
-      const std::vector<std::vector<double>> coordstet4 = {
+      const std::vector<std::array<double, 3>> coordstet4 = {
           {2.5, -0.5, 0.0}, {1.0, -1.1, 0.1}, {1.1, 0.11, 0.15}, {1.5, -0.5, 2.0}};
       for (int j = 0; j < 4; ++j)
       {
-        testdis_->add_node(std::make_shared<Core::Nodes::Node>(nodeidstet4[j], coordstet4[j], 0));
+        testdis_->add_node(coordstet4[j], nodeidstet4[j], nullptr);
       }
       std::shared_ptr<Discret::Elements::Solid> testtet4ele =
           std::make_shared<Discret::Elements::Solid>(2, 0);

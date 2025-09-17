@@ -416,6 +416,11 @@ namespace Core::FE
   {
    public:
     /**
+     * Integer type used for global indices (e.g. global ids of nodes, elements, dofs).
+     */
+    using GlobalIndexType = int;
+
+    /**
      * Various callbacks to hook into the discretization.
      */
     struct Callbacks
@@ -1281,7 +1286,8 @@ namespace Core::FE
 
     \note Sets Filled()=false
     */
-    void add_node(std::shared_ptr<Core::Nodes::Node> node);
+    void add_node(std::span<const double, 3> x, GlobalIndexType gid,
+        std::shared_ptr<Core::Nodes::Node> user_node);
 
     /**
      * @brief Construct a discretization from a mesh.
@@ -2493,6 +2499,8 @@ namespace Core::FE
 
     //! Map from nodal Gid to node pointers
     std::map<int, std::shared_ptr<Core::Nodes::Node>> node_;
+    std::vector<GlobalIndexType> node_gid_;
+    std::vector<double> node_coordinates_;
 
     //! Map of references to solution states
     std::vector<std::map<std::string, std::shared_ptr<const Core::LinAlg::Vector<double>>>> state_;

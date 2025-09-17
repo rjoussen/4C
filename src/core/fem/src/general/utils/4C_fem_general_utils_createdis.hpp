@@ -209,12 +209,19 @@ namespace Core::FE
           const Core::FE::Nurbs::ControlPoint* control_point =
               dynamic_cast<const Core::FE::Nurbs::ControlPoint*>(sourcenode);
 
+          std::span<const double, 3> coord(sourcenode->x().data(), 3);
           // if the node cannot be dynamic casted to a control point, add the point as a node
           if (!control_point)
-            targetdis->add_node(std::make_shared<Core::Nodes::Node>(gid, sourcenode->x(), myrank));
+          {
+            targetdis->add_node(
+                coord, gid, std::make_shared<Core::Nodes::Node>(gid, sourcenode->x(), myrank));
+          }
           else
-            targetdis->add_node(std::make_shared<Core::FE::Nurbs::ControlPoint>(
-                gid, control_point->x(), control_point->w(), myrank));
+          {
+            targetdis->add_node(coord, gid,
+                std::make_shared<Core::FE::Nurbs::ControlPoint>(
+                    gid, control_point->x(), control_point->w(), myrank));
+          }
         }
       }
 

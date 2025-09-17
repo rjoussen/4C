@@ -336,7 +336,7 @@ void XFEM::MultiFieldMapExtractor::init(const XDisVec& dis_vec, int max_num_rese
       // clone the node, thus it becomes independent of any redistribution
       Core::Nodes::Node* node = sl_dis_vec()[sl_dis_id_to_copy_from]->g_node(ngid);
       std::shared_ptr<Core::Nodes::Node> inode(node->clone());
-      idiscret_->add_node(inode);
+      idiscret_->add_node(inode->x(), inode->id(), inode);
       // store the id for the master/slave coupling maps
       for (cit_set = cit_map->second.begin(); cit_set != cit_map->second.end(); ++cit_set)
         my_master_inode_gids[*cit_set].push_back(inode->id());

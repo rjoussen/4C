@@ -281,7 +281,8 @@ Constraints::MPConstraint3Penalty::create_discretization_from_condition(
         if (rownodeset.find(gid) != rownodeset.end())
         {
           const Core::Nodes::Node* standardnode = actdisc->l_row_node(i);
-          newdis->add_node(std::make_shared<Core::Nodes::Node>(gid, standardnode->x(), myrank));
+          newdis->add_node(standardnode->x(), gid,
+              std::make_shared<Core::Nodes::Node>(gid, standardnode->x(), myrank));
         }
       }
 

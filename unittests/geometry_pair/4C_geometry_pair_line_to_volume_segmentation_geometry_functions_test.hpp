@@ -550,10 +550,10 @@ namespace
     for (unsigned int i_node = 0; i_node < 27; i_node++)
     {
       nodes[i_node] = (int)i_node;
-      std::vector<double> dummycoord = {0., 0., 0., 0., 0., 0.};
+      std::array<double, 3> dummycoord = {0., 0., 0.};
       std::shared_ptr<Core::Nodes::Node> new_node =
           std::make_shared<Core::FE::Nurbs::ControlPoint>(i_node, dummycoord, weights[i_node], 0);
-      structdis->add_node(new_node);
+      structdis->add_node(dummycoord, i_node, new_node);
       nodes_map[i_node] = new_node;
     }
 

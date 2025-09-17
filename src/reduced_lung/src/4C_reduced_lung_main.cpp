@@ -511,8 +511,8 @@ namespace ReducedLung
       const auto* airway_ele =
           static_cast<Discret::Elements::RedAirway*>(actdis->g_element(airway.global_element_id));
       const Discret::ReducedLung::AirwayParams airway_params = airway_ele->get_airway_params();
-      const std::vector<double>& coords_1 = airway_ele->nodes()[0]->x();
-      const std::vector<double>& coords_2 = airway_ele->nodes()[1]->x();
+      const auto coords_1 = airway_ele->nodes()[0]->x();
+      const auto coords_2 = airway_ele->nodes()[1]->x();
       const double current_length =
           std::sqrt((coords_1[0] - coords_2[0]) * (coords_1[0] - coords_2[0]) +
                     (coords_1[1] - coords_2[1]) * (coords_1[1] - coords_2[1]) +

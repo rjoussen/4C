@@ -575,7 +575,7 @@ void PARTICLEWALL::WallHandlerDiscretCondition::init_wall_discretization()
       Core::Nodes::Node* currnode = nodeit.second;
 
       // add current node to wall discretization
-      walldiscretization_->add_node(
+      walldiscretization_->add_node(currnode->x(), currnode->id(),
           std::make_shared<Core::Nodes::Node>(currnode->id(), currnode->x(), currnode->owner()));
     }
 
@@ -666,7 +666,7 @@ void PARTICLEWALL::WallHandlerBoundingBox::init_wall_discretization()
     }
 
     // init vector of corner node positions
-    std::vector<std::vector<double>> nodepositions;
+    std::vector<std::array<double, 3>> nodepositions;
     nodepositions.reserve(8);
 
     // determine corner node positions from bounding box dimension
@@ -683,7 +683,8 @@ void PARTICLEWALL::WallHandlerBoundingBox::init_wall_discretization()
     for (auto& nodepos : nodepositions)
     {
       // add corner node to wall discretization
-      walldiscretization_->add_node(std::make_shared<Core::Nodes::Node>(nodeid, nodepos, myrank_));
+      walldiscretization_->add_node(
+          nodepos, nodeid, std::make_shared<Core::Nodes::Node>(nodeid, nodepos, myrank_));
 
       // add node id
       nodeids.push_back(nodeid++);

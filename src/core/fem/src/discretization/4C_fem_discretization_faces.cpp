@@ -750,14 +750,14 @@ void Core::FE::DiscretizationFaces::build_faces(const bool verbose)
           {
             for (auto node : my_row_node_range())
             {
-              if (node.local_id() == mymasternodeids[kk]) counter++;
+              if (node.global_id() == mymasternodeids[kk]) counter++;
             }
           }
           for (std::size_t kk = 0; kk < myfurthermasternodeids.size(); kk++)
           {
             for (auto node : my_row_node_range())
             {
-              if (node.local_id() == myfurthermasternodeids[kk]) counter++;
+              if (node.global_id() == myfurthermasternodeids[kk]) counter++;
             }
           }
           if (counter == 0)

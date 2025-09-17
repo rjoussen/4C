@@ -304,9 +304,7 @@ void XFEM::Utils::XFEMDiscretizationBuilder::split_discretization(
     const int nid = sourcegnode_iter->first;
     if (sourcegnode_iter->second->owner() == myrank)
     {
-      std::shared_ptr<Core::Nodes::Node> sourcegnode =
-          std::make_shared<Core::Nodes::Node>(nid, sourcegnode_iter->second->x(), myrank);
-      targetdis.add_node(sourcegnode);
+      targetdis.add_node(sourcegnode_iter->second->x(), nid, nullptr);
       condnoderowset.insert(nid);
       targetnoderowvec.push_back(nid);
     }

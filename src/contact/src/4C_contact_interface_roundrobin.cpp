@@ -297,7 +297,7 @@ void CONTACT::Interface::round_robin_change_ownership()
         if (ghost == 1)
         {
           node->set_owner(myrank);
-          idiscret_->add_node(node);
+          idiscret_->add_node(node->x(), node->id(), node);
 
           nrow.push_back(node->id());
           ncol.push_back(node->id());
@@ -316,7 +316,7 @@ void CONTACT::Interface::round_robin_change_ownership()
         if (ghost == 1)
         {
           node->set_owner(myrank);
-          idiscret_->add_node(node);
+          idiscret_->add_node(node->x(), node->id(), node);
 
           nrow.push_back(node->id());
           ncol.push_back(node->id());

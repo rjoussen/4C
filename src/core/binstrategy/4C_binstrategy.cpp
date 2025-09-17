@@ -722,7 +722,7 @@ void Core::Binstrategy::BinningStrategy::write_bin_output(int const step, double
       nids[corner_i] = (bingid * numcorner) + corner_i;
       std::shared_ptr<Core::Nodes::Node> newnode =
           std::make_shared<Core::Nodes::Node>(nids[corner_i], cornerpos, myrank_);
-      visbindis_->add_node(newnode);
+      visbindis_->add_node(newnode->x(), newnode->id(), newnode);
     }
 
     // assign nodes to elements
@@ -770,7 +770,7 @@ void Core::Binstrategy::BinningStrategy::write_bin_output(int const step, double
         nids[corner_i] = (newelegid * numcorner) + corner_i;
         std::shared_ptr<Core::Nodes::Node> newnode =
             std::make_shared<Core::Nodes::Node>(nids[corner_i], cornerpos, myrank_);
-        visbindis_->add_node(newnode);
+        visbindis_->add_node(newnode->x(), newnode->id(), newnode);
       }
 
       // assign nodes to elements
