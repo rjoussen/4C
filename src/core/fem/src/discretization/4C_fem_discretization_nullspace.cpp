@@ -11,6 +11,7 @@
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_general_elementtype.hpp"
 #include "4C_fem_general_node.hpp"
+#include "4C_io_pstream.hpp"
 
 #include <Teuchos_ArrayRCP.hpp>
 
@@ -60,10 +61,9 @@ namespace Core::FE
         // check size of degrees of freedom
         if (localLength != numdf)
         {
-          std::cout << "Warning: At local node " << node << " : nullspace degrees of freedom ( "
-                    << numdf << " ) "
-                    << "and rowmap degrees of freedom ( " << localLength << " ) are not consistent"
-                    << std::endl;
+          Core::IO::cout(Core::IO::debug)
+              << "Warning: At local node " << node << " : nullspace degrees of freedom ( " << numdf
+              << " ) and rowmap degrees of freedom ( " << localLength << " ) are not consistent.\n";
         }
 
         // Here we check the first element type of the node. One node can be owned by several
