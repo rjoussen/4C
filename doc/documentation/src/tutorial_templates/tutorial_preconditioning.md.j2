@@ -520,7 +520,7 @@ To study the preconditioner, perform the following steps:
 
    MueLu block preconditioners can be defined via MueLu's "advanced" input deck. This details all factories, i.e., ƒruntbuilding blocks of a multigrid hierarchy in sublists of the xml file. These are then processed by MueLu and stitched together to create a MueLu preconditioner.
 
-   - The list `Factories` collects all individual factories. Factories can refer to other factories, e.g., for using the result of factory `A` as input for factory `B`. Therefore, factory `A` must be defined prior to factory ``ƒB in the list of all factories. Other than that, the ordering of the factories is arbitrary. In this spirit, aggregation, transfer operators, or smoothers (or any other component of a MueLu hierarchy) are represented via their own sublist in the `Factories` list.
+   - The list `Factories` collects all individual factories. Factories can refer to other factories, e.g., for using the result of factory `A` as input for factory `B`. Therefore, factory `A` must be defined prior to factory `B` in the list of all factories. Other than that, the ordering of the factories is arbitrary. In this spirit, aggregation, transfer operators, or smoothers (or any other component of a MueLu hierarchy) are represented via their own sublist in the `Factories` list.
    - The list `Hierarchy` defines the actual multigrid hierarchy based on some parameters and the factories from above.
 
    </details>
