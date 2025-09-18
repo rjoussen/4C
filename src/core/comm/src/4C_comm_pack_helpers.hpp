@@ -40,17 +40,20 @@ namespace Core::Communication
   }
 
 
-  //! @name Routines to help pack stuff into a char vector
-
   /*!
    * \brief Add stuff to the PackBuffer.
    *
    * This function works for all trivially copyable types, i.e. types that can be copied with
    * memcpy(). This includes all POD types, but also some user-defined types.
+   *
+   * @note Just because a type is trivially copyable does not mean that it makes sense to pack
+   * it. For example, packing a pointer member (trivially copyable) will just pack the address, not
+   * the data it points to. In this case, you likely want to implement a custom pack() und unpack()
+   * method for your type.
    */
   template <typename T>
-    requires std::is_trivially_copyable_v<T>
-  inline void add_to_pack(PackBuffer& data, const T& stuff)
+    requires(std::is_trivially_copyable_v<T> && !HasPack<T>)
+  void add_to_pack(PackBuffer& data, const T& stuff)
   {
     data.add_to_pack(stuff);
   }
@@ -64,8 +67,8 @@ namespace Core::Communication
    * \param[in] stuffsize length of stuff in byte
    */
   template <typename T>
-    requires std::is_trivially_copyable_v<T>
-  void add_to_pack(PackBuffer& data, const T* stuff, const int stuffsize)
+    requires(std::is_trivially_copyable_v<T> && !HasPack<T>)
+  void add_to_pack(PackBuffer& data, const T* stuff, size_t stuffsize)
   {
     data.add_to_pack(stuff, stuffsize);
   }
@@ -76,7 +79,7 @@ namespace Core::Communication
   void add_to_pack(PackBuffer& data, const HasPack auto& obj) { obj.pack(data); }
 
   /*!
-   * \brief Add stuff to the end of a char vector data
+   * \brief Add stuff to a PackBuffer
    *
    * This method is templated for std::optional<T>
    * \param[in,out] data char string stuff shall be added to
@@ -93,8 +96,14 @@ namespace Core::Communication
     }
   }
 
+  /**
+   * Explicitly delete the overload for std::span<T, n> to avoid accidental usage.
+   */
+  template <typename T, std::size_t n>
+  void add_to_pack(PackBuffer& data, std::span<T, n> stuff) = delete;
+
   /*!
-   * \brief Add stuff to the end of a char vector data
+   * \brief Add stuff to a PackBuffer
    *
    * This method is templated for std::vector<T>
    * \param[in,out] data char string stuff shall be added to
@@ -120,7 +129,7 @@ namespace Core::Communication
   }
 
   /*!
-   * \brief Add stuff to the end of a char vector data
+   * \brief Add stuff to a PackBuffer
    *
    * This method is templated for std::array<T, n>
    * \param[in,out] data char string stuff shall be added to
@@ -142,7 +151,7 @@ namespace Core::Communication
   }
 
   /*!
-   * \brief Add stuff to the end of a char vector data
+   * \brief Add stuff to a PackBuffer
    *
    * This method is templated for std::map<T,U>
    * \param[in,out] data char string stuff shall be added to
@@ -162,7 +171,7 @@ namespace Core::Communication
   }
 
   /*!
-   * \brief Add stuff to the end of a char vector data
+   * \brief Add stuff to a PackBuffer
    *
    * This method is templated for std::unordered_map<T,U>
    *
@@ -183,7 +192,7 @@ namespace Core::Communication
   }
 
   /*!
-   * \brief Add stuff to the end of a char vector data
+   * \brief Add stuff to a PackBuffer
    *
    * This method is templated for std::pair<T,U>
    * \param[in,out] data char string stuff shall be added to
@@ -197,7 +206,7 @@ namespace Core::Communication
   }
 
   /*!
-   * \brief Add stuff to the end of a char vector data
+   * \brief Add stuff to a PackBuffer
    *
    * This method is a template for Pairedvector<Ts...>
    * \param[in,out] data char string stuff shall be added to
@@ -221,7 +230,7 @@ namespace Core::Communication
   }
 
   /*!
-   * \brief Add stuff to the end of a char vector data first
+   * \brief Add stuff to a PackBuffer first
    *
    * This method is a template for std::vector< Pairedvector<Ts...> >
    * \param[in,out] data char string stuff shall be added to
@@ -244,7 +253,7 @@ namespace Core::Communication
   }
 
   /*!
-   * \brief Add stuff to the end of a char vector data
+   * \brief Add stuff to a PackBuffer
    *
    * This method is templated for std::set<T, U>
    * \param[in,out] data char string stuff shall be added to
@@ -270,7 +279,7 @@ namespace Core::Communication
   }
 
   /*!
-   * \brief Add stuff to the end of a char vector data
+   * \brief Add stuff to a PackBuffer
    *
    * This method is an overload of the above template for Core::LinAlg::SerialDenseMatrix
    * \param[in,out] data char string stuff shall be added to
@@ -279,7 +288,7 @@ namespace Core::Communication
   void add_to_pack(PackBuffer& data, const Core::LinAlg::SerialDenseMatrix& stuff);
 
   /*!
-   * \brief Add stuff to the end of a char vector data
+   * \brief Add stuff to a PackBuffer
    *
    * This method is an overload of the above template for Core::LinAlg::SerialDenseMatrix
    * \param[in,out] data char string stuff shall be added to
@@ -288,7 +297,7 @@ namespace Core::Communication
   void add_to_pack(PackBuffer& data, const Core::LinAlg::SerialDenseVector& stuff);
 
   /*!
-   * \brief Add stuff to the end of a char vector data
+   * \brief Add stuff to a PackBuffer
    *
    * This method is an overload of the above template for Matrix
    * \param[in,out] data char string stuff shall be added to
@@ -303,7 +312,7 @@ namespace Core::Communication
   }
 
   /*!
-   * \brief Add stuff to the end of a char vector data
+   * \brief Add stuff to a PackBuffer
    *
    * This method is an overload of the above template for string
    * \param[in,out] data char string stuff shall be added to
@@ -315,7 +324,7 @@ namespace Core::Communication
    * Template to forward to the implementation on UnpackBuffer.
    */
   template <typename T>
-    requires std::is_trivially_copyable_v<T>
+    requires(std::is_trivially_copyable_v<T> && !HasUnpack<T>)
   void extract_from_pack(UnpackBuffer& buffer, T& stuff)
   {
     buffer.extract_from_pack(stuff);
@@ -325,7 +334,7 @@ namespace Core::Communication
    * Template to forward to the implementation on UnpackBuffer.
    */
   template <typename T>
-    requires std::is_trivially_copyable_v<T>
+    requires(std::is_trivially_copyable_v<T> && !HasUnpack<T>)
   void extract_from_pack(UnpackBuffer& buffer, T* stuff, std::size_t stuff_size)
   {
     buffer.extract_from_pack(stuff, stuff_size);
@@ -655,7 +664,6 @@ namespace Core::Communication
    * \param[out] stuff string to extract from data
    */
   void extract_from_pack(UnpackBuffer& buffer, std::string& stuff);
-  //@}
 
   /*!
    *  \brief Extract the type id at a given @p position from a @p data vector, assert if the
