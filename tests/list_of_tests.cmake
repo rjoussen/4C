@@ -1996,6 +1996,16 @@ four_c_test_tutorial(PREFIX tutorial_prec_solid_chebyshev NP 4 COPY_FILES
         ${PROJECT_SOURCE_DIR}/tests/tutorials/tutorial_prec_solid_3.exo
         ${PROJECT_SOURCE_DIR}/tests/tutorials/tutorial_prec_solid_gmres.xml
         ${PROJECT_SOURCE_DIR}/tests/tutorials/tutorial_prec_solid_ifpack_Chebyshev.xml)
+# Test use case fsi with Teko block-iterative preconditioner with 2 MPI ranks
+four_c_test_tutorial(PREFIX tutorial_prec_fsi NP 2 COPY_FILES
+        ${PROJECT_SOURCE_DIR}/tests/tutorials/tutorial_prec_fsi.exo
+        ${PROJECT_SOURCE_DIR}/tests/tutorials/tutorial_prec_fsi_gmres.xml
+        ${PROJECT_SOURCE_DIR}/tests/tutorials/tutorial_prec_fsi_teko_block_iterative.xml)
+# Test use case fsi with MueLu fully coupled AMG preconditioner with 2 MPI ranks
+four_c_test_tutorial(PREFIX tutorial_prec_fsi_muelu NP 2 COPY_FILES
+        ${PROJECT_SOURCE_DIR}/tests/tutorials/tutorial_prec_fsi.exo
+        ${PROJECT_SOURCE_DIR}/tests/tutorials/tutorial_prec_fsi_gmres.xml
+        ${PROJECT_SOURCE_DIR}/tests/tutorials/tutorial_prec_fsi_muelu_fully_coupled_amg.xml)
 
 four_c_test_post_processing(constr3D_MPC_direct.4C.yaml 2 2 ndxyz ndxyz 25)
 four_c_test_post_processing(contact2D_onlylin_stdlagr.4C.yaml 2 2 ndxyz ndxyz 50)
