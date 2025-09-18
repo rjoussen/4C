@@ -130,14 +130,6 @@ bool Discret::Elements::MembraneScatra<distype>::read_element(const std::string&
   return true;
 }
 
-/*----------------------------------------------------------------------*
- |  Get vector of ptrs to nodes (private)                               |
- *----------------------------------------------------------------------*/
-template <Core::FE::CellType distype>
-inline Core::Nodes::Node** Discret::Elements::MembraneScatra<distype>::nodes()
-{
-  return Membrane<distype>::nodes();
-}
 
 /*----------------------------------------------------------------------*
  |  Get shape type of element (private)                                 |

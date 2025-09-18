@@ -304,7 +304,7 @@ namespace Core::Elements
     \return Ptr to pointers to nodes of the element in local nodal ordering.
             Returns nullptr if pointers to not exist.
     */
-    virtual Core::Nodes::Node** nodes()
+    Core::Nodes::Node** nodes()
     {
       if (node_.size())
         return node_.data();
@@ -324,7 +324,7 @@ namespace Core::Elements
     \return Ptr to pointers to nodes of the element in local nodal ordering.
             Returns nullptr if pointers to not exist.
     */
-    virtual const Core::Nodes::Node* const* nodes() const
+    const Core::Nodes::Node* const* nodes() const
     {
       if (node_.size())
         return (const Core::Nodes::Node* const*)(node_.data());
@@ -354,8 +354,6 @@ might become invalid after a redistribution of the discretization.
       return std::vector<std::shared_ptr<Element>>(0);
     }
 
-    // virtual const Element*const* Lines() const { FOUR_C_THROW("unexpected base method called.");
-    // return nullptr; }
 
     /*!
     \brief Get vector of std::shared_ptrs to the surfaces of this element

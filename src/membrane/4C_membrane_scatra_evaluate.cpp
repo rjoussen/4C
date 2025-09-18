@@ -24,7 +24,7 @@ void Discret::Elements::MembraneScatra<distype>::pre_evaluate(Teuchos::Parameter
   if (la.size() > 1)
   {
     // ask for the number of dofs of second dofset (scatra)
-    const int numscal = discretization.num_dof(1, nodes()[0]);
+    const int numscal = discretization.num_dof(1, this->nodes()[0]);
 
     if (la[1].size() != Membrane<distype>::numnod_ * numscal)
       FOUR_C_THROW("location vector length does not match!");

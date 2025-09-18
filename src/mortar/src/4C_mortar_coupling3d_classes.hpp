@@ -66,13 +66,13 @@ namespace Mortar
     \brief Get shape type of parent element
 
     */
-    virtual Core::FE::CellType par_shape() const { return parele_->shape(); }
+    Core::FE::CellType par_shape() const { return parele_->shape(); }
 
     /*!
     \brief Get shape type of parent element
 
     */
-    virtual Mortar::Element* par_ele() const { return parele_; }
+    Mortar::Element* par_ele() const { return parele_; }
 
     /*!
     \brief Affine map of IntElement coordinates to parent element
@@ -86,22 +86,6 @@ namespace Mortar
     */
     virtual bool map_to_parent(const std::vector<Core::Gen::Pairedvector<int, double>>& dxi,
         std::vector<Core::Gen::Pairedvector<int, double>>& dparxi);
-
-    Core::Nodes::Node** nodes() override
-    {
-      if (parele_->shape() != Core::FE::CellType::nurbs9)
-        return Core::Elements::Element::nodes();
-      else
-        return nodes_ptr_.data();
-    }
-
-    const Core::Nodes::Node* const* nodes() const override
-    {
-      if (parele_->shape() != Core::FE::CellType::nurbs9)
-        return Core::Elements::Element::nodes();
-      else
-        return nodes_ptr_.data();
-    }
 
     /*!
     \brief Get the linearization of the spatial position of the Nodes for this IntEle.

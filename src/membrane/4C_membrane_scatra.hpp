@@ -218,11 +218,6 @@ namespace Discret
 
      private:
       /*!
-      \brief Get vector of ptrs to nodes
-      */
-      Core::Nodes::Node** nodes() override;
-
-      /*!
       \brief Get shape type of element
       */
       Core::FE::CellType shape() const override;
