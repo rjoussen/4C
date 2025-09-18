@@ -175,7 +175,7 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(std::shared_ptr<Core::FE::Disc
       std::shared_ptr<Core::Nodes::Node> sepcondnode =
           std::shared_ptr<Core::Nodes::Node>(actnode->clone());
 
-      childdiscret_->add_node(sepcondnode);
+      childdiscret_->add_node(sepcondnode->x(), sepcondnode->id(), sepcondnode);
     }
 
     // loop all row elements and add all elements with a separation node

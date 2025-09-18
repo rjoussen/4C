@@ -562,7 +562,7 @@ void XFEM::MeshVolCoupling::create_auxiliary_discretization()
   {
     Core::Nodes::Node* actnode = cond_dis_->g_node(*id);
     std::shared_ptr<Core::Nodes::Node> bndnode(actnode->clone());
-    aux_coup_dis_->add_node(bndnode);
+    aux_coup_dis_->add_node(bndnode->x(), bndnode->id(), bndnode);
   }
 
   // build nodal row & col maps to redistribute the discretization

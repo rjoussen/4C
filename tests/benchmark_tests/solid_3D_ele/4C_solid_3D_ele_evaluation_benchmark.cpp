@@ -56,14 +56,14 @@ namespace
   template <Core::FE::CellType celltype>
   void add_nodes_to_discretization(Core::FE::Discretization& dis)
   {
-    const auto add_node_and_coords = [&](int id, std::vector<double> coords)
-    { dis.add_node(std::make_unique<Core::Nodes::Node>(id, coords, 0)); };
+    const auto add_node_and_coords = [&](int id, std::array<double, 3> coords)
+    { dis.add_node(coords, id, nullptr); };
 
     Core::LinAlg::SerialDenseMatrix reference_nodes =
         Core::FE::get_ele_node_numbering_nodes_paramspace(celltype);
     for (int i = 0; i < reference_nodes.num_cols(); ++i)
     {
-      std::vector<double> coord(3);
+      std::array<double, Core::FE::dim<celltype>> coord;
       for (int j = 0; j < Core::FE::dim<celltype>; ++j)
       {
         // create some deterministic coordinates

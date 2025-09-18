@@ -204,7 +204,7 @@ void Core::Geo::MeshFree::BoundingBox::setup_bounding_box_discretization(
 
       std::shared_ptr<Core::Nodes::Node> newnode =
           std::make_shared<Core::Nodes::Node>(corner_i, cornerpos, 0);
-      boxdiscret_->add_node(newnode);
+      boxdiscret_->add_node(newnode->x(), newnode->id(), newnode);
     }
 
     // assign nodes to element

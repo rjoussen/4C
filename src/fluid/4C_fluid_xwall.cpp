@@ -382,7 +382,7 @@ void FLD::XWall::init_wall_dist()
     Core::Nodes::Node* node = discret_->l_col_node(i);
     if (!node) FOUR_C_THROW("Cannot find node with local id {}", i);
     std::shared_ptr<Core::Nodes::Node> newnode(node->clone());
-    commondis->add_node(newnode);
+    commondis->add_node(newnode->x(), newnode->id(), newnode);
   }
   // loop over all column elements of underlying problem discret and add
   for (int i = 0; i < (discret_->element_col_map())->num_my_elements(); ++i)
@@ -582,7 +582,7 @@ void FLD::XWall::setup_x_wall_dis()
       Core::Nodes::Node* node = discret_->l_col_node(i);
       if (!node) FOUR_C_THROW("Cannot find node with local id {}", i);
       std::shared_ptr<Core::Nodes::Node> newnode(node->clone());
-      xwdiscret_->add_node(newnode);
+      xwdiscret_->add_node(newnode->x(), newnode->id(), newnode);
     }
   }
   // loop over all column elements of underlying problem discret and add

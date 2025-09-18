@@ -391,7 +391,7 @@ void CONTACT::Interface::print(std::ostream& os) const
  *----------------------------------------------------------------------*/
 void CONTACT::Interface::add_node(std::shared_ptr<CONTACT::Node> cnode)
 {
-  idiscret_->add_node(cnode);
+  idiscret_->add_node(cnode->x(), cnode->id(), cnode);
 }
 
 /*----------------------------------------------------------------------*

@@ -12,6 +12,8 @@
 
 #include "4C_linalg_serialdensematrix.hpp"
 
+#include <span>
+
 FOUR_C_NAMESPACE_OPEN
 
 namespace Discret::Elements
@@ -25,7 +27,7 @@ namespace Discret::Elements
   template <unsigned dim>
     requires(dim == 2 || dim == 3)
   Core::LinAlg::SerialDenseMatrix compute_solid_null_space(
-      const std::vector<double>& node_coordinates, const double* x0)
+      std::span<const double, 3> node_coordinates, const double* x0)
   {
     if constexpr (dim == 2)
     {

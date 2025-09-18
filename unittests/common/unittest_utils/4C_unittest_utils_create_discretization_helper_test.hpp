@@ -218,9 +218,8 @@ namespace TESTING
             const int node_lid = lid(i, j, k);
             if (row_nodes->lid(node_lid) != -1)
             {
-              const std::vector<double> coords = {i * increment, j * increment, k * increment};
-              discretization.add_node(
-                  std::make_shared<Core::Nodes::Node>(lid(i, j, k), coords, my_rank));
+              const std::array<double, 3> coords = {i * increment, j * increment, k * increment};
+              discretization.add_node(coords, lid(i, j, k), nullptr);
             }
           }
         }
@@ -310,8 +309,8 @@ namespace TESTING
     {
       if (row_nodes->lid(0) != -1)
       {
-        const std::vector<double> coords = {0.0, 0.0, 0.0};
-        discretization.add_node(std::make_shared<Core::Nodes::Node>(0, coords, my_rank));
+        const std::array coords = {0.0, 0.0, 0.0};
+        discretization.add_node(coords, 0, nullptr);
       }
 
       const double y_inc = 1.0;
@@ -324,8 +323,8 @@ namespace TESTING
           const int node_id = leaf_on_level(level, ele_on_level);
           if (row_nodes->lid(node_id) != -1)
           {
-            const std::vector<double> coords = {ele_on_level * x_inc, level * y_inc, 0.0};
-            discretization.add_node(std::make_shared<Core::Nodes::Node>(node_id, coords, my_rank));
+            const std::array coords = {ele_on_level * x_inc, level * y_inc, 0.0};
+            discretization.add_node(coords, node_id, nullptr);
           }
         }
       }
@@ -350,8 +349,8 @@ namespace TESTING
 
       discretization.add_element(std::move(ele));
 
-      const auto add_node = [&](int id, std::vector<double> coords)
-      { discretization.add_node(std::make_shared<Core::Nodes::Node>(id, coords, 0)); };
+      const auto add_node = [&](int id, std::array<double, 3> coords)
+      { discretization.add_node(coords, id, nullptr); };
 
       add_node(0, {0.0, 0.0, 0.0});
       add_node(1, {1.0, 0.0, 0.0});
@@ -383,11 +382,11 @@ namespace TESTING
 
       discretization.add_element(std::move(ele));
 
-      const auto add_node_polar = [&](int id, std::vector<double> coords_polar)
+      const auto add_node_polar = [&](int id, std::array<double, 3> coords_polar)
       {
-        const std::vector coords_cartesian{coords_polar[0] * std::cos(coords_polar[1]),
+        const std::array coords_cartesian{coords_polar[0] * std::cos(coords_polar[1]),
             coords_polar[0] * std::sin(coords_polar[1]), coords_polar[2]};
-        discretization.add_node(std::make_shared<Core::Nodes::Node>(id, coords_cartesian, 0));
+        discretization.add_node(coords_cartesian, id, nullptr);
       };
 
       add_node_polar(0, {inner, 0.0, 0.0});
@@ -444,10 +443,10 @@ namespace TESTING
 
       discretization.add_element(std::move(ele));
 
-      const auto add_node = [&](int id, std::vector<double> coords)
-      { discretization.add_node(std::make_shared<Core::Nodes::Node>(id, coords, 0)); };
+      const auto add_node = [&](int id, std::array<double, 3> coords)
+      { discretization.add_node(coords, id, nullptr); };
 
-      const std::vector<std::vector<double>> coords{{-1.0, -1.0, -1.0}, {1.0, -1.0, -1.0},
+      const std::vector<std::array<double, 3>> coords{{-1.0, -1.0, -1.0}, {1.0, -1.0, -1.0},
           {1.0, 1.0, -1.0}, {-1.0, 1.0, -1.0}, {-1.0, -1.0, 1.0}, {1.0, -1.0, 1.0}, {1.0, 1.0, 1.0},
           {-1.0, 1.0, 1.0}, {0.0, -1.0, -1.0}, {1.0, 0.0, -1.0}, {0.0, 1.0, -1.0},
           {-1.0, 0.0, -1.0}, {-1.0, -1.0, 0.0}, {1.0, -1.0, 0.0}, {1.0, 1.0, 0.0}, {-1.0, 1.0, 0.0},
@@ -478,10 +477,10 @@ namespace TESTING
 
       discretization.add_element(std::move(ele));
 
-      const auto add_node = [&](int id, std::vector<double> coords)
-      { discretization.add_node(std::make_shared<Core::Nodes::Node>(id, coords, 0)); };
+      const auto add_node = [&](int id, std::array<double, 3> coords)
+      { discretization.add_node(coords, id, nullptr); };
 
-      const std::vector<std::vector<double>> coords{{-0.9, -1.0, -1.0}, {1.0, -1.0, -1.0},
+      const std::vector<std::array<double, 3>> coords{{-0.9, -1.0, -1.0}, {1.0, -1.0, -1.0},
           {1.0, 1.0, -1.0}, {-1.0, 1.0, -1.0}, {-1.0, -1.0, 1.0}, {1.0, -1.0, 1.2}, {1.0, 1.0, 1.0},
           {-1.0, 1.0, 1.0}, {0.0, -1.0, -1.0}, {1.0, 0.0, -1.0}, {0.0, 1.0, -1.0},
           {-1.0, 0.0, -1.0}, {-1.0, -1.0, 0.0}, {1.0, -1.0, 0.0}, {.9, 1.0, 0.0}, {-1.0, 1.0, 0.0},

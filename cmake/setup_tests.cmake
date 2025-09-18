@@ -105,7 +105,7 @@ else()
 endif()
 
 # setup test for installation
-set(FOURC_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/cmake/4C)
+set(FOUR_C_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/cmake/4C)
 configure_file(
   ${PROJECT_SOURCE_DIR}/tests/install_test/main.cpp.in
   ${PROJECT_BINARY_DIR}/tests/install_test/main.cpp

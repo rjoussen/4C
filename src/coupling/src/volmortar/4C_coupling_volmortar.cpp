@@ -1617,9 +1617,15 @@ void Coupling::VolMortar::VolMortarCoupl::perform_cut(
 
   // add clones of nodes to auxiliary discretizations
   for (int node = 0; node < sele->num_node(); ++node)
-    sauxdis->add_node(std::shared_ptr<Core::Nodes::Node>(sele->nodes()[node]->clone()));
+  {
+    auto cloned_node = std::shared_ptr<Core::Nodes::Node>(sele->nodes()[node]->clone());
+    sauxdis->add_node(cloned_node->x(), cloned_node->id(), cloned_node);
+  }
   for (int node = 0; node < mele->num_node(); ++node)
-    mauxdis->add_node(std::shared_ptr<Core::Nodes::Node>(mele->nodes()[node]->clone()));
+  {
+    auto cloned_node = std::shared_ptr<Core::Nodes::Node>(mele->nodes()[node]->clone());
+    mauxdis->add_node(cloned_node->x(), cloned_node->id(), cloned_node);
+  }
 
   // complete dis
   sauxdis->fill_complete(true, false, false);

@@ -259,7 +259,7 @@ namespace Core::IO::GridGenerator
       size_t j = (posid / nx) % ny;
       size_t k = posid / (nx * ny);
 
-      std::vector<double> coords(3, 0.0);
+      std::array<double, 3> coords;
       coords[0] = static_cast<double>(i) / (2 * inputData.interval_[0]) *
                       (inputData.top_corner_point_[0] - inputData.bottom_corner_point_[0]) +
                   inputData.bottom_corner_point_[0];
@@ -296,9 +296,7 @@ namespace Core::IO::GridGenerator
         }
       }
 
-      std::shared_ptr<Core::Nodes::Node> node =
-          std::make_shared<Core::Nodes::Node>(gid, coords, myrank);
-      dis.add_node(node);
+      dis.add_node(coords, gid, nullptr);
     }
     dis.export_column_nodes(*nodeColMap);
   }

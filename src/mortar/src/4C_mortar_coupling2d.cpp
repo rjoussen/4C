@@ -154,7 +154,7 @@ bool Mortar::Coupling2d::project()
 
       // for nurbs, we introduce a dummy mortar node at the actual spatial position of the master
       // side element boundary. Hence, we need that location
-      std::vector<double> xm(2, 0.0);
+      std::array<double, 3> xm{};
       Core::LinAlg::SerialDenseVector mval(mele_.num_node());
       Core::LinAlg::SerialDenseMatrix deriv(mele_.num_node(), 1);
       mele_.evaluate_shape(xinode.data(), mval, deriv, mele_.num_node());

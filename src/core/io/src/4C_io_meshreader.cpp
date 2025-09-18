@@ -387,7 +387,7 @@ namespace
       {
         int nodeid = parser.read<int>() - 1;
         parser.consume("COORD");
-        auto coords = parser.read<std::vector<double>>(3);
+        auto coords = parser.read<std::array<double, 3>>();
 
         max_node_id = std::max(max_node_id, nodeid) + 1;
         std::vector<std::shared_ptr<Core::FE::Discretization>> dis =
@@ -395,10 +395,7 @@ namespace
 
         for (const auto& di : dis)
         {
-          // create node and add to discretization
-          std::shared_ptr<Core::Nodes::Node> node =
-              std::make_shared<Core::Nodes::Node>(nodeid, coords, myrank);
-          di->add_node(node);
+          di->add_node(coords, nodeid, nullptr);
         }
       }
       // this node is a Nurbs control point
@@ -406,7 +403,7 @@ namespace
       {
         int cpid = parser.read<int>() - 1;
         parser.consume("COORD");
-        auto coords = parser.read<std::vector<double>>(3);
+        auto coords = parser.read<std::array<double, 3>>();
         double weight = parser.read<double>();
 
         max_node_id = std::max(max_node_id, cpid) + 1;
@@ -421,7 +418,7 @@ namespace
           // create node/control point and add to discretization
           std::shared_ptr<Core::FE::Nurbs::ControlPoint> node =
               std::make_shared<Core::FE::Nurbs::ControlPoint>(cpid, coords, weight, myrank);
-          dis->add_node(node);
+          dis->add_node(coords, cpid, node);
         }
       }
       // this is a special node with additional fiber information
@@ -442,7 +439,7 @@ namespace
 
         int nodeid = parser.read<int>() - 1;
         parser.consume("COORD");
-        auto coords = parser.read<std::vector<double>>(3);
+        auto coords = parser.read<std::array<double, 3>>();
         max_node_id = std::max(max_node_id, nodeid) + 1;
 
         while (!parser.at_end())
@@ -485,7 +482,7 @@ namespace
         {
           auto node = std::make_shared<Core::Nodes::FiberNode>(
               nodeid, coords, cosyDirections, fibers, angles, myrank);
-          dis->add_node(node);
+          dis->add_node(coords, nodeid, node);
         }
       }
       else

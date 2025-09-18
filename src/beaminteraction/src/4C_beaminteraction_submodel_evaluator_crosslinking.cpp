@@ -668,7 +668,7 @@ void BeamInteraction::SubmodelEvaluator::Crosslinking::setup_my_initial_double_b
         std::make_shared<CrossLinking::CrosslinkerNode>(gid, X, g_state().get_my_rank());
     newcrosslinker->set_material(std::dynamic_pointer_cast<Mat::CrosslinkerMat>(
         Mat::factory(newlinkermatid[i])));  // HACK HACK HACK
-    bin_discret_ptr()->add_node(newcrosslinker);
+    bin_discret_ptr()->add_node(newcrosslinker->x(), newcrosslinker->id(), newcrosslinker);
 
     NewDoubleBonds dbondcl;
     std::vector<std::pair<int, int>> bspots = newlinker[i]->get_b_spots();
@@ -746,7 +746,7 @@ void BeamInteraction::SubmodelEvaluator::Crosslinking::add_crosslinker_to_bin_di
         std::shared_ptr<CrossLinking::CrosslinkerNode> newcrosslinker =
             std::make_shared<CrossLinking::CrosslinkerNode>(gid++, X, g_state().get_my_rank());
         newcrosslinker->set_material(matcrosslinkerpertype[cltype_i]);
-        bin_discret_ptr()->add_node(newcrosslinker);
+        bin_discret_ptr()->add_node(newcrosslinker->x(), newcrosslinker->id(), newcrosslinker);
       }
     }
   }

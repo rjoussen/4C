@@ -463,20 +463,20 @@ void CONTACT::Beam3cmanager::init_beam_contact_discret()
   nodedofs.clear();
 
   // loop over all column nodes of underlying problem discret and add
-  for (int i = 0; i < (problem_discret().node_col_map())->num_my_elements(); ++i)
+  for (auto node : problem_discret().my_col_node_range())
   {
-    Core::Nodes::Node* node = problem_discret().l_col_node(i);
-    if (!node) FOUR_C_THROW("Cannot find node with local id {}", i);
-    std::shared_ptr<Core::Nodes::Node> newnode = std::shared_ptr<Core::Nodes::Node>(node->clone());
+    std::shared_ptr<Core::Nodes::Node> newnode =
+        std::shared_ptr<Core::Nodes::Node>(node.user_node()->clone());
+
     if (BeamInteraction::Utils::is_beam_node(*newnode))
     {
-      bt_sol_discret().add_node(newnode);
-      nodedofs[node->id()] = problem_discret().dof(0, node);
+      bt_sol_discret().add_node(node.x(), node.global_id(), newnode);
+      nodedofs[node.global_id()] = problem_discret().dof(0, node);
     }
     else if (BeamInteraction::Utils::is_rigid_sphere_node(*newnode))
     {
-      bt_sol_discret().add_node(newnode);
-      nodedofs[node->id()] = problem_discret().dof(0, node);
+      bt_sol_discret().add_node(node.x(), node.global_id(), newnode);
+      nodedofs[node.global_id()] = problem_discret().dof(0, node);
     }
     else
     {
@@ -556,7 +556,7 @@ void CONTACT::Beam3cmanager::init_beam_contact_discret()
       // as their status could have been overwritten, but is prevented
       // by the "foundinitialactive" block above!
       solcontactnodes_.push_back(cnode);
-      bt_sol_discret().add_node(cnode);
+      bt_sol_discret().add_node(cnode->x(), cnode->id(), cnode);
       nodedofs[node->id()] = problem_discret().dof(0, node);
     }
   }
@@ -632,7 +632,7 @@ void CONTACT::Beam3cmanager::init_beam_contact_discret()
       // as their status could have been overwritten, but is prevented
       // by the "foundinitialactive" block above!
       solmeshtyingnodes_.push_back(mtnode);
-      bt_sol_discret().add_node(mtnode);
+      bt_sol_discret().add_node(mtnode->x(), mtnode->id(), mtnode);
       nodedofs[node->id()] = problem_discret().dof(0, node);
     }
   }

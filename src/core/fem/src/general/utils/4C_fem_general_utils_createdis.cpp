@@ -54,7 +54,7 @@ void Core::FE::DiscretizationCreatorBase::create_nodes(const Core::FE::Discretiz
       if (rownodeset.find(gid) != rownodeset.end())
       {
         Core::Nodes::Node* node_to_create = sourcedis.l_row_node(i);
-        targetdis.add_node(std::make_shared<Core::Nodes::Node>(gid, node_to_create->x(), myrank));
+        targetdis.add_node(node_to_create->x(), gid, nullptr);
       }
     }
   }
@@ -67,8 +67,9 @@ void Core::FE::DiscretizationCreatorBase::create_nodes(const Core::FE::Discretiz
       {
         Core::FE::Nurbs::ControlPoint* node_to_create =
             dynamic_cast<Core::FE::Nurbs::ControlPoint*>(sourcedis.l_row_node(i));
-        targetdis.add_node(std::make_shared<Core::FE::Nurbs::ControlPoint>(
-            gid, node_to_create->x(), node_to_create->w(), myrank));
+        targetdis.add_node(node_to_create->x(), gid,
+            std::make_shared<Core::FE::Nurbs::ControlPoint>(
+                gid, node_to_create->x(), node_to_create->w(), myrank));
       }
     }
   }
@@ -134,7 +135,7 @@ Core::FE::DiscretizationCreatorBase::create_matching_discretization(
     Core::Nodes::Node* node = sourcedis.l_col_node(i);
     if (!node) FOUR_C_THROW("Cannot find node with local id {}", i);
     std::shared_ptr<Core::Nodes::Node> newnode(node->clone());
-    targetdis->add_node(newnode);
+    targetdis->add_node(newnode->x(), newnode->id(), newnode);
   }
 
   // clone elements

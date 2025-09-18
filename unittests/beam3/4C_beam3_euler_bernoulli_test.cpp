@@ -27,11 +27,10 @@ namespace
     {
       testdis_ = std::make_shared<Core::FE::Discretization>("Beam3eb", MPI_COMM_WORLD, 3);
 
-      std::vector<std::vector<double>> xrefe{{-0.05, 0.05, 0.3}, {0.45, -0.05, 0.1}};
+      std::vector<std::array<double, 3>> xrefe{{-0.05, 0.05, 0.3}, {0.45, -0.05, 0.1}};
       std::vector<double> xrefe_full{-0.05, 0.05, 0.3, 0.45, -0.05, 0.1};
 
-      for (int lid = 0; lid < 2; ++lid)
-        testdis_->add_node(std::make_shared<Core::Nodes::Node>(lid, xrefe[lid], 0));
+      for (int lid = 0; lid < 2; ++lid) testdis_->add_node(xrefe[lid], lid, nullptr);
 
       testele_ = std::make_shared<Discret::Elements::Beam3eb>(0, 0);
       std::array<int, 2> node_ids{0, 1};
