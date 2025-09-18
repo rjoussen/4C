@@ -312,10 +312,6 @@ namespace Core::Elements
         return nullptr;
     }
 
-    // mgee: change to this (as const and !const):
-    // virtual std::vector<Core::Nodes::Node*>& Nodes()
-    //{ return node_; }
-
     /*!
     \brief Get const vector of ptrs to nodes
 
@@ -335,34 +331,6 @@ namespace Core::Elements
       else
         return nullptr;
     }
-
-    /*!
-     * \brief Return id's of points forming the geometry of this element
-     *
-     * For finite elements, this is equal to NodeIds(). Needed for meshfree
-     * discretization where the integration cell (i.e. the "element") is not
-     * formed by the nodes and many more nodes can have influence.
-     */
-    const int* point_ids() const { return node_ids(); }
-
-    /*!
-     * \brief Get vector of ptrs to points forming the geometry of this element
-     *
-     * For finite elements, this is equal to Nodes(). Needed for meshfree
-     * discretization where the integration cell (i.e. the "element") is not
-     * formed by the nodes and many more nodes can have influence.
-     */
-    Core::Nodes::Node** points() { return nodes(); }
-
-    /*!
-     * \brief Get const vector of ptrs to points forming the geometry of this element
-     *
-     * For finite elements, this is equal to Nodes() const. Needed for meshfree
-     * discretization where the integration cell (i.e. the "element") is not
-     * formed by the nodes and many more nodes can have influence.
-     */
-    const Core::Nodes::Node* const* points() const { return nodes(); }
-
 
     /*!
     \brief Get vector of std::shared_ptrs to the lines of this element

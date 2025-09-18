@@ -44,7 +44,7 @@ namespace Mortar
       static constexpr int n = Core::FE::num_nodes(distype);
       static constexpr int ndim = Core::FE::dim<distype> + 1;
 
-      const Core::Nodes::Node* const* mynodes = ele.points();
+      const Core::Nodes::Node* const* mynodes = ele.nodes();
       if (!mynodes) FOUR_C_THROW("ERROR: local_to_global: Null pointer!");
 
       std::fill(globcoord, globcoord + ndim, 0.0);

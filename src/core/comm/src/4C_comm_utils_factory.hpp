@@ -135,8 +135,8 @@ namespace Core::Communication
       // get connectivity infos
       for (unsigned int inode = 0; inode < nnode; inode++)
       {
-        nodeids[inode] = ele.point_ids()[connectivity[iele][inode]];
-        nodes[inode] = ele.points()[connectivity[iele][inode]];
+        nodeids[inode] = ele.node_ids()[connectivity[iele][inode]];
+        nodes[inode] = ele.nodes()[connectivity[iele][inode]];
       }
 
       // allocate a new boundary element
