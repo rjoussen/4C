@@ -56,22 +56,82 @@ namespace
     fill_data(data.second);
   }
 
+  struct TriviallyCopyable
+  {
+    int a;
+    double b;
+    char c;
+
+    auto operator<=>(const TriviallyCopyable&) const = default;
+  };
+  static_assert(std::is_trivially_copyable_v<TriviallyCopyable>);
+
+  void fill_data(TriviallyCopyable& data)
+  {
+    fill_data(data.a);
+    fill_data(data.b);
+    fill_data(data.c);
+  }
+
+  struct CustomPack
+  {
+    std::string data;
+
+    void pack(Core::Communication::PackBuffer& buffer) const
+    {
+      Core::Communication::add_to_pack(buffer, data);
+    }
+    void unpack(Core::Communication::UnpackBuffer& buffer)
+    {
+      Core::Communication::extract_from_pack(buffer, data);
+    }
+    auto operator<=>(const CustomPack&) const = default;
+  };
+
+  void fill_data(CustomPack& data) { fill_data(data.data); }
+
+
+  struct TriviallyCopyableAndCustomPack
+  {
+    int a;
+
+    void pack(Core::Communication::PackBuffer& buffer) const
+    {
+      int a_plus_one = a + 1;
+      Core::Communication::add_to_pack(buffer, a_plus_one);
+    }
+
+    void unpack(Core::Communication::UnpackBuffer& buffer)
+    {
+      int a_plus_one;
+      Core::Communication::extract_from_pack(buffer, a_plus_one);
+      a = a_plus_one - 1;
+    }
+
+    auto operator<=>(const TriviallyCopyableAndCustomPack&) const = default;
+  };
+  static_assert(std::is_trivially_copyable_v<TriviallyCopyableAndCustomPack>);
+
+  void fill_data(TriviallyCopyableAndCustomPack& data) { fill_data(data.a); }
+
 
   /**
    * A test fixture to test that basic types can round-trip through the pack/unpack mechanism.
    */
   template <typename T>
-  class PackUnpackStandardTypes : public ::testing::Test
+  class PackUnpackRoundtripTest : public ::testing::Test
   {
   };
 
-  using MyTypes = ::testing::Types<int, double, char, std::string, std::vector<int>,
+  using TestTypes = ::testing::Types<int, double, char, std::string, std::vector<int>,
       std::vector<std::vector<std::vector<int>>>, std::map<std::string, bool>, std::optional<int>,
-      std::optional<std::vector<double>>>;
+      std::optional<std::vector<double>>,
+      // custom types
+      TriviallyCopyable, CustomPack, TriviallyCopyableAndCustomPack>;
 
-  TYPED_TEST_SUITE(PackUnpackStandardTypes, MyTypes);
+  TYPED_TEST_SUITE(PackUnpackRoundtripTest, TestTypes);
 
-  TYPED_TEST(PackUnpackStandardTypes, Empty)
+  TYPED_TEST(PackUnpackRoundtripTest, Empty)
   {
     TypeParam data{};
     Core::Communication::PackBuffer pack_buffer;
@@ -84,7 +144,7 @@ namespace
     EXPECT_EQ(data, unpacked_data);
   }
 
-  TYPED_TEST(PackUnpackStandardTypes, NonEmpty)
+  TYPED_TEST(PackUnpackRoundtripTest, NonEmpty)
   {
     TypeParam data;
     fill_data(data);
