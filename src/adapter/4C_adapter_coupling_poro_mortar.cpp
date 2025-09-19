@@ -105,7 +105,7 @@ void Adapter::CouplingPoroMortar::add_mortar_elements(
   if (masterdis.get() != slavedis.get())
   {
     int nummastermtreles = masterelements.size();
-    Core::Communication::sum_all(&nummastermtreles, &eleoffset, 1, comm_);
+    eleoffset = Core::Communication::sum_all(nummastermtreles, comm_);
   }
 
   // feeding master elements to the interface

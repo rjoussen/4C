@@ -419,7 +419,7 @@ void Solid::TimIntImpl::predict()
   if (fresn_str_ != nullptr)
   {
     double loc = params.get<double>("cond_rhs_norm");
-    Core::Communication::sum_all(&loc, &cond_res_, 1, discret_->get_comm());
+    cond_res_ = Core::Communication::sum_all(loc, discret_->get_comm());
   }
 
   // rotate to local coordinate systems
@@ -1907,7 +1907,7 @@ int Solid::TimIntImpl::newton_ls()
         exceptcount = 1;
 #endif
       int tmp = 0;
-      Core::Communication::sum_all(&exceptcount, &tmp, 1, discret_->get_comm());
+      tmp = Core::Communication::sum_all(exceptcount, discret_->get_comm());
       if (tmp) eval_error = true;
 #ifdef FOUR_C_ENABLE_FE_TRAPPING
       feclearexcept(FE_ALL_EXCEPT);
@@ -1919,7 +1919,7 @@ int Solid::TimIntImpl::newton_ls()
     if (fresn_str_ != nullptr)
     {
       double loc = params.get<double>("cond_rhs_norm");
-      Core::Communication::sum_all(&loc, &cond_res_, 1, discret_->get_comm());
+      cond_res_ = Core::Communication::sum_all(loc, discret_->get_comm());
     }
 
     // blank residual at (locally oriented) Dirichlet DOFs
@@ -2140,7 +2140,7 @@ void Solid::TimIntImpl::ls_update_structural_rh_sand_stiff(bool& isexcept, doubl
   if (fresn_str_ != nullptr)
   {
     double loc = params.get<double>("cond_rhs_norm");
-    Core::Communication::sum_all(&loc, &cond_res_, 1, discret_->get_comm());
+    cond_res_ = Core::Communication::sum_all(loc, discret_->get_comm());
   }
 
 #ifdef FOUR_C_ENABLE_FE_TRAPPING
@@ -2151,7 +2151,7 @@ void Solid::TimIntImpl::ls_update_structural_rh_sand_stiff(bool& isexcept, doubl
 
   // synchronize the exception flag isexcept on all processors
   int exceptsum = 0;
-  Core::Communication::sum_all(&exceptcount, &exceptsum, 1, discret_->get_comm());
+  exceptsum = Core::Communication::sum_all(exceptcount, discret_->get_comm());
   if (exceptsum > 0)
     isexcept = true;
   else
@@ -2219,7 +2219,7 @@ int Solid::TimIntImpl::ls_eval_merit_fct(double& merit_fct)
   if (fetestexcept(FE_OVERFLOW)) exceptcount = 1;
 #endif
   int exceptsum = 0;
-  Core::Communication::sum_all(&exceptcount, &exceptsum, 1, discret_->get_comm());
+  exceptsum = Core::Communication::sum_all(exceptcount, discret_->get_comm());
   if (exceptsum != 0) return err;
 #ifdef FOUR_C_ENABLE_FE_TRAPPING
   feclearexcept(FE_ALL_EXCEPT);

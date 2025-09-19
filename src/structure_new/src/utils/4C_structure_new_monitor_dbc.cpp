@@ -25,6 +25,9 @@
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
+#include <algorithm>
+#include <vector>
+
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
@@ -499,7 +502,8 @@ void Solid::MonitorDbc::get_area(double area[], const Core::Conditions::Conditio
     larea[AreaType::curr] += Core::Geo::element_area(fele->shape(), xyze_curr);
   }
 
-  Core::Communication::sum_all(larea.data(), area, 2, discret.get_comm());
+  std::array<double, 2> garea = Core::Communication::sum_all(larea, discret.get_comm());
+  std::ranges::copy(garea, area);
 }
 
 /*----------------------------------------------------------------------------*
@@ -521,8 +525,7 @@ double Solid::MonitorDbc::get_reaction_force(Core::LinAlg::Matrix<DIM, 1>& rforc
     for (int i = 0; i < react_maps[d]->num_my_elements(); ++i) lrforce_comp += vals[i];
   }
 
-  Core::Communication::sum_all(
-      lrforce_xyz.data(), rforce_xyz.data(), DIM, discret_ptr_->get_comm());
+  rforce_xyz = Core::Communication::sum_all(lrforce_xyz, discret_ptr_->get_comm());
   return rforce_xyz.norm2();
 }
 
@@ -584,8 +587,7 @@ double Solid::MonitorDbc::get_reaction_moment(Core::LinAlg::Matrix<DIM, 1>& rmom
     lrmoment_xyz += node_reaction_moment;
   }
 
-  Core::Communication::sum_all(
-      lrmoment_xyz.data(), rmoment_xyz.data(), DIM, discret_ptr_->get_comm());
+  rmoment_xyz = Core::Communication::sum_all(lrmoment_xyz, discret_ptr_->get_comm());
   return rmoment_xyz.norm2();
 }
 

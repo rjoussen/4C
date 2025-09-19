@@ -108,8 +108,7 @@ namespace Core::Binstrategy::Utils
     // -----------------------------------------------------------------------
     // ---- prepare receiving procs -----
     std::vector<int> summedtargets(numproc, 0);
-    Core::Communication::sum_all(
-        targetprocs.data(), summedtargets.data(), numproc, discret.get_comm());
+    summedtargets = Core::Communication::sum_all(targetprocs, discret.get_comm());
 
     // ---- receive ----
     for (int rec = 0; rec < summedtargets[Core::Communication::my_mpi_rank(discret.get_comm())];
@@ -203,8 +202,7 @@ namespace Core::Binstrategy::Utils
     // -----------------------------------------------------------------------
     // ---- prepare receiving procs -----
     std::vector<int> summedtargets(numproc, 0);
-    Core::Communication::sum_all(
-        targetprocs.data(), summedtargets.data(), numproc, discret.get_comm());
+    summedtargets = Core::Communication::sum_all(targetprocs, discret.get_comm());
 
     // ---- receive ----
     for (int rec = 0; rec < summedtargets[Core::Communication::my_mpi_rank(discret.get_comm())];
