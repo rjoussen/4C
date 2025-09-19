@@ -304,17 +304,13 @@ namespace Core::Elements
     \return Ptr to pointers to nodes of the element in local nodal ordering.
             Returns nullptr if pointers to not exist.
     */
-    virtual Core::Nodes::Node** nodes()
+    Core::Nodes::Node** nodes()
     {
       if (node_.size())
         return node_.data();
       else
         return nullptr;
     }
-
-    // mgee: change to this (as const and !const):
-    // virtual std::vector<Core::Nodes::Node*>& Nodes()
-    //{ return node_; }
 
     /*!
     \brief Get const vector of ptrs to nodes
@@ -328,41 +324,13 @@ namespace Core::Elements
     \return Ptr to pointers to nodes of the element in local nodal ordering.
             Returns nullptr if pointers to not exist.
     */
-    virtual const Core::Nodes::Node* const* nodes() const
+    const Core::Nodes::Node* const* nodes() const
     {
       if (node_.size())
         return (const Core::Nodes::Node* const*)(node_.data());
       else
         return nullptr;
     }
-
-    /*!
-     * \brief Return id's of points forming the geometry of this element
-     *
-     * For finite elements, this is equal to NodeIds(). Needed for meshfree
-     * discretization where the integration cell (i.e. the "element") is not
-     * formed by the nodes and many more nodes can have influence.
-     */
-    const int* point_ids() const { return node_ids(); }
-
-    /*!
-     * \brief Get vector of ptrs to points forming the geometry of this element
-     *
-     * For finite elements, this is equal to Nodes(). Needed for meshfree
-     * discretization where the integration cell (i.e. the "element") is not
-     * formed by the nodes and many more nodes can have influence.
-     */
-    Core::Nodes::Node** points() { return nodes(); }
-
-    /*!
-     * \brief Get const vector of ptrs to points forming the geometry of this element
-     *
-     * For finite elements, this is equal to Nodes() const. Needed for meshfree
-     * discretization where the integration cell (i.e. the "element") is not
-     * formed by the nodes and many more nodes can have influence.
-     */
-    const Core::Nodes::Node* const* points() const { return nodes(); }
-
 
     /*!
     \brief Get vector of std::shared_ptrs to the lines of this element
@@ -386,8 +354,6 @@ might become invalid after a redistribution of the discretization.
       return std::vector<std::shared_ptr<Element>>(0);
     }
 
-    // virtual const Element*const* Lines() const { FOUR_C_THROW("unexpected base method called.");
-    // return nullptr; }
 
     /*!
     \brief Get vector of std::shared_ptrs to the surfaces of this element

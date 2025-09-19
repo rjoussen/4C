@@ -55,7 +55,7 @@ namespace Discret
       Core::LinAlg::SerialDenseMatrix compute_null_space(
           Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override
       {
-        return FLD::compute_fluid_null_space(node, numdof, dimnsp);
+        return FLD::compute_fluid_null_space(numdof, dimnsp);
       }
 
       void setup_element_definition(

@@ -7,6 +7,7 @@
 
 #include "4C_mortar_coupling3d_classes.hpp"
 
+#include "4C_fem_discretization.hpp"
 #include "4C_fem_general_node.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
@@ -47,7 +48,11 @@ Mortar::IntElement::IntElement(int lid, int id, int owner, Mortar::Element* pare
     nodes_.push_back(Node(nodeids[i], nodes[i]->x(), nodes[i]->owner(), empty_dofs, isslave));
   for (int i = 0; i < numnode; ++i) nodes_ptr_.push_back(&(nodes_[i]));
 
-  if (numnode > 0) build_nodal_pointers(nodes.data());
+  if (par_shape() == Core::FE::CellType::nurbs9)
+    build_nodal_pointers(nodes_ptr_.data());
+  else
+    build_nodal_pointers(nodes.data());
+
 
   // as discretization is already evaluated, compute area
   // (data container has to be initialized first)

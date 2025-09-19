@@ -841,7 +841,7 @@ bool Mortar::ProjectorCalcEleBased<distype_s, distype_m>::project_gauss_point_3d
     Core::LinAlg::Matrix<ndim_, ns_> coord;
     coord.clear();
 
-    const Core::Nodes::Node* const* mypoints = gpele.points();
+    const Core::Nodes::Node* const* mypoints = gpele.nodes();
     const Core::Nodes::Node* const* mynodes = gpele.nodes();
     if (!mypoints) FOUR_C_THROW("ProjectGaussPoint: Null pointer!");
 

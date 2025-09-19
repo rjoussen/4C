@@ -760,11 +760,11 @@ namespace Mortar
     double inline get_nodal_coords(const int direction, const int node) const
     {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-      const Node* mymrtrnode = dynamic_cast<const Node*>(points()[node]);
+      const Node* mymrtrnode = dynamic_cast<const Node*>(nodes()[node]);
       if (!mymrtrnode) FOUR_C_THROW("GetNodalCoords: Null pointer!");
       return mymrtrnode->xspatial()[direction];
 #else
-      return static_cast<const Node*>(points()[node])->xspatial()[direction];
+      return static_cast<const Node*>(nodes()[node])->xspatial()[direction];
 #endif
     }
 
@@ -779,12 +779,12 @@ namespace Mortar
     double inline get_nodal_coords_old(const int direction, const int node) const
     {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-      const Node* mymrtrnode = dynamic_cast<const Node*>(points()[node]);
+      const Node* mymrtrnode = dynamic_cast<const Node*>(nodes()[node]);
       if (!mymrtrnode) FOUR_C_THROW("GetNodalCoords: Null pointer!");
       return mymrtrnode->x()[direction] + mymrtrnode->uold()[direction];
 #else
-      return (static_cast<const Node*>(points()[node])->x()[direction] +
-              static_cast<const Node*>(points()[node])->uold()[direction]);
+      return (static_cast<const Node*>(nodes()[node])->x()[direction] +
+              static_cast<const Node*>(nodes()[node])->uold()[direction]);
 #endif
     }
 

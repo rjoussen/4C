@@ -811,7 +811,7 @@ void Mortar::Element::deriv_unit_normal_at_xi(
 void Mortar::Element::get_nodal_coords(Core::LinAlg::SerialDenseMatrix& coord) const
 {
   const int nnodes = num_point();
-  const Core::Nodes::Node* const* mynodes = points();
+  const Core::Nodes::Node* const* mynodes = nodes();
   if (!mynodes) FOUR_C_THROW("GetNodalCoords: Null pointer!");
   if (coord.numRows() != 3 || coord.numCols() != nnodes)
     FOUR_C_THROW("GetNodalCoords: Dimensions!");
@@ -833,7 +833,7 @@ void Mortar::Element::get_nodal_coords_old(
     Core::LinAlg::SerialDenseMatrix& coord, bool isinit) const
 {
   const int nnodes = num_point();
-  const Core::Nodes::Node* const* mynodes = points();
+  const Core::Nodes::Node* const* mynodes = nodes();
   if (!mynodes) FOUR_C_THROW("GetNodalCoordsOld: Null pointer!");
   if (coord.numRows() != 3 || coord.numCols() != nnodes)
     FOUR_C_THROW("GetNodalCoordsOld: Dimensions!");
