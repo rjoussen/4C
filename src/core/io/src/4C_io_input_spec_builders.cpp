@@ -1161,6 +1161,15 @@ namespace
     std::vector<Core::IO::InputSpec> flattened_specs;
     for (auto&& spec : specs)
     {
+      // Strip of redundant all_of wrappers with only one spec.
+      if (auto* all_of_spec =
+              dynamic_cast<Core::IO::Internal::InputSpecTypeErasedImplementation<AllOfSpec>*>(
+                  &spec.impl());
+          all_of_spec && all_of_spec->wrapped.specs.size() == 1)
+      {
+        spec = all_of_spec->wrapped.specs[0];
+      }
+
       if (auto* nested =
               dynamic_cast<Core::IO::Internal::InputSpecTypeErasedImplementation<InputSpecType>*>(
                   &spec.impl());
