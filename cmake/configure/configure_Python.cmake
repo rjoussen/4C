@@ -7,7 +7,6 @@
 
 ### Function to execute a process and check for errors
 function(_execute_process)
-
   set(options "")
   set(oneValueArgs "")
   set(multiValueArgs PROCESS_COMMAND)
@@ -43,21 +42,20 @@ function(_execute_process)
     message(STATUS "Result: ${_command_result}")
     message(FATAL_ERROR "Error: ${_command_error}")
   endif()
-
 endfunction()
 
 ### Set up a virtual Python environment for building and testing 4C
-
 message(STATUS "Setting up virtual Python environment for building and testing 4C")
 find_package(Python REQUIRED COMPONENTS Interpreter Development)
+
 if(Python_FOUND)
   message(STATUS "Using python executable: ${Python_EXECUTABLE} (V${Python_VERSION})")
 endif()
 
-if(Python_VERSION VERSION_LESS "3.10")
+if(Python_VERSION VERSION_LESS "3.12")
   message(
     FATAL_ERROR
-      "Python version must be at least 3.10, but found ${Python_VERSION}. "
+      "Python version must be at least 3.12, but found ${Python_VERSION}. "
       "Please install a newer version of Python and set FOUR_C_PYTHON_ROOT to the correct path."
     )
 endif()
@@ -79,15 +77,8 @@ _execute_process(
   PROCESS_COMMAND
   ${FOUR_C_PYTHON_VENV_BUILD}/bin/pip
   install
-  pip==24.3.1
-  wheel==0.45.0
-  )
-_execute_process(
-  PROCESS_COMMAND
-  ${FOUR_C_PYTHON_VENV_BUILD}/bin/pip
-  install
-  -r
-  ${PROJECT_SOURCE_DIR}/cmake/python/requirements.txt
+  -e
+  ${PROJECT_SOURCE_DIR}/utilities/four_c_python[build]
   )
 
 message(

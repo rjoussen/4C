@@ -9,7 +9,7 @@
 
 import argparse
 import os
-from four_c_utils import common_utils as utils
+from four_c_common_utils import common_utils as utils
 
 
 def check_header_guards(filenames, allerrors):

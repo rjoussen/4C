@@ -1,0 +1,4 @@
+rapidyaml
+jsonschema-rs
+
+numpy

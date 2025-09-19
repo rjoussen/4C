@@ -1,0 +1,2 @@
+pre-commit==4.1.0
+networkx==3.4.2

@@ -24,9 +24,9 @@ done
 
 stored_hash_file="./utilities/python-venv/_venv_hash.txt"
 
-# Hash the content of ./utilities/four_c_utils and requirements.txt
+# Hash the content of ./utilities/four_c_python
 # Also include the set_up_dev_env.sh script, so we can force a rerun of this script if it changes
-hash=$(find ./utilities/four_c_utils/ utilities/requirements.txt utilities/set_up_dev_env.sh -not -wholename '*.egg-info*' -not -wholename '*__pycache__*' -type f -exec sha256sum {} \; | sha256sum | cut -d ' ' -f 1)
+hash=$(find ./utilities/four_c_python/ utilities/set_up_dev_env.sh -not -wholename '*.egg-info*' -not -wholename '*__pycache__*' -type f -exec sha256sum {} \; | sha256sum | cut -d ' ' -f 1)
 
 # If the --update option is given, update the hash
 if [ "$update" = true ]; then

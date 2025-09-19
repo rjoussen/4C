@@ -238,7 +238,7 @@ jobs:
           ${{ github.workspace }}/utilities/set_up_dev_env.sh
           source ${{ github.workspace }}/utilities/python-venv/bin/activate
           shopt -s globstar nullglob
-          python ${{ github.workspace }}/utilities/validate_schema.py --schema ${{ github.workspace }}/4C_schema.json  **/*.4C.yaml **/*.4C.yml **/*.4C.json
+          validate-test-files --schema ${{ github.workspace }}/4C_schema.json  **/*.4C.yaml **/*.4C.yml **/*.4C.json
 
   gcc13_no_optional_dependencies_build:
     runs-on: ubuntu-latest
