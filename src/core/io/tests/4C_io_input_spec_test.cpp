@@ -689,6 +689,65 @@ specs:
     EXPECT_EQ(out.str(), expected);
   }
 
+  TEST(InputSpecTest, NestedOneOfsWithAllOfs)
+  {
+    auto spec = one_of({
+        all_of({
+            one_of({
+                parameter<int>("a"),
+                parameter<int>("b"),
+            }),
+            one_of({
+                parameter<std::string>("c"),
+            }),
+        }),
+        all_of({
+            one_of({
+                parameter<int>("c"),
+                parameter<int>("d"),
+            }),
+        }),
+    });
+
+    std::ostringstream out;
+    ryml::Tree tree = init_yaml_tree_with_exceptions();
+    ryml::NodeRef root = tree.rootref();
+    YamlNodeRef yaml(root, "");
+    spec.emit_metadata(yaml);
+    out << tree;
+
+    std::string expected = R"(type: one_of
+specs:
+  - type: all_of
+    specs:
+      - name: a
+        type: int
+        required: true
+      - name: c
+        type: string
+        required: true
+  - type: all_of
+    specs:
+      - name: b
+        type: int
+        required: true
+      - name: c
+        type: string
+        required: true
+  - type: all_of
+    specs:
+      - name: c
+        type: int
+        required: true
+  - type: all_of
+    specs:
+      - name: d
+        type: int
+        required: true
+)";
+    EXPECT_EQ(out.str(), expected);
+  }
+
   TEST(InputSpecTest, PrintAsDat)
   {
     enum class Options
