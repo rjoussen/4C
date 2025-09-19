@@ -49,6 +49,13 @@ namespace Core::GeometricSearch
   class MatchingOctree
   {
    public:
+    /// Data structure to hold entity id and position regardless of entity type
+    struct Entity
+    {
+      int gid;
+      std::array<double, 3> position;
+    };
+
     //! Constructor
     MatchingOctree();
 
@@ -131,13 +138,9 @@ namespace Core::GeometricSearch
     //! returns true if entity is owned by calling proc
     virtual bool check_entity_owner(const Core::FE::Discretization* dis, const int id) = 0;
 
-    //! pack entity to PackPuffer
+    //! Write data as Entity to PackPuffer
     virtual void pack_entity(Core::Communication::PackBuffer& data,
         const Core::FE::Discretization* dis, const int id) = 0;
-
-    //! unpack entity to PackPuffer
-    virtual void unpack_entity(
-        Core::Communication::UnpackBuffer& buffer, std::vector<char>& data) = 0;
 
     //! check if unpacked type is correct
     virtual int check_valid_entity_type(std::shared_ptr<Core::Communication::ParObject> o) = 0;
@@ -300,9 +303,6 @@ namespace Core::GeometricSearch
     void pack_entity(Core::Communication::PackBuffer& data, const Core::FE::Discretization* dis,
         const int id) override;
 
-    //! unpack node from PackPuffer
-    void unpack_entity(Communication::UnpackBuffer& buffer, std::vector<char>& data) override;
-
     //! check if unpacked type is correct
     int check_valid_entity_type(std::shared_ptr<Core::Communication::ParObject> o) override;
 
@@ -337,9 +337,6 @@ namespace Core::GeometricSearch
     //! pack element to PackPuffer
     void pack_entity(Core::Communication::PackBuffer& data, const Core::FE::Discretization* dis,
         const int id) override;
-
-    //! unpack element from PackPuffer
-    void unpack_entity(Communication::UnpackBuffer& buffer, std::vector<char>& data) override;
 
     //! check if unpacked type is correct
     int check_valid_entity_type(std::shared_ptr<Core::Communication::ParObject> o) override;
