@@ -523,4 +523,25 @@ Core::LinAlg::SparseMatrix Core::LinAlg::multiply_multi_vector_multi_vector(
   return mat;
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void Core::LinAlg::multiply_multi_vectors(Core::LinAlg::MultiVector<double>& multivect1,
+    char multivect1Trans, Core::LinAlg::MultiVector<double>& multivect2, char multivect2Trans,
+    Core::LinAlg::Map& redmap, Core::LinAlg::Import& impo,
+    Core::LinAlg::MultiVector<double>& result)
+{
+  // initialize temporary Core::LinAlg::MultiVector<double> (redmap: all procs hold all
+  // elements/rows)
+  Core::LinAlg::MultiVector<double> multivect_temp(redmap, multivect2.NumVectors(), true);
+
+  // do the multiplication: (all procs hold the full result)
+  int err =
+      multivect_temp.Multiply(multivect1Trans, multivect2Trans, 1.0, multivect1, multivect2, 0.0);
+  if (err) FOUR_C_THROW("Multiplication failed.");
+
+  // import the result to a Core::LinAlg::MultiVector<double> whose elements/rows are distributed
+  // over all procs
+  result.Import(multivect_temp, impo, Insert, nullptr);
+}
+
 FOUR_C_NAMESPACE_CLOSE

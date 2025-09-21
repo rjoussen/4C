@@ -304,6 +304,11 @@ namespace Core::LinAlg
   void std_vector_to_multi_vector(const std::vector<double>& std_vector,
       Core::LinAlg::MultiVector<double>& multi_vector, const int block_size);
 
+  //! Core::LinAlg::MultiVector<double> to Core::LinAlg::SparseMatrix
+  void multi_vector_to_linalg_sparse_matrix(Core::LinAlg::MultiVector<double>& multivect,
+      Core::LinAlg::Map& rangemap, std::shared_ptr<Core::LinAlg::Map> domainmap,
+      Core::LinAlg::SparseMatrix& sparsemat);
+
   /*! \brief Write values from a std::vector to a Core::LinAlg::MultiVector<double>
    *
    *  The data layout in the std::vector is consecutively ordered. The
@@ -422,7 +427,6 @@ namespace Core::LinAlg
   std::shared_ptr<Core::LinAlg::SparseMatrix> matrix_row_col_transform_gids(
       const Core::LinAlg::SparseMatrix& inmat, const Core::LinAlg::Map& newrowmap,
       const Core::LinAlg::Map& newdomainmap);
-
 
 }  // namespace Core::LinAlg
 

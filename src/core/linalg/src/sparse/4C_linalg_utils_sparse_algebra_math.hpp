@@ -200,6 +200,13 @@ namespace Core::LinAlg
       const Core::LinAlg::MultiVector<double>& mv1, const Core::LinAlg::MultiVector<double>& mv2,
       const int id = 1, const bool fill = true);
 
+  /**
+   * \brief Multiply two multi vectors
+   */
+  void multiply_multi_vectors(Core::LinAlg::MultiVector<double>&, char,
+      Core::LinAlg::MultiVector<double>&, char, Core::LinAlg::Map&, Core::LinAlg::Import&,
+      Core::LinAlg::MultiVector<double>&);
+
 }  // namespace Core::LinAlg
 
 FOUR_C_NAMESPACE_CLOSE

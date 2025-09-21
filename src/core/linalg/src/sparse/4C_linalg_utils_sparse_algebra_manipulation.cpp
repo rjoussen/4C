@@ -795,6 +795,36 @@ void Core::LinAlg::multi_vector_to_std_vector(const Core::LinAlg::MultiVector<do
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
+void Core::LinAlg::multi_vector_to_linalg_sparse_matrix(
+    Core::LinAlg::MultiVector<double>& multivect, Core::LinAlg::Map& rangemap,
+    std::shared_ptr<Core::LinAlg::Map> domainmap, Core::LinAlg::SparseMatrix& sparsemat)
+{
+  double* Values;
+  Values = multivect.Values();
+
+  double value;
+  for (int i = 0; i < multivect.NumVectors(); i++)
+  {
+    for (int j = 0; j < multivect.MyLength(); j++)
+    {
+      value = Values[i * multivect.MyLength() + j];
+
+      // if we have a zero value, just continue
+      if (std::abs(value) < std::numeric_limits<double>::min()) continue;
+
+      sparsemat.assemble(value, rangemap.gid(j), i);
+    }
+  }
+
+  // Complete the Core::LinAlg::SparseMatrix
+  if (domainmap == nullptr)
+    sparsemat.complete();
+  else
+    sparsemat.complete(*domainmap, rangemap);
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 std::shared_ptr<Core::LinAlg::SparseMatrix> Core::LinAlg::matrix_row_transform(
     const Core::LinAlg::SparseMatrix& inmat, const Core::LinAlg::Map& newrowmap)
 {

@@ -10,6 +10,7 @@
 #include "4C_comm_mpi_utils.hpp"
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
+#include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_utils_string.hpp"
 
@@ -105,7 +106,7 @@ Cardiovascular0D::ProperOrthogonalDecomposition::reduce_diagonal(Core::LinAlg::S
   // convert Core::LinAlg::MultiVector<double> to Core::LinAlg::SparseMatrix
   std::shared_ptr<Core::LinAlg::SparseMatrix> M_red =
       std::make_shared<Core::LinAlg::SparseMatrix>(*structmapr_, 0, false, true);
-  multi_vector_to_linalg_sparse_matrix(*M_red_mvec, *structmapr_, nullptr, *M_red);
+  Core::LinAlg::multi_vector_to_linalg_sparse_matrix(*M_red_mvec, *structmapr_, nullptr, *M_red);
 
   return M_red;
 }
@@ -126,7 +127,7 @@ Cardiovascular0D::ProperOrthogonalDecomposition::reduce_off_diagonal(Core::LinAl
   std::shared_ptr<Core::LinAlg::Map> rangemap = std::make_shared<Core::LinAlg::Map>(M.domain_map());
   std::shared_ptr<Core::LinAlg::SparseMatrix> M_red =
       std::make_shared<Core::LinAlg::SparseMatrix>(*rangemap, 0, false, true);
-  multi_vector_to_linalg_sparse_matrix(*M_tmp, *rangemap, structmapr_, *M_red);
+  Core::LinAlg::multi_vector_to_linalg_sparse_matrix(*M_tmp, *rangemap, structmapr_, *M_red);
 
   return M_red;
 }
@@ -175,57 +176,6 @@ Cardiovascular0D::ProperOrthogonalDecomposition::extend_solution(
   return v;
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void Cardiovascular0D::ProperOrthogonalDecomposition::multiply_multi_vectors(
-    Core::LinAlg::MultiVector<double>& multivect1, char multivect1Trans,
-    Core::LinAlg::MultiVector<double>& multivect2, char multivect2Trans, Core::LinAlg::Map& redmap,
-    Core::LinAlg::Import& impo, Core::LinAlg::MultiVector<double>& result)
-{
-  // initialize temporary Core::LinAlg::MultiVector<double> (redmap: all procs hold all
-  // elements/rows)
-  Core::LinAlg::MultiVector<double> multivect_temp(redmap, multivect2.NumVectors(), true);
-
-  // do the multiplication: (all procs hold the full result)
-  int err =
-      multivect_temp.Multiply(multivect1Trans, multivect2Trans, 1.0, multivect1, multivect2, 0.0);
-  if (err) FOUR_C_THROW("Multiplication failed.");
-
-  // import the result to a Core::LinAlg::MultiVector<double> whose elements/rows are distributed
-  // over all procs
-  result.Import(multivect_temp, impo, Insert, nullptr);
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void Cardiovascular0D::ProperOrthogonalDecomposition::multi_vector_to_linalg_sparse_matrix(
-    Core::LinAlg::MultiVector<double>& multivect, Core::LinAlg::Map& rangemap,
-    std::shared_ptr<Core::LinAlg::Map> domainmap, Core::LinAlg::SparseMatrix& sparsemat)
-{
-  // pointer to values of the Core::LinAlg::MultiVector<double>
-  double* Values;
-  Values = multivect.Values();
-
-  // loop over columns of the Core::LinAlg::MultiVector<double>
-  for (int i = 0; i < multivect.NumVectors(); i++)
-  {
-    // loop over rows of the Core::LinAlg::MultiVector<double>
-    for (int j = 0; j < multivect.MyLength(); j++)
-    {
-      // assemble the values into the Core::LinAlg::SparseMatrix (value by value)
-      sparsemat.assemble(Values[i * multivect.MyLength() + j], rangemap.gid(j), i);
-    }
-  }
-
-  // Complete the Core::LinAlg::SparseMatrix
-  if (domainmap == nullptr)
-    sparsemat.complete();
-  else
-    sparsemat.complete(*domainmap, rangemap);
-  return;
-}
 
 /*----------------------------------------------------------------------*
  | read binary projection matrix from file                pfaller Oct17 |
