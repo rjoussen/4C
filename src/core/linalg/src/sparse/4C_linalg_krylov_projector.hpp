@@ -97,19 +97,6 @@ namespace Core::LinAlg
         const Core::LinAlg::MultiVector<double>& v1, const Core::LinAlg::MultiVector<double>& v2,
         const Core::LinAlg::SerialDenseMatrix& inv_v1Tv2) const;
 
-    //! multiplies MultiVector times Core::LinAlg::SerialDenseMatrix
-    Core::LinAlg::MultiVector<double> multiply_multi_vector_dense_matrix(
-        const Core::LinAlg::MultiVector<double>& mv,
-        const Core::LinAlg::SerialDenseMatrix& dm) const;
-
-    //! outer product of two MultiVectors
-    Core::LinAlg::SparseMatrix multiply_multi_vector_multi_vector(
-        const Core::LinAlg::MultiVector<double>& mv1,  //! first MultiVector
-        const Core::LinAlg::MultiVector<double>& mv2,  //! second MultiVector
-        const int id = 1,  //! id of MultiVector form which sparsity of output matrix is estimated
-        const bool fill = true  //! bool for completing matrix after computation
-    ) const;
-
     /*
       (Modified) ApplyInverse call
 

@@ -10,6 +10,7 @@
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 #include "4C_linalg_transfer.hpp"
+#include "4C_linalg_utils_densematrix_communication.hpp"
 #include "4C_utils_enum.hpp"
 #include "4C_utils_exceptions.hpp"
 
@@ -400,6 +401,126 @@ std::shared_ptr<Core::LinAlg::SparseMatrix> Core::LinAlg::matrix_sparse_inverse(
   A_inverse->complete();
 
   return A_inverse;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Core::LinAlg::MultiVector<double> Core::LinAlg::multiply_multi_vector_dense_matrix(
+    const Core::LinAlg::MultiVector<double>& mv, const Core::LinAlg::SerialDenseMatrix& dm)
+{
+  Core::LinAlg::MultiVector<double> mvout(mv.get_map(), mv.NumVectors());
+
+  for (int rr = 0; rr < mv.NumVectors(); ++rr)
+  {
+    auto& mvouti = mvout(rr);
+
+    for (int mm = 0; mm < mv.NumVectors(); ++mm)
+    {
+      mvouti.update(dm(mm, rr), mv(mm), 1.0);
+    }
+  }
+
+  return mvout;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Core::LinAlg::SparseMatrix Core::LinAlg::multiply_multi_vector_multi_vector(
+    const Core::LinAlg::MultiVector<double>& mv1, const Core::LinAlg::MultiVector<double>& mv2,
+    const int id, const bool fill)
+{
+  // compute information about density of P^T A P
+  const Core::LinAlg::MultiVector<double>& temp = [&]()
+  {
+    if (id == 1)
+      return mv1;
+    else if (id == 2)
+      return mv2;
+    else
+      FOUR_C_THROW("id must be 1 or 2");
+  }();
+
+  Core::LinAlg::Vector<double> prod(temp(0));
+  for (int i = 1; i < mv1.NumVectors(); ++i) prod.multiply(1.0, temp(i), prod, 1.0);
+  int numnonzero = 0;
+  for (int i = 0; i < prod.local_length(); ++i)
+    if (prod[i] != 0.0) numnonzero++;
+
+  int glob_numnonzero = 0;
+  Core::Communication::sum_all(&numnonzero, &glob_numnonzero, 1, prod.get_comm());
+
+  Core::LinAlg::Map mv1map(mv1.get_map().num_global_elements(), mv1.get_map().num_my_elements(),
+      mv1.get_map().my_global_elements(), 0, mv1.get_map().get_comm());
+  // initialization of mat with map of mv1
+  Core::LinAlg::SparseMatrix mat(mv1map, glob_numnonzero, false);
+
+  //-------------------------------
+  // make mv2 redundant on all procs:
+  //-------------------------------
+  // auxiliary variables
+  const int nummyrows = mv1.MyLength();
+  const int numvals = mv2.GlobalLength();
+
+  Core::LinAlg::Map mv2map(mv2.get_map().num_global_elements(), mv2.get_map().num_my_elements(),
+      mv2.get_map().my_global_elements(), 0, mv2.get_map().get_comm());
+
+  // fully redundant/overlapping map
+  std::shared_ptr<Core::LinAlg::Map> redundant_map = Core::LinAlg::allreduce_e_map(mv2map);
+  // initialize global mv2 without setting to 0
+  Core::LinAlg::MultiVector<double> mv2glob(*redundant_map, mv2.NumVectors());
+  // create importer with redundant target map and distributed source map
+  Core::LinAlg::Import importer(*redundant_map, mv2.get_map());
+  // import values to global mv2
+  mv2glob.Import(mv2, importer, Insert);
+
+  //--------------------------------------------------------
+  // compute mat by multiplying upright mv1 with lying mv2^T:
+  //--------------------------------------------------------
+  // loop over all proc-rows
+  for (int rr = 0; rr < nummyrows; ++rr)
+  {
+    // get global row id of current local row id
+    const int grid = mat.global_row_index(rr);
+
+    // vector of all row values - prevented from growing in following loops
+    std::vector<double> rowvals;
+    rowvals.reserve(numvals);
+
+    // vector of indices corresponding to vector of row values
+    std::vector<int> indices;
+    indices.reserve(numvals);
+
+    // loop over all entries of global w
+    for (int mm = 0; mm < numvals; ++mm)
+    {
+      double sum = 0.0;
+      // loop over all kernel/weight vector
+      for (int vv = 0; vv < mv1.NumVectors(); ++vv)
+      {
+        sum += mv1(vv)[rr] * mv2glob(vv)[mm];
+      }
+
+      // add value to vector only if non-zero
+      if (sum != 0.0)
+      {
+        rowvals.push_back(sum);
+        indices.push_back(redundant_map->gid(mm));
+      }
+    }
+
+    // insert values in mat
+    int err = mat.insert_global_values(grid, indices.size(), rowvals.data(), indices.data());
+    if (err < 0)
+    {
+      FOUR_C_THROW(
+          "insertion error when trying to compute krylov projection matrix (error code: {}).", err);
+    }
+  }
+
+  // call fill complete
+  if (fill) mat.complete();
+
+  return mat;
 }
 
 FOUR_C_NAMESPACE_CLOSE
