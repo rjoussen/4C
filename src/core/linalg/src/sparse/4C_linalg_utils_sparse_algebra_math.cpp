@@ -430,7 +430,7 @@ Core::LinAlg::SparseMatrix Core::LinAlg::multiply_multi_vector_multi_vector(
     const int id, const bool fill)
 {
   // compute information about density of P^T A P
-  const Core::LinAlg::MultiVector<double>& temp = [&]()
+  const Core::LinAlg::MultiVector<double>& get_multi_vector = [&]()
   {
     if (id == 1)
       return mv1;
@@ -440,8 +440,8 @@ Core::LinAlg::SparseMatrix Core::LinAlg::multiply_multi_vector_multi_vector(
       FOUR_C_THROW("id must be 1 or 2");
   }();
 
-  Core::LinAlg::Vector<double> prod(temp(0));
-  for (int i = 1; i < mv1.NumVectors(); ++i) prod.multiply(1.0, temp(i), prod, 1.0);
+  Core::LinAlg::Vector<double> prod(get_multi_vector(0));
+  for (int i = 1; i < mv1.NumVectors(); ++i) prod.multiply(1.0, get_multi_vector(i), prod, 1.0);
   int numnonzero = 0;
   for (int i = 0; i < prod.local_length(); ++i)
     if (prod[i] != 0.0) numnonzero++;
@@ -476,31 +476,25 @@ Core::LinAlg::SparseMatrix Core::LinAlg::multiply_multi_vector_multi_vector(
   //--------------------------------------------------------
   // compute mat by multiplying upright mv1 with lying mv2^T:
   //--------------------------------------------------------
-  // loop over all proc-rows
   for (int rr = 0; rr < nummyrows; ++rr)
   {
-    // get global row id of current local row id
     const int grid = mat.global_row_index(rr);
 
-    // vector of all row values - prevented from growing in following loops
     std::vector<double> rowvals;
     rowvals.reserve(numvals);
 
-    // vector of indices corresponding to vector of row values
     std::vector<int> indices;
     indices.reserve(numvals);
 
-    // loop over all entries of global w
     for (int mm = 0; mm < numvals; ++mm)
     {
       double sum = 0.0;
-      // loop over all kernel/weight vector
+
       for (int vv = 0; vv < mv1.NumVectors(); ++vv)
       {
         sum += mv1(vv)[rr] * mv2glob(vv)[mm];
       }
 
-      // add value to vector only if non-zero
       if (sum != 0.0)
       {
         rowvals.push_back(sum);
@@ -508,7 +502,6 @@ Core::LinAlg::SparseMatrix Core::LinAlg::multiply_multi_vector_multi_vector(
       }
     }
 
-    // insert values in mat
     int err = mat.insert_global_values(grid, indices.size(), rowvals.data(), indices.data());
     if (err < 0)
     {
@@ -527,12 +520,12 @@ Core::LinAlg::SparseMatrix Core::LinAlg::multiply_multi_vector_multi_vector(
  *----------------------------------------------------------------------*/
 void Core::LinAlg::multiply_multi_vectors(Core::LinAlg::MultiVector<double>& multivect1,
     char multivect1Trans, Core::LinAlg::MultiVector<double>& multivect2, char multivect2Trans,
-    Core::LinAlg::Map& redmap, Core::LinAlg::Import& impo,
+    Core::LinAlg::Map& redundant_map, Core::LinAlg::Import& impo,
     Core::LinAlg::MultiVector<double>& result)
 {
-  // initialize temporary Core::LinAlg::MultiVector<double> (redmap: all procs hold all
+  // initialize temporary Core::LinAlg::MultiVector<double> (redundant_map: all procs hold all
   // elements/rows)
-  Core::LinAlg::MultiVector<double> multivect_temp(redmap, multivect2.NumVectors(), true);
+  Core::LinAlg::MultiVector<double> multivect_temp(redundant_map, multivect2.NumVectors(), true);
 
   // do the multiplication: (all procs hold the full result)
   int err =
