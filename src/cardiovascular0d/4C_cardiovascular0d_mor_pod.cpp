@@ -106,7 +106,8 @@ Cardiovascular0D::ProperOrthogonalDecomposition::reduce_diagonal(Core::LinAlg::S
   // convert Core::LinAlg::MultiVector<double> to Core::LinAlg::SparseMatrix
   std::shared_ptr<Core::LinAlg::SparseMatrix> M_red =
       std::make_shared<Core::LinAlg::SparseMatrix>(*structmapr_, 0, false, true);
-  Core::LinAlg::multi_vector_to_linalg_sparse_matrix(*M_red_mvec, *structmapr_, nullptr, *M_red);
+  Core::LinAlg::multi_vector_to_linalg_sparse_matrix(
+      *M_red_mvec, *structmapr_, *structmapr_, *M_red);
 
   return M_red;
 }
@@ -127,7 +128,7 @@ Cardiovascular0D::ProperOrthogonalDecomposition::reduce_off_diagonal(Core::LinAl
   std::shared_ptr<Core::LinAlg::Map> rangemap = std::make_shared<Core::LinAlg::Map>(M.domain_map());
   std::shared_ptr<Core::LinAlg::SparseMatrix> M_red =
       std::make_shared<Core::LinAlg::SparseMatrix>(*rangemap, 0, false, true);
-  Core::LinAlg::multi_vector_to_linalg_sparse_matrix(*M_tmp, *rangemap, structmapr_, *M_red);
+  Core::LinAlg::multi_vector_to_linalg_sparse_matrix(*M_tmp, *rangemap, *structmapr_, *M_red);
 
   return M_red;
 }

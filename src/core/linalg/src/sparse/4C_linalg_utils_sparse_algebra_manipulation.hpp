@@ -304,9 +304,18 @@ namespace Core::LinAlg
   void std_vector_to_multi_vector(const std::vector<double>& std_vector,
       Core::LinAlg::MultiVector<double>& multi_vector, const int block_size);
 
-  //! Core::LinAlg::MultiVector<double> to Core::LinAlg::SparseMatrix
-  void multi_vector_to_linalg_sparse_matrix(Core::LinAlg::MultiVector<double>& multivect,
-      Core::LinAlg::Map& rangemap, std::shared_ptr<Core::LinAlg::Map> domainmap,
+  /*! \brief Convert a MultiVector<double> to a SparseMatrix
+   *
+   * The SparseMatrix will be completed with the given range map and domain map.
+   *
+   * \param multivect (in): MultiVector to be converted to a SparseMatrix
+   * \param rangemap (in): Range map of the final SparseMatrix
+   * \param domainmap (in): Domain map of the final SparseMatrix
+   * \param sparsemat (out): SparseMatrix to be filled with a MultiVector
+   *
+   */
+  void multi_vector_to_linalg_sparse_matrix(const Core::LinAlg::MultiVector<double>& multivect,
+      const Core::LinAlg::Map& rangemap, const Core::LinAlg::Map& domainmap,
       Core::LinAlg::SparseMatrix& sparsemat);
 
   /*! \brief Write values from a std::vector to a Core::LinAlg::MultiVector<double>
