@@ -1,6 +1,7 @@
 dbc monitor condition:
-  - condition information: "Condition 100 Tagged elements: ONOFF : 1 1 0 0 0 0 0 0 0 \nNodes of this condition:
-      2\n\n\n"
+  condition information: "Condition 100 Tagged elements: ONOFF : 1 1 0 0 0 0 0 0 0 \nNodes of this condition:
+    2\n\n\n"
+  node gids: [2]
 dbc monitor condition data:
   - step: 0
     time: 0
