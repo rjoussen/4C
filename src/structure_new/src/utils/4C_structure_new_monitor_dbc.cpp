@@ -237,13 +237,16 @@ void Solid::MonitorDbc::setup()
         root |= ryml::MAP;
         auto information_node = root.append_child();
         information_node << ryml::key("dbc monitor condition");
-        information_node |= ryml::SEQ;
+        information_node |= ryml::MAP;
         {
-          std::ostringstream of;
-          write_condition_header(of, OS_WIDTH, rcond_ptr);
-          auto first_entry = information_node.append_child();
-          first_entry |= ryml::MAP;
-          first_entry["condition information"] << of.str();
+          auto node_gids = information_node.append_child();
+          node_gids << ryml::key("node gids");
+          node_gids |= ryml::SEQ;
+          const auto* node_ids = rcond_ptr->get_nodes();
+          for (const auto node_id : *node_ids)
+          {
+            node_gids.append_child() << node_id;
+          }
         }
 
         // add the data node to be appended later
