@@ -13,6 +13,8 @@
 
 #include "4C_io_input_spec.hpp"
 
+#include <cstdint>
+
 FOUR_C_NAMESPACE_OPEN
 
 
