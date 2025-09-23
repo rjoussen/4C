@@ -309,7 +309,7 @@ std::shared_ptr<Core::LinAlg::MultiVector<double>> Core::FE::Discretization::bui
 
   for (int lid = 0; lid < noderowmap->num_my_elements(); ++lid)
   {
-    if (!node_.count(noderowmap->gid(lid))) continue;
+    if (!node_.contains(noderowmap->gid(lid))) continue;
     for (int dim = 0; dim < 3; ++dim)
       coordinates->ReplaceMyValue(lid, dim, node_.at(noderowmap->gid(lid))->x()[dim]);
   }
