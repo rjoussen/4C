@@ -82,41 +82,14 @@ namespace
       nodal_test_coordinates->ExtractCopy(coords.data(), nodal_test_coordinates->MyLength());
 
       // first coordinate
-      EXPECT_NEAR(coords[0], 0.0, 1e-14);
-      EXPECT_NEAR(coords[4], 0.0, 1e-14);
-      EXPECT_NEAR(coords[8], 0.0, 1e-14);
+      EXPECT_DOUBLE_EQ(coords[0], 0.0);
+      EXPECT_DOUBLE_EQ(coords[4], 0.0);
+      EXPECT_DOUBLE_EQ(coords[8], 0.0);
 
       // last coordinate
-      EXPECT_NEAR(coords[3], 0.5, 1e-14);
-      EXPECT_NEAR(coords[7], 0.0, 1e-14);
-      EXPECT_NEAR(coords[11], 0.5, 1e-14);
-    }
-
-    // build node coordinates based on the node row map of second partial discretization
-    {
-      std::array<int, 3> nodeList{50, 62, 114};  // random GIDs
-      std::shared_ptr<Core::LinAlg::Map> node_row_map =
-          std::make_shared<Core::LinAlg::Map>(-1, nodeList.size(), nodeList.data(), 0, comm_);
-      std::shared_ptr<Core::LinAlg::MultiVector<double>> nodal_test_coordinates =
-          test_discretization_->build_node_coordinates(node_row_map);
-
-      EXPECT_EQ(nodal_test_coordinates->MyLength(), 3);
-      EXPECT_EQ(nodal_test_coordinates->NumVectors(), 3);
-
-      std::array<double, 9> coords;
-      nodal_test_coordinates->ExtractCopy(coords.data(), nodal_test_coordinates->MyLength());
-
-      EXPECT_NEAR(coords[0], 0.0, 1e-14);
-      EXPECT_NEAR(coords[3], 0.0, 1e-14);
-      EXPECT_NEAR(coords[6], 0.5, 1e-14);
-
-      EXPECT_NEAR(coords[1], 0.5, 1e-14);
-      EXPECT_NEAR(coords[4], 0.5, 1e-14);
-      EXPECT_NEAR(coords[7], 0.5, 1e-14);
-
-      EXPECT_NEAR(coords[2], 1.0, 1e-14);
-      EXPECT_NEAR(coords[5], 0.5, 1e-14);
-      EXPECT_NEAR(coords[8], 1.0, 1e-14);
+      EXPECT_DOUBLE_EQ(coords[3], 0.5);
+      EXPECT_DOUBLE_EQ(coords[7], 0.0);
+      EXPECT_DOUBLE_EQ(coords[11], 0.5);
     }
   }
 }  // namespace

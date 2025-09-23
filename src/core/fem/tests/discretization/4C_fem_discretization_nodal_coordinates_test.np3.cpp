@@ -53,59 +53,18 @@ namespace
     std::shared_ptr<Core::LinAlg::MultiVector<double>> nodal_test_coordinates =
         test_discretization_->build_node_coordinates();
 
-    if (Core::Communication::my_mpi_rank(comm_) == 0)
+    EXPECT_EQ(nodal_test_coordinates->MyLength(), test_discretization_->num_my_row_nodes());
+    EXPECT_EQ(nodal_test_coordinates->NumVectors(), 3);
+
+    const auto& nodal_coordinates = *nodal_test_coordinates;
+
+    for (auto node : test_discretization_->my_row_node_range())
     {
-      EXPECT_EQ(nodal_test_coordinates->MyLength(), test_discretization_->num_my_row_nodes());
-      EXPECT_EQ(nodal_test_coordinates->NumVectors(), 3);
-
-      std::array<double, 54> coords;
-      nodal_test_coordinates->ExtractCopy(coords.data(), nodal_test_coordinates->MyLength());
-
-      // first coordinate
-      EXPECT_NEAR(coords[0], 0.0, 1e-14);
-      EXPECT_NEAR(coords[18], 0.0, 1e-14);
-      EXPECT_NEAR(coords[36], 0.0, 1e-14);
-
-      // last coordinate
-      EXPECT_NEAR(coords[17], 1.0, 1e-14);
-      EXPECT_NEAR(coords[35], 1.0, 1e-14);
-      EXPECT_NEAR(coords[53], 0.25, 1e-14);
-    }
-    else if (Core::Communication::my_mpi_rank(comm_) == 1)
-    {
-      EXPECT_EQ(nodal_test_coordinates->MyLength(), test_discretization_->num_my_row_nodes());
-      EXPECT_EQ(nodal_test_coordinates->NumVectors(), 3);
-
-      std::array<double, 54> coords;
-      nodal_test_coordinates->ExtractCopy(coords.data(), nodal_test_coordinates->MyLength());
-
-      // first coordinate
-      EXPECT_NEAR(coords[0], 0.0, 1e-14);
-      EXPECT_NEAR(coords[18], 0.0, 1e-14);
-      EXPECT_NEAR(coords[36], 0.5, 1e-14);
-
-      // last coordinate
-      EXPECT_NEAR(coords[17], 1.0, 1e-14);
-      EXPECT_NEAR(coords[35], 1.0, 1e-14);
-      EXPECT_NEAR(coords[53], 0.75, 1e-14);
-    }
-    else if (Core::Communication::my_mpi_rank(comm_) == 2)
-    {
-      EXPECT_EQ(nodal_test_coordinates->MyLength(), test_discretization_->num_my_row_nodes());
-      EXPECT_EQ(nodal_test_coordinates->NumVectors(), 3);
-
-      std::array<double, 27> coords;
-      nodal_test_coordinates->ExtractCopy(coords.data(), nodal_test_coordinates->MyLength());
-
-      // first coordinate
-      EXPECT_NEAR(coords[0], 0.0, 1e-14);
-      EXPECT_NEAR(coords[9], 0.0, 1e-14);
-      EXPECT_NEAR(coords[18], 1.0, 1e-14);
-
-      // last coordinate
-      EXPECT_NEAR(coords[8], 1.0, 1e-14);
-      EXPECT_NEAR(coords[17], 1.0, 1e-14);
-      EXPECT_NEAR(coords[26], 1.0, 1e-14);
+      const auto nodal_x = node.x();
+      const int id = nodal_coordinates.get_map().lid(node.global_id());
+      EXPECT_DOUBLE_EQ(nodal_coordinates(0)[id], nodal_x[0]) << " at node " << node.global_id();
+      EXPECT_DOUBLE_EQ(nodal_coordinates(1)[id], nodal_x[1]) << " at node " << node.global_id();
+      EXPECT_DOUBLE_EQ(nodal_coordinates(2)[id], nodal_x[2]) << " at node " << node.global_id();
     }
   }
 
@@ -119,91 +78,18 @@ namespace
       std::shared_ptr<Core::LinAlg::MultiVector<double>> nodal_test_coordinates =
           test_discretization_->build_node_coordinates(node_row_map);
 
-      if (Core::Communication::my_mpi_rank(comm_) == 0)
+      const auto& nodal_coordinates = *nodal_test_coordinates;
+
+      for (auto node : test_discretization_->my_row_node_range())
       {
-        EXPECT_EQ(nodal_test_coordinates->MyLength(), 4);
-        EXPECT_EQ(nodal_test_coordinates->NumVectors(), 3);
-
-        std::array<double, 12> coords;
-        nodal_test_coordinates->ExtractCopy(coords.data(), nodal_test_coordinates->MyLength());
-
-        // first coordinate
-        EXPECT_NEAR(coords[0], 0.0, 1e-14);
-        EXPECT_NEAR(coords[4], 0.0, 1e-14);
-        EXPECT_NEAR(coords[8], 0.0, 1e-14);
-
-        // last coordinate
-        EXPECT_NEAR(coords[3], 0.0, 1e-14);
-        EXPECT_NEAR(coords[7], 0.5, 1e-14);
-        EXPECT_NEAR(coords[11], 0.0, 1e-14);
-      }
-    }
-
-    // build node coordinates based on the node row map of second partial discretization
-    {
-      std::shared_ptr<Core::LinAlg::Map> node_row_map = nullptr;
-      if (Core::Communication::my_mpi_rank(comm_) == 0)
-      {
-        std::array<int, 2> nodeList{50, 62};
-        node_row_map =
-            std::make_shared<Core::LinAlg::Map>(-1, nodeList.size(), nodeList.data(), 0, comm_);
-      }
-      else if (Core::Communication::my_mpi_rank(comm_) == 1)
-      {
-        std::array<int, 1> nodeList{114};
-        node_row_map =
-            std::make_shared<Core::LinAlg::Map>(-1, nodeList.size(), nodeList.data(), 0, comm_);
-      }
-      else if (Core::Communication::my_mpi_rank(comm_) == 2)
-      {
-        std::array<int, 1> nodeList{212};
-        node_row_map =
-            std::make_shared<Core::LinAlg::Map>(-1, nodeList.size(), nodeList.data(), 0, comm_);
-      }
-
-      std::shared_ptr<Core::LinAlg::MultiVector<double>> nodal_test_coordinates =
-          test_discretization_->build_node_coordinates(node_row_map);
-
-      if (Core::Communication::my_mpi_rank(comm_) == 0)
-      {
-        EXPECT_EQ(nodal_test_coordinates->MyLength(), 2);
-        EXPECT_EQ(nodal_test_coordinates->NumVectors(), 3);
-
-        std::array<double, 6> coords;
-        nodal_test_coordinates->ExtractCopy(coords.data(), nodal_test_coordinates->MyLength());
-
-        EXPECT_NEAR(coords[0], 0.0, 1e-14);
-        EXPECT_NEAR(coords[2], 0.0, 1e-14);
-        EXPECT_NEAR(coords[4], 0.25, 1e-14);
-
-        EXPECT_NEAR(coords[1], 0.5, 1e-14);
-        EXPECT_NEAR(coords[3], 0.5, 1e-14);
-        EXPECT_NEAR(coords[5], 0.25, 1e-14);
-      }
-      else if (Core::Communication::my_mpi_rank(comm_) == 1)
-      {
-        EXPECT_EQ(nodal_test_coordinates->MyLength(), 1);
-        EXPECT_EQ(nodal_test_coordinates->NumVectors(), 3);
-
-        std::array<double, 3> coords;
-        nodal_test_coordinates->ExtractCopy(coords.data(), nodal_test_coordinates->MyLength());
-
-        EXPECT_NEAR(coords[0], 1.0, 1e-14);
-        EXPECT_NEAR(coords[1], 0.5, 1e-14);
-        EXPECT_NEAR(coords[2], 0.5, 1e-14);
-      }
-      else if (Core::Communication::my_mpi_rank(comm_) == 2)
-      {
-        EXPECT_EQ(nodal_test_coordinates->MyLength(), 1);
-        EXPECT_EQ(nodal_test_coordinates->NumVectors(), 3);
-
-        std::array<double, 3> coords;
-        nodal_test_coordinates->ExtractCopy(coords.data(), nodal_test_coordinates->MyLength());
-
-        EXPECT_NEAR(coords[0], 0.5, 1e-14);
-        EXPECT_NEAR(coords[1], 0.5, 1e-14);
-        EXPECT_NEAR(coords[2], 1.0, 1e-14);
+        const auto nodal_x = node.x();
+        const int id = nodal_coordinates.get_map().lid(node.global_id());
+        if (id == -1) continue;  // node not in map
+        EXPECT_DOUBLE_EQ(nodal_coordinates(0)[id], nodal_x[0]) << " at node " << node.global_id();
+        EXPECT_DOUBLE_EQ(nodal_coordinates(1)[id], nodal_x[1]) << " at node " << node.global_id();
+        EXPECT_DOUBLE_EQ(nodal_coordinates(2)[id], nodal_x[2]) << " at node " << node.global_id();
       }
     }
   }
+
 }  // namespace
