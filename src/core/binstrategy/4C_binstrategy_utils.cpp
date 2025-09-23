@@ -245,6 +245,7 @@ namespace Core::Binstrategy::Utils
   void get_current_node_pos(const Core::FE::Discretization& discret, Core::Nodes::Node const* node,
       std::shared_ptr<const Core::LinAlg::Vector<double>> const disnp, double* currpos)
   {
+    const auto x = node->x();
     if (disnp != nullptr)
     {
       const int gid = discret.dof(node, 0);
@@ -254,14 +255,16 @@ namespace Core::Binstrategy::Utils
             "Your displacement is incomplete (need to be based on a column map"
             " as this function is also called from a loop over elements and "
             "each proc does (usually) not own all nodes of its row elements ");
-      for (int dim = 0; dim < 3; ++dim)
+      for (size_t dim = 0; dim < x.size(); ++dim)
       {
-        currpos[dim] = node->x()[dim] + (*disnp)[lid + dim];
+        currpos[dim] = x[dim] + (*disnp)[lid + dim];
       }
+      for (size_t dim = x.size(); dim < 3; ++dim) currpos[dim] = 0.0;
     }
     else
     {
-      for (int dim = 0; dim < 3; ++dim) currpos[dim] = node->x()[dim];
+      for (size_t dim = 0; dim < x.size(); ++dim) currpos[dim] = x[dim];
+      for (size_t dim = x.size(); dim < 3; ++dim) currpos[dim] = 0.0;
     }
   }
 }  // namespace Core::Binstrategy::Utils

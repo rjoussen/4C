@@ -1,7 +1,7 @@
 TITLE:
   - "baby arterial network"
 PROBLEM SIZE:
-  DIM: 1
+  DIM: 3
   ELEMENTS: 2
   NODES: 3
   MATERIALS: 1

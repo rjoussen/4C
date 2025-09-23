@@ -103,9 +103,10 @@ Core::LinAlg::Matrix<3, 2> Core::Geo::get_xaab_bof_dis(const Core::FE::Discretiz
   {
     const Core::Nodes::Node* node = dis.l_col_node(lid);
     Core::LinAlg::Matrix<3, 1> currpos;
-    currpos(0) = node->x()[0];
-    currpos(1) = node->x()[1];
-    currpos(2) = node->x()[2];
+    auto x = node->x();
+    currpos(0) = x[0];
+    currpos(1) = x[1];
+    if (x.size() > 2) currpos(2) = x[2];
     currentpositions[node->id()] = currpos;
   }
 

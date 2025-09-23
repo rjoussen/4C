@@ -31,7 +31,7 @@ double Discret::Elements::ArteryEleCalc<distype>::calculate_ele_length(Artery* e
     const auto& x = nodes[inode]->x();
     xyze(0, inode) = x[0];
     xyze(1, inode) = x[1];
-    xyze(2, inode) = x[2];
+    if (x.size() > 2) xyze(2, inode) = x[2];
   }
 
   // Calculate the length of artery element

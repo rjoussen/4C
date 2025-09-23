@@ -898,7 +898,7 @@ void Solid::TimInt::apply_mesh_initialization(
 
     // get degrees of freedom associated with this fluid/structure node
     std::vector<int> nodedofs = discret_->dof(0, mynode);
-    std::vector<double> nvector(3, 0.0);
+    std::vector<double> nvector(numdim, 0.0);
 
     // create new position vector
     for (int i = 0; i < numdim; ++i)

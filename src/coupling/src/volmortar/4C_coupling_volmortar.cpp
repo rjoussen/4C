@@ -314,9 +314,10 @@ std::shared_ptr<Core::Geo::SearchTree> Coupling::VolMortar::VolMortarCoupl::init
       Core::Nodes::Node* node = sele->nodes()[k];
       Core::LinAlg::Matrix<3, 1> currpos;
 
-      currpos(0) = node->x()[0];
-      currpos(1) = node->x()[1];
-      currpos(2) = node->x()[2];
+      const auto x = node->x();
+      currpos(0) = x[0];
+      currpos(1) = x[1];
+      if (x.size() > 2) currpos(2) = x[2];
 
       currentpositions[node->id()] = currpos;
     }
@@ -3762,7 +3763,8 @@ void Coupling::VolMortar::VolMortarCoupl::define_vertices_slave(
   for (int i = 0; i < nnodes; ++i)
   {
     // compute projection
-    for (int k = 0; k < 3; ++k) vertices[k] = mynodes[i]->x()[k];
+    const auto x = mynodes[i]->x();
+    for (size_t k = 0; k < x.size(); ++k) vertices[k] = x[k];
 
     // get node id, too
     snodeids[0] = mynodes[i]->id();
@@ -3792,7 +3794,8 @@ void Coupling::VolMortar::VolMortarCoupl::define_vertices_master(
   for (int i = 0; i < nnodes; ++i)
   {
     // compute projection
-    for (int k = 0; k < 3; ++k) vertices[k] = mynodes[i]->x()[k];
+    const auto x = mynodes[i]->x();
+    for (size_t k = 0; k < x.size(); ++k) vertices[k] = x[k];
 
     // get node id, too
     snodeids[0] = mynodes[i]->id();
