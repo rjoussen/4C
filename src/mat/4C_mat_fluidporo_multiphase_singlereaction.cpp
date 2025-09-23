@@ -10,6 +10,7 @@
 #include "4C_comm_pack_helpers.hpp"
 #include "4C_global_data.hpp"
 #include "4C_mat_par_bundle.hpp"
+#include "4C_porofluid_pressure_based_elast_scatra_input.hpp"
 #include "4C_utils_enum.hpp"
 #include "4C_utils_function.hpp"
 
@@ -26,7 +27,8 @@ Mat::PAR::FluidPoroSingleReaction::FluidPoroSingleReaction(
       numscal_(matdata.parameters.get<int>("NUMSCAL")),
       numvolfrac_(matdata.parameters.get<int>("NUMVOLFRAC")),
       totalnummultiphasedof_(matdata.parameters.get<int>("TOTALNUMDOF")),
-      numfluidphases_(totalnummultiphasedof_ - 2 * numvolfrac_),
+      numfluidphases_(
+          get_numfluidphases_from_closing_relation_of_additional_porous_network_type(matdata)),
       scale_(matdata.parameters.get<std::vector<int>>("SCALE")),
       coupling_(set_coupling_type(matdata)),
       functID_(matdata.parameters.get<int>("FUNCTID")),
@@ -325,17 +327,40 @@ std::shared_ptr<Core::Mat::Material> Mat::PAR::FluidPoroSingleReaction::create_m
 Mat::PAR::FluidPoroSingleReaction::PorofluidReactionCoupling
 Mat::PAR::FluidPoroSingleReaction::set_coupling_type(const Core::Mat::PAR::Parameter::Data& matdata)
 {
-  if ((matdata.parameters.get<std::string>("COUPLING")) == "scalar_by_function")
+  if ((matdata.parameters.get<PoroPressureBased::FluidporoReactionCoupling>("COUPLING")) ==
+      PoroPressureBased::FluidporoReactionCoupling::scalar_by_function)
   {
     return porofluid_reac_coup_scalarsbyfunction;
   }
-  else if ((matdata.parameters.get<std::string>("COUPLING")) == "no_coupling")
+  else if ((matdata.parameters.get<PoroPressureBased::FluidporoReactionCoupling>("COUPLING")) ==
+           PoroPressureBased::FluidporoReactionCoupling::no_coupling)
   {
     return porofluid_reac_coup_none;
   }
   else
   {
     return porofluid_reac_coup_none;
+  }
+}
+
+int Mat::PAR::FluidPoroSingleReaction::
+    get_numfluidphases_from_closing_relation_of_additional_porous_network_type(
+        const Core::Mat::PAR::Parameter::Data& matdata)
+{
+  switch (matdata.parameters.get<Mat::PAR::PoroFluidPressureBased::ClosingRelation>(
+      "VOLFRAC_CLOSING_RELATION"))
+  {
+    case Mat::PAR::PoroFluidPressureBased::ClosingRelation::evolutionequation_blood_lung:
+      return (
+          matdata.parameters.get<int>("TOTALNUMDOF") - matdata.parameters.get<int>("NUMVOLFRAC"));
+    case Mat::PAR::PoroFluidPressureBased::ClosingRelation::
+        evolutionequation_homogenized_vasculature_tumor:
+      return (matdata.parameters.get<int>("TOTALNUMDOF") -
+              2 * matdata.parameters.get<int>("NUMVOLFRAC"));
+    default:
+      FOUR_C_THROW(
+          "Your number of volfracs and number of fluidphases in multiphase porespace does not "
+          "match!");
   }
 }
 
@@ -377,11 +402,6 @@ void Mat::FluidPoroSingleReaction::pack(Core::Communication::PackBuffer& data) c
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
   add_to_pack(data, type);
-
-  // matid
-  int matid = -1;
-  if (params_ != nullptr) matid = params_->id();  // in case we are in post-process mode
-  add_to_pack(data, matid);
 }
 
 /*----------------------------------------------------------------------*

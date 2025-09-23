@@ -36,6 +36,13 @@ namespace PoroPressureBased
     twoway_monolithic
   };
 
+  /// type of coupling for reactions between fluid phases in the pore space
+  enum class FluidporoReactionCoupling
+  {
+    scalar_by_function,
+    no_coupling
+  };
+
   /// valid parameters for porofluid-elasticity with scalar transport problems
   std::vector<Core::IO::InputSpec> valid_parameters_porofluid_elast_scatra();
 
