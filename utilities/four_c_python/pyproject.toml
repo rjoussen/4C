@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+
+[project]
+name = "four_c_python"
+version = "0.0.1"
+description = "Common utilities to work on the 4C code base"
+requires-python = ">=3.12"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+dynamic = ["dependencies", "optional-dependencies"]
+
+[project.scripts]
+check-file-header = "four_c_development.check_file_header:main"
+check-filenames = "four_c_development.check_filenames:main"
+check-includes = "four_c_development.check_includes:main"
+check-includes-for-cycles = "four_c_development.check_includes_for_cycles:main"
+check-header-guards = "four_c_development.check_header_guards:main"
+check-test-files = "four_c_development.check_test_files:main"
+check-preprocessor = "four_c_development.check_preprocessor:main"
+check-workflow-dependencies-hash = "four_c_development.check_workflow_dependencies_hash:main"
+create-schema-files = "four_c_metadata.json_schema:cli"
+validate-test-files = "four_c_metadata.validate_test_input_files:cli"
+diff-with-tolerance = "four_c_building_testing.diff_with_tolerance:cli"
+vtk-compare = "four_c_building_testing.vtk_compare:cli"
+
+[tool.setuptools.dynamic]
+dependencies = { file = ["requirements.txt"] }
+optional-dependencies = { development = { file = [
+    "dev-requirements.txt",
+] }, build = { file = [
+    "build-requirements.txt",
+] } }

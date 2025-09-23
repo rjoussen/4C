@@ -30,8 +30,8 @@ if(FOUR_C_ENABLE_METADATA_GENERATION)
         ${FOUR_C_ENABLE_ADDRESS_SANITIZER_TEST_OPTIONS} "$<TARGET_FILE:${FOUR_C_EXECUTABLE_NAME}>"
         -p > ${PROJECT_BINARY_DIR}/4C_metadata.yaml
       COMMAND
-        ${FOUR_C_PYTHON_VENV_BUILD}/bin/python ${PROJECT_SOURCE_DIR}/utilities/create_json_schema.py
-        ${PROJECT_BINARY_DIR}/4C_metadata.yaml ${PROJECT_BINARY_DIR}/4C_schema.json
+        ${FOUR_C_PYTHON_VENV_BUILD}/bin/create-schema-files ${PROJECT_BINARY_DIR}/4C_metadata.yaml
+        ${PROJECT_BINARY_DIR}/4C_schema.json
       COMMENT "Creating metadata and JSON schema files"
       )
   else()

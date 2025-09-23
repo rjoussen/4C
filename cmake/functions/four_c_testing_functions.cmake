@@ -70,7 +70,6 @@ endfunction()
 
 # add test with options
 function(_add_test_with_options)
-
   set(options "")
   set(oneValueArgs NAME_OF_TEST ADDITIONAL_FIXTURE NP TIMEOUT)
   set(multiValueArgs TEST_COMMAND LABELS)
@@ -120,7 +119,6 @@ function(_add_test_with_options)
   if(NOT ${_parsed_LABELS} STREQUAL "")
     set_label(${_parsed_NAME_OF_TEST} ${_parsed_LABELS})
   endif()
-
 endfunction()
 
 ###------------------------------------------------------------------ 4C Test
@@ -140,14 +138,12 @@ endfunction()
 # TIMEOUT:                        Manually defined duration for test timeout; defaults to global timeout if not specified
 # OMP_THREADS:                    Number of OpenMP threads per processor the test should use; defaults to deactivated
 # LABELS:                         Add labels to the test
-# CSV_YAML_COMPARISON_RESULT_FILE:     Arbitrary .csv result files to be compared (see `utilites/diff_with_tolerance.py`)
+# CSV_YAML_COMPARISON_RESULT_FILE:     Arbitrary .csv result files to be compared
 # CSV_YAML_COMPARISON_REFERENCE_FILE:  Reference files to compare with
 # CSV_YAML_COMPARISON_TOL_R:           Relative tolerances for comparison
 # CSV_YAML_COMPARISON_TOL_A:           Absolute tolerances for comparison
 # REQUIRED_DEPENDENCIES:          Any required external dependencies. The test will be skipped if the dependencies are not met.
-
 function(four_c_test)
-
   set(options "")
   set(oneValueArgs RESTART_STEP TIMEOUT OMP_THREADS)
   set(multiValueArgs
@@ -215,6 +211,7 @@ function(four_c_test)
 
   list(LENGTH _parsed_TEST_FILE num_TEST_FILE)
   list(LENGTH _parsed_NP num_NP)
+
   if(num_TEST_FILE GREATER 2 OR NOT num_NP EQUAL num_TEST_FILE)
     message(
       FATAL_ERROR
@@ -231,11 +228,14 @@ function(four_c_test)
 
   # check if source files exist
   set(source_file "")
+
   foreach(string IN LISTS _parsed_TEST_FILE)
     set(file_name "${PROJECT_SOURCE_DIR}/tests/input_files/${string}")
+
     if(NOT EXISTS ${file_name})
       message(FATAL_ERROR "Test source file ${file_name} does not exist!")
     endif()
+
     list(APPEND source_file ${file_name})
   endforeach()
 
@@ -244,6 +244,7 @@ function(four_c_test)
   list(LENGTH _parsed_CSV_YAML_COMPARISON_REFERENCE_FILE num_CSV_YAML_COMPARISON_REFERENCE_FILE)
   list(LENGTH _parsed_CSV_YAML_COMPARISON_TOL_R num_CSV_YAML_COMPARISON_TOL_R)
   list(LENGTH _parsed_CSV_YAML_COMPARISON_TOL_A num_CSV_YAML_COMPARISON_TOL_A)
+
   if(NOT num_CSV_YAML_COMPARISON_RESULT_FILE EQUAL num_CSV_YAML_COMPARISON_REFERENCE_FILE
      OR NOT num_CSV_YAML_COMPARISON_RESULT_FILE EQUAL num_CSV_YAML_COMPARISON_TOL_R
      OR NOT num_CSV_YAML_COMPARISON_RESULT_FILE EQUAL num_CSV_YAML_COMPARISON_TOL_A
@@ -256,30 +257,36 @@ function(four_c_test)
 
   # check if .csv reference files exists
   set(CSV_YAML_COMPARISON_REFERENCE_FILE "")
+
   foreach(string IN LISTS _parsed_CSV_YAML_COMPARISON_REFERENCE_FILE)
     set(file_name "${PROJECT_SOURCE_DIR}/tests/input_files/${string}")
+
     if(NOT EXISTS ${file_name})
       message(
         FATAL_ERROR
           "Reference file ${file_name} for arbitrary .csv result comparison does not exist!"
         )
     endif()
+
     list(APPEND CSV_YAML_COMPARISON_REFERENCE_FILE ${file_name})
   endforeach()
 
   if(DEFINED _parsed_REQUIRED_DEPENDENCIES)
     foreach(dep IN LISTS _parsed_REQUIRED_DEPENDENCIES)
       four_c_sanitize_package_name(${dep} dep_sanitized)
+
       # Check that we even know this dependency
       if(NOT DEFINED "FOUR_C_WITH_${dep_sanitized}")
         message(FATAL_ERROR "Unknown dependency ${dep}")
       endif()
+
       if(NOT FOUR_C_WITH_${dep_sanitized})
         string(
           APPEND skip_message "Skipping because FOUR_C_WITH_${dep_sanitized} is not enabled.\n"
           )
       endif()
     endforeach()
+
     if(NOT "${skip_message}" STREQUAL "")
       # Note that this only adds _one_ skipped test, even though multiple dependent tests
       # might have been created by this function.
@@ -321,6 +328,7 @@ function(four_c_test)
 
   # Optional OpenMP threads per processor
   set(total_procs ${base_NP})
+
   if(${_parsed_OMP_THREADS})
     set(name_of_test ${name_of_test}-OMP${_parsed_OMP_THREADS})
     set(test_command
@@ -380,6 +388,7 @@ function(four_c_test)
 
     # Optional OpenMP threads per processor
     set(total_procs ${restart_NP})
+
     if(${_parsed_OMP_THREADS})
       set(name_of_test ${name_of_test}-OMP${_parsed_OMP_THREADS})
       set(test_command
@@ -406,12 +415,10 @@ function(four_c_test)
 
     # update additional fixture for possible following post_ensight or csv comparison
     set(additional_fixture "${name_of_test}")
-
   endif()
 
   # csv comparison
   if(NOT _parsed_CSV_YAML_COMPARISON_RESULT_FILE STREQUAL "")
-
     # loop over all csv comparisons
     foreach(
       result_file
@@ -426,9 +433,10 @@ function(four_c_test)
       _parsed_CSV_YAML_COMPARISON_TOL_A
       )
       set(name_of_csv_comparison_test "${name_of_test}-csv_comparison-${result_file}")
+
       if(FOUR_C_WITH_PYTHON)
         set(csv_comparison_command
-            "${FOUR_C_PYTHON_VENV_BUILD}/bin/python ${PROJECT_SOURCE_DIR}/utilities/diff_with_tolerance.py ${test_directory}/${result_file} ${PROJECT_SOURCE_DIR}/tests/input_files/${reference_file} ${tol_r} ${tol_a}"
+            "${FOUR_C_PYTHON_VENV_BUILD}/bin/diff-with-tolerance ${test_directory}/${result_file} ${PROJECT_SOURCE_DIR}/tests/input_files/${reference_file} ${tol_r} ${tol_a}"
             )
         _add_test_with_options(
           NAME_OF_TEST
@@ -447,7 +455,6 @@ function(four_c_test)
       endif()
     endforeach()
   endif()
-
 endfunction()
 
 ###------------------------------------------------------------------ Nested Parallelism
@@ -490,11 +497,11 @@ endfunction()
 #
 # Usage in tests/lists_of_tests.cmake:
 #
-#  four_c_test_tutorial(PREFIX <prefix> NP <NP> [COPY_FILES <file1> <file2> ...])"
+# four_c_test_tutorial(PREFIX <prefix> NP <NP> [COPY_FILES <file1> <file2> ...])"
 #
-#  PREFIX: must equal the name of a .4C.yaml and a .e file in directory tests/tutorials
-#  NP: number of MPI ranks for this test
-#  COPY_FILES: copy any additional files to the test directory
+# PREFIX: must equal the name of a .4C.yaml and a .e file in directory tests/tutorials
+# NP: number of MPI ranks for this test
+# COPY_FILES: copy any additional files to the test directory
 function(four_c_test_tutorial)
   set(oneValueArgs PREFIX NP)
   set(multiValueArgs COPY_FILES)
@@ -528,8 +535,10 @@ function(four_c_test_tutorial)
       if(NOT EXISTS ${_file_name})
         message(FATAL_ERROR "File ${_file_name} does not exist!")
       endif()
+
       list(APPEND _run_copy_files "cp ${_file_name} ${test_directory}")
     endforeach()
+
     list(JOIN _run_copy_files " && " _run_copy_files)
   else()
     # no-op command to do nothing
@@ -619,6 +628,7 @@ function(
   endif()
 
   set(name_of_test "${name_of_input_file}${IDENTIFIER}${FIELD}-p${num_proc}-pp")
+
   # define macros for serial and parallel runs
   set(RUNPOSTFILTER_SER
       ${FOUR_C_ENABLE_ADDRESS_SANITIZER_TEST_OPTIONS}\ ./post_ensight\ --file=${test_directory}/xxx${IDENTIFIER}\ --output=${test_directory}/xxx${IDENTIFIER}_SER_${name_of_input_file}\ --stress=${stresstype}\ --strain=${straintype}\ --start=${startstep}
@@ -694,8 +704,7 @@ function(
     add_test(
       NAME "${name_of_test}-p${num_proc_base_run}"
       COMMAND
-        ${FOUR_C_PYTHON_VENV_BUILD}/bin/python
-        ${PROJECT_SOURCE_DIR}/tests/output_test/vtk_compare.py ${test_directory}
+        ${FOUR_C_PYTHON_VENV_BUILD}/bin/vtk-compare ${test_directory}
         ${PROJECT_SOURCE_DIR}/tests/input_files/${pvd_referencefilename} ${tolerance}
         ${num_extra_args} ${extra_macro_args}
       )

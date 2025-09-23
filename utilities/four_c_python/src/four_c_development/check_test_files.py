@@ -10,7 +10,7 @@
 import os
 import argparse
 import re
-from four_c_utils import common_utils as utils
+from four_c_common_utils import common_utils as utils
 
 
 def check_inputtests(filenames: list) -> list:

@@ -16,7 +16,7 @@ from vtk import vtkXMLGenericDataObjectReader
 from vtk.util import numpy_support as VN
 
 # Import pure vtk data comparison.
-from vtk_data_compare import compare_vtk_data
+from four_c_building_testing.vtk_data_compare import compare_vtk_data
 
 # we expect the following input:
 # link_to_python link_to_this_script input_pvd_file reference_pvd_file tolerance_for_data_comparison number_of_timesteps[optional] list_of_points_in_time[optional]
@@ -230,7 +230,7 @@ def compare_vtk(path1, path2, points_in_time, tol_float=1e-8, raise_error=True):
     return True
 
 
-if __name__ == "__main__":
+def cli():
     # Read arguments.
     file_comp = sys.argv[1]
     file_ref = sys.argv[2]
@@ -262,3 +262,7 @@ if __name__ == "__main__":
     print(
         "SUCCESS: VTK results match for given .pvd files, points in time and tolerance"
     )
+
+
+if __name__ == "__main__":
+    cli()

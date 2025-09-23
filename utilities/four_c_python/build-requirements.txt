@@ -1,8 +1,6 @@
-# for creating the yaml schemata during build:
-ruamel.yaml
 # for testing:
-numpy
 vtk
+
 # for sphinx documentation:
 matplotlib
 myst-parser
@@ -10,3 +8,4 @@ nbsphinx
 scipy
 sphinx-multibuild
 sphinx-rtd-theme
+pyyaml

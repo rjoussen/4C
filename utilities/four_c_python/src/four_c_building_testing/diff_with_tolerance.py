@@ -12,10 +12,10 @@ This script compares two files with a tolerance.
 
 # Import python modules.
 import os
-import sys
 import numpy as np
-import yaml
 import argparse
+
+from four_c_common_utils.io import load_yaml
 
 
 def convert_line_to_array(line):
@@ -145,7 +145,7 @@ def compare_nested_dicts_or_lists(
     return True
 
 
-if __name__ == "__main__":
+def cli():
     """
     Execution part of script.
     """
@@ -186,15 +186,14 @@ if __name__ == "__main__":
             raise ValueError("CSV comparison failed!")
 
     elif file_ending_a == ".yaml":
-        data_a = []
-        data_b = []
-        with open(file_a, "r") as f:
-            data_a = yaml.safe_load(f)
-
-        with open(file_b, "r") as f:
-            data_b = yaml.safe_load(f)
+        data_a = load_yaml(file_a)
+        data_b = load_yaml(file_b)
 
         compare_nested_dicts_or_lists(data_a, data_b, r_tol, a_tol)
 
     else:
         raise ValueError("File ending not recognized!")
+
+
+if __name__ == "__main__":
+    cli()

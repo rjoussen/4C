@@ -7,8 +7,9 @@
 
 import subprocess
 import os
-import yaml
 import sys
+
+from four_c_common_utils.io import load_yaml
 
 
 def compute_dependencies_hash():
@@ -30,19 +31,18 @@ def main():
     jobs_with_wrong_dependency_hash = {}
     workflow_path = ".github/workflows"
     for file in os.listdir(workflow_path):
-        with open(os.path.join(workflow_path, file), "r") as f:
-            workflow = yaml.safe_load(f)
+        workflow = load_yaml(os.path.join(workflow_path, file))
 
-            for job_name, job in workflow["jobs"].items():
-                if "container" in job and "image" in job["container"]:
-                    image_name = job["container"]["image"]
-                    if image_name.startswith(
-                        "ghcr.io/4c-multiphysics/4c-dependencies-ubuntu24.04"
-                    ) and not image_name.endswith(f":{dependencies_hash}"):
-                        if file not in jobs_with_wrong_dependency_hash:
-                            jobs_with_wrong_dependency_hash[file] = []
+        for job_name, job in workflow["jobs"].items():
+            if "container" in job and "image" in job["container"]:
+                image_name = job["container"]["image"]
+                if image_name.startswith(
+                    "ghcr.io/4c-multiphysics/4c-dependencies-ubuntu24.04"
+                ) and not image_name.endswith(f":{dependencies_hash}"):
+                    if file not in jobs_with_wrong_dependency_hash:
+                        jobs_with_wrong_dependency_hash[file] = []
 
-                        jobs_with_wrong_dependency_hash[file].append(job_name)
+                    jobs_with_wrong_dependency_hash[file].append(job_name)
 
     if len(jobs_with_wrong_dependency_hash) > 0:
         print(f"Expecting all jobs to have the dependencies hash {dependencies_hash}.")

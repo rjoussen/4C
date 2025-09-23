@@ -12,7 +12,7 @@ import sys
 from pathlib import Path
 from typing import Tuple
 
-from four_c_utils.common_utils import file_contents
+from four_c_common_utils.common_utils import file_contents
 
 
 def replace_line_in_file(file: Path, line_no: int, line: str):
