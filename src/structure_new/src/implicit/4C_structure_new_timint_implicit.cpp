@@ -491,7 +491,7 @@ void Solid::TimeInt::Implicit::print_jacobian_in_matlab_format(
   if (get_data_global_state().get_my_rank() == 0)
     std::cout << "Writing structural jacobian to \"" << filename.str() << "\"\n";
 
-  Teuchos::RCP<const ::NOX::Epetra::LinearSystem> linear_system = curr_grp.getLinearSystem();
+  Teuchos::RCP<const ::NOX::Epetra::LinearSystem> linear_system = curr_grp.get_linear_system();
 
   Teuchos::RCP<const NOX::Nln::LinearSystem> nln_lin_system =
       Teuchos::rcp_dynamic_cast<const NOX::Nln::LinearSystem>(linear_system, true);

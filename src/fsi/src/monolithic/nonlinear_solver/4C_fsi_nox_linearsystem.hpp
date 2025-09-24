@@ -17,7 +17,6 @@
 
 #include <NOX.H>
 #include <NOX_Common.H>
-#include <NOX_Epetra_Group.H>
 #include <NOX_Epetra_Interface_Jacobian.H>
 #include <NOX_Epetra_Interface_Required.H>
 #include <NOX_Epetra_Vector.H>

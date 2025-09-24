@@ -67,7 +67,6 @@ namespace NOX
 
       /// assign operator
       ::NOX::Abstract::Group& operator=(const ::NOX::Abstract::Group& source) override;
-      ::NOX::Abstract::Group& operator=(const ::NOX::Epetra::Group& source) override;
 
       Teuchos::RCP<::NOX::Abstract::Group> clone(
           ::NOX::CopyType type = ::NOX::DeepCopy) const override;
@@ -80,7 +79,7 @@ namespace NOX
       ::NOX::Abstract::Group::ReturnType computeF() override;
 
       ::NOX::Abstract::Group::ReturnType applyJacobianInverse(Teuchos::ParameterList& p,
-          const ::NOX::Epetra::Vector& input, ::NOX::Epetra::Vector& result) const override;
+          const ::NOX::Abstract::Vector& input, ::NOX::Abstract::Vector& result) const override;
 
       //! Compute and store \f$F(x)\f$ and the jacobian \f$\frac{\partial F(x)}{\partial x}\f$ at
       //! the same time. This can result in a huge performance gain in some special cases, e.g.
@@ -194,13 +193,11 @@ namespace NOX
       inline void set_is_valid_rhs(const bool value) { isValidRHS = value; };
 #endif
 
-     protected:
-      //! resets the isValid flags to false
-      void resetIsValid() override;
-
      private:
       //! Throw an NOX_error
       void throw_error(const std::string& functionName, const std::string& errorMsg) const;
+
+      mutable Teuchos::RCP<Epetra_Vector> tmp_vector_ptr_;
 
      protected:
       /*! flag whether update of x vector should be skipped

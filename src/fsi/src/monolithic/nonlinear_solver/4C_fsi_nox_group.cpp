@@ -32,7 +32,6 @@ void NOX::FSI::Group::capture_system_state()
   mfsi_.setup_rhs(rhs_view, true);
   mfsi_.setup_system_matrix();
 
-  sharedLinearSystem.getObject(this);
   isValidJacobian = true;
   isValidRHS = true;
 }
@@ -48,7 +47,6 @@ void NOX::FSI::Group::capture_system_state()
     if (not isValidJacobian)
     {
       mfsi_.setup_system_matrix();
-      sharedLinearSystem.getObject(this);
       isValidJacobian = true;
     }
   }
