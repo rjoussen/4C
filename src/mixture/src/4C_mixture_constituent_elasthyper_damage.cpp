@@ -91,7 +91,7 @@ void Mixture::MixtureConstituentElastHyperDamage::update(
   current_reference_growth_[gp] =
       Global::Problem::instance()
           ->function_by_id<Core::Utils::FunctionOfSpaceTime>(params_->damage_function_id_)
-          .evaluate(reference_coordinates.data(), totaltime, 0);
+          .evaluate(reference_coordinates.as_span(), totaltime, 0);
 
   MixtureConstituentElastHyperBase::update(defgrd, params, gp, eleGID);
 }

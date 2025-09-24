@@ -989,10 +989,9 @@ void Discret::Elements::ScaTraEleCalc<distype, probdim>::calc_subgr_velocity(
             // evaluation at the integration point. However, we need a node
             // based element bodyforce vector for prescribed pressure gradients
             // in some fancy turbulance stuff.
-            functfac =
-                Global::Problem::instance()
-                    ->function_by_id<Core::Utils::FunctionOfSpaceTime>(funct[isd].value())
-                    .evaluate((ele->nodes()[jnode])->x().data(), scatraparatimint_->time(), isd);
+            functfac = Global::Problem::instance()
+                           ->function_by_id<Core::Utils::FunctionOfSpaceTime>(funct[isd].value())
+                           .evaluate((ele->nodes()[jnode])->x(), scatraparatimint_->time(), isd);
           }
           else
             FOUR_C_THROW("Negative time value in body force calculation: time = {}",

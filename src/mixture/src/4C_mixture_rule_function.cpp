@@ -100,7 +100,7 @@ void Mixture::FunctionMixtureRule::evaluate(const Core::LinAlg::Tensor<double, 3
 
     // evaluate the mass fraction function at the gauss point reference coordinates and current time
     const double massfrac =
-        mass_fractions_functions_[i]->evaluate(reference_coordinates.data(), time, 0);
+        mass_fractions_functions_[i]->evaluate(reference_coordinates.container(), time, 0);
     sum += massfrac;
     double constituent_density = params_->initial_reference_density_ * massfrac;
 

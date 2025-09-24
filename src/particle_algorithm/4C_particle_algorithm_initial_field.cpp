@@ -115,7 +115,8 @@ void PARTICLEALGORITHM::InitialFieldHandler::set_initial_fields()
       {
         // evaluate function to set initial field
         for (int dim = 0; dim < statedim; ++dim)
-          state[statedim * i + dim] = function.evaluate(&(pos[posstatedim * i]), 0.0, dim);
+          state[statedim * i + dim] =
+              function.evaluate(std::span(&(pos[posstatedim * i]), 3), 0.0, dim);
       }
     }
   }

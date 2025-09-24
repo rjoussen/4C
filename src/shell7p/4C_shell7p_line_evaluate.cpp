@@ -97,12 +97,11 @@ int Discret::Elements::Shell7pLine::evaluate_neumann(Teuchos::ParameterList& par
           // calculate reference position of gaussian point
           Core::LinAlg::SerialDenseVector gp_coord(num_dim_);
           Core::LinAlg::multiply_tn(gp_coord, x, shape_functions);
-          const double* coordgpref = gp_coord.values();  // needed for function evaluation
 
           // evaluate function at current gauss point
           functfac = Global::Problem::instance()
                          ->function_by_id<Core::Utils::FunctionOfSpaceTime>(spa_func[i].value())
-                         .evaluate(coordgpref, time, i);
+                         .evaluate(gp_coord.as_span(), time, i);
         }
 
         const double fac = val[i] * intpoints.qwgt[gp] * dL * functfac;

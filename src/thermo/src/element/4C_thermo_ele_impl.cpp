@@ -2583,7 +2583,7 @@ void Discret::Elements::TemperImpl<distype>::radiation(
       // evaluate function at current gauss point (3D position vector required!)
       functfac = Global::Problem::instance()
                      ->function_by_id<Core::Utils::FunctionOfSpaceTime>(funct[0].value())
-                     .evaluate(xrefegp.data(), time, 0);
+                     .evaluate(xrefegp.as_span(), time, 0);
 
     // get values and switches from the condition
     const auto onoff = myneumcond[0]->parameters().get<std::vector<int>>("ONOFF");

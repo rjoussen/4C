@@ -2639,7 +2639,7 @@ void Discret::Elements::Beam3k::evaluate_line_neumann_forces(
         functionfac =
             Global::Problem::instance()
                 ->function_by_id<Core::Utils::FunctionOfSpaceTime>(function_numbers[idof].value())
-                .evaluate(X_ref.data(), time, idof);
+                .evaluate(X_ref, time, idof);
       }
       else
         functionfac = 1.0;

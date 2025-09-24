@@ -963,12 +963,11 @@ int Discret::Elements::Wall1PoroP1<distype>::evaluate_neumann(Teuchos::Parameter
           for (int k = Base::numdim_; k < 3;
               k++)  // set a zero value for the remaining spatial directions
             gp_coord2[k] = 0.0;
-          const double* coordgpref = gp_coord2.data();  // needed for function evaluation
 
           // evaluate function at current gauss point
           functfac = Global::Problem::instance()
                          ->function_by_id<Core::Utils::FunctionOfSpaceTime>(funct[i].value())
-                         .evaluate(coordgpref, time, i);
+                         .evaluate(gp_coord2, time, i);
         }
 
         ar[i] = fac * val[i] * functfac;

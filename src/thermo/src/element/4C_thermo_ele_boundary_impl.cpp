@@ -541,8 +541,6 @@ int Thermo::TemperBoundaryImpl<distype>::evaluate_neumann(const Core::Elements::
     Core::LinAlg::Matrix<nsd_vol_ele, 1> coordgp;  // coordinate has always to be given in 3D!
     coordgp.multiply_nn(xyze_, funct_);
 
-    const double* coordgpref = &coordgp(0);
-
     for (int dof = 0; dof < numdofpernode_; dof++)
     {
       if (onoff[dof])  // is this dof activated?
@@ -553,7 +551,7 @@ int Thermo::TemperBoundaryImpl<distype>::evaluate_neumann(const Core::Elements::
           // evaluate function at current gauss point
           functfac = Global::Problem::instance()
                          ->function_by_id<Core::Utils::FunctionOfSpaceTime>(func[dof].value())
-                         .evaluate(coordgpref, time, dof);
+                         .evaluate(coordgp.as_span(), time, dof);
         }
         else
           functfac = 1.0;

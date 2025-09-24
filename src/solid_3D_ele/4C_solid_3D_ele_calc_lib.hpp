@@ -1148,7 +1148,7 @@ namespace Discret::Elements
           for (int i_dim = 0; i_dim < 3; i_dim++)
           {
             analytical_solution(i_dim) = analytical_displacements_function.evaluate(
-                gauss_point_reference_coordinates.data(), 0.0, i_dim);
+                gauss_point_reference_coordinates.as_span(), 0.0, i_dim);
           }
 
           // The data that will be added to the element_force_vector will be summed up for all

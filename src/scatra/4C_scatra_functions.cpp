@@ -163,16 +163,16 @@ ScaTra::CylinderMagnetFunction::CylinderMagnetFunction(const CylinderMagnetParam
 
 
 double ScaTra::CylinderMagnetFunction::evaluate(
-    const double* x, double t, std::size_t component) const
+    std::span<const double> x, double t, std::size_t component) const
 {
-  const std::span<const double, 3> position(x, 3);
-  const auto force_vector = evaluate_magnetic_force(position);
+  FOUR_C_ASSERT(x.size() == 3, "Input position must be a 3D point");
+  const auto force_vector = evaluate_magnetic_force(x);
   return force_vector[component];
 }
 
 
 void ScaTra::CylinderMagnetFunction::evaluate_vector(
-    const std::span<const double, 3> x, double t, std::span<double> values) const
+    const std::span<const double> x, double t, std::span<double> values) const
 {
   auto force = evaluate_magnetic_force(x);
   FOUR_C_ASSERT(force.size() == 3, "Internal error: force vector has wrong size");
@@ -181,7 +181,7 @@ void ScaTra::CylinderMagnetFunction::evaluate_vector(
 
 
 std::array<double, 3> ScaTra::CylinderMagnetFunction::global_to_cylinder_coordinates(
-    const std::span<const double, 3> x) const
+    const std::span<const double> x) const
 {
   // convert rotation angles to radians
   const double gamma = parameters_.magnet_rotation.x_axis * std::numbers::pi / 180;
@@ -245,7 +245,7 @@ std::array<double, 3> ScaTra::CylinderMagnetFunction::cylinder_to_global_coordin
 
 
 std::array<double, 3> ScaTra::CylinderMagnetFunction::evaluate_magnetic_field(
-    const std::span<const double, 3> x) const
+    const std::span<const double> x) const
 {
   const double radius_magnet = parameters_.magnet_radius;
   // half-length L in Caciagli et al. (2018)
@@ -322,7 +322,7 @@ std::array<double, 3> ScaTra::CylinderMagnetFunction::evaluate_magnetic_field(
 
 
 double ScaTra::CylinderMagnetFunction::evaluate_magnetization_model(
-    const std::span<const double, 3> x) const
+    const std::span<const double> x) const
 {
   const auto magnetic_field = evaluate_magnetic_field(x);
   const auto magnetic_field_magnitude =
@@ -367,7 +367,7 @@ double ScaTra::CylinderMagnetFunction::evaluate_magnetization_model(
 
 
 std::array<double, 3> ScaTra::CylinderMagnetFunction::evaluate_magnetic_force(
-    const std::span<const double, 3> x) const
+    const std::span<const double> x) const
 {
   // magnet parameters
   const double radius_magnet = parameters_.magnet_radius;

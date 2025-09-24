@@ -2194,7 +2194,7 @@ void Discret::Elements::FluidBoundaryParent<distype>::evaluate_weak_dbc(
         // (important: requires 3D position vector)
         functionfac(idim) = Global::Problem::instance()
                                 ->function_by_id<Core::Utils::FunctionOfSpaceTime>(functions[idim])
-                                .evaluate(coordgp.data(), time, idim);
+                                .evaluate(coordgp.as_span(), time, idim);
       }
       else
         functionfac(idim) = 1.0;
@@ -4863,7 +4863,7 @@ void Discret::Elements::FluidBoundaryParent<distype>::mix_hyb_dirichlet(
             functionfac(dim) =
                 Global::Problem::instance()
                     ->function_by_id<Core::Utils::FunctionOfSpaceTime>(functions[dim].value())
-                    .evaluate(coordgp.data(), time, dim);
+                    .evaluate(coordgp.as_span(), time, dim);
           }
           else
           {
@@ -5231,7 +5231,7 @@ void Discret::Elements::FluidBoundaryParent<distype>::mix_hyb_dirichlet(
           functionfac(dim) =
               Global::Problem::instance()
                   ->function_by_id<Core::Utils::FunctionOfSpaceTime>(functions[dim].value())
-                  .evaluate(coordgp.data(), time, dim);
+                  .evaluate(coordgp.as_span(), time, dim);
         }
         else
         {

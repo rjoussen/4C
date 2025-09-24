@@ -2640,7 +2640,7 @@ void FLD::FluidImplicitTimeInt::ale_update(std::string condName)
             (*nodeNormals).get_values()[dofsLocalInd[i]] =
                 (Global::Problem::instance()->function_by_id<Core::Utils::FunctionOfSpaceTime>(
                      nodeNormalFunct))
-                    .evaluate(currPos.data(), 0.0, i);
+                    .evaluate(currPos, 0.0, i);
           }
         }
       }
@@ -4145,7 +4145,7 @@ void FLD::FluidImplicitTimeInt::set_initial_flow_field(
 
         double initialval = Global::Problem::instance()
                                 ->function_by_id<Core::Utils::FunctionOfSpaceTime>(startfuncno)
-                                .evaluate(lnode.x().data(), time_, index);
+                                .evaluate(lnode.x(), time_, index);
 
         velnp_->replace_global_value(gid, initialval);
       }

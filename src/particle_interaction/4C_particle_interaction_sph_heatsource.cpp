@@ -136,7 +136,7 @@ void ParticleInteraction::SPHHeatSourceVolume::evaluate_heat_source(const double
       double* tempdot_i = container_i->get_ptr_to_state(PARTICLEENGINE::TemperatureDot, particle_i);
 
       // evaluate function defining heat source
-      funct = function.evaluate_time_derivative(pos_i, evaltime, 0, 0);
+      funct = function.evaluate_time_derivative(std::span(pos_i, 3), evaltime, 0, 0);
 
       // add contribution of heat source
       tempdot_i[0] += thermomaterial_i->thermalAbsorptivity_ * funct[0] *
@@ -326,7 +326,7 @@ void ParticleInteraction::SPHHeatSourceSurface::evaluate_heat_source(const doubl
       double* tempdot_i = container_i->get_ptr_to_state(PARTICLEENGINE::TemperatureDot, particle_i);
 
       // evaluate function defining heat source
-      funct = function.evaluate_time_derivative(pos_i, evaltime, 0, 0);
+      funct = function.evaluate_time_derivative(std::span(pos_i, 3), evaltime, 0, 0);
 
       // add contribution of heat source
       tempdot_i[0] += f_i_proj * thermomaterial_i->thermalAbsorptivity_ * funct[0] *

@@ -105,7 +105,7 @@ namespace ScaTra
      * @param component index of the function-component which should be evaluated
      * @return function value
      */
-    double evaluate(const double* x, double t, std::size_t component) const override;
+    double evaluate(std::span<const double> x, double t, std::size_t component) const override;
 
     /**
      * Evaluate the function at a given position x and time t and return the vector of all
@@ -116,7 +116,7 @@ namespace ScaTra
      * @param values function values
      */
     void evaluate_vector(
-        std::span<const double, 3> x, double t, std::span<double> values) const override;
+        std::span<const double> x, double t, std::span<double> values) const override;
 
     /**
      * Number of components of the function (3 for the cylinder magnet)
@@ -139,7 +139,7 @@ namespace ScaTra
      * @param x global cartesian coordinates (X,Y,Z) of the point x
      * @return magnetic field vector
      */
-    [[nodiscard]] std::array<double, 3> evaluate_magnetic_field(std::span<const double, 3> x) const;
+    [[nodiscard]] std::array<double, 3> evaluate_magnetic_field(std::span<const double> x) const;
 
     /*!
      * @brief evaluate demagnetization factor f(|H|) as part of the magnetization model at a given
@@ -148,7 +148,7 @@ namespace ScaTra
      * @param x global cartesian coordinates (X,Y,Z) of the point x
      * @return magnetization model
      */
-    [[nodiscard]] double evaluate_magnetization_model(std::span<const double, 3> x) const;
+    [[nodiscard]] double evaluate_magnetization_model(std::span<const double> x) const;
 
     /*!
      * @brief evaluate magnetic force at a given position (X,Y,Z)
@@ -161,7 +161,7 @@ namespace ScaTra
      * @param x global cartesian coordinates (X,Y,Z) of the point x
      * @return magnetic force vector
      */
-    [[nodiscard]] std::array<double, 3> evaluate_magnetic_force(std::span<const double, 3> x) const;
+    [[nodiscard]] std::array<double, 3> evaluate_magnetic_force(std::span<const double> x) const;
 
 
     /*!
@@ -173,7 +173,7 @@ namespace ScaTra
      * @return cylindrical coordinates (rho, phi, z)
      */
     [[nodiscard]] std::array<double, 3> global_to_cylinder_coordinates(
-        std::span<const double, 3> x) const;
+        std::span<const double> x) const;
 
     /*!
      * \brief transform the cylindrical coordinates of a result vector to global cartesian

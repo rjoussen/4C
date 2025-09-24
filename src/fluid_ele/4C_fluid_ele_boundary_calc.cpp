@@ -370,8 +370,6 @@ int Discret::Elements::FluidBoundaryImpl<distype>::evaluate_neumann(
     coordgp3D[2] = 0.0;
     for (int i = 0; i < nsd_; i++) coordgp3D[i] = coordgp(i);
 
-    const double* coordgpref = coordgp3D;  // needed for function evaluation
-
     for (int idim = 0; idim < (nsd_); ++idim)
     {
       if (*type == "Live")
@@ -383,11 +381,11 @@ int Discret::Elements::FluidBoundaryImpl<distype>::evaluate_neumann(
             // evaluate function at current gauss point
             functfac = Global::Problem::instance()
                            ->function_by_id<Core::Utils::FunctionOfSpaceTime>(func[idim].value())
-                           .evaluate(coordgpref, time, idim);
+                           .evaluate(coordgp3D, time, idim);
             if (fldparatimint_->is_new_ost_implementation())
               functfacn = Global::Problem::instance()
                               ->function_by_id<Core::Utils::FunctionOfSpaceTime>(func[idim].value())
-                              .evaluate(coordgpref, time - fldparatimint_->dt(), idim);
+                              .evaluate(coordgp3D, time - fldparatimint_->dt(), idim);
           }
           else
           {
@@ -421,11 +419,11 @@ int Discret::Elements::FluidBoundaryImpl<distype>::evaluate_neumann(
             // evaluate function at current gauss point
             functfac = Global::Problem::instance()
                            ->function_by_id<Core::Utils::FunctionOfSpaceTime>(func[0].value())
-                           .evaluate(coordgpref, time, idim);
+                           .evaluate(coordgp3D, time, idim);
             if (fldparatimint_->is_new_ost_implementation())
               functfacn = Global::Problem::instance()
                               ->function_by_id<Core::Utils::FunctionOfSpaceTime>(func[0].value())
-                              .evaluate(coordgpref, time - fldparatimint_->dt(), idim);
+                              .evaluate(coordgp3D, time - fldparatimint_->dt(), idim);
           }
           else
           {

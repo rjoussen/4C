@@ -6359,13 +6359,13 @@ int Discret::Elements::FluidEleCalcPoro<distype>::compute_error(Discret::Element
         {
           const double u_exact_x = Global::Problem::instance()
                                        ->function_by_id<Core::Utils::FunctionOfSpaceTime>(func_no)
-                                       .evaluate(position.data(), t, 0);
+                                       .evaluate(position, t, 0);
           const double u_exact_y = Global::Problem::instance()
                                        ->function_by_id<Core::Utils::FunctionOfSpaceTime>(func_no)
-                                       .evaluate(position.data(), t, 1);
+                                       .evaluate(position, t, 1);
           const double p_exact = Global::Problem::instance()
                                      ->function_by_id<Core::Utils::FunctionOfSpaceTime>(func_no)
-                                     .evaluate(position.data(), t, 2);
+                                     .evaluate(position, t, 2);
 
           u(0) = u_exact_x;
           u(1) = u_exact_y;
@@ -6375,16 +6375,16 @@ int Discret::Elements::FluidEleCalcPoro<distype>::compute_error(Discret::Element
         {
           const double u_exact_x = Global::Problem::instance()
                                        ->function_by_id<Core::Utils::FunctionOfSpaceTime>(func_no)
-                                       .evaluate(position.data(), t, 0);
+                                       .evaluate(position, t, 0);
           const double u_exact_y = Global::Problem::instance()
                                        ->function_by_id<Core::Utils::FunctionOfSpaceTime>(func_no)
-                                       .evaluate(position.data(), t, 1);
+                                       .evaluate(position, t, 1);
           const double u_exact_z = Global::Problem::instance()
                                        ->function_by_id<Core::Utils::FunctionOfSpaceTime>(func_no)
-                                       .evaluate(position.data(), t, 2);
+                                       .evaluate(position, t, 2);
           const double p_exact = Global::Problem::instance()
                                      ->function_by_id<Core::Utils::FunctionOfSpaceTime>(func_no)
-                                     .evaluate(position.data(), t, 3);
+                                     .evaluate(position, t, 3);
 
           u(0) = u_exact_x;
           u(1) = u_exact_y;

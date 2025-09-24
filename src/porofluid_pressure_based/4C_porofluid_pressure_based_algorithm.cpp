@@ -1083,7 +1083,7 @@ void PoroPressureBased::PorofluidAlgorithm::apply_starting_dbc()
               const double dbc_value = Global::Problem::instance()
                                            ->function_by_id<Core::Utils::FunctionOfSpaceTime>(
                                                starting_dbc_funct_[dof_idx])
-                                           .evaluate(current_node->x().data(), time_, 0);
+                                           .evaluate(current_node->x(), time_, 0);
               phinp_->replace_global_value(gid, dbc_value);
             }
           }
@@ -2016,7 +2016,7 @@ void PoroPressureBased::PorofluidAlgorithm::set_initial_field(
           // evaluate component k of spatial function
           double initialval = Global::Problem::instance()
                                   ->function_by_id<Core::Utils::FunctionOfSpaceTime>(startfuncno)
-                                  .evaluate(lnode.x().data(), time_, k);
+                                  .evaluate(lnode.x(), time_, k);
           int err = phin_->replace_local_value(doflid, initialval);
           if (err != 0) FOUR_C_THROW("dof not on proc");
         }

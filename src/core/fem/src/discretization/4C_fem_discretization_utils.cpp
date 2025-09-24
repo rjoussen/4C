@@ -109,7 +109,7 @@ void Core::FE::do_initial_field(const Core::Utils::FunctionManager& function_man
           const double functfac =
               funct_num > 0
                   ? function_manager.function_by_id<Core::Utils::FunctionOfSpaceTime>(funct_num)
-                        .evaluate(node->x().data(), time, localdof)
+                        .evaluate(node->x(), time, localdof)
                   : 0.0;
 
           // assign value

@@ -264,7 +264,7 @@ void Discret::Utils::add_valid_xfluid_functions(Core::Utils::FunctionManager& fu
 Discret::Utils::GerstenbergerForwardfacingStep::GerstenbergerForwardfacingStep() {}
 
 double Discret::Utils::GerstenbergerForwardfacingStep::evaluate(
-    const double* xp, const double t, const std::size_t component) const
+    std::span<const double> xp, const double t, const std::size_t component) const
 {
   //  //cube_Gerstenberger:
   //  //1.6x1.6
@@ -368,7 +368,7 @@ Discret::Utils::MovingLevelSetCylinder::MovingLevelSetCylinder(std::vector<doubl
 }
 
 double Discret::Utils::MovingLevelSetCylinder::evaluate(
-    const double* xp, const double t, const std::size_t component) const
+    std::span<const double> xp, const double t, const std::size_t component) const
 {
   // d = L/2 * sin(f*t-PI/2)
   // v = L*f/2 * cos(f*t-PI/2) = maxspeed * cos( (maxspeed*2/L)*t-PI/2 )
@@ -504,7 +504,7 @@ Discret::Utils::MovingLevelSetTorus::MovingLevelSetTorus(std::vector<double>* or
 }
 
 double Discret::Utils::MovingLevelSetTorus::evaluate(
-    const double* xp, const double t, const std::size_t component) const
+    std::span<const double> xp, const double t, const std::size_t component) const
 {
   // d = L/2 * sin(f*t-PI/2)
   // v = L*f/2 * cos(f*t-PI/2) = maxspeed * cos( (maxspeed*2/L)*t-PI/2 )
@@ -617,7 +617,7 @@ Discret::Utils::MovingLevelSetTorusVelocity::MovingLevelSetTorusVelocity(
 }
 
 double Discret::Utils::MovingLevelSetTorusVelocity::evaluate(
-    const double* xp, const double t, const std::size_t component) const
+    std::span<const double> xp, const double t, const std::size_t component) const
 {
   // d = L/2 * sin(f*t-PI/2)
   // v = L*f/2 * cos(f*t-PI/2) = maxspeed * cos( (maxspeed*2/L)*t-PI/2 )
@@ -747,7 +747,7 @@ Discret::Utils::MovingLevelSetTorusSliplength::MovingLevelSetTorusSliplength(
 }
 
 double Discret::Utils::MovingLevelSetTorusSliplength::evaluate(
-    const double* xp, const double t, const std::size_t component) const
+    std::span<const double> xp, const double t, const std::size_t component) const
 {
   // coefficient for sinus.
   double dist;
@@ -934,7 +934,7 @@ Discret::Utils::TaylorCouetteFlow::TaylorCouetteFlow(double radius_inner, double
 }
 
 double Discret::Utils::TaylorCouetteFlow::evaluate(
-    const double* xp, const double t, const std::size_t component) const
+    std::span<const double> xp, const double t, const std::size_t component) const
 {
   double radius = std::sqrt(xp[0] * xp[0] + xp[1] * xp[1]);
 
@@ -961,7 +961,7 @@ double Discret::Utils::TaylorCouetteFlow::evaluate(
 }
 
 std::vector<double> Discret::Utils::TaylorCouetteFlow::evaluate_spatial_derivative(
-    const double* xp, const double t, const std::size_t component) const
+    std::span<const double> xp, const double t, const std::size_t component) const
 {
   // u_x = -(c1_*r + c2_/r)*y/r = -(c1_*y + c2_*y/(x^2+y^2))
   // d u_x /dx = c2_ * 2*x*y/((x^2+y^2)^2)
@@ -1063,7 +1063,7 @@ Discret::Utils::UrquizaBoxFlow::UrquizaBoxFlow(double lengthx, double lengthy, d
 }
 
 double Discret::Utils::UrquizaBoxFlow::evaluate(
-    const double* xp, const double t, const std::size_t component) const
+    std::span<const double> xp, const double t, const std::size_t component) const
 {
   // CASE 1:
   //  u =
@@ -1215,7 +1215,7 @@ double Discret::Utils::UrquizaBoxFlow::evaluate(
 }
 
 std::vector<double> Discret::Utils::UrquizaBoxFlow::evaluate_spatial_derivative(
-    const double* xp, const double t, const std::size_t component) const
+    std::span<const double> xp, const double t, const std::size_t component) const
 {
   //  CASE 1:
   //  du_i/dx_j =
@@ -1316,7 +1316,7 @@ Discret::Utils::UrquizaBoxFlowForce::UrquizaBoxFlowForce(double lengthx, double 
 }
 
 double Discret::Utils::UrquizaBoxFlowForce::evaluate(
-    const double* xp, const double t, const std::size_t component) const
+    std::span<const double> xp, const double t, const std::size_t component) const
 {
   double x = xp[0];
   double y = xp[1];
@@ -1470,7 +1470,7 @@ Discret::Utils::UrquizaBoxFlowTraction::UrquizaBoxFlowTraction(double lengthx, d
 }
 
 double Discret::Utils::UrquizaBoxFlowTraction::evaluate(
-    const double* xp, const double t, const std::size_t component) const
+    std::span<const double> xp, const double t, const std::size_t component) const
 {
   double tol = 1e-13;
 

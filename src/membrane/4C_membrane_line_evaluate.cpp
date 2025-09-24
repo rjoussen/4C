@@ -132,12 +132,11 @@ int Discret::Elements::MembraneLine<distype>::evaluate_neumann(Teuchos::Paramete
               // write coordinates in another datatype
               double gp_coord2[noddof_];
               for (int k = 0; k < noddof_; k++) gp_coord2[k] = gp_coord(k, 0);
-              const double* coordgpref = gp_coord2;  // needed for function evaluation
 
               // evaluate function at current gauss point
               functfac = Global::Problem::instance()
                              ->function_by_id<Core::Utils::FunctionOfSpaceTime>(spa_func[i].value())
-                             .evaluate(coordgpref, time, i);
+                             .evaluate(gp_coord2, time, i);
             }
 
             const double fac = val[i] * gpweight * dL * functfac;

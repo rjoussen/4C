@@ -394,7 +394,7 @@ FLD::BeltramiFunction::BeltramiFunction(double c1) : c1_(c1) {}
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 double FLD::BeltramiFunction::evaluate(
-    const double* xp, const double t, const std::size_t component) const
+    std::span<const double> xp, const double t, const std::size_t component) const
 {
   double a = std::numbers::pi / 4.0;
   double d = std::numbers::pi / 2.0;
@@ -442,8 +442,8 @@ double FLD::BeltramiFunction::evaluate(
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::vector<double> FLD::BeltramiFunction::evaluate_time_derivative(
-    const double* xp, const double t, const unsigned deg, const std::size_t component) const
+std::vector<double> FLD::BeltramiFunction::evaluate_time_derivative(std::span<const double> xp,
+    const double t, const unsigned deg, const std::size_t component) const
 {
   double a = std::numbers::pi / 4.0;
   double d = std::numbers::pi / 2.0;
@@ -559,7 +559,7 @@ std::vector<double> FLD::BeltramiFunction::evaluate_time_derivative(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 double FLD::ChannelWeaklyCompressibleFunction::evaluate(
-    const double* xp, const double t, const std::size_t component) const
+    std::span<const double> xp, const double t, const std::size_t component) const
 {
   int id = Global::Problem::instance()->materials()->first_id_by_type(
       Core::Materials::m_fluid_murnaghantait);
@@ -770,7 +770,8 @@ double FLD::ChannelWeaklyCompressibleFunction::evaluate(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 std::vector<double> FLD::ChannelWeaklyCompressibleFunction::evaluate_time_derivative(
-    const double* xp, const double t, const unsigned deg, const std::size_t component) const
+    std::span<const double> xp, const double t, const unsigned deg,
+    const std::size_t component) const
 {
   // resulting vector holding
   std::vector<double> res(deg + 1);
@@ -802,7 +803,7 @@ std::vector<double> FLD::ChannelWeaklyCompressibleFunction::evaluate_time_deriva
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 double FLD::CorrectionTermChannelWeaklyCompressibleFunction::evaluate(
-    const double* xp, const double t, const std::size_t component) const
+    std::span<const double> xp, const double t, const std::size_t component) const
 {
   int id = Global::Problem::instance()->materials()->first_id_by_type(
       Core::Materials::m_fluid_murnaghantait);
@@ -928,7 +929,8 @@ double FLD::CorrectionTermChannelWeaklyCompressibleFunction::evaluate(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 std::vector<double> FLD::CorrectionTermChannelWeaklyCompressibleFunction::evaluate_time_derivative(
-    const double* xp, const double t, const unsigned deg, const std::size_t component) const
+    std::span<const double> xp, const double t, const unsigned deg,
+    const std::size_t component) const
 {
   // resulting vector holding
   std::vector<double> res(deg + 1);
@@ -973,7 +975,7 @@ FLD::WeaklyCompressiblePoiseuilleFunction::WeaklyCompressiblePoiseuilleFunction(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 double FLD::WeaklyCompressiblePoiseuilleFunction::evaluate(
-    const double* xp, const double t, const std::size_t component) const
+    std::span<const double> xp, const double t, const std::size_t component) const
 {
   // ease notation
   double x = xp[0];
@@ -1035,7 +1037,8 @@ double FLD::WeaklyCompressiblePoiseuilleFunction::evaluate(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 std::vector<double> FLD::WeaklyCompressiblePoiseuilleFunction::evaluate_time_derivative(
-    const double* xp, const double t, const unsigned deg, const std::size_t component) const
+    std::span<const double> xp, const double t, const unsigned deg,
+    const std::size_t component) const
 {
   // resulting vector holding
   std::vector<double> res(deg + 1);
@@ -1079,7 +1082,7 @@ FLD::WeaklyCompressiblePoiseuilleForceFunction::WeaklyCompressiblePoiseuilleForc
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 double FLD::WeaklyCompressiblePoiseuilleForceFunction::evaluate(
-    const double* xp, const double t, const std::size_t component) const
+    std::span<const double> xp, const double t, const std::size_t component) const
 {
   // ease notation
   double x = xp[0];
@@ -1125,7 +1128,8 @@ double FLD::WeaklyCompressiblePoiseuilleForceFunction::evaluate(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 std::vector<double> FLD::WeaklyCompressiblePoiseuilleForceFunction::evaluate_time_derivative(
-    const double* xp, const double t, const unsigned deg, const std::size_t component) const
+    std::span<const double> xp, const double t, const unsigned deg,
+    const std::size_t component) const
 {
   // resulting vector holding
   std::vector<double> res(deg + 1);
@@ -1167,7 +1171,7 @@ FLD::WeaklyCompressibleManufacturedFlowFunction::WeaklyCompressibleManufacturedF
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 double FLD::WeaklyCompressibleManufacturedFlowFunction::evaluate(
-    const double* xp, const double t, const std::size_t component) const
+    std::span<const double> xp, const double t, const std::size_t component) const
 {
   // ease notation
   double x = xp[0];
@@ -1294,7 +1298,8 @@ double FLD::WeaklyCompressibleManufacturedFlowFunction::evaluate(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 std::vector<double> FLD::WeaklyCompressibleManufacturedFlowFunction::evaluate_time_derivative(
-    const double* xp, const double t, const unsigned deg, const std::size_t component) const
+    std::span<const double> xp, const double t, const unsigned deg,
+    const std::size_t component) const
 {
   // resulting vector holding
   std::vector<double> res(deg + 1);
@@ -1337,7 +1342,7 @@ FLD::WeaklyCompressibleManufacturedFlowForceFunction::
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 double FLD::WeaklyCompressibleManufacturedFlowForceFunction::evaluate(
-    const double* xp, const double t, const std::size_t component) const
+    std::span<const double> xp, const double t, const std::size_t component) const
 {
   // ease notation
   double x = xp[0];
@@ -1690,7 +1695,8 @@ double FLD::WeaklyCompressibleManufacturedFlowForceFunction::evaluate(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 std::vector<double> FLD::WeaklyCompressibleManufacturedFlowForceFunction::evaluate_time_derivative(
-    const double* xp, const double t, const unsigned deg, const std::size_t component) const
+    std::span<const double> xp, const double t, const unsigned deg,
+    const std::size_t component) const
 {
   // resulting vector holding
   std::vector<double> res(deg + 1);
@@ -1731,7 +1737,7 @@ FLD::WeaklyCompressibleEtienneCFDFunction::WeaklyCompressibleEtienneCFDFunction(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 double FLD::WeaklyCompressibleEtienneCFDFunction::evaluate(
-    const double* xp, const double t, const std::size_t component) const
+    std::span<const double> xp, const double t, const std::size_t component) const
 {
   // ease notation
   double x = xp[0];
@@ -1844,7 +1850,8 @@ double FLD::WeaklyCompressibleEtienneCFDFunction::evaluate(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 std::vector<double> FLD::WeaklyCompressibleEtienneCFDFunction::evaluate_time_derivative(
-    const double* xp, const double t, const unsigned deg, const std::size_t component) const
+    std::span<const double> xp, const double t, const unsigned deg,
+    const std::size_t component) const
 {
   // resulting vector holding
   std::vector<double> res(deg + 1);
@@ -1883,7 +1890,7 @@ FLD::WeaklyCompressibleEtienneCFDForceFunction::WeaklyCompressibleEtienneCFDForc
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 double FLD::WeaklyCompressibleEtienneCFDForceFunction::evaluate(
-    const double* xp, const double t, const std::size_t component) const
+    std::span<const double> xp, const double t, const std::size_t component) const
 {
   // ease notation
   double x = xp[0];
@@ -2260,7 +2267,8 @@ double FLD::WeaklyCompressibleEtienneCFDForceFunction::evaluate(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 std::vector<double> FLD::WeaklyCompressibleEtienneCFDForceFunction::evaluate_time_derivative(
-    const double* xp, const double t, const unsigned deg, const std::size_t component) const
+    std::span<const double> xp, const double t, const unsigned deg,
+    const std::size_t component) const
 {
   // resulting vector holding
   std::vector<double> res(deg + 1);
@@ -2298,7 +2306,7 @@ FLD::WeaklyCompressibleEtienneCFDViscosityFunction::WeaklyCompressibleEtienneCFD
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 double FLD::WeaklyCompressibleEtienneCFDViscosityFunction::evaluate(
-    const double* xp, const double t, const std::size_t component) const
+    std::span<const double> xp, const double t, const std::size_t component) const
 {
   // ease notation
   double x = xp[0];
@@ -2322,7 +2330,8 @@ double FLD::WeaklyCompressibleEtienneCFDViscosityFunction::evaluate(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 std::vector<double> FLD::WeaklyCompressibleEtienneCFDViscosityFunction::evaluate_time_derivative(
-    const double* xp, const double t, const unsigned deg, const std::size_t component) const
+    std::span<const double> xp, const double t, const unsigned deg,
+    const std::size_t component) const
 {
   // resulting vector holding
   std::vector<double> res(deg + 1);
@@ -2375,7 +2384,7 @@ FLD::WeaklyCompressibleEtienneFSIFluidFunction::WeaklyCompressibleEtienneFSIFlui
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 double FLD::WeaklyCompressibleEtienneFSIFluidFunction::evaluate(
-    const double* xp, const double t, const std::size_t component) const
+    std::span<const double> xp, const double t, const std::size_t component) const
 {
   // ease notation
   double x = xp[0];
@@ -2772,7 +2781,8 @@ double FLD::WeaklyCompressibleEtienneFSIFluidFunction::evaluate(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 std::vector<double> FLD::WeaklyCompressibleEtienneFSIFluidFunction::evaluate_time_derivative(
-    const double* xp, const double t, const unsigned deg, const std::size_t component) const
+    std::span<const double> xp, const double t, const unsigned deg,
+    const std::size_t component) const
 {
   // resulting vector holding
   std::vector<double> res(deg + 1);
@@ -2825,7 +2835,7 @@ FLD::WeaklyCompressibleEtienneFSIFluidForceFunction::WeaklyCompressibleEtienneFS
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 double FLD::WeaklyCompressibleEtienneFSIFluidForceFunction::evaluate(
-    const double* xp, const double t, const std::size_t component) const
+    std::span<const double> xp, const double t, const std::size_t component) const
 {
   // ease notation
   double x = xp[0];
@@ -7814,7 +7824,8 @@ double FLD::WeaklyCompressibleEtienneFSIFluidForceFunction::evaluate(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 std::vector<double> FLD::WeaklyCompressibleEtienneFSIFluidForceFunction::evaluate_time_derivative(
-    const double* xp, const double t, const unsigned deg, const std::size_t component) const
+    std::span<const double> xp, const double t, const unsigned deg,
+    const std::size_t component) const
 {
   // resulting vector holding
   std::vector<double> res(deg + 1);
@@ -7868,7 +7879,7 @@ FLD::WeaklyCompressibleEtienneFSIFluidViscosityFunction::
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 double FLD::WeaklyCompressibleEtienneFSIFluidViscosityFunction::evaluate(
-    const double* xp, const double t, const std::size_t component) const
+    std::span<const double> xp, const double t, const std::size_t component) const
 {
   // ease notation
   double x = xp[0];
@@ -8047,7 +8058,8 @@ double FLD::WeaklyCompressibleEtienneFSIFluidViscosityFunction::evaluate(
 /*----------------------------------------------------------------------*/
 std::vector<double>
 FLD::WeaklyCompressibleEtienneFSIFluidViscosityFunction::evaluate_time_derivative(
-    const double* xp, const double t, const unsigned deg, const std::size_t component) const
+    std::span<const double> xp, const double t, const unsigned deg,
+    const std::size_t component) const
 {
   // resulting vector holding
   std::vector<double> res(deg + 1);
@@ -8082,7 +8094,7 @@ FLD::BeltramiUP::BeltramiUP(const Mat::PAR::NewtonianFluid& fparams) : density_(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 double FLD::BeltramiUP::evaluate(
-    const double* xp, const double t, const std::size_t component) const
+    std::span<const double> xp, const double t, const std::size_t component) const
 {
   double x = xp[0];
   double y = xp[1];
@@ -8116,8 +8128,8 @@ double FLD::BeltramiUP::evaluate(
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::vector<double> FLD::BeltramiUP::evaluate_time_derivative(
-    const double* xp, const double t, const unsigned deg, const std::size_t component) const
+std::vector<double> FLD::BeltramiUP::evaluate_time_derivative(std::span<const double> xp,
+    const double t, const unsigned deg, const std::size_t component) const
 {
   // resulting vector holding
   std::vector<double> res(deg + 1);
@@ -8174,7 +8186,7 @@ FLD::BeltramiGradU::BeltramiGradU(const Mat::PAR::NewtonianFluid& fparams) {}
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 double FLD::BeltramiGradU::evaluate(
-    const double* xp, const double t, const std::size_t component) const
+    std::span<const double> xp, const double t, const std::size_t component) const
 {
   double x = xp[0];
   double y = xp[1];
@@ -8217,8 +8229,8 @@ double FLD::BeltramiGradU::evaluate(
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::vector<double> FLD::BeltramiGradU::evaluate_time_derivative(
-    const double* xp, const double t, const unsigned deg, const std::size_t component) const
+std::vector<double> FLD::BeltramiGradU::evaluate_time_derivative(std::span<const double> xp,
+    const double t, const unsigned deg, const std::size_t component) const
 {
   // resulting vector holding
   std::vector<double> res(deg + 1);
@@ -8288,7 +8300,7 @@ FLD::BeltramiRHS::BeltramiRHS(const Mat::PAR::NewtonianFluid& fparams, bool is_s
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 double FLD::BeltramiRHS::evaluate(
-    const double* xp, const double t, const std::size_t component) const
+    std::span<const double> xp, const double t, const std::size_t component) const
 {
   double x = xp[0];
   double y = xp[1];
@@ -8339,8 +8351,8 @@ double FLD::BeltramiRHS::evaluate(
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::vector<double> FLD::BeltramiRHS::evaluate_time_derivative(
-    const double* xp, const double t, const unsigned deg, const std::size_t component) const
+std::vector<double> FLD::BeltramiRHS::evaluate_time_derivative(std::span<const double> xp,
+    const double t, const unsigned deg, const std::size_t component) const
 {
   // resulting vector holding
   std::vector<double> res(deg + 1);
@@ -8399,7 +8411,8 @@ FLD::KimMoinUP::KimMoinUP(const Mat::PAR::NewtonianFluid& fparams, bool is_stati
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double FLD::KimMoinUP::evaluate(const double* xp, const double t, const std::size_t component) const
+double FLD::KimMoinUP::evaluate(
+    std::span<const double> xp, const double t, const std::size_t component) const
 {
   double x = xp[0];
   double y = xp[1];
@@ -8439,8 +8452,8 @@ double FLD::KimMoinUP::evaluate(const double* xp, const double t, const std::siz
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::vector<double> FLD::KimMoinUP::evaluate_time_derivative(
-    const double* xp, const double t, const unsigned deg, const std::size_t component) const
+std::vector<double> FLD::KimMoinUP::evaluate_time_derivative(std::span<const double> xp,
+    const double t, const unsigned deg, const std::size_t component) const
 {
   double x = xp[0];
   double y = xp[1];
@@ -8547,7 +8560,7 @@ FLD::KimMoinGradU::KimMoinGradU(const Mat::PAR::NewtonianFluid& fparams, bool is
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 double FLD::KimMoinGradU::evaluate(
-    const double* xp, const double t, const std::size_t component) const
+    std::span<const double> xp, const double t, const std::size_t component) const
 {
   // double visc = 1.0;
 
@@ -8598,8 +8611,8 @@ double FLD::KimMoinGradU::evaluate(
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::vector<double> FLD::KimMoinGradU::evaluate_time_derivative(
-    const double* xp, const double t, const unsigned deg, const std::size_t component) const
+std::vector<double> FLD::KimMoinGradU::evaluate_time_derivative(std::span<const double> xp,
+    const double t, const unsigned deg, const std::size_t component) const
 {
   // double visc = 1.0;
 
@@ -8736,7 +8749,7 @@ FLD::KimMoinRHS::KimMoinRHS(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 double FLD::KimMoinRHS::evaluate(
-    const double* xp, const double t, const std::size_t component) const
+    std::span<const double> xp, const double t, const std::size_t component) const
 {
   double x = xp[0];
   double y = xp[1];
@@ -8798,8 +8811,8 @@ double FLD::KimMoinRHS::evaluate(
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::vector<double> FLD::KimMoinRHS::evaluate_time_derivative(
-    const double* xp, const double t, const unsigned deg, const std::size_t component) const
+std::vector<double> FLD::KimMoinRHS::evaluate_time_derivative(std::span<const double> xp,
+    const double t, const unsigned deg, const std::size_t component) const
 {
   double x = xp[0];
   double y = xp[1];
@@ -8937,7 +8950,7 @@ FLD::KimMoinStress::KimMoinStress(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 double FLD::KimMoinStress::evaluate(
-    const double* xp, const double t, const std::size_t component) const
+    std::span<const double> xp, const double t, const std::size_t component) const
 {
   // double visc = 1.0;
 

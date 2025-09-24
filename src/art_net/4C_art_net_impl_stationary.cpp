@@ -714,7 +714,7 @@ void Arteries::ArtNetImplStationary::set_initial_field(
           // evaluate component k of spatial function
           double initialval = Global::Problem::instance()
                                   ->function_by_id<Core::Utils::FunctionOfSpaceTime>(startfuncno)
-                                  .evaluate(lnode.x().data(), time_, k);
+                                  .evaluate(lnode.x(), time_, k);
           int err = pressurenp_->replace_local_value(doflid, initialval);
           if (err != 0) FOUR_C_THROW("dof not on proc");
         }

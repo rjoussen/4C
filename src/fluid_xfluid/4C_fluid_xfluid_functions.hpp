@@ -38,7 +38,7 @@ namespace Discret
       /// ctor
       GerstenbergerForwardfacingStep();
 
-      double evaluate(const double* x, double t, std::size_t component) const override;
+      double evaluate(std::span<const double> x, double t, std::size_t component) const override;
 
       [[nodiscard]] std::size_t number_components() const override
       {
@@ -62,7 +62,7 @@ namespace Discret
       MovingLevelSetCylinder(std::vector<double>* origin, double radius,
           std::vector<double>* direction, double distance, double maxspeed);
 
-      double evaluate(const double* x, double t, std::size_t component) const override;
+      double evaluate(std::span<const double> x, double t, std::size_t component) const override;
 
       [[nodiscard]] std::size_t number_components() const override
       {
@@ -188,7 +188,7 @@ namespace Discret
           double maxspeed, std::vector<double>* rotvector, double rotspeed, double rotramptime);
 
       /// evaluate function at given position in space
-      double evaluate(const double* x, double t, std::size_t component) const override;
+      double evaluate(std::span<const double> x, double t, std::size_t component) const override;
     };
 
     class MovingLevelSetTorusVelocity : public MovingLSTorus
@@ -201,7 +201,7 @@ namespace Discret
           std::vector<double>* rotvector, double rotspeed, double rotramptime);
 
       /// evaluate function at given position in space
-      double evaluate(const double* x, double t, std::size_t component) const override;
+      double evaluate(std::span<const double> x, double t, std::size_t component) const override;
 
       /*!
        * @brief Return the number of components of this spatial function (This is a vector-valued
@@ -222,7 +222,7 @@ namespace Discret
           std::vector<double>* rotvector, double rotspeed, double rotramptime, int slipfunct);
 
       /// evaluate function at given position in space
-      double evaluate(const double* x, double t, std::size_t component) const override;
+      double evaluate(std::span<const double> x, double t, std::size_t component) const override;
 
      private:
       int slipfunct_;
@@ -242,10 +242,10 @@ namespace Discret
 
       /// evaluate function at given position in space,
       /// here: evaluation of Taylor-Couette analytical solution
-      double evaluate(const double* x, double t, std::size_t component) const override;
+      double evaluate(std::span<const double> x, double t, std::size_t component) const override;
 
       std::vector<double> evaluate_spatial_derivative(
-          const double* x, double t, std::size_t component) const override;
+          std::span<const double> x, double t, std::size_t component) const override;
 
       [[nodiscard]] std::size_t number_components() const override
       {
@@ -275,10 +275,10 @@ namespace Discret
       UrquizaBoxFlow(double lengthx, double lengthy, double rotation, double viscosity,
           double density, int functno, std::vector<double> lincomb);
 
-      double evaluate(const double* x, double t, std::size_t component) const override;
+      double evaluate(std::span<const double> x, double t, std::size_t component) const override;
 
       std::vector<double> evaluate_spatial_derivative(
-          const double* x, double t, std::size_t component) const override;
+          std::span<const double> x, double t, std::size_t component) const override;
 
       [[nodiscard]] std::size_t number_components() const override
       {
@@ -308,10 +308,10 @@ namespace Discret
           double density, int functno, std::vector<double> lincomb);
 
       /// evaluate function at given position in space
-      double evaluate(const double* x, double t, std::size_t component) const override;
+      double evaluate(std::span<const double> x, double t, std::size_t component) const override;
 
       std::vector<double> evaluate_spatial_derivative(
-          const double* x, const double t, const std::size_t component) const override
+          std::span<const double> x, const double t, const std::size_t component) const override
       {
         FOUR_C_THROW("Derivative not implemented for UrquizaBoxFlowForce");
         return {};
@@ -329,10 +329,10 @@ namespace Discret
           double density, int functno, std::vector<double> lincomb);
 
       /// evaluate function at given position in space
-      double evaluate(const double* x, double t, std::size_t component) const override;
+      double evaluate(std::span<const double> x, double t, std::size_t component) const override;
 
       std::vector<double> evaluate_spatial_derivative(
-          const double* x, const double t, const std::size_t component) const override
+          std::span<const double> x, const double t, const std::size_t component) const override
       {
         FOUR_C_THROW("Derivative not implemented for UrquizaBoxFlowTraction");
         return {};

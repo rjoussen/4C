@@ -134,7 +134,7 @@ void Solid::Integrator::set_initial_displacement(
           const double initialval =
               Global::Problem::instance()
                   ->function_by_id<Core::Utils::FunctionOfSpaceTime>(startfuncno)
-                  .evaluate(lnode->x().data(), global_state().get_time_n(), d);
+                  .evaluate(lnode->x(), global_state().get_time_n(), d);
 
           const int err = global_state().get_dis_n()->replace_local_value(doflid, initialval);
           if (err != 0) FOUR_C_THROW("dof not on proc");

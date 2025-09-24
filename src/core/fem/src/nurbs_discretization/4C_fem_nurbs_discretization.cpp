@@ -614,7 +614,7 @@ void Core::FE::DbcNurbs::fill_matrix_and_rhs_for_ls_dirichlet_boundary(
         // important: position has to have always three components!!
         functimederivfac =
             function_manager.function_by_id<Core::Utils::FunctionOfSpaceTime>(funct[rr].value())
-                .evaluate_time_derivative(position.values(), time, deg, rr);
+                .evaluate_time_derivative(std::span(position.values(), 3), time, deg, rr);
       }
 
       // apply factors to Dirichlet value
@@ -764,11 +764,11 @@ void Core::FE::DbcNurbs::fill_matrix_and_rhs_for_ls_dirichlet_domain(
         // important: position has to have always three components!!
         functimederivfac =
             function_manager.function_by_id<Core::Utils::FunctionOfSpaceTime>(funct[rr].value())
-                .evaluate_time_derivative(position.values(), time, deg, rr);
+                .evaluate_time_derivative(std::span(position.values(), 3), time, deg, rr);
 
         functfac =
             function_manager.function_by_id<Core::Utils::FunctionOfSpaceTime>(funct[rr].value())
-                .evaluate(position.values(), time, rr);
+                .evaluate(std::span(position.values(), 3), time, rr);
       }
 
       // apply factors to Dirichlet value

@@ -145,8 +145,8 @@ void PARTICLEALGORITHM::DirichletBoundaryConditionHandler::evaluate_dirichlet_bo
       for (int dim = 0; dim < statedim; ++dim)
       {
         // evaluate function, first and second time derivative
-        functtimederiv =
-            function.evaluate_time_derivative(&(refpos[statedim * i]), evaltime, deg, dim);
+        functtimederiv = function.evaluate_time_derivative(
+            std::span(&(refpos[statedim * i]), 3), evaltime, deg, dim);
 
         // set position state
         if (evalpos)

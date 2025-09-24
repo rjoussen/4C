@@ -47,7 +47,7 @@ namespace Core::Utils
      *                      which should be evaluated
      * @return function value
      */
-    virtual double evaluate(const double* x, double t, std::size_t component) const = 0;
+    virtual double evaluate(std::span<const double> x, double t, std::size_t component) const = 0;
 
     /*!
      * @brief Vector-valued evaluation of time and space dependent function
@@ -60,10 +60,7 @@ namespace Core::Utils
      * @param values function values
      */
     virtual void evaluate_vector(
-        const std::span<const double, 3> x, double t, std::span<double> values) const
-    {
-      for (std::size_t i = 0; i < number_components(); ++i) values[i] = evaluate(x.data(), t, i);
-    }
+        std::span<const double> x, double t, std::span<double> values) const;
 
 
     /*!
@@ -76,10 +73,7 @@ namespace Core::Utils
      * \return first spatial derivative of function
      */
     virtual std::vector<double> evaluate_spatial_derivative(
-        const double* x, double t, std::size_t component) const
-    {
-      FOUR_C_THROW("The evaluation of the derivative is not implemented for this function");
-    };
+        std::span<const double> x, double t, std::size_t component) const;
 
     /*!
      * \brief Evaluation of time derivatives and value of the time and space dependent function
@@ -95,10 +89,7 @@ namespace Core::Utils
      * @return vector containing value and time derivative(s)
      */
     virtual std::vector<double> evaluate_time_derivative(
-        const double* x, double t, unsigned deg, std::size_t component) const
-    {
-      FOUR_C_THROW("The evaluation of the time derivative is not implemented for this function");
-    };
+        std::span<const double> x, double t, unsigned deg, std::size_t component) const;
 
     /// Return number of components of function
     [[nodiscard]] virtual std::size_t number_components() const = 0;
@@ -124,13 +115,13 @@ namespace Core::Utils
     SymbolicFunctionOfSpaceTime(const std::vector<std::string>& expressions,
         std::vector<std::shared_ptr<FunctionVariable>> variables);
 
-    double evaluate(const double* x, double t, std::size_t component) const override;
+    double evaluate(std::span<const double> x, double t, std::size_t component) const override;
 
     std::vector<double> evaluate_spatial_derivative(
-        const double* x, double t, std::size_t component) const override;
+        std::span<const double> x, double t, std::size_t component) const override;
 
     std::vector<double> evaluate_time_derivative(
-        const double* x, double t, unsigned deg, std::size_t component) const override;
+        std::span<const double> x, double t, unsigned deg, std::size_t component) const override;
 
     [[nodiscard]] std::size_t number_components() const override { return (expr_.size()); }
 

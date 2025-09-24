@@ -642,7 +642,7 @@ int Discret::Elements::Beam3r::evaluate_neumann(Teuchos::ParameterList& params,
       if (functions[dof].has_value() && functions[dof].value() > 0)
         functionfac = Global::Problem::instance()
                           ->function_by_id<Core::Utils::FunctionOfSpaceTime>(functions[dof].value())
-                          .evaluate(X_ref.data(), time, dof);
+                          .evaluate(X_ref, time, dof);
       else
         functionfac = 1.0;
 

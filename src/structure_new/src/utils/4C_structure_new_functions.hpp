@@ -35,10 +35,10 @@ namespace Solid
    public:
     WeaklyCompressibleEtienneFSIStructureFunction(const Mat::PAR::StVenantKirchhoff& fparams);
 
-    double evaluate(const double* x, double t, std::size_t component) const override;
+    double evaluate(std::span<const double> x, double t, std::size_t component) const override;
 
     std::vector<double> evaluate_time_derivative(
-        const double* x, double t, unsigned deg, std::size_t component) const override;
+        std::span<const double> x, double t, unsigned deg, std::size_t component) const override;
 
     [[nodiscard]] std::size_t number_components() const override { return (2); };
   };
@@ -49,10 +49,10 @@ namespace Solid
    public:
     WeaklyCompressibleEtienneFSIStructureForceFunction(const Mat::PAR::StVenantKirchhoff& fparams);
 
-    double evaluate(const double* x, double t, std::size_t component) const override;
+    double evaluate(std::span<const double> x, double t, std::size_t component) const override;
 
     std::vector<double> evaluate_time_derivative(
-        const double* x, double t, unsigned deg, std::size_t component) const override;
+        std::span<const double> x, double t, unsigned deg, std::size_t component) const override;
 
     [[nodiscard]] std::size_t number_components() const override { return (2); };
 

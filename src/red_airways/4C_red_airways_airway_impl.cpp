@@ -109,7 +109,7 @@ namespace
         {
           functionfac = Global::Problem::instance()
                             ->function_by_id<Core::Utils::FunctionOfSpaceTime>(functnum)
-                            .evaluate(node->x().data(), time, 0);
+                            .evaluate(node->x(), time, 0);
         }
         // get curve2
         double curve2fac = 1.0;
@@ -975,7 +975,7 @@ void Discret::Elements::AirwayImpl<distype>::evaluate_terminal_bc(RedAirway* ele
                       return Global::Problem::instance()
                           ->function_by_id<Core::Utils::FunctionOfSpaceTime>(
                               (*functions)[0].value())
-                          .evaluate((ele->nodes()[i])->x().data(), time, 0);
+                          .evaluate((ele->nodes()[i])->x(), time, 0);
                     else
                       return 0.0;
                   }
