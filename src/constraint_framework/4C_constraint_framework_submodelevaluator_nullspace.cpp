@@ -11,8 +11,8 @@
 #include "4C_fem_discretization_nullspace.hpp"
 #include "4C_fem_general_elementtype.hpp"
 #include "4C_io_pstream.hpp"
+#include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
-#include "4C_linalg_utils_sparse_algebra_print.hpp"
 #include "4C_structure_new_timint_base.hpp"
 #include "4C_structure_new_timint_basedataglobalstate.hpp"
 
@@ -138,30 +138,8 @@ void Constraints::SubmodelEvaluator::NullspaceConstraintManager::evaluate_coupli
 
   Q_dL_ = std::make_shared<Core::LinAlg::SparseMatrix>(*dof_map, constraint_space.NumVectors());
 
-  const int offset = constraint_map_->min_all_gid();
-
-  // put values of nullspace vectors into matrix
-  for (int row = 0; row < Q_dL_->num_my_rows(); row++)
-  {
-    std::vector<int> indices;
-    std::vector<double> values;
-
-    for (int mode = 0; mode < constraint_space.NumVectors(); mode++)
-    {
-      // mode is the index, the value the respective entry
-      double value = constraint_space(mode).get_values()[row];
-
-      // if we have a zero value, just continue
-      if (std::abs(value) < 1e-14) continue;
-
-      indices.push_back(mode + offset);
-      values.push_back(value);
-    }
-
-    Q_dL_->insert_global_values(dof_map->gid(row), indices.size(), values.data(), indices.data());
-  }
-
-  Q_dL_->complete(*constraint_map_, *dof_map);
+  Core::LinAlg::multi_vector_to_linalg_sparse_matrix(
+      constraint_space, *dof_map, *constraint_map_, *Q_dL_);
 
   Q_Ld_ = Core::LinAlg::matrix_transpose(*Q_dL_);
   Q_Ld_->complete(*dof_map, *constraint_map_);

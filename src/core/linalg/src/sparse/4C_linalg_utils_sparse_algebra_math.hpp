@@ -14,8 +14,6 @@
 #include "4C_linalg_graph.hpp"
 #include "4C_linalg_map.hpp"
 
-#include <Epetra_CrsMatrix.h>
-
 #include <memory>
 
 FOUR_C_NAMESPACE_OPEN
@@ -23,8 +21,8 @@ FOUR_C_NAMESPACE_OPEN
 namespace Core::LinAlg
 {
   /*!
-   \brief Add a (transposed) Epetra_CrsMatrix to a Core::LinAlg::SparseMatrix: B = B*scalarB +
-   A(^T)*scalarA
+   \brief Add a (transposed) Core::LinAlg::SparseMatrix to a Core::LinAlg::SparseMatrix:
+   B = B*scalarB + A(^T)*scalarA
 
    Add one matrix to another.
 
@@ -175,6 +173,39 @@ namespace Core::LinAlg
   std::shared_ptr<SparseMatrix> matrix_sparse_inverse(const SparseMatrix& A,
       std::shared_ptr<Core::LinAlg::Graph> sparsity_pattern,
       OptionsSparseMatrixInverse options = {});
+
+  /**
+   * \brief Computes multiplication of a MultiVector times a SerialDenseMatrix
+   *
+   * \param mv (in): MultiVector to be used for multiplication
+   * \param dm (in): SerialDenseMatrix to be used for multiplication
+   *
+   * \return MultiVector times SerialDenseMatrix MV*SerialDenseMatrix
+   */
+  MultiVector<double> multiply_multi_vector_dense_matrix(
+      const Core::LinAlg::MultiVector<double>& mv, const Core::LinAlg::SerialDenseMatrix& dm);
+
+  /**
+   * \brief Computes the outer product of two MultiVectors
+   *
+   * \param mv1 (in): First MultiVector to be used for multiplication
+   * \param mv2 (in): Second MultiVector to be used for multiplication
+   * \param id (in): Flag indicating which MultiVector should be used for sparsity estimate
+   * \param fill (in): Flag indicating whether complete should be called on result upon exit,
+   * (defaults to true)
+   *
+   * \return SparseMatrix containing the outer-product MV*MV
+   */
+  Core::LinAlg::SparseMatrix multiply_multi_vector_multi_vector(
+      const Core::LinAlg::MultiVector<double>& mv1, const Core::LinAlg::MultiVector<double>& mv2,
+      const int id = 1, const bool fill = true);
+
+  /**
+   * \brief Multiply two multi vectors
+   */
+  void multiply_multi_vectors(Core::LinAlg::MultiVector<double>&, char,
+      Core::LinAlg::MultiVector<double>&, char, Core::LinAlg::Map&, Core::LinAlg::Import&,
+      Core::LinAlg::MultiVector<double>&);
 
 }  // namespace Core::LinAlg
 

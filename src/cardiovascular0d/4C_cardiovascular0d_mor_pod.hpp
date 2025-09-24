@@ -69,16 +69,6 @@ namespace Cardiovascular0D
     void read_pod_basis_vectors_from_file(const std::string& absolute_path_to_pod_file,
         std::shared_ptr<Core::LinAlg::MultiVector<double>>& projmatrix);
 
-    //! Multiply two multi vectors
-    void multiply_multi_vectors(Core::LinAlg::MultiVector<double>&, char,
-        Core::LinAlg::MultiVector<double>&, char, Core::LinAlg::Map&, Core::LinAlg::Import&,
-        Core::LinAlg::MultiVector<double>&);
-
-    //! Core::LinAlg::MultiVector<double> to Core::LinAlg::SparseMatrix
-    void multi_vector_to_linalg_sparse_matrix(Core::LinAlg::MultiVector<double>& multivect,
-        Core::LinAlg::Map& rangemap, std::shared_ptr<Core::LinAlg::Map> domainmap,
-        Core::LinAlg::SparseMatrix& sparsemat);
-
     //! Check orthogonality of POD basis vectors with M^T * M - I == 0
     bool is_pod_basis_orthogonal(const Core::LinAlg::MultiVector<double>& M);
 
