@@ -35,7 +35,10 @@
       "description": "Build release version of 4C on thought at LNM",
       "inherits": [
         ".lnm_cluster"
-      ]
+      ],
+      "cacheVariables": {
+        "FOUR_C_PYTHON_ROOT": "/lnm/miniconda3/envs/python_3_12_env/bin"
+      }
     }
   ]
 }
