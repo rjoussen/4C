@@ -75,8 +75,8 @@ void Discret::Elements::FluidHDGType::nodal_block_information(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::Elements::FluidHDGType::compute_null_space(
-    Core::FE::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns)
+void Discret::Elements::FluidHDGType::compute_null_space(Core::FE::Discretization& dis,
+    std::vector<double>& ns, std::span<const double> x0, int numdf, int dimns)
 {
   if (Core::FE::DiscretizationFaces* facedis = dynamic_cast<Core::FE::DiscretizationFaces*>(&dis))
   {

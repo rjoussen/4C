@@ -61,7 +61,7 @@ void Discret::Elements::FluidType::nodal_block_information(
 
 
 Core::LinAlg::SerialDenseMatrix Discret::Elements::FluidType::compute_null_space(
-    Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
+    Core::Nodes::Node& node, std::span<const double> x0, const int numdof)
 {
   switch (numdof)
   {

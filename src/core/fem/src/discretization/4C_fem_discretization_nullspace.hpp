@@ -27,13 +27,11 @@ namespace Core::FE
           in the respective variable.
 
      \param dis (in): discretization
-     \param numdf (in): number of degrees of freedom
      \param dimns (in): nullspace dimension
      \param map (in): nullspace map
       */
   std::shared_ptr<Core::LinAlg::MultiVector<double>> compute_null_space(
-      const Core::FE::Discretization& dis, const int numdf, const int dimns,
-      const Core::LinAlg::Map& dofmap);
+      const Core::FE::Discretization& dis, const int dimns, const Core::LinAlg::Map& dofmap);
 }  // namespace Core::FE
 
 FOUR_C_NAMESPACE_CLOSE

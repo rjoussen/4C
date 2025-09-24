@@ -93,7 +93,7 @@ namespace Solid::Utils::Shell
    *  rotational (around x,y,z) nullspace contribution for given node
    */
   Core::LinAlg::SerialDenseMatrix compute_shell_null_space(
-      Core::Nodes::Node& node, const double* x0, const Core::LinAlg::Matrix<3, 1>& dir);
+      Core::Nodes::Node& node, std::span<const double> x0, const Core::LinAlg::Matrix<3, 1>& dir);
 
   void nodal_block_information_shell(Core::Elements::Element* dwele, int& numdf, int& dimns);
 

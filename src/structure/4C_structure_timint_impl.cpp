@@ -790,7 +790,7 @@ void Solid::TimIntImpl::update_krylov_space_projection()
 
   Core::LinAlg::Map nullspaceMap(*discret_->dof_row_map());
   std::shared_ptr<Core::LinAlg::MultiVector<double>> nullspace =
-      Core::FE::compute_null_space(*discret_, 3, 6, nullspaceMap);
+      Core::FE::compute_null_space(*discret_, 6, nullspaceMap);
   if (nullspace == nullptr) FOUR_C_THROW("nullspace not successfully computed");
 
   // sort vector of nullspace data into kernel vector c_

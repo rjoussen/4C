@@ -64,7 +64,8 @@ Constraints::SubmodelEvaluator::NullspaceConstraintManager::NullspaceConstraintM
   // just grab the block information on the first element that appears and check with given number
   Core::Elements::Element* dwele = discret_ptr->l_row_element(0);
   int nullspace_dimension;
-  dwele->element_type().nodal_block_information(dwele, number_of_dofs_, nullspace_dimension);
+  int number_of_dofs;
+  dwele->element_type().nodal_block_information(dwele, number_of_dofs, nullspace_dimension);
 
   if (nullspace_dimension_ != nullspace_dimension)
   {
@@ -119,8 +120,7 @@ void Constraints::SubmodelEvaluator::NullspaceConstraintManager::evaluate_coupli
     Solid::TimeInt::BaseDataGlobalState& gstate)
 {
   auto dof_map = discret_ptr_->dof_row_map();
-  auto nullspace =
-      Core::FE::compute_null_space(*discret_ptr_, number_of_dofs_, nullspace_dimension_, *dof_map);
+  auto nullspace = Core::FE::compute_null_space(*discret_ptr_, nullspace_dimension_, *dof_map);
 
   Core::LinAlg::MultiVector<double> constraint_space(*dof_map, active_mode_ids_.size());
 

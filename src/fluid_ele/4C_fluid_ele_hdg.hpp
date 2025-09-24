@@ -43,7 +43,7 @@ namespace Discret
       void nodal_block_information(Core::Elements::Element* dwele, int& numdf, int& dimns) override;
 
       virtual void compute_null_space(Core::FE::Discretization& dis, std::vector<double>& ns,
-          const double* x0, int numdf, int dimns);
+          std::span<const double> x0, int numdf, int dimns);
 
       void setup_element_definition(
           std::map<std::string, std::map<Core::FE::CellType, Core::IO::InputSpec>>& definitions)

@@ -75,7 +75,7 @@ void Discret::Elements::FluidHDGWeakCompType::nodal_block_information(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void Discret::Elements::FluidHDGWeakCompType::compute_null_space(
-    Core::FE::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns)
+    Core::FE::Discretization& dis, std::vector<double>& ns, std::span<const double> x0, int numdf)
 {
 }
 

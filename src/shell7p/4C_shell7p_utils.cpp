@@ -330,7 +330,7 @@ namespace
 }  // namespace
 
 Core::LinAlg::SerialDenseMatrix Solid::Utils::Shell::compute_shell_null_space(
-    Core::Nodes::Node& node, const double* x0, const Core::LinAlg::Matrix<3, 1>& dir)
+    Core::Nodes::Node& node, std::span<const double> x0, const Core::LinAlg::Matrix<3, 1>& dir)
 {
   const auto& x = node.x();
 

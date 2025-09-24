@@ -71,19 +71,13 @@ void Discret::Elements::Beam3ebType::nodal_block_information(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Core::LinAlg::SerialDenseMatrix Discret::Elements::Beam3ebType::compute_null_space(
-    Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
+    Core::Nodes::Node& node, std::span<const double> x0, const int numdof)
 {
   if (numdof != 6)
     FOUR_C_THROW(
         "The computation of the euler-bernoulli beam nullspace in three dimensions requires six"
         "DOFs per node, however the current node carries {} DOFs.",
         numdof);
-
-  if (dimnsp != 5)
-    FOUR_C_THROW(
-        "The computation of the euler-bernoulli beam nullspace in three dimensions requires five"
-        " nullspace vectors per node, however the current node carries {} vectors.",
-        dimnsp);
 
   constexpr std::size_t spacedim = 3;
 
@@ -163,7 +157,7 @@ Core::LinAlg::SerialDenseMatrix Discret::Elements::Beam3ebType::compute_null_spa
   rotTangOne.cross_product(omegaOne, tangent);
   rotTangTwo.cross_product(omegaTwo, tangent);
 
-  Core::LinAlg::SerialDenseMatrix nullspace(numdof, dimnsp);
+  Core::LinAlg::SerialDenseMatrix nullspace(numdof, 5);
   // x-modes
   nullspace(0, 0) = 1.0;
   nullspace(0, 1) = 0.0;

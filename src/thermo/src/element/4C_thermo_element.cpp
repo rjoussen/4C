@@ -77,10 +77,11 @@ void Thermo::ElementType::nodal_block_information(
  | ctor (public)                                             dano 08/12 |
  *----------------------------------------------------------------------*/
 Core::LinAlg::SerialDenseMatrix Thermo::ElementType::compute_null_space(
-    Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
+    Core::Nodes::Node& node, std::span<const double> x0, const int numdof)
 {
-  Core::LinAlg::SerialDenseMatrix nullspace;
-  FOUR_C_THROW("method ComputeNullSpace not implemented!");
+  Core::LinAlg::SerialDenseMatrix nullspace(1, 1);
+  nullspace.put_scalar(1.0);
+
   return nullspace;
 }
 
