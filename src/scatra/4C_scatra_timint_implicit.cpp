@@ -3153,24 +3153,6 @@ std::string ScaTra::ScaTraTimIntImpl::map_tim_int_enum_to_string(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-std::shared_ptr<Core::LinAlg::MultiVector<double>>
-ScaTra::ScaTraTimIntImpl::convert_dof_vector_to_componentwise_node_vector(
-    const Core::LinAlg::Vector<double>& dof_vector, const int nds) const
-{
-  std::shared_ptr<Core::LinAlg::MultiVector<double>> componentwise_node_vector =
-      std::make_shared<Core::LinAlg::MultiVector<double>>(*discret_->node_row_map(), nsd_, true);
-  for (int inode = 0; inode < discret_->num_my_row_nodes(); ++inode)
-  {
-    Core::Nodes::Node* node = discret_->l_row_node(inode);
-    for (int idim = 0; idim < nsd_; ++idim)
-      (*componentwise_node_vector)(idim).get_values()[inode] =
-          (dof_vector)[dof_vector.get_map().lid(discret_->dof(nds, node, idim))];
-  }
-  return componentwise_node_vector;
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 inline void ScaTra::ScaTraTimIntImpl::increment_time_and_step()
 {
   step_ += 1;

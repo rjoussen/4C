@@ -438,13 +438,6 @@ namespace ScaTra
     //! print information about the current time step to screen
     virtual void print_time_step_info();
 
-    //! convert dof-based result vector into node-based multi-vector for postprocessing
-    [[nodiscard]] std::shared_ptr<Core::LinAlg::MultiVector<double>>
-    convert_dof_vector_to_componentwise_node_vector(
-        const Core::LinAlg::Vector<double>& dof_vector,  ///< dof-based result vector
-        int nds                                          ///< number of dofset to convert
-    ) const;
-
     //! return system matrix as a sparse operator
     std::shared_ptr<Core::LinAlg::SparseOperator> system_matrix_operator() { return sysmat_; };
 
