@@ -75,7 +75,20 @@ void Discret::Elements::TransportType::nodal_block_information(
 Core::LinAlg::SerialDenseMatrix Discret::Elements::TransportType::compute_null_space(
     Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  return FLD::compute_fluid_null_space(numdof, dimnsp);
+  switch (numdof)
+  {
+    case 2:
+      return FLD::compute_fluid_null_space<2>();
+    case 3:
+      return FLD::compute_fluid_null_space<3>();
+    case 4:
+      return FLD::compute_fluid_null_space<4>();
+    default:
+      FOUR_C_THROW(
+          "The computation of a {}-dimensional null space is not yet implemented for the scatra "
+          "element.",
+          numdof);
+  }
 }
 
 void Discret::Elements::TransportType::setup_element_definition(

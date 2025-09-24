@@ -55,7 +55,20 @@ namespace Discret
       Core::LinAlg::SerialDenseMatrix compute_null_space(
           Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override
       {
-        return FLD::compute_fluid_null_space(numdof, dimnsp);
+        switch (numdof)
+        {
+          case 3:
+            // 2D lubrication
+            return FLD::compute_fluid_null_space<3>();
+          case 4:
+            // 3D lubrication
+            return FLD::compute_fluid_null_space<4>();
+          default:
+            FOUR_C_THROW(
+                "The computation of a {}-dimensional null space is not yet implemented for the "
+                "artery element.",
+                numdof);
+        }
       }
 
       void setup_element_definition(
