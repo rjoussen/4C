@@ -2004,12 +2004,14 @@ namespace Core::LinAlg
     /// set to 512 bytes (or 64 entries for double matrices).
     static constexpr bool allocatesmemory_ = rows * cols * sizeof(ValueType) > 512;
 
+    static constexpr size_t size_ = rows * cols;
+
     /// the pointer holding the data
     ValueType* data_;
 
     /// for small sizes of the matrix, avoid expensive memory allocation by storing
     /// the matrix on the stack
-    ValueType datafieldsmall_[allocatesmemory_ ? 1 : rows * cols];
+    ValueType datafieldsmall_[allocatesmemory_ ? 1 : size_];
 
     /// whether we are a view to some other matrix
     bool isview_;
@@ -2156,6 +2158,27 @@ namespace Core::LinAlg
       FOUR_C_ASSERT((not isreadonly_), "No write access to read-only data!");
       return data_;
     }
+
+    /// Return a std::span for easy access to the data as a 1D array.
+    ///
+    /// This is only available for vectors (rows==1 or cols==1).
+    [[nodiscard]] std::span<const ValueType, size_> as_span() const
+      requires(rows == 1 || cols == 1)
+    {
+      return std::span<ValueType, size_>(data_, size_);
+    }
+
+    /// Return a std::span for easy access to the data as a 1D array.
+    ///
+    /// This is only available for vectors (rows==1 or cols==1).
+    [[nodiscard]] std::span<ValueType, size_> as_span()
+      requires(rows == 1 || cols == 1)
+    {
+      FOUR_C_ASSERT((not isreadonly_), "No write access to read-only data!");
+      return std::span<ValueType, size_>(data_, size_);
+    }
+
+
     /// Return the number of rows
     static constexpr unsigned int m() { return num_rows(); }
     /// Return the number of columns
