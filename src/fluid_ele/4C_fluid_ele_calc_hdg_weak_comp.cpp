@@ -841,17 +841,17 @@ void Discret::Elements::FluidEleCalcHDGWeakComp<distype>::evaluate_all(const int
 {
   r = Global::Problem::instance()
           ->function_by_id<Core::Utils::FunctionOfSpaceTime>(funcnum)
-          .evaluate(xyz.data(), t, 0);
+          .evaluate(xyz.as_span(), t, 0);
 
   for (unsigned int d = 0; d < nsd_; ++d)
     w(d) = Global::Problem::instance()
                ->function_by_id<Core::Utils::FunctionOfSpaceTime>(funcnum)
-               .evaluate(xyz.data(), t, 1 + d);
+               .evaluate(xyz.as_span(), t, 1 + d);
 
   for (unsigned int m = 0; m < msd_; ++m)
     L(m) = Global::Problem::instance()
                ->function_by_id<Core::Utils::FunctionOfSpaceTime>(funcnum)
-               .evaluate(xyz.data(), t, 1 + nsd_ + m);
+               .evaluate(xyz.as_span(), t, 1 + nsd_ + m);
 }
 
 
@@ -863,12 +863,12 @@ void Discret::Elements::FluidEleCalcHDGWeakComp<distype>::evaluate_density_momen
 {
   r = Global::Problem::instance()
           ->function_by_id<Core::Utils::FunctionOfSpaceTime>(funcnum)
-          .evaluate(xyz.data(), t, 0);
+          .evaluate(xyz.as_span(), t, 0);
 
   for (unsigned int d = 0; d < nsd_; ++d)
     w(d) = Global::Problem::instance()
                ->function_by_id<Core::Utils::FunctionOfSpaceTime>(funcnum)
-               .evaluate(xyz.data(), t, 1 + d);
+               .evaluate(xyz.as_span(), t, 1 + d);
 }
 
 
@@ -1082,7 +1082,7 @@ void Discret::Elements::FluidEleCalcHDGWeakComp<distype>::LocalSolver::compute_m
     // get viscosity
     double mu = Global::Problem::instance()
                     ->function_by_id<Core::Utils::FunctionOfSpaceTime>(varviscfuncnum)
-                    .evaluate(xyz.data(), time, 0);
+                    .evaluate(xyz.as_span(), time, 0);
 
     // evaluate Dw
     for (unsigned int d = 0; d < nsd_; ++d) Dw(d, d) = 2.0 * mu;
@@ -1200,7 +1200,7 @@ void Discret::Elements::FluidEleCalcHDGWeakComp<distype>::LocalSolver::compute_i
         for (unsigned int dmod = 0; dmod < (1 + nsd_); ++dmod)
           feg(dmod, q) = Global::Problem::instance()
                              ->function_by_id<Core::Utils::FunctionOfSpaceTime>(forcefuncnum)
-                             .evaluate(xyzeg.data(), time, dmod);
+                             .evaluate(xyzeg.as_span(), time, dmod);
 
       drdteg(q) += N(i, q) * drdte(i);
 

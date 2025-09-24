@@ -38,10 +38,10 @@ namespace FLD
    public:
     BeltramiUP(const Mat::PAR::NewtonianFluid& fparams);
 
-    double evaluate(const double* x, double t, std::size_t component) const override;
+    double evaluate(std::span<const double> x, double t, std::size_t component) const override;
 
     std::vector<double> evaluate_time_derivative(
-        const double* x, double t, unsigned deg, std::size_t component) const override;
+        std::span<const double> x, double t, unsigned deg, std::size_t component) const override;
 
     /*!
      * \brief Return the number of components of this spatial function (This is a vector-valued
@@ -61,10 +61,10 @@ namespace FLD
    public:
     BeltramiGradU(const Mat::PAR::NewtonianFluid& fparams);
 
-    double evaluate(const double* x, double t, std::size_t component) const override;
+    double evaluate(std::span<const double> x, double t, std::size_t component) const override;
 
     std::vector<double> evaluate_time_derivative(
-        const double* x, double t, unsigned deg, std::size_t component) const override;
+        std::span<const double> x, double t, unsigned deg, std::size_t component) const override;
 
     /*!
      * \brief Return the number of components of this spatial function (This is a vector-valued
@@ -82,10 +82,10 @@ namespace FLD
    public:
     KimMoinUP(const Mat::PAR::NewtonianFluid& fparams, bool is_stationary);
 
-    double evaluate(const double* x, double t, std::size_t component) const override;
+    double evaluate(std::span<const double> x, double t, std::size_t component) const override;
 
     std::vector<double> evaluate_time_derivative(
-        const double* x, double t, unsigned deg, std::size_t component) const override;
+        std::span<const double> x, double t, unsigned deg, std::size_t component) const override;
 
     /*!
      * \brief Return the number of components of this spatial function (This is a vector-valued
@@ -108,10 +108,10 @@ namespace FLD
    public:
     KimMoinGradU(const Mat::PAR::NewtonianFluid& fparams, bool is_stationary);
 
-    double evaluate(const double* x, double t, std::size_t component) const override;
+    double evaluate(std::span<const double> x, double t, std::size_t component) const override;
 
     std::vector<double> evaluate_time_derivative(
-        const double* x, double t, unsigned deg, std::size_t component) const override;
+        std::span<const double> x, double t, unsigned deg, std::size_t component) const override;
 
     /*!
      * \brief Return the number of components of this spatial function (This is a vector-valued
@@ -132,10 +132,10 @@ namespace FLD
    public:
     BeltramiFunction(double c1);
 
-    double evaluate(const double* x, double t, std::size_t component) const override;
+    double evaluate(std::span<const double> x, double t, std::size_t component) const override;
 
     std::vector<double> evaluate_time_derivative(
-        const double* x, double t, unsigned deg, std::size_t component) const override;
+        std::span<const double> x, double t, unsigned deg, std::size_t component) const override;
 
     /*!
      * \brief Return the number of components of this spatial function (This is a vector-valued
@@ -153,10 +153,10 @@ namespace FLD
   class ChannelWeaklyCompressibleFunction : public Core::Utils::FunctionOfSpaceTime
   {
    public:
-    double evaluate(const double* x, double t, std::size_t component) const override;
+    double evaluate(std::span<const double> x, double t, std::size_t component) const override;
 
     std::vector<double> evaluate_time_derivative(
-        const double* x, double t, unsigned deg, std::size_t component) const override;
+        std::span<const double> x, double t, unsigned deg, std::size_t component) const override;
 
     /*!
      * \brief Return the number of components of this spatial function (This is a vector-valued
@@ -171,10 +171,10 @@ namespace FLD
   class CorrectionTermChannelWeaklyCompressibleFunction : public Core::Utils::FunctionOfSpaceTime
   {
    public:
-    double evaluate(const double* x, double t, std::size_t component) const override;
+    double evaluate(std::span<const double> x, double t, std::size_t component) const override;
 
     std::vector<double> evaluate_time_derivative(
-        const double* x, double t, unsigned deg, std::size_t component) const override;
+        std::span<const double> x, double t, unsigned deg, std::size_t component) const override;
 
     std::size_t number_components() const override { return (1); };
   };
@@ -186,10 +186,10 @@ namespace FLD
     WeaklyCompressiblePoiseuilleFunction(
         const Mat::PAR::WeaklyCompressibleFluid& fparams, double L, double R, double U);
 
-    double evaluate(const double* x, double t, std::size_t component) const override;
+    double evaluate(std::span<const double> x, double t, std::size_t component) const override;
 
     std::vector<double> evaluate_time_derivative(
-        const double* x, double t, unsigned deg, std::size_t component) const override;
+        std::span<const double> x, double t, unsigned deg, std::size_t component) const override;
 
     std::size_t number_components() const override { return (6); };
 
@@ -210,10 +210,10 @@ namespace FLD
     WeaklyCompressiblePoiseuilleForceFunction(
         const Mat::PAR::WeaklyCompressibleFluid& fparams, double L, double R, double U);
 
-    double evaluate(const double* x, double t, std::size_t component) const override;
+    double evaluate(std::span<const double> x, double t, std::size_t component) const override;
 
     std::vector<double> evaluate_time_derivative(
-        const double* x, double t, unsigned deg, std::size_t component) const override;
+        std::span<const double> x, double t, unsigned deg, std::size_t component) const override;
 
     std::size_t number_components() const override { return (3); };
 
@@ -232,10 +232,10 @@ namespace FLD
    public:
     WeaklyCompressibleManufacturedFlowFunction(const Mat::PAR::WeaklyCompressibleFluid& fparams);
 
-    double evaluate(const double* x, double t, std::size_t component) const override;
+    double evaluate(std::span<const double> x, double t, std::size_t component) const override;
 
     std::vector<double> evaluate_time_derivative(
-        const double* x, double t, unsigned deg, std::size_t component) const override;
+        std::span<const double> x, double t, unsigned deg, std::size_t component) const override;
 
     std::size_t number_components() const override { return (6); };
 
@@ -253,10 +253,10 @@ namespace FLD
     WeaklyCompressibleManufacturedFlowForceFunction(
         const Mat::PAR::WeaklyCompressibleFluid& fparams);
 
-    double evaluate(const double* x, double t, std::size_t component) const override;
+    double evaluate(std::span<const double> x, double t, std::size_t component) const override;
 
     std::vector<double> evaluate_time_derivative(
-        const double* x, double t, unsigned deg, std::size_t component) const override;
+        std::span<const double> x, double t, unsigned deg, std::size_t component) const override;
 
     std::size_t number_components() const override { return (3); };
 
@@ -273,10 +273,10 @@ namespace FLD
    public:
     WeaklyCompressibleEtienneCFDFunction(const Mat::PAR::WeaklyCompressibleFluid& fparams);
 
-    double evaluate(const double* x, double t, std::size_t component) const override;
+    double evaluate(std::span<const double> x, double t, std::size_t component) const override;
 
     std::vector<double> evaluate_time_derivative(
-        const double* x, double t, unsigned deg, std::size_t component) const override;
+        std::span<const double> x, double t, unsigned deg, std::size_t component) const override;
 
     std::size_t number_components() const override { return (6); };
 
@@ -292,10 +292,10 @@ namespace FLD
    public:
     WeaklyCompressibleEtienneCFDForceFunction(const Mat::PAR::WeaklyCompressibleFluid& fparams);
 
-    double evaluate(const double* x, double t, std::size_t component) const override;
+    double evaluate(std::span<const double> x, double t, std::size_t component) const override;
 
     std::vector<double> evaluate_time_derivative(
-        const double* x, double t, unsigned deg, std::size_t component) const override;
+        std::span<const double> x, double t, unsigned deg, std::size_t component) const override;
 
     std::size_t number_components() const override { return (3); };
 
@@ -309,10 +309,10 @@ namespace FLD
    public:
     WeaklyCompressibleEtienneCFDViscosityFunction(const Mat::PAR::WeaklyCompressibleFluid& fparams);
 
-    double evaluate(const double* x, double t, std::size_t component) const override;
+    double evaluate(std::span<const double> x, double t, std::size_t component) const override;
 
     std::vector<double> evaluate_time_derivative(
-        const double* x, double t, unsigned deg, std::size_t component) const override;
+        std::span<const double> x, double t, unsigned deg, std::size_t component) const override;
 
     std::size_t number_components() const override { return (1); };
   };
@@ -325,10 +325,10 @@ namespace FLD
         const Mat::PAR::WeaklyCompressibleFluid& fparams_fluid,
         const Mat::PAR::StVenantKirchhoff& fparams_struct);
 
-    double evaluate(const double* x, double t, std::size_t component) const override;
+    double evaluate(std::span<const double> x, double t, std::size_t component) const override;
 
     std::vector<double> evaluate_time_derivative(
-        const double* x, double t, unsigned deg, std::size_t component) const override;
+        std::span<const double> x, double t, unsigned deg, std::size_t component) const override;
 
     std::size_t number_components() const override { return (6); };
 
@@ -349,10 +349,10 @@ namespace FLD
         const Mat::PAR::WeaklyCompressibleFluid& fparams_fluid,
         const Mat::PAR::StVenantKirchhoff& fparams_struct);
 
-    double evaluate(const double* x, double t, std::size_t component) const override;
+    double evaluate(std::span<const double> x, double t, std::size_t component) const override;
 
     std::vector<double> evaluate_time_derivative(
-        const double* x, double t, unsigned deg, std::size_t component) const override;
+        std::span<const double> x, double t, unsigned deg, std::size_t component) const override;
 
     std::size_t number_components() const override { return (3); };
 
@@ -373,10 +373,10 @@ namespace FLD
         const Mat::PAR::WeaklyCompressibleFluid& fparams_fluid,
         const Mat::PAR::StVenantKirchhoff& fparams_struct);
 
-    double evaluate(const double* x, double t, std::size_t component) const override;
+    double evaluate(std::span<const double> x, double t, std::size_t component) const override;
 
     std::vector<double> evaluate_time_derivative(
-        const double* x, double t, unsigned deg, std::size_t component) const override;
+        std::span<const double> x, double t, unsigned deg, std::size_t component) const override;
 
     std::size_t number_components() const override { return (1); };
 
@@ -395,10 +395,10 @@ namespace FLD
    public:
     BeltramiRHS(const Mat::PAR::NewtonianFluid& fparams, bool is_stokes);
 
-    double evaluate(const double* x, double t, std::size_t component) const override;
+    double evaluate(std::span<const double> x, double t, std::size_t component) const override;
 
     std::vector<double> evaluate_time_derivative(
-        const double* x, double t, unsigned deg, std::size_t component) const override;
+        std::span<const double> x, double t, unsigned deg, std::size_t component) const override;
 
     /*!
      * \brief Return the number of components of this spatial function (This is a vector-valued
@@ -419,10 +419,10 @@ namespace FLD
    public:
     KimMoinRHS(const Mat::PAR::NewtonianFluid& fparams, bool is_stationary, bool is_stokes);
 
-    double evaluate(const double* x, double t, std::size_t component) const override;
+    double evaluate(std::span<const double> x, double t, std::size_t component) const override;
 
     std::vector<double> evaluate_time_derivative(
-        const double* x, double t, unsigned deg, std::size_t component) const override;
+        std::span<const double> x, double t, unsigned deg, std::size_t component) const override;
 
     /*!
      * \brief Return the number of components of this spatial function (This is a vector-valued
@@ -446,7 +446,7 @@ namespace FLD
     KimMoinStress(
         const Mat::PAR::NewtonianFluid& fparams, bool is_stationary, double amplitude = 1.0);
 
-    double evaluate(const double* x, double t, std::size_t component) const override;
+    double evaluate(std::span<const double> x, double t, std::size_t component) const override;
 
     std::size_t number_components() const override { return (6); };
 

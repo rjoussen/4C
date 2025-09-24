@@ -169,7 +169,8 @@ int Discret::Elements::KirchhoffLoveShellNurbs::evaluate_neumann(Teuchos::Parame
     {
       if (onoff[i_dof] == 1 and funct_id[i_dof] > 0)
       {
-        force(i_dof) = val[i_dof] * functions[i_dof]->evaluate(reference_position, time, i_dof);
+        force(i_dof) =
+            val[i_dof] * functions[i_dof]->evaluate(std::span(reference_position, 3), time, i_dof);
       }
       else if (onoff[i_dof] == 1)
       {

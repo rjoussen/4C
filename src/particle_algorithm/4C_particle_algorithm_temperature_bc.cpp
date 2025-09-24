@@ -125,7 +125,7 @@ void PARTICLEALGORITHM::TemperatureBoundaryConditionHandler::
     for (int i = 0; i < particlestored; ++i)
     {
       // evaluate function
-      temp[i] = function.evaluate(&(refpos[statedim * i]), evaltime, 0);
+      temp[i] = function.evaluate(std::span(&(refpos[statedim * i]), 3), evaltime, 0);
     }
   }
 }

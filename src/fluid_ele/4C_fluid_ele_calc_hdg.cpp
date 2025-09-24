@@ -608,7 +608,7 @@ int Discret::Elements::FluidEleCalcHDG<distype>::project_field(Discret::Elements
           if (funct_num > 0)
             u(d) = Global::Problem::instance()
                        ->function_by_id<Core::Utils::FunctionOfSpaceTime>(funct_num)
-                       .evaluate(xyz.data(), *time, d);
+                       .evaluate(xyz.as_span(), *time, d);
         }
       }
 
@@ -1288,13 +1288,13 @@ void Discret::Elements::FluidEleCalcHDG<distype>::evaluate_all(const int startfu
     {
       FLD::ChannelWeaklyCompressibleFunction* channelfunc =
           new FLD::ChannelWeaklyCompressibleFunction;
-      u(0) = channelfunc->evaluate(xyz.data(), 0, 0);
-      u(1) = channelfunc->evaluate(xyz.data(), 0, 1);
-      p = channelfunc->evaluate(xyz.data(), 0, 2);
-      grad(0, 0) = channelfunc->evaluate(xyz.data(), 0, 3);
-      grad(0, 1) = channelfunc->evaluate(xyz.data(), 0, 4);
-      grad(1, 0) = channelfunc->evaluate(xyz.data(), 0, 5);
-      grad(1, 1) = channelfunc->evaluate(xyz.data(), 0, 6);
+      u(0) = channelfunc->evaluate(xyz.as_span(), 0, 0);
+      u(1) = channelfunc->evaluate(xyz.as_span(), 0, 1);
+      p = channelfunc->evaluate(xyz.as_span(), 0, 2);
+      grad(0, 0) = channelfunc->evaluate(xyz.as_span(), 0, 3);
+      grad(0, 1) = channelfunc->evaluate(xyz.as_span(), 0, 4);
+      grad(1, 0) = channelfunc->evaluate(xyz.as_span(), 0, 5);
+      grad(1, 1) = channelfunc->evaluate(xyz.as_span(), 0, 6);
     }
     break;
 
@@ -1304,10 +1304,10 @@ void Discret::Elements::FluidEleCalcHDG<distype>::evaluate_all(const int startfu
       for (unsigned int index = 0; index < nsd_; ++index)
         u(index) = Global::Problem::instance()
                        ->function_by_id<Core::Utils::FunctionOfSpaceTime>(startfunc)
-                       .evaluate(xyz.data(), 0, index);
+                       .evaluate(xyz.as_span(), 0, index);
       p = Global::Problem::instance()
               ->function_by_id<Core::Utils::FunctionOfSpaceTime>(startfunc)
-              .evaluate(xyz.data(), 0, nsd_);
+              .evaluate(xyz.as_span(), 0, nsd_);
     }
     break;
 

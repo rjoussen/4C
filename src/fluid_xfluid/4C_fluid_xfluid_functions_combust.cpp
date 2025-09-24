@@ -55,7 +55,7 @@ void Discret::Utils::add_valid_combust_functions(Core::Utils::FunctionManager& f
 
 
 double Discret::Utils::ZalesaksDiskFunction::evaluate(
-    const double* xp, const double t, const std::size_t component) const
+    std::span<const double> xp, const double t, const std::size_t component) const
 {
   // the disk consists of 3 lines and a part of a circle and four points
   // decide if the orthogonal projection of the current point lies on the lines and the circle (four
@@ -128,7 +128,7 @@ double Discret::Utils::ZalesaksDiskFunction::evaluate(
 
 
 double Discret::Utils::CollapsingWaterColumnFunction::evaluate(
-    const double* xp, const double t, const std::size_t component) const
+    std::span<const double> xp, const double t, const std::size_t component) const
 {
   // here calculation of distance (sign is already taken in consideration)
   double distance = 0.0;

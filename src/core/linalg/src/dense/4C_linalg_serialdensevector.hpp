@@ -13,6 +13,8 @@
 
 #include <Teuchos_SerialDenseVector.hpp>
 
+#include <c++/13/span>
+
 FOUR_C_NAMESPACE_OPEN
 
 namespace Core::LinAlg
@@ -39,6 +41,19 @@ namespace Core::LinAlg
     //! @note This function exists because of a design decision in Trilinos where a vector is
     //! implemented as a matrix with one column.
     [[nodiscard]] int num_cols() const { return this->numCols(); }
+
+    /**
+     * Get the vector as a std::span.
+     */
+    [[nodiscard]] std::span<const double> as_span() const
+    {
+      return std::span(this->values(), this->length());
+    }
+
+    /**
+     * Get the vector as a std::span.
+     */
+    [[nodiscard]] std::span<double> as_span() { return std::span(this->values(), this->length()); }
   };
 
   // type definition for serial integer vector

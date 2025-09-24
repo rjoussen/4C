@@ -1291,8 +1291,6 @@ void Discret::Elements::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::compute
     double coordgp[3];  // we always need three coordinates for function evaluation!
     for (int i = 0; i < 3; ++i) coordgp[i] = shapesface_->xyzreal(i, iquad);
 
-    const double* coordgpref = coordgp;  // needed for function evaluation
-
     if (onoff[0])  // is this dof activated?
     {
       // factor given by spatial function
@@ -1301,7 +1299,7 @@ void Discret::Elements::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::compute
         // evaluate function at current Gauss point (provide always 3D coordinates!)
         functfac = Global::Problem::instance()
                        ->function_by_id<Core::Utils::FunctionOfSpaceTime>(func[0].value())
-                       .evaluate(coordgpref, time, 0);
+                       .evaluate(coordgp, time, 0);
       }
       else
         functfac = 1.;
@@ -1600,11 +1598,11 @@ int Discret::Elements::ScaTraEleCalcHDG<distype, probdim>::set_initial_field(
 
       phi = Global::Problem::instance()
                 ->function_by_id<Core::Utils::FunctionOfSpaceTime>(*start_func)
-                .evaluate(xyz.data(), 0, 0);
+                .evaluate(xyz, 0, 0);
       for (unsigned int i = 0; i < nsd_; ++i)
         gradphi[i] = Global::Problem::instance()
                          ->function_by_id<Core::Utils::FunctionOfSpaceTime>(*start_func)
-                         .evaluate(xyz.data(), 0, 1 + i);
+                         .evaluate(xyz, 0, 1 + i);
 
       // now fill the components in the one-sided mass matrix and the right hand side
       for (unsigned int i = 0; i < shapes_->ndofs_; ++i)
@@ -1658,7 +1656,7 @@ int Discret::Elements::ScaTraEleCalcHDG<distype, probdim>::set_initial_field(
       double trphi;
       trphi = Global::Problem::instance()
                   ->function_by_id<Core::Utils::FunctionOfSpaceTime>(*start_func)
-                  .evaluate(xyz.data(), 0, nsd_ + 1);
+                  .evaluate(xyz, 0, nsd_ + 1);
 
       // now fill the components in the mass matrix and the right hand side
       for (unsigned int i = 0; i < shapesface_->nfdofs_; ++i)
@@ -2141,10 +2139,10 @@ int Discret::Elements::ScaTraEleCalcHDG<distype, probdim>::calc_error(
     for (unsigned int idim = 0; idim < nsd_; idim++) xsi(idim) = highshapes.xyzreal(idim, q);
     double funct = Global::Problem::instance()
                        ->function_by_id<Core::Utils::FunctionOfSpaceTime>(func)
-                       .evaluate(xsi.data(), time, 0);
+                       .evaluate(xsi.as_span(), time, 0);
     std::vector<double> deriv = Global::Problem::instance()
                                     ->function_by_id<Core::Utils::FunctionOfSpaceTime>(func)
-                                    .evaluate_spatial_derivative(xsi.data(), time, 0);
+                                    .evaluate_spatial_derivative(xsi.as_span(), time, 0);
 
     error_phi += std::pow((funct - phi), 2) * highshapes.jfac(q);
     exact_phi += std::pow(funct, 2) * highshapes.jfac(q);

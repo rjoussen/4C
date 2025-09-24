@@ -214,14 +214,14 @@ void Core::Conditions::LocsysManager::update(const double time,
                   // Evaluate function with current node position
                   functfac = (function_manager.function_by_id<Core::Utils::FunctionOfSpaceTime>(
                                   (funct)[j].value()))
-                                 .evaluate(currPos.data(), time, j);
+                                 .evaluate(currPos, time, j);
                 }
                 else
                 {
                   // Evaluate function with reference node position
                   functfac = (function_manager.function_by_id<Core::Utils::FunctionOfSpaceTime>(
                                   (funct)[j].value()))
-                                 .evaluate(node->x().data(), time, j);
+                                 .evaluate(node->x(), time, j);
                 }
               }
               currotangle(j) = (rotangle)[j] * functfac;

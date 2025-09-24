@@ -303,7 +303,8 @@ void ParticleInteraction::SPHOpenBoundaryDirichlet::prescribe_open_boundary_stat
     double* vel_i = container_i->get_ptr_to_state(PARTICLEENGINE::Velocity, particle_i);
 
     // evaluate function to set velocity
-    Utils::vec_set_scale(vel_i, -function.evaluate(pos_i, evaltime, 0), outwardnormal_.data());
+    Utils::vec_set_scale(
+        vel_i, -function.evaluate(std::span(pos_i, 3), evaltime, 0), outwardnormal_.data());
   }
 }
 
@@ -513,7 +514,7 @@ void ParticleInteraction::SPHOpenBoundaryNeumann::prescribe_open_boundary_states
       double* press_i = container_i->get_ptr_to_state(PARTICLEENGINE::Pressure, particle_i);
 
       // evaluate function to set pressure
-      press_i[0] = function.evaluate(pos_i, evaltime, 0);
+      press_i[0] = function.evaluate(std::span(pos_i, 3), evaltime, 0);
     }
   }
   else

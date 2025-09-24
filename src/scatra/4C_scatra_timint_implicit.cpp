@@ -1254,7 +1254,7 @@ void ScaTra::ScaTraTimIntImpl::set_velocity_field_from_function()
         {
           double value =
               problem_->function_by_id<Core::Utils::FunctionOfSpaceTime>(velfuncno).evaluate(
-                  lnode->x().data(), time_, index);
+                  lnode->x(), time_, index);
 
           // get global and local dof IDs
           const int gid = nodedofs[index];
@@ -1325,7 +1325,7 @@ void ScaTra::ScaTraTimIntImpl::set_external_force() const
       const double external_force_value = external_force_vector[spatial_dimension];
       const double intrinsic_mobility_value =
           problem_->function_by_id<Core::Utils::FunctionOfSpaceTime>(intrinsic_mobility_function_id)
-              .evaluate(current_node->x().data(), time_, spatial_dimension);
+              .evaluate(current_node->x(), time_, spatial_dimension);
       const double force_velocity_value = external_force_value * intrinsic_mobility_value;
 
       const int gid = nodedofs[spatial_dimension];
@@ -1933,7 +1933,7 @@ void ScaTra::ScaTraTimIntImpl::set_initial_field(
           // evaluate component k of spatial function
           double initialval =
               problem_->function_by_id<Core::Utils::FunctionOfSpaceTime>(startfuncno)
-                  .evaluate(lnode.x().data(), time_, k);
+                  .evaluate(lnode.x(), time_, k);
           int err = phin_->replace_local_value(doflid, initialval);
           if (err != 0) FOUR_C_THROW("dof not on proc");
         }

@@ -888,7 +888,7 @@ void Thermo::TimInt::set_initial_field(const Thermo::InitialField init, const in
           // evaluate component k of spatial function
           double initialval = Global::Problem::instance()
                                   ->function_by_id<Core::Utils::FunctionOfSpaceTime>(startfuncno)
-                                  .evaluate(lnode.x().data(), 0.0, k);
+                                  .evaluate(lnode.x(), 0.0, k);
           // extract temperature vector at time t_n (temp_ contains various vectors of
           // old(er) temperatures and is of type TimIntMStep<Core::LinAlg::Vector<double>>)
           int err1 = temp_(0)->replace_local_value(doflid, initialval);

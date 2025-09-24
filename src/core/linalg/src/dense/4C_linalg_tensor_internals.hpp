@@ -193,6 +193,28 @@ namespace Core::LinAlg
 
     TensorInternal(ContainerType&& data) : data_(std::move(data)) {}
 
+    /**
+     * @brief Access the underlying raw data of the tensor as a std::span.
+     *
+     * This only works for rank-1 tensors (i.e., vectors).
+     */
+    [[nodiscard]] constexpr std::span<Number, size_> as_span()
+      requires(rank_ == 1)
+    {
+      return data_;
+    }
+
+    /**
+     * @brief Access the underlying raw data of the tensor as a std::span.
+     *
+     * This only works for rank-1 tensors (i.e., vectors).
+     */
+    [[nodiscard]] constexpr std::span<const Number, size_> as_span() const
+      requires(rank_ == 1)
+    {
+      return data_;
+    }
+
     /*!
      * @brief Access to the underlying raw data of the tensor
      *

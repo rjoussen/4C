@@ -214,8 +214,6 @@ int Discret::Elements::PoroFluidMultiPhaseEleBoundaryCalc<distype>::evaluate_neu
     Core::LinAlg::Matrix<nsd_vol_ele, 1> coordgp;  // coordinate has always to be given in 3D!
     coordgp.multiply_nn(xyze_, funct_);
 
-    const double* coordgpref = &coordgp(0);  // needed for function evaluation
-
     for (int dof = 0; dof < numdofpernode_; ++dof)
     {
       if (onoff[dof])  // is this dof activated?
@@ -226,7 +224,7 @@ int Discret::Elements::PoroFluidMultiPhaseEleBoundaryCalc<distype>::evaluate_neu
           // evaluate function at current Gauss point (provide always 3D coordinates!)
           functfac = Global::Problem::instance()
                          ->function_by_id<Core::Utils::FunctionOfSpaceTime>(func[dof].value())
-                         .evaluate(coordgpref, time, dof);
+                         .evaluate(coordgp.as_span(), time, dof);
         }
         else
           functfac = 1.;

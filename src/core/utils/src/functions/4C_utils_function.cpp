@@ -59,26 +59,34 @@ namespace
 
   /// sets the values of the variables in second derivative of expression
   void set_values_in_expression_second_deriv(
-      const std::vector<std::shared_ptr<Core::Utils::FunctionVariable>>& variables, const double* x,
-      const double t,
+      const std::vector<std::shared_ptr<Core::Utils::FunctionVariable>>& variables,
+      std::span<const double> x, const double t,
       std::map<std::string, Sacado::Fad::DFad<Sacado::Fad::DFad<double>>>& variable_values)
   {
     // define Fad object for evaluation
     using FAD = Sacado::Fad::DFad<Sacado::Fad::DFad<double>>;
+
+    const auto safe_coordinate = [&x](size_t i) -> double
+    {
+      if (i < x.size())
+        return x[i];
+      else
+        return 0.0;
+    };
 
     // define FAD variables
     // arguments are: x, y, z, and t
     const int number_of_arguments = 4;
     // we consider a function of the type F = F ( x, y, z, t, v1(t), ..., vn(t) )
     const int fad_size = number_of_arguments + static_cast<int>(variables.size());
-    FAD xfad(fad_size, 0, x[0]);
-    FAD yfad(fad_size, 1, x[1]);
-    FAD zfad(fad_size, 2, x[2]);
+    FAD xfad(fad_size, 0, safe_coordinate(0));
+    FAD yfad(fad_size, 1, safe_coordinate(1));
+    FAD zfad(fad_size, 2, safe_coordinate(2));
     FAD tfad(fad_size, 3, t);
 
-    xfad.val() = Sacado::Fad::DFad<double>(fad_size, 0, x[0]);
-    yfad.val() = Sacado::Fad::DFad<double>(fad_size, 1, x[1]);
-    zfad.val() = Sacado::Fad::DFad<double>(fad_size, 2, x[2]);
+    xfad.val() = Sacado::Fad::DFad<double>(fad_size, 0, safe_coordinate(0));
+    yfad.val() = Sacado::Fad::DFad<double>(fad_size, 1, safe_coordinate(1));
+    zfad.val() = Sacado::Fad::DFad<double>(fad_size, 2, safe_coordinate(2));
     tfad.val() = Sacado::Fad::DFad<double>(fad_size, 3, t);
 
     std::vector<FAD> fadvectvars(variables.size());
@@ -354,6 +362,24 @@ Core::Utils::try_create_symbolic_function_of_space_time(
   return std::make_shared<SymbolicFunctionOfSpaceTime>(functstring, functvarvector);
 }
 
+void Core::Utils::FunctionOfSpaceTime::evaluate_vector(
+    std::span<const double> x, double t, std::span<double> values) const
+{
+  for (std::size_t i = 0; i < number_components(); ++i) values[i] = evaluate(x, t, i);
+}
+
+std::vector<double> Core::Utils::FunctionOfSpaceTime::evaluate_spatial_derivative(
+    std::span<const double> x, double t, std::size_t component) const
+{
+  FOUR_C_THROW("The evaluation of the derivative is not implemented for this function");
+}
+
+std::vector<double> Core::Utils::FunctionOfSpaceTime::evaluate_time_derivative(
+    std::span<const double> x, double t, unsigned deg, std::size_t component) const
+{
+  FOUR_C_THROW("The evaluation of the time derivative is not implemented for this function");
+}
+
 Core::Utils::SymbolicFunctionOfSpaceTime::SymbolicFunctionOfSpaceTime(
     const std::vector<std::string>& expressions,
     std::vector<std::shared_ptr<FunctionVariable>> variables)
@@ -370,7 +396,7 @@ Core::Utils::SymbolicFunctionOfSpaceTime::SymbolicFunctionOfSpaceTime(
 }
 
 double Core::Utils::SymbolicFunctionOfSpaceTime::evaluate(
-    const double* x, const double t, const std::size_t component) const
+    std::span<const double> x, const double t, const std::size_t component) const
 {
   std::size_t component_mod = find_modified_component(component, expr_);
 
@@ -383,8 +409,10 @@ double Core::Utils::SymbolicFunctionOfSpaceTime::evaluate(
 
   // set spatial variables
   variable_values.emplace("x", x[0]);
-  variable_values.emplace("y", x[1]);
-  variable_values.emplace("z", x[2]);
+  if (x.size() > 1) variable_values.emplace("y", x[1]);
+  if (x.size() > 2) variable_values.emplace("z", x[2]);
+  if (x.size() > 3)
+    FOUR_C_THROW("The function can only be evaluated in 1D, 2D or 3D space, but got {}D", x.size());
 
   // set temporal variable
   variable_values.emplace("t", t);
@@ -400,7 +428,7 @@ double Core::Utils::SymbolicFunctionOfSpaceTime::evaluate(
 }
 
 std::vector<double> Core::Utils::SymbolicFunctionOfSpaceTime::evaluate_spatial_derivative(
-    const double* x, const double t, const std::size_t component) const
+    std::span<const double> x, const double t, const std::size_t component) const
 {
   std::size_t component_mod = find_modified_component(component, expr_);
 
@@ -422,7 +450,8 @@ std::vector<double> Core::Utils::SymbolicFunctionOfSpaceTime::evaluate_spatial_d
 }
 
 std::vector<double> Core::Utils::SymbolicFunctionOfSpaceTime::evaluate_time_derivative(
-    const double* x, const double t, const unsigned deg, const std::size_t component) const
+    std::span<const double> x, const double t, const unsigned deg,
+    const std::size_t component) const
 {
   // result vector
   std::vector<double> res(deg + 1);

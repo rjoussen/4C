@@ -120,7 +120,7 @@ void FLD::TimIntPoro::set_initial_porosity_field(
         int numdofs = nodedofset.size();
         double initialval = Global::Problem::instance()
                                 ->function_by_id<Core::Utils::FunctionOfSpaceTime>(startfuncno)
-                                .evaluate(lnode.x().data(), time_, 0);
+                                .evaluate(lnode.x(), time_, 0);
 
         // check whether there are invalid values of porosity
         if (initialval < 1e-15) FOUR_C_THROW("zero or negative initial porosity");

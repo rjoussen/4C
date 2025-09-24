@@ -232,7 +232,7 @@ void Discret::Elements::InterAcinarDepImpl<distype>::evaluate_terminal_bc(RedInt
             functionfac =
                 Global::Problem::instance()
                     ->function_by_id<Core::Utils::FunctionOfSpaceTime>(functions[0].value())
-                    .evaluate((ele->nodes()[i])->x().data(), time, 0);
+                    .evaluate((ele->nodes()[i])->x(), time, 0);
           }
 
           // Get factor of second CURVE

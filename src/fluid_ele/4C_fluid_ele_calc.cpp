@@ -1457,7 +1457,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::body_force(Discret::Elem
             functionfac =
                 Global::Problem::instance()
                     ->function_by_id<Core::Utils::FunctionOfSpaceTime>(functions[isd].value())
-                    .evaluate((ele->nodes()[jnode])->x().data(), time, isd);
+                    .evaluate((ele->nodes()[jnode])->x(), time, isd);
           }
           else
             functionfac = 1.0;
@@ -1485,7 +1485,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::body_force(Discret::Elem
             functionfac =
                 Global::Problem::instance()
                     ->function_by_id<Core::Utils::FunctionOfSpaceTime>(functions[isd].value())
-                    .evaluate((ele->nodes()[jnode])->x().data(), time, isd);
+                    .evaluate((ele->nodes()[jnode])->x(), time, isd);
           }
           else
             functionfac = 1.0;
@@ -1568,7 +1568,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::correction_term(
   {
     ecorrectionterm(i) = Global::Problem::instance()
                              ->function_by_id<Core::Utils::FunctionOfSpaceTime>(functnum)
-                             .evaluate((ele->nodes()[i])->x().data(), 0.0, 0);
+                             .evaluate((ele->nodes()[i])->x(), 0.0, 0);
   }
 }
 
@@ -1826,7 +1826,7 @@ void Discret::Elements::FluidEleCalc<distype, enrtype>::set_advective_vel_oseen(
     const double time = fldparatimint_->time();
     for (int jnode = 0; jnode < nen_; ++jnode)
     {
-      const double* jx = ele->nodes()[jnode]->x().data();
+      const auto jx = ele->nodes()[jnode]->x();
       for (int idim = 0; idim < nsd_; ++idim)
         eadvvel_(idim, jnode) = Global::Problem::instance()
                                     ->function_by_id<Core::Utils::FunctionOfSpaceTime>(funcnum)

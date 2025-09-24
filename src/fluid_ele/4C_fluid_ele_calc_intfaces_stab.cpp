@@ -839,7 +839,7 @@ int Discret::Elements::FluidInternalSurfaceStab<distype, pdistype,
     // parent element
     for (int jnode = 0; jnode < piel; ++jnode)
     {
-      const double* jx = pele->nodes()[jnode]->x().data();
+      const auto jx = pele->nodes()[jnode]->x();
       for (int idim = 0; idim < nsd_; ++idim)
         peconvvelaf_(idim, jnode) = Global::Problem::instance()
                                         ->function_by_id<Core::Utils::FunctionOfSpaceTime>(funcnum)
@@ -849,7 +849,7 @@ int Discret::Elements::FluidInternalSurfaceStab<distype, pdistype,
     // neighbor element
     for (int jnode = 0; jnode < niel; ++jnode)
     {
-      const double* jx = nele->nodes()[jnode]->x().data();
+      const auto jx = nele->nodes()[jnode]->x();
       for (int idim = 0; idim < nsd_; ++idim)
         neconvvelaf_(idim, jnode) = Global::Problem::instance()
                                         ->function_by_id<Core::Utils::FunctionOfSpaceTime>(funcnum)

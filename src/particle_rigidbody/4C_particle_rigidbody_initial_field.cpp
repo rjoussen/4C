@@ -71,7 +71,7 @@ void ParticleRigidBody::set_initial_fields(const Teuchos::ParameterList& params,
       // evaluate function to set initial field
       for (int dim = 0; dim < statedim; ++dim)
       {
-        state[rigidbody_k][dim] = function.evaluate(pos_k, 0.0, dim);
+        state[rigidbody_k][dim] = function.evaluate(std::span(pos_k, 3), 0.0, dim);
       }
     }
   }

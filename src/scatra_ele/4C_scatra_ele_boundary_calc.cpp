@@ -523,8 +523,6 @@ int Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_neumann
     Core::LinAlg::Matrix<nsd_, 1> coordgp;  // coordinate has always to be given in 3D!
     coordgp.multiply_nn(xyze_, funct_);
 
-    const double* coordgpref = &coordgp(0);  // needed for function evaluation
-
     for (int dof = 0; dof < numdofpernode_; ++dof)
     {
       if (onoff[dof])  // is this dof activated?
@@ -535,7 +533,7 @@ int Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_neumann
           // evaluate function at current Gauss point (provide always 3D coordinates!)
           functfac = Global::Problem::instance()
                          ->function_by_id<Core::Utils::FunctionOfSpaceTime>(func[dof].value())
-                         .evaluate(coordgpref, time, dof);
+                         .evaluate(coordgp.as_span(), time, dof);
         }
         else
           functfac = 1.;
@@ -2573,7 +2571,7 @@ void Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::weak_dirichlet(
 
       functfac = Global::Problem::instance()
                      ->function_by_id<Core::Utils::FunctionOfSpaceTime>(func[0].value())
-                     .evaluate(coordgp3D.data(), time, 0);
+                     .evaluate(coordgp3D, time, 0);
     }
     else
       functfac = 1.0;

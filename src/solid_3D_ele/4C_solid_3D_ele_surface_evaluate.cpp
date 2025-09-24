@@ -296,13 +296,11 @@ int Discret::Elements::SolidSurface::evaluate_neumann(Teuchos::ParameterList& pa
                 {
                   gp_coord2[i] = gp_coord(0, i);
                 }
-                const double* coordgpref = gp_coord2;  // needed for function evaluation
-
                 // evaluate function at current gauss point
                 functfac =
                     Global::Problem::instance()
                         ->function_by_id<Core::Utils::FunctionOfSpaceTime>((*spa_func)[dof].value())
-                        .evaluate(coordgpref, time, dof);
+                        .evaluate(gp_coord2, time, dof);
               }
             }
             else
@@ -344,13 +342,12 @@ int Discret::Elements::SolidSurface::evaluate_neumann(Teuchos::ParameterList& pa
             {
               gp_coord2[i] = gp_coord(0, i);
             }
-            const double* coordgpref = gp_coord2;  // needed for function evaluation
 
             // evaluate function at current gauss point
             functfac =
                 Global::Problem::instance()
                     ->function_by_id<Core::Utils::FunctionOfSpaceTime>((*spa_func)[0].value())
-                    .evaluate(coordgpref, time, 0);
+                    .evaluate(gp_coord2, time, 0);
           }
         }
 

@@ -877,10 +877,9 @@ void Discret::Elements::ScaTraEleCalc<distype, probdim>::body_force(
 
         if (funct[idof].has_value() && funct[idof].value() > 0)
         {
-          functfac =
-              Global::Problem::instance()
-                  ->function_by_id<Core::Utils::FunctionOfSpaceTime>(funct[idof].value())
-                  .evaluate((ele->nodes()[jnode])->x().data(), scatraparatimint_->time(), idof);
+          functfac = Global::Problem::instance()
+                         ->function_by_id<Core::Utils::FunctionOfSpaceTime>(funct[idof].value())
+                         .evaluate((ele->nodes()[jnode])->x(), scatraparatimint_->time(), idof);
         }
 
         (bodyforce_[idof])(jnode) = onoff[idof] * val[idof] * functfac;

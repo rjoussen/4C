@@ -221,12 +221,11 @@ int Discret::Elements::Wall1Line::evaluate_neumann(Teuchos::ParameterList& param
               for (int k = numdim; k < 3;
                   k++)  // set a zero value for the remaining spatial directions
                 gp_coord2[k] = 0.0;
-              const double* coordgpref = gp_coord2;  // needed for function evaluation
 
               // evaluate function at current gauss point
               functfac = Global::Problem::instance()
                              ->function_by_id<Core::Utils::FunctionOfSpaceTime>(functnum)
-                             .evaluate(coordgpref, time, i);
+                             .evaluate(gp_coord2, time, i);
             }
             else
               functfac = 1.0;
@@ -277,12 +276,11 @@ int Discret::Elements::Wall1Line::evaluate_neumann(Teuchos::ParameterList& param
           for (int k = 0; k < numdim; k++) gp_coord2[k] = gp_coord(0, k);
           for (int k = numdim; k < 3; k++)  // set a zero value for the remaining spatial directions
             gp_coord2[k] = 0.0;
-          const double* coordgpref = gp_coord2;  // needed for function evaluation
 
           // evaluate function at current gauss point
           functfac = Global::Problem::instance()
                          ->function_by_id<Core::Utils::FunctionOfSpaceTime>(functnum)
-                         .evaluate(coordgpref, time, 0);
+                         .evaluate(gp_coord2, time, 0);
         }
 
         // constant factor for integration

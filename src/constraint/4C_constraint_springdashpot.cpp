@@ -379,11 +379,11 @@ void Constraints::SpringDashpot::evaluate_robin(std::shared_ptr<Core::LinAlg::Sp
                   std::numeric_limits<double>::infinity(), std::numeric_limits<double>::infinity()};
               displ[i] = delta_displacement;
 
-              const double force = nonlinear_spring.evaluate(displ.data(), total_time, 0) +
-                                   dashpot_viscosity * velocity;
+              const double force =
+                  nonlinear_spring.evaluate(displ, total_time, 0) + dashpot_viscosity * velocity;
 
               const double force_derivative_wrt_displ =
-                  nonlinear_spring.evaluate_spatial_derivative(displ.data(), total_time, 0)[i];
+                  nonlinear_spring.evaluate_spatial_derivative(displ, total_time, 0)[i];
 
               return {force, force_derivative_wrt_displ, dashpot_viscosity};
             };
@@ -593,12 +593,12 @@ void Constraints::SpringDashpot::evaluate_robin(std::shared_ptr<Core::LinAlg::Sp
             force_disp = Global::Problem::instance()
                              ->function_by_id<Core::Utils::FunctionOfSpaceTime>(
                                  (numfuncnonlinstiff)[dof] - 1)
-                             .evaluate(displ.data(), total_time, 0);
+                             .evaluate(displ, total_time, 0);
 
             force_disp_deriv = (Global::Problem::instance()
                     ->function_by_id<Core::Utils::FunctionOfSpaceTime>(
                         (numfuncnonlinstiff)[dof] - 1)
-                    .evaluate_spatial_derivative(displ.data(), total_time, 0))[dof];
+                    .evaluate_spatial_derivative(displ, total_time, 0))[dof];
           }
 
           // velocity related forces and derivatives

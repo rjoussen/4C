@@ -138,7 +138,7 @@ void Mat::Elastic::AnisoActiveStressEvolution::add_stress_aniso_principal(
     activationFunction =
         Global::Problem::instance()
             ->function_by_id<Core::Utils::FunctionOfSpaceTime>(params_->sourceactiv_)
-            .evaluate(element_center_coordinates_ref.data(), totaltime, 0);
+            .evaluate(element_center_coordinates_ref.as_span(), totaltime, 0);
   }
 
   double lambda = 0.0;
