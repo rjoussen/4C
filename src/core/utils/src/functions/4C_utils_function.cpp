@@ -66,19 +66,27 @@ namespace
     // define Fad object for evaluation
     using FAD = Sacado::Fad::DFad<Sacado::Fad::DFad<double>>;
 
+    const auto safe_coordinate = [&x](size_t i) -> double
+    {
+      if (i < x.size())
+        return x[i];
+      else
+        return 0.0;
+    };
+
     // define FAD variables
     // arguments are: x, y, z, and t
     const int number_of_arguments = 4;
     // we consider a function of the type F = F ( x, y, z, t, v1(t), ..., vn(t) )
     const int fad_size = number_of_arguments + static_cast<int>(variables.size());
-    FAD xfad(fad_size, 0, x[0]);
-    FAD yfad(fad_size, 1, x[1]);
-    FAD zfad(fad_size, 2, x[2]);
+    FAD xfad(fad_size, 0, safe_coordinate(0));
+    FAD yfad(fad_size, 1, safe_coordinate(1));
+    FAD zfad(fad_size, 2, safe_coordinate(2));
     FAD tfad(fad_size, 3, t);
 
-    xfad.val() = Sacado::Fad::DFad<double>(fad_size, 0, x[0]);
-    yfad.val() = Sacado::Fad::DFad<double>(fad_size, 1, x[1]);
-    zfad.val() = Sacado::Fad::DFad<double>(fad_size, 2, x[2]);
+    xfad.val() = Sacado::Fad::DFad<double>(fad_size, 0, safe_coordinate(0));
+    yfad.val() = Sacado::Fad::DFad<double>(fad_size, 1, safe_coordinate(1));
+    zfad.val() = Sacado::Fad::DFad<double>(fad_size, 2, safe_coordinate(2));
     tfad.val() = Sacado::Fad::DFad<double>(fad_size, 3, t);
 
     std::vector<FAD> fadvectvars(variables.size());
@@ -401,8 +409,10 @@ double Core::Utils::SymbolicFunctionOfSpaceTime::evaluate(
 
   // set spatial variables
   variable_values.emplace("x", x[0]);
-  variable_values.emplace("y", x[1]);
-  variable_values.emplace("z", x[2]);
+  if (x.size() > 1) variable_values.emplace("y", x[1]);
+  if (x.size() > 2) variable_values.emplace("z", x[2]);
+  if (x.size() > 3)
+    FOUR_C_THROW("The function can only be evaluated in 1D, 2D or 3D space, but got {}D", x.size());
 
   // set temporal variable
   variable_values.emplace("t", t);
