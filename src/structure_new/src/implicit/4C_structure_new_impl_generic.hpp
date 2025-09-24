@@ -267,7 +267,7 @@ namespace NOX
            *  \note The result vector is the actual result vector of the internal
            *  linear solver and, accordingly, due to the used sign convention in NOX,
            *  the NEGATIVE direction vector. The sign will be changed again in the
-           *  ::NOX::Epetra::Group::computeNewton method.
+           *  NOX::Nln::GroupBase::computeNewton method.
            *
            *  \param rhs    : read-only access to the rhs vector
            *  \param result : full access to the result vector

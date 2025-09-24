@@ -59,24 +59,13 @@ Teuchos::RCP<::NOX::Abstract::Group> NOX::Nln::Group::clone(::NOX::CopyType type
  *----------------------------------------------------------------------------*/
 ::NOX::Abstract::Group& NOX::Nln::Group::operator=(const ::NOX::Abstract::Group& source)
 {
-  return operator=(dynamic_cast<const ::NOX::Epetra::Group&>(source));
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-::NOX::Abstract::Group& NOX::Nln::Group::operator=(const ::NOX::Epetra::Group& source)
-{
-  ::NOX::Epetra::Group::operator=(source);
+  NOX::Nln::GroupBase::operator=(source);
   const NOX::Nln::Group& nln_src = dynamic_cast<const NOX::Nln::Group&>(source);
 
   this->skipUpdateX_ = nln_src.skipUpdateX_;
 
   return *this;
 }
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-void NOX::Nln::Group::resetIsValid() { ::NOX::Epetra::Group::resetIsValid(); }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -103,10 +92,7 @@ void NOX::Nln::Group::computeX(
   Core::LinAlg::View d_view(const_cast<Epetra_Vector&>(d.getEpetraVector()));
   prePostOperatorPtr_->run_pre_compute_x(grp, d_view, step, *this);
 
-
-  if (isPreconditioner()) sharedLinearSystem.getObject(this)->destroyPreconditioner();
-
-  resetIsValid();
+  reset_is_valid();
 
   if (not skipUpdateX_) xVector.update(1.0, grp.xVector, step, d);
 
@@ -188,7 +174,7 @@ void NOX::Nln::Group::set_skip_update_x(bool skipUpdateX) { skipUpdateX_ = skipU
     }
     bool status = false;
     Teuchos::RCP<NOX::Nln::LinearSystem> nlnSharedLinearSystem =
-        Teuchos::rcp_dynamic_cast<NOX::Nln::LinearSystem>(sharedLinearSystem.getObject(this));
+        Teuchos::rcp_dynamic_cast<NOX::Nln::LinearSystem>(linearSystemPtr);
 
     if (nlnSharedLinearSystem.is_null())
       throw_error("compute_f_and_jacobian", "Dynamic cast of the shared linear system failed!");
@@ -221,12 +207,12 @@ void NOX::Nln::Group::set_skip_update_x(bool skipUpdateX) { skipUpdateX_ = skipU
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 ::NOX::Abstract::Group::ReturnType NOX::Nln::Group::applyJacobianInverse(Teuchos::ParameterList& p,
-    const ::NOX::Epetra::Vector& input, ::NOX::Epetra::Vector& result) const
+    const ::NOX::Abstract::Vector& input, ::NOX::Abstract::Vector& result) const
 {
   prePostOperatorPtr_->run_pre_apply_jacobian_inverse(input, result, xVector, *this);
 
   ::NOX::Abstract::Group::ReturnType status =
-      ::NOX::Epetra::Group::applyJacobianInverse(p, input, result);
+      NOX::Nln::GroupBase::applyJacobianInverse(p, input, result);
 
   prePostOperatorPtr_->run_post_apply_jacobian_inverse(input, result, xVector, *this);
 
@@ -327,23 +313,24 @@ double NOX::Nln::Group::get_trial_update_norm(const ::NOX::Abstract::Vector& dir
   const std::vector<StatusTest::QuantityType> quantities(1, quantity);
   const std::vector<StatusTest::NormUpdate::ScaleType> scales(1, scale);
 
-  if (tmpVectorPtr.is_null() or !tmpVectorPtr->Map().SameAs(xVector.getEpetraVector().Map()) or
-      tmpVectorPtr.get() == &xVector.getEpetraVector())
-    tmpVectorPtr = Teuchos::make_rcp<Epetra_Vector>(xVector.getEpetraVector());
+  if (tmp_vector_ptr_.is_null() or
+      !tmp_vector_ptr_->Map().SameAs(xVector.getEpetraVector().Map()) or
+      tmp_vector_ptr_.get() == &xVector.getEpetraVector())
+    tmp_vector_ptr_ = Teuchos::make_rcp<Epetra_Vector>(xVector.getEpetraVector());
   else
-    tmpVectorPtr->Scale(1.0, xVector.getEpetraVector());
+    tmp_vector_ptr_->Scale(1.0, xVector.getEpetraVector());
 
   // change the internally stored x-vector for the norm evaluation
   ::NOX::Epetra::Vector& x_mutable = const_cast<::NOX::Epetra::Vector&>(xVector);
   x_mutable.update(1.0, dir, 1.0);
 
-  ::NOX::Epetra::Vector xold(tmpVectorPtr, ::NOX::Epetra::Vector::CreateView);
+  ::NOX::Epetra::Vector xold(tmp_vector_ptr_, ::NOX::Epetra::Vector::CreateView);
 
   const double rval =
       get_solution_update_norms(xold, normtypes, quantities, Teuchos::rcpFromRef(scales))->at(0);
 
   // un-do the changes to the x-vector
-  x_mutable.getEpetraVector().Scale(1.0, *tmpVectorPtr);
+  x_mutable.getEpetraVector().Scale(1.0, *tmp_vector_ptr_);
 
   return rval;
 }
@@ -430,7 +417,7 @@ Teuchos::RCP<std::vector<double>> NOX::Nln::Group::get_previous_solution_norms(
 void NOX::Nln::Group::reset_pre_post_operator(
     Teuchos::ParameterList& grpOptionParams, const bool& resetIsValidFlags)
 {
-  if (resetIsValidFlags) resetIsValid();
+  if (resetIsValidFlags) reset_is_valid();
 
   prePostOperatorPtr_->reset(grpOptionParams);
 }
@@ -440,10 +427,10 @@ void NOX::Nln::Group::reset_pre_post_operator(
 void NOX::Nln::Group::reset_lin_sys_pre_post_operator(
     Teuchos::ParameterList& linearSolverParams, const bool& resetIsValidFlags)
 {
-  if (resetIsValidFlags) resetIsValid();
+  if (resetIsValidFlags) reset_is_valid();
 
   Teuchos::RCP<NOX::Nln::LinearSystem> nlnLinsysPtr =
-      Teuchos::rcp_dynamic_cast<NOX::Nln::LinearSystem>(getLinearSystem());
+      Teuchos::rcp_dynamic_cast<NOX::Nln::LinearSystem>(get_linear_system());
 
   if (nlnLinsysPtr.is_null())
     throw_error("reset_lin_sys_pre_post_operator", "The linear system cast failed!");
@@ -469,7 +456,7 @@ void NOX::Nln::Group::adjust_pseudo_time_step(double& delta, const double& stepS
     throw_error("AdjustPseudoTimeStep", "F and/or the jacobian are not evaluated!");
 
   Teuchos::RCP<NOX::Nln::LinearSystem> nlnSharedLinearSystem =
-      Teuchos::rcp_dynamic_cast<NOX::Nln::LinearSystem>(sharedLinearSystem.getObject(this));
+      Teuchos::rcp_dynamic_cast<NOX::Nln::LinearSystem>(linearSystemPtr);
 
   if (nlnSharedLinearSystem.is_null())
     throw_error("AdjustPseudoTimeStep()", "Dynamic cast of the shared linear system failed!");
@@ -488,12 +475,7 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> NOX::Nln::Group::get_contributions_from
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool NOX::Nln::Group::isJacobian() const
-{
-  if (isValidJacobian and not sharedLinearSystem.isOwner(this)) sharedLinearSystem.getObject(this);
-
-  return ::NOX::Epetra::Group::isJacobian();
-}
+bool NOX::Nln::Group::isJacobian() const { return NOX::Nln::GroupBase::isJacobian(); }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

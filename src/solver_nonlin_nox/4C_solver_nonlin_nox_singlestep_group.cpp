@@ -60,9 +60,7 @@ void NOX::Nln::SINGLESTEP::Group::computeX(
   Core::LinAlg::View d_view(const_cast<Epetra_Vector&>(d.getEpetraVector()));
   prePostOperatorPtr_->run_pre_compute_x(grp, d_view, step, *this);
 
-  if (isPreconditioner()) sharedLinearSystem.getObject(this)->destroyPreconditioner();
-
-  resetIsValid();
+  reset_is_valid();
 
   step = 1.0;
   xVector.update(-1.0, d, step, grp.xVector);
