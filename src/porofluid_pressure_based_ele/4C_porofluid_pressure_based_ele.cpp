@@ -70,7 +70,20 @@ void Discret::Elements::PoroFluidMultiPhaseType::nodal_block_information(
 Core::LinAlg::SerialDenseMatrix Discret::Elements::PoroFluidMultiPhaseType::compute_null_space(
     Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  return FLD::compute_fluid_null_space(numdof, dimnsp);
+  switch (numdof)
+  {
+    case 3:
+      return FLD::compute_fluid_null_space<3>();
+    case 4:
+      return FLD::compute_fluid_null_space<4>();
+    case 5:
+      return FLD::compute_fluid_null_space<5>();
+    default:
+      FOUR_C_THROW(
+          "The computation of a {}-dimensional null space is not yet implemented for the poro "
+          "fluid multiphase element.",
+          numdof);
+  }
 }
 
 void Discret::Elements::PoroFluidMultiPhaseType::setup_element_definition(

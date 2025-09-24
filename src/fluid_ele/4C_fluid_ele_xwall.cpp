@@ -58,7 +58,23 @@ void Discret::Elements::FluidXWallType::nodal_block_information(
 Core::LinAlg::SerialDenseMatrix Discret::Elements::FluidXWallType::compute_null_space(
     Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  return FLD::compute_fluid_null_space(numdof, dimnsp);
+  switch (numdof)
+  {
+    case 3:
+      // 2D fluid wall
+      return FLD::compute_fluid_null_space<3>();
+    case 4:
+      // 3D fluid wall
+      return FLD::compute_fluid_null_space<4>();
+    case 8:
+      // 3D enriched fluid wall
+      return FLD::compute_fluid_null_space<8>();
+    default:
+      FOUR_C_THROW(
+          "The computation of a {}-dimensional null space is not yet implemented for the fluid "
+          "xwall element.",
+          numdof);
+  }
 }
 
 void Discret::Elements::FluidXWallType::setup_element_definition(

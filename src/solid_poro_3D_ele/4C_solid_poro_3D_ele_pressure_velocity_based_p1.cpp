@@ -139,7 +139,16 @@ Core::LinAlg::SerialDenseMatrix
 Discret::Elements::SolidPoroPressureVelocityBasedP1Type::compute_null_space(
     Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  return FLD::compute_fluid_null_space(numdof, dimnsp);
+  switch (numdof)
+  {
+    case 4:
+      return FLD::compute_fluid_null_space<4>();
+    default:
+      FOUR_C_THROW(
+          "The computation of a {}-dimensional null space is not yet implemented for the solid "
+          "poro pressure velocity based P1 element.",
+          numdof);
+  }
 }
 
 Discret::Elements::SolidPoroPressureVelocityBasedP1::SolidPoroPressureVelocityBasedP1(
