@@ -548,7 +548,7 @@ namespace
         Core::IO::cout << "Complete discretization " << std::left << std::setw(16)
                        << target_discretization.name() << " in...." << Core::IO::flush;
 
-      int err = target_discretization.fill_complete(false, false, false);
+      int err = target_discretization.fill_complete(Core::FE::OptionsFillComplete::none());
       if (err) FOUR_C_THROW("dis_->fill_complete() returned {}", err);
 
       if (!myrank) Core::IO::cout << time.totalElapsedTime(true) << " secs" << Core::IO::endl;

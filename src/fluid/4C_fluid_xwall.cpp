@@ -399,7 +399,7 @@ void FLD::XWall::init_wall_dist()
 
   // do not assign any dofs to save memory
   // only the nodes are needed in this discretization
-  commondis->fill_complete(false, false, false);
+  commondis->fill_complete(Core::FE::OptionsFillComplete::none());
 
   // also build a fully overlapping map of enriched nodes here:
   std::vector<int> colvec;  // node col map
@@ -629,7 +629,7 @@ void FLD::XWall::setup_x_wall_dis()
       std::make_shared<Core::DOFSets::TransparentDofSet>(discret_, parallel);
 
   xwdiscret_->replace_dof_set(newdofset);
-  xwdiscret_->fill_complete(true, true, true);
+  xwdiscret_->fill_complete();
 
   // redistribute and treat periodic bc if parallel
   if (parallel)
@@ -650,12 +650,13 @@ void FLD::XWall::setup_x_wall_dis()
 
     // rebuild of the system with new maps
     xwdiscret_->redistribute(
-        {*rownodes, *colnodes}, {.assign_degrees_of_freedom = false, .init_elements = false});
+        {*rownodes, *colnodes}, {.fill_complete = Core::FE::OptionsFillComplete{
+                                     .assign_degrees_of_freedom = false, .init_elements = false}});
 
     Core::Conditions::PeriodicBoundaryConditions pbc(xwdiscret_, false);
     pbc.update_dofs_for_periodic_boundary_conditions();
     xwdiscret_->replace_dof_set(newdofset);
-    xwdiscret_->fill_complete(true, true, true);
+    xwdiscret_->fill_complete();
   }
 
   return;

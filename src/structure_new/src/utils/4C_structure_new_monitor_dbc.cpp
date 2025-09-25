@@ -55,7 +55,11 @@ void Solid::MonitorDbc::init(const std::shared_ptr<Solid::TimeInt::BaseDataIO>& 
     create_reaction_force_condition(*tagged_cond, discret);
 
   // build geometry
-  discret.fill_complete(false, false, true);
+  discret.fill_complete({
+      .assign_degrees_of_freedom = false,
+      .init_elements = false,
+      .do_boundary_conditions = true,
+  });
 
   discret_ptr_ = &discret;
   gstate_ptr_ = &gstate;

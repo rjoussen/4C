@@ -184,7 +184,7 @@ void Core::IO::DiscretizationReader::read_mesh(int step)
   dis_->unpack_my_nodes(*nodedata);
   dis_->unpack_my_elements(*elementdata);
 
-  dis_->setup_ghosting(true, false, false);
+  dis_->setup_ghosting({true, false, false});
 
   dis_->fill_complete();
 

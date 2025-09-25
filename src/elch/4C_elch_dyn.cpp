@@ -88,7 +88,7 @@ void elch_dyn(int restart)
 
       // now me may redistribute or ghost the scatra discretization
       // finalize discretization
-      scatradis->fill_complete(true, true, true);
+      scatradis->fill_complete();
 
       // now we can call init() on the base algorithm
       // scatra time integrator is constructed and initialized inside
@@ -96,7 +96,7 @@ void elch_dyn(int restart)
 
       // now me may redistribute or ghost the scatra discretization
       // finalize discretization
-      scatradis->fill_complete(true, true, true);
+      scatradis->fill_complete();
 
       // only now we must call setup() on the base algorithm.
       // all objects relying on the parallel distribution are
@@ -158,7 +158,7 @@ void elch_dyn(int restart)
       const auto& fdyn = (problem->fluid_dynamic_params());
 
       std::shared_ptr<Core::FE::Discretization> aledis = problem->get_dis("ale");
-      if (!aledis->filled()) aledis->fill_complete(false, false, false);
+      if (!aledis->filled()) aledis->fill_complete(Core::FE::OptionsFillComplete::none());
       // is ALE needed or not?
       const auto withale =
           Teuchos::getIntegralValue<ElCh::ElchMovingBoundary>(elchcontrol, "MOVINGBOUNDARY");
@@ -172,7 +172,11 @@ void elch_dyn(int restart)
           Core::FE::clone_discretization<ALE::Utils::AleCloneStrategy>(
               *fluiddis, *aledis, Global::Problem::instance()->cloning_material_map());
 
-          aledis->fill_complete(true, true, false);
+          aledis->fill_complete({
+              .assign_degrees_of_freedom = true,
+              .init_elements = true,
+              .do_boundary_conditions = false,
+          });
           // setup material in every ALE element
           Teuchos::ParameterList params;
           params.set<std::string>("action", "setup_material");

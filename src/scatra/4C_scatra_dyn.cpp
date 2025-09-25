@@ -62,8 +62,8 @@ void scatra_dyn(int restart)
 
   // ensure that all dofs are assigned in the right order;
   // this creates dof numbers with fluid dof < scatra dof
-  fluiddis->fill_complete(true, true, true);
-  scatradis->fill_complete(true, true, true);
+  fluiddis->fill_complete();
+  scatradis->fill_complete();
 
   // determine coupling type
   const auto fieldcoupling = Teuchos::getIntegralValue<Inpar::ScaTra::FieldCoupling>(
@@ -136,7 +136,11 @@ void scatra_dyn(int restart)
       creator.copy_conditions(*scatradis, *scatradis, conditions_to_copy);
 
       // finalize discretization
-      scatradis->fill_complete(true, false, true);
+      scatradis->fill_complete({
+          .assign_degrees_of_freedom = true,
+          .init_elements = false,
+          .do_boundary_conditions = true,
+      });
 
       // now we can call init() on the base algo.
       // time integrator is initialized inside
@@ -160,7 +164,11 @@ void scatra_dyn(int restart)
       }
 
       // assign degrees of freedom and rebuild geometries
-      scatradis->fill_complete(true, false, true);
+      scatradis->fill_complete({
+          .assign_degrees_of_freedom = true,
+          .init_elements = false,
+          .do_boundary_conditions = true,
+      });
 
       // now we must call setup()
       scatraonly.setup();
@@ -244,8 +252,8 @@ void scatra_dyn(int restart)
         creator.copy_conditions(*scatradis, *scatradis, conditions_to_copy);
 
         // build the element and node maps
-        scatradis->fill_complete(false, false, false);
-        fluiddis->fill_complete(false, false, false);
+        scatradis->fill_complete(Core::FE::OptionsFillComplete::none());
+        fluiddis->fill_complete(Core::FE::OptionsFillComplete::none());
 
         // build auxiliary dofsets, i.e. pseudo dofs on each discretization
         const int ndofpernode_scatra = scatradis->num_dof(0, scatradis->l_row_node(0));
@@ -271,8 +279,16 @@ void scatra_dyn(int restart)
         // 2. scatra dofs
         // 3. fluid auxiliary dofs
         // 4. scatra auxiliary dofs
-        fluiddis->fill_complete(true, false, false);
-        scatradis->fill_complete(true, false, false);
+        fluiddis->fill_complete({
+            .assign_degrees_of_freedom = true,
+            .init_elements = false,
+            .do_boundary_conditions = false,
+        });
+        scatradis->fill_complete({
+            .assign_degrees_of_freedom = true,
+            .init_elements = false,
+            .do_boundary_conditions = false,
+        });
       }
 
       // init algo (init fluid time integrator and scatra time integrator inside)
@@ -298,8 +314,16 @@ void scatra_dyn(int restart)
 
       // ensure that all dofs are assigned in the right order;
       // this creates dof numbers with fluid dof < scatra dof
-      fluiddis->fill_complete(true, false, true);
-      scatradis->fill_complete(true, false, true);
+      fluiddis->fill_complete({
+          .assign_degrees_of_freedom = true,
+          .init_elements = false,
+          .do_boundary_conditions = true,
+      });
+      scatradis->fill_complete({
+          .assign_degrees_of_freedom = true,
+          .init_elements = false,
+          .do_boundary_conditions = true,
+      });
 
       // setup algo
       //(setup fluid time integrator and scatra time integrator inside)

@@ -681,7 +681,7 @@ void CONTACT::Beam3cmanager::init_beam_contact_discret()
 
   // build maps but do not assign dofs yet, we'll do this below
   // after shuffling around of nodes and elements (saves time)
-  bt_sol_discret().fill_complete(false, false, false);
+  bt_sol_discret().fill_complete(Core::FE::OptionsFillComplete::none());
 
   // store the node and element row and column maps into this manager
   noderowmap_ = std::make_shared<Core::LinAlg::Map>(*(bt_sol_discret().node_row_map()));
@@ -760,7 +760,11 @@ void CONTACT::Beam3cmanager::init_beam_contact_discret()
   // complete beam contact discretization based on the new column maps
   // (this also assign new degrees of freedom what we actually do not
   // want, thus we have to introduce a dof mapping next)
-  bt_sol_discret().fill_complete(true, false, false);
+  bt_sol_discret().fill_complete({
+      .assign_degrees_of_freedom = true,
+      .init_elements = false,
+      .do_boundary_conditions = false,
+  });
 
   // communicate the map nodedofs to all proccs
   Core::Communication::Exporter ex(

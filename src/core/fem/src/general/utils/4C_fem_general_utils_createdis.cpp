@@ -165,7 +165,11 @@ Core::FE::DiscretizationCreatorBase::create_matching_discretization(
   // make auxiliary discretization have the same dofs as the coupling discretization
   if (clonedofs)
     targetdis->replace_dof_set(std::make_shared<Core::DOFSets::IndependentDofSet>(), false);
-  targetdis->fill_complete(assigndegreesoffreedom, initelements, doboundaryconditions);
+  targetdis->fill_complete({
+      .assign_degrees_of_freedom = assigndegreesoffreedom,
+      .init_elements = initelements,
+      .do_boundary_conditions = doboundaryconditions,
+  });
 
   // at the end, we do several checks to ensure that we really have generated
   // an identical discretization
@@ -200,7 +204,7 @@ void Core::FE::DiscretizationCreatorBase::finalize(
   targetdis.export_column_nodes(*targetnodecolmap_);
   targetdis.export_row_elements(*targetelerowmap_);
   targetdis.export_column_elements(*targetelecolmap_);
-  targetdis.fill_complete(false, false, false);
+  targetdis.fill_complete(Core::FE::OptionsFillComplete::none());
 
   // extra work for NURBS discretizations
 

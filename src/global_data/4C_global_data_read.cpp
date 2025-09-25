@@ -1722,7 +1722,7 @@ void Global::read_knots(Global::Problem& problem, Core::IO::InputFile& input)
       // vector values
       if (!dis->filled())
       {
-        dis->fill_complete(false, false, false);
+        dis->fill_complete(Core::FE::OptionsFillComplete::none());
       }
 
       // the smallest gid in the discretisation determines the access

@@ -112,7 +112,11 @@ std::shared_ptr<Adapter::ArtNet> dyn_art_net_drt(bool CoupledTo3D)
     if (scatradis->add_dof_set(arterydofset) != 1)
       FOUR_C_THROW("unexpected dof sets in scatra field");
 
-    scatradis->fill_complete(true, false, false);
+    scatradis->fill_complete({
+        .assign_degrees_of_freedom = true,
+        .init_elements = false,
+        .do_boundary_conditions = false,
+    });
   }
   else
   {

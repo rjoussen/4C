@@ -100,7 +100,11 @@ void ScaTra::HeterogeneousReactionStrategy::setup_meshtying()
       scatratimint_->discretization()->name(), com, Global::Problem::instance()->n_dim());
 
   // call complete without assigning degrees of freedom
-  discret_->fill_complete(false, true, false);
+  discret_->fill_complete({
+      .assign_degrees_of_freedom = false,
+      .init_elements = true,
+      .do_boundary_conditions = false,
+  });
 
   std::shared_ptr<Core::FE::Discretization> scatradis = scatratimint_->discretization();
 
@@ -152,7 +156,7 @@ void ScaTra::HeterogeneousReactionStrategy::setup_meshtying()
     }
 
     // done. Rebuild all maps and boundary condition geometries
-    discret_->fill_complete(true, true, true);
+    discret_->fill_complete();
 
     if (Core::Communication::my_mpi_rank(com) == 0 and Core::Communication::num_mpi_ranks(com) > 1)
       std::cout << "parallel distribution of auxiliary discr. with standard ghosting" << std::endl;

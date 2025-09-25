@@ -51,7 +51,11 @@ namespace Core::Binstrategy::Utils
     discret.export_column_nodes(nodecolmap);
 
     // fillcomplete discret with extended ghosting
-    discret.fill_complete(assigndegreesoffreedom, initelements, doboundaryconditions);
+    discret.fill_complete({
+        .assign_degrees_of_freedom = assigndegreesoffreedom,
+        .init_elements = initelements,
+        .do_boundary_conditions = doboundaryconditions,
+    });
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
     // print distribution after standard ghosting

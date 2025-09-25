@@ -155,15 +155,8 @@ namespace Core::FE
     - build internal faces elements
     - build maps and pointers for internal faces
 
-    \param assigndegreesoffreedom (in) : if true, resets existing dofsets and performs
-                                         assigning of degrees of freedoms to nodes and
-                                         elements.
-    \param initelements (in) : if true, build element register classes and call initialize()
-                               on each type of finite element present
-    \param doboundaryconditions (in) : if true, build geometry of boundary conditions
-                                       present.
+    \param options (in) : options struct to set flags for specific tasks
     \param createinternalfaces (in) : if true, build geometry of internal faces.
-    \param createboundaryfaces (in) : if true,
 
     \note In order to receive a fully functional discretization, this method must be called
           with all parameters set to true (the default). The parameters though can be
@@ -173,8 +166,7 @@ namespace Core::FE
 
     \note Sets Filled()=true
     */
-    int fill_complete_faces(bool assigndegreesoffreedom = true, bool initelements = true,
-        bool doboundaryconditions = true, bool createinternalfaces = false);
+    int fill_complete_faces(OptionsFillComplete options, bool createinternalfaces = false);
 
     /*!
     \brief Get flag indicating whether create_internal_faces_extension() has been called

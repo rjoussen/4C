@@ -468,7 +468,11 @@ void CONTACT::Interface::fill_complete_new(const bool isFinalParallelDistributio
   }
 
   // fill_complete the interface discretization
-  discret().fill_complete(isFinalParallelDistribution, false, false);
+  discret().fill_complete({
+      .assign_degrees_of_freedom = isFinalParallelDistribution,
+      .init_elements = false,
+      .do_boundary_conditions = false,
+  });
 
   // check whether crosspoints / edge nodes shall be considered or not
   initialize_cross_points();

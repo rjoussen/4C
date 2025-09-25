@@ -90,7 +90,11 @@ FPSI::MonolithicBase::MonolithicBase(MPI_Comm comm, const Teuchos::ParameterList
   {
     FOUR_C_THROW("unexpected numbers of dofsets in fluid field");
   }
-  fluid_field()->discretization()->fill_complete(true, false, false);
+  fluid_field()->discretization()->fill_complete({
+      .assign_degrees_of_freedom = true,
+      .init_elements = false,
+      .do_boundary_conditions = false,
+  });
 }  // MonolithicBase
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

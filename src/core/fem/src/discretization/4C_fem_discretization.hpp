@@ -316,21 +316,27 @@ namespace Core::FE
     }
   };
 
-  /*!
-    \brief Options for parallel (re)distribution
-  */
-  struct OptionsRedistribution
+  /// Options for Discretization::fill_complete()
+  struct OptionsFillComplete
   {
-    //! reset existing dofsets and performs assigning of degrees of freedoms to nodes and elements
-    //! if true
+    /// When true, assigns DOFs during fill_complete.
     bool assign_degrees_of_freedom = true;
 
-    //! build element register classes and call initialize() on each type of finite element present
-    //! if true
+    /// When true, initializes element types during fill_complete.
     bool init_elements = true;
 
-    //!  build geometry of boundary conditions present if true
+    /// When true, builds geometry of boundary conditions during fill_complete.
     bool do_boundary_conditions = true;
+
+    /// Return all options turned off.
+    static OptionsFillComplete none() { return OptionsFillComplete{false, false, false}; }
+  };
+
+  /// Options for parallel (re)distribution
+  struct OptionsRedistribution
+  {
+    /// Optional options for fill_complete().
+    std::optional<OptionsFillComplete> fill_complete{OptionsFillComplete{}};
 
     //! reset existing dofsets in discretization
     bool kill_dofs = true;
@@ -341,6 +347,7 @@ namespace Core::FE
     //! extended ghosting is applied if true
     bool do_extended_ghosting = false;
   };
+
 
   /**
    * This struct is used to bundle row and column maps as arguments.
@@ -1410,42 +1417,36 @@ namespace Core::FE
     */
     bool clear_discret();
 
-    /*!
-    \brief Complete construction of a discretization  (Filled()==true NOT prerequisite)
-
-    After adding or deleting nodes or elements or redistributing them in parallel,
-    or adding/deleting boundary conditions, this method has to be called to (re)construct
-    pointer topologies.<br>
-    It builds in this order:<br>
-    - row map of nodes
-    - column map of nodes
-    - row map of elements
-    - column map of elements
-    - pointers from elements to nodes
-    - pointers from nodes to elements
-    - assigns degrees of freedoms
-    - map of element register classes
-    - calls all element register initialize methods
-    - build geometries of all Dirichlet and Neumann boundary conditions
-
-    \param assigndegreesoffreedom (in) : if true, resets existing dofsets and performs
-                                         assigning of degrees of freedoms to nodes and
-                                         elements.
-    \param initelements (in) : if true, build element register classes and call initialize()
-                               on each type of finite element present
-    \param doboundaryconditions (in) : if true, build geometry of boundary conditions
-                                       present.
-
-    \note In order to receive a fully functional discretization, this method must be called
-          with all parameters set to true (the default). The parameters though can be
-          used to turn off specific tasks to allow for more flexibility in the
-          construction of a discretization, where it is known that this method will
-          be called more than once.
-
-    \note Sets Filled()=true
-    */
-    virtual int fill_complete(bool assigndegreesoffreedom = true, bool initelements = true,
-        bool doboundaryconditions = true);
+    /**
+     * @brief Complete construction of a discretization  (Filled()==true NOT prerequisite)
+     *
+     * After adding or deleting nodes or elements or redistributing them in parallel,
+     * or adding/deleting boundary conditions, this method has to be called to (re)construct
+     * pointer topologies.
+     *
+     * It builds in this order:
+     *
+     * - row map of nodes
+     * - column map of nodes
+     * - row map of elements
+     * - column map of elements
+     * - pointers from elements to nodes
+     * - pointers from nodes to elements
+     * - assigns degrees of freedoms
+     * - map of element register classes
+     * - calls all element register initialize methods
+     * - build geometries of all Dirichlet and Neumann boundary conditions
+     *
+     * Refer to OptionsFillComplete for details on the options.
+     *
+     * @note In order to receive a fully functional discretization, this method must be called
+     *       with the default options. The options can be used to turn off specific tasks to allow
+     *       for more flexibility in the construction of a discretization, where it is known that
+     *       this method will be called more than once.
+     *
+     * @post filled()=true
+     */
+    virtual int fill_complete(OptionsFillComplete options = {});
 
     /*!
     \brief Synchronize filled_ flag on all processors
@@ -1584,7 +1585,7 @@ namespace Core::FE
 
     // Setup ghosting if you have a proper distribution of rownodes and elements
     // only use this if you are sure that the parallel distribution is ok!
-    void setup_ghosting(bool assigndegreesoffreedom, bool initelements, bool doboundaryconditions);
+    void setup_ghosting(OptionsFillComplete options = {});
 
 
     //-----------------------------------------------------------------------------------

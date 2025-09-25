@@ -76,7 +76,7 @@ namespace
 
     Core::IO::GridGenerator::create_rectangular_cuboid_discretization(*testdis_, inputData_, true);
 
-    testdis_->fill_complete(false, false, false);
+    testdis_->fill_complete(Core::FE::OptionsFillComplete::none());
 
     Core::Nodes::Node* lastNode = testdis_->l_row_node(testdis_->num_my_row_nodes() - 1);
     const auto nodePosition = lastNode->x();
@@ -126,7 +126,7 @@ namespace
 
     Core::IO::GridGenerator::create_rectangular_cuboid_discretization(*testdis_, inputData_, true);
 
-    testdis_->fill_complete(false, false, false);
+    testdis_->fill_complete(Core::FE::OptionsFillComplete::none());
 
     Core::Nodes::Node* lastNode = testdis_->l_row_node(testdis_->num_my_row_nodes() - 1);
     const auto nodePosition = lastNode->x();

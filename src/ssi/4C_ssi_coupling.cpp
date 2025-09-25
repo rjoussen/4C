@@ -224,8 +224,16 @@ void SSI::SSICouplingNonMatchingBoundary::init(const int ndim,
   // 2. scatra dofs
   // 3. structure auxiliary dofs
   // 4. scatra auxiliary dofs
-  structdis_->fill_complete(true, false, false);
-  scatradis_->fill_complete(true, false, false);
+  structdis_->fill_complete({
+      .assign_degrees_of_freedom = true,
+      .init_elements = false,
+      .do_boundary_conditions = false,
+  });
+  scatradis_->fill_complete({
+      .assign_degrees_of_freedom = true,
+      .init_elements = false,
+      .do_boundary_conditions = false,
+  });
 
   // setup mortar adapter for surface volume coupling
   adaptermeshtying_ = std::make_shared<Coupling::Adapter::CouplingMortar>(
@@ -351,8 +359,16 @@ void SSI::SSICouplingNonMatchingVolume::init(const int ndim,
   // 2. scatra dofs
   // 3. structure auxiliary dofs
   // 4. scatra auxiliary dofs
-  structdis->fill_complete(true, false, false);
-  scatradis->fill_complete(true, false, false);
+  structdis->fill_complete({
+      .assign_degrees_of_freedom = true,
+      .init_elements = false,
+      .do_boundary_conditions = false,
+  });
+  scatradis->fill_complete({
+      .assign_degrees_of_freedom = true,
+      .init_elements = false,
+      .do_boundary_conditions = false,
+  });
 
   // Scheme: non matching meshes --> volumetric mortar coupling...
   volcoupl_structurescatra_ = std::make_shared<Coupling::Adapter::MortarVolCoupl>();

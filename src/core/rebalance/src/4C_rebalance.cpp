@@ -51,11 +51,7 @@ do_rebalance_discretization(const Core::LinAlg::Graph& graph,
               *rowmap,
               *colmap,
           },
-          {
-              .assign_degrees_of_freedom = false,
-              .init_elements = false,
-              .do_boundary_conditions = false,
-          });
+          {.fill_complete = Core::FE::OptionsFillComplete::none()});
 
       std::shared_ptr<Core::LinAlg::MultiVector<double>> coordinates =
           discretization.build_node_coordinates();
@@ -81,7 +77,7 @@ do_rebalance_discretization(const Core::LinAlg::Graph& graph,
               *rowmap,
               *colmap,
           },
-          {.do_boundary_conditions = false});
+          {.fill_complete = Core::FE::OptionsFillComplete{.do_boundary_conditions = false}});
 
       std::shared_ptr<const Core::LinAlg::Graph> enriched_graph =
           Core::Rebalance::build_monolithic_node_graph(discretization,
@@ -144,9 +140,7 @@ void Core::Rebalance::rebalance_discretization(Core::FE::Discretization& discret
   if (rebalanceMethod == Core::Rebalance::RebalanceType::monolithic)
     options_redistribution.do_extended_ghosting = true;
 
-  options_redistribution.assign_degrees_of_freedom = false;
-  options_redistribution.init_elements = false;
-  options_redistribution.do_boundary_conditions = false;
+  options_redistribution.fill_complete = FE::OptionsFillComplete::none();
 
   discretization.redistribute({*rowmap, *colmap}, options_redistribution);
 

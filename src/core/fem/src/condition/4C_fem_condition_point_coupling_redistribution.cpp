@@ -147,7 +147,7 @@ void redistribute(const std::vector<int>& rank_to_hold_condition,
   // accessing the noderowmap requires a 'completed' discretization
   if (!discret.filled())
   {
-    discret.fill_complete(false, false, false);
+    discret.fill_complete(Core::FE::OptionsFillComplete::none());
   }
 
   // get all currently owned node gids of this proc
@@ -243,9 +243,6 @@ void redistribute(const std::vector<int>& rank_to_hold_condition,
           .col_map = new_col_node_map,
       },
       {
-          .assign_degrees_of_freedom = true,
-          .init_elements = true,
-          .do_boundary_conditions = true,
           .do_extended_ghosting = true,
       });
 

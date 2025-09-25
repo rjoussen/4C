@@ -563,7 +563,7 @@ void Mortar::Interface::fill_complete(
     discret().replace_dof_set(mrtrdofset);
     // do not assign dofs yet, we'll do this below after
     // shuffling around of nodes and elements (saves time)
-    discret().fill_complete(false, false, false);
+    discret().fill_complete(Core::FE::OptionsFillComplete::none());
   }
 
   // check whether crosspoints / edge nodes shall be considered or not
@@ -587,7 +587,11 @@ void Mortar::Interface::fill_complete(
       output_control, spatial_approximation_type);
 
   // make sure discretization is complete
-  discret().fill_complete(isFinalParallelDistribution, false, false);
+  discret().fill_complete({
+      .assign_degrees_of_freedom = isFinalParallelDistribution,
+      .init_elements = false,
+      .do_boundary_conditions = false,
+  });
 
   // ghost also parent elements according to the ghosting strategy of the interface (atm just for
   // poro)
@@ -1504,7 +1508,11 @@ void Mortar::Interface::extend_interface_ghosting(const bool isFinalParallelDist
        * initialization of elements, if we know, that the discretization will be redistributed
        * again.
        */
-      discret().fill_complete(false, isFinalParallelDistribution, false);
+      discret().fill_complete({
+          .assign_degrees_of_freedom = false,
+          .init_elements = isFinalParallelDistribution,
+          .do_boundary_conditions = false,
+      });
 
       // Create the binning strategy
       std::shared_ptr<Core::Binstrategy::BinningStrategy> binningstrategy = setup_binning_strategy(

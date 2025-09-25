@@ -537,8 +537,8 @@ void PoroElast::PoroBase::replace_dof_sets()
     structdis->replace_dof_set(1, fluiddofsetproxy);
   }
 
-  fluiddis->fill_complete(true, true, true);
-  structdis->fill_complete(true, true, true);
+  fluiddis->fill_complete();
+  structdis->fill_complete();
 
   // for the new time integration setup() has to be called after structdis->fill_complete to make
   // sure all pointers connected to structdis are updated

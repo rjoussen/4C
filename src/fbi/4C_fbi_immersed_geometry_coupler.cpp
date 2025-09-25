@@ -169,7 +169,11 @@ void FBI::FBIGeometryCoupler::extend_beam_ghosting(Core::FE::Discretization& dis
   discretization.export_column_nodes(newnodecolmap);
   discretization.export_column_elements(newelecolmap);
 
-  discretization.fill_complete(true, false, false);
+  discretization.fill_complete({
+      .assign_degrees_of_freedom = true,
+      .init_elements = false,
+      .do_boundary_conditions = false,
+  });
 }
 
 /*----------------------------------------------------------------------*/
@@ -292,7 +296,7 @@ void FBI::FBIGeometryCoupler::prepare_pair_creation(
     discretizations[1]->export_column_elements(newelecolmap);
 
     std::dynamic_pointer_cast<Core::FE::DiscretizationFaces>(discretizations[1])
-        ->fill_complete_faces(true, true, true, edgebased_fluidstabilization_);
+        ->fill_complete_faces({}, edgebased_fluidstabilization_);
   }
 
   element_senddata.clear();

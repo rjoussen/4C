@@ -59,7 +59,7 @@ void FBI::FBIBinningGeometryCoupler::partition_geometry(
   binstrategy_->distribute_elements_to_bins_using_ele_aabb(*discretizations[0],
       discretizations[0]->my_row_element_range(), bintoelemap_, structure_displacement);
 
-  binstrategy_->bin_discret()->fill_complete(false, false, false);
+  binstrategy_->bin_discret()->fill_complete(Core::FE::OptionsFillComplete::none());
 
   std::set<int> colbins;
 
@@ -184,7 +184,7 @@ void FBI::FBIBinningGeometryCoupler::set_binning(
     std::shared_ptr<Core::Binstrategy::BinningStrategy> binning)
 {
   binstrategy_ = binning;
-  binstrategy_->bin_discret()->fill_complete(false, false, false);
+  binstrategy_->bin_discret()->fill_complete(Core::FE::OptionsFillComplete::none());
   binrowmap_ =
       std::make_shared<Core::LinAlg::Map>(*(binstrategy_->bin_discret()->element_row_map()));
 };

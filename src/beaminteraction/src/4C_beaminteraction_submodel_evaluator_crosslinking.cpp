@@ -149,7 +149,7 @@ bool BeamInteraction::SubmodelEvaluator::Crosslinking::post_partition_problem()
   set_all_possible_initial_double_bonded_crosslinker(newlinker, mynewdbondcl);
 
   // set row map of newly created linker discretization
-  bin_discret_ptr()->fill_complete(false, false, false);
+  bin_discret_ptr()->fill_complete(Core::FE::OptionsFillComplete::none());
 
   // init crosslinker data container
   crosslinker_data_.clear();
@@ -752,7 +752,7 @@ void BeamInteraction::SubmodelEvaluator::Crosslinking::add_crosslinker_to_bin_di
   }
 
   // set row map of newly created linker discretization
-  bin_discret_ptr()->fill_complete(false, false, false);
+  bin_discret_ptr()->fill_complete(Core::FE::OptionsFillComplete::none());
 }
 
 /*-------------------------------------------------------------------------------*

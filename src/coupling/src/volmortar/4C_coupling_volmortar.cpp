@@ -1145,8 +1145,16 @@ void Coupling::VolMortar::VolMortarCoupl::mesh_init()
   int dofseta = dis1_->add_dof_set(dofsetaux);
   dofsetaux = std::make_shared<Core::DOFSets::DofSetPredefinedDoFNumber>(dim_, 0, 0, true);
   int dofsetb = dis2_->add_dof_set(dofsetaux);
-  dis1_->fill_complete(true, false, false);
-  dis2_->fill_complete(true, false, false);
+  dis1_->fill_complete({
+      .assign_degrees_of_freedom = true,
+      .init_elements = false,
+      .do_boundary_conditions = false,
+  });
+  dis2_->fill_complete({
+      .assign_degrees_of_freedom = true,
+      .init_elements = false,
+      .do_boundary_conditions = false,
+  });
 
   double omega = 1.0;
   double nu = 0.0;
@@ -1451,8 +1459,16 @@ void Coupling::VolMortar::VolMortarCoupl::mesh_init()
       }
     }
 
-    dis1_->fill_complete(false, true, true);
-    dis2_->fill_complete(false, true, true);
+    dis1_->fill_complete({
+        .assign_degrees_of_freedom = false,
+        .init_elements = true,
+        .do_boundary_conditions = true,
+    });
+    dis2_->fill_complete({
+        .assign_degrees_of_freedom = false,
+        .init_elements = true,
+        .do_boundary_conditions = true,
+    });
 
     // last check:
     std::shared_ptr<Core::LinAlg::Vector<double>> checka =
@@ -1629,8 +1645,16 @@ void Coupling::VolMortar::VolMortarCoupl::perform_cut(
   }
 
   // complete dis
-  sauxdis->fill_complete(true, false, false);
-  mauxdis->fill_complete(true, false, false);
+  sauxdis->fill_complete({
+      .assign_degrees_of_freedom = true,
+      .init_elements = false,
+      .do_boundary_conditions = false,
+  });
+  mauxdis->fill_complete({
+      .assign_degrees_of_freedom = true,
+      .init_elements = false,
+      .do_boundary_conditions = false,
+  });
 
   //--------------------------------------------------------------------------------------
   // Initialize the cut wizard

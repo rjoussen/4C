@@ -38,7 +38,7 @@ namespace
 
       // create 1 element discretization
       testdis_->add_element(testele_);
-      testdis_->fill_complete(false, false, false);
+      testdis_->fill_complete(Core::FE::OptionsFillComplete::none());
 
       testele_->set_up_reference_geometry(xrefe_full);
     }

@@ -537,10 +537,12 @@ void Core::FE::Discretization::redistribute(
   export_column_elements(element_maps.col_map, options.kill_dofs, options.kill_cond);
 
   // these exports have set Filled()=false as all maps are invalid now
-  int err = fill_complete(
-      options.assign_degrees_of_freedom, options.init_elements, options.do_boundary_conditions);
+  if (options.fill_complete)
+  {
+    int err = fill_complete(*options.fill_complete);
 
-  if (err) FOUR_C_THROW("fill_complete() returned err={}", err);
+    if (err) FOUR_C_THROW("fill_complete() returned err={}", err);
+  }
 }
 
 /*----------------------------------------------------------------------*
@@ -681,14 +683,17 @@ void Core::FE::Discretization::extended_ghosting(const Core::LinAlg::Map& elecol
   export_column_nodes(nodecolmap);
 
   // these exports have set Filled()=false as all maps are invalid now
-  int err = fill_complete(assigndegreesoffreedom, initelements, doboundaryconditions);
+  int err = fill_complete({
+      .assign_degrees_of_freedom = assigndegreesoffreedom,
+      .init_elements = initelements,
+      .do_boundary_conditions = doboundaryconditions,
+  });
   if (err) FOUR_C_THROW("fill_complete() threw error code {}", err);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::FE::Discretization::setup_ghosting(
-    bool assigndegreesoffreedom, bool initelements, bool doboundaryconditions)
+void Core::FE::Discretization::setup_ghosting(OptionsFillComplete options)
 {
   if (filled())
     FOUR_C_THROW(
@@ -772,9 +777,7 @@ void Core::FE::Discretization::setup_ghosting(
           .row_map = noderowmap,
           .col_map = nodecolmap,
       },
-      {.assign_degrees_of_freedom = assigndegreesoffreedom,
-          .init_elements = initelements,
-          .do_boundary_conditions = doboundaryconditions});
+      {.fill_complete = options});
 }
 
 FOUR_C_NAMESPACE_CLOSE

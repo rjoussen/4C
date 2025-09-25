@@ -34,7 +34,7 @@ namespace
 
       Core::IO::cout.setup(false, false, false, Core::IO::standard, comm_, 0, 0, "dummyFilePrefix");
 
-      test_discretization_->fill_complete(false, false, false);
+      test_discretization_->fill_complete(Core::FE::OptionsFillComplete::none());
     }
 
     void TearDown() override { Core::IO::cout.close(); }

@@ -55,7 +55,11 @@ void lubrication_dyn(int restart)
     FOUR_C_THROW("lub discretization has illegal number of dofsets!");
 
   // finalize discretization
-  lubricationdis->fill_complete(true, false, false);
+  lubricationdis->fill_complete({
+      .assign_degrees_of_freedom = true,
+      .init_elements = false,
+      .do_boundary_conditions = false,
+  });
 
   // get linear solver id from LUBRICATION DYNAMIC
   const int linsolvernumber = lubricationdyn.get<int>("LINEAR_SOLVER");

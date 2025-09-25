@@ -255,9 +255,7 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(std::shared_ptr<Core::FE::Disc
     }
 
     childdiscret_->redistribute(
-        {*newrownodemap, *newcolnodemap}, {.assign_degrees_of_freedom = false,
-                                              .init_elements = false,
-                                              .do_boundary_conditions = false});
+        {*newrownodemap, *newcolnodemap}, {.fill_complete = Core::FE::OptionsFillComplete::none()});
 
     if (Core::Communication::my_mpi_rank(childdiscret_->get_comm()) == 0)
     {
@@ -354,8 +352,7 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(std::shared_ptr<Core::FE::Disc
         parentdiscret_, true));  // true: parallel
     // and assign the dofs to nodes
     // remark: nothing is redistributed here
-    childdiscret_->redistribute({*newrownodemap, *newcolnodemap},
-        {.assign_degrees_of_freedom = true, .init_elements = true, .do_boundary_conditions = true});
+    childdiscret_->redistribute({*newrownodemap, *newcolnodemap});
 
     if (Core::Communication::my_mpi_rank(childdiscret_->get_comm()) == 0)
     {
@@ -392,7 +389,8 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(std::shared_ptr<Core::FE::Disc
     }
     // redistribute accordingly to the adapted rowmap
     childdiscret_->redistribute({*sepcondrownodes, *sepcondcolnodes},
-        {.assign_degrees_of_freedom = false, .init_elements = false});
+        {.fill_complete = Core::FE::OptionsFillComplete{
+             .assign_degrees_of_freedom = false, .init_elements = false}});
 
     if (Core::Communication::my_mpi_rank(childdiscret_->get_comm()) == 0)
     {
@@ -437,7 +435,7 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(std::shared_ptr<Core::FE::Disc
     // call fill_complete() to assign the dof
     // remark: equal redistribute(*newrownodemap,*newcolnodemap,true,true,true) as
     //         it also calls fill_complete() at the end
-    childdiscret_->fill_complete(true, true, true);
+    childdiscret_->fill_complete();
 
     if (Core::Communication::my_mpi_rank(childdiscret_->get_comm()) == 0)
     {

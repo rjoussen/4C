@@ -117,8 +117,8 @@ std::shared_ptr<FPSI::FpsiBase> FPSI::InterfaceUtils::setup_discretizations(MPI_
   }
 
 
-  fluiddis->fill_complete(true, true, true);
-  aledis->fill_complete(true, true, true);
+  fluiddis->fill_complete();
+  aledis->fill_complete();
 
   // 3.- Create ALE elements if the ale discretization is empty
   if (aledis->num_global_nodes() == 0)  // ALE discretization still empty

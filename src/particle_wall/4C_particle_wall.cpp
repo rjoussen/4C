@@ -607,7 +607,11 @@ void PARTICLEWALL::WallHandlerDiscretCondition::init_wall_discretization()
   walldiscretization_->replace_dof_set(newdofset);
 
   // finalize wall discretization construction
-  walldiscretization_->fill_complete(true, false, false);
+  walldiscretization_->fill_complete({
+      .assign_degrees_of_freedom = true,
+      .init_elements = false,
+      .do_boundary_conditions = false,
+  });
 }
 
 void PARTICLEWALL::WallHandlerDiscretCondition::setup_wall_discretization() const
@@ -755,7 +759,11 @@ void PARTICLEWALL::WallHandlerBoundingBox::init_wall_discretization()
   walldiscretization_->export_column_elements(*elecolmap);
 
   // finalize wall discretization construction
-  walldiscretization_->fill_complete(true, false, false);
+  walldiscretization_->fill_complete({
+      .assign_degrees_of_freedom = true,
+      .init_elements = false,
+      .do_boundary_conditions = false,
+  });
 }
 
 void PARTICLEWALL::WallHandlerBoundingBox::setup_wall_discretization() const

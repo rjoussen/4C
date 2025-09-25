@@ -221,10 +221,26 @@ void FS3I::PartFS3I::init()
   if (not(volume_coupling_objects_.size() == 2))
     FOUR_C_THROW("Unexpected size of volmortar object vector!");
 
-  fluiddis->fill_complete(true, false, false);
-  structdis->fill_complete(true, false, false);
-  fluidscatradis->fill_complete(true, false, false);
-  structscatradis->fill_complete(true, false, false);
+  fluiddis->fill_complete({
+      .assign_degrees_of_freedom = true,
+      .init_elements = false,
+      .do_boundary_conditions = false,
+  });
+  structdis->fill_complete({
+      .assign_degrees_of_freedom = true,
+      .init_elements = false,
+      .do_boundary_conditions = false,
+  });
+  fluidscatradis->fill_complete({
+      .assign_degrees_of_freedom = true,
+      .init_elements = false,
+      .do_boundary_conditions = false,
+  });
+  structscatradis->fill_complete({
+      .assign_degrees_of_freedom = true,
+      .init_elements = false,
+      .do_boundary_conditions = false,
+  });
 
   // Note: in the scatra fields we have now the following dof-sets:
   // structure dofset 0: structure dofset
@@ -362,8 +378,16 @@ std::shared_ptr<Coupling::Adapter::MortarVolCoupl> FS3I::PartFS3I::create_vol_mo
   // 2. scatra dofs
   // 3. structure auxiliary dofs
   // 4. scatra auxiliary dofs
-  masterdis->fill_complete(true, false, false);
-  slavedis->fill_complete(true, false, false);
+  masterdis->fill_complete({
+      .assign_degrees_of_freedom = true,
+      .init_elements = false,
+      .do_boundary_conditions = false,
+  });
+  slavedis->fill_complete({
+      .assign_degrees_of_freedom = true,
+      .init_elements = false,
+      .do_boundary_conditions = false,
+  });
 
 
   // Scheme: non matching meshes --> volumetric mortar coupling...

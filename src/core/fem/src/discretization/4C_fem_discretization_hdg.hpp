@@ -85,8 +85,7 @@ namespace Core::FE
 
     \note Sets Filled()=true
     */
-    int fill_complete(bool assigndegreesoffreedom = true, bool initelements = true,
-        bool doboundaryconditions = true) override;
+    int fill_complete(OptionsFillComplete options = {}) override;
 
     /*!
      * this function has the same functionality as the function in the base class,
