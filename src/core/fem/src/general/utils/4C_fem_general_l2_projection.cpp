@@ -224,33 +224,21 @@ std::shared_ptr<Core::LinAlg::MultiVector<double>> Core::FE::solve_nodal_l2_proj
     {
       case Core::LinearSolver::PreconditionerType::multigrid_muelu:
       {
-        Teuchos::ParameterList* preclist_ptr = nullptr;
-        // Parameter for MueLu
-        if (prectype == Core::LinearSolver::PreconditionerType::multigrid_muelu)
-          preclist_ptr = &((solver.params()).sublist("MueLu Parameters"));
-        else
-          FOUR_C_THROW("please add correct parameter list");
-
-        Teuchos::ParameterList& preclist = *preclist_ptr;
+        Teuchos::ParameterList& preclist = solver.params().sublist("MueLu Parameters");
         preclist.set("PDE equations", 1);
-        preclist.set("null space: dimension", 1);
-        preclist.set("null space: type", "pre-computed");
-        preclist.set("null space: add default vectors", false);
 
         std::shared_ptr<Core::LinAlg::MultiVector<double>> nullspace =
             std::make_shared<Core::LinAlg::MultiVector<double>>(noderowmap, 1, true);
         nullspace->PutScalar(1.0);
 
         preclist.set<std::shared_ptr<Core::LinAlg::MultiVector<double>>>("nullspace", nullspace);
-        preclist.set("null space: vectors", nullspace->Values());
-        preclist.set("ML validate parameter list", false);
       }
       break;
       case Core::LinearSolver::PreconditionerType::ilu:
         // do nothing
         break;
       default:
-        FOUR_C_THROW("You have to choose ML, MueLu or ILU preconditioning");
+        FOUR_C_THROW("You have to choose MueLu or ILU preconditioning");
         break;
     }
   }

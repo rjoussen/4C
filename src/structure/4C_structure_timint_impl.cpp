@@ -30,6 +30,7 @@
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_linalg_utils_sparse_algebra_print.hpp"
+#include "4C_linear_solver_method.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
 #include "4C_mortar_manager_base.hpp"
 #include "4C_mortar_strategy_base.hpp"
@@ -3119,41 +3120,36 @@ void Solid::TimIntImpl::cmt_linear_solve()
         FOUR_C_THROW("Unexpected operator created by build_saddle_point_system()");
 
       // compute the nullspace vectors for the Lagrange multiplier field for MueLu
-      if (contactsolver_->params().isSublist("Belos Parameters"))
-        if (contactsolver_->params()
-                .sublist("Belos Parameters")
-                .get<std::string>("Preconditioner Type") == "ML")
+      if (contactsolver_->params().isSublist("Belos Parameters") and
+          contactsolver_->params().isSublist("MueLu Parameters"))
+      {
+        int dim_nullspace = discretization()->n_dim();
+
+        // get the degree of freedom map from the block matrix
+        auto block_mat_blocked_operator =
+            std::dynamic_pointer_cast<Core::LinAlg::BlockSparseMatrixBase>(
+                Core::Utils::shared_ptr_from_ref(*blockMat.get()));
+
+        if (!block_mat_blocked_operator)
+          FOUR_C_THROW("Failed to cast blockMat to BlockSparseMatrixBase");
+
+        auto mat11 = block_mat_blocked_operator->matrix(1, 1);
+        const Core::LinAlg::Map& dofmap = mat11.domain_map();
+
+        // set the nullspace
+        std::shared_ptr<Core::LinAlg::MultiVector<double>> nullspace =
+            std::make_shared<Core::LinAlg::MultiVector<double>>(dofmap, dim_nullspace, true);
+        for (int ldof = 0; ldof < dofmap.num_my_elements(); ++ldof)
         {
-          int dim_nullspace = contactsolver_->params()
-                                  .sublist("Inverse2")
-                                  .sublist("MueLu Parameters")
-                                  .get<int>("PDE equations", -1);
-
-          // get the degree of freedom map from the block matrix
-          auto block_mat_blocked_operator =
-              std::dynamic_pointer_cast<Core::LinAlg::BlockSparseMatrixBase>(
-                  Core::Utils::shared_ptr_from_ref(*blockMat.get()));
-
-          if (!block_mat_blocked_operator)
-            FOUR_C_THROW("Failed to cast blockMat to BlockSparseMatrixBase");
-
-          auto mat11 = block_mat_blocked_operator->matrix(1, 1);
-          const Core::LinAlg::Map& dofmap = mat11.domain_map();
-
-          // set the nullspace
-          std::shared_ptr<Core::LinAlg::MultiVector<double>> nullspace =
-              std::make_shared<Core::LinAlg::MultiVector<double>>(dofmap, dim_nullspace, true);
-          for (int ldof = 0; ldof < dofmap.num_my_elements(); ++ldof)
-          {
-            nullspace->ReplaceMyValue(ldof, ldof % dim_nullspace, 1.0);
-          }
-
-          // add the nullspace to the parameter list
-          contactsolver_->params()
-              .sublist("Inverse2")
-              .sublist("MueLu Parameters")
-              .set("nullspace", nullspace);
+          nullspace->ReplaceMyValue(ldof, ldof % dim_nullspace, 1.0);
         }
+
+        // add the nullspace to the parameter list
+        contactsolver_->params()
+            .sublist("Inverse2")
+            .sublist("MueLu Parameters")
+            .set("nullspace", nullspace);
+      }
 
       // solve the linear system
       contactsolver_->solve(sparse_operator, blocksol, blockrhs, solver_params);

@@ -361,33 +361,13 @@ Teuchos::ParameterList translate_four_c_to_belos(const Teuchos::ParameterList& i
   const auto azprectype =
       Teuchos::getIntegralValue<Core::LinearSolver::PreconditionerType>(inparams, "AZPREC");
 
-  switch (azprectype)
-  {
-    case Core::LinearSolver::PreconditionerType::ilu:
-      beloslist.set("Preconditioner Type", "ILU");
-      break;
-    case Core::LinearSolver::PreconditionerType::multigrid_muelu:
-      beloslist.set("Preconditioner Type", "ML");
-      break;
-    case Core::LinearSolver::PreconditionerType::multigrid_nxn:
-      beloslist.set("Preconditioner Type", "AMGnxn");
-      break;
-    case Core::LinearSolver::PreconditionerType::block_teko:
-      beloslist.set("Preconditioner Type", "Teko");
-      break;
-    default:
-      FOUR_C_THROW("Unknown preconditioner for Belos");
-      break;
-  }
-
   // set parameters for Ifpack if used
   if (azprectype == Core::LinearSolver::PreconditionerType::ilu)
   {
     Teuchos::ParameterList& ifpacklist = outparams.sublist("IFPACK Parameters");
     ifpacklist = translate_four_c_to_ifpack(inparams);
   }
-
-  // set parameters for ML if used
+  // set parameters for multigrid if used
   if (azprectype == Core::LinearSolver::PreconditionerType::multigrid_muelu)
   {
     Teuchos::ParameterList& muelulist = outparams.sublist("MueLu Parameters");

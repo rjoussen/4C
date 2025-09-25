@@ -492,22 +492,16 @@ void Adapter::FluidFSI::proj_vel_to_div_zero()
       Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
           Global::Problem::instance()->io_params(), "VERBOSITY"));
 
-  if (solver->params().isSublist("ML Parameters"))
+  if (solver->params().isSublist("MueLu Parameters"))
   {
     std::shared_ptr<Core::LinAlg::MultiVector<double>> pressure_nullspace =
         std::make_shared<Core::LinAlg::MultiVector<double>>(*(dis_->dof_row_map()), 1);
     pressure_nullspace->PutScalar(1.0);
 
-    solver->params().sublist("ML Parameters").set("PDE equations", 1);
-    solver->params().sublist("ML Parameters").set("null space: dimension", 1);
+    solver->params().sublist("MueLu Parameters").set("PDE equations", 1);
     solver->params()
-        .sublist("ML Parameters")
-        .set("null space: vectors", pressure_nullspace->Values());
-    solver->params().sublist("ML Parameters").remove("nullspace", false);  // necessary?
-    solver->params()
-        .sublist("Michael's secret vault")
-        .set<std::shared_ptr<Core::LinAlg::MultiVector<double>>>(
-            "pressure nullspace", pressure_nullspace);
+        .sublist("MueLu Parameters")
+        .set<std::shared_ptr<Core::LinAlg::MultiVector<double>>>("nullspace", pressure_nullspace);
   }
 
   Core::LinAlg::SolverParams solver_params;

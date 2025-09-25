@@ -2109,70 +2109,6 @@ void FSI::MonolithicXFEM::create_linear_solver()
   // prepare linear solvers and preconditioners
   switch (azprectype)
   {
-    case Core::LinearSolver::PreconditionerType::multigrid_muelu:
-    {
-      solver_ = std::make_shared<Core::LinAlg::Solver>(xfsisolverparams,
-          // ggfs. explicit Comm von STR wie lungscatra
-          get_comm(), Global::Problem::instance()->solver_params_callback(),
-          Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
-              Global::Problem::instance()->io_params(), "VERBOSITY"));
-
-      // use solver blocks for structure and fluid
-      const Teuchos::ParameterList& ssolverparams =
-          Global::Problem::instance()->solver_params(slinsolvernumber);
-      const Teuchos::ParameterList& fsolverparams =
-          Global::Problem::instance()->solver_params(flinsolvernumber);
-
-      // This is not very elegant:
-      // first read in solver parameters. These have to contain ML parameters such that...
-      solver_->put_solver_params_to_sub_params("Inverse1", ssolverparams,
-          Global::Problem::instance()->solver_params_callback(),
-          Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
-              Global::Problem::instance()->io_params(), "VERBOSITY"),
-          get_comm());
-      solver_->put_solver_params_to_sub_params("Inverse2", fsolverparams,
-          Global::Problem::instance()->solver_params_callback(),
-          Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
-              Global::Problem::instance()->io_params(), "VERBOSITY"),
-          get_comm());
-
-      // ... 4C calculates the null space vectors. These are then stored in the sublists
-      //     Inverse1 and Inverse2 from where they...
-      structure_poro()->discretization()->compute_null_space_if_necessary(
-          solver_->params().sublist("Inverse1"));
-      fluid_field()->discretization()->compute_null_space_if_necessary(
-          solver_->params().sublist("Inverse2"));
-
-      // ... are copied from here to ...
-      const Teuchos::ParameterList& inv1source =
-          solver_->params().sublist("Inverse1").sublist("ML Parameters");
-      const Teuchos::ParameterList& inv2source =
-          solver_->params().sublist("Inverse2").sublist("ML Parameters");
-
-      // ... here. The "MueLu Parameters" sublists "Inverse1" and "Inverse2" only contain the basic
-      //     information about the corresponding null space vectors, which are actually copied ...
-      Teuchos::ParameterList& inv1 =
-          solver_->params().sublist("MueLu Parameters").sublist("Inverse1");
-      Teuchos::ParameterList& inv2 =
-          solver_->params().sublist("MueLu Parameters").sublist("Inverse2");
-
-      // ... here.
-      inv1.set<int>("PDE equations", inv1source.get<int>("PDE equations"));
-      inv2.set<int>("PDE equations", inv2source.get<int>("PDE equations"));
-      inv1.set<int>("null space: dimension", inv1source.get<int>("null space: dimension"));
-      inv2.set<int>("null space: dimension", inv2source.get<int>("null space: dimension"));
-      inv1.set<double*>("null space: vectors", inv1source.get<double*>("null space: vectors"));
-      inv2.set<double*>("null space: vectors", inv2source.get<double*>("null space: vectors"));
-      inv1.set<std::shared_ptr<Core::LinAlg::MultiVector<double>>>("nullspace",
-          inv1source.get<std::shared_ptr<Core::LinAlg::MultiVector<double>>>("nullspace"));
-      inv2.set<std::shared_ptr<Core::LinAlg::MultiVector<double>>>("nullspace",
-          inv2source.get<std::shared_ptr<Core::LinAlg::MultiVector<double>>>("nullspace"));
-
-      // TODO: muelu for XFSI similar to TSI?
-      FOUR_C_THROW("MueLu for XFSI?");
-      solver_->params().sublist("MueLu Parameters").set("TSI", true);
-      break;
-    }
     case Core::LinearSolver::PreconditionerType::block_teko:
     {
       // This should be the default case (well-tested and used)
@@ -2247,7 +2183,7 @@ void FSI::MonolithicXFEM::create_linear_solver()
       break;
     }
     default:
-      FOUR_C_THROW("Block Gauss-Seidel BGS2x2 preconditioner expected");
+      FOUR_C_THROW("Block preconditioner expected.");
       break;
   }
 }  // create_linear_solver()

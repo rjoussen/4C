@@ -72,11 +72,8 @@ void Core::LinearSolver::Parameters::compute_solver_parameters(
     numdf = gdata[0];
     dimns = gdata[1];
 
-    // store nullspace information in solver list
+    // store dof information in solver list
     solverlist.set("PDE equations", numdf);
-    solverlist.set("null space: dimension", dimns);
-    solverlist.set("null space: type", "pre-computed");
-    solverlist.set("null space: add default vectors", false);
   }
 
   // set coordinate information
@@ -102,8 +99,6 @@ void Core::LinearSolver::Parameters::compute_solver_parameters(
     const auto nullspace = Core::FE::compute_null_space(dis, numdf, dimns, *nullspace_dof_map);
 
     solverlist.set<std::shared_ptr<Core::LinAlg::MultiVector<double>>>("nullspace", nullspace);
-    solverlist.set("null space: vectors", nullspace->Values());
-    solverlist.set<bool>("ML validate parameter list", false);
   }
 }
 
@@ -116,22 +111,19 @@ void Core::LinearSolver::Parameters::fix_null_space(std::string field,
   if (!Core::Communication::my_mpi_rank(oldmap.get_comm()))
     printf("Fixing %s Nullspace\n", field.c_str());
 
-  // find the ML or MueLu list
+  // find the Teko or MueLu list
   Teuchos::ParameterList* params_ptr = nullptr;
-  if (solveparams.isSublist("ML Parameters"))
-    params_ptr = &(solveparams.sublist("ML Parameters"));
-  else if (solveparams.isSublist("MueLu Parameters"))
+  if (solveparams.isSublist("MueLu Parameters"))
     params_ptr = &(solveparams.sublist("MueLu Parameters"));
   else
     params_ptr = &(solveparams);
   Teuchos::ParameterList& params = *params_ptr;
 
-  const int ndim = params.get("null space: dimension", -1);
-  if (ndim == -1) FOUR_C_THROW("List does not contain nullspace dimension");
-
   std::shared_ptr<Core::LinAlg::MultiVector<double>> nullspace =
       params.get<std::shared_ptr<Core::LinAlg::MultiVector<double>>>("nullspace", nullptr);
   if (nullspace == nullptr) FOUR_C_THROW("List does not contain nullspace");
+
+  const int ndim = nullspace->NumVectors();
 
   const int nullspaceLength = nullspace->MyLength();
   const int newmapLength = newmap.num_my_elements();
@@ -162,7 +154,6 @@ void Core::LinearSolver::Parameters::fix_null_space(std::string field,
   }
 
   params.set<std::shared_ptr<Core::LinAlg::MultiVector<double>>>("nullspace", nullspaceNew);
-  params.set("null space: vectors", nullspaceNew->Values());
 }
 
 //----------------------------------------------------------------------------------
@@ -172,13 +163,6 @@ Core::LinearSolver::Parameters::extract_nullspace_from_parameterlist(
     const Xpetra::Map<LocalOrdinal, GlobalOrdinal, Node>& row_map,
     const Teuchos::ParameterList& list)
 {
-  if (!list.isParameter("null space: dimension"))
-    FOUR_C_THROW("Multigrid parameter 'null space: dimension' missing  in solver parameter list.");
-
-  const int nullspace_dimension = list.get<int>("null space: dimension");
-  if (nullspace_dimension < 1)
-    FOUR_C_THROW("Multigrid parameter 'null space: dimension' wrong. It has to be > 0.");
-
   auto nullspace_data = list.get<std::shared_ptr<Core::LinAlg::MultiVector<double>>>("nullspace");
   if (!nullspace_data) FOUR_C_THROW("Nullspace data is null.");
 
