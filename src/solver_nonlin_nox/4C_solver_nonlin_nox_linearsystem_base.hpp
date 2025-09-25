@@ -130,7 +130,15 @@ namespace NOX
       /**
        * \brief Set Jacobian operator for solve.
        *
-       * This method does nothing and is a temporary mock.
+       * This method is in fact does nothing, because the only (strange) use of this method in
+       * Trilinos, which is relevant for 4C, is the following call inside NOX::Epetra::Group
+       *
+       * sharedLinearSystem.getObject(this)->setJacobianOperatorForSolve(
+       *   sharedLinearSystem.getObject(this)->getJacobianOperator());
+       *
+       * We could have implemented this method to covert the Teuchos::RCP to a std::shared_ptr, but
+       * that would loose the ownership information, and for the use pattern shown above it can be
+       * quite dangerous as the wrapped object might get deleted.
        */
       void setJacobianOperatorForSolve(const Teuchos::RCP<const Epetra_Operator>& solveJacOp) final;
     };

@@ -52,7 +52,7 @@ namespace NOX
         //! generate a clone of the given object concerning the given \c CopyType
         Teuchos::RCP<::NOX::Abstract::Group> clone(::NOX::CopyType type) const override;
 
-        ::NOX::Abstract::Group& operator=(const ::NOX::Abstract::Group& source) override;
+        ::NOX::Abstract::Group& operator=(const ::NOX::Epetra::Group& source) override;
 
         //! Returns the interface map
         const ReqInterfaceMap& get_constraint_interfaces() const;
