@@ -917,7 +917,7 @@ void Global::read_micro_fields(Global::Problem& problem, const std::filesystem::
         Core::Rebalance::rebalance_node_maps(*nodeGraph, rebalanceParams, nodeWeights, edgeWeights);
 
     // rebuild the discretization with new maps
-    macro_dis->redistribute(*rownodes, *colnodes);
+    macro_dis->redistribute({*rownodes, *colnodes});
   }
 
   // make sure that we read the micro discretizations only on the processors on

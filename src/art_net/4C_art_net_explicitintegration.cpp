@@ -89,8 +89,8 @@ void Arteries::ArtNetExplicitTimeInt::init(const Teuchos::ParameterList& globalt
   // reduce the node row map into processor 0
   const Core::LinAlg::Map noderowmap_1_proc =
       *Core::LinAlg::allreduce_e_map(*discret_->node_row_map(), 0);
-  // update the discetization by redistributing the new row map
-  discret_->redistribute(noderowmap_1_proc, noderowmap_1_proc);
+  // update the discretization by redistributing the new row map
+  discret_->redistribute({noderowmap_1_proc, noderowmap_1_proc});
 
   // -------------------------------------------------------------------
   // get a vector layout from the discretization to construct matching

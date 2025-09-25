@@ -46,10 +46,16 @@ do_rebalance_discretization(const Core::LinAlg::Graph& graph,
       colmap = std::make_shared<Core::LinAlg::Map>(
           -1, graph.col_map().num_my_elements(), graph.col_map().my_global_elements(), 0, comm);
 
-      discretization.redistribute(*rowmap, *colmap,
-          {.assign_degrees_of_freedom = false,
+      discretization.redistribute(
+          {
+              *rowmap,
+              *colmap,
+          },
+          {
+              .assign_degrees_of_freedom = false,
               .init_elements = false,
-              .do_boundary_conditions = false});
+              .do_boundary_conditions = false,
+          });
 
       std::shared_ptr<Core::LinAlg::MultiVector<double>> coordinates =
           discretization.build_node_coordinates();
@@ -70,7 +76,12 @@ do_rebalance_discretization(const Core::LinAlg::Graph& graph,
       colmap = std::make_shared<Core::LinAlg::Map>(
           -1, graph.col_map().num_my_elements(), graph.col_map().my_global_elements(), 0, comm);
 
-      discretization.redistribute(*rowmap, *colmap, {.do_boundary_conditions = false});
+      discretization.redistribute(
+          {
+              *rowmap,
+              *colmap,
+          },
+          {.do_boundary_conditions = false});
 
       std::shared_ptr<const Core::LinAlg::Graph> enriched_graph =
           Core::Rebalance::build_monolithic_node_graph(discretization,
@@ -137,7 +148,7 @@ void Core::Rebalance::rebalance_discretization(Core::FE::Discretization& discret
   options_redistribution.init_elements = false;
   options_redistribution.do_boundary_conditions = false;
 
-  discretization.redistribute(*rowmap, *colmap, options_redistribution);
+  discretization.redistribute({*rowmap, *colmap}, options_redistribution);
 
   print_parallel_distribution(discretization);
 }

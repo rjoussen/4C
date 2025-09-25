@@ -237,11 +237,17 @@ void redistribute(const std::vector<int>& rank_to_hold_condition,
       new_col_node_block_map.my_global_elements(), 0, discret.get_comm());
 
   // rearrange node/element distribution according to target layout (accept extended ghosting)
-  discret.redistribute(new_row_node_map, new_col_node_map,
-      {.assign_degrees_of_freedom = true,
+  discret.redistribute(
+      {
+          .row_map = new_row_node_map,
+          .col_map = new_col_node_map,
+      },
+      {
+          .assign_degrees_of_freedom = true,
           .init_elements = true,
           .do_boundary_conditions = true,
-          .do_extended_ghosting = true});
+          .do_extended_ghosting = true,
+      });
 
   if (myrank == 0)
     std::cout << "\nparallel redistributed discretization due to point coupling condition(s)"

@@ -23,8 +23,7 @@ void Core::FE::Discretization::export_row_nodes(
 
   // destroy all ghosted nodes
   const int myrank = Core::Communication::my_mpi_rank(get_comm());
-  std::map<int, std::shared_ptr<Core::Nodes::Node>>::iterator curr;
-  for (curr = node_.begin(); curr != node_.end();)
+  for (auto curr = node_.begin(); curr != node_.end();)
   {
     if (curr->second->owner() != myrank)
       node_.erase(curr++);
@@ -43,7 +42,7 @@ void Core::FE::Discretization::export_row_nodes(
   exporter.do_export(node_);
 
   // update all ownership flags
-  for (curr = node_.begin(); curr != node_.end(); ++curr) curr->second->set_owner(myrank);
+  for (auto& val : node_ | std::views::values) val->set_owner(myrank);
 
   // maps and pointers are no longer correct and need rebuilding
   reset(killdofs, killcond);
@@ -56,8 +55,7 @@ void Core::FE::Discretization::export_column_nodes(
 {
   // destroy all ghosted nodes
   const int myrank = Core::Communication::my_mpi_rank(get_comm());
-  std::map<int, std::shared_ptr<Core::Nodes::Node>>::iterator curr;
-  for (curr = node_.begin(); curr != node_.end();)
+  for (auto curr = node_.begin(); curr != node_.end();)
   {
     if (curr->second->owner() != myrank)
       node_.erase(curr++);
@@ -193,8 +191,7 @@ void Core::FE::Discretization::export_row_elements(
 
   // destroy all ghosted elements
   const int myrank = Core::Communication::my_mpi_rank(get_comm());
-  std::map<int, std::shared_ptr<Core::Elements::Element>>::iterator curr;
-  for (curr = element_.begin(); curr != element_.end();)
+  for (auto curr = element_.begin(); curr != element_.end();)
   {
     if (curr->second->owner() != myrank)
       element_.erase(curr++);
@@ -228,8 +225,7 @@ void Core::FE::Discretization::export_column_elements(
 {
   // destroy all ghosted elements
   const int myrank = Core::Communication::my_mpi_rank(get_comm());
-  std::map<int, std::shared_ptr<Core::Elements::Element>>::iterator curr;
-  for (curr = element_.begin(); curr != element_.end();)
+  for (auto curr = element_.begin(); curr != element_.end();)
   {
     if (curr->second->owner() != myrank)
       element_.erase(curr++);
@@ -519,44 +515,30 @@ Core::FE::Discretization::build_element_row_column(const Core::LinAlg::Map& node
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::FE::Discretization::redistribute(const Core::LinAlg::Map& noderowmap,
-    const Core::LinAlg::Map& nodecolmap, OptionsRedistribution options_redistribution)
+void Core::FE::Discretization::redistribute(
+    const RowColMaps& node_maps, OptionsRedistribution options)
 {
   // build the overlapping and non-overlapping element maps
   const auto& [elerowmap, elecolmap] =
-      build_element_row_column(noderowmap, nodecolmap, options_redistribution.do_extended_ghosting);
+      build_element_row_column(node_maps.row_map, node_maps.col_map, options.do_extended_ghosting);
 
-  // export nodes and elements to the new maps
-  export_row_nodes(noderowmap, options_redistribution.kill_dofs, options_redistribution.kill_cond);
-  export_column_nodes(
-      nodecolmap, options_redistribution.kill_dofs, options_redistribution.kill_cond);
-  export_row_elements(
-      *elerowmap, options_redistribution.kill_dofs, options_redistribution.kill_cond);
-  export_column_elements(
-      *elecolmap, options_redistribution.kill_dofs, options_redistribution.kill_cond);
-
-  // these exports have set Filled()=false as all maps are invalid now
-  int err = fill_complete(options_redistribution.assign_degrees_of_freedom,
-      options_redistribution.init_elements, options_redistribution.do_boundary_conditions);
-
-  if (err) FOUR_C_THROW("fill_complete() returned err={}", err);
+  redistribute(node_maps, {.row_map = *elerowmap, .col_map = *elecolmap}, options);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::FE::Discretization::redistribute(const Core::LinAlg::Map& noderowmap,
-    const Core::LinAlg::Map& nodecolmap, const Core::LinAlg::Map& elerowmap,
-    const Core::LinAlg::Map& elecolmap, bool assigndegreesoffreedom, bool initelements,
-    bool doboundaryconditions, bool killdofs, bool killcond)
+void Core::FE::Discretization::redistribute(
+    const RowColMaps& node_maps, const RowColMaps& element_maps, OptionsRedistribution options)
 {
   // export nodes and elements to the new maps
-  export_row_nodes(noderowmap, killdofs, killcond);
-  export_column_nodes(nodecolmap, killdofs, killcond);
-  export_row_elements(elerowmap, killdofs, killcond);
-  export_column_elements(elecolmap, killdofs, killcond);
+  export_row_nodes(node_maps.row_map, options.kill_dofs, options.kill_cond);
+  export_column_nodes(node_maps.col_map, options.kill_dofs, options.kill_cond);
+  export_row_elements(element_maps.row_map, options.kill_dofs, options.kill_cond);
+  export_column_elements(element_maps.col_map, options.kill_dofs, options.kill_cond);
 
   // these exports have set Filled()=false as all maps are invalid now
-  int err = fill_complete(assigndegreesoffreedom, initelements, doboundaryconditions);
+  int err = fill_complete(
+      options.assign_degrees_of_freedom, options.init_elements, options.do_boundary_conditions);
 
   if (err) FOUR_C_THROW("fill_complete() returned err={}", err);
 }
@@ -785,7 +767,11 @@ void Core::FE::Discretization::setup_ghosting(
   graph = nullptr;
 
   // Redistribute discretization to match the new maps.
-  redistribute(noderowmap, nodecolmap,
+  redistribute(
+      {
+          .row_map = noderowmap,
+          .col_map = nodecolmap,
+      },
       {.assign_degrees_of_freedom = assigndegreesoffreedom,
           .init_elements = initelements,
           .do_boundary_conditions = doboundaryconditions});

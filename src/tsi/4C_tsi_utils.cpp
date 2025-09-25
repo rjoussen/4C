@@ -124,7 +124,7 @@ void TSI::Utils::setup_tsi(MPI_Comm comm)
     structdis->fill_complete();
     Core::LinAlg::Map nc = *(structdis->node_col_map());
     Core::LinAlg::Map nr = *(structdis->node_row_map());
-    structdis->redistribute(nr, nc);
+    structdis->redistribute({nr, nc});
   }
 
   // access the thermo discretization

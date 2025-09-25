@@ -1790,7 +1790,7 @@ void Solid::TimInt::set_restart_state(std::shared_ptr<Core::LinAlg::Vector<doubl
   // so everything should be OK
   discret_->unpack_my_nodes(*nodedata);
   discret_->unpack_my_elements(*elementdata);
-  discret_->redistribute(noderowmap, nodecolmap);
+  discret_->redistribute({noderowmap, nodecolmap});
 }
 /*----------------------------------------------------------------------*/
 /* Read and set restart values for constraints */

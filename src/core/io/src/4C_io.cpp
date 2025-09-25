@@ -238,8 +238,7 @@ void Core::IO::DiscretizationReader::read_history_data(int step)
   // so everything should be OK
   dis_->unpack_my_nodes(*nodedata);
   dis_->unpack_my_elements(*elementdata);
-  dis_->redistribute(noderowmap, nodecolmap, elerowmap, elecolmap);
-  return;
+  dis_->redistribute({noderowmap, nodecolmap}, {elerowmap, elecolmap});
 }
 
 /*----------------------------------------------------------------------*/

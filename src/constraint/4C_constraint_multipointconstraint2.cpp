@@ -37,7 +37,7 @@ Constraints::MPConstraint2::MPConstraint2(std::shared_ptr<Core::FE::Discretizati
         actdisc_, constrcond_, "ConstrDisc", "CONSTRELE2", dummy);
     std::shared_ptr<Core::LinAlg::Map> newcolnodemap =
         Core::Rebalance::compute_node_col_map(*actdisc_, *constraintdis_.find(0)->second);
-    actdisc_->redistribute(*(actdisc_->node_row_map()), *newcolnodemap);
+    actdisc_->redistribute({*actdisc_->node_row_map(), *newcolnodemap});
     std::shared_ptr<Core::DOFSets::DofSet> newdofset =
         std::make_shared<Core::DOFSets::TransparentDofSet>(actdisc_);
     (constraintdis_.find(0)->second)->replace_dof_set(newdofset);
@@ -223,7 +223,7 @@ Constraints::MPConstraint2::create_discretization_from_condition(
 
   constraintnodecolvec.clear();
 
-  newdis->redistribute(constraintnoderowmap, constraintnodecolmap);
+  newdis->redistribute({constraintnoderowmap, constraintnodecolmap});
 
   std::map<int, std::shared_ptr<Core::FE::Discretization>> newdismap;
   newdismap[startID] = newdis;

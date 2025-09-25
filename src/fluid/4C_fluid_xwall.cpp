@@ -650,7 +650,7 @@ void FLD::XWall::setup_x_wall_dis()
 
     // rebuild of the system with new maps
     xwdiscret_->redistribute(
-        *rownodes, *colnodes, {.assign_degrees_of_freedom = false, .init_elements = false});
+        {*rownodes, *colnodes}, {.assign_degrees_of_freedom = false, .init_elements = false});
 
     Core::Conditions::PeriodicBoundaryConditions pbc(xwdiscret_, false);
     pbc.update_dofs_for_periodic_boundary_conditions();

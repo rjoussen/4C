@@ -342,6 +342,15 @@ namespace Core::FE
     bool do_extended_ghosting = false;
   };
 
+  /**
+   * This struct is used to bundle row and column maps as arguments.
+   */
+  struct RowColMaps
+  {
+    const Core::LinAlg::Map& row_map;
+    const Core::LinAlg::Map& col_map;
+  };
+
   /*!
   \brief A class to manage a discretization in parallel
 
@@ -1535,48 +1544,28 @@ namespace Core::FE
 
     //! @name Parallel (re)distribution
 
-    /*!
-    \brief Redistribute the discretization according to provided maps
-           (Filled()==NOT true prerequisite)
+    /**
+     * @brief Redistribute the discretization according to provided maps
+     *
+     * This function takes the desired node and element row and column maps and redistributes
+     * the discretization accordingly. For additional options see OptionsRedistribution.
+     *
+     * @post filled()==true
+     */
+    void redistribute(const RowColMaps& node_maps, const RowColMaps& element_maps,
+        OptionsRedistribution options = {});
 
-    Steps taken in this method are:<br>
-    - build element maps (row and column)
-    - do export of row/col nodes and row/col elements
-    - call Fillcomplete(assigndegreesoffreedom,initelements,doboundaryconditions)
+    /**
+     * @brief Redistribute the discretization according to provided maps
+     *
+     * Compared to the other overload, this function only takes node maps and computes the
+     * element maps internally using build_element_row_column(). For additional options see
+     * OptionsRedistribution.
+     *
+     * @post filled()==true
+     */
+    void redistribute(const RowColMaps& node_maps, OptionsRedistribution options = {});
 
-    \param noderowmap (in): new node map the discretization shall have on exit
-    \param nodecolmap (in): new column map the discretization shall have on exit
-    \param options_redistribution (in): options for redistribution
-
-    \note Filled()==true is a prerequisite, Filled()==true on exit
-    */
-    void redistribute(const Core::LinAlg::Map& noderowmap, const Core::LinAlg::Map& nodecolmap,
-        OptionsRedistribution options_redistribution = {});
-
-    /*!
-    \brief Redistribute the discretization according to provided maps
-           (Filled()==NOT true prerequisite)
-
-    \param noderowmap (in): new node map the discretization shall have on exit
-    \param nodecolmap (in): new column map the discretization shall have on exit
-    \param elerowmap  (in): new element row map the discretization shall have on exit
-    \param elecolmap  (in): new element column map the discretization shall have on exit
-
-    \param assigndegreesoffreedom (in) : if true, resets existing dofsets and performs
-                                         assigning of degrees of freedoms to nodes and
-                                         elements.
-    \param initelements           (in) : if true, build element register classes and
-                                         call initialize() on each type of finite element
-                                         present
-    \param doboundaryconditions   (in) : if true, build geometry of boundary conditions
-                                         present.
-
-    \note Filled()==true is a prerequisite, Filled()==true on exit
-    */
-    void redistribute(const Core::LinAlg::Map& noderowmap, const Core::LinAlg::Map& nodecolmap,
-        const Core::LinAlg::Map& elerowmap, const Core::LinAlg::Map& elecolmap,
-        bool assigndegreesoffreedom = true, bool initelements = true,
-        bool doboundaryconditions = true, bool killdofs = true, bool killcond = true);
 
     /*!
       \brief Ghost elements on processors according to provided element column map

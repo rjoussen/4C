@@ -583,10 +583,10 @@ void XFEM::MeshVolCoupling::create_auxiliary_discretization()
     newnodecolmap = std::make_shared<Core::LinAlg::Map>(
         -1, colnodes.size(), colnodes.data(), 0, aux_coup_dis_->get_comm());
 
-    aux_coup_dis_->redistribute(*newnoderowmap, *newnodecolmap,
-        {.assign_degrees_of_freedom = false,
-            .init_elements = false,
-            .do_boundary_conditions = false});
+    aux_coup_dis_->redistribute(
+        {*newnoderowmap, *newnodecolmap}, {.assign_degrees_of_freedom = false,
+                                              .init_elements = false,
+                                              .do_boundary_conditions = false});
 
     // make auxiliary discretization have the same dofs as the coupling discretization
     std::shared_ptr<Core::DOFSets::DofSet> newdofset =
