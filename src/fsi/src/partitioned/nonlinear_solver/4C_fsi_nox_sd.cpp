@@ -11,11 +11,11 @@
 #include "4C_global_data.hpp"
 #include "4C_io_control.hpp"
 #include "4C_linalg_vector.hpp"
-#include "4C_solver_nonlin_nox_group.hpp"
 
 #include <NOX_Abstract_Group.H>
 #include <NOX_Abstract_Vector.H>
 #include <NOX_Common.H>
+#include <NOX_Epetra_Group.H>
 #include <NOX_Epetra_Interface_Required.H>
 #include <NOX_Epetra_Vector.H>
 #include <NOX_GlobalData.H>
@@ -54,7 +54,7 @@ bool NOX::FSI::SDRelaxation::compute(::NOX::Abstract::Group& newgrp, double& ste
   }
 
   const ::NOX::Abstract::Group& oldgrp = s.getPreviousSolutionGroup();
-  auto& grp = dynamic_cast<NOX::Nln::GroupBase&>(newgrp);
+  ::NOX::Epetra::Group& egrp = dynamic_cast<::NOX::Epetra::Group&>(newgrp);
 
   // Perform single-step linesearch
 
@@ -63,7 +63,7 @@ bool NOX::FSI::SDRelaxation::compute(::NOX::Abstract::Group& newgrp, double& ste
 
   double numerator = oldgrp.getF().innerProduct(dir);
   double denominator =
-      compute_directional_derivative(dir, *grp.get_required_interface()).innerProduct(dir);
+      compute_directional_derivative(dir, *egrp.getRequiredInterface()).innerProduct(dir);
 
   step = -numerator / denominator;
   utils_->out() << "          RELAX = " << std::setw(5) << step << "\n";

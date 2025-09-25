@@ -47,7 +47,7 @@ Teuchos::RCP<::NOX::Abstract::Group> NOX::Nln::CONSTRAINT::Group::clone(::NOX::C
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-::NOX::Abstract::Group& NOX::Nln::CONSTRAINT::Group::operator=(const ::NOX::Abstract::Group& source)
+::NOX::Abstract::Group& NOX::Nln::CONSTRAINT::Group::operator=(const ::NOX::Epetra::Group& source)
 {
   NOX::Nln::Group::operator=(source);
 

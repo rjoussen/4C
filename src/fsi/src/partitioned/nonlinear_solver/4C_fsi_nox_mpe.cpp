@@ -14,6 +14,7 @@
 #include "4C_linalg_vector.hpp"
 
 #include <NOX_Abstract_Group.H>
+#include <NOX_Epetra_Group.H>
 #include <NOX_Epetra_Vector.H>
 #include <NOX_GlobalData.H>
 #include <Teuchos_ParameterList.hpp>

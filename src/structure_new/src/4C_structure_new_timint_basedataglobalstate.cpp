@@ -1179,10 +1179,7 @@ void NOX::Nln::GROUP::PrePostOp::TimeInt::RotVecUpdater::run_pre_compute_x(
 
   // now replace the rotvec entries by the correct value computed before
   Core::LinAlg::assemble_my_vector(0.0, *xnew, 1.0, x_rotvec);
-
-  ::NOX::Epetra::Vector wrapper(Teuchos::make_rcp<Epetra_Vector>(xnew->get_ref_of_epetra_vector()),
-      ::NOX::Epetra::Vector::CreateView);
-  curr_grp_mutable.setX(wrapper);
+  curr_grp_mutable.setX(Teuchos::rcpFromRef(xnew->get_ref_of_epetra_vector()));
 
   /* tell the NOX::Nln::Group that the x vector has already been updated in
    * this preComputeX operator call */

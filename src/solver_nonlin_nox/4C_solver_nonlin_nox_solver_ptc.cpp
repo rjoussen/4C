@@ -139,9 +139,11 @@ void NOX::Nln::Solver::PseudoTransient::create_scaling_operator()
     case NOX::Nln::Solver::PseudoTransient::scale_op_identity:
     {
       // identity matrix
-      const auto& epetraXPtr = dynamic_cast<const ::NOX::Epetra::Vector&>(solnPtr->getX());
+      Teuchos::RCP<const ::NOX::Epetra::Vector> epetraXPtr =
+          Teuchos::rcp_dynamic_cast<const ::NOX::Epetra::Vector>(solnPtr->getXPtr());
+      if (epetraXPtr.is_null()) FOUR_C_THROW("Cast to ::NOX::Epetra::Vector failed!");
       scalingDiagOpPtr_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(
-          epetraXPtr.getEpetraVector().Map(), false);
+          epetraXPtr->getEpetraVector().Map(), false);
 
       scalingDiagOpPtr_->put_scalar(1.0);
 
@@ -258,8 +260,8 @@ void NOX::Nln::Solver::PseudoTransient::create_group_pre_post_operator()
     ::NOX::Abstract::Group::ReturnType rtype = solnPtr->computeF();
     if (rtype != ::NOX::Abstract::Group::Ok)
     {
-      utilsPtr->out() << "::NOX::Solver::PseudoTransient::init - " << "Unable to compute F"
-                      << std::endl;
+      utilsPtr->out() << "::NOX::Solver::PseudoTransient::init - "
+                      << "Unable to compute F" << std::endl;
       throw "NOX Error";
     }
 
@@ -271,8 +273,8 @@ void NOX::Nln::Solver::PseudoTransient::create_group_pre_post_operator()
                       << "The solution passed into the solver (either "
                       << "through constructor or reset method) "
                       << "is already converged! The solver will not "
-                      << "attempt to solve this system since status is " << "flagged as converged."
-                      << std::endl;
+                      << "attempt to solve this system since status is "
+                      << "flagged as converged." << std::endl;
     }
     printUpdate();
   }
@@ -315,6 +317,11 @@ void NOX::Nln::Solver::PseudoTransient::create_group_pre_post_operator()
    * See the NOX::Nln::LinSystem::PrePostOP::PseudoTransient class for
    * more information. */
   bool ok = directionPtr->compute(*dirPtr, soln, *this);
+
+  // Show the linear solver residual || Ax-b ||_2
+  //  double lin_residual = 0.0;
+  //  soln.getNormLastLinearSolveResidual(lin_residual);
+  //  utilsPtr->out() << "Linear Solver Residual (L2-norm): " << lin_residual << std::endl;
 
   if (not ok)
   {
