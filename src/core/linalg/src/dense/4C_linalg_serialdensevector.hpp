@@ -13,7 +13,7 @@
 
 #include <Teuchos_SerialDenseVector.hpp>
 
-#include <c++/13/span>
+#include <span>
 
 FOUR_C_NAMESPACE_OPEN
 
