@@ -56,7 +56,6 @@ namespace Core::LinearSolver
      * \brief Extract nullspace from parameter list and convert to Xpetra::MultiVector
      *
      * \pre The input parameter list needs to contain these entries:
-     *   - "null space: dimension" (type: \c int )
      *   - "nullspace" (type: \c std::shared_ptr<Core::LinAlg::MultiVector<double>> )
      *
      * @param[in] row_map Xpetra-style map to be used to create the nullspace vector

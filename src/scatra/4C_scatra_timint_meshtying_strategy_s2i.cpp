@@ -3689,9 +3689,6 @@ void ScaTra::MeshtyingStrategyS2I::equip_extended_solver_with_null_space_info() 
     // for scatra-scatra interface layer growth
     Teuchos::ParameterList& mllist = extendedsolver_->params().sublist("Inverse" + iblockstr.str());
     mllist.set("PDE equations", 1);
-    mllist.set("null space: dimension", 1);
-    mllist.set("null space: type", "pre-computed");
-    mllist.set("null space: add default vectors", false);
 
     const auto nullspace = std::make_shared<Core::LinAlg::MultiVector<double>>(
         *(scatratimint_->dof_row_map(2)), 1, true);
@@ -3705,8 +3702,6 @@ void ScaTra::MeshtyingStrategyS2I::equip_extended_solver_with_null_space_info() 
     mllist.set<std::shared_ptr<Core::LinAlg::MultiVector<double>>>("Coordinates", coordinates);
 
     mllist.set<std::shared_ptr<Core::LinAlg::MultiVector<double>>>("nullspace", nullspace);
-    mllist.set("null space: vectors", nullspace->Values());
-    mllist.set("ML validate parameter list", false);
   }
 }
 

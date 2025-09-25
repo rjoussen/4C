@@ -1228,76 +1228,18 @@ void STI::Monolithic::build_null_spaces() const
  *--------------------------------------------------------------------------------*/
 void STI::Monolithic::compute_null_space_if_necessary(Teuchos::ParameterList& solverparams) const
 {
-  // compute vector-based null space information for ML preconditioner
-  if (solverparams.isSublist("ML Parameters"))
-  {
-    // extract parameter list for ML preconditioner
-    Teuchos::ParameterList& mllist = solverparams.sublist("ML Parameters", true);
-
-    // determine null space dimension
-    const int numdofpernode_scatra = scatra_field()->num_dof_per_node();
-    const int numdofpernode_thermo = thermo_field()->num_dof_per_node();
-    const int dimns = numdofpernode_scatra + numdofpernode_thermo;
-
-    // allocate vector for null space information
-    std::vector<double> ns(dimns * dof_row_map()->num_my_elements(), 0.);
-
-    // compute null space modes associated with scatra field
-    const Core::FE::Discretization& scatradis = *scatra_field()->discretization();
-    std::vector<double*> modes_scatra(numdofpernode_scatra);
-    for (int i = 0; i < numdofpernode_scatra; ++i)
-      modes_scatra[i] = &((ns)[i * dof_row_map()->num_my_elements()]);
-    for (int i = 0; i < scatradis.num_my_row_nodes(); ++i)
-    {
-      const int lid = dof_row_map()->lid(scatradis.dof(0, scatradis.l_row_node(i), 0));
-      if (lid < 0) FOUR_C_THROW("Cannot find scatra degree of freedom!");
-      for (int j = 0; j < numdofpernode_scatra; ++j) modes_scatra[j][lid + j] = 1.;
-    }
-
-    // compute null space modes associated with thermo field
-    const Core::FE::Discretization& thermodis = *thermo_field()->discretization();
-    std::vector<double*> modes_thermo(numdofpernode_thermo);
-    for (int i = 0; i < numdofpernode_thermo; ++i)
-      modes_thermo[i] = &((ns)[(numdofpernode_scatra + i) * dof_row_map()->num_my_elements()]);
-    for (int i = 0; i < thermodis.num_my_row_nodes(); ++i)
-    {
-      const int lid = dof_row_map()->lid(thermodis.dof(0, thermodis.l_row_node(i), 0));
-      if (lid < 0) FOUR_C_THROW("Cannot find thermo degree of freedom!");
-      for (int j = 0; j < numdofpernode_thermo; ++j) modes_thermo[j][lid + j] = 1.;
-    }
-
-    // fill parameter list
-    mllist.set("PDE equations", dimns);
-    mllist.set("null space: dimension", dimns);
-    mllist.set("null space: type", "pre-computed");
-    mllist.set("null space: add default vectors", false);
-
-    std::shared_ptr<Core::LinAlg::MultiVector<double>> nullspace =
-        std::make_shared<Core::LinAlg::MultiVector<double>>(dof_row_map().operator*(), dimns, true);
-    Core::LinAlg::std_vector_to_multi_vector(ns, *nullspace, dimns);
-
-    mllist.set<std::shared_ptr<Core::LinAlg::MultiVector<double>>>("nullspace", nullspace);
-    mllist.set("null space: vectors", nullspace->Values());
-    mllist.set("ML validate parameter list", false);
-  }
-
   // compute point-based null space information for MueLu preconditioner
-  else if (solverparams.isSublist("MueLu Parameters"))
+  if (solverparams.isSublist("MueLu Parameters"))
   {
     // extract and fill parameter list for MueLu preconditioner
     Teuchos::ParameterList& mllist = solverparams.sublist("MueLu Parameters", true);
     mllist.set("PDE equations", 1);
-    mllist.set("null space: dimension", 1);
-    mllist.set("null space: type", "pre-computed");
-    mllist.set("null space: add default vectors", false);
 
     std::shared_ptr<Core::LinAlg::MultiVector<double>> nullspace =
         std::make_shared<Core::LinAlg::MultiVector<double>>(dof_row_map().operator*(), 1, true);
     nullspace->PutScalar(1.0);
 
     mllist.set<std::shared_ptr<Core::LinAlg::MultiVector<double>>>("nullspace", nullspace);
-    mllist.set("null space: vectors", nullspace->Values());
-    mllist.set("ML validate parameter list", false);
 
     std::shared_ptr<Core::LinAlg::MultiVector<double>> coordinates =
         scatra_field()->discretization()->build_node_coordinates();

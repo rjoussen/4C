@@ -129,7 +129,6 @@ Core::LinearSolver::AmGnxnInterface::AmGnxnInterface(Teuchos::ParameterList& par
   //  <ParameterList name="Inverse1">
   //    <ParameterList name="MueLu Parameters">
   //    <Parameter name="PDE equations"          type="int"     value="..."/>
-  //    <Parameter name="null space: dimension"  type="int"     value="..."/>
   //    <Parameter name="nullspace"              type="..."     value="..."/>
   //    </ParameterList>
   //  </ParameterList>
@@ -220,11 +219,11 @@ Core::LinearSolver::AmGnxnInterface::AmGnxnInterface(Teuchos::ParameterList& par
 
     xml_files_[block] = mllist.get<std::string>("xml file", "none");
     num_pdes_[block] = mllist.get<int>("PDE equations", -1);
-    null_spaces_dim_[block] = mllist.get<int>("null space: dimension", -1);
 
     std::shared_ptr<Core::LinAlg::MultiVector<double>> nullspace =
         mllist.get<std::shared_ptr<Core::LinAlg::MultiVector<double>>>("nullspace", nullptr);
     if (nullspace == nullptr) FOUR_C_THROW("Nullspace vector is null!");
+    null_spaces_dim_[block] = nullspace->NumVectors();
 
     std::shared_ptr<std::vector<double>> ns =
         std::make_shared<std::vector<double>>(nullspace->MyLength() * nullspace->NumVectors());

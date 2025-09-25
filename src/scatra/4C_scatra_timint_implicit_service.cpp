@@ -928,17 +928,12 @@ void ScaTra::ScaTraTimIntImpl::compute_null_space_if_necessary() const
       // extract and fill parameter list for MueLu preconditioner
       Teuchos::ParameterList& mllist = solverparams.sublist("MueLu Parameters", true);
       mllist.set("PDE equations", 1);
-      mllist.set("null space: dimension", 1);
-      mllist.set("null space: type", "pre-computed");
-      mllist.set("null space: add default vectors", false);
 
       std::shared_ptr<Core::LinAlg::MultiVector<double>> nullspace =
           std::make_shared<Core::LinAlg::MultiVector<double>>(*(discret_->dof_row_map()), 1, true);
       nullspace->PutScalar(1.0);
 
       mllist.set<std::shared_ptr<Core::LinAlg::MultiVector<double>>>("nullspace", nullspace);
-      mllist.set("null space: vectors", nullspace->Values());
-      mllist.set("ML validate parameter list", false);
 
       std::shared_ptr<Core::LinAlg::MultiVector<double>> coordinates =
           discret_->build_node_coordinates();
