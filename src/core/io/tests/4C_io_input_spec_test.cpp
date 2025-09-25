@@ -8,7 +8,7 @@
 #include <gtest/gtest.h>
 
 #include "4C_io_input_spec_builders.hpp"
-#include "4C_io_value_parser.hpp"
+#include "4C_io_input_spec_builders.templates.hpp"
 #include "4C_unittest_utils_assertions_test.hpp"
 
 
