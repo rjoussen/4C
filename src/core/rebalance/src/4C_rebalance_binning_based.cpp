@@ -230,19 +230,14 @@ void Core::Rebalance::match_element_distribution_of_matching_discretizations(
     ////////////////////////////////////////
     // REBALANCE
     ////////////////////////////////////////
-    // export the nodes
-    dis_to_rebalance.export_row_nodes(rebalanced_noderowmap, false, false);
-    dis_to_rebalance.export_column_nodes(rebalanced_nodecolmap, false, false);
-    // export the elements
-    dis_to_rebalance.export_row_elements(rebalanced_elerowmap, false, false);
-    dis_to_rebalance.export_column_elements(rebalanced_elecolmap, false, false);
 
-    ////////////////////////////////////////
-    // FINISH
-    ////////////////////////////////////////
-    int err = dis_to_rebalance.fill_complete(Core::FE::OptionsFillComplete::none());
-
-    if (err) FOUR_C_THROW("fill_complete() returned err={}", err);
+    dis_to_rebalance.redistribute({rebalanced_noderowmap, rebalanced_nodecolmap},
+        {rebalanced_elerowmap, rebalanced_elecolmap},
+        {
+            .fill_complete = Core::FE::OptionsFillComplete::none(),
+            .kill_dofs = false,
+            .kill_cond = false,
+        });
 
     // print to screen
     Core::Rebalance::print_parallel_distribution(dis_to_rebalance);
@@ -512,20 +507,13 @@ void Core::Rebalance::match_element_distribution_of_matching_conditioned_element
     ////////////////////////////////////////
     // REBALANCE
     ////////////////////////////////////////
-    // export the nodes
-    dis_to_rebalance.export_row_nodes(rebalanced_noderowmap, false, false);
-    dis_to_rebalance.export_column_nodes(rebalanced_nodecolmap, false, false);
-    // export the elements
-    dis_to_rebalance.export_row_elements(rebalanced_elerowmap, false, false);
-    dis_to_rebalance.export_column_elements(rebalanced_elecolmap, false, false);
-
-
-    ////////////////////////////////////////
-    // FINISH
-    ////////////////////////////////////////
-    int err = dis_to_rebalance.fill_complete(Core::FE::OptionsFillComplete::none());
-
-    if (err) FOUR_C_THROW("fill_complete() returned err={}", err);
+    dis_to_rebalance.redistribute({rebalanced_noderowmap, rebalanced_nodecolmap},
+        {rebalanced_elerowmap, rebalanced_elecolmap},
+        {
+            .fill_complete = Core::FE::OptionsFillComplete::none(),
+            .kill_dofs = false,
+            .kill_cond = false,
+        });
 
     // print to screen
     print_parallel_distribution(dis_to_rebalance);

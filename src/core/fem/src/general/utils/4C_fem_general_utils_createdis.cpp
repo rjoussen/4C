@@ -200,11 +200,8 @@ void Core::FE::DiscretizationCreatorBase::finalize(
     const Core::FE::Discretization& sourcedis, Core::FE::Discretization& targetdis) const
 {
   // export according to previously filled maps
-  targetdis.export_row_nodes(*targetnoderowmap_);
-  targetdis.export_column_nodes(*targetnodecolmap_);
-  targetdis.export_row_elements(*targetelerowmap_);
-  targetdis.export_column_elements(*targetelecolmap_);
-  targetdis.fill_complete(Core::FE::OptionsFillComplete::none());
+  targetdis.redistribute({*targetnoderowmap_, *targetnodecolmap_},
+      {*targetelerowmap_, *targetelecolmap_}, {.fill_complete = OptionsFillComplete::none()});
 
   // extra work for NURBS discretizations
 

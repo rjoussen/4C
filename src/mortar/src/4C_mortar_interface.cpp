@@ -1213,13 +1213,8 @@ void Mortar::Interface::redistribute()
     // (note that nothing is actually redistributed in here)
     auto const& [roweles, coleles] = discret().build_element_row_column(*rownodes, *colnodes);
 
-    // export nodes and elements to the row map
-    discret().export_row_nodes(*rownodes);
-    discret().export_row_elements(*roweles);
-
-    // export nodes and elements to the column map (create ghosting)
-    discret().export_column_nodes(*colnodes);
-    discret().export_column_elements(*coleles);
+    discret().redistribute(
+        {*rownodes, *colnodes}, {*roweles, *coleles}, {.fill_complete = std::nullopt});
   }
 }
 

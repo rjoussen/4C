@@ -432,13 +432,7 @@ void XFEM::Utils::XFEMDiscretizationBuilder::redistribute(
 
   auto const& [roweles, coleles] = dis.build_element_row_column(*noderowmap, *nodecolmap);
 
-  dis.export_row_nodes(*noderowmap);
-  dis.export_row_elements(*roweles);
-
-  dis.export_column_nodes(*nodecolmap);
-  dis.export_column_elements(*coleles);
-
-  dis.fill_complete();
+  dis.redistribute({*noderowmap, *nodecolmap}, {*roweles, *coleles});
 }
 
 /*----------------------------------------------------------------------------*

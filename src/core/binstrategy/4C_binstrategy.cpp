@@ -1444,10 +1444,10 @@ void Core::Binstrategy::BinningStrategy::standard_discretization_ghosting(
   std::shared_ptr<Core::LinAlg::Map> roweles;
   std::tie(roweles, stdelecolmap) =
       discret->build_element_row_column(*newnoderowmap, *stdnodecolmap);
-  discret->export_row_nodes(*newnoderowmap);
-  discret->export_row_elements(*roweles);
-  discret->export_column_nodes(*stdnodecolmap);
-  discret->export_column_elements(*stdelecolmap);
+
+  discret->redistribute(
+      {*newnoderowmap, *stdnodecolmap}, {*roweles, *stdelecolmap}, {.fill_complete = std::nullopt});
+
   // in case we have a state vector, we need to build the dof map to enable its rebuild
   if (disnp == nullptr)
   {
