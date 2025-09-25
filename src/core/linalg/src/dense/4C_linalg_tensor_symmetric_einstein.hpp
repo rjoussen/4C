@@ -13,8 +13,6 @@
 #include "4C_linalg_symmetric_tensor.hpp"
 #include "4C_linalg_tensor_einstein.hpp"
 
-#include <bits/utility.h>
-
 #include <algorithm>
 #include <cstddef>
 #include <type_traits>

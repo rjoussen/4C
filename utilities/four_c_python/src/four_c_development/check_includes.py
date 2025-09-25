@@ -68,10 +68,17 @@ def check_and_fix_includes(file: Path) -> Tuple[list, bool]:
                 new_line = f'#include "{match[1]}"{match[2]}\n'
                 replace_line_in_file(file, line_no, new_line)
                 fixed_include = True
+            continue
 
-        else:
-            if not "<" in line:
-                invalid_include_lines.append([line_no + 1, line])
+        # External includes must use angle brackets
+        if not "<" in line:
+            invalid_include_lines.append([line_no + 1, line])
+            continue
+
+        match = re.search(r"#include <(c\+\+|bits/).*>", line)
+        if match:
+            invalid_include_lines.append([line_no + 1, line])
+            continue
 
     return invalid_include_lines, fixed_include
 
@@ -101,6 +108,7 @@ def main():
             "    A valid include must:\n"
             "        - not contain relative navigation (. or ../) \n"
             "        - include external files with angle brackets\n"
+            "        - not be an internal standard library include\n"
         )
 
     if fixed_file_includes_data:
