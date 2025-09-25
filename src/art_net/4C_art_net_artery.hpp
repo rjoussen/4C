@@ -53,15 +53,18 @@ namespace Discret
       }
 
       Core::LinAlg::SerialDenseMatrix compute_null_space(
-          Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override
+          Core::Nodes::Node& node, std::span<const double> x0, const int numdof) override
       {
         switch (numdof)
         {
+          case 1:
+            // trivial artery
+            return FLD::compute_fluid_null_space<1>();
           case 3:
-            // 2D lubrication
+            // 2D artery
             return FLD::compute_fluid_null_space<3>();
           case 4:
-            // 3D lubrication
+            // 3D artery
             return FLD::compute_fluid_null_space<4>();
           default:
             FOUR_C_THROW(

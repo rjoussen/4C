@@ -49,7 +49,7 @@ namespace Thermo
     void nodal_block_information(Core::Elements::Element* dwele, int& numdf, int& dimns) override;
 
     Core::LinAlg::SerialDenseMatrix compute_null_space(
-        Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
+        Core::Nodes::Node& node, std::span<const double> x0, const int numdof) override;
 
     void setup_element_definition(
         std::map<std::string, std::map<Core::FE::CellType, Core::IO::InputSpec>>& definitions)
@@ -370,10 +370,11 @@ namespace Thermo
     void nodal_block_information(Core::Elements::Element* dwele, int& numdf, int& dimns) override {}
 
     Core::LinAlg::SerialDenseMatrix compute_null_space(
-        Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override
+        Core::Nodes::Node& node, std::span<const double> x0, const int numdof) override
     {
-      Core::LinAlg::SerialDenseMatrix nullspace;
-      FOUR_C_THROW("method ComputeNullSpace not implemented");
+      Core::LinAlg::SerialDenseMatrix nullspace(1, 1);
+      nullspace.put_scalar(1.0);
+
       return nullspace;
     }
 

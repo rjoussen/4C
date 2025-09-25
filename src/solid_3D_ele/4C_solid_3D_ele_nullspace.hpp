@@ -27,7 +27,7 @@ namespace Discret::Elements
   template <unsigned dim>
     requires(dim == 2 || dim == 3)
   Core::LinAlg::SerialDenseMatrix compute_solid_null_space(
-      std::span<const double> node_coordinates, const double* x0)
+      std::span<const double> node_coordinates, std::span<const double> x0)
   {
     if constexpr (dim == 2)
     {

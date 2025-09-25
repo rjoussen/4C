@@ -90,7 +90,7 @@ void Discret::Elements::Beam3rType::nodal_block_information(
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
 Core::LinAlg::SerialDenseMatrix Discret::Elements::Beam3rType::compute_null_space(
-    Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
+    Core::Nodes::Node& node, std::span<const double> x0, const int numdof)
 {
   // getting pointer at current element
   const auto* beam3r =
@@ -113,12 +113,6 @@ Core::LinAlg::SerialDenseMatrix Discret::Elements::Beam3rType::compute_null_spac
           "DOFs per node, however the current node carries {} DOFs.",
           numdof);
   }
-
-  if (dimnsp != 6)
-    FOUR_C_THROW(
-        "The computation of the Simo-Reissner beam nullspace in three dimensions requires six "
-        "nullspace vectors per node, however the current node carries {} vectors.",
-        dimnsp);
 
   constexpr std::size_t spacedim = 3;
 
@@ -163,7 +157,7 @@ Core::LinAlg::SerialDenseMatrix Discret::Elements::Beam3rType::compute_null_spac
   rotTangTwo.cross_product(e2, tangent);
   rotTangThree.cross_product(e3, tangent);
 
-  Core::LinAlg::SerialDenseMatrix nullspace(numdof, dimnsp);
+  Core::LinAlg::SerialDenseMatrix nullspace(numdof, 6);
   if (beam3r->is_centerline_node(node))
   {
     // x-modes

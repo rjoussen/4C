@@ -96,7 +96,7 @@ void Core::LinearSolver::Parameters::compute_solver_parameters(
       nullspace_dof_map = std::make_shared<Core::LinAlg::Map>(*dis.dof_row_map());
     }
 
-    const auto nullspace = Core::FE::compute_null_space(dis, numdf, dimns, *nullspace_dof_map);
+    const auto nullspace = Core::FE::compute_null_space(dis, dimns, *nullspace_dof_map);
 
     solverlist.set<std::shared_ptr<Core::LinAlg::MultiVector<double>>>("nullspace", nullspace);
   }

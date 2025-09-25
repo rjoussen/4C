@@ -51,7 +51,7 @@ namespace TESTING
     }
 
     Core::LinAlg::SerialDenseMatrix compute_null_space(
-        Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override
+        Core::Nodes::Node& node, std::span<const double> x0, const int numdof) override
     {
       FOUR_C_THROW("Not implemented.");
     }

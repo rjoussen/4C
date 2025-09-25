@@ -225,8 +225,7 @@ namespace
     int numdof, dimnsp;
     testele_->element_type().nodal_block_information(testele_.get(), numdof, dimnsp);
 
-    const auto B =
-        Core::FE::compute_null_space(*testdis_, numdof, dimnsp, *testdis_->dof_row_map());
+    const auto B = Core::FE::compute_null_space(*testdis_, dimnsp, *testdis_->dof_row_map());
     Core::LinAlg::MultiVector<double> zero(*testdis_->dof_row_map(), 6);
 
     A.multiply(false, *B, zero);

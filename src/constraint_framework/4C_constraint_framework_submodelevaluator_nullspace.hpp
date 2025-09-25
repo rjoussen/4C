@@ -74,9 +74,6 @@ namespace Constraints::SubmodelEvaluator
     //! Row map of the additional constraint degrees of freedom
     std::shared_ptr<Core::LinAlg::Map> constraint_map_;
 
-    //! Number of degrees of freedom per node in the discretization
-    int number_of_dofs_;
-
     //! Dimension of the nullspace used for constraint enforcement
     int nullspace_dimension_;
 

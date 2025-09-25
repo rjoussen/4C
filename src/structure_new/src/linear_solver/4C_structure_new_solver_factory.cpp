@@ -178,7 +178,7 @@ std::shared_ptr<Core::LinAlg::Solver> Solid::SOLVER::Factory::build_structure_li
           dwele->element_type().nodal_block_information(dwele, numdof, dimns);
         }
         std::shared_ptr<Core::LinAlg::MultiVector<double>> nullspace =
-            Core::FE::compute_null_space(actdis, numdof, dimns, nullspace_map);
+            Core::FE::compute_null_space(actdis, dimns, nullspace_map);
         if (nullspace == nullptr) FOUR_C_THROW("Nullspace could not be computed successfully.");
 
         // sort vector of nullspace data into kernel vector c_

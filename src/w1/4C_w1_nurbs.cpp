@@ -57,7 +57,7 @@ void Discret::Elements::Nurbs::Wall1NurbsType::nodal_block_information(
 }
 
 Core::LinAlg::SerialDenseMatrix Discret::Elements::Nurbs::Wall1NurbsType::compute_null_space(
-    Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
+    Core::Nodes::Node& node, std::span<const double> x0, const int numdof)
 {
   return compute_solid_null_space<2>(node.x(), x0);
 }

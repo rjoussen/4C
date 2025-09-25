@@ -143,7 +143,7 @@ void Discret::Elements::SolidType::nodal_block_information(
 }
 
 Core::LinAlg::SerialDenseMatrix Discret::Elements::SolidType::compute_null_space(
-    Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
+    Core::Nodes::Node& node, std::span<const double> x0, const int numdof)
 {
   switch (numdof)
   {
