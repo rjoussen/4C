@@ -190,7 +190,7 @@ std::array<double, 3> ScaTra::CylinderMagnetFunction::global_to_cylinder_coordin
   // translate coordinates to the magnet's coordinate system
   const double x_translated = x[0] - parameters_.magnet_position[0];
   const double y_translated = x[1] - parameters_.magnet_position[1];
-  const double z_translated = x[2] - parameters_.magnet_position[2];
+  const double z_translated = (x.size() > 2) ? x[2] - parameters_.magnet_position[2] : 0.0;
 
   // rotate coordinates to the magnet's coordinate system
   const double xi = x_translated * std::cos(beta) +
