@@ -1965,7 +1965,16 @@ void Coupling::VolMortar::ConsInterpolator::interpolate(Core::Nodes::Node* node,
   if (node->owner() != Core::Communication::my_mpi_rank(nodediscret.get_comm())) return;
 
   // map gp into A and B para space
-  double nodepos[3] = {node->x()[0], node->x()[1], node->x()[2]};
+  double nodepos[3];
+
+  const auto node_x = node->x();
+  nodepos[0] = node_x[0];
+  nodepos[1] = node_x[1];
+  if (node_x.size() > 2)
+    nodepos[2] = node_x[2];
+  else
+    nodepos[2] = 0.0;
+
   double dist = 1.0e12;
   int eleid = 0;
   double AuxXi[3] = {0.0, 0.0, 0.0};

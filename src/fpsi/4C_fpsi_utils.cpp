@@ -239,11 +239,11 @@ void FPSI::InterfaceUtils::setup_local_interface_facing_element_map(
     {
       const Core::Nodes::Node* const* currslavenode = curr->second->nodes();
 
-      std::vector<double> temploc;
-      temploc.assign(3, 0.0);
-      temploc[0] = currslavenode[nodenum]->x()[0];
-      temploc[1] = currslavenode[nodenum]->x()[1];
-      temploc[2] = currslavenode[nodenum]->x()[2];
+      std::vector<double> temploc(3);
+      auto x = currslavenode[nodenum]->x();
+      temploc[0] = x[0];
+      temploc[1] = x[1];
+      if (x.size() > 2) temploc[2] = x[2];
       for (int dim = 0; dim < 3; dim++)
       {
         slaveloc[dim] = slaveloc[dim] + temploc[dim];
@@ -337,11 +337,11 @@ void FPSI::InterfaceUtils::setup_local_interface_facing_element_map(
         {
           const Core::Nodes::Node* const* currmasternode = curr->second->nodes();
 
-          std::vector<double> temploc;
-          temploc.assign(3, 0.0);
-          temploc[0] = currmasternode[nodenum]->x()[0];
-          temploc[1] = currmasternode[nodenum]->x()[1];
-          temploc[2] = currmasternode[nodenum]->x()[2];
+          std::vector<double> temploc(3);
+          auto x = currmasternode[nodenum]->x();
+          temploc[0] = x[0];
+          temploc[1] = x[1];
+          if (x.size() > 2) temploc[2] = x[2];
           for (int dim = 0; dim < 3; dim++)
           {
             masterloc[dim] = masterloc[dim] + temploc[dim];

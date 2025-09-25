@@ -441,9 +441,10 @@ std::map<int, Core::LinAlg::Matrix<3, 1>> PoroPressureBased::get_nodal_positions
     const Core::Nodes::Node* node = dis.g_node(nodemap->gid(lid));
     Core::LinAlg::Matrix<3, 1> currpos;
 
-    currpos(0) = node->x()[0];
-    currpos(1) = node->x()[1];
-    currpos(2) = node->x()[2];
+    auto x = node->x();
+    currpos(0) = x[0];
+    currpos(1) = x[1];
+    if (x.size() > 2) currpos(2) = x[2];
 
     positions[node->id()] = currpos;
   }
@@ -467,7 +468,7 @@ double PoroPressureBased::get_max_nodal_distance(
     static Core::LinAlg::Matrix<3, 1> pos0;
     pos0(0) = node0->x()[0];
     pos0(1) = node0->x()[1];
-    pos0(2) = node0->x()[2];
+    if (node0->x().size() > 2) pos0(2) = node0->x()[2];
 
     // loop over second node to numnode to compare distances with first node
     for (int jnode = inode + 1; jnode < ele->num_node(); jnode++)
@@ -478,7 +479,7 @@ double PoroPressureBased::get_max_nodal_distance(
       static Core::LinAlg::Matrix<3, 1> pos1;
       pos1(0) = node1->x()[0];
       pos1(1) = node1->x()[1];
-      pos1(2) = node1->x()[2];
+      if (node1->x().size() > 2) pos1(2) = node1->x()[2];
 
       static Core::LinAlg::Matrix<3, 1> dist;
       dist.update(1.0, pos0, -1.0, pos1, 0.0);

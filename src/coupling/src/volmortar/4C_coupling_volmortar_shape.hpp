@@ -339,10 +339,11 @@ namespace Coupling::VolMortar
           // build basis vectors gxi and geta
           for (int i = 0; i < nn; ++i)
           {
+            const auto x = ele.nodes()[i]->x();
             // first local basis vector
-            gxi[0] += deriv(0, i) * ele.nodes()[i]->x()[0];
-            gxi[1] += deriv(0, i) * ele.nodes()[i]->x()[1];
-            gxi[2] += deriv(0, i) * ele.nodes()[i]->x()[2];
+            gxi[0] += deriv(0, i) * x[0];
+            gxi[1] += deriv(0, i) * x[1];
+            if (x.size() == 3) gxi[2] += deriv(0, i) * x[2];
           }
 
           // second local basis vector
@@ -372,15 +373,16 @@ namespace Coupling::VolMortar
           // build basis vectors gxi and geta
           for (int i = 0; i < nn; ++i)
           {
+            const auto x = ele.nodes()[i]->x();
             // first local basis vector
-            gxi[0] += deriv(0, i) * ele.nodes()[i]->x()[0];
-            gxi[1] += deriv(0, i) * ele.nodes()[i]->x()[1];
-            gxi[2] += deriv(0, i) * ele.nodes()[i]->x()[2];
+            gxi[0] += deriv(0, i) * x[0];
+            gxi[1] += deriv(0, i) * x[1];
+            if (x.size() == 3) gxi[2] += deriv(0, i) * x[2];
 
             // second local basis vector
-            geta[0] += deriv(1, i) * ele.nodes()[i]->x()[0];
-            geta[1] += deriv(1, i) * ele.nodes()[i]->x()[1];
-            geta[2] += deriv(1, i) * ele.nodes()[i]->x()[2];
+            geta[0] += deriv(1, i) * x[0];
+            geta[1] += deriv(1, i) * x[1];
+            if (x.size() == 3) geta[2] += deriv(1, i) * x[2];
           }
 
           // cross product of gxi and geta
@@ -422,9 +424,10 @@ namespace Coupling::VolMortar
             const Core::Nodes::Node* const* nodes = ele.nodes();
             if (!nodes) FOUR_C_THROW("Nodes() returned null pointer");
 
-            xrefe(i, 0) = nodes[i]->x()[0];
-            xrefe(i, 1) = nodes[i]->x()[1];
-            xrefe(i, 2) = nodes[i]->x()[2];
+            const auto x = nodes[i]->x();
+            xrefe(i, 0) = x[0];
+            xrefe(i, 1) = x[1];
+            if (x.size() == 3) xrefe(i, 2) = x[2];
           }
 
           Core::LinAlg::Matrix<ndim, ndim> invJ;

@@ -41,11 +41,17 @@ namespace Core::IO
     cell_types.push_back(vtk_cell_info.first);
 
     // Add each node to the output.
-    const Core::Nodes::Node* const* nodes = ele.nodes();
+    auto nodes = ele.node_range();
 
-    for (int inode = 0; inode < ele.num_node(); ++inode)
+    for (auto node : numbering | std::views::transform([&](int i) { return nodes[i]; }))
       for (unsigned int idim = 0; idim < num_spatial_dimensions; ++idim)
-        point_coordinates.push_back(nodes[numbering[inode]]->x()[idim]);
+      {
+        const auto x = node.x();
+        if (idim < x.size())
+          point_coordinates.push_back(x[idim]);
+        else
+          point_coordinates.push_back(0.0);
+      }
 
     // Return the number of added points.
     return ele.num_node();
@@ -110,7 +116,8 @@ namespace Core::IO
           ++i_controlpoint)
       {
         const Core::Nodes::Node* controlpoint = ele.nodes()[i_controlpoint];
-        for (int i_dim = 0; i_dim < dim_output; ++i_dim)
+        const auto size = controlpoint->x().size();
+        for (size_t i_dim = 0; i_dim < size; ++i_dim)
           pos_controlpoints(dim_output * i_controlpoint + i_dim) = controlpoint->x()[i_dim];
       }
 

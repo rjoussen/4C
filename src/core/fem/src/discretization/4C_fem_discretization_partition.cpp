@@ -211,8 +211,11 @@ void Core::FE::Discretization::export_row_elements(
 
   exporter.do_export(element_);
 
-  // update ownerships and kick out everything that's not in newmap
-  for (curr = element_.begin(); curr != element_.end(); ++curr) curr->second->set_owner(myrank);
+  for (auto& ele : element_ | std::views::values)
+  {
+    ele->set_owner(myrank);
+    ele->discretization_ = this;
+  }
 
   // maps and pointers are no longer correct and need rebuilding
   reset(killdofs, killcond);
@@ -310,8 +313,14 @@ std::shared_ptr<Core::LinAlg::MultiVector<double>> Core::FE::Discretization::bui
   for (int lid = 0; lid < noderowmap->num_my_elements(); ++lid)
   {
     if (!node_.contains(noderowmap->gid(lid))) continue;
-    for (int dim = 0; dim < 3; ++dim)
-      coordinates->ReplaceMyValue(lid, dim, node_.at(noderowmap->gid(lid))->x()[dim]);
+    auto x = node_.at(noderowmap->gid(lid))->x();
+    for (size_t dim = 0; dim < 3; ++dim)
+    {
+      if (dim >= n_dim())
+        coordinates->ReplaceMyValue(lid, dim, 0.0);
+      else
+        coordinates->ReplaceMyValue(lid, dim, x[dim]);
+    }
   }
 
   return coordinates;

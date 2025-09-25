@@ -253,27 +253,15 @@ void Core::GeometricSearch::MatchingOctree::create_global_entity_matching(
     Communication::UnpackBuffer buffer(rblockofnodes);
     while (!buffer.at_end())
     {
-      // extract node data from blockofnodes
-      std::vector<char> data;
-      extract_from_pack(buffer, data);
-
-      // allocate an "empty node". Fill it with info from
-      // extracted node data
-      Communication::UnpackBuffer data_buffer(data);
-      auto o = std::shared_ptr<Core::Communication::ParObject>(
-          Core::Communication::factory(data_buffer));
-
-      // check type of ParObject, and return gid
-      const int id = check_valid_entity_type(o);
+      Entity entity;
+      extract_from_pack(buffer, entity);
 
       //----------------------------------------------------------------
       // there is nothing to do if there are no master nodes on this
       // proc
       if (!masterplanecoords_.empty())
       {
-        std::array<double, 3> pointcoord;
-        calc_point_coordinate(o.get(), pointcoord.data());
-
+        const auto& [id, pointcoord] = entity;
         // get its coordinates
         std::vector<double> x(3);
 
@@ -490,25 +478,15 @@ void Core::GeometricSearch::MatchingOctree::find_match(const Core::FE::Discretiz
     Communication::UnpackBuffer buffer(rblockofnodes);
     while (!buffer.at_end())
     {
-      // extract node data from blockofnodes
-      std::vector<char> data;
-      extract_from_pack(buffer, data);
-
-      // allocate an "empty node". Fill it with info from
-      // extracted node data
-      Communication::UnpackBuffer data_buffer(data);
-      std::shared_ptr<Core::Communication::ParObject> o(Core::Communication::factory(data_buffer));
-
-      // cast ParObject to specific type and return id
-      const int id = check_valid_entity_type(o);
+      Entity entity;
+      extract_from_pack(buffer, entity);
 
       //----------------------------------------------------------------
       // there is nothing to do if there are no master nodes on this
       // proc
       if (not masterplanecoords_.empty())
       {
-        std::array<double, 3> pointcoord;
-        calc_point_coordinate(o.get(), pointcoord.data());
+        const auto& [id, pointcoord] = entity;
 
         // get its coordinates
         std::vector<double> x(pointcoord.begin(), pointcoord.end());
@@ -643,26 +621,15 @@ void Core::GeometricSearch::MatchingOctree::fill_slave_to_master_gid_mapping(
     Communication::UnpackBuffer buffer(rblockofnodes);
     while (!buffer.at_end())
     {
-      // extract node data from blockofnodes
-      std::vector<char> data;
-      unpack_entity(buffer, data);
-
-      // allocate an "empty node". Fill it with info from
-      // extracted node data
-      Communication::UnpackBuffer data_buffer(data);
-      std::shared_ptr<Core::Communication::ParObject> o(Core::Communication::factory(data_buffer));
-
-      const int id = check_valid_entity_type(o);
+      Entity entity;
+      extract_from_pack(buffer, entity);
 
       //----------------------------------------------------------------
       // there is nothing to do if there are no master nodes on this
       // proc
       if (not masterplanecoords_.empty())
       {
-        std::array<double, 3> pointcoord;
-        calc_point_coordinate(o.get(), pointcoord.data());
-
-        // get its coordinates
+        const auto& [id, pointcoord] = entity;
         std::vector<double> x(pointcoord.begin(), pointcoord.end());
 
         //--------------------------------------------------------
@@ -729,7 +696,9 @@ void Core::GeometricSearch::NodeMatchingOctree::calc_point_coordinate(
 
   const int dim = 3;
 
-  for (int idim = 0; idim < dim; idim++) coord[idim] = actnode->x()[idim];
+  const auto x = actnode->x();
+  for (size_t idim = 0; idim < x.size(); idim++) coord[idim] = x[idim];
+  for (size_t idim = x.size(); idim < dim; idim++) coord[idim] = 0.0;
 }  // NodeMatchingOctree::calc_point_coordinate
 
 /*----------------------------------------------------------------------*/
@@ -743,7 +712,10 @@ void Core::GeometricSearch::NodeMatchingOctree::calc_point_coordinate(
 
   const int dim = 3;
 
-  for (int idim = 0; idim < dim; idim++) coord[idim] = actnode->x()[idim];
+  const auto x = actnode->x();
+  for (size_t idim = 0; idim < x.size(); idim++) coord[idim] = x[idim];
+  for (size_t idim = x.size(); idim < dim; idim++) coord[idim] = 0.0;
+
 }  // NodeMatchingOctree::calc_point_coordinate
 
 /*----------------------------------------------------------------------*/
@@ -767,22 +739,12 @@ bool Core::GeometricSearch::NodeMatchingOctree::check_entity_owner(
 void Core::GeometricSearch::NodeMatchingOctree::pack_entity(
     Core::Communication::PackBuffer& data, const Core::FE::Discretization* dis, const int id)
 {
-  // get the slavenode
   Core::Nodes::Node* actnode = dis->g_node(id);
-  // Add node to list of nodes which will be sent to the next proc
-  Core::Communication::PackBuffer dummy;
-  add_to_pack(dummy, *actnode);
-  add_to_pack(data, dummy());
-
-}  // NodeMatchingOctree::PackEntity
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void Core::GeometricSearch::NodeMatchingOctree::unpack_entity(
-    Communication::UnpackBuffer& buffer, std::vector<char>& data)
-{
-  extract_from_pack(buffer, data);
-}  // NodeMatchingOctree::unpack_entity
+  Entity e{};
+  e.gid = actnode->id();
+  std::ranges::copy(actnode->x(), e.position.begin());
+  add_to_pack(data, e);
+}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -826,13 +788,15 @@ void Core::GeometricSearch::ElementMatchingOctree::calc_point_coordinate(
 {
   Core::Elements::Element* actele = dis->g_element(id);
 
-  const int numnode = actele->num_node();
   const int dim = 3;
 
   for (int idim = 0; idim < dim; idim++) coord[idim] = 0.0;
 
-  for (int node = 0; node < numnode; node++)
-    for (int idim = 0; idim < dim; idim++) coord[idim] += (actele->nodes())[node]->x()[idim];
+  for (auto node : actele->node_range())
+  {
+    const auto x = node.x();
+    for (size_t idim = 0; idim < x.size(); idim++) coord[idim] += x[idim];
+  }
 }  // ElementMatchingOctree::calc_point_coordinate
 
 /*----------------------------------------------------------------------*/
@@ -846,13 +810,15 @@ void Core::GeometricSearch::ElementMatchingOctree::calc_point_coordinate(
   Core::Nodes::Node** nodes = actele->nodes();
   if (nodes == nullptr) FOUR_C_THROW("could not get pointer to nodes");
 
-  const int numnode = actele->num_node();
   const int dim = 3;
 
   for (int idim = 0; idim < dim; idim++) coord[idim] = 0.0;
 
-  for (int node = 0; node < numnode; node++)
-    for (int idim = 0; idim < dim; idim++) coord[idim] += (nodes[node]->x())[idim];
+  for (auto node : actele->node_range())
+  {
+    const auto x = node.x();
+    for (size_t idim = 0; idim < x.size(); idim++) coord[idim] += x[idim];
+  }
 }  // ElementMatchingOctree::calc_point_coordinate
 
 /*----------------------------------------------------------------------*/
@@ -876,41 +842,18 @@ bool Core::GeometricSearch::ElementMatchingOctree::check_entity_owner(
 void Core::GeometricSearch::ElementMatchingOctree::pack_entity(
     Core::Communication::PackBuffer& data, const Core::FE::Discretization* dis, const int id)
 {
-  // get the slavenode
   Core::Elements::Element* actele = dis->g_element(id);
-  Core::Nodes::Node** nodes = actele->nodes();
-  // Add node to list of nodes which will be sent to the next proc
-  add_to_pack(data, actele->num_node());
+  Entity e{};
+  e.gid = actele->id();
 
+  for (auto node : actele->node_range())
   {
-    Core::Communication::PackBuffer dummy_buffer;
-    add_to_pack(dummy_buffer, *actele);
-
-    add_to_pack(data, dummy_buffer());
+    const auto x = node.x();
+    for (size_t idim = 0; idim < x.size(); idim++) e.position[idim] += x[idim];
   }
+  add_to_pack(data, e);
+}
 
-  for (int node = 0; node < actele->num_node(); node++) add_to_pack(data, *nodes[node]);
-}  // ElementMatchingOctree::PackEntity
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void Core::GeometricSearch::ElementMatchingOctree::unpack_entity(
-    Communication::UnpackBuffer& buffer, std::vector<char>& data)
-{
-  nodes_.clear();
-  int numnode;
-  extract_from_pack(buffer, numnode);
-  extract_from_pack(buffer, data);
-
-  for (int node = 0; node < numnode; node++)
-  {
-    std::shared_ptr<Core::Communication::ParObject> o(Core::Communication::factory(buffer));
-    std::shared_ptr<Core::Nodes::Node> actnode = std::dynamic_pointer_cast<Core::Nodes::Node>(o);
-    if (actnode == nullptr) FOUR_C_THROW("cast from ParObject to Node failed");
-    nodes_.insert(std::pair<int, std::shared_ptr<Core::Nodes::Node>>(actnode->id(), actnode));
-  }
-
-}  // ElementMatchingOctree::unpack_entity
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -959,7 +902,9 @@ void Core::GeometricSearch::OctreeNodalElement::calc_point_coordinate(
 
   const int dim = 3;
 
-  for (int idim = 0; idim < dim; idim++) coord[idim] = actnode->x()[idim];
+  const auto x = actnode->x();
+  for (size_t idim = 0; idim < x.size(); idim++) coord[idim] = x[idim];
+  for (size_t idim = x.size(); idim < dim; idim++) coord[idim] = 0.0;
 }  // OctreeNodalElement::calc_point_coordinate
 
 /*----------------------------------------------------------------------*/
@@ -992,13 +937,15 @@ void Core::GeometricSearch::OctreeElementElement::calc_point_coordinate(
 {
   Core::Elements::Element* actele = dis->g_element(id);
 
-  const int numnode = actele->num_node();
   const int dim = 3;
 
   for (int idim = 0; idim < dim; idim++) coord[idim] = 0.0;
 
-  for (int node = 0; node < numnode; node++)
-    for (int idim = 0; idim < dim; idim++) coord[idim] += (actele->nodes())[node]->x()[idim];
+  for (auto node : actele->node_range())
+  {
+    const auto x = node.x();
+    for (size_t idim = 0; idim < x.size(); idim++) coord[idim] += x[idim];
+  }
 }  // OctreeElementElement::calc_point_coordinate
 
 /*----------------------------------------------------------------------*/

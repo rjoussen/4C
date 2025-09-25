@@ -41,6 +41,7 @@ Core::FE::Discretization::Discretization(const std::string& name, MPI_Comm comm,
 void Core::FE::Discretization::add_element(std::shared_ptr<Core::Elements::Element> ele)
 {
   element_[ele->id()] = ele;
+  ele->discretization_ = this;
   reset();
 }
 
@@ -66,15 +67,34 @@ void Core::FE::Discretization::check_filled_globally()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void Core::FE::Discretization::add_node(
-    std::span<const double, 3> x, GlobalIndexType gid, std::shared_ptr<Core::Nodes::Node> user_node)
+    std::span<const double> x, GlobalIndexType gid, std::shared_ptr<Core::Nodes::Node> user_node)
 {
+  FOUR_C_ASSERT(x.size() == n_dim_, "Node coordinate dimension mismatch in discretization.");
+
   // As long as user nodes are required, we need to ensure that a node exists, so we create one.
   // Once we can live without user nodes, this fixup may be removed.
   if (user_node == nullptr)
     user_node = std::make_shared<Core::Nodes::Node>(gid, x, Communication::my_mpi_rank(comm_));
 
+  user_node->discretization_ = this;
+
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+  FOUR_C_ASSERT(user_node->id() == gid,
+      "Node GID mismatch in discretization (user node). Expected {}, got {}.", gid,
+      user_node->id());
+
+  const auto user_x = user_node->x();
+  FOUR_C_ASSERT(
+      user_x.size() == n_dim_, "Node coordinate dimension mismatch in discretization (user node).");
+  for (unsigned int i = 0; i < n_dim_; i++)
+    FOUR_C_ASSERT(user_x[i] == x[i],
+        "Node coordinate mismatch in discretization (user node). Expected {}, got {}.", x[i],
+        user_x[i]);
+
+#endif
+
   node_[gid] = user_node;
-  FOUR_C_ASSERT(node_gid_.size() * 3 == node_coordinates_.size(),
+  FOUR_C_ASSERT(node_gid_.size() * n_dim_ == node_coordinates_.size(),
       "Internal error: mismatch in size of node data.");
 
   node_gid_.emplace_back() = gid;
@@ -129,9 +149,22 @@ void Core::FE::Discretization::fill_from_mesh(
     int id = 0;
     for (const auto& point : mesh.points)
     {
+      // Discard additional coordinates but only if they are zero.
+      for (auto i = point.size() - 1; i >= n_dim_; --i)
+      {
+        if (std::abs(point[i]) != 0)
+        {
+          FOUR_C_THROW(
+              "Node {} has a non-zero coordinate {} in direction {} but discretization "
+              "is {}D!",
+              id, point[i], i, n_dim_);
+        }
+      }
+
       // for now, discard external id of the node. 4C is not yet prepared to deal with this!
       // replace id with point.external_id once possible
-      add_node(point, id, nullptr);
+
+      add_node(std::span(point.data(), n_dim_), id, nullptr);
       ++id;
     }
   }

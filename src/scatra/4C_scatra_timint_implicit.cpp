@@ -1317,8 +1317,7 @@ void ScaTra::ScaTraTimIntImpl::set_external_force() const
 
     std::vector<double> external_force_vector(3);
     problem_->function_by_id<Core::Utils::FunctionOfSpaceTime>(external_force_function_id)
-        .evaluate_vector(std::span<const double, 3>(current_node->x().begin(), 3), time_,
-            std::span<double, 3>(external_force_vector));
+        .evaluate_vector(current_node->x(), time_, external_force_vector);
 
     for (int spatial_dimension = 0; spatial_dimension < nsd_; ++spatial_dimension)
     {
