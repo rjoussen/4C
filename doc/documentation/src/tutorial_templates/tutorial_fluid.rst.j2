@@ -1,4 +1,4 @@
-{% set tutorial_file = "tutorial_fluid.4C.yaml" %}
+{% set tutorial_file = "fluid/tutorial_fluid.4C.yaml" %}
 {% set input_file_content = load_input_file(tutorial_file) %}
 
 .. _fluidtutorial:
@@ -35,7 +35,7 @@ After successful geometry and mesh creation, export everything to an
 EXODUS file of your choice via *File* :math:`\to`\ *Export...* and
 set the dimension explicitly to 2D.
 
-.. literalinclude::  /tutorial_fluid.jou
+.. literalinclude::  /fluid/tutorial_fluid.jou
    :linenos:
 
 The generated mesh should look like this:

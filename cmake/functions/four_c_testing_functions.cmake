@@ -497,13 +497,13 @@ endfunction()
 #
 # Usage in tests/lists_of_tests.cmake:
 #
-# four_c_test_tutorial(PREFIX <prefix> NP <NP> [COPY_FILES <file1> <file2> ...])"
+# four_c_test_tutorial(TEST_FILE <input_file> NP <NP> [COPY_FILES <file1> <file2> ...])"
 #
-# PREFIX: must equal the name of a .4C.yaml and a .e file in directory tests/tutorials
+# TEST_FILE: must equal the name of the input file in directory tests/tutorials
 # NP: number of MPI ranks for this test
 # COPY_FILES: copy any additional files to the test directory
 function(four_c_test_tutorial)
-  set(oneValueArgs PREFIX NP)
+  set(oneValueArgs TEST_FILE NP)
   set(multiValueArgs COPY_FILES)
   cmake_parse_arguments(
     _parsed
@@ -518,7 +518,7 @@ function(four_c_test_tutorial)
     message(FATAL_ERROR "There are unparsed arguments: ${_parsed_UNPARSED_ARGUMENTS}!")
   endif()
 
-  set(name_of_input_file ${_parsed_PREFIX})
+  set(name_of_input_file ${_parsed_TEST_FILE})
   set(num_proc ${_parsed_NP})
   set(name_of_test ${name_of_input_file}-p${num_proc}-fw)
   set(test_directory tutorials/${name_of_input_file})
@@ -526,7 +526,7 @@ function(four_c_test_tutorial)
   list(
     APPEND
     _run_copy_files
-    "cp ${PROJECT_SOURCE_DIR}/tests/tutorials/${name_of_input_file}.4C.yaml ${test_directory}/xxx.4C.yaml"
+    "cp ${PROJECT_SOURCE_DIR}/tests/tutorials/${name_of_input_file} ${test_directory}/xxx.4C.yaml"
     )
 
   # copy additional files to the test directory
