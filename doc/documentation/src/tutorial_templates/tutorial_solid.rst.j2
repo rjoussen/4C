@@ -1,4 +1,4 @@
-{% set solid_tutorial_file = "tutorial_solid.4C.yaml" %}
+{% set solid_tutorial_file = "solid/tutorial_solid.4C.yaml" %}
 {% set inputfile_content = load_input_file(solid_tutorial_file) %}
 
 .. _3d_solidtutorial:
@@ -95,7 +95,7 @@ The mesh is rather fine and 27-node brick elements have been used herein.
 The corresponding journal file can be run to reproduce this mesh and output a binary EXODUS mesh information file ``tutorial_solid.e``.
 The geometry dimensions (actually mainly the radius, all other dimensions depend on it) and element size can be varied, since they are parametrized in the journal file.
 
-.. literalinclude::  /tutorial_solid.jou
+.. literalinclude::  /solid/tutorial_solid.jou
    :linenos:
 
 The general definition of the geometry in this cubit journal file, which can be run from the directory ``<source-root>/tests/tutorials/`` includes the complete mesh and four surface node sets.

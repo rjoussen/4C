@@ -1988,34 +1988,34 @@ four_c_test_nested_parallelism(sohex8_multiscale_macro.4C.yaml sohex8_multiscale
 four_c_test_nested_parallelism(sohex8_multiscale_macro_2micro.4C.yaml sohex8_multiscale_npsupport.4C.yaml "1")
 four_c_test_nested_parallelism(tsi_heatconvection_monolithic.4C.json tsi_heatconvection_monolithic.4C.json "")
 
-four_c_test_tutorial(PREFIX tutorial_battery NP 2 COPY_FILES ${PROJECT_SOURCE_DIR}/tests/tutorials/tutorial_battery.e)
-four_c_test_tutorial(PREFIX tutorial_poisson_scatra NP 2 COPY_FILES ${PROJECT_SOURCE_DIR}/tests/tutorials/tutorial_poisson_geo.e)
-four_c_test_tutorial(PREFIX tutorial_poisson_thermo NP 2 COPY_FILES ${PROJECT_SOURCE_DIR}/tests/tutorials/tutorial_poisson_geo.e)
-four_c_test_tutorial(PREFIX tutorial_contact_3d NP 2 COPY_FILES ${PROJECT_SOURCE_DIR}/tests/tutorials/tutorial_contact_3d.e)
-four_c_test_tutorial(PREFIX tutorial_fluid NP 2 COPY_FILES ${PROJECT_SOURCE_DIR}/tests/tutorials/tutorial_fluid.e)
-four_c_test_tutorial(PREFIX tutorial_fsi_2d NP 2 COPY_FILES ${PROJECT_SOURCE_DIR}/tests/tutorials/tutorial_fsi_2d.e)
-four_c_test_tutorial(PREFIX tutorial_fsi_3d NP 2 COPY_FILES ${PROJECT_SOURCE_DIR}/tests/input_files/fsi_part_struct_solver.xml ${PROJECT_SOURCE_DIR}/tests/tutorials/tutorial_fsi_3d.e)
-four_c_test_tutorial(PREFIX tutorial_solid NP 3 COPY_FILES ${PROJECT_SOURCE_DIR}/tests/input_files/xml/multigrid/elasticity_template.xml ${PROJECT_SOURCE_DIR}/tests/tutorials/tutorial_solid_geo.e)
+four_c_test_tutorial(TEST_FILE battery/tutorial_battery.4C.yaml NP 2 COPY_FILES ${PROJECT_SOURCE_DIR}/tests/tutorials/battery/tutorial_battery.e)
+four_c_test_tutorial(TEST_FILE poisson/tutorial_poisson_scatra.4C.yaml NP 2 COPY_FILES ${PROJECT_SOURCE_DIR}/tests/tutorials/poisson/tutorial_poisson_geo.e)
+four_c_test_tutorial(TEST_FILE poisson/tutorial_poisson_thermo.4C.yaml NP 2 COPY_FILES ${PROJECT_SOURCE_DIR}/tests/tutorials/poisson/tutorial_poisson_geo.e)
+four_c_test_tutorial(TEST_FILE contact/tutorial_contact_3d.4C.yaml NP 2 COPY_FILES ${PROJECT_SOURCE_DIR}/tests/tutorials/contact/tutorial_contact_3d.e)
+four_c_test_tutorial(TEST_FILE fluid/tutorial_fluid.4C.yaml NP 2 COPY_FILES ${PROJECT_SOURCE_DIR}/tests/tutorials/fluid/tutorial_fluid.e)
+four_c_test_tutorial(TEST_FILE fsi/tutorial_fsi_2d.4C.yaml NP 2 COPY_FILES ${PROJECT_SOURCE_DIR}/tests/tutorials/fsi/tutorial_fsi_2d.e)
+four_c_test_tutorial(TEST_FILE fsi/tutorial_fsi_3d.4C.yaml NP 2 COPY_FILES ${PROJECT_SOURCE_DIR}/tests/input_files/fsi_part_struct_solver.xml ${PROJECT_SOURCE_DIR}/tests/tutorials/fsi/tutorial_fsi_3d.e)
+four_c_test_tutorial(TEST_FILE solid/tutorial_solid.4C.yaml NP 3 COPY_FILES ${PROJECT_SOURCE_DIR}/tests/input_files/xml/multigrid/elasticity_template.xml ${PROJECT_SOURCE_DIR}/tests/tutorials/solid/tutorial_solid_geo.e)
 # Test use case solid with Jacobi preconditioner on mesh 2 with 2 MPI ranks
-four_c_test_tutorial(PREFIX tutorial_prec_solid_jacobi NP 2 COPY_FILES
-        ${PROJECT_SOURCE_DIR}/tests/tutorials/tutorial_prec_solid_2.exo
-        ${PROJECT_SOURCE_DIR}/tests/tutorials/tutorial_prec_solid_gmres.xml
-        ${PROJECT_SOURCE_DIR}/tests/tutorials/tutorial_prec_solid_ifpack_Jacobi.xml)
+four_c_test_tutorial(TEST_FILE preconditioner/tutorial_prec_solid_jacobi.4C.yaml NP 2 COPY_FILES
+        ${PROJECT_SOURCE_DIR}/tests/tutorials/preconditioner/tutorial_prec_solid_2.exo
+        ${PROJECT_SOURCE_DIR}/tests/tutorials/preconditioner/tutorial_prec_solid_gmres.xml
+        ${PROJECT_SOURCE_DIR}/tests/tutorials/preconditioner/tutorial_prec_solid_ifpack_Jacobi.xml)
 # Test use case solid with Chebyshev preconditioner on mesh 3 with 4 MPI ranks
-four_c_test_tutorial(PREFIX tutorial_prec_solid_chebyshev NP 4 COPY_FILES
-        ${PROJECT_SOURCE_DIR}/tests/tutorials/tutorial_prec_solid_3.exo
-        ${PROJECT_SOURCE_DIR}/tests/tutorials/tutorial_prec_solid_gmres.xml
-        ${PROJECT_SOURCE_DIR}/tests/tutorials/tutorial_prec_solid_ifpack_Chebyshev.xml)
+four_c_test_tutorial(TEST_FILE preconditioner/tutorial_prec_solid_chebyshev.4C.yaml NP 4 COPY_FILES
+        ${PROJECT_SOURCE_DIR}/tests/tutorials/preconditioner/tutorial_prec_solid_3.exo
+        ${PROJECT_SOURCE_DIR}/tests/tutorials/preconditioner/tutorial_prec_solid_gmres.xml
+        ${PROJECT_SOURCE_DIR}/tests/tutorials/preconditioner/tutorial_prec_solid_ifpack_Chebyshev.xml)
 # Test use case fsi with Teko block-iterative preconditioner with 2 MPI ranks
-four_c_test_tutorial(PREFIX tutorial_prec_fsi NP 2 COPY_FILES
-        ${PROJECT_SOURCE_DIR}/tests/tutorials/tutorial_prec_fsi.exo
-        ${PROJECT_SOURCE_DIR}/tests/tutorials/tutorial_prec_fsi_gmres.xml
-        ${PROJECT_SOURCE_DIR}/tests/tutorials/tutorial_prec_fsi_teko_block_iterative.xml)
+four_c_test_tutorial(TEST_FILE preconditioner/tutorial_prec_fsi.4C.yaml NP 2 COPY_FILES
+        ${PROJECT_SOURCE_DIR}/tests/tutorials/preconditioner/tutorial_prec_fsi.exo
+        ${PROJECT_SOURCE_DIR}/tests/tutorials/preconditioner/tutorial_prec_fsi_gmres.xml
+        ${PROJECT_SOURCE_DIR}/tests/tutorials/preconditioner/tutorial_prec_fsi_teko_block_iterative.xml)
 # Test use case fsi with MueLu fully coupled AMG preconditioner with 2 MPI ranks
-four_c_test_tutorial(PREFIX tutorial_prec_fsi_muelu NP 2 COPY_FILES
-        ${PROJECT_SOURCE_DIR}/tests/tutorials/tutorial_prec_fsi.exo
-        ${PROJECT_SOURCE_DIR}/tests/tutorials/tutorial_prec_fsi_gmres.xml
-        ${PROJECT_SOURCE_DIR}/tests/tutorials/tutorial_prec_fsi_muelu_fully_coupled_amg.xml)
+four_c_test_tutorial(TEST_FILE preconditioner/tutorial_prec_fsi_muelu.4C.yaml NP 2 COPY_FILES
+        ${PROJECT_SOURCE_DIR}/tests/tutorials/preconditioner/tutorial_prec_fsi.exo
+        ${PROJECT_SOURCE_DIR}/tests/tutorials/preconditioner/tutorial_prec_fsi_gmres.xml
+        ${PROJECT_SOURCE_DIR}/tests/tutorials/preconditioner/tutorial_prec_fsi_muelu_fully_coupled_amg.xml)
 
 four_c_test_post_processing(constr3D_MPC_direct.4C.yaml 2 2 ndxyz ndxyz 25)
 four_c_test_post_processing(contact2D_onlylin_stdlagr.4C.yaml 2 2 ndxyz ndxyz 50)
