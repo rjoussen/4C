@@ -419,7 +419,7 @@ void XFEM::Utils::XFEMDiscretizationBuilder::redistribute(
 
   std::shared_ptr<Core::LinAlg::Map> nodecolmap =
       std::make_shared<Core::LinAlg::Map>(-1, nodecolvec.size(), nodecolvec.data(), 0, comm);
-  if (!dis.filled()) dis.redistribute(*noderowmap, *nodecolmap);
+  if (!dis.filled()) dis.redistribute({*noderowmap, *nodecolmap});
 
   Core::LinAlg::Map elerowmap(*dis.element_row_map());
   std::shared_ptr<const Core::LinAlg::Graph> nodegraph =
@@ -432,13 +432,7 @@ void XFEM::Utils::XFEMDiscretizationBuilder::redistribute(
 
   auto const& [roweles, coleles] = dis.build_element_row_column(*noderowmap, *nodecolmap);
 
-  dis.export_row_nodes(*noderowmap);
-  dis.export_row_elements(*roweles);
-
-  dis.export_column_nodes(*nodecolmap);
-  dis.export_column_elements(*coleles);
-
-  dis.fill_complete();
+  dis.redistribute({*noderowmap, *nodecolmap}, {*roweles, *coleles});
 }
 
 /*----------------------------------------------------------------------------*

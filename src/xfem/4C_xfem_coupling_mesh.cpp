@@ -423,7 +423,7 @@ void XFEM::MeshVolCoupling::redistribute_embedded_discretization()
     cond_dis_->export_column_nodes(full_nodecolmap);
     cond_dis_->export_column_elements(full_elecolmap);
 
-    cond_dis_->fill_complete(true, true, true);
+    cond_dis_->fill_complete();
   }
 
   // STEP 3: reconnect all parentelement pointers in the cutter_dis_ faceelements
@@ -583,17 +583,15 @@ void XFEM::MeshVolCoupling::create_auxiliary_discretization()
     newnodecolmap = std::make_shared<Core::LinAlg::Map>(
         -1, colnodes.size(), colnodes.data(), 0, aux_coup_dis_->get_comm());
 
-    aux_coup_dis_->redistribute(*newnoderowmap, *newnodecolmap,
-        {.assign_degrees_of_freedom = false,
-            .init_elements = false,
-            .do_boundary_conditions = false});
+    aux_coup_dis_->redistribute(
+        {*newnoderowmap, *newnodecolmap}, {.fill_complete = Core::FE::OptionsFillComplete::none()});
 
     // make auxiliary discretization have the same dofs as the coupling discretization
     std::shared_ptr<Core::DOFSets::DofSet> newdofset =
         std::make_shared<Core::DOFSets::TransparentIndependentDofSet>(cond_dis_, true);
     aux_coup_dis_->replace_dof_set(newdofset,
         false);  // do not call this with true (no replacement in static dofsets intended)
-    aux_coup_dis_->fill_complete(true, true, true);
+    aux_coup_dis_->fill_complete();
   }
 }
 

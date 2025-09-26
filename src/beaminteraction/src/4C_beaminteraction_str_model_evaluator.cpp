@@ -852,7 +852,7 @@ void Solid::ModelEvaluator::BeamInteraction::read_restart(Core::IO::Discretizati
   // read correct nodes
   Core::IO::DiscretizationReader bin_reader(bindis_, input_control_file, stepn);
   bin_reader.read_nodes_only(stepn);
-  bindis_->fill_complete(false, false, false);
+  bindis_->fill_complete(Core::FE::OptionsFillComplete::none());
 
   // need to read step next (as it was written next, do safety check)
   if (stepn != ia_reader.read_int("step") or stepn != bin_reader.read_int("step"))

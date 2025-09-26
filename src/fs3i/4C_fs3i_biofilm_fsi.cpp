@@ -803,7 +803,11 @@ void FS3I::BiofilmFSI::struct_ale_solve()
       ale_to_struct_field(ale_->write_access_dispnp());
   std::shared_ptr<Core::FE::Discretization> structdis = fsi_->structure_field()->discretization();
   Core::Geo::update_reference_config_with_disp(*structdis, *structdisp);
-  structdis->fill_complete(false, true, true);
+  structdis->fill_complete({
+      .assign_degrees_of_freedom = false,
+      .init_elements = true,
+      .do_boundary_conditions = true,
+  });
 
   // change nodes reference position also for the struct ale field
   Core::Geo::update_reference_config_with_disp(*structaledis, *ale_->write_access_dispnp());

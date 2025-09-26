@@ -261,7 +261,7 @@ void fsi_immersed_drt()
 
   if (structdis->has_condition("PointCoupling"))
   {
-    structdis->fill_complete(false, false, false);
+    structdis->fill_complete(Core::FE::OptionsFillComplete::none());
     Teuchos::ParameterList binning_params = Global::Problem::instance()->binning_strategy_params();
     Core::Utils::add_enum_class_to_parameter_list<Core::FE::ShapeFunctionType>(
         "spatial_approximation_type", Global::Problem::instance()->spatial_approximation_type(),
@@ -400,7 +400,7 @@ void fsi_ale_drt()
 
   if (structdis->has_condition("PointCoupling"))
   {
-    structdis->fill_complete(false, false, false);
+    structdis->fill_complete(Core::FE::OptionsFillComplete::none());
     Teuchos::ParameterList binning_params = Global::Problem::instance()->binning_strategy_params();
     Core::Utils::add_enum_class_to_parameter_list<Core::FE::ShapeFunctionType>(
         "spatial_approximation_type", Global::Problem::instance()->spatial_approximation_type(),
@@ -720,7 +720,7 @@ void xfsi_drt()
     aledis = problem->get_dis("ale");
     if (aledis == nullptr) FOUR_C_THROW("XFSI DYNAMIC: ALE discretization empty!!!");
 
-    aledis->fill_complete(true, true, true);
+    aledis->fill_complete();
 
     // Create ALE elements if the ale discretization is empty
     if (aledis->num_global_nodes() == 0)  // ALE discretization still empty
@@ -873,7 +873,7 @@ void xfpsi_drt()
     aledis = problem->get_dis("ale");
     if (aledis == nullptr) FOUR_C_THROW("Ale discretization empty!");
 
-    aledis->fill_complete(true, true, true);
+    aledis->fill_complete();
 
     // 3.- Create ALE elements if the ale discretization is empty
     if (aledis->num_global_nodes() == 0)  // ALE discretization still empty

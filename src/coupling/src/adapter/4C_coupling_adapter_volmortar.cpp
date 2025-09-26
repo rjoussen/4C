@@ -184,8 +184,16 @@ void Coupling::Adapter::MortarVolCoupl::create_aux_dofsets(Core::FE::Discretizat
   // 2. dofs 2
   // 3. auxiliary dofs 1
   // 4. auxiliary dofs 2
-  dis1.fill_complete(true, false, false);
-  dis2.fill_complete(true, false, false);
+  dis1.fill_complete({
+      .assign_degrees_of_freedom = true,
+      .init_elements = false,
+      .do_boundary_conditions = false,
+  });
+  dis2.fill_complete({
+      .assign_degrees_of_freedom = true,
+      .init_elements = false,
+      .do_boundary_conditions = false,
+  });
 }
 
 /*----------------------------------------------------------------------*

@@ -544,9 +544,9 @@ void PostProblem::read_meshes()
           }
 
           if (Core::Communication::num_mpi_ranks(nurbsdis->get_comm()) != 1)
-            nurbsdis->setup_ghosting(false, false, false);
+            nurbsdis->setup_ghosting(Core::FE::OptionsFillComplete::none());
           else
-            nurbsdis->fill_complete(false, false, false);
+            nurbsdis->fill_complete(Core::FE::OptionsFillComplete::none());
 
 
           if (!(nurbsdis->filled()))
@@ -569,7 +569,7 @@ void PostProblem::read_meshes()
         {
           // setup of parallel layout: create ghosting of already distributed nodes+elems
           if (Core::Communication::num_mpi_ranks(currfield.discretization()->get_comm()) != 1)
-            currfield.discretization()->setup_ghosting(true, true, true);
+            currfield.discretization()->setup_ghosting();
           else
             currfield.discretization()->fill_complete();
 

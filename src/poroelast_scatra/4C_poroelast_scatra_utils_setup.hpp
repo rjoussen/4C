@@ -148,9 +148,21 @@ namespace PoroElastScaTra
         // 2. fluiddis dofs
         // 3. scatradis dofs
         // 4. auxiliary dofs
-        structdis->fill_complete(true, false, false);
-        fluiddis->fill_complete(true, false, false);
-        scatradis->fill_complete(true, false, false);
+        structdis->fill_complete({
+            .assign_degrees_of_freedom = true,
+            .init_elements = false,
+            .do_boundary_conditions = false,
+        });
+        fluiddis->fill_complete({
+            .assign_degrees_of_freedom = true,
+            .init_elements = false,
+            .do_boundary_conditions = false,
+        });
+        scatradis->fill_complete({
+            .assign_degrees_of_freedom = true,
+            .init_elements = false,
+            .do_boundary_conditions = false,
+        });
       }
     }
   }  // namespace Utils

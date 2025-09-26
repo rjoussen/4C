@@ -31,13 +31,12 @@ Core::FE::DiscretizationFaces::DiscretizationFaces(
 /*----------------------------------------------------------------------*
  |  Finalize construction (public)                          schott 03/12|
  *----------------------------------------------------------------------*/
-int Core::FE::DiscretizationFaces::fill_complete_faces(bool assigndegreesoffreedom,
-    bool initelements, bool doboundaryconditions, bool createinternalfaces)
+int Core::FE::DiscretizationFaces::fill_complete_faces(
+    OptionsFillComplete options, bool createinternalfaces)
 
 {
   // call standard FillComplete of base class
-  Core::FE::Discretization::fill_complete(
-      assigndegreesoffreedom, initelements, doboundaryconditions);
+  Core::FE::Discretization::fill_complete(options);
 
   if (createinternalfaces)
   {

@@ -187,8 +187,16 @@ void EHL::Base::setup_discretizations(
   // 2. lubrication dofs
   // 3. structure auxiliary dofs
   // 4. lubrication auxiliary dofs
-  structdis->fill_complete(true, false, false);
-  lubricationdis->fill_complete(true, false, false);
+  structdis->fill_complete({
+      .assign_degrees_of_freedom = true,
+      .init_elements = false,
+      .do_boundary_conditions = false,
+  });
+  lubricationdis->fill_complete({
+      .assign_degrees_of_freedom = true,
+      .init_elements = false,
+      .do_boundary_conditions = false,
+  });
 }
 
 /*----------------------------------------------------------------------*

@@ -298,7 +298,11 @@ PoroPressureBased::create_fully_overlapping_artery_discretization(
 
   // ghost on all procs.
   Core::Rebalance::ghost_discretization_on_all_procs(*artsearchdis);
-  artsearchdis->fill_complete(false, false, doboundaryconditions);
+  artsearchdis->fill_complete({
+      .assign_degrees_of_freedom = false,
+      .init_elements = false,
+      .do_boundary_conditions = doboundaryconditions,
+  });
 
   return artsearchdis;
 }

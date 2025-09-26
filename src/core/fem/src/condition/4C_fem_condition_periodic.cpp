@@ -823,7 +823,7 @@ void Core::Conditions::PeriodicBoundaryConditions::redistribute_and_create_dof_c
     // accessing the noderowmap requires a 'completed' discretization
     if (!discret_->filled())
     {
-      discret_->fill_complete(false, false, false);
+      discret_->fill_complete(Core::FE::OptionsFillComplete::none());
     }
 
     // a list of all nodes on this proc
@@ -1176,7 +1176,7 @@ void Core::Conditions::PeriodicBoundaryConditions::redistribute_and_create_dof_c
     // redistribute the nodes
     // this contains a call to fill_complete and assigns the same
     // degree of freedom to the matching nodes
-    discret_->redistribute(*newrownodemap, *newcolnodemap);
+    discret_->redistribute({*newrownodemap, *newcolnodemap});
   }
 }
 
@@ -1372,7 +1372,8 @@ void Core::Conditions::PeriodicBoundaryConditions::balance_load()
   const Core::LinAlg::Map newnodecolmap(-1, newnodegraph->col_map().num_my_elements(),
       newnodegraph->col_map().my_global_elements(), 0, discret_->get_comm());
 
-  discret_->redistribute(newnoderowmap, newnodecolmap, {.assign_degrees_of_freedom = false});
+  discret_->redistribute({newnoderowmap, newnodecolmap},
+      {.fill_complete = FE::OptionsFillComplete{.assign_degrees_of_freedom = false}});
 }
 
 FOUR_C_NAMESPACE_CLOSE

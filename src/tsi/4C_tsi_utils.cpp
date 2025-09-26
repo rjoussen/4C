@@ -124,7 +124,7 @@ void TSI::Utils::setup_tsi(MPI_Comm comm)
     structdis->fill_complete();
     Core::LinAlg::Map nc = *(structdis->node_col_map());
     Core::LinAlg::Map nr = *(structdis->node_row_map());
-    structdis->redistribute(nr, nc);
+    structdis->redistribute({nr, nc});
   }
 
   // access the thermo discretization
@@ -184,8 +184,8 @@ void TSI::Utils::setup_tsi(MPI_Comm comm)
     if (structdis->add_dof_set(thermodofset) != 1)
       FOUR_C_THROW("unexpected dof sets in structure field");
 
-    structdis->fill_complete(true, true, true);
-    thermdis->fill_complete(true, true, true);
+    structdis->fill_complete();
+    thermdis->fill_complete();
 
     TSI::Utils::set_material_pointers_matching_grid(*structdis, *thermdis);
   }
@@ -221,8 +221,16 @@ void TSI::Utils::setup_tsi(MPI_Comm comm)
     // 2. thermo dofs
     // 3. structure auxiliary dofs
     // 4. thermo auxiliary dofs
-    structdis->fill_complete(true, false, false);
-    thermdis->fill_complete(true, false, false);
+    structdis->fill_complete({
+        .assign_degrees_of_freedom = true,
+        .init_elements = false,
+        .do_boundary_conditions = false,
+    });
+    thermdis->fill_complete({
+        .assign_degrees_of_freedom = true,
+        .init_elements = false,
+        .do_boundary_conditions = false,
+    });
   }
 
 }  // setup_tsi()

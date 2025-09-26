@@ -36,7 +36,7 @@ namespace
 
       // create 1 element discretization
       testdis_->add_element(testele_);
-      testdis_->fill_complete(false, false, false);
+      testdis_->fill_complete(Core::FE::OptionsFillComplete::none());
 
       // setup internal beam element parameters
       // different data layout is necessary to call this method

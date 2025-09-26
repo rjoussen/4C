@@ -106,7 +106,7 @@ Airway::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(
 
     // make search discret fully overlapping on all procs
     Core::Rebalance::ghost_discretization_on_all_procs(*discret_);
-    discret_->fill_complete(false, false, false);
+    discret_->fill_complete(Core::FE::OptionsFillComplete::none());
 
     // Get elements and nodes that need to be ghosted to have correct neighbor search
     // independent of number of procs

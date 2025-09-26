@@ -60,9 +60,9 @@ void SSTI::SSTIAlgorithm::init(MPI_Comm comm, const Teuchos::ParameterList& ssti
   // get the global problem
   Global::Problem* problem = Global::Problem::instance();
 
-  problem->get_dis("structure")->fill_complete(true, true, true);
-  problem->get_dis("scatra")->fill_complete(true, true, true);
-  problem->get_dis("thermo")->fill_complete(true, true, true);
+  problem->get_dis("structure")->fill_complete();
+  problem->get_dis("scatra")->fill_complete();
+  problem->get_dis("thermo")->fill_complete();
 
   // clone scatra discretization from structure discretization first. Afterwards, clone thermo
   // discretization from scatra discretization
@@ -137,9 +137,17 @@ void SSTI::SSTIAlgorithm::init(MPI_Comm comm, const Teuchos::ParameterList& ssti
   // now we can finally fill our discretizations
   // reinitialization of the structural elements is
   // vital for parallelization here!
-  problem->get_dis("structure")->fill_complete(true, true, true);
-  problem->get_dis("scatra")->fill_complete(true, false, true);
-  problem->get_dis("thermo")->fill_complete(true, false, true);
+  problem->get_dis("structure")->fill_complete();
+  problem->get_dis("scatra")->fill_complete({
+      .assign_degrees_of_freedom = true,
+      .init_elements = false,
+      .do_boundary_conditions = true,
+  });
+  problem->get_dis("thermo")->fill_complete({
+      .assign_degrees_of_freedom = true,
+      .init_elements = false,
+      .do_boundary_conditions = true,
+  });
 
   isinit_ = true;
 }

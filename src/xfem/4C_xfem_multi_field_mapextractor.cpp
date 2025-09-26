@@ -587,7 +587,11 @@ void XFEM::MultiFieldMapExtractor::build_interface_coupling_dof_set()
   // set the new dof-set and finish the interface discretization
   idiscret_->replace_dof_set(0, icoupl_dofset_, true);
 
-  idiscret_->fill_complete(true, false, false);
+  idiscret_->fill_complete({
+      .assign_degrees_of_freedom = true,
+      .init_elements = false,
+      .do_boundary_conditions = false,
+  });
 }
 
 /*----------------------------------------------------------------------------*

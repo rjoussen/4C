@@ -353,14 +353,9 @@ void CONTACT::Interface::round_robin_change_ownership()
   std::shared_ptr<Core::LinAlg::Map> rownodesfull = Core::LinAlg::merge_map(noderowmap, SRN, false);
   std::shared_ptr<Core::LinAlg::Map> rowelesfull = Core::LinAlg::merge_map(elerowmap, SRE, false);
 
-  // to discretization
-  // export nodes and elements to the row map
-  discret().export_row_nodes(*rownodesfull);
-  discret().export_row_elements(*rowelesfull);
-
-  // export nodes and elements to the col map
-  discret().export_column_nodes(*colnodesfull);
-  discret().export_column_elements(*colelesfull);
+  // Redistribute but do NOT fill_complete
+  discret().redistribute({*rownodesfull, *colnodesfull}, {*rowelesfull, *colelesfull},
+      {.fill_complete = std::nullopt});
 
   // ********************************************
   // call the (very) expensive FILLCOMPLETE()!

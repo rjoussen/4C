@@ -37,7 +37,7 @@ int XFEM::DiscretizationXFEM::initial_fill_complete(const std::vector<int>& nds,
 {
   // Call from BaseClass
   int val = Core::FE::Discretization::fill_complete(
-      assigndegreesoffreedom, initelements, doboundaryconditions);
+      {assigndegreesoffreedom, initelements, doboundaryconditions});
 
   if (!assigndegreesoffreedom)
     FOUR_C_THROW(

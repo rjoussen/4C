@@ -294,7 +294,11 @@ void FSI::SlidingMonolithicStructureSplit::setup_system()
     {
       // mesh_init possibly modifies reference configuration of slave side --> recompute element
       // volume in initialize_elements()
-      structure_field()->discretization()->fill_complete(false, true, true);
+      structure_field()->discretization()->fill_complete({
+          .assign_degrees_of_freedom = false,
+          .init_elements = true,
+          .do_boundary_conditions = true,
+      });
       // set up sliding ale utils
       slideale_ = std::make_shared<FSI::Utils::SlideAleUtils>(structure_field()->discretization(),
           fluid_field()->discretization(), *coupsfm_, false, aleproj_);

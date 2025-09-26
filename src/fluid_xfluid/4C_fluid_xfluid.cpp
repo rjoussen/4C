@@ -117,7 +117,11 @@ void FLD::XFluid::add_additional_scalar_dofset_and_coupling()
         "!= 1?");
 
   // assign degrees of freedom (as a new dofset has been added!)
-  xdiscret_->fill_complete(true, false, false);
+  xdiscret_->fill_complete({
+      .assign_degrees_of_freedom = true,
+      .init_elements = false,
+      .do_boundary_conditions = false,
+  });
 
   xdiscret_->get_dof_set_proxy()->print_all_dofsets(xdiscret_->get_comm());
 

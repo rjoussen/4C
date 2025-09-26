@@ -64,7 +64,7 @@ void sti_dyn(const int& restartstep  //! time step for restart
 
   // equip thermo discretization with noderowmap for subsequent safety check
   // final fill_complete() is called at the end of discretization cloning
-  thermodis->fill_complete(false, false, false);
+  thermodis->fill_complete(Core::FE::OptionsFillComplete::none());
 
   // safety check
   if (thermodis->num_global_nodes() != 0)
@@ -76,15 +76,27 @@ void sti_dyn(const int& restartstep  //! time step for restart
   // interaction
   Core::FE::clone_discretization<STI::ScatraThermoCloneStrategy>(
       *scatradis, *thermodis, Global::Problem::instance()->cloning_material_map());
-  thermodis->fill_complete(false, true, true);
+  thermodis->fill_complete({
+      .assign_degrees_of_freedom = false,
+      .init_elements = true,
+      .do_boundary_conditions = true,
+  });
 
   // add proxy of scalar transport degrees of freedom to thermo discretization and vice versa
   if (thermodis->add_dof_set(scatradis->get_dof_set_proxy()) != 2)
     FOUR_C_THROW("Thermo discretization has illegal number of dofsets!");
   if (scatradis->add_dof_set(thermodis->get_dof_set_proxy()) != 2)
     FOUR_C_THROW("Scatra discretization has illegal number of dofsets!");
-  thermodis->fill_complete(true, false, false);
-  scatradis->fill_complete(true, false, false);
+  thermodis->fill_complete({
+      .assign_degrees_of_freedom = true,
+      .init_elements = false,
+      .do_boundary_conditions = false,
+  });
+  scatradis->fill_complete({
+      .assign_degrees_of_freedom = true,
+      .init_elements = false,
+      .do_boundary_conditions = false,
+  });
 
   // add material of scatra elements to thermo elements and vice versa
   for (int i = 0; i < scatradis->num_my_col_elements(); ++i)

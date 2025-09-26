@@ -114,7 +114,7 @@ Core::Binstrategy::BinningStrategy::BinningStrategy(const Teuchos::ParameterList
       binning_params, "spatial_approximation_type");
   bindis_->set_writer(std::make_shared<Core::IO::DiscretizationWriter>(
       bindis_, output_control, spatial_approximation_type));
-  bindis_->fill_complete(false, false, false);
+  bindis_->fill_complete(Core::FE::OptionsFillComplete::none());
 
   visbindis_ = std::make_shared<Core::FE::Discretization>("bins", comm_, 3);
   // create discretization writer
@@ -588,7 +588,7 @@ void Core::Binstrategy::BinningStrategy::determine_boundary_row_bins()
   boundaryrowbins_.clear();
 
   // fill discret if necessary to obtain bin row map
-  if (!bindis_->filled()) bindis_->fill_complete(false, false, false);
+  if (!bindis_->filled()) bindis_->fill_complete(Core::FE::OptionsFillComplete::none());
 
   // determine maximal possible number of neighbors
   size_t nummaxneighbors = 26;
@@ -785,7 +785,11 @@ void Core::Binstrategy::BinningStrategy::write_bin_output(int const step, double
   std::shared_ptr<Core::DOFSets::IndependentDofSet> independentdofset =
       std::make_shared<Core::DOFSets::IndependentDofSet>(true);
   visbindis_->replace_dof_set(independentdofset);
-  visbindis_->fill_complete(true, true, false);
+  visbindis_->fill_complete({
+      .assign_degrees_of_freedom = true,
+      .init_elements = true,
+      .do_boundary_conditions = false,
+  });
 
   // create vector that shows ghosting
   std::shared_ptr<Core::LinAlg::Vector<double>> ownedghostsvec =
@@ -1440,18 +1444,22 @@ void Core::Binstrategy::BinningStrategy::standard_discretization_ghosting(
   std::shared_ptr<Core::LinAlg::Map> roweles;
   std::tie(roweles, stdelecolmap) =
       discret->build_element_row_column(*newnoderowmap, *stdnodecolmap);
-  discret->export_row_nodes(*newnoderowmap);
-  discret->export_row_elements(*roweles);
-  discret->export_column_nodes(*stdnodecolmap);
-  discret->export_column_elements(*stdelecolmap);
+
+  discret->redistribute(
+      {*newnoderowmap, *stdnodecolmap}, {*roweles, *stdelecolmap}, {.fill_complete = std::nullopt});
+
   // in case we have a state vector, we need to build the dof map to enable its rebuild
   if (disnp == nullptr)
   {
-    discret->fill_complete(false, false, false);
+    discret->fill_complete(Core::FE::OptionsFillComplete::none());
   }
   else
   {
-    discret->fill_complete(true, false, false);
+    discret->fill_complete({
+        .assign_degrees_of_freedom = true,
+        .init_elements = false,
+        .do_boundary_conditions = false,
+    });
     std::shared_ptr<Core::LinAlg::Vector<double>> old;
     old = disnp;
     disnp = Core::LinAlg::create_vector(*discret->dof_row_map(), true);

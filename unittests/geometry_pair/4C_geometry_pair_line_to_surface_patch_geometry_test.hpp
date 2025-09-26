@@ -109,7 +109,11 @@ namespace
         new_element->set_node_ids(n_nodes_volume, node_ids.data());
         discret.add_element(new_element);
       }
-      discret.fill_complete(true, true, false);
+      discret.fill_complete({
+          .assign_degrees_of_freedom = true,
+          .init_elements = true,
+          .do_boundary_conditions = false,
+      });
     }
 
     // Create the face elements.

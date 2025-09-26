@@ -64,7 +64,7 @@ namespace
           std::make_shared<CONTACT::Element>(testtet4ele->id() + 1, testtet4ele->owner(),
               testtet4ele->shape(), testtet4ele->num_node(), testtet4ele->node_ids(), false, false);
       testdis_->add_element(testcontacttri3ele);
-      testdis_->fill_complete(false, false, false);
+      testdis_->fill_complete(Core::FE::OptionsFillComplete::none());
     }
   };
 

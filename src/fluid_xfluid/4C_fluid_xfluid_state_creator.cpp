@@ -206,7 +206,11 @@ void FLD::XFluidStateCreator::create_new_cut_state(
   dofset->set_min_gid(minnumdofsets_);         // set the minimal GID of xfem dis
   xdiscret->replace_dof_set(0, dofset, true);  // fluid dofset has nds = 0
 
-  xdiscret->fill_complete(true, false, false);
+  xdiscret->fill_complete({
+      .assign_degrees_of_freedom = true,
+      .init_elements = false,
+      .do_boundary_conditions = false,
+  });
 
   // print all dofsets
   xdiscret->get_dof_set_proxy()->print_all_dofsets(xdiscret->get_comm());

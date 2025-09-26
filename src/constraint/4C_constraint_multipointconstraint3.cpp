@@ -52,7 +52,7 @@ Constraints::MPConstraint3::MPConstraint3(std::shared_ptr<Core::FE::Discretizati
       // ReplaceNumDof(actdisc_,discriter->second);
       std::shared_ptr<Core::LinAlg::Map> newcolnodemap =
           Core::Rebalance::compute_node_col_map(*actdisc_, *discriter->second);
-      actdisc_->redistribute(*(actdisc_->node_row_map()), *newcolnodemap);
+      actdisc_->redistribute({*actdisc_->node_row_map(), *newcolnodemap});
       std::shared_ptr<Core::DOFSets::DofSet> newdofset =
           std::make_shared<Core::DOFSets::TransparentDofSet>(actdisc_);
       (discriter->second)->replace_dof_set(newdofset);
@@ -320,7 +320,7 @@ Constraints::MPConstraint3::create_discretization_from_condition(
         -1, constraintnodecolvec.size(), constraintnodecolvec.data(), 0, newdis->get_comm());
 
     constraintnodecolvec.clear();
-    newdis->redistribute(constraintnoderowmap, constraintnodecolmap);
+    newdis->redistribute({constraintnoderowmap, constraintnodecolmap});
     // put new discretization into the map
     newdiscmap[(*conditer)->parameters().get<int>("ConditionID")] = newdis;
     // increase counter

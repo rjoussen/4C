@@ -148,7 +148,7 @@ void Adapter::StructureBaseAlgorithmNew::setup_tim_int()
     Core::Utils::add_enum_class_to_parameter_list<Core::FE::ShapeFunctionType>(
         "spatial_approximation_type", Global::Problem::instance()->spatial_approximation_type(),
         binning_params);
-    actdis_vec[0]->fill_complete(false, false, false);
+    actdis_vec[0]->fill_complete(Core::FE::OptionsFillComplete::none());
 
     // Different types of structural elements may be present, so we need to help the binning
     // strategy understand their different shapes by providing the correct points to compute

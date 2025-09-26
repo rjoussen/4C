@@ -205,9 +205,21 @@ PoroPressureBased::setup_discretizations_and_field_coupling_porofluid_elast_scat
   ndsporofluid_scatra = fluiddis->add_dof_set(scatradofset);
   if (ndsporofluid_scatra != 3) FOUR_C_THROW("unexpected dof sets in fluid field");
 
-  structdis->fill_complete(true, false, false);
-  fluiddis->fill_complete(true, false, false);
-  scatradis->fill_complete(true, false, false);
+  structdis->fill_complete({
+      .assign_degrees_of_freedom = true,
+      .init_elements = false,
+      .do_boundary_conditions = false,
+  });
+  fluiddis->fill_complete({
+      .assign_degrees_of_freedom = true,
+      .init_elements = false,
+      .do_boundary_conditions = false,
+  });
+  scatradis->fill_complete({
+      .assign_degrees_of_freedom = true,
+      .init_elements = false,
+      .do_boundary_conditions = false,
+  });
 
   std::map<int, std::set<int>> nearby_ele_pairs;
   if (artery_coupl)
@@ -248,7 +260,11 @@ PoroPressureBased::setup_discretizations_and_field_coupling_porofluid_elast_scat
     if (artdis->add_dof_set(artscatradofset) != 2)
       FOUR_C_THROW("unexpected dof sets in artery field");
 
-    artscatradis->fill_complete(true, false, false);
+    artscatradis->fill_complete({
+        .assign_degrees_of_freedom = true,
+        .init_elements = false,
+        .do_boundary_conditions = false,
+    });
   }
 
   return nearby_ele_pairs;

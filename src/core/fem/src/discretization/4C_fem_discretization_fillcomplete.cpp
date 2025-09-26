@@ -45,8 +45,7 @@ void Core::FE::Discretization::reset(bool killdofs, bool killcond)
 }
 
 
-int Core::FE::Discretization::fill_complete(
-    bool assigndegreesoffreedom, bool initelements, bool doboundaryconditions)
+int Core::FE::Discretization::fill_complete(OptionsFillComplete options)
 {
   // my processor id
   const int myrank = Core::Communication::my_mpi_rank(get_comm());
@@ -63,7 +62,7 @@ int Core::FE::Discretization::fill_complete(
   }
 
   // set all maps to nullptr
-  reset(assigndegreesoffreedom, doboundaryconditions);
+  reset(options.assign_degrees_of_freedom, options.do_boundary_conditions);
 
   // (re)build map of nodes noderowmap_, nodecolmap_, noderowptr and nodecolptr
   build_node_row_map();
@@ -85,7 +84,7 @@ int Core::FE::Discretization::fill_complete(
   filled_ = true;
 
   // Assign degrees of freedom to elements and nodes
-  if (assigndegreesoffreedom)
+  if (options.assign_degrees_of_freedom)
   {
     if (myrank == 0)
     {
@@ -97,7 +96,7 @@ int Core::FE::Discretization::fill_complete(
   }
 
   // call element routines to initialize
-  if (initelements)
+  if (options.init_elements)
   {
     if (myrank == 0)
     {
@@ -109,7 +108,7 @@ int Core::FE::Discretization::fill_complete(
   }
 
   // (Re)build the geometry of the boundary conditions
-  if (doboundaryconditions)
+  if (options.do_boundary_conditions)
   {
     if (myrank == 0)
     {

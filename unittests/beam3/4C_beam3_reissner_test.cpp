@@ -58,7 +58,11 @@ namespace
 
       // create 1 element discretization
       testdis_->add_element(testele_);
-      testdis_->fill_complete(true, false, false);
+      testdis_->fill_complete({
+          .assign_degrees_of_freedom = true,
+          .init_elements = false,
+          .do_boundary_conditions = false,
+      });
     }
 
    protected:

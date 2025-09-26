@@ -210,7 +210,11 @@ void Mat::ScatraMultiScaleGP::init()
       FOUR_C_THROW("Micro-scale discretization has illegal number of dofsets!");
 
     // finalize discretization
-    microdis->fill_complete(true, false, false);
+    microdis->fill_complete({
+        .assign_degrees_of_freedom = true,
+        .init_elements = false,
+        .do_boundary_conditions = false,
+    });
 
     // get solver number
     const int linsolvernumber = sdyn_micro->get<int>("LINEAR_SOLVER");

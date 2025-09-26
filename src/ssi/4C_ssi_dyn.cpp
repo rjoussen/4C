@@ -92,9 +92,9 @@ void ssi_drt()
     }
 
     // 3.1.1 initial fill_complete
-    problem->get_dis("structure")->fill_complete(true, true, true);
-    problem->get_dis("scatra")->fill_complete(true, true, true);
-    if (is_scatra_manifold) problem->get_dis("scatra_manifold")->fill_complete(true, true, true);
+    problem->get_dis("structure")->fill_complete();
+    problem->get_dis("scatra")->fill_complete();
+    if (is_scatra_manifold) problem->get_dis("scatra_manifold")->fill_complete();
 
     // 3.1.2 init the chosen ssi algorithm
     // Construct time integrators of subproblems inside.
@@ -103,9 +103,19 @@ void ssi_drt()
     // now we can finally fill our discretizations
     // reinitialization of the structural elements is
     // vital for parallelization here!
-    problem->get_dis("structure")->fill_complete(true, true, true);
-    problem->get_dis("scatra")->fill_complete(true, false, true);
-    if (is_scatra_manifold) problem->get_dis("scatra_manifold")->fill_complete(true, false, true);
+    problem->get_dis("structure")->fill_complete();
+    problem->get_dis("scatra")->fill_complete({
+        .assign_degrees_of_freedom = true,
+        .init_elements = false,
+        .do_boundary_conditions = true,
+    });
+    if (is_scatra_manifold)
+      problem->get_dis("scatra_manifold")
+          ->fill_complete({
+              .assign_degrees_of_freedom = true,
+              .init_elements = false,
+              .do_boundary_conditions = true,
+          });
 
     Core::Rebalance::print_parallel_distribution(*problem->get_dis("structure"));
     Core::Rebalance::print_parallel_distribution(*problem->get_dis("scatra"));

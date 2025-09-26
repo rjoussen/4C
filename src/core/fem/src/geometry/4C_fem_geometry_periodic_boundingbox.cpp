@@ -168,7 +168,12 @@ void Core::Geo::MeshFree::BoundingBox::setup_bounding_box_discretization(
   {
     boxdiscret_ = boundingbox_dis;
 
-    if (boxdiscret_->filled() == false) boxdiscret_->fill_complete(true, false, false);
+    if (boxdiscret_->filled() == false)
+      boxdiscret_->fill_complete({
+          .assign_degrees_of_freedom = true,
+          .init_elements = false,
+          .do_boundary_conditions = false,
+      });
 
     // create fully overlapping boundingbox discret
     std::shared_ptr<Core::LinAlg::Map> rednodecolmap =
@@ -180,7 +185,11 @@ void Core::Geo::MeshFree::BoundingBox::setup_bounding_box_discretization(
     boxdiscret_->export_column_nodes(*rednodecolmap);
     boxdiscret_->export_column_elements(*redelecolmap);
 
-    boxdiscret_->fill_complete(true, false, false);
+    boxdiscret_->fill_complete({
+        .assign_degrees_of_freedom = true,
+        .init_elements = false,
+        .do_boundary_conditions = false,
+    });
   }
 
   if (boundingbox_dis == nullptr or boxdiscret_->num_my_col_elements() == 0)

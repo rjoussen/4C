@@ -468,7 +468,11 @@ void CONTACT::Interface::fill_complete_new(const bool isFinalParallelDistributio
   }
 
   // fill_complete the interface discretization
-  discret().fill_complete(isFinalParallelDistribution, false, false);
+  discret().fill_complete({
+      .assign_degrees_of_freedom = isFinalParallelDistribution,
+      .init_elements = false,
+      .do_boundary_conditions = false,
+  });
 
   // check whether crosspoints / edge nodes shall be considered or not
   initialize_cross_points();
@@ -1042,13 +1046,9 @@ void CONTACT::Interface::redistribute()
   // (note that nothing is actually redistributed in here)
   const auto& [roweles, coleles] = discret().build_element_row_column(*rownodes, *colnodes);
 
-  // export nodes and elements to the row map
-  discret().export_row_nodes(*rownodes);
-  discret().export_row_elements(*roweles);
-
-  // export nodes and elements to the column map (create ghosting)
-  discret().export_column_nodes(*colnodes);
-  discret().export_column_elements(*coleles);
+  // Redistribute but do NOT call fill_complete at all
+  discret().redistribute(
+      {*rownodes, *colnodes}, {*roweles, *coleles}, {.fill_complete = std::nullopt});
 }
 
 /*----------------------------------------------------------------------------*

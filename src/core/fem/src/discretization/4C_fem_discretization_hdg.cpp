@@ -31,11 +31,10 @@ Core::FE::DiscretizationHDG::DiscretizationHDG(
 /*----------------------------------------------------------------------*
  |  Finalize construction (public)                     kronbichler 12/13|
  *----------------------------------------------------------------------*/
-int Core::FE::DiscretizationHDG::fill_complete(
-    bool assigndegreesoffreedom, bool initelements, bool doboundaryconditions)
+int Core::FE::DiscretizationHDG::fill_complete(OptionsFillComplete options)
 {
   // call FillCompleteFaces of base class with create_faces set to true
-  this->fill_complete_faces(assigndegreesoffreedom, initelements, doboundaryconditions, true);
+  this->fill_complete_faces(options, true);
 
   // get the correct face orientation from the owner. since the elements in general do not allow
   // packing, extract the node ids, communicate them, and change the node ids in the element

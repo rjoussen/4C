@@ -103,7 +103,7 @@ void Adapter::FluidBaseAlgorithm::setup_fluid(const Teuchos::ParameterList& prbd
     if (probtype == Core::ProblemType::fsi_xfem or probtype == Core::ProblemType::fluid_xfem or
         (probtype == Core::ProblemType::fpsi_xfem and disname == "fluid"))
     {
-      actdis->fill_complete(false, false, false);
+      actdis->fill_complete(Core::FE::OptionsFillComplete::none());
     }
     else
     {

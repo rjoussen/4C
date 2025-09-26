@@ -1071,7 +1071,7 @@ void ScaTra::ScaTraTimIntElchSCL::redistribute_micro_discretization()
   Core::LinAlg::Map new_node_col_map(
       -1, static_cast<int>(my_col_nodes.size()), my_col_nodes.data(), 0, micro_dis->get_comm());
 
-  micro_dis->redistribute(new_node_row_map, new_node_col_map);
+  micro_dis->redistribute({new_node_row_map, new_node_col_map});
 }
 
 /*----------------------------------------------------------------------*

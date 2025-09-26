@@ -202,7 +202,7 @@ void PoroElastScaTra::Utils::create_volume_ghosting(Core::FE::Discretization& id
   // 4 In case we use
   std::shared_ptr<Core::FE::DiscretizationFaces> facediscret =
       std::dynamic_pointer_cast<Core::FE::DiscretizationFaces>(voldis[1]);
-  if (facediscret != nullptr) facediscret->fill_complete_faces(true, true, true, true);
+  if (facediscret != nullptr) facediscret->fill_complete_faces({}, true);
 }
 
 FOUR_C_NAMESPACE_CLOSE
