@@ -65,99 +65,217 @@ void BeamInteraction::BeamToBeamPointCouplingPair<Beam>::evaluate_and_assemble(
     const std::shared_ptr<Core::LinAlg::SparseMatrix>& stiffness_matrix,
     const std::shared_ptr<const Core::LinAlg::Vector<double>>& displacement_vector)
 {
-  evaluate_and_assemble_positional_coupling(
-      *discret, force_vector, stiffness_matrix, *displacement_vector);
-  evaluate_and_assemble_rotational_coupling(
-      *discret, force_vector, stiffness_matrix, *displacement_vector);
-}
-
-/**
- *
- */
-template <typename Beam>
-void BeamInteraction::BeamToBeamPointCouplingPair<Beam>::evaluate_and_assemble_positional_coupling(
-    const Core::FE::Discretization& discret,
-    const std::shared_ptr<Core::LinAlg::FEVector<double>>& force_vector,
-    const std::shared_ptr<Core::LinAlg::SparseMatrix>& stiffness_matrix,
-    const Core::LinAlg::Vector<double>& displacement_vector) const
-{
   const std::array<const Core::Elements::Element*, 2> beam_ele = {
       this->element1(), this->element2()};
 
-  // Initialize variables for evaluation of the positional coupling terms.
-  std::array<Core::LinAlg::Matrix<Beam::n_dof_, 1, int>, 2> gid_pos;
-  std::array<GeometryPair::ElementData<Beam, scalar_type_pos>, 2> beam_pos = {
-      GeometryPair::InitializeElementData<Beam, scalar_type_pos>::initialize(beam_ele[0]),
-      GeometryPair::InitializeElementData<Beam, scalar_type_pos>::initialize(beam_ele[1])};
-  std::array<Core::LinAlg::Matrix<3, 1, scalar_type_pos>, 2> r;
-  Core::LinAlg::Matrix<3, 1, scalar_type_pos> force;
-  std::array<Core::LinAlg::Matrix<Beam::n_dof_, 1, scalar_type_pos>, 2> force_element;
+  // Initialize pair values that we will fill while evaluating the cross-section kinematics.
+  std::array<int, 2 * (Beam::n_dof_ + n_dof_rot_)> pair_gid{-1};
+  Core::LinAlg::Matrix<2 * (Beam::n_dof_ + n_dof_rot_), 12> left_transformation_matrix(
+      Core::LinAlg::Initialization::zero);
+  Core::LinAlg::Matrix<12, 2 * (Beam::n_dof_ + n_dof_rot_)> right_transformation_matrix(
+      Core::LinAlg::Initialization::zero);
 
-  // Evaluate individual positions in the two beams.
-  for (unsigned int i_beam = 0; i_beam < 2; i_beam++)
-  {
-    // Get GIDs of the beams positional DOF.
-    std::vector<int> lm_beam, lm_solid, lmowner, lmstride;
-    beam_ele[i_beam]->location_vector(discret, lm_beam, lmowner, lmstride);
-    const std::array<int, 12> pos_dof_indices = {0, 1, 2, 6, 7, 8, 9, 10, 11, 15, 16, 17};
-    for (unsigned int i = 0; i < Beam::n_dof_; i++)
-      gid_pos[i_beam](i) = lm_beam[pos_dof_indices[i]];
+  // Initialize variables for evaluation of the positions.
+  std::array<Core::LinAlg::Matrix<3, 1>, 2> r_ref;
+  std::array<Core::LinAlg::Matrix<3, 1>, 2> r;
 
-    // Set current nodal positions (and tangents) for beam element
-    std::vector<double> element_posdofvec_absolutevalues(Beam::n_dof_, 0.0);
-    std::vector<int> lm(Beam::n_dof_);
-    for (unsigned int i_dof = 0; i_dof < Beam::n_dof_; i_dof++) lm[i_dof] = gid_pos[i_beam](i_dof);
-    BeamInteraction::Utils::extract_pos_dof_vec_absolute_values(
-        discret, beam_ele[i_beam], displacement_vector, element_posdofvec_absolutevalues);
-    for (unsigned int i_dof = 0; i_dof < Beam::n_dof_; i_dof++)
-      beam_pos[i_beam].element_position_(i_dof) =
-          Core::FADUtils::HigherOrderFadValue<scalar_type_pos>::apply(2 * Beam::n_dof_,
-              i_beam * Beam::n_dof_ + i_dof, element_posdofvec_absolutevalues[i_dof]);
-
-    // Evaluate the position of the coupling point.
-    GeometryPair::evaluate_position<Beam>(
-        position_in_parameterspace_[i_beam], beam_pos[i_beam], r[i_beam]);
-  }
-
-  // Calculate the force between the two beams.
-  force = r[1];
-  force -= r[0];
-  force.scale(penalty_parameter_pos_);
-
-  for (unsigned int i_beam = 0; i_beam < 2; i_beam++)
-  {
-    double factor;
-    if (i_beam == 0)
-      factor = -1.0;
-    else
-      factor = 1.0;
-
-    // The force vector is in R3, we need to calculate the equivalent nodal forces on the
-    // element dof. This is done with the virtual work equation $F \delta r = f \delta q$.
-    force_element[i_beam].put_scalar(0.0);
-    for (unsigned int i_dof = 0; i_dof < Beam::n_dof_; i_dof++)
-      for (unsigned int i_dir = 0; i_dir < 3; i_dir++)
-        force_element[i_beam](i_dof) +=
-            factor * force(i_dir) * r[i_beam](i_dir).dx(i_beam * Beam::n_dof_ + i_dof);
-
-    // Add the coupling force to the global force vector.
-    if (force_vector != nullptr)
-      force_vector->sum_into_global_values(gid_pos[i_beam].num_rows(), gid_pos[i_beam].data(),
-          Core::FADUtils::cast_to_double(force_element[i_beam]).data());
-  }
-
-  // Evaluate and assemble the coupling stiffness terms.
-  if (stiffness_matrix != nullptr)
+  // Evaluate positional kinematics
   {
     for (unsigned int i_beam = 0; i_beam < 2; i_beam++)
     {
-      for (unsigned int j_beam = 0; j_beam < 2; j_beam++)
+      // Get shape function data
+      GeometryPair::ElementData<Beam, double> beam_data =
+          GeometryPair::InitializeElementData<Beam, double>::initialize(beam_ele[i_beam]);
+
+      // Get GIDs of the beams positional DOF.
+      std::vector<int> lm_beam, lm_solid, lmowner, lmstride;
+      beam_ele[i_beam]->location_vector(*discret, lm_beam, lmowner, lmstride);
+      const std::array<int, 12> pos_dof_indices = {0, 1, 2, 6, 7, 8, 9, 10, 11, 15, 16, 17};
+      for (unsigned int i_dof = 0; i_dof < Beam::n_dof_; i_dof++)
+        pair_gid[i_dof + i_beam * (Beam::n_dof_ + n_dof_rot_)] = lm_beam[pos_dof_indices[i_dof]];
+
+      // Set current nodal positions (and tangents) for beam element
+      std::vector<double> element_posdofvec_values(Beam::n_dof_, 0.0);
+      BeamInteraction::Utils::extract_pos_dof_vec_values(
+          *discret, beam_ele[i_beam], *displacement_vector, element_posdofvec_values);
+      std::vector<double> element_posdofvec_absolutevalues(Beam::n_dof_, 0.0);
+      BeamInteraction::Utils::extract_pos_dof_vec_absolute_values(
+          *discret, beam_ele[i_beam], *displacement_vector, element_posdofvec_absolutevalues);
+
+      // Evaluate the current position of the coupling point.
+      for (unsigned int i_dof = 0; i_dof < Beam::n_dof_; i_dof++)
+        beam_data.element_position_(i_dof) = element_posdofvec_absolutevalues[i_dof];
+      GeometryPair::evaluate_position<Beam>(
+          position_in_parameterspace_[i_beam], beam_data, r[i_beam]);
+
+      // Evaluate the reference position of the coupling point.
+      for (unsigned int i_dof = 0; i_dof < Beam::n_dof_; i_dof++)
+        beam_data.element_position_(i_dof) -= element_posdofvec_values[i_dof];
+      GeometryPair::evaluate_position<Beam>(
+          position_in_parameterspace_[i_beam], beam_data, r_ref[i_beam]);
+
+      // Shape function matrices
+      Core::LinAlg::Matrix<3, Beam::n_dof_> H_full;
+      GeometryPair::evaluate_shape_function_matrix<Beam>(
+          H_full, position_in_parameterspace_[i_beam], beam_data.shape_function_data_);
+      for (unsigned int i_dof = 0; i_dof < Beam::n_dof_; i_dof++)
       {
-        for (unsigned int i_dof = 0; i_dof < Beam::n_dof_; i_dof++)
-          for (unsigned int j_dof = 0; j_dof < Beam::n_dof_; j_dof++)
-            stiffness_matrix->fe_assemble(
-                force_element[i_beam](i_dof).dx(j_beam * Beam::n_dof_ + j_dof),
-                gid_pos[i_beam](i_dof), gid_pos[j_beam](j_dof));
+        for (unsigned int i_dir = 0; i_dir < 3; i_dir++)
+        {
+          left_transformation_matrix(i_dof + i_beam * (Beam::n_dof_ + n_dof_rot_),
+              i_dir + i_beam * 6) = H_full(i_dir, i_dof);
+          right_transformation_matrix(i_dir + i_beam * 6,
+              i_dof + i_beam * (Beam::n_dof_ + n_dof_rot_)) = H_full(i_dir, i_dof);
+        }
+      }
+    }
+  }
+
+  // Initialize variables for evaluation of the rotations.
+  std::array<Core::LinAlg::Matrix<4, 1, scalar_type_rot>, 2> cross_section_quaternion;
+  std::array<Core::LinAlg::Matrix<4, 1, double>, 2> cross_section_quaternion_ref;
+
+  // Evaluate rotational kinematics
+  {
+    for (unsigned int i_beam = 0; i_beam < 2; i_beam++)
+    {
+      // Get GIDs of the beams rotational DOF.
+      const auto rot_gid = Utils::get_element_rot_gid_indices(*discret, beam_ele[i_beam]);
+      for (unsigned int i_dof = 0; i_dof < n_dof_rot_; i_dof++)
+        pair_gid[i_dof + Beam::n_dof_ + i_beam * (Beam::n_dof_ + n_dof_rot_)] = rot_gid[i_dof];
+
+      // Get the triad interpolation schemes for the two beams.
+      LargeRotations::TriadInterpolationLocalRotationVectors<3, double> triad_interpolation_scheme;
+      LargeRotations::TriadInterpolationLocalRotationVectors<3, double>
+          ref_triad_interpolation_scheme;
+      BeamInteraction::get_beam_triad_interpolation_scheme(*discret, *displacement_vector,
+          beam_ele[i_beam], triad_interpolation_scheme, ref_triad_interpolation_scheme);
+
+      // Calculate the rotation vector of the beam cross section and its FAD representation.
+      Core::LinAlg::Matrix<4, 1, double> quaternion_double;
+      Core::LinAlg::Matrix<3, 1, double> psi_double;
+      Core::LinAlg::Matrix<3, 1, scalar_type_rot> psi;
+      triad_interpolation_scheme.get_interpolated_quaternion_at_xi(
+          quaternion_double, position_in_parameterspace_[i_beam]);
+      Core::LargeRotations::quaterniontoangle(quaternion_double, psi_double);
+      for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
+        psi(i_dim) = Core::FADUtils::HigherOrderFadValue<scalar_type_rot>::apply(
+            6, i_beam * 3 + i_dim, psi_double(i_dim));
+      Core::LargeRotations::angletoquaternion(psi, cross_section_quaternion[i_beam]);
+      ref_triad_interpolation_scheme.get_interpolated_quaternion_at_xi(
+          cross_section_quaternion_ref[i_beam], position_in_parameterspace_[i_beam]);
+
+      // Linearization interpolation matrices
+      std::vector<Core::LinAlg::Matrix<3, 3, double>> I_tilde;
+      Core::LinAlg::Matrix<3, n_dof_rot_, double> I_tilde_full;
+      triad_interpolation_scheme.get_nodal_generalized_rotation_interpolation_matrices_at_xi(
+          I_tilde, position_in_parameterspace_[i_beam]);
+      for (unsigned int i_node = 0; i_node < 3; i_node++)
+        for (unsigned int i_dim_0 = 0; i_dim_0 < 3; i_dim_0++)
+          for (unsigned int i_dim_1 = 0; i_dim_1 < 3; i_dim_1++)
+            I_tilde_full(i_dim_0, i_node * 3 + i_dim_1) = I_tilde[i_node](i_dim_0, i_dim_1);
+
+      // Spin shape function matrices
+      auto L_beam = Core::LinAlg::SerialDenseVector(3);
+      Core::FE::shape_function_1d(
+          L_beam, position_in_parameterspace_[i_beam], Core::FE::CellType::line3);
+      Core::LinAlg::Matrix<3, n_dof_rot_, double> L_beam_full{Core::LinAlg::Initialization::zero};
+      for (unsigned int i_node_rot = 0; i_node_rot < 3; i_node_rot++)
+      {
+        for (unsigned int i_dir = 0; i_dir < 3; i_dir++)
+        {
+          L_beam_full(i_dir, i_dir + 3 * i_node_rot) = L_beam(i_node_rot);
+        }
+      }
+      for (unsigned int i_dof = 0; i_dof < n_dof_rot_; i_dof++)
+      {
+        for (unsigned int i_dir = 0; i_dir < 3; i_dir++)
+        {
+          left_transformation_matrix(i_dof + Beam::n_dof_ + i_beam * (Beam::n_dof_ + n_dof_rot_),
+              i_dir + 3 + i_beam * 6) = L_beam_full(i_dir, i_dof);
+          right_transformation_matrix(
+              i_dir + 3 + i_beam * 6, i_dof + Beam::n_dof_ + i_beam * (Beam::n_dof_ + n_dof_rot_)) =
+              I_tilde_full(i_dir, i_dof);
+        }
+      }
+    }
+  }
+
+  // Positional coupling terms
+  const auto [constraint_position, constraint_position_lin_kinematic,
+      residuum_position_lin_lambda] = evaluate_positional_coupling(r);
+
+  // Rotational coupling terms
+  const auto [constraint_rotation, constraint_rotation_lin_kinematic, residuum_rotation_lin_lambda,
+      evaluation_data_rotation] =
+      evaluate_rotational_coupling(cross_section_quaternion_ref, cross_section_quaternion);
+
+  // Coupling residuum and stiffness
+  Core::LinAlg::Matrix<12, 1> residuum(Core::LinAlg::Initialization::zero);
+  Core::LinAlg::Matrix<12, 12> stiffness(Core::LinAlg::Initialization::zero);
+
+  // Penalty regularization positions
+  Core::LinAlg::Matrix<3, 1> lambda_position = constraint_position;
+  lambda_position.scale(penalty_parameter_pos_);
+  Core::LinAlg::Matrix<12, 1> residuum_position;
+  residuum_position.multiply_nn(residuum_position_lin_lambda, lambda_position);
+  residuum += residuum_position;
+
+  Core::LinAlg::Matrix<12, 12> stiffness_position;
+  stiffness_position.multiply_nn(residuum_position_lin_lambda, constraint_position_lin_kinematic);
+  stiffness_position.scale(penalty_parameter_pos_);
+  stiffness += stiffness_position;
+
+  // Penalty regularization rotations
+  Core::LinAlg::Matrix<3, 1> lambda_rotation = constraint_rotation;
+  lambda_rotation.scale(penalty_parameter_rot_);
+  Core::LinAlg::Matrix<12, 1> residuum_rotation;
+  residuum_rotation.multiply_nn(residuum_rotation_lin_lambda, lambda_rotation);
+  residuum += residuum_rotation;
+
+  Core::LinAlg::Matrix<12, 12> stiffness_rot;
+  stiffness_rot.multiply_nn(residuum_rotation_lin_lambda, constraint_rotation_lin_kinematic);
+  stiffness_rot.scale(penalty_parameter_rot_);
+  for (unsigned int i_beam = 0; i_beam < 2; i_beam++)
+  {
+    for (unsigned int i = 0; i < 3; i++)
+    {
+      for (unsigned int j = 0; j < 3; j++)
+      {
+        for (unsigned int l = 0; l < 3; l++)
+        {
+          stiffness_rot(i + 3, l + 3 + 6 * i_beam) -=
+              evaluation_data_rotation[i_beam][i][j][l] * lambda_rotation(j);
+          stiffness_rot(i + 9, l + 3 + 6 * i_beam) +=
+              evaluation_data_rotation[i_beam][i][j][l] * lambda_rotation(j);
+        }
+      }
+    }
+  }
+  stiffness += stiffness_rot;
+
+  // Map residuum and stiffness to element DOFs
+  Core::LinAlg::Matrix<2 * (Beam::n_dof_ + n_dof_rot_), 1> residuum_pair{
+      Core::LinAlg::Initialization::zero};
+  Core::LinAlg::Matrix<2 * (Beam::n_dof_ + n_dof_rot_), 2 * (Beam::n_dof_ + n_dof_rot_)>
+      stiffness_pair{Core::LinAlg::Initialization::zero};
+  residuum_pair.multiply(left_transformation_matrix, residuum);
+  Core::LinAlg::Matrix<2 * (Beam::n_dof_ + n_dof_rot_), 12> temp_matrix;
+  temp_matrix.multiply(left_transformation_matrix, stiffness);
+  stiffness_pair.multiply(temp_matrix, right_transformation_matrix);
+
+  // Add the coupling terms into the global vector ana matrix.
+  if (force_vector != nullptr)
+    force_vector->sum_into_global_values(pair_gid.size(), pair_gid.data(), residuum_pair.data());
+  if (stiffness_matrix != nullptr)
+  {
+    for (unsigned int i_dof = 0; i_dof < pair_gid.size(); i_dof++)
+    {
+      for (unsigned int j_dof = 0; j_dof < pair_gid.size(); j_dof++)
+      {
+        if (pair_gid[i_dof] == -1 or pair_gid[j_dof] == -1) continue;
+        stiffness_matrix->fe_assemble(
+            stiffness_pair(i_dof, j_dof), pair_gid[i_dof], pair_gid[j_dof]);
       }
     }
   }
@@ -167,130 +285,119 @@ void BeamInteraction::BeamToBeamPointCouplingPair<Beam>::evaluate_and_assemble_p
  *
  */
 template <typename Beam>
-void BeamInteraction::BeamToBeamPointCouplingPair<Beam>::evaluate_and_assemble_rotational_coupling(
-    const Core::FE::Discretization& discret,
-    const std::shared_ptr<Core::LinAlg::FEVector<double>>& force_vector,
-    const std::shared_ptr<Core::LinAlg::SparseMatrix>& stiffness_matrix,
-    const Core::LinAlg::Vector<double>& displacement_vector) const
+std::tuple<Core::LinAlg::Matrix<3, 1>, Core::LinAlg::Matrix<3, 12>, Core::LinAlg::Matrix<12, 3>>
+BeamInteraction::BeamToBeamPointCouplingPair<Beam>::evaluate_positional_coupling(
+    const std::array<Core::LinAlg::Matrix<3, 1>, 2>& r)
 {
-  const std::array<const Core::Elements::Element*, 2> beam_ele = {
-      this->element1(), this->element2()};
+  // Coupling vectors and matrices
+  Core::LinAlg::Matrix<3, 1> constraint_position(Core::LinAlg::Initialization::zero);
+  Core::LinAlg::Matrix<3, 12> constraint_position_lin_kinematic(Core::LinAlg::Initialization::zero);
+  Core::LinAlg::Matrix<12, 3> residuum_position_lin_lambda(Core::LinAlg::Initialization::zero);
 
-  // Declare variables for evaluation of the rotational coupling terms.
-  std::array<std::vector<int>, 2> gid_rot;
-  std::array<Core::LinAlg::Matrix<4, 1, double>, 2> quaternion_ref;
-  std::array<Core::LinAlg::Matrix<4, 1, scalar_type_rot>, 2> quaternion;
-  std::array<Core::LinAlg::SerialDenseVector, 2> L_i = {
-      Core::LinAlg::SerialDenseVector(3), Core::LinAlg::SerialDenseVector(3)};
-  std::array<Core::LinAlg::Matrix<3, n_dof_rot_, double>, 2> T_times_I_tilde_full;
-  std::array<Core::LinAlg::Matrix<n_dof_rot_, 1, scalar_type_rot>, 2> moment_nodal_load;
-  std::array<std::array<Core::LinAlg::Matrix<n_dof_rot_, 3, double>, 2>, 2>
-      d_moment_nodal_load_d_psi;
+  // Constraint
+  constraint_position = r[1];
+  constraint_position -= r[0];
 
-  // Evaluate individual rotational fields in the two beams.
-  for (unsigned int i_beam = 0; i_beam < 2; i_beam++)
+  // Linearizations
+  for (unsigned int i_dir = 0; i_dir < 3; i_dir++)
   {
-    // Get GIDs of the beams rotational DOF.
-    gid_rot[i_beam] = Utils::get_element_rot_gid_indices(discret, beam_ele[i_beam]);
+    constraint_position_lin_kinematic(i_dir, i_dir) = -1.0;
+    constraint_position_lin_kinematic(i_dir, 6 + i_dir) = 1.0;
 
-    // Get the triad interpolation schemes for the two beams.
-    LargeRotations::TriadInterpolationLocalRotationVectors<3, double> triad_interpolation_scheme;
-    LargeRotations::TriadInterpolationLocalRotationVectors<3, double>
-        ref_triad_interpolation_scheme;
-    BeamInteraction::get_beam_triad_interpolation_scheme(discret, displacement_vector,
-        beam_ele[i_beam], triad_interpolation_scheme, ref_triad_interpolation_scheme);
-
-    // Calculate the rotation vector of the beam cross sections and its FAD representation.
-    Core::LinAlg::Matrix<4, 1, double> quaternion_double;
-    Core::LinAlg::Matrix<3, 1, double> psi_double;
-    Core::LinAlg::Matrix<3, 1, scalar_type_rot> psi;
-    triad_interpolation_scheme.get_interpolated_quaternion_at_xi(
-        quaternion_double, position_in_parameterspace_[i_beam]);
-    Core::LargeRotations::quaterniontoangle(quaternion_double, psi_double);
-    for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
-      psi(i_dim) = Core::FADUtils::HigherOrderFadValue<scalar_type_rot>::apply(
-          6, i_beam * rot_dim_ + i_dim, psi_double(i_dim));
-    Core::LargeRotations::angletoquaternion(psi, quaternion[i_beam]);
-
-    ref_triad_interpolation_scheme.get_interpolated_quaternion_at_xi(
-        quaternion_ref[i_beam], position_in_parameterspace_[i_beam]);
-
-    // Transformation matrix.
-    Core::LinAlg::Matrix<3, 3, double> T = Core::LargeRotations::tmatrix(psi_double);
-
-    // Interpolation matrices.
-    std::vector<Core::LinAlg::Matrix<3, 3, double>> I_tilde;
-    Core::LinAlg::Matrix<3, n_dof_rot_, double> I_tilde_full;
-    Core::FE::shape_function_1d(
-        L_i[i_beam], position_in_parameterspace_[i_beam], Core::FE::CellType::line3);
-    triad_interpolation_scheme.get_nodal_generalized_rotation_interpolation_matrices_at_xi(
-        I_tilde, position_in_parameterspace_[i_beam]);
-    for (unsigned int i_node = 0; i_node < 3; i_node++)
-      for (unsigned int i_dim_0 = 0; i_dim_0 < 3; i_dim_0++)
-        for (unsigned int i_dim_1 = 0; i_dim_1 < 3; i_dim_1++)
-          I_tilde_full(i_dim_0, i_node * 3 + i_dim_1) = I_tilde[i_node](i_dim_0, i_dim_1);
-    T_times_I_tilde_full[i_beam].multiply(T, I_tilde_full);
+    residuum_position_lin_lambda(i_dir, i_dir) = -1.0;
+    residuum_position_lin_lambda(6 + i_dir, i_dir) = 1.0;
   }
+
+  return {constraint_position, constraint_position_lin_kinematic, residuum_position_lin_lambda};
+}
+
+/**
+ *
+ */
+template <typename Beam>
+std::tuple<Core::LinAlg::Matrix<3, 1>, Core::LinAlg::Matrix<3, 12>, Core::LinAlg::Matrix<12, 3>,
+    std::array<std::array<std::array<std::array<double, 3>, 3>, 3>, 2>>
+BeamInteraction::BeamToBeamPointCouplingPair<Beam>::evaluate_rotational_coupling(
+    const std::array<Core::LinAlg::Matrix<4, 1, double>, 2>& cross_section_quaternion_ref,
+    const std::array<Core::LinAlg::Matrix<4, 1, scalar_type_rot>, 2>& cross_section_quaternion)
+{
+  // Coupling vectors and matrices
+  Core::LinAlg::Matrix<3, 1> constraint_rotation(Core::LinAlg::Initialization::zero);
+  Core::LinAlg::Matrix<3, 12> constraint_rotation_lin_kinematic(Core::LinAlg::Initialization::zero);
+  Core::LinAlg::Matrix<12, 3> residuum_rotation_lin_lambda(Core::LinAlg::Initialization::zero);
+  std::array<std::array<std::array<std::array<double, 3>, 3>, 3>, 2> evaluation_data_rotation{};
 
   // Get the relative rotation vector between the two cross sections.
   Core::LinAlg::Matrix<4, 1, scalar_type_rot> temp_quaternion_1, temp_quaternion_2, quaternion_rel;
   Core::LinAlg::Matrix<3, 1, scalar_type_rot> psi_rel;
   Core::LinAlg::Matrix<4, 1, scalar_type_rot> quaternion_0_inv =
-      Core::LargeRotations::inversequaternion(quaternion[0]);
+      Core::LargeRotations::inversequaternion(cross_section_quaternion[0]);
   Core::LinAlg::Matrix<4, 1, double> quaternion_1_ref_inv =
-      Core::LargeRotations::inversequaternion(quaternion_ref[1]);
-  Core::LargeRotations::quaternionproduct(quaternion_0_inv, quaternion_ref[0], temp_quaternion_1);
+      Core::LargeRotations::inversequaternion(cross_section_quaternion_ref[1]);
+  Core::LargeRotations::quaternionproduct(
+      quaternion_0_inv, cross_section_quaternion_ref[0], temp_quaternion_1);
   Core::LargeRotations::quaternionproduct(
       temp_quaternion_1, quaternion_1_ref_inv, temp_quaternion_2);
-  Core::LargeRotations::quaternionproduct(temp_quaternion_2, quaternion[1], quaternion_rel);
+  Core::LargeRotations::quaternionproduct(
+      temp_quaternion_2, cross_section_quaternion[1], quaternion_rel);
   Core::LargeRotations::quaterniontoangle(quaternion_rel, psi_rel);
 
-  // Evaluate and assemble the moment coupling terms.
+  // Transformation matrix
+  const Core::LinAlg::Matrix<3, 3, scalar_type_rot> T_psi_rel =
+      Core::LargeRotations::tmatrix(psi_rel);
+
+  constraint_rotation = Core::FADUtils::cast_to_double(psi_rel);
   for (unsigned int i_beam = 0; i_beam < 2; i_beam++)
   {
-    for (unsigned int i_node = 0; i_node < 3; i_node++)
+    const double load_factor = i_beam == 0 ? -1.0 : 1.0;
+
+    // Get the rotation angle
+    Core::LinAlg::Matrix<3, 1, double> psi_beam;
+    Core::LargeRotations::quaterniontoangle(
+        Core::FADUtils::cast_to_double(cross_section_quaternion[i_beam]), psi_beam);
+
+    const Core::LinAlg::Matrix<3, 3, double> T_psi_beam = Core::LargeRotations::tmatrix(psi_beam);
+    Core::LinAlg::Matrix<3, 3, double> d_psi_rel_d_psi_beam;
+    for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
     {
-      for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
+      for (unsigned int j_dim = 0; j_dim < 3; j_dim++)
       {
-        double factor;
-        if (i_beam == 0)
-          factor = -1.0;
-        else
-          factor = 1.0;
-        moment_nodal_load[i_beam](3 * i_node + i_dim) =
-            factor * penalty_parameter_rot_ * L_i[i_beam](i_node) * psi_rel(i_dim);
+        d_psi_rel_d_psi_beam(i_dim, j_dim) = psi_rel(i_dim).dx(j_dim + i_beam * 3);
       }
     }
 
-    if (force_vector != nullptr)
-      force_vector->sum_into_global_values(gid_rot[i_beam].size(), gid_rot[i_beam].data(),
-          Core::FADUtils::cast_to_double(moment_nodal_load[i_beam]).data());
-  }
-
-  // Evaluate and assemble the coupling stiffness terms.
-  if (stiffness_matrix != nullptr)
-  {
-    for (unsigned int i_beam = 0; i_beam < 2; i_beam++)
+    Core::LinAlg::Matrix<3, 3, double> constraint_lin_psi_beam;
+    constraint_lin_psi_beam.multiply_nn(d_psi_rel_d_psi_beam, T_psi_beam);
+    for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
     {
-      for (unsigned int j_beam = 0; j_beam < 2; j_beam++)
-        for (unsigned int i_beam_dof = 0; i_beam_dof < n_dof_rot_; i_beam_dof++)
-          for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
-            d_moment_nodal_load_d_psi[i_beam][j_beam](i_beam_dof, i_dim) =
-                moment_nodal_load[i_beam](i_beam_dof).dx(j_beam * 3 + i_dim);
-
-      for (unsigned int j_beam = 0; j_beam < 2; j_beam++)
+      for (unsigned int j_dim = 0; j_dim < 3; j_dim++)
       {
-        Core::LinAlg::Matrix<n_dof_rot_, n_dof_rot_, double> moment_stiff_temp;
-        moment_stiff_temp.multiply(
-            d_moment_nodal_load_d_psi[i_beam][j_beam], T_times_I_tilde_full[j_beam]);
-
-        for (unsigned int i_dof = 0; i_dof < n_dof_rot_; i_dof++)
-          for (unsigned int j_dof = 0; j_dof < n_dof_rot_; j_dof++)
-            stiffness_matrix->fe_assemble(
-                moment_stiff_temp(i_dof, j_dof), gid_rot[i_beam][i_dof], gid_rot[j_beam][j_dof]);
+        constraint_rotation_lin_kinematic(i_dim, j_dim + 3 + i_beam * 6) =
+            constraint_lin_psi_beam(i_dim, j_dim);
+        // Note: Here we insert the transposed, thus the switched ordering in the target but not
+        // the source.
+        residuum_rotation_lin_lambda(j_dim + 3 + i_beam * 6, i_dim) =
+            load_factor * Core::FADUtils::cast_to_double(T_psi_rel(i_dim, j_dim));
+      }
+    }
+    for (unsigned int i = 0; i < 3; i++)
+    {
+      for (unsigned int j = 0; j < 3; j++)
+      {
+        for (unsigned int l = 0; l < 3; l++)
+        {
+          for (unsigned int k = 0; k < 3; k++)
+          {
+            evaluation_data_rotation[i_beam][i][j][l] +=
+                T_psi_rel(j, i).dx(k + 3 * i_beam) * T_psi_beam(k, l);
+          }
+        }
       }
     }
   }
+
+  return {constraint_rotation, constraint_rotation_lin_kinematic, residuum_rotation_lin_lambda,
+      evaluation_data_rotation};
 }
 
 /**

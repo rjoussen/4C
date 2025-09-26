@@ -40,9 +40,6 @@ namespace BeamInteraction
     //! beam element.
     using scalar_type_rot = typename Sacado::Fad::SLFad<double, 6>;
 
-    //! FAD type for positional coupling.
-    using scalar_type_pos = typename Sacado::Fad::SLFad<double, 2 * Beam::n_dof_>;
-
    public:
     /**
      * \brief Standard Constructor.
@@ -169,39 +166,25 @@ namespace BeamInteraction
 
    private:
     /**
-     * \brief Evaluate the positional coupling terms and directly assemble them into the global
-     * force vector and stiffness matrix.
-     *
-     * @param discret (in) Pointer to the discretization.
-     * @param force_vector (in / out) Global force vector.
-     * @param stiffness_matrix (in / out) Global stiffness matrix.
-     * @param displacement_vector (in) Global displacement vector.
+     * \brief Evaluate the positional coupling terms based on general cross-section kinematics.
      */
-    void evaluate_and_assemble_positional_coupling(const Core::FE::Discretization& discret,
-        const std::shared_ptr<Core::LinAlg::FEVector<double>>& force_vector,
-        const std::shared_ptr<Core::LinAlg::SparseMatrix>& stiffness_matrix,
-        const Core::LinAlg::Vector<double>& displacement_vector) const;
+    static std::tuple<Core::LinAlg::Matrix<3, 1>, Core::LinAlg::Matrix<3, 12>,
+        Core::LinAlg::Matrix<12, 3>>
+    evaluate_positional_coupling(const std::array<Core::LinAlg::Matrix<3, 1>, 2>& r);
 
     /**
-     * \brief Evaluate the rotational coupling terms and directly assemble them into the global
-     * force vector and stiffness matrix.
-     *
-     * @param discret (in) Pointer to the discretization.
-     * @param force_vector (in / out) Global force vector.
-     * @param stiffness_matrix (in / out) Global stiffness matrix.
-     * @param displacement_vector (in) Global displacement vector.
+     * \brief Evaluate the rotational coupling terms based on general cross-section kinematics.
      */
-    void evaluate_and_assemble_rotational_coupling(const Core::FE::Discretization& discret,
-        const std::shared_ptr<Core::LinAlg::FEVector<double>>& force_vector,
-        const std::shared_ptr<Core::LinAlg::SparseMatrix>& stiffness_matrix,
-        const Core::LinAlg::Vector<double>& displacement_vector) const;
+    static std::tuple<Core::LinAlg::Matrix<3, 1>, Core::LinAlg::Matrix<3, 12>,
+        Core::LinAlg::Matrix<12, 3>,
+        std::array<std::array<std::array<std::array<double, 3>, 3>, 3>, 2>>
+    evaluate_rotational_coupling(
+        const std::array<Core::LinAlg::Matrix<4, 1, double>, 2>& cross_section_quaternion_ref,
+        const std::array<Core::LinAlg::Matrix<4, 1, scalar_type_rot>, 2>& cross_section_quaternion);
 
    private:
     //! Number of rotational DOF for the SR beams;
     static constexpr unsigned int n_dof_rot_ = 9;
-
-    //! Number of dimensions for each rotation.
-    const unsigned int rot_dim_ = 3;
 
     //! Penalty parameter for positional coupling.
     double penalty_parameter_pos_;
