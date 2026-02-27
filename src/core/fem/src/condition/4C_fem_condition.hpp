@@ -15,10 +15,13 @@
 #include "4C_legacy_enum_definitions_conditions.hpp"
 
 #include <algorithm>
+#include <map>
 #include <memory>
 #include <optional>
 #include <string>
 #include <tuple>
+#include <variant>
+#include <vector>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -61,6 +64,17 @@ namespace Core::Conditions
     node_set_name
   };
 
+  struct GeometryContext
+  {
+    std::vector<std::vector<int>> dvol_fenode;
+    std::vector<std::vector<int>> dsurf_fenode;
+    std::vector<std::vector<int>> dline_fenode;
+    std::vector<std::vector<int>> dnode_fenode;
+    std::map<int, std::vector<int>> node_sets;
+    std::map<std::string, std::vector<int>> node_sets_names;
+    std::map<int, std::vector<int>> element_block_nodes;
+  };
+
   /*!
    * A condition is mainly used to realize boundary conditions. Parameters for the condition
    * are stored in a InputParameterContainer.
@@ -99,9 +113,9 @@ namespace Core::Conditions
      * \param entity_type (in): type of entity this condition is associated with
      * \param node_set_name (in): optional name of the node set in the external mesh file
      */
-    Condition(const int id, const Core::Conditions::ConditionType type, const bool buildgeometry,
-        const Core::Conditions::GeometryType gtype, EntityType entity_type,
-        std::optional<std::string> node_set_name = std::nullopt);
+    Condition(const std::variant<int, std::string>& id, const Core::Conditions::ConditionType type,
+        const bool buildgeometry, const Core::Conditions::GeometryType gtype,
+        EntityType entity_type);
 
     /*!
     \brief Default constructor with type condition_none
@@ -116,11 +130,13 @@ namespace Core::Conditions
     /*!
     \brief Return condition id
     */
-    [[nodiscard]] inline int id() const { return id_; }
+    [[nodiscard]] int id() const;
 
     [[nodiscard]] std::string node_set_name() const;
 
     [[nodiscard]] bool has_node_set_name() const { return node_set_name_.has_value(); }
+
+    void resolve_geometry(const GeometryContext& geometry_context);
 
     /*!
     \brief Return vector of my global node ids
@@ -255,7 +271,7 @@ namespace Core::Conditions
     Condition& operator=(const Condition& old) = default;
 
     //! Unique id of this condition, no second condition of the same type with same id may exist
-    int id_{-1};
+    std::optional<int> id_{};
 
     //! global node ids
     std::vector<int> nodes_{};

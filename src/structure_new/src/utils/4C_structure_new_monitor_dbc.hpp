@@ -135,7 +135,7 @@ namespace Solid
     std::vector<std::string> full_filepaths_ = std::vector<std::string>();
 
     /// extract the dofs of the reaction forces which shall be monitored
-    std::map<int, std::vector<std::shared_ptr<Core::LinAlg::Map>>> react_maps_;
+    std::map<std::string, std::vector<std::shared_ptr<Core::LinAlg::Map>>> react_maps_;
     int os_precision_ = -1;
     std::vector<std::unique_ptr<Core::IO::RuntimeCsvWriter>> dbc_monitor_csvwriter_;
     std::vector<ryml::Tree> dbc_monitor_yaml_file_trees_;

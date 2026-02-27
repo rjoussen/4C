@@ -67,13 +67,10 @@ namespace Core::Conditions
     /// read all conditions from my input file section
     /*!
       \param input the input file
-      \param cmap an empty multimap to fill with the read conditions (key: entity id, value:
-      condition)
-      \param node_sets_names map of node set names to their ids from the external mesh file
+      \param conditions a vector to fill with the read conditions
      */
     void read(Core::IO::InputFile& input,
-        std::multimap<int, std::shared_ptr<Core::Conditions::Condition>>& cmap,
-        const std::map<std::string, std::vector<int>>& node_sets_names) const;
+        std::vector<std::shared_ptr<Core::Conditions::Condition>>& conditions) const;
 
     /// name of my section in input file
     std::string section_name() const { return sectionname_; }

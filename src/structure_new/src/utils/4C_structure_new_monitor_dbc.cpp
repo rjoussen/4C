@@ -112,15 +112,14 @@ int Solid::MonitorDbc::get_unique_id(int tagged_id, Core::Conditions::GeometryTy
 void Solid::MonitorDbc::create_reaction_force_condition(
     const Core::Conditions::Condition& tagged_cond, Core::FE::Discretization& discret) const
 {
-  const int new_id = get_unique_id(tagged_cond.id(), tagged_cond.g_type());
-
-  // get external node set name if the tagged condition has one, otherwise use the unique id as name
-  const std::string& node_set_name =
-      tagged_cond.has_node_set_name() ? tagged_cond.node_set_name() : std::to_string(new_id + 1);
+  const std::string rcond_name =
+      (tagged_cond.entity_type() == Core::Conditions::EntityType::node_set_name)
+          ? tagged_cond.node_set_name()
+          : std::to_string(get_unique_id(tagged_cond.id(), tagged_cond.g_type()));
 
   auto rcond_ptr =
-      std::make_shared<Core::Conditions::Condition>(new_id, Core::Conditions::ElementTag, true,
-          tagged_cond.g_type(), Core::Conditions::EntityType::legacy_id, node_set_name);
+      std::make_shared<Core::Conditions::Condition>(rcond_name, Core::Conditions::ElementTag, true,
+          tagged_cond.g_type(), Core::Conditions::EntityType::node_set_name);
 
   rcond_ptr->parameters().add("ONOFF", (tagged_cond.parameters().get<std::vector<int>>("ONOFF")));
   rcond_ptr->set_nodes(*tagged_cond.get_nodes());
@@ -202,11 +201,11 @@ void Solid::MonitorDbc::setup()
   for (const auto& rcond_ptr : rconds)
   {
     const Core::Conditions::Condition& rcond = *rcond_ptr;
-    auto ipair = react_maps_.insert(
-        std::make_pair(rcond.id(), std::vector<std::shared_ptr<Core::LinAlg::Map>>(3, nullptr)));
+    auto ipair = react_maps_.insert(std::make_pair(
+        rcond.node_set_name(), std::vector<std::shared_ptr<Core::LinAlg::Map>>(3, nullptr)));
 
     if (not ipair.second)
-      FOUR_C_THROW("The reaction condition id #{} seems to be non-unique!", rcond.id());
+      FOUR_C_THROW("The reaction condition id #{} seems to be non-unique!", rcond.node_set_name());
 
     create_reaction_maps(*discret_ptr_, rcond, ipair.first->second.data());
 
@@ -328,12 +327,11 @@ void Solid::MonitorDbc::execute(Core::IO::DiscretizationWriter& writer)
     std::fill_n(rmoment_xyz.data(), DIM, 0.0);
 
     const auto* const rcond_ptr = rconds[condition_counter];
-    const int rid = rcond_ptr->id();
+    const std::string rcond_name = rcond_ptr->node_set_name();
     get_area(area.data(), rcond_ptr);
 
-    get_reaction_force(rforce_xyz, react_maps_[rid].data());
-    get_reaction_moment(rmoment_xyz, react_maps_[rid].data(), rcond_ptr);
-
+    get_reaction_force(rforce_xyz, react_maps_[rcond_name].data());
+    get_reaction_moment(rmoment_xyz, react_maps_[rcond_name].data(), rcond_ptr);
     std::vector<double> rforce_vec(DIM);
     std::vector<double> rmoment_vec(DIM);
     rforce_vec.assign(rforce_xyz.data(), rforce_xyz.data() + DIM);

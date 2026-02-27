@@ -18,7 +18,9 @@
 #include <algorithm>
 #include <iterator>
 #include <optional>
+#include <string>
 #include <utility>
+#include <variant>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -28,20 +30,10 @@ namespace
   struct EntitySpec
   {
     EntityType type;
-    // The resolved internal ID of the entity
-    int id;
-    std::optional<std::string> node_set_name;
+    std::variant<int, std::string> identifier;
   };
 
-  /**
-   * @brief Parse entity specification from input data and resolve internal ID if necessary.
-   *
-   * @param input_data Input parameters containing entity specification.
-   * @param node_sets_names Mapping from external node set names to internal entity IDs.
-   * @return validated and resolved EntitySpec
-   */
-  EntitySpec parse_entity(const Core::IO::InputParameterContainer& input_data,
-      const std::map<std::string, std::vector<int>>& node_sets_names)
+  EntitySpec parse_entity(const Core::IO::InputParameterContainer& input_data)
   {
     // get entity_type, id, node_set_name from input
     auto entity_type = input_data.get<std::optional<EntityType>>("ENTITY_TYPE");
@@ -55,15 +47,7 @@ namespace
           "Condition with NODE_SET_NAME '{}' must not specify ENTITY_TYPE or E: ID.",
           node_set_name.value());
 
-      FOUR_C_ASSERT_ALWAYS(node_sets_names.contains(node_set_name.value()),
-          "NODE_SET_NAME '{}' could not be found in the meshfile.", node_set_name.value());
-
-      const auto& ids = node_sets_names.at(node_set_name.value());
-      FOUR_C_ASSERT_ALWAYS(ids.size() == 1,
-          "NODE_SET_NAME '{}' is not unique in the meshfile ({} occurrences).",
-          node_set_name.value(), ids.size());
-
-      return {.type = EntityType::node_set_name, .id = ids[0], .node_set_name = node_set_name};
+      return {.type = EntityType::node_set_name, .identifier = node_set_name.value()};
     }
 
     // ID based identfication
@@ -76,14 +60,14 @@ namespace
       FOUR_C_ASSERT_ALWAYS(id.value() > 0,
           "Conditions with ENTITY_TYPE: legacy_id require positive E: ID. (given: {})", id.value());
 
-      return {.type = EntityType::legacy_id, .id = id.value() - 1, .node_set_name = std::nullopt};
+      return {.type = EntityType::legacy_id, .identifier = id.value() - 1};
     }
 
     // Other entity types
 
     FOUR_C_ASSERT_ALWAYS(
         id.value() >= 0, "Conditions require non-negative E: ID. (given: {})", id.value());
-    return {.type = entity_type.value(), .id = id.value(), .node_set_name = std::nullopt};
+    return {.type = entity_type.value(), .identifier = id.value()};
   }
 
 }  // namespace
@@ -137,8 +121,7 @@ void Core::Conditions::ConditionDefinition::add_component(const Core::IO::InputS
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void Core::Conditions::ConditionDefinition::read(Core::IO::InputFile& input,
-    std::multimap<int, std::shared_ptr<Core::Conditions::Condition>>& cmap,
-    const std::map<std::string, std::vector<int>>& node_sets_names) const
+    std::vector<std::shared_ptr<Core::Conditions::Condition>>& conditions) const
 {
   Core::IO::InputParameterContainer container;
   try
@@ -155,14 +138,14 @@ void Core::Conditions::ConditionDefinition::read(Core::IO::InputFile& input,
   for (const auto& condition_data :
       container.get_or<std::vector<Core::IO::InputParameterContainer>>(section_name(), {}))
   {
-    auto entity_spec = parse_entity(condition_data, node_sets_names);
+    auto entity_spec = parse_entity(condition_data);
 
-    auto condition = std::make_shared<Core::Conditions::Condition>(entity_spec.id, condtype_,
-        buildgeometry_, gtype_, entity_spec.type, entity_spec.node_set_name);
+    auto condition = std::make_shared<Core::Conditions::Condition>(
+        entity_spec.identifier, condtype_, buildgeometry_, gtype_, entity_spec.type);
 
     condition->parameters() = condition_data;
 
-    cmap.emplace(entity_spec.id, condition);
+    conditions.emplace_back(condition);
   }
 }
 
