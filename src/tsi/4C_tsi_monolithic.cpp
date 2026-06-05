@@ -1638,6 +1638,7 @@ void TSI::Monolithic::apply_str_coupl_matrix(
   // other parameters that might be needed by the elements
   sparams.set("delta time", dt());
   sparams.set("total time", time());
+  sparams.set<int>("differentiationtype", static_cast<int>(Solid::DifferentiationType::temp));
 
   structure_field()->discretization()->clear_state(true);
   structure_field()->discretization()->set_state(0, "displacement", *structure_field()->dispnp());

@@ -8,7 +8,7 @@
 #include <gtest/gtest.h>
 
 #include "4C_linalg_fixedsizematrix.hpp"
-#include "4C_linalg_fixedsizematrix_voigt_notation.hpp"
+#include "4C_linalg_symmetric_tensor.hpp"
 #include "4C_mat_elast_coupneohooke.hpp"
 #include "4C_mat_elast_isoneohooke.hpp"
 #include "4C_mat_elasthyper_service.hpp"
@@ -175,57 +175,31 @@ namespace
     iFinM(2, 1) = 0.0000000000000000;
     iFinM(2, 2) = 0.8021447823814358;
     //**************************************************
-    Core::LinAlg::Matrix<3, 3> CTM_ref_{Core::LinAlg::Initialization::zero};
-    CTM_ref_(0, 0) = 21.0000000000000000;
-    CTM_ref_(0, 1) = 0.0000000000000000;
-    CTM_ref_(0, 2) = 0.0000000000000000;
-    CTM_ref_(1, 0) = 0.0000000000000000;
-    CTM_ref_(1, 1) = 21.0000000000000000;
-    CTM_ref_(1, 2) = 0.0000000000000000;
-    CTM_ref_(2, 0) = 0.0000000000000000;
-    CTM_ref_(2, 1) = 0.0000000000000000;
-    CTM_ref_(2, 2) = 21.0000000000000000;
+    Core::LinAlg::SymmetricTensor<double, 3, 3> thermal_contribution_to_2pk_stress_ref_{};
+    thermal_contribution_to_2pk_stress_ref_(0, 0) = 60.3191058810404357;
+    thermal_contribution_to_2pk_stress_ref_(0, 1) = 32.4795185513294626;
+    thermal_contribution_to_2pk_stress_ref_(0, 2) = 0.0000000000000000;
+    thermal_contribution_to_2pk_stress_ref_(1, 0) = 32.4795185513294626;
+    thermal_contribution_to_2pk_stress_ref_(1, 1) = 103.2384696810115088;
+    thermal_contribution_to_2pk_stress_ref_(1, 2) = 0.0000000000000000;
+    thermal_contribution_to_2pk_stress_ref_(2, 0) = 0.0000000000000000;
+    thermal_contribution_to_2pk_stress_ref_(2, 1) = 0.0000000000000000;
+    thermal_contribution_to_2pk_stress_ref_(2, 2) = 37.1194497729479664;
     //**************************************************
-    Core::LinAlg::Matrix<3, 3> dCTM_dT_ref_{Core::LinAlg::Initialization::zero};
-    dCTM_dT_ref_(0, 0) = 0.2000000000000000;
-    dCTM_dT_ref_(0, 1) = 0.0000000000000000;
-    dCTM_dT_ref_(0, 2) = 0.0000000000000000;
-    dCTM_dT_ref_(1, 0) = 0.0000000000000000;
-    dCTM_dT_ref_(1, 1) = 0.2000000000000000;
-    dCTM_dT_ref_(1, 2) = 0.0000000000000000;
-    dCTM_dT_ref_(2, 0) = 0.0000000000000000;
-    dCTM_dT_ref_(2, 1) = 0.0000000000000000;
-    dCTM_dT_ref_(2, 2) = 0.2000000000000000;
-    //**************************************************
-    Core::LinAlg::Matrix<3, 3> S_ref{Core::LinAlg::Initialization::zero};
-    S_ref(0, 0) = -60.3191058810404357;
-    S_ref(0, 1) = -32.4795185513294626;
-    S_ref(0, 2) = 0.0000000000000000;
-    S_ref(1, 0) = -32.4795185513294626;
-    S_ref(1, 1) = -103.2384696810115088;
-    S_ref(1, 2) = 0.0000000000000000;
-    S_ref(2, 0) = 0.0000000000000000;
-    S_ref(2, 1) = 0.0000000000000000;
-    S_ref(2, 2) = -37.1194497729479664;
-    //**************************************************
-    Core::LinAlg::Matrix<3, 3> pS_pT_ref_{Core::LinAlg::Initialization::zero};
-    pS_pT_ref_(0, 0) = -0.0000941798851085;
-    pS_pT_ref_(0, 1) = -0.0000507122458277;
-    pS_pT_ref_(0, 2) = -0.0000000000000000;
-    pS_pT_ref_(1, 0) = -0.0000507122458277;
-    pS_pT_ref_(1, 1) = -0.0001611924956665;
-    pS_pT_ref_(1, 2) = -0.0000000000000000;
-    pS_pT_ref_(2, 0) = -0.0000000000000000;
-    pS_pT_ref_(2, 1) = -0.0000000000000000;
-    pS_pT_ref_(2, 2) = -0.0000579568523745;
+    Core::LinAlg::SymmetricTensor<double, 3, 3>
+        p_thermal_contribution_to_2pk_stress_p_temperature_ref_{};
+    p_thermal_contribution_to_2pk_stress_p_temperature_ref_(0, 0) = 0.0000941798851085;
+    p_thermal_contribution_to_2pk_stress_p_temperature_ref_(0, 1) = 0.0000507122458277;
+    p_thermal_contribution_to_2pk_stress_p_temperature_ref_(0, 2) = 0.0000000000000000;
+    p_thermal_contribution_to_2pk_stress_p_temperature_ref_(1, 0) = 0.0000507122458277;
+    p_thermal_contribution_to_2pk_stress_p_temperature_ref_(1, 1) = 0.0001611924956665;
+    p_thermal_contribution_to_2pk_stress_p_temperature_ref_(1, 2) = 0.0000000000000000;
+    p_thermal_contribution_to_2pk_stress_p_temperature_ref_(2, 0) = 0.0000000000000000;
+    p_thermal_contribution_to_2pk_stress_p_temperature_ref_(2, 1) = 0.0000000000000000;
+    p_thermal_contribution_to_2pk_stress_p_temperature_ref_(2, 2) = 0.0000579568523745;
 
     // set thermal info
     const double thermal_expansion_fac = 0.1;
-
-    Core::LinAlg::Matrix<3, 3> iCinM{Core::LinAlg::Initialization::zero};
-    iCinM.multiply_nt(1.0, iFinM, iFinM, 0.0);
-    Core::LinAlg::Matrix<6, 1> iCinV{Core::LinAlg::Initialization::zero};
-    Core::LinAlg::Voigt::Stresses::matrix_to_vector(iCinM, iCinV);
 
     // Create summand vector
     std::vector<std::shared_ptr<Mat::Elastic::Summand>> potsum;
@@ -238,37 +212,15 @@ namespace
         dynamic_cast<Mat::Elastic::PAR::CoupNeoHooke*>(coup_neo_hooke_params.get())));
 
 
-    // evaluate thermal quantities
-    Mat::ThermalQuantities thermal_quantities = Mat::evaluate_thermal_quantities(
-        delta_temperature, thermal_expansion_fac, iFinM, 0, 0, potsum);
+    auto thermoelastic_stress_contribution =
+        Mat::ThermalExpansion::compute_thermoelastic_stress_contribution(
+            delta_temperature, thermal_expansion_fac, potsum, 0, 0);
 
-    // evaluate thermal stress factors
-    Mat::StressFactors thermal_stress_factors;
-    Mat::calculate_gamma_delta(thermal_stress_factors.gamma, thermal_stress_factors.delta,
-        thermal_quantities.prinv, thermal_quantities.dPI, thermal_quantities.ddPII);
-
-    // evaluate thermal contribution to second Piola-Kirchhoff stress
-    Core::LinAlg::Matrix<6, 1> S_V{Core::LinAlg::Initialization::zero};
-    Mat::add_thermal_stress_contribution(
-        S_V, thermal_quantities, thermal_stress_factors, iCinV, 1.0 / iFinM.determinant());
-    Core::LinAlg::Matrix<3, 3> S_M{Core::LinAlg::Initialization::zero};
-    Core::LinAlg::Voigt::Stresses::vector_to_matrix(S_V, S_M);
-    // evaluate partial derivative of 2nd Piola-Kirchhoff stress wrt temperature
-    Core::LinAlg::Matrix<6, 1> pS_pT_V =
-        Mat::compute_partial_d_stress_d_temperature(iFinM, thermal_quantities);
-    Core::LinAlg::Matrix<3, 3> pS_pT_M{Core::LinAlg::Initialization::zero};
-    Core::LinAlg::Voigt::Stresses::vector_to_matrix(pS_pT_V, pS_pT_M);
-
-
-    // postprocessed data for assertions
-    Core::LinAlg::Matrix<3, 3> CTM{Core::LinAlg::Initialization::zero};
-    Core::LinAlg::Voigt::Stresses::vector_to_matrix(thermal_quantities.CTV, CTM);
-    Core::LinAlg::Matrix<3, 3> dCTM_dT{Core::LinAlg::Initialization::zero};
-    Core::LinAlg::Voigt::Strains::vector_to_matrix(thermal_quantities.dCTdTV, dCTM_dT);
-
-    FOUR_C_EXPECT_NEAR(CTM, CTM_ref_, 1.0e-10);
-    FOUR_C_EXPECT_NEAR(dCTM_dT, dCTM_dT_ref_, 1.0e-10);
-    FOUR_C_EXPECT_NEAR(S_M, S_ref, 1.0e-10);
-    FOUR_C_EXPECT_NEAR(pS_pT_M, pS_pT_ref_, 1.0e-10);
+    const auto pk2_stress_contribution = Mat::ThermalExpansion::compute_pk2_stress_contribution(
+        thermoelastic_stress_contribution, iFinM);
+    FOUR_C_EXPECT_NEAR(
+        pk2_stress_contribution.value, thermal_contribution_to_2pk_stress_ref_, 1.0e-10);
+    FOUR_C_EXPECT_NEAR(pk2_stress_contribution.temperature_derivative,
+        p_thermal_contribution_to_2pk_stress_p_temperature_ref_, 1.0e-10);
   }
 }  // namespace

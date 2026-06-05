@@ -21,7 +21,7 @@ namespace Mat
 {
   namespace Trait
   {
-    class ThermoSolid : public Thermo, public Solid, public MonolithicSolidScalarMaterial
+    class ThermoSolid : public Thermo, public MonolithicSolidScalarMaterial
     {
      public:
       /*!

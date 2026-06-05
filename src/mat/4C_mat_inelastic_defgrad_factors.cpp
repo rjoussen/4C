@@ -1974,25 +1974,8 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_state_quantities(
   Core::LinAlg::Matrix<3, 3> CeCeM(Core::LinAlg::Initialization::zero);
   CeCeM.multiply_nn(1.0, state_quantities.curr_CeM, state_quantities.curr_CeM, 0.0);
 
-  // thermal quantities and stress factors
-  Mat::ThermalQuantities thermal_quantities =
-      Mat::evaluate_thermal_quantities(temperature - ref_temperature_,
-          thermal_expansion_coefficient_, iFinM, gp_, ele_gid_, potsumel_);
-  Mat::StressFactors thermal_stress_factors;
-  Mat::calculate_gamma_delta(thermal_stress_factors.gamma, thermal_stress_factors.delta,
-      thermal_quantities.prinv, thermal_quantities.dPI, thermal_quantities.ddPII);
-
-  // compute mixed thermo-elastic tensors required for reducing the Mandel stress based on
-  // temperature
-  Core::LinAlg::Matrix<3, 3> CT{Core::LinAlg::Initialization::zero};
-  Core::LinAlg::Voigt::Stresses::vector_to_matrix(thermal_quantities.CTV, CT);
-  Core::LinAlg::Matrix<3, 3> iCT{Core::LinAlg::Initialization::zero};
-  Core::LinAlg::Voigt::Stresses::vector_to_matrix(thermal_quantities.iCTV, iCT);
-  Core::LinAlg::Matrix<3, 3> CeCT{Core::LinAlg::Initialization::zero};
-  CeCT.multiply_nn(1.0, state_quantities.curr_CeM, CT, 0.0);
-  Core::LinAlg::Matrix<3, 3> CeiCT{Core::LinAlg::Initialization::zero};
-  CeiCT.multiply_nn(1.0, state_quantities.curr_CeM, iCT, 0.0);
-
+  state_quantities.curr_ST = Mat::ThermalExpansion::compute_thermoelastic_stress_contribution(
+      temperature - ref_temperature_, thermal_expansion_coefficient_, potsumel_, gp_, ele_gid_);
 
   /**
   compute symmetric part of thermo-elastic Mandel stress tensor
@@ -2003,9 +1986,9 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_state_quantities(
   Mtheta_sym_M.update(state_quantities.curr_gamma(0), state_quantities.curr_CeM,
       state_quantities.curr_gamma(1), CeCeM, 0.0);
   Mtheta_sym_M.update(state_quantities.curr_gamma(2), const_non_mat_tensors.id3x3, 1.0);
-  Mtheta_sym_M.update(-1.0 * thermal_stress_factors.gamma(0), state_quantities.curr_CeM, 1.0);
-  Mtheta_sym_M.update(-1.0 * thermal_stress_factors.gamma(1), CeCT, 1.0);
-  Mtheta_sym_M.update(-1.0 * thermal_stress_factors.gamma(2), CeiCT, 1.0);
+  const auto& CeS_T =
+      dot(make_tensor_view(state_quantities.curr_CeM), state_quantities.curr_ST.value);
+  Mtheta_sym_M.update(-1.0, make_matrix_view(CeS_T), 1.0);
   if (parameter()->mat_behavior() == ViscoplastUtils::MatBehavior::transv_isotropic)
   {
     Core::LinAlg::Matrix<3, 3> addMeM(Core::LinAlg::Initialization::zero);
@@ -2233,6 +2216,7 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_state_quantity_deriv
   const Core::LinAlg::Matrix<3, 3> dpM = relevant_state_quantities.curr_dpM;
   const Core::LinAlg::Matrix<3, 3> lpM = relevant_state_quantities.curr_lpM;
   const Core::LinAlg::Matrix<3, 3> EpM = relevant_state_quantities.curr_EpM;
+  const TensorAndTemperatureDerivative ST = relevant_state_quantities.curr_ST;
 
 
   // compute the relevant derivatives of the elastic right Cauchy-Green deformation tensor
@@ -2309,19 +2293,7 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_state_quantity_deriv
   Core::LinAlg::Matrix<6, 1> iCV(Core::LinAlg::Initialization::zero);
   Core::LinAlg::Voigt::Stresses::matrix_to_vector(iCM, iCV);
 
-  // thermal quantities and stress factors
-  Mat::ThermalQuantities thermal_quantities =
-      Mat::evaluate_thermal_quantities(temperature - ref_temperature_,
-          thermal_expansion_coefficient_, iFinM, gp_, ele_gid_, potsumel_);
-  Core::LinAlg::SymmetricTensor<double, 3, 3> hyperelast_stress_CT{};
-  Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3> hyperelast_stiffness_CT{};
-  Mat::elast_hyper_add_isotropic_stress_cmat(hyperelast_stress_CT, hyperelast_stiffness_CT,
-      Core::LinAlg::make_symmetric_tensor_from_stress_like_voigt_matrix(thermal_quantities.CTV),
-      Core::LinAlg::make_symmetric_tensor_from_stress_like_voigt_matrix(thermal_quantities.iCTV),
-      thermal_quantities.prinv, thermal_quantities.dPI, thermal_quantities.ddPII);
-  const Core::LinAlg::Matrix<3, 3> S_T =
-      Core::LinAlg::make_matrix(Core::LinAlg::get_full(hyperelast_stress_CT));
-
+  const auto S_T = make_matrix(get_full(ST.value));
   // compute the relevant derivatives of the symmetric part of the Mandel stress
 
   /**
@@ -2391,11 +2363,7 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_state_quantity_deriv
    \f$ \frac{\partial \boldsymbol{M}_{\theta, \text{sym}} }{\partial T}  =
    - \boldsymbol{C}_e \cdot \frac{\partial\boldsymbol{S}_{T}}{\partial T}\f$ (Voigt stress-form)
   */
-  Core::LinAlg::Matrix<6, 1> dST_dT_V{Core::LinAlg::Initialization::zero};
-  dST_dT_V.multiply_nn(0.5, Core::LinAlg::make_stress_like_voigt_view(hyperelast_stiffness_CT),
-      thermal_quantities.dCTdTV, 0.0);
-  Core::LinAlg::Matrix<3, 3> dST_dT_M{Core::LinAlg::Initialization::zero};
-  Core::LinAlg::Voigt::Stresses::vector_to_matrix(dST_dT_V, dST_dT_M);
+  const auto dST_dT_M = make_matrix(get_full(ST.temperature_derivative));
   Core::LinAlg::Matrix<3, 3> dMtheta_sym_dT_M(Core::LinAlg::Initialization::zero);
   dMtheta_sym_dT_M.multiply_nn(-1.0, CeM, dST_dT_M, 0.0);
   Core::LinAlg::Matrix<6, 1> dMtheta_sym_dT_V(Core::LinAlg::Initialization::zero);

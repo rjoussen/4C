@@ -9,9 +9,11 @@
 
 #include "4C_global_data.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
+#include "4C_linalg_symmetric_tensor.hpp"
 #include "4C_mat_elasthyper_service.hpp"
 #include "4C_mat_material_factory.hpp"
 #include "4C_mat_multiplicative_split_defgrad_elasthyper.hpp"
+#include "4C_mat_multiplicative_split_defgrad_elasthyper_service.hpp"
 #include "4C_mat_par_bundle.hpp"
 #include "4C_material_parameter_base.hpp"
 #include "4C_ssi_input.hpp"
@@ -121,6 +123,8 @@ namespace
       std::vector<int> inelastic_defgrad_factor_ids = {inelastic_defgrad_id};
       multiplicativeSplitDefgradData.add("INELDEFGRADFACIDS", inelastic_defgrad_factor_ids);
       multiplicativeSplitDefgradData.add("DENS", 1.32e1);
+      multiplicativeSplitDefgradData.add("REF_TEMPERATURE", 293.0);
+      multiplicativeSplitDefgradData.add("THERMAL_EXPANSION_COEFFICIENT", 0.1);
 
       // get pointer to parameter class
       parameters_multiplicative_split_defgrad_ =
@@ -547,8 +551,9 @@ namespace
     stress_fact.gamma = gamma_ref_;
     stress_fact.delta = delta_ref_;
 
+    const Core::LinAlg::SymmetricTensor<double, 3, 3> ST{};  // no stress due to thermal expansion
     Core::LinAlg::Matrix<6, 9> dSdiFin =
-        multiplicative_split_defgrad_->evaluated_sdi_fin(kinemat_quant, stress_fact);
+        multiplicative_split_defgrad_->evaluated_sdi_fin(kinemat_quant, stress_fact, ST);
 
     FOUR_C_EXPECT_NEAR(dSdiFin, dSdiFin_ref_, 1.0e-10);
   }
@@ -624,7 +629,7 @@ namespace
 
     // do the actual call that is tested
     auto source(Mat::PAR::InelasticSource::concentration);
-    Core::LinAlg::Matrix<6, 1> dSdx(Core::LinAlg::Initialization::zero);
+
     // reference solution
     Core::LinAlg::Matrix<6, 1> dSdx_ref;
     dSdx_ref(0) = -1.907155639254611e-05;
@@ -634,7 +639,8 @@ namespace
     dSdx_ref(4) = 1.08343997650926e-06;
     dSdx_ref(5) = 1.949130554546719e-06;
 
-    multiplicative_split_defgrad_->evaluate_od_stiff_mat(source, &FM_, dSdiFin_ref_, dSdx);
+    Core::LinAlg::Matrix<6, 1> dSdx =
+        multiplicative_split_defgrad_->evaluate_od_stiff_mat(source, &FM_, dSdiFin_ref_);
 
     FOUR_C_EXPECT_NEAR(dSdx, dSdx_ref, 1.0e-10);
   }

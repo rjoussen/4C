@@ -11,12 +11,18 @@
 #include "4C_config.hpp"
 
 #include "4C_comm_parobjectfactory.hpp"
+#include "4C_linalg_fixedsizematrix.hpp"
+#include "4C_linalg_symmetric_tensor.hpp"
+#include "4C_linalg_tensor.hpp"
 #include "4C_mat_anisotropy.hpp"
 #include "4C_mat_elast_couptransverselyisotropic.hpp"
-#include "4C_mat_monolithic_solid_scalar_material.hpp"
 #include "4C_mat_multiplicative_split_defgrad_elasthyper_service.hpp"
 #include "4C_mat_so3_material.hpp"
+#include "4C_mat_thermomechanical.hpp"
 #include "4C_material_parameter_base.hpp"
+#include "4C_utils_exceptions.hpp"
+
+#include <vector>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -64,6 +70,12 @@ namespace Mat
 
       /// material mass density
       const double density_;
+
+      /// reference temperature for thermal expansion
+      const double ref_temperature_;
+
+      /// thermal expansion coefficient
+      const double thermal_expansion_coefficient_;
 
     };  // class MultiplicativeSplitDefgrad_ElastHyper
 
@@ -176,8 +188,7 @@ namespace Mat
     that are needed to set up the system to be solved are evaluated in the derived classes
     of the interface class 'InelasticDefgradFactors'.
 */
-  class MultiplicativeSplitDefgradElastHyper : public So3Material,
-                                               public MonolithicSolidScalarMaterial
+  class MultiplicativeSplitDefgradElastHyper : public So3Material, public Trait::ThermoSolid
   {
    public:
     /// construct empty material object
@@ -276,6 +287,112 @@ namespace Mat
         const Teuchos::ParameterList& params, const EvaluationContext<3>& context, int gp,
         int eleGID) override;
 
+    void reinit(const Core::LinAlg::Tensor<double, 3, 3>* defgrd,
+        const Core::LinAlg::SymmetricTensor<double, 3, 3>& glstrain, double temperature,
+        unsigned gp) override { /* do nothing */ };
+
+    void stress_temperature_modulus_and_deriv(Core::LinAlg::SymmetricTensor<double, 3, 3>& stm,
+        Core::LinAlg::SymmetricTensor<double, 3, 3>& stm_dT, const int gp) override;
+
+    /*!
+     * @brief Evaluate the heat source produced by this material. Currently, this is only
+     * enabled for the viscoplastic factor.
+     *
+     * @param[in] context Evaluation context, providing access to the current timestep and total
+     * time
+     * @param[in] gp Gauss point
+     * @param[in] eleGID global element ID
+     * @param[in] defgrad Deformation gradient
+     * @param[in] current_temperature Absolute current temperature
+     * @return mechanical dissipation heat source and derivatives w.r.t. temperature and the right
+     *         Cauchy-Green tensor
+     */
+    [[nodiscard]] HeatSource evaluate_additional_heat_source(const EvaluationContext<3>& context,
+        const int gp, const int eleGID, const Core::LinAlg::Matrix<3, 3>* current_defgrad,
+        const double current_temperature);
+
+
+    // *******************************************************************************
+    // All of the following functions in this block are only required since the ThermoSolid
+    // Trait inherits from the ThermoTrait.
+    // https://github.com/4C-multiphysics/4C/pull/2075 aims to remove this dependency. After this,
+    // these functions can be removed. This material hence does not wrap an internal thermo
+    // material, all corresponding functions throw an error if called.
+
+    void evaluate(
+        const Core::LinAlg::Matrix<3, 1>& gradtemp,  ///< temperature gradient (strain tensor)
+        Core::LinAlg::Matrix<3, 3>& cmat,            ///< constitutive matrix
+        Core::LinAlg::Matrix<3, 1>& heatflux,        ///< heatflux
+        const int eleGID) const override
+    {
+      FOUR_C_THROW("This material does not wrap an internal thermo material");
+    };
+
+    void evaluate(
+        const Core::LinAlg::Matrix<2, 1>& gradtemp,  ///< temperature gradient (strain tensor)
+        Core::LinAlg::Matrix<2, 2>& cmat,            ///< constitutive matrix
+        Core::LinAlg::Matrix<2, 1>& heatflux,        ///< heatflux
+        const int eleGID) const override
+    {
+      FOUR_C_THROW("This material does not wrap an internal thermo material");
+    };
+
+    void evaluate(
+        const Core::LinAlg::Matrix<1, 1>& gradtemp,  ///< temperature gradient (strain tensor)
+        Core::LinAlg::Matrix<1, 1>& cmat,            ///< constitutive matrix
+        Core::LinAlg::Matrix<1, 1>& heatflux,        ///< heatflux
+        const int eleGID) const override
+    {
+      FOUR_C_THROW("This material does not wrap an internal thermo material");
+    };
+
+    std::vector<double> conductivity(int eleGID = 0) const override
+    {
+      FOUR_C_THROW("This material does not wrap an internal thermo material");
+    };
+
+    void conductivity_deriv_t(Core::LinAlg::Matrix<3, 3>& dCondDT) const override
+    {
+      FOUR_C_THROW("This material does not wrap an internal thermo material");
+    };
+
+    void conductivity_deriv_t(Core::LinAlg::Matrix<2, 2>& dCondDT) const override
+    {
+      FOUR_C_THROW("This material does not wrap an internal thermo material");
+    };
+
+    void conductivity_deriv_t(Core::LinAlg::Matrix<1, 1>& dCondDT) const override
+    {
+      FOUR_C_THROW("This material does not wrap an internal thermo material");
+    };
+
+    double capacity() const override
+    {
+      FOUR_C_THROW("This material does not wrap an internal thermo material");
+    };
+
+    double capacity_deriv_t() const override
+    {
+      FOUR_C_THROW("This material does not wrap an internal thermo material");
+    };
+
+    void reinit(double temperature, unsigned gp) override
+    {
+      FOUR_C_THROW("This material does not wrap an internal thermo material");
+    };
+
+    void reset_current_state() override
+    {
+      FOUR_C_THROW("This material does not wrap an internal thermo material");
+    };
+
+    void commit_current_state() override
+    {
+      FOUR_C_THROW("This material does not wrap an internal thermo material");
+    };
+
+    // *******************************************************************************
+
     double evaluate_cauchy_n_dir_and_derivatives(const Core::LinAlg::Tensor<double, 3, 3>& defgrd,
         const Core::LinAlg::Tensor<double, 3>& n, const Core::LinAlg::Tensor<double, 3>& dir,
         Core::LinAlg::Matrix<3, 1>* d_cauchyndir_dn, Core::LinAlg::Matrix<3, 1>* d_cauchyndir_ddir,
@@ -300,18 +417,23 @@ namespace Mat
         const std::string& name, Core::LinAlg::SerialDenseMatrix& data) const override;
 
     /*!
-     * @brief Evaluate off-diagonal stiffness matrix (required for monolithic algorithms)
+     * @brief Evaluate off-diagonal stiffness matrix contributions due to the inelastic deformation,
+     * i.e.:
+     * \f[
+     * \frac{\partial \mathbf{S}}{\partial \mathbf{F}_\text{in}^{-1}}
+     * :\frac{\mathrm{d}\mathbf{F}_\text{in}^{-1}}{\mathrm{d}x}
+     * \f]
+     * where \f[x\f] is the scalar of the secondary field corresponding to \param source
      *
      * @param[in] source   Source of inelastic deformation
      * @param[in] defgrad  Deformation gradient
-     * @param[in] dSdiFin  Derivative of 2nd Piola Kirchhoff stresses w.r.t. the inverse inelastic
-     *                     deformation gradient
-     * @param[out] dstressdx  Derivative of 2nd Piola Kirchhoff stresses w.r.t. primary variable of
-     *                        different field
+     * @param[in] dSdiFin  Already computed derivative of 2nd Piola Kirchhoff stresses w.r.t. the
+     * inverse inelastic deformation gradient \f[ \frac{\partial \mathbf{S}}{\partial
+     * \mathbf{F}_\text{in}^{-1}} \f]
+     * @return off-diagonal stiffness matrix contribution in stress-like Voigt notation
      */
-    void evaluate_od_stiff_mat(PAR::InelasticSource source,
-        const Core::LinAlg::Matrix<3, 3>* defgrad, const Core::LinAlg::Matrix<6, 9>& dSdiFin,
-        Core::LinAlg::Matrix<6, 1>& dstressdx);
+    Core::LinAlg::Matrix<6, 1> evaluate_od_stiff_mat(PAR::InelasticSource source,
+        const Core::LinAlg::Matrix<3, 3>* defgrad, const Core::LinAlg::Matrix<6, 9>& dSdiFin);
 
     /*!
      * @brief Evaluate additional terms of the elasticity tensor
@@ -337,11 +459,13 @@ namespace Mat
      * @param[in] kinemat_quant struct containing kinematic quantities
      * @param[in] stress_fact struct containing \f$ \gamma_i \f$ and \f$ \delta_i \f$ stress
      * factors, as presented in Holzapfel - Nonlinear Solid Mechanics
+     * @param[in] SthetaT thermal part of the thermo-elastic stress (due to thermal expansion)
      * @return derivative \f$ \frac{\partial \mathsymbol{S}}{\partial
      * \mathsymbol{F}^{-1}_{\text{in}}} \f$
      */
-    Core::LinAlg::Matrix<6, 9> evaluated_sdi_fin(
-        const KinematicQuantities& kinemat_quant, const Mat::StressFactors& stress_factors) const;
+    [[nodiscard]] Core::LinAlg::Matrix<6, 9> evaluated_sdi_fin(
+        const KinematicQuantities& kinemat_quant, const Mat::StressFactors& stress_factors,
+        const Core::LinAlg::SymmetricTensor<double, 3, 3>& SthetaT) const;
 
     /*!
      * @brief  Evaluate the stress and stiffness components of the transversely isotropic components
@@ -379,7 +503,6 @@ namespace Mat
      * \f]
      * \f[
      * \mathbf{S} = \det(\mathbf{F}_\text{in}) \left(\gamma_1 \ \mathbf{C}_\text{in}^{-1} + \gamma_2
-     * \
      * \mathbf{C}_\text{in}^{-1} \cdot \mathbf{C} \cdot \mathbf{C}_\text{in}^{-1} + \gamma_3 \
      * \mathbf{C}^{-1} \right)
      * \f] with \f$\gamma_i\f$ as defined in Mat::CalculateGammaDelta()

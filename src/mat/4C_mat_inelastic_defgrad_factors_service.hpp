@@ -12,6 +12,7 @@
 
 #include "4C_comm_utils.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
+#include "4C_mat_multiplicative_split_defgrad_elasthyper_service.hpp"
 #include "4C_utils_exceptions.hpp"
 
 #include <format>
@@ -466,6 +467,9 @@ namespace Mat
 
       //! isotropic constitutive tensor factors
       Core::LinAlg::Matrix<8, 1> curr_delta{Core::LinAlg::Initialization::zero};
+
+      //! thermal contribution due to thermal expansion to the thermo-elastic 2PK stress
+      TensorAndTemperatureDerivative curr_ST{};
 
       //! elastic 2nd PK stress tensors (specifically only transversely-isotropic components)
       Core::LinAlg::Matrix<3, 3> curr_SeM{Core::LinAlg::Initialization::zero};

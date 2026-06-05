@@ -15,6 +15,7 @@
 #include "4C_linalg_fixedsizematrix_tensor_products.hpp"
 #include "4C_linalg_fixedsizematrix_voigt_notation.hpp"
 #include "4C_linalg_symmetric_tensor.hpp"
+#include "4C_linalg_tensor.hpp"
 #include "4C_linalg_tensor_conversion.hpp"
 #include "4C_linalg_tensor_generators.hpp"
 #include "4C_mat_anisotropy.hpp"
@@ -28,6 +29,7 @@
 #include "4C_ssi_input.hpp"
 #include "4C_structure_new_enum_lists.hpp"
 #include "4C_utils_enum.hpp"
+#include "4C_utils_exceptions.hpp"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
@@ -45,7 +47,10 @@ Mat::PAR::MultiplicativeSplitDefgradElastHyper::MultiplicativeSplitDefgradElastH
       matids_elast_(matdata.parameters.get<std::vector<int>>("MATIDSEL")),
       numfac_inel_(matdata.parameters.get<int>("NUMFACINEL")),
       inel_defgradfacids_(matdata.parameters.get<std::vector<int>>("INELDEFGRADFACIDS")),
-      density_(matdata.parameters.get<double>("DENS"))
+      density_(matdata.parameters.get<double>("DENS")),
+      ref_temperature_(matdata.parameters.get<double>("REF_TEMPERATURE")),
+      thermal_expansion_coefficient_(
+          matdata.parameters.get<double>("THERMAL_EXPANSION_COEFFICIENT"))
 {
   // check if sizes fit
   if (nummat_elast_ != static_cast<int>(matids_elast_.size()))
@@ -241,9 +246,20 @@ void Mat::MultiplicativeSplitDefgradElastHyper::evaluate(
   Mat::calculate_gamma_delta(stress_factors.gamma, stress_factors.delta, kinematic_quantities.prinv,
       kinematic_quantities.dPIe, kinematic_quantities.ddPIIe);
 
+  // compute thermal quantities from the absolute temperature stored in the parameter list
+  double delta_temperature = 0.0;
+  if (params.isParameter("temperature"))
+  {
+    delta_temperature = params.get<double>("temperature") - params_->ref_temperature_;
+  }
+  auto thermoelastic_stress_contribution =
+      Mat::ThermalExpansion::compute_thermoelastic_stress_contribution(
+          delta_temperature, params_->thermal_expansion_coefficient_, potsumel_, gp, eleGID);
+
   // derivative of 2nd Piola Kirchhoff stresses w.r.t. the inverse inelastic deformation
   // gradient
-  Core::LinAlg::Matrix<6, 9> dSdiFin = evaluated_sdi_fin(kinematic_quantities, stress_factors);
+  Core::LinAlg::Matrix<6, 9> dSdiFin = evaluated_sdi_fin(
+      kinematic_quantities, stress_factors, thermoelastic_stress_contribution.value);
 
   // right Cauchy-Green deformation tensor
   Core::LinAlg::Matrix<3, 3> CM(Core::LinAlg::Initialization::zero);
@@ -255,9 +271,18 @@ void Mat::MultiplicativeSplitDefgradElastHyper::evaluate(
   // cmat = 2 dS/dC = 2 \frac{\partial S}{\partial C} + 2 \frac{\partial S}{\partial F_{in}^{-1}}
   // : \frac{\partial F_{in}^{-1}}{\partial C} = cmatiso + cmatadd
   evaluate_stress_cmat_iso(kinematic_quantities, stress_factors, stress_view, cmatiso);
+
+  // subtract stress contribution due to thermal expansion
+  stress -= Mat::ThermalExpansion::compute_pk2_stress_contribution(
+      thermoelastic_stress_contribution, kinematic_quantities.iFinM)
+                .value;
+
   // separate update coming from the transversely isotropic components
   if (!(potsumel_transviso_.empty()))
   {
+    FOUR_C_ASSERT_ALWAYS(delta_temperature == 0.0,
+        "Thermoelastic coupling with transversely isotropic elastic summands is not supported yet. "
+        "Use isotropic elastic summands only.");
     evaluate_transv_iso_quantities(
         kinematic_quantities, CM, params, gp, eleGID, stress_view, cmatiso, dSdiFin);
   }
@@ -300,13 +325,36 @@ Mat::MultiplicativeSplitDefgradElastHyper::evaluate_d_stress_d_scalar(
   Mat::calculate_gamma_delta(stress_factors.gamma, stress_factors.delta, kinematic_quantities.prinv,
       kinematic_quantities.dPIe, kinematic_quantities.ddPIIe);
 
-  Core::LinAlg::SymmetricTensor<double, 3, 3> d_stress_d_scalar{};
-  Core::LinAlg::Matrix<6, 1> d_stress_d_scalar_view =
-      Core::LinAlg::make_stress_like_voigt_view(d_stress_d_scalar);
+  double delta_temperature = 0.0;
 
-  Core::LinAlg::Matrix<6, 9> dSdiFin = evaluated_sdi_fin(kinematic_quantities, stress_factors);
+  // compute thermal quantities from the absolute temperature stored in the parameter list
+  if (params.isParameter("temperature"))
+  {
+    delta_temperature = params.get<double>("temperature") - params_->ref_temperature_;
+  }
 
-  evaluate_od_stiff_mat(source, &defgrad_mat, dSdiFin, d_stress_d_scalar_view);
+  const auto thermoelastic_stress_contribution =
+      Mat::ThermalExpansion::compute_thermoelastic_stress_contribution(
+          delta_temperature, params_->thermal_expansion_coefficient_, potsumel_, gp, eleGID);
+
+  Core::LinAlg::Matrix<6, 9> dSdiFin = evaluated_sdi_fin(
+      kinematic_quantities, stress_factors, thermoelastic_stress_contribution.value);
+
+  Core::LinAlg::SymmetricTensor<double, 3, 3> d_stress_d_scalar =
+      make_symmetric_tensor_from_stress_like_voigt_matrix(
+          evaluate_od_stiff_mat(source, &defgrad_mat, dSdiFin));
+
+
+  if (source == PAR::InelasticSource::temperature)
+  {
+    // stress depends on temperature not only through the inelastic deformation gradient but also
+    // through thermal expansion
+    d_stress_d_scalar -= Mat::ThermalExpansion::compute_pk2_stress_contribution(
+        thermoelastic_stress_contribution, kinematic_quantities.iFinM)
+                             .temperature_derivative;
+  }
+
+
   return d_stress_d_scalar;
 }
 
@@ -670,7 +718,8 @@ void Mat::MultiplicativeSplitDefgradElastHyper::evaluate_invariant_derivatives(
  *--------------------------------------------------------------------*/
 Core::LinAlg::Matrix<6, 9> Mat::MultiplicativeSplitDefgradElastHyper::evaluated_sdi_fin(
     const Mat::MultiplicativeSplitDefgradElastHyper::KinematicQuantities& kinemat_quant,
-    const Mat::StressFactors& stress_fact) const
+    const Mat::StressFactors& stress_fact,
+    const Core::LinAlg::SymmetricTensor<double, 3, 3>& SthetaT) const
 {
   // declare output variables
   Core::LinAlg::Matrix<6, 9> dSdiFin{Core::LinAlg::Initialization::zero};
@@ -734,6 +783,22 @@ Core::LinAlg::Matrix<6, 9> Mat::MultiplicativeSplitDefgradElastHyper::evaluated_
 
   // chain rule to get dS/d(det(Fin)) * d(det(Fin))/diFin
   dSdiFin.multiply_nt(1.0, dSddetFin, ddetFindiFinV, 1.0);
+
+  {
+    const Core::LinAlg::Tensor<double, 3, 3> iFinSthetaT = dot(make_tensor_view(iFinM), SthetaT);
+
+    /// \f$\texttt{dSdiFin}\; \mathrel{-}= \frac{\partial}{\partial
+    /// \mathbf{F}_{\text{in}}^{-1}}\left(\det(\mathbf{F}_{\text{in}}) \mathbf{F}_{\text{in}}^{-1}
+    /// \cdot \mathbf{S}_{\theta,T} \cdot \mathbf{F}_{\text{in}}^{-T}\right)\f$
+    Core::LinAlg::FourTensorOperations::add_right_non_symmetric_holzapfel_product(
+        dSdiFin, id, make_matrix_view(iFinSthetaT), -detFin);
+
+    Core::LinAlg::Matrix<3, 3> iFinSthetaTiFinT(Core::LinAlg::Initialization::zero);
+    iFinSthetaTiFinT.multiply_nt(1.0, make_matrix_view(iFinSthetaT), iFinM, 0.0);
+    Core::LinAlg::Matrix<6, 1> iFinSthetaTiFinTV(Core::LinAlg::Initialization::zero);
+    Core::LinAlg::Voigt::Stresses::matrix_to_vector(iFinSthetaTiFinT, iFinSthetaTiFinTV);
+    dSdiFin.multiply_nt(-1.0, iFinSthetaTiFinTV, ddetFindiFinV, 1.0);
+  }
 
   return dSdiFin;
 }
@@ -979,12 +1044,11 @@ void Mat::MultiplicativeSplitDefgradElastHyper::update()
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void Mat::MultiplicativeSplitDefgradElastHyper::evaluate_od_stiff_mat(PAR::InelasticSource source,
-    const Core::LinAlg::Matrix<3, 3>* const defgrad, const Core::LinAlg::Matrix<6, 9>& dSdiFin,
-    Core::LinAlg::Matrix<6, 1>& dstressdx)
+Core::LinAlg::Matrix<6, 1> Mat::MultiplicativeSplitDefgradElastHyper::evaluate_od_stiff_mat(
+    const PAR::InelasticSource source, const Core::LinAlg::Matrix<3, 3>* const defgrad,
+    const Core::LinAlg::Matrix<6, 9>& dSdiFin)
 {
-  // clear variable
-  dstressdx.clear();
+  Core::LinAlg::Matrix<6, 1> dstressdx{Core::LinAlg::Initialization::zero};
 
   // References to vector of inelastic contributions and inelastic deformation gradients
   const auto& facdefgradin = inelastic_->fac_def_grad_in();
@@ -1064,8 +1128,53 @@ void Mat::MultiplicativeSplitDefgradElastHyper::evaluate_od_stiff_mat(PAR::Inela
   }
   else
     FOUR_C_THROW("You should not be here");
+
+  return dstressdx;
 }
 
+void Mat::MultiplicativeSplitDefgradElastHyper::stress_temperature_modulus_and_deriv(
+    Core::LinAlg::SymmetricTensor<double, 3, 3>& stm,
+    Core::LinAlg::SymmetricTensor<double, 3, 3>& stm_dT, const int gp)
+{
+  // this contribution is intentionally neglected so far.
+  stm.fill(0.0);
+  stm_dT.fill(0.0);
+}
+
+Mat::HeatSource Mat::MultiplicativeSplitDefgradElastHyper::evaluate_additional_heat_source(
+    const EvaluationContext<3>& context, const int gp, const int eleGID,
+    const Core::LinAlg::Matrix<3, 3>* current_defgrad, const double current_temperature)
+{
+  HeatSource heat_source;
+
+  // References to vector of inelastic contributions and inelastic deformation gradients
+  const auto& facdefgradin = inelastic_->fac_def_grad_in();
+
+  // number of contributions
+  const int num_contributions = inelastic_->num_inelastic_def_grad();
+
+  // check number of factors the inelastic deformation gradient consists of and choose
+  // implementation accordingly
+  if (num_contributions == 1)
+  {
+    if (const auto viscoplastic_factor =
+            std::dynamic_pointer_cast<Mat::InelasticDefgradTransvIsotropElastViscoplast>(
+                facdefgradin[0].second))
+    {
+      heat_source = viscoplastic_factor->evaluate_taylor_quinney_heat_source(context, gp, eleGID,
+          current_defgrad, Core::LinAlg::identity_matrix<3>(), current_temperature);
+    }
+  }
+  else if (num_contributions > 1)
+  {
+    FOUR_C_THROW(
+        "Evaluation of additional heat source is only implemented for a single factor so far.");
+  }
+  else
+    FOUR_C_THROW("You should not be here");
+
+  return heat_source;
+}
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
 void Mat::MultiplicativeSplitDefgradElastHyper::pre_evaluate(const Teuchos::ParameterList& params,
