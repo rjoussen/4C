@@ -31,6 +31,12 @@ namespace Mat
 
   namespace Viscoplastic
   {
+    enum class HardeningRegularizationMode
+    {
+      none,
+      derivatives_only,
+      full
+    };
 
     namespace PAR
     {
@@ -64,6 +70,16 @@ namespace Mat
         [[nodiscard]] double melt_temperature() const { return melt_temperature_; };
         //! get temperature sensitivity factor
         [[nodiscard]] double temperature_sens() const { return temperature_sens_; };
+        //! scope of the plastic strain regularization
+        [[nodiscard]] HardeningRegularizationMode hardening_regularization_mode() const
+        {
+          return hardening_regularization_mode_;
+        };
+        //! regularization strain offset added to the hardening variable
+        [[nodiscard]] double hardening_regularization_strain_offset() const
+        {
+          return hardening_regularization_strain_offset_;
+        };
 
        private:
         //! strain rate prefactor \f$ \dot{P}_0 \f$
@@ -90,6 +106,12 @@ namespace Mat
 
         //! temperature sensitivity \f$ M \f$
         const double temperature_sens_;
+
+        //! scope of the plastic strain regularization
+        const HardeningRegularizationMode hardening_regularization_mode_;
+
+        //! regularization strain offset added to the hardening variable
+        const double hardening_regularization_strain_offset_;
       };
     }  // namespace PAR
 
@@ -155,6 +177,8 @@ namespace Mat
           const std::string& name, Core::LinAlg::SerialDenseMatrix& data) const override;
 
      private:
+      [[nodiscard]] double compute_regularized_plastic_strain(double equiv_plastic_strain) const;
+
       /// struct containing constant parameters to be evaluated only once
       struct ConstPars
       {

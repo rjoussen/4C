@@ -21,6 +21,7 @@
 #include "4C_mat_micromaterial.hpp"
 #include "4C_mat_scatra_growth_remodel.hpp"
 #include "4C_mat_scatra_nonlocal_stimulus.hpp"
+#include "4C_mat_vplast_reform_johnsoncook.hpp"
 #include "4C_porofluid_pressure_based_elast_scatra_input.hpp"
 
 #include <filesystem>
@@ -3058,6 +3059,18 @@ std::unordered_map<Core::Materials::MaterialType, Core::IO::InputSpec> Global::v
                 {.description =
                         "temperature sensitivity $m$. Has no effect for isothermal simulations.",
                     .validator = positive<double>()}),
+            group("PLASTIC_STRAIN_REGULARIZATION",
+                {parameter<Mat::Viscoplastic::HardeningRegularizationMode>("MODE",
+                     {.description = "scope of the plastic strain regularization",
+                         .default_value = Mat::Viscoplastic::HardeningRegularizationMode::none}),
+                    parameter<double>("STRAIN_OFFSET",
+                        {.description = "strain offset used in the plastic strain regularization "
+                                        "$\\varepsilon_\\mathrm{p} + "
+                                        "\\varepsilon_\\mathrm{reg}$",
+                            .default_value = 1.0e-8,
+                            .validator = positive<double>()})},
+                {.description = "Settings for the plastic strain regularization",
+                    .required = false}),
 
         },
         {.description = "Reformulation of the Johnson-Cook viscoplastic law (comprising flow "

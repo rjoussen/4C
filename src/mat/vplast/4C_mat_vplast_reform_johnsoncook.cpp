@@ -35,7 +35,11 @@ Mat::Viscoplastic::PAR::ReformulatedJohnsonCook::ReformulatedJohnsonCook(
       isotrop_harden_exp_(matdata.parameters.get<double>("ISOTROP_HARDEN_EXP")),
       ref_temperature_(matdata.parameters.get<double>("REF_TEMPERATURE")),
       melt_temperature_(matdata.parameters.get<double>("MELT_TEMPERATURE")),
-      temperature_sens_(matdata.parameters.get<double>("TEMPERATURE_SENS"))
+      temperature_sens_(matdata.parameters.get<double>("TEMPERATURE_SENS")),
+      hardening_regularization_mode_(matdata.parameters.group("PLASTIC_STRAIN_REGULARIZATION")
+              .get<Mat::Viscoplastic::HardeningRegularizationMode>("MODE")),
+      hardening_regularization_strain_offset_(
+          matdata.parameters.group("PLASTIC_STRAIN_REGULARIZATION").get<double>("STRAIN_OFFSET"))
 {
   // consistency checks for the temperature
   FOUR_C_ASSERT_ALWAYS(ref_temperature_ > 0.0,
@@ -141,6 +145,10 @@ double Mat::Viscoplastic::ReformulatedJohnsonCook::evaluate_plastic_strain_rate(
     const double max_plastic_strain_incr, ViscoplastErrorType& err_status,
     const bool update_hist_var)
 {
+  const double hardening_strain =
+      parameter()->hardening_regularization_mode() == HardeningRegularizationMode::full
+          ? compute_regularized_plastic_strain(equiv_plastic_strain)
+          : equiv_plastic_strain;
   // first set error status to "no errors"
   err_status = ViscoplastErrorType::no_errors;
 
@@ -167,7 +175,7 @@ double Mat::Viscoplastic::ReformulatedJohnsonCook::evaluate_plastic_strain_rate(
     InelasticDefgradTransvIsotropElastViscoplastUtils::ErrorType yield_strength_err_status =
         InelasticDefgradTransvIsotropElastViscoplastUtils::ErrorType::no_errors;
     time_step_quantities_.current_yield_strength_[gp_] =
-        compute_flow_resistance(equiv_stress, equiv_plastic_strain, yield_strength_err_status);
+        compute_flow_resistance(equiv_stress, hardening_strain, yield_strength_err_status);
     FOUR_C_ASSERT_ALWAYS(
         yield_strength_err_status ==
             InelasticDefgradTransvIsotropElastViscoplastUtils::ErrorType::no_errors,
@@ -182,7 +190,7 @@ double Mat::Viscoplastic::ReformulatedJohnsonCook::evaluate_plastic_strain_rate(
       "Maximum plastic strain increment must be > 0: current value = {}", max_plastic_strain_incr);
 
   // stress ratio
-  double stress_ratio = evaluate_stress_ratio(equiv_stress, equiv_plastic_strain);
+  double stress_ratio = evaluate_stress_ratio(equiv_stress, hardening_strain);
 
   // then we check the yield condition
   if (stress_ratio >= 1.0)
@@ -213,6 +221,16 @@ Mat::Viscoplastic::ReformulatedJohnsonCook::evaluate_derivatives_of_plastic_stra
     const double max_plastic_strain_deriv_incr, ViscoplastErrorType& err_status,
     const bool update_hist_var)
 {
+  const auto regularization_mode = parameter()->hardening_regularization_mode();
+  const double hardening_strain_for_yield_strength =
+      regularization_mode == HardeningRegularizationMode::full
+          ? compute_regularized_plastic_strain(equiv_plastic_strain)
+          : equiv_plastic_strain;
+  const double hardening_strain_for_hardening_derivative =
+      regularization_mode == HardeningRegularizationMode::none
+          ? equiv_plastic_strain
+          : compute_regularized_plastic_strain(equiv_plastic_strain);
+
   // declare derivatives to be computed
   double deriv_equiv_stress{0.0};
   double deriv_plastic_strain{0.0};
@@ -220,15 +238,6 @@ Mat::Viscoplastic::ReformulatedJohnsonCook::evaluate_derivatives_of_plastic_stra
 
   // first set error status to "no errors"
   err_status = ViscoplastErrorType::no_errors;
-
-  // used equivalent plastic strain
-  double used_equiv_plastic_strain = equiv_plastic_strain;
-  // check whether the plastic strain is less than a set value (singularity in the derivatives
-  // below)
-  if (std::abs(equiv_plastic_strain) < 1.0e-16)
-  {
-    used_equiv_plastic_strain = 1.0e-16;
-  }
 
   // Check if plastic strain is negative and throw error (handled by the parent material,
   // substepping)
@@ -242,8 +251,8 @@ Mat::Viscoplastic::ReformulatedJohnsonCook::evaluate_derivatives_of_plastic_stra
   // extraction of the yield strength from the plastic strain and the material parameters
   InelasticDefgradTransvIsotropElastViscoplastUtils::ErrorType yield_strength_err_status{
       InelasticDefgradTransvIsotropElastViscoplastUtils::ErrorType::no_errors};
-  const double yield_strength =
-      compute_flow_resistance(equiv_stress, used_equiv_plastic_strain, yield_strength_err_status);
+  const double yield_strength = compute_flow_resistance(
+      equiv_stress, hardening_strain_for_yield_strength, yield_strength_err_status);
   FOUR_C_ASSERT_ALWAYS(yield_strength_err_status ==
                            InelasticDefgradTransvIsotropElastViscoplastUtils::ErrorType::no_errors,
       "Something went wrong in the computation of the yield strength in the plastic strain rate "
@@ -257,7 +266,7 @@ Mat::Viscoplastic::ReformulatedJohnsonCook::evaluate_derivatives_of_plastic_stra
 
   // logarithms of equivalent stress and plastic strain
   const double log_equiv_stress = std::log(equiv_stress);
-  const double log_equiv_plastic_strain = std::log(used_equiv_plastic_strain);
+  const double log_hardening_strain = std::log(hardening_strain_for_hardening_derivative);
 
   // logarithm of the time step
   const double log_dt = std::log(dt);
@@ -265,7 +274,7 @@ Mat::Viscoplastic::ReformulatedJohnsonCook::evaluate_derivatives_of_plastic_stra
   // computation of derivatives
 
   // then we check the yield condition
-  if (evaluate_stress_ratio(equiv_stress, used_equiv_plastic_strain) >= 1.0)
+  if (evaluate_stress_ratio(equiv_stress, hardening_strain_for_yield_strength) >= 1.0)
   {
     // compute first the logarithms of our derivatives (try to avoid overflow!)
     /// \f$ \log\left( \frac{\partial v_\text{p}}{\partial \overline\sigma}\right) =
@@ -319,7 +328,7 @@ Mat::Viscoplastic::ReformulatedJohnsonCook::evaluate_derivatives_of_plastic_stra
       /// \f$ \log\left( \frac{\partial \sigma_\text{Y}}{\partial \varepsilon_\text{p}}\right) =
       /// \log \left( \hat{B} \hat{M} \varepsilon_\text{p}^{\hat{M}-1} \right) \f$
       const double log_dyield_depsp = const_pars_.log_B_N +
-                                      (const_pars_.N - 1.0) * log_equiv_plastic_strain +
+                                      (const_pars_.N - 1.0) * log_hardening_strain +
                                       log_temperature_ratio_;
       /// \f$ \log\left( - \frac{\partial v_\text{p}}{\partial \overline\varepsilon_\text{p}}\right)
       /// =
@@ -352,6 +361,14 @@ Mat::Viscoplastic::ReformulatedJohnsonCook::evaluate_derivatives_of_plastic_stra
       .deriv_equiv_stress = deriv_equiv_stress,
       .deriv_plastic_strain = deriv_plastic_strain,
       .deriv_temperature = deriv_temperature};
+}
+
+double Mat::Viscoplastic::ReformulatedJohnsonCook::compute_regularized_plastic_strain(
+    const double equiv_plastic_strain) const
+{
+  /// regularized hardening strain \f$ \varepsilon_\text{p,reg} = \varepsilon_\text{p} +
+  /// \varepsilon_\text{p,reg0} \f$
+  return equiv_plastic_strain + parameter()->hardening_regularization_strain_offset();
 }
 
 void Mat::Viscoplastic::ReformulatedJohnsonCook::setup(const int numgp,
