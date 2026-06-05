@@ -265,16 +265,26 @@ Mat::Viscoplastic::ReformulatedJohnsonCook::evaluate_derivatives_of_plastic_stra
   // computation of derivatives
 
   // then we check the yield condition
-  if (evaluate_stress_ratio(equiv_stress, equiv_plastic_strain) >= 1.0)
+  if (evaluate_stress_ratio(equiv_stress, used_equiv_plastic_strain) >= 1.0)
   {
     // compute first the logarithms of our derivatives (try to avoid overflow!)
-    double log_deriv_sigma = const_pars_.log_p_e +
-                             const_pars_.e * (equiv_stress * inv_yield_strength - 1.0) -
-                             log_yield_strength;
+    /// \f$ \log\left( \frac{\partial v_\text{p}}{\partial \overline\sigma}\right) =
+    /// \log \left( \frac{\hat{P}\hat{E}}{\sigma_{\text{Y}}} \exp \left( \hat{E} \left[
+    /// \frac{\overline{\sigma}}{\sigma_{\text{Y}}} - 1 \right] \right) \right) \f$
+    const double log_deriv_sigma = const_pars_.log_p_e +
+                                   const_pars_.e * (equiv_stress * inv_yield_strength - 1.0) -
+                                   log_yield_strength;
 
+    /// \f$ \log\left( - \frac{\partial \sigma_\text{Y}}{\partial T}\right) = \log \left( -
+    /// \sigma_{\text{Y},T_\text{ref}} \frac{\partial D_T}{\partial T}\right) \f$
     const double log_neg_d_yield_strength_d_temperature =
         log_yield_strength_reference_temperature + log_neg_temperature_ratio_deriv_;
 
+    /// \f$ \log\left( \frac{\partial v_\text{p}}{\partial T}\right) =
+    /// \log \left( - \hat{P} \hat{E} \exp \left( \hat{E} \left[
+    /// \frac{\overline{\sigma}}{\sigma_{\text{Y}}} - 1 \right] \right)
+    /// \frac{\overline\sigma}{\sigma_\text{Y}^2}\frac{\partial \sigma_\text{Y}}{\partial T} \right)
+    /// \f$
     const double log_deriv_temperature =
         const_pars_.log_p_e + const_pars_.e * (equiv_stress * inv_yield_strength - 1.0) +
         log_equiv_stress - 2.0 * log_yield_strength + log_neg_d_yield_strength_d_temperature;
@@ -289,7 +299,7 @@ Mat::Viscoplastic::ReformulatedJohnsonCook::evaluate_derivatives_of_plastic_stra
     if (const_pars_.is_perfect_plasticity)
     {
       // check overflow error using these logarithms
-      double log_max_plastic_strain_deriv_value = std::log(max_plastic_strain_deriv_incr);
+      const double log_max_plastic_strain_deriv_value = std::log(max_plastic_strain_deriv_incr);
       if ((log_dt + log_deriv_sigma > log_max_plastic_strain_deriv_value) or
           (log_dt + log_deriv_temperature > log_max_plastic_strain_deriv_value))
       {
@@ -306,12 +316,22 @@ Mat::Viscoplastic::ReformulatedJohnsonCook::evaluate_derivatives_of_plastic_stra
     // hardening case
     else
     {
+      /// \f$ \log\left( \frac{\partial \sigma_\text{Y}}{\partial \varepsilon_\text{p}}\right) =
+      /// \log \left( \hat{B} \hat{M} \varepsilon_\text{p}^{\hat{M}-1} \right) \f$
+      const double log_dyield_depsp = const_pars_.log_B_N +
+                                      (const_pars_.N - 1.0) * log_equiv_plastic_strain +
+                                      log_temperature_ratio_;
+      /// \f$ \log\left( - \frac{\partial v_\text{p}}{\partial \overline\varepsilon_\text{p}}\right)
+      /// =
+      /// \log \left( \hat{P} \hat{E} \exp \left( \hat{E} \left[
+      /// \frac{\overline{\sigma}}{\sigma_{\text{Y}}} - 1 \right] \right)
+      /// \frac{\overline\sigma}{\sigma_\text{Y}^2}\frac{\partial \sigma_\text{Y}}{\partial
+      /// \varepsilon_\text{p}} \right) \f$
       const double log_neg_deriv_eps =
           const_pars_.log_p_e + const_pars_.e * (equiv_stress * inv_yield_strength - 1.0) +
-          log_equiv_stress - 2.0 * log_yield_strength + const_pars_.log_B_N +
-          (const_pars_.N - 1.0) * log_equiv_plastic_strain + log_temperature_ratio_;
+          log_equiv_stress - 2.0 * log_yield_strength + log_dyield_depsp;
       // check overflow error using these logarithms
-      double log_max_plastic_strain_deriv_value = std::log(max_plastic_strain_deriv_incr);
+      const double log_max_plastic_strain_deriv_value = std::log(max_plastic_strain_deriv_incr);
       if ((log_dt + log_deriv_sigma > log_max_plastic_strain_deriv_value) or
           (log_dt + log_neg_deriv_eps > log_max_plastic_strain_deriv_value) or
           (log_dt + log_deriv_temperature > log_max_plastic_strain_deriv_value))
