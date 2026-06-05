@@ -28,6 +28,7 @@
 #include <Teuchos_ParameterList.hpp>
 
 #include <memory>
+#include <optional>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -415,6 +416,12 @@ namespace Mat
       {
         return local_newton_params_;
       }
+      //! predictor used to initialize the Local Newton loop
+      [[nodiscard]] InelasticDefgradTransvIsotropElastViscoplastUtils::LocalNewtonPredictor
+      local_newton_predictor() const
+      {
+        return local_newton_predictor_;
+      }
 
      private:
       //! ID of the viscoplasticity law
@@ -473,6 +480,10 @@ namespace Mat
       //! Local Newton--Raphson parameters
       const InelasticDefgradTransvIsotropElastViscoplastUtils::LocalNewtonParams
           local_newton_params_;
+
+      //! predictor used to initialize the Local Newton loop
+      const InelasticDefgradTransvIsotropElastViscoplastUtils::LocalNewtonPredictor
+          local_newton_predictor_;
     };
   }  // namespace PAR
 
@@ -1847,6 +1858,28 @@ namespace Mat
         const Core::LinAlg::Matrix<10, 1>& x, const double last_plastic_strain,
         const Core::LinAlg::Matrix<3, 3>& last_iFinM, const double dt,
         InelasticDefgradTransvIsotropElastViscoplastUtils::ErrorType& err_status);
+
+    /*!
+     * @brief Determine the initial guess for the Local Newton loop according to the configured
+     * predictor strategy.
+     */
+    Core::LinAlg::Matrix<10, 1> determine_local_newton_initial_guess(
+        const Core::LinAlg::Matrix<3, 3>& current_rightCG, const double temperature);
+
+    /*!
+     * @brief Predict the last converged local state to the current state using stored history
+     * variable linearizations, if available.
+     */
+    [[nodiscard]] std::optional<Core::LinAlg::Matrix<10, 1>>
+    predict_last_converged_state_with_linearizations(
+        const Core::LinAlg::Matrix<3, 3>& current_rightCG, const double temperature) const;
+
+    /*!
+     * @brief Persist cached history variable linearizations for the configured predictor, if
+     * available.
+     */
+    void update_local_newton_predictor_linearizations(
+        const Core::LinAlg::Matrix<3, 3>& current_rightCG, const double temperature);
 
     /*!
      * @brief Performs the viscoplastic corrector step of the return mapping.

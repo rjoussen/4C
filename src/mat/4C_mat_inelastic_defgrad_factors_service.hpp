@@ -196,6 +196,15 @@ namespace Mat
       perturbation_based,  ///< linearization based on perturbing the current state
     };
 
+    /// enum: predictor used to initialize the Local Newton loop in the viscoplastic corrector
+    enum class LocalNewtonPredictor
+    {
+      last_time_step,        ///< use history variables from the last committed time step
+      last_converged_state,  ///< use the last converged local state as additional predictor
+      last_converged_state_with_linearizations  ///< use stored linearizations of the last converged
+                                                ///< local state as additional predictor
+    };
+
     //! matrix exponential and logarithm evaluation utilities
     struct MatrixExpLogUtils
     {
@@ -234,6 +243,32 @@ namespace Mat
       //! equivalent stress at the previous time instant (for all Gauss points)
       std::vector<double> last_equiv_stress;
 
+      //! derivative-based Local Newton predictor availability at the last time step
+      std::vector<int> last_local_newton_predictor_derivatives_available;
+
+      //! temperature where the derivative-based Local Newton predictor derivatives were evaluated
+      //! at the last time step
+      std::vector<double> last_local_newton_predictor_temperature;
+
+      //! right Cauchy-Green tensor where the derivative-based Local Newton predictor derivatives
+      //! were evaluated at the last time step
+      std::vector<Core::LinAlg::Matrix<3, 3>> last_local_newton_predictor_rightCG;
+
+      //! derivative of the inverse plastic deformation gradient w.r.t. the right Cauchy-Green
+      //! tensor at the last time step
+      std::vector<Core::LinAlg::Matrix<9, 6>> last_plastic_defgrad_inverse_wrt_cauchy_green;
+
+      //! derivative of the equivalent plastic strain w.r.t. the right Cauchy-Green tensor at the
+      //! last time step
+      std::vector<Core::LinAlg::Matrix<1, 6>> last_plastic_strain_wrt_cauchy_green;
+
+      //! derivative of the inverse plastic deformation gradient w.r.t. temperature at the last
+      //! time step
+      std::vector<Core::LinAlg::Matrix<9, 1>> last_plastic_defgrad_inverse_wrt_temperature;
+
+      //! derivative of the equivalent plastic strain w.r.t. temperature at the last time step
+      std::vector<double> last_plastic_strain_wrt_temperature;
+
 
       //! last (reduced) deformation gradient (for all Gauss points)
       std::vector<Core::LinAlg::Matrix<3, 3>> last_defgrad;
@@ -258,6 +293,32 @@ namespace Mat
 
       //! current equivalent stress (for all Gauss points)
       std::vector<double> current_equiv_stress;
+
+      //! derivative-based Local Newton predictor availability at the current time step
+      std::vector<int> current_local_newton_predictor_derivatives_available;
+
+      //! temperature where the derivative-based Local Newton predictor derivatives were evaluated
+      //! at the current time step
+      std::vector<double> current_local_newton_predictor_temperature;
+
+      //! right Cauchy-Green tensor where the derivative-based Local Newton predictor derivatives
+      //! were evaluated at the current time step
+      std::vector<Core::LinAlg::Matrix<3, 3>> current_local_newton_predictor_rightCG;
+
+      //! derivative of the inverse plastic deformation gradient w.r.t. the right Cauchy-Green
+      //! tensor at the current time step
+      std::vector<Core::LinAlg::Matrix<9, 6>> current_plastic_defgrad_inverse_wrt_cauchy_green;
+
+      //! derivative of the equivalent plastic strain w.r.t. the right Cauchy-Green tensor at the
+      //! current time step
+      std::vector<Core::LinAlg::Matrix<1, 6>> current_plastic_strain_wrt_cauchy_green;
+
+      //! derivative of the inverse plastic deformation gradient w.r.t. temperature at the current
+      //! time step
+      std::vector<Core::LinAlg::Matrix<9, 1>> current_plastic_defgrad_inverse_wrt_temperature;
+
+      //! derivative of the equivalent plastic strain w.r.t. temperature at the current time step
+      std::vector<double> current_plastic_strain_wrt_temperature;
 
 
       //! absolute temperature at the current time instant (for all Gauss points)

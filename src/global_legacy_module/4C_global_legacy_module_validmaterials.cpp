@@ -3002,7 +3002,16 @@ std::unordered_map<Core::Materials::MaterialType, Core::IO::InputSpec> Global::v
                         {.description = "strategy to deal with divergence in the Local Newton Loop",
                             .default_value =
                                 Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::
-                                    LocalNewtonDiverCont::stop})
+                                    LocalNewtonDiverCont::stop}),
+                    parameter<Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::
+                            LocalNewtonPredictor>("PREDICTOR",
+                        {.description =
+                                "predictor for the Local Newton initial guess: last_time_step | "
+                                "last_converged_state | "
+                                "last_converged_state_with_linearizations",
+                            .default_value =
+                                Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::
+                                    LocalNewtonPredictor::last_time_step})
 
                 },
                 {.description = "Parameters used in the Local Newton--Raphson procedure "

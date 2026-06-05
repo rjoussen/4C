@@ -718,7 +718,10 @@ Mat::PAR::InelasticDefgradTransvIsotropElastViscoplast::
       mat_log_deriv_calc_method_(
           matdata.parameters.get<Core::LinAlg::GenMatrixLogFirstDerivCalcMethod>(
               "MATRIX_LOG_DERIV_CALC_METHOD")),
-      local_newton_params_(retrieve_local_newton_params(matdata))
+      local_newton_params_(retrieve_local_newton_params(matdata)),
+      local_newton_predictor_(matdata.parameters.group("LOCAL_NEWTON")
+              .get_or<ViscoplastUtils::LocalNewtonPredictor>(
+                  "PREDICTOR", ViscoplastUtils::LocalNewtonPredictor::last_time_step))
 {
   // consistency check: yield parameters in case of transversely-isotropic behavior
   const bool all_yield_cond_param_specified =
@@ -2827,6 +2830,7 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_history_variables_wr
     thermo_mechanical_coupling_cache_.history_variables_wrt_temperature.set(
         gp_, {.inv_plastic_defgrad_wrt_temperature = extract_inv_plastic_defgrad_wrt_temperature(),
                  .plastic_strain_wrt_temperature = SOL(9)});
+    update_local_newton_predictor_linearizations(CredM, temperature);
 
     return thermo_mechanical_coupling_cache_.history_variables_wrt_temperature.value(gp_);
   }
@@ -2834,6 +2838,7 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_history_variables_wr
   {
     thermo_mechanical_coupling_cache_.state_derivatives.set(gp_, {});
     thermo_mechanical_coupling_cache_.history_variables_wrt_temperature.set(gp_, {});
+    update_local_newton_predictor_linearizations(CredM, temperature);
 
     return thermo_mechanical_coupling_cache_.history_variables_wrt_temperature.value(gp_);
   }
@@ -3132,6 +3137,7 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_history_variables_wr
     thermo_mechanical_coupling_cache_.history_variables_wrt_cauchy_green.set(gp_,
         {.inv_plastic_defgrad_wrt_cauchy_green = extract_derivative_of_inv_inelastic_defgrad(SOL),
             .plastic_strain_wrt_cauchy_green = extract_derivative_of_plastic_strain(SOL)});
+    update_local_newton_predictor_linearizations(CredM, temperature);
 
     return thermo_mechanical_coupling_cache_.history_variables_wrt_cauchy_green.value(gp_);
   }
@@ -3140,9 +3146,139 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_history_variables_wr
     // linearization terms are zero if no plastic strain increment
     thermo_mechanical_coupling_cache_.state_derivatives.set(gp_, {});
     thermo_mechanical_coupling_cache_.history_variables_wrt_cauchy_green.set(gp_, {});
+    update_local_newton_predictor_linearizations(CredM, temperature);
 
     return thermo_mechanical_coupling_cache_.history_variables_wrt_cauchy_green.value(gp_);
   }
+}
+
+/*--------------------------------------------------------------------*
+ *--------------------------------------------------------------------*/
+Core::LinAlg::Matrix<10, 1>
+Mat::InelasticDefgradTransvIsotropElastViscoplast::determine_local_newton_initial_guess(
+    const Core::LinAlg::Matrix<3, 3>& current_rightCG, const double temperature)
+{
+  const auto last_time_step_guess =
+      wrap_unknowns(time_step_quantities_.last_plastic_defgrad_inverse[gp_],
+          time_step_quantities_.last_plastic_strain[gp_]);
+
+  switch (parameter()->local_newton_predictor())
+  {
+    case ViscoplastUtils::LocalNewtonPredictor::last_time_step:
+    {
+      return last_time_step_guess;
+    }
+    case ViscoplastUtils::LocalNewtonPredictor::last_converged_state:
+    {
+      return wrap_unknowns(time_step_quantities_.current_plastic_defgrad_inverse[gp_],
+          time_step_quantities_.current_plastic_strain[gp_]);
+    }
+    case ViscoplastUtils::LocalNewtonPredictor::last_converged_state_with_linearizations:
+    {
+      if (auto linearized_guess =
+              predict_last_converged_state_with_linearizations(current_rightCG, temperature))
+      {
+        return *linearized_guess;
+      }
+      return wrap_unknowns(time_step_quantities_.current_plastic_defgrad_inverse[gp_],
+          time_step_quantities_.current_plastic_strain[gp_]);
+    }
+    default:
+      FOUR_C_THROW("Invalid Local Newton predictor {}",
+          EnumTools::enum_name(parameter()->local_newton_predictor()));
+  }
+}
+
+/*--------------------------------------------------------------------*
+ *--------------------------------------------------------------------*/
+std::optional<Core::LinAlg::Matrix<10, 1>>
+Mat::InelasticDefgradTransvIsotropElastViscoplast::predict_last_converged_state_with_linearizations(
+    const Core::LinAlg::Matrix<3, 3>& current_rightCG, const double temperature) const
+{
+  if (time_step_quantities_.current_local_newton_predictor_derivatives_available[gp_] == 0)
+  {
+    return std::nullopt;
+  }
+
+  Core::LinAlg::Matrix<3, 3> delta_rightCG(Core::LinAlg::Initialization::zero);
+  delta_rightCG.update(1.0, current_rightCG, -1.0,
+      time_step_quantities_.current_local_newton_predictor_rightCG[gp_], 0.0);
+
+  Core::LinAlg::Matrix<6, 1> delta_rightCGV(Core::LinAlg::Initialization::zero);
+  Core::LinAlg::Voigt::Strains::matrix_to_vector(delta_rightCG, delta_rightCGV);
+
+  Core::LinAlg::Matrix<9, 1> delta_iFinV(Core::LinAlg::Initialization::zero);
+  delta_iFinV.multiply_nn(1.0,
+      time_step_quantities_.current_plastic_defgrad_inverse_wrt_cauchy_green[gp_], delta_rightCGV,
+      0.0);
+  delta_iFinV.update(
+      temperature - time_step_quantities_.current_local_newton_predictor_temperature[gp_],
+      time_step_quantities_.current_plastic_defgrad_inverse_wrt_temperature[gp_], 1.0);
+
+  Core::LinAlg::Matrix<3, 3> predicted_iFinM =
+      time_step_quantities_.current_plastic_defgrad_inverse[gp_];
+  Core::LinAlg::Matrix<9, 1> predicted_iFinV(Core::LinAlg::Initialization::zero);
+  Core::LinAlg::Voigt::matrix_3x3_to_9x1(predicted_iFinM, predicted_iFinV);
+  predicted_iFinV.update(1.0, delta_iFinV, 1.0);
+  Core::LinAlg::Voigt::matrix_9x1_to_3x3(predicted_iFinV, predicted_iFinM);
+
+  Core::LinAlg::Matrix<1, 1> delta_plastic_strain(Core::LinAlg::Initialization::zero);
+  delta_plastic_strain.multiply_nn(
+      1.0, time_step_quantities_.current_plastic_strain_wrt_cauchy_green[gp_], delta_rightCGV, 0.0);
+  const double predicted_plastic_strain =
+      time_step_quantities_.current_plastic_strain[gp_] + delta_plastic_strain(0) +
+      (temperature - time_step_quantities_.current_local_newton_predictor_temperature[gp_]) *
+          time_step_quantities_.current_plastic_strain_wrt_temperature[gp_];
+
+  const double predicted_iFinM_det = predicted_iFinM.determinant();
+  if (!std::isfinite(predicted_plastic_strain) || predicted_plastic_strain < 0.0 ||
+      !std::isfinite(predicted_iFinM_det) || predicted_iFinM_det <= 0.0)
+  {
+    return std::nullopt;
+  }
+
+  return wrap_unknowns(predicted_iFinM, predicted_plastic_strain);
+}
+
+/*--------------------------------------------------------------------*
+ *--------------------------------------------------------------------*/
+void Mat::InelasticDefgradTransvIsotropElastViscoplast::
+    update_local_newton_predictor_linearizations(
+        const Core::LinAlg::Matrix<3, 3>& current_rightCG, const double temperature)
+{
+  if (parameter()->local_newton_predictor() !=
+      ViscoplastUtils::LocalNewtonPredictor::last_converged_state_with_linearizations)
+  {
+    return;
+  }
+
+  if (!thermo_mechanical_coupling_cache_.history_variables_wrt_cauchy_green.is_evaluated(gp_))
+  {
+    return;
+  }
+
+  const auto& history_variables_wrt_cauchy_green =
+      thermo_mechanical_coupling_cache_.history_variables_wrt_cauchy_green.value(gp_);
+  time_step_quantities_.current_plastic_defgrad_inverse_wrt_cauchy_green[gp_] =
+      history_variables_wrt_cauchy_green.inv_plastic_defgrad_wrt_cauchy_green;
+  time_step_quantities_.current_plastic_strain_wrt_cauchy_green[gp_] =
+      history_variables_wrt_cauchy_green.plastic_strain_wrt_cauchy_green;
+
+  time_step_quantities_.current_plastic_defgrad_inverse_wrt_temperature[gp_].clear();
+  time_step_quantities_.current_plastic_strain_wrt_temperature[gp_] = 0.0;
+  if (thermo_mechanical_coupling_cache_.history_variables_wrt_temperature.is_evaluated(gp_))
+  {
+    const auto& history_variables_wrt_temperature =
+        thermo_mechanical_coupling_cache_.history_variables_wrt_temperature.value(gp_);
+    time_step_quantities_.current_plastic_defgrad_inverse_wrt_temperature[gp_] =
+        history_variables_wrt_temperature.inv_plastic_defgrad_wrt_temperature;
+    time_step_quantities_.current_plastic_strain_wrt_temperature[gp_] =
+        history_variables_wrt_temperature.plastic_strain_wrt_temperature;
+  }
+
+  time_step_quantities_.current_local_newton_predictor_temperature[gp_] = temperature;
+  time_step_quantities_.current_local_newton_predictor_rightCG[gp_] = current_rightCG;
+  time_step_quantities_.current_local_newton_predictor_derivatives_available[gp_] = 1;
 }
 
 Mat::InelasticDefgradTransvIsotropElastViscoplast::HistoryVariables
@@ -3185,7 +3321,7 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::return_mapping(
   else  // predictor does not suffice
   {
     // perform local time integration
-    Core::LinAlg::Matrix<10, 1> x = wrap_unknowns(iFinM_pred, plastic_strain_pred);
+    Core::LinAlg::Matrix<10, 1> x = determine_local_newton_initial_guess(CredM, temperature);
     Core::LinAlg::Matrix<10, 1> sol = viscoplastic_correction(FredM, temperature, x, err_status);
     // throw error if the Local Newton Loop cannot be evaluated with the given substepping
     // settings
@@ -3212,6 +3348,7 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::return_mapping(
     time_step_quantities_.current_equiv_stress[gp_] = state_quantities_.curr_equiv_stress;
     time_step_quantities_.current_rightCG[gp_] = CredM;
     time_step_quantities_.current_defgrad[gp_] = FredM;
+    time_step_quantities_.current_local_newton_predictor_derivatives_available[gp_] = 0;
   }
 
   return result;

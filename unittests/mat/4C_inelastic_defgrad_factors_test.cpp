@@ -80,6 +80,8 @@ namespace
     double thermal_expansion_coefficient = 0.1;
     double ref_temperature = 293.0;
     ReformulatedJohnsonCookParameters viscoplastic_law_params{};
+    ViscoplastUtils::LocalNewtonPredictor local_newton_predictor =
+        ViscoplastUtils::LocalNewtonPredictor::last_time_step;
   };
 
   struct ViscoplasticTestMaterial
@@ -179,6 +181,7 @@ namespace
     material_data.group("LOCAL_NEWTON")
         .add(
             "MAX_EXCEEDANCE_FACT_INCR_TOL", setup.local_newton_params.max_exceedance_fact_incr_tol);
+    material_data.group("LOCAL_NEWTON").add("PREDICTOR", setup.local_newton_predictor);
 
     auto material_params =
         std::dynamic_pointer_cast<Mat::PAR::InelasticDefgradTransvIsotropElastViscoplast>(
@@ -1806,7 +1809,11 @@ namespace
 
   TEST_F(InelasticDefgradFactorsTest, TestLocalNewtonParametersParsing)
   {
-    const auto local_newton_params = set_up_viscoplastic_material().params->local_newton_params();
+    ViscoplasticMaterialSetup setup;
+    setup.local_newton_predictor = Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::
+        LocalNewtonPredictor::last_converged_state_with_linearizations;
+    const auto params = set_up_viscoplastic_material(setup).params;
+    const auto local_newton_params = params->local_newton_params();
 
     EXPECT_EQ(local_newton_params.conv_check,
         Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::LocalNewtonConvCheck::
@@ -1818,6 +1825,9 @@ namespace
     EXPECT_DOUBLE_EQ(local_newton_params.incr_tol, 1.0e-8);
     EXPECT_DOUBLE_EQ(local_newton_params.max_exceedance_fact_res_tol, 1.0e1);
     EXPECT_DOUBLE_EQ(local_newton_params.max_exceedance_fact_incr_tol, 1.0e1);
+    EXPECT_EQ(params->local_newton_predictor(),
+        Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::LocalNewtonPredictor::
+            last_converged_state_with_linearizations);
   }
 
   TEST_F(InelasticDefgradFactorsTest, TestLocalNewtonManagerBookkeeping)

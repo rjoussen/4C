@@ -221,6 +221,21 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::TimeStepQuantities:
   last_equiv_stress.resize(1, 0.0);
   current_equiv_stress.resize(1, 0.0);  // value irrelevant at this point
 
+  last_local_newton_predictor_derivatives_available.resize(1, 0);
+  current_local_newton_predictor_derivatives_available.resize(1, 0);
+  last_local_newton_predictor_temperature.resize(1, ref_temperature);
+  current_local_newton_predictor_temperature.resize(1, ref_temperature);
+  last_local_newton_predictor_rightCG.resize(1, id3x3);
+  current_local_newton_predictor_rightCG.resize(1, id3x3);
+  last_plastic_defgrad_inverse_wrt_cauchy_green.resize(1);
+  current_plastic_defgrad_inverse_wrt_cauchy_green.resize(1);
+  last_plastic_strain_wrt_cauchy_green.resize(1);
+  current_plastic_strain_wrt_cauchy_green.resize(1);
+  last_plastic_defgrad_inverse_wrt_temperature.resize(1);
+  current_plastic_defgrad_inverse_wrt_temperature.resize(1);
+  last_plastic_strain_wrt_temperature.resize(1, 0.0);
+  current_plastic_strain_wrt_temperature.resize(1, 0.0);
+
   // default values of the right CG tensor: unit tensor
   last_rightCG.resize(1, id3x3);
   current_rightCG.resize(1, id3x3);  // value irrelevant at this point
@@ -262,6 +277,28 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::TimeStepQuantities:
   last_equiv_stress.resize(numgp, last_equiv_stress[0]);
   current_equiv_stress.resize(numgp, current_equiv_stress[0]);  // value irrelevant at this point
 
+  last_local_newton_predictor_derivatives_available.resize(
+      numgp, last_local_newton_predictor_derivatives_available[0]);
+  current_local_newton_predictor_derivatives_available.resize(
+      numgp, current_local_newton_predictor_derivatives_available[0]);
+  last_local_newton_predictor_temperature.resize(numgp, last_local_newton_predictor_temperature[0]);
+  current_local_newton_predictor_temperature.resize(
+      numgp, current_local_newton_predictor_temperature[0]);
+  last_local_newton_predictor_rightCG.resize(numgp, last_local_newton_predictor_rightCG[0]);
+  current_local_newton_predictor_rightCG.resize(numgp, current_local_newton_predictor_rightCG[0]);
+  last_plastic_defgrad_inverse_wrt_cauchy_green.resize(
+      numgp, last_plastic_defgrad_inverse_wrt_cauchy_green[0]);
+  current_plastic_defgrad_inverse_wrt_cauchy_green.resize(
+      numgp, current_plastic_defgrad_inverse_wrt_cauchy_green[0]);
+  last_plastic_strain_wrt_cauchy_green.resize(numgp, last_plastic_strain_wrt_cauchy_green[0]);
+  current_plastic_strain_wrt_cauchy_green.resize(numgp, current_plastic_strain_wrt_cauchy_green[0]);
+  last_plastic_defgrad_inverse_wrt_temperature.resize(
+      numgp, last_plastic_defgrad_inverse_wrt_temperature[0]);
+  current_plastic_defgrad_inverse_wrt_temperature.resize(
+      numgp, current_plastic_defgrad_inverse_wrt_temperature[0]);
+  last_plastic_strain_wrt_temperature.resize(numgp, last_plastic_strain_wrt_temperature[0]);
+  current_plastic_strain_wrt_temperature.resize(numgp, current_plastic_strain_wrt_temperature[0]);
+
   // default values of the deformation gradient
   last_defgrad.resize(numgp, last_defgrad[0]);
   current_defgrad.resize(numgp, current_defgrad[0]);
@@ -294,6 +331,14 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::TimeStepQuantities:
   last_substep_plastic_defgrad_inverse = current_plastic_defgrad_inverse;
   last_plastic_strain = current_plastic_strain;
   last_equiv_stress = current_equiv_stress;
+  last_local_newton_predictor_derivatives_available =
+      current_local_newton_predictor_derivatives_available;
+  last_local_newton_predictor_temperature = current_local_newton_predictor_temperature;
+  last_local_newton_predictor_rightCG = current_local_newton_predictor_rightCG;
+  last_plastic_defgrad_inverse_wrt_cauchy_green = current_plastic_defgrad_inverse_wrt_cauchy_green;
+  last_plastic_strain_wrt_cauchy_green = current_plastic_strain_wrt_cauchy_green;
+  last_plastic_defgrad_inverse_wrt_temperature = current_plastic_defgrad_inverse_wrt_temperature;
+  last_plastic_strain_wrt_temperature = current_plastic_strain_wrt_temperature;
   last_substep_plastic_strain = current_plastic_strain;
   last_temperature = current_temperature;
 }
@@ -309,6 +354,13 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::TimeStepQuantities:
   add_to_pack(data, last_plastic_defgrad_inverse);
   add_to_pack(data, last_plastic_strain);
   add_to_pack(data, last_equiv_stress);
+  add_to_pack(data, last_local_newton_predictor_derivatives_available);
+  add_to_pack(data, last_local_newton_predictor_temperature);
+  add_to_pack(data, last_local_newton_predictor_rightCG);
+  add_to_pack(data, last_plastic_defgrad_inverse_wrt_cauchy_green);
+  add_to_pack(data, last_plastic_strain_wrt_cauchy_green);
+  add_to_pack(data, last_plastic_defgrad_inverse_wrt_temperature);
+  add_to_pack(data, last_plastic_strain_wrt_temperature);
   add_to_pack(data, last_substep_plastic_defgrad_inverse);
   add_to_pack(data, last_substep_plastic_strain);
   add_to_pack(data, last_temperature);
@@ -325,21 +377,31 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::TimeStepQuantities:
   extract_from_pack(buffer, last_plastic_defgrad_inverse);
   extract_from_pack(buffer, last_plastic_strain);
   extract_from_pack(buffer, last_equiv_stress);
+  extract_from_pack(buffer, last_local_newton_predictor_derivatives_available);
+  extract_from_pack(buffer, last_local_newton_predictor_temperature);
+  extract_from_pack(buffer, last_local_newton_predictor_rightCG);
+  extract_from_pack(buffer, last_plastic_defgrad_inverse_wrt_cauchy_green);
+  extract_from_pack(buffer, last_plastic_strain_wrt_cauchy_green);
+  extract_from_pack(buffer, last_plastic_defgrad_inverse_wrt_temperature);
+  extract_from_pack(buffer, last_plastic_strain_wrt_temperature);
   extract_from_pack(buffer, last_substep_plastic_defgrad_inverse);
   extract_from_pack(buffer, last_substep_plastic_strain);
   extract_from_pack(buffer, last_temperature);
 
   // fill current_ values with the last_ values
-  current_rightCG.resize(last_rightCG.size(),
-      last_rightCG[0]);  // value irrelevant
-  current_plastic_defgrad_inverse.resize(last_plastic_defgrad_inverse.size(),
-      last_plastic_defgrad_inverse[0]);  // value irrelevant
-  current_plastic_strain.resize(last_plastic_strain.size(),
-      last_plastic_strain[0]);  // value irrelevant
-  current_equiv_stress.resize(last_equiv_stress.size(),
-      last_equiv_stress[0]);  // value irrelevant
-  current_temperature.resize(last_temperature.size(),
-      0.0);  // value irrelevant
+  current_rightCG = last_rightCG;
+  current_plastic_defgrad_inverse = last_plastic_defgrad_inverse;
+  current_plastic_strain = last_plastic_strain;
+  current_equiv_stress = last_equiv_stress;
+  current_local_newton_predictor_derivatives_available =
+      last_local_newton_predictor_derivatives_available;
+  current_local_newton_predictor_temperature = last_local_newton_predictor_temperature;
+  current_local_newton_predictor_rightCG = last_local_newton_predictor_rightCG;
+  current_plastic_defgrad_inverse_wrt_cauchy_green = last_plastic_defgrad_inverse_wrt_cauchy_green;
+  current_plastic_strain_wrt_cauchy_green = last_plastic_strain_wrt_cauchy_green;
+  current_plastic_defgrad_inverse_wrt_temperature = last_plastic_defgrad_inverse_wrt_temperature;
+  current_plastic_strain_wrt_temperature = last_plastic_strain_wrt_temperature;
+  current_temperature = last_temperature;
 
   // set evaluated deformation gradient to 0, to make sure that the inverse inelastic deformation
   // gradient is evaluated fully after the restart
