@@ -24,9 +24,11 @@
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "4C_linear_solver_method.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
+#include "4C_material_time_step_request.hpp"
 #include "4C_mortar_multifield_coupling.hpp"
 #include "4C_structure_new_model_evaluator_structure.hpp"
 #include "4C_structure_new_timint_base.hpp"
+#include "4C_structure_new_timint_noxinterface.hpp"
 #include "4C_thermo_adapter.hpp"
 #include "4C_thermo_ele_action.hpp"
 #include "4C_tsi_problem_access.hpp"
@@ -36,6 +38,13 @@
 #include <Teuchos_TimeMonitor.hpp>
 
 FOUR_C_NAMESPACE_OPEN
+
+namespace
+{
+  class TsiMaterialTimeStepReductionRequested
+  {
+  };
+}  // namespace
 
 //! Note: The order of calling the two BaseAlgorithm-constructors is
 //! important here! In here control file entries are written. And these entries
@@ -73,9 +82,25 @@ TSI::Monolithic::Monolithic(MPI_Comm comm, const Teuchos::ParameterList& sdynpar
       ptcdt_(tsidynmono_.get<double>("PTCDT")),
       dti_(1.0 / ptcdt_),
       ls_strategy_(Teuchos::getIntegralValue<TSI::LineSearch>(tsidynmono_, "TSI_LINE_SEARCH")),
-      vel_(nullptr)
+      vel_(nullptr),
+      time_step_control_settings_(std::nullopt),
+      scheduled_time_step_increase_(std::nullopt),
+      retry_time_step_(std::nullopt),
+      retry_step_reason_(""),
+      time_step_control_num_fine_step_(0),
+      time_step_control_is_reduced_(false)
 {
   fix_time_integration_params();
+
+  if (tsidynmono_.isType<TSI::TimeStepControlSettings>("TIMESTEP CONTROL"))
+  {
+    time_step_control_settings_ = tsidynmono_.get<TSI::TimeStepControlSettings>("TIMESTEP CONTROL");
+    if (not time_step_control_settings_->max_timestep.has_value())
+      time_step_control_settings_->max_timestep = tsidyn_.get<double>("TIMESTEP");
+    if (not time_step_control_settings_->increase_factor.has_value())
+      time_step_control_settings_->increase_factor =
+          1.0 / time_step_control_settings_->decrease_factor;
+  }
 
   // another setup of structural time integration with the correct initial temperature is required,
   // so get the temperature
@@ -207,8 +232,31 @@ void TSI::Monolithic::prepare_time_step()
   apply_struct_coupling_state(structure_field()->dispnp(), structure_field()->velnp());
   apply_thermo_coupling_state(thermo_field()->tempnp());
 
-  // call the predictor
-  structure_field()->prepare_time_step();
+  // call the structural predictor. It may trigger material timestep reduction through solid
+  // evaluation, so use the retry-aware adapter contract here and retry the whole coupled step
+  // before the thermo field is advanced.
+  const Adapter::StepControlResult prepare_result =
+      structure_field()->prepare_time_step_control_result();
+  switch (prepare_result.action)
+  {
+    case Adapter::StepControlAction::proceed:
+      break;
+    case Adapter::StepControlAction::repeat_step:
+    {
+      if (prepare_result.retry_reason != Adapter::RetryStepReason::material_time_step_reduction)
+      {
+        FOUR_C_THROW("Unsupported structural prepare-step retry reason in monolithic TSI.");
+      }
+      request_time_step_retry(compute_material_reduced_time_step(),
+          "Material evaluation requested a reduced time step");
+      return;
+    }
+    case Adapter::StepControlAction::stop:
+      FOUR_C_THROW("Structural prepare_time_step() was not successful in monolithic TSI.");
+    default:
+      FOUR_C_THROW("Unknown structural prepare-step control action in monolithic TSI.");
+  }
+
   thermo_field()->prepare_time_step();
 
 }  // prepare_time_step()
@@ -293,30 +341,215 @@ void TSI::Monolithic::create_linear_solver()
  *----------------------------------------------------------------------*/
 void TSI::Monolithic::solve()
 {
+  retry_time_step_.reset();
+  retry_step_reason_.clear();
+
+  Adapter::StepControlResult solve_result;
+  std::string retry_reason;
+
   // choose solution technique according to input file
-  switch (soltech_)
+  try
   {
-    // Newton-Raphson iteration
-    case TSI::NlnSolTech::fullnewton:
-      newton_full();
-      break;
-    // Pseudo-transient continuation
-    case TSI::NlnSolTech::ptc:
-      ptc();
-      break;
-    // catch problems
-    default:
-      FOUR_C_THROW("Solution technique \"{}\" is not implemented", soltech_);
-      break;
-  }  // end switch (soltechnique_)
+    switch (soltech_)
+    {
+      // Newton-Raphson iteration
+      case TSI::NlnSolTech::fullnewton:
+        solve_result = newton_full();
+        retry_reason = "Monolithic TSI nonlinear solver did not converge";
+        break;
+      // Pseudo-transient continuation
+      case TSI::NlnSolTech::ptc:
+        solve_result = ptc();
+        retry_reason = "Monolithic TSI PTC nonlinear solver did not converge";
+        break;
+      // catch problems
+      default:
+        FOUR_C_THROW("Solution technique \"{}\" is not implemented", soltech_);
+        break;
+    }  // end switch (soltechnique_)
+  }
+  catch (const TsiMaterialTimeStepReductionRequested&)
+  {
+    request_time_step_retry(
+        compute_material_reduced_time_step(), "Material evaluation requested a reduced time step");
+  }
+
+  if (solve_result.action == Adapter::StepControlAction::repeat_step)
+  {
+    FOUR_C_ASSERT_ALWAYS(solve_result.proposed_time_step.has_value(),
+        "Monolithic TSI requested a step retry without a proposed time-step size.");
+    request_time_step_retry(*solve_result.proposed_time_step, retry_reason);
+  }
+
+  if (not retry_time_step_.has_value()) check_for_time_step_increase();
 }  // Solve()
+
+/*----------------------------------------------------------------------*
+ | time-step retry handling                                  dano 11/10 |
+ *----------------------------------------------------------------------*/
+void TSI::Monolithic::pre_time_loop_step()
+{
+  if (not scheduled_time_step_increase_.has_value()) return;
+
+  const double old_dt = dt();
+  const double new_dt = std::min(*scheduled_time_step_increase_, max_time() - time());
+  scheduled_time_step_increase_.reset();
+
+  if (not(new_dt > 0.0 and old_dt > 0.0 and new_dt != old_dt)) return;
+
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
+  {
+    Core::IO::cout << std::string(72, '*') << "\n"
+                   << "TSI time step control recovery: increase timestep size by factor "
+                   << new_dt / old_dt << ".\n"
+                   << "Old time step: " << old_dt << "\n"
+                   << "New time step: " << new_dt << "\n"
+                   << std::string(72, '*') << "\n"
+                   << Core::IO::endl;
+  }
+
+  apply_time_step_change(new_dt, false);
+}
+
+bool TSI::Monolithic::supports_material_time_step_reduction() const
+{
+  return material_time_step_reduction_enabled();
+}
+
+bool TSI::Monolithic::handle_step_retry()
+{
+  if (not retry_time_step_.has_value()) return false;
+
+  const double new_dt = *retry_time_step_;
+  retry_time_step_.reset();
+
+  if (Core::Communication::my_mpi_rank(get_comm()) == 0)
+  {
+    Core::IO::cout << std::string(72, '*') << "\n"
+                   << retry_step_reason_ << " at time t= " << time() << "\n"
+                   << "Old time step: " << dt() << "\n"
+                   << "New time step: " << new_dt << "\n"
+                   << std::string(72, '*') << "\n"
+                   << Core::IO::endl;
+  }
+
+  apply_time_step_change(new_dt, true);
+  time_step_control_is_reduced_ = true;
+  time_step_control_num_fine_step_ = 0;
+  retry_step_reason_.clear();
+  return true;
+}
+
+void TSI::Monolithic::request_time_step_retry(const double new_dt, const std::string& reason)
+{
+  retry_time_step_ = new_dt;
+  retry_step_reason_ = reason;
+}
+
+double TSI::Monolithic::compute_material_reduced_time_step() const
+{
+  if (not material_time_step_reduction_enabled())
+  {
+    FOUR_C_THROW(
+        "A material evaluation requested a reduced time step, but TSI "
+        "DYNAMIC/MONOLITHIC/TIMESTEP CONTROL/REDUCTION_REASON does not enable material requests.");
+  }
+
+  return compute_reduced_time_step("A material evaluation requested a reduced time step");
+}
+
+double TSI::Monolithic::compute_nonlinear_reduced_time_step() const
+{
+  if (not nonlinear_solver_time_step_reduction_enabled()) return 0.0;
+
+  return compute_reduced_time_step("The monolithic TSI nonlinear solver did not converge");
+}
+
+double TSI::Monolithic::compute_reduced_time_step(const std::string& trigger) const
+{
+  FOUR_C_ASSERT_ALWAYS(time_step_control_settings_.has_value(),
+      "Cannot compute a reduced TSI time step without TIMESTEP CONTROL settings.");
+
+  const auto& settings = *time_step_control_settings_;
+  const double new_dt = dt() * settings.decrease_factor;
+  if (new_dt < settings.min_timestep)
+  {
+    FOUR_C_THROW(
+        "{} at time t = {}, but reducing dt would violate TSI "
+        "DYNAMIC/MONOLITHIC/TIMESTEP CONTROL/MIN_TIMESTEP. Current dt = {}, requested dt = {}, "
+        "MIN_TIMESTEP = {}.",
+        trigger, time(), dt(), new_dt, settings.min_timestep);
+  }
+
+  return new_dt;
+}
+
+bool TSI::Monolithic::material_time_step_reduction_enabled() const
+{
+  if (not time_step_control_settings_.has_value()) return false;
+
+  const auto reason = time_step_control_settings_->reduction_reason;
+  return reason == TSI::TimeStepReductionReason::material ||
+         reason == TSI::TimeStepReductionReason::both;
+}
+
+bool TSI::Monolithic::nonlinear_solver_time_step_reduction_enabled() const
+{
+  if (not time_step_control_settings_.has_value()) return false;
+
+  const auto reason = time_step_control_settings_->reduction_reason;
+  return reason == TSI::TimeStepReductionReason::nonlinear_solver ||
+         reason == TSI::TimeStepReductionReason::both;
+}
+
+void TSI::Monolithic::check_for_time_step_increase()
+{
+  if (not time_step_control_is_reduced_ or not time_step_control_settings_.has_value()) return;
+
+  const auto& settings = *time_step_control_settings_;
+  const double max_timestep = *settings.max_timestep;
+  if (dt() >= max_timestep)
+  {
+    time_step_control_is_reduced_ = false;
+    time_step_control_num_fine_step_ = 0;
+    return;
+  }
+
+  ++time_step_control_num_fine_step_;
+  if (time_step_control_num_fine_step_ < settings.steps_to_increase) return;
+
+  const double new_dt = std::min(dt() * *settings.increase_factor, max_timestep);
+  if (new_dt > dt()) scheduled_time_step_increase_ = new_dt;
+  time_step_control_num_fine_step_ = 0;
+}
+
+void TSI::Monolithic::apply_time_step_change(const double new_dt, const bool reset_step_for_retry)
+{
+  FOUR_C_ASSERT_ALWAYS(new_dt > 0.0, "Time-step size must be positive.");
+
+  const double time_n = reset_step_for_retry ? time() - dt() : time();
+  const int step_n = reset_step_for_retry ? step() - 1 : step();
+
+  set_dt(new_dt);
+  structure_field()->set_dt(new_dt);
+  thermo_field()->set_dt(new_dt);
+  structure_field()->set_timen(time_n + new_dt);
+  thermo_field()->set_timen(time_n + new_dt);
+
+  if (reset_step_for_retry)
+  {
+    set_time_step(time_n, step_n);
+    structure_field()->reset_step_for_time_step_retry(new_dt);
+    thermo_field()->reset_step();
+  }
+}
 
 
 /*----------------------------------------------------------------------*
  | solution with full Newton-Raphson iteration               dano 10/10 |
  | in tsi_algorithm: NewtonFull()                                       |
  *----------------------------------------------------------------------*/
-void TSI::Monolithic::newton_full()
+Adapter::StepControlResult TSI::Monolithic::newton_full()
 {
   // we do a Newton-Raphson iteration here.
   // the specific time integration has set the following
@@ -532,19 +765,34 @@ void TSI::Monolithic::newton_full()
   // test whether max iterations was hit
   if (iter_ >= itermax_ and not converged())
   {
+    if (nonlinear_solver_time_step_reduction_enabled())
+    {
+      Adapter::StepControlResult result;
+      result.action = Adapter::StepControlAction::repeat_step;
+      result.convergence_status = Inpar::Solid::conv_fail_repeat;
+      result.retry_reason = Adapter::RetryStepReason::nonlinear_solver_time_step_reduction;
+      result.proposed_time_step = compute_nonlinear_reduced_time_step();
+      return result;
+    }
+
     if (Teuchos::getIntegralValue<Inpar::Solid::DivContAct>(sdyn_, "DIVERCONT") ==
         Inpar::Solid::divcont_continue)
       ;  // do nothing
     else
       FOUR_C_THROW("Newton unconverged in {} iterations", iter_);
   }
+
+  Adapter::StepControlResult result;
+  result.action = Adapter::StepControlAction::proceed;
+  result.convergence_status = Inpar::Solid::conv_success;
+  return result;
 }  // NewtonFull()
 
 
 /*----------------------------------------------------------------------*
  | solution with pseudo-transient continuation               dano 06/14 |
  *----------------------------------------------------------------------*/
-void TSI::Monolithic::ptc()
+Adapter::StepControlResult TSI::Monolithic::ptc()
 {
   // do a PTC iteration here
   // implementation is based on the work of Gee, Kelley, Lehouq (2009):
@@ -767,8 +1015,23 @@ void TSI::Monolithic::ptc()
   // test whether max iterations was hit
   if (iter_ >= itermax_ and not converged())
   {
+    if (nonlinear_solver_time_step_reduction_enabled())
+    {
+      Adapter::StepControlResult result;
+      result.action = Adapter::StepControlAction::repeat_step;
+      result.convergence_status = Inpar::Solid::conv_fail_repeat;
+      result.retry_reason = Adapter::RetryStepReason::nonlinear_solver_time_step_reduction;
+      result.proposed_time_step = compute_nonlinear_reduced_time_step();
+      return result;
+    }
+
     FOUR_C_THROW("PTC unconverged in {} iterations", iter_);
   }
+
+  Adapter::StepControlResult result;
+  result.action = Adapter::StepControlAction::proceed;
+  result.convergence_status = Inpar::Solid::conv_success;
+  return result;
 }  // PTC()
 
 
@@ -812,10 +1075,22 @@ void TSI::Monolithic::evaluate(std::shared_ptr<Core::LinAlg::Vector<double>> ste
   //     blank residual DOFs that are on Dirichlet BC
   //     in case of local coordinate systems rotate the residual forth and back
   //     Be AWARE: apply_dirichlet_to_system has to be called with rotated stiff_!
-  if (iter_ == 0)
-    structure_field()->evaluate();
-  else
-    structure_field()->evaluate(sx);
+  // The solid model evaluator owns the material timestep-reduction EvaluationScope and performs
+  // the synchronized request collection. TSI only consumes the already reduced request here and
+  // turns it into a coupled-step retry.
+  try
+  {
+    if (iter_ == 0)
+      structure_field()->evaluate();
+    else
+      structure_field()->evaluate(sx);
+  }
+  catch (const Solid::TimeInt::Internal::MaterialTimeStepReductionRequestedFromNox&)
+  {
+    if (Core::Mat::TimeStepReduction::consume_mpi_reduced_request())
+      throw TsiMaterialTimeStepReductionRequested{};
+    throw;
+  }
   structure_field()->discretization()->clear_state(true);
 
   /// thermal field

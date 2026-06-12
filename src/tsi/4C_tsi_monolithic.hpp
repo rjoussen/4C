@@ -14,12 +14,16 @@
  *----------------------------------------------------------------------*/
 #include "4C_config.hpp"
 
+#include "4C_adapter_str_structure.hpp"
 #include "4C_inpar_structure.hpp"
 #include "4C_thermo_input.hpp"
 #include "4C_tsi_algorithm.hpp"
 #include "4C_tsi_input.hpp"
 
 #include <Teuchos_Time.hpp>
+
+#include <optional>
+#include <string>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -151,7 +155,7 @@ namespace TSI
     bool converged();
 
     //! outer iteration loop
-    void newton_full();
+    Adapter::StepControlResult newton_full();
 
     //! apply DBC to all blocks
     void apply_dbc();
@@ -163,7 +167,7 @@ namespace TSI
     //! and/or can do larger time steps
     //!
 
-    void ptc();
+    Adapter::StepControlResult ptc();
 
     //! @name Output
 
@@ -203,6 +207,15 @@ namespace TSI
 
     //! calculate stresses, strains, energies
     void prepare_output(bool force_prepare) override;
+
+    //! Apply deferred timestep changes before starting the next monolithic step.
+    void pre_time_loop_step() override;
+
+    //! Monolithic TSI owns material-triggered retry when the optional parameter group is set.
+    [[nodiscard]] bool supports_material_time_step_reduction() const override;
+
+    //! Repeat the current monolithic step if solve() requested timestep reduction.
+    bool handle_step_retry() override;
 
     //! convergence check for Newton solver
     bool convergence_check(int itnum, int itmax, double ittol);
@@ -270,6 +283,30 @@ namespace TSI
     //! if just rho_inf is specified for genAlpha, the other parameters in the global parameter
     //! list need to be adapted accordingly
     void fix_time_integration_params();
+
+    //! Shared implementation for material and nonlinear-solver timestep retries.
+    void request_time_step_retry(double new_dt, const std::string& reason);
+
+    //! Reduce dt after a material evaluation requested it.
+    [[nodiscard]] double compute_material_reduced_time_step() const;
+
+    //! Reduce dt after the monolithic nonlinear solver did not converge.
+    [[nodiscard]] double compute_nonlinear_reduced_time_step() const;
+
+    //! Shared timestep reduction based on the configured timestep-control settings.
+    [[nodiscard]] double compute_reduced_time_step(const std::string& trigger) const;
+
+    //! Whether material requests should retry with a reduced time step.
+    [[nodiscard]] bool material_time_step_reduction_enabled() const;
+
+    //! Whether monolithic nonlinear non-convergence should retry with a reduced time step.
+    [[nodiscard]] bool nonlinear_solver_time_step_reduction_enabled() const;
+
+    //! Track successful reduced steps and schedule recovery.
+    void check_for_time_step_increase();
+
+    //! Apply a dt change to all time owners, optionally restoring current step state.
+    void apply_time_step_change(double new_dt, bool reset_step_for_retry);
 
     const Teuchos::ParameterList& tsidyn_;      //!< TSI dynamic parameter list
     const Teuchos::ParameterList& tsidynmono_;  //!< monolithic TSI dynamic parameter list
@@ -369,6 +406,13 @@ namespace TSI
 
     //! global velocities \f${V}_{n+1}\f$ at \f$t_{n+1}\f$
     std::shared_ptr<const Core::LinAlg::Vector<double>> vel_;
+
+    std::optional<TSI::TimeStepControlSettings> time_step_control_settings_;
+    std::optional<double> scheduled_time_step_increase_;
+    std::optional<double> retry_time_step_;
+    std::string retry_step_reason_;
+    int time_step_control_num_fine_step_;
+    bool time_step_control_is_reduced_;
 
     //! Dirichlet BCs with local co-ordinate system
     std::shared_ptr<Core::Conditions::LocsysManager> locsysman_;

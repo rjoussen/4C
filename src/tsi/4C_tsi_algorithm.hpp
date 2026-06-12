@@ -126,6 +126,15 @@ namespace TSI
     //! take current results for converged and save for next time step
     void update() override = 0;
 
+    //! hook executed at the beginning of each time-loop pass
+    virtual void pre_time_loop_step() {}
+
+    //! whether this algorithm can handle material-triggered timestep retry
+    [[nodiscard]] virtual bool supports_material_time_step_reduction() const { return false; }
+
+    //! handle a requested retry after solve(); returns true if the current step is repeated
+    virtual bool handle_step_retry() { return false; }
+
     //@}
 
     //! @name Transfer methods

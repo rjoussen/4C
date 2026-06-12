@@ -20,6 +20,7 @@
 #include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
+#include "4C_material_time_step_request.hpp"
 #include "4C_mortar_multifield_coupling.hpp"
 #include "4C_thermo_adapter.hpp"
 #include "4C_tsi_input.hpp"
@@ -168,11 +169,19 @@ void TSI::Algorithm::time_loop()
   // time loop
   while (not_finished())
   {
+    pre_time_loop_step();
+    Core::Mat::TimeStepReduction::AlgorithmSupportScope support_scope(
+        supports_material_time_step_reduction());
+
     // increment step, print header and apply coupling (only monolithic scheme)
     prepare_time_step();
 
+    if (handle_step_retry()) continue;
+
     // integrate time step
     solve();
+
+    if (handle_step_retry()) continue;
 
     // calculate stresses, strains, energies
     prepare_output();

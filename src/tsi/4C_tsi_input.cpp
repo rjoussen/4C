@@ -10,6 +10,8 @@
 #include "4C_contact_input.hpp"
 #include "4C_io_input_spec_builders.hpp"
 
+#include <limits>
+
 FOUR_C_NAMESPACE_OPEN
 
 std::vector<Core::IO::InputSpec> TSI::valid_parameters()
@@ -128,6 +130,53 @@ std::vector<Core::IO::InputSpec> TSI::valid_parameters()
           // default: "No", i.e. use block matrix
           parameter<bool>("MERGE_TSI_BLOCK_MATRIX",
               {.description = "Merge TSI block matrix", .default_value = false}),
+
+          group<TimeStepControlSettings>("TIMESTEP CONTROL",
+              {
+                  parameter<TimeStepReductionReason>("REDUCTION_REASON",
+                      {.description =
+                              "Reason that triggers monolithic TSI timestep reduction. Use "
+                              "'material' for material requests, 'nonlinear_solver' when the "
+                              "monolithic nonlinear solver does not converge, or 'both'.",
+                          .default_value = TimeStepReductionReason::both,
+                          .store = in_struct(&TimeStepControlSettings::reduction_reason)}),
+                  parameter<double>("DECREASE_FACTOR",
+                      {.description = "Factor applied to the monolithic TSI time step size after a "
+                                      "configured timestep-reduction trigger",
+                          .default_value = 0.5,
+                          .validator =
+                              Validators::in_range(Validators::excl(0.0), Validators::excl(1.0)),
+                          .store = in_struct(&TimeStepControlSettings::decrease_factor)}),
+                  parameter<double>("MIN_TIMESTEP",
+                      {.description = "Minimum allowed monolithic TSI time step size during "
+                                      "timestep reduction",
+                          .default_value = 1.0e-12,
+                          .validator = Validators::positive<double>(),
+                          .store = in_struct(&TimeStepControlSettings::min_timestep)}),
+                  parameter<int>("STEPS_TO_INCREASE",
+                      {.description =
+                              "Number of consecutively successful reduced time steps before "
+                              "increasing the monolithic TSI time step again",
+                          .default_value = 4,
+                          .validator = Validators::positive<int>(),
+                          .store = in_struct(&TimeStepControlSettings::steps_to_increase)}),
+                  parameter<std::optional<double>>("MAX_TIMESTEP",
+                      {.description = "Maximum allowed monolithic TSI time step size during "
+                                      "recovery. If omitted, the initially configured TSI TIMESTEP "
+                                      "is used.",
+                          .validator = Validators::null_or(Validators::positive<double>()),
+                          .store = in_struct(&TimeStepControlSettings::max_timestep)}),
+                  parameter<std::optional<double>>("INCREASE_FACTOR",
+                      {.description =
+                              "Factor applied when increasing the monolithic TSI time step during "
+                              "recovery. If omitted, INCREASE_FACTOR = 1/DECREASE_FACTOR.",
+                          .validator = Validators::null_or(Validators::in_range(
+                              Validators::excl(1.0), std::numeric_limits<double>::max())),
+                          .store = in_struct(&TimeStepControlSettings::increase_factor)}),
+              },
+              {.description = "Use this optional group to allow timestep reduction and recovery in "
+                              "monolithic TSI",
+                  .required = false}),
 
           deprecated_selection<LineSearch>("TSI_LINE_SEARCH",
               {

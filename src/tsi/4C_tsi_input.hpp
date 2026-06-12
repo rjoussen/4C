@@ -12,6 +12,7 @@
 
 #include "4C_io_input_spec.hpp"
 
+#include <optional>
 #include <vector>
 
 
@@ -74,6 +75,26 @@ namespace TSI
     LS_thermo,     //!< line-search based on thermal residual
     LS_or,         //!< line-search based on structural or thermal residual
     LS_and,        //!< line-search based on structural and thermal residual
+  };
+
+  //! events that trigger monolithic TSI time step reduction
+  enum class TimeStepReductionReason
+  {
+    none,
+    material,
+    nonlinear_solver,
+    both,
+  };
+
+  //! settings for monolithic TSI time-step reduction and recovery
+  struct TimeStepControlSettings
+  {
+    TimeStepReductionReason reduction_reason = TimeStepReductionReason::both;
+    double decrease_factor = 0.5;
+    double min_timestep = 1.0e-12;
+    int steps_to_increase = 4;
+    std::optional<double> max_timestep = std::nullopt;
+    std::optional<double> increase_factor = std::nullopt;
   };
 
   //@}

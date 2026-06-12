@@ -62,12 +62,23 @@ namespace
 
   bool request_time_step_reduction_for_error(const ViscoplastUtils::ErrorType& err_status)
   {
-    const bool is_time_step_reducible_error =
-        err_status == ViscoplastUtils::ErrorType::no_convergence_local_newton ||
-        err_status == ViscoplastUtils::ErrorType::failed_solution_linear_system_lnl ||
-        err_status == ViscoplastUtils::ErrorType::overflow_error ||
-        err_status == ViscoplastUtils::ErrorType::negative_plastic_strain ||
-        err_status == ViscoplastUtils::ErrorType::failed_computation_flow_resistance_derivs;
+    bool is_time_step_reducible_error = false;
+    switch (err_status)
+    {
+      case ViscoplastUtils::ErrorType::no_convergence_local_newton:
+      case ViscoplastUtils::ErrorType::failed_solution_linear_system_lnl:
+      case ViscoplastUtils::ErrorType::overflow_error:
+      case ViscoplastUtils::ErrorType::singular_jacobian:
+      case ViscoplastUtils::ErrorType::negative_plastic_strain:
+      case ViscoplastUtils::ErrorType::failed_computation_flow_resistance_derivs:
+      case ViscoplastUtils::ErrorType::failed_matrix_log_evaluation:
+      case ViscoplastUtils::ErrorType::failed_matrix_exp_evaluation:
+      case ViscoplastUtils::ErrorType::failed_solution_analytic_linearization:
+        is_time_step_reducible_error = true;
+        break;
+      default:
+        is_time_step_reducible_error = false;
+    }
 
     if (!is_time_step_reducible_error) return false;
 
@@ -2733,6 +2744,10 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_additional_cmat
   const auto& diFinjdC = evaluate_history_variables_wrt_cauchy_green(
       reduced_kinematics.right_cauchy_green, temperature, err_status)
                              .inv_plastic_defgrad_wrt_cauchy_green;
+
+  if (err_status != ViscoplastUtils::ErrorType::no_errors &&
+      request_time_step_reduction_for_error(err_status))
+    return;
 
   FOUR_C_ASSERT_ALWAYS(err_status == ViscoplastUtils::ErrorType::no_errors,
       "Could not evaluate additional stiffness matrix: {}",
