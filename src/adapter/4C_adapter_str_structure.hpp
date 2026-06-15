@@ -17,6 +17,8 @@
 #include "4C_utils_parameter_list.fwd.hpp"
 #include "4C_utils_result_test.hpp"
 
+#include <optional>
+
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
@@ -80,6 +82,53 @@ namespace Global
 
 namespace Adapter
 {
+  enum class PrepareTimeStepStatus
+  {
+    successful,
+    failed,
+    repeat_step,
+  };
+
+  enum class RetryStepReason
+  {
+    none,
+    material_time_step_reduction,
+    nonlinear_solver_time_step_reduction,
+  };
+
+  enum class TimeStepIncreaseReason
+  {
+    none,
+    material_recovery,
+    divergence_control_recovery,
+  };
+
+  enum class StepControlAction
+  {
+    proceed,
+    repeat_step,
+    stop,
+  };
+
+  /*!
+   * \brief Normalized result of structure-owned step-control decisions.
+   *
+   * Outer time-loop drivers consume this contract after prepare-time-step handling and after
+   * solve(). When a retry is requested, \c retry_reason explains why; when the retry or follow-up
+   * action requires a different dt, \c proposed_time_step carries that structure-provided value.
+   */
+  struct StepControlResult
+  {
+    //! Driver action to take after consulting the structure algorithm.
+    StepControlAction action = StepControlAction::proceed;
+    //! Convergence status that should be propagated by the owning loop.
+    Inpar::Solid::ConvergenceStatus convergence_status = Inpar::Solid::conv_success;
+    //! Reason for repeating the current step, if any.
+    RetryStepReason retry_reason = RetryStepReason::none;
+    //! Optional replacement dt associated with the requested control action.
+    std::optional<double> proposed_time_step = std::nullopt;
+  };
+
   /// general structural field interface
   /*!
 
@@ -310,14 +359,134 @@ namespace Adapter
     virtual Inpar::Solid::ConvergenceStatus perform_error_action(
         Inpar::Solid::ConvergenceStatus nonlinsoldiv) = 0;
 
+    /*!
+     * \brief Whether this structure algorithm owns material-triggered timestep reduction.
+     *
+     * Material timestep reduction is only safe when the algorithm that calls solve() also has a
+     * retry policy for pending MPI-reduced material requests: it must reduce dt, restore the step
+     * state, and repeat the current global timestep consistently on all MPI ranks. Unsupported
+     * algorithms deliberately return false so material requests fail loudly instead of being
+     * silently ignored.
+     */
+    [[nodiscard]] virtual bool supports_material_time_step_reduction() const { return false; }
+
+    /// Return and clear the current retry-step reason reported by the structure algorithm.
+    virtual RetryStepReason consume_retry_step_reason() { return RetryStepReason::none; }
+
+    /// Return material-triggered time-step reduction settings when this feature is enabled.
+    [[nodiscard]] virtual std::optional<Inpar::Solid::MaterialTimeStepReductionSettings>
+    material_time_step_reduction_settings() const
+    {
+      return std::nullopt;
+    }
+
     /// tests if there are more time steps to do
     [[nodiscard]] virtual bool not_finished() const = 0;
 
     /// start new time step
     void prepare_time_step() override = 0;
 
+    /*!
+     * \brief Start a new time step and report a retry-aware status.
+     *
+     * Algorithms that need prepare-time-step retry handling can override this instead of relying
+     * on control-flow exceptions or side effects alone.
+     */
+    virtual PrepareTimeStepStatus prepare_time_step_with_status()
+    {
+      prepare_time_step();
+      return PrepareTimeStepStatus::successful;
+    }
+
+    /*!
+     * \brief Return the full adapter-level control decision for prepare-time-step handling.
+     *
+     * The default implementation translates prepare_time_step_with_status() into a
+     * StepControlResult. Algorithms with richer retry semantics may override this directly.
+     */
+    virtual StepControlResult prepare_time_step_control_result()
+    {
+      StepControlResult result;
+      switch (prepare_time_step_with_status())
+      {
+        case PrepareTimeStepStatus::successful:
+          result.action = StepControlAction::proceed;
+          result.convergence_status = Inpar::Solid::conv_success;
+          break;
+        case PrepareTimeStepStatus::repeat_step:
+          result.action = StepControlAction::repeat_step;
+          result.convergence_status = Inpar::Solid::conv_fail_repeat;
+          result.retry_reason = consume_retry_step_reason();
+          break;
+        case PrepareTimeStepStatus::failed:
+        default:
+          result.action = StepControlAction::stop;
+          result.convergence_status = Inpar::Solid::conv_nonlin_fail;
+          break;
+      }
+      return result;
+    }
+
     /// set time step size
     virtual void set_dt(const double dtnew) = 0;
+
+    /*!
+     * \brief Apply a new time-step size and reset the current step for retry.
+     *
+     * The owning algorithm decides which new time-step size to use; the structure implementation
+     * performs the local mechanics required to retry the current step consistently with that size.
+     */
+    virtual void reset_step_for_time_step_retry(double dtnew)
+    {
+      FOUR_C_THROW("This structure algorithm does not support time-step retry mechanics.");
+    }
+
+    /*!
+     * \brief Apply a new time-step size for the next step only.
+     *
+     * In contrast to reset_step_for_time_step_retry(), this does not repeat the current step. It
+     * is meant for deferred dt changes that become active after a successful step boundary.
+     */
+    virtual void apply_time_step_for_next_step(double dtnew)
+    {
+      FOUR_C_THROW("This structure algorithm does not support next-step time-step changes.");
+    }
+
+    /*!
+     * \brief Apply a pending next-step time-step increase, if one was scheduled earlier.
+     *
+     * Returns true when a deferred increase was consumed and applied.
+     */
+    virtual bool apply_scheduled_time_step_increase() { return false; }
+
+    /*!
+     * \brief Translate raw solve() convergence information into a uniform step-control result.
+     *
+     * This hook lets the structure algorithm combine nonlinear solver status, retry policy and
+     * optional dt changes before the outer loop decides how to proceed.
+     */
+    virtual StepControlResult post_solve_control_result(
+        Inpar::Solid::ConvergenceStatus convergencestatus)
+    {
+      StepControlResult result;
+      result.convergence_status = (convergencestatus == Inpar::Solid::conv_success)
+                                      ? convergencestatus
+                                      : perform_error_action(convergencestatus);
+      if (result.convergence_status == Inpar::Solid::conv_success)
+      {
+        result.action = StepControlAction::proceed;
+      }
+      else if (result.convergence_status == Inpar::Solid::conv_fail_repeat)
+      {
+        result.action = StepControlAction::repeat_step;
+        result.retry_reason = consume_retry_step_reason();
+      }
+      else
+      {
+        result.action = StepControlAction::stop;
+      }
+      return result;
+    }
 
     //! Sets the current time \f$t_{n}\f$
     virtual void set_time(const double time) = 0;

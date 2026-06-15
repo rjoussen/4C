@@ -18,6 +18,7 @@
 #include <NOX_Abstract_Vector.H>
 #include <Teuchos_Time.hpp>
 
+#include <optional>
 #include <set>
 
 FOUR_C_NAMESPACE_OPEN
@@ -239,6 +240,21 @@ namespace Solid
 
       /// Returns the initial pseudo time step for the PTC method
       double get_initial_ptc_pseudo_time_step() const { return ptc_delta_init_; }
+
+      bool material_time_step_reduction_enabled() const
+      {
+        check_init_setup();
+        return material_time_step_reduction_.has_value();
+      }
+
+      const Inpar::Solid::MaterialTimeStepReductionSettings& material_time_step_reduction_settings()
+          const
+      {
+        check_init_setup();
+        FOUR_C_ASSERT_ALWAYS(material_time_step_reduction_.has_value(),
+            "Material time step reduction settings are not available.");
+        return *material_time_step_reduction_;
+      }
       ///@}
 
       /// @name Get mutable linear solver variables (read only access)
@@ -657,6 +673,9 @@ namespace Solid
 
       /// initial pseudo time step for the pseudo transient continuation (PTC) method
       double ptc_delta_init_;
+
+      /// optional settings for material-triggered time step reduction
+      std::optional<Inpar::Solid::MaterialTimeStepReductionSettings> material_time_step_reduction_;
       ///@}
 
       /// @name linear solver variables

@@ -11,7 +11,11 @@
 #include "4C_fem_condition_definition.hpp"
 #include "4C_io_input_spec.hpp"
 #include "4C_io_input_spec_builders.hpp"
+#include "4C_io_input_spec_storage.hpp"
+#include "4C_io_input_spec_validators.hpp"
 #include "4C_utils_enum.hpp"
+
+#include <limits>
 FOUR_C_NAMESPACE_OPEN
 
 namespace Inpar
@@ -253,6 +257,49 @@ namespace Inpar
                   {.description = "pseudo time step for pseudo transient continuation (PTC) "
                                   "stabilized Newton procedure",
                       .default_value = 0.1}),
+              group<MaterialTimeStepReductionSettings>("MATERIAL TIMESTEP REDUCTION",
+                  {
+                      parameter<double>("DECREASE_FACTOR",
+                          {.description =
+                                  "Factor applied to the global time step size after a material "
+                                  "evaluation requests time step reduction",
+                              .default_value = 0.5,
+                              .validator = Validators::in_range(
+                                  Validators::excl(0.0), Validators::excl(1.0)),
+                              .store = in_struct(&MaterialTimeStepReductionSettings::factor)}),
+                      parameter<double>("MIN_TIMESTEP",
+                          {.description = "Minimum allowed global time step size during "
+                                          "material-triggered reduction",
+                              .default_value = 1.0e-12,
+                              .validator = Validators::positive<double>(),
+                              .store =
+                                  in_struct(&MaterialTimeStepReductionSettings::min_timestep)}),
+                      parameter<int>("STEPS_TO_INCREASE",
+                          {.description = "Number of consecutively successful time steps on a "
+                                          "reduced material-triggered time step size before "
+                                          "increasing the global time step again",
+                              .default_value = 4,
+                              .validator = Validators::positive<int>(),
+                              .store = in_struct(
+                                  &MaterialTimeStepReductionSettings::steps_to_increase)}),
+                      parameter<std::optional<double>>("MAX_TIMESTEP",
+                          {.description = "Maximum allowed global time step size during "
+                                          "material-triggered recovery. If omitted, the initially "
+                                          "configured TIMESTEP is used.",
+                              .validator = Validators::null_or(Validators::positive<double>()),
+                              .store =
+                                  in_struct(&MaterialTimeStepReductionSettings::max_timestep)}),
+                      parameter<std::optional<double>>("INCREASE_FACTOR",
+                          {.description = "Factor applied when increasing the global time step "
+                                          "during material-triggered recovery. If omitted, "
+                                          "INCREASE_FACTOR = 1/DECREASE_FACTOR.",
+                              .validator = Validators::null_or(Validators::in_range(
+                                  Validators::excl(1.0), std::numeric_limits<double>().max())),
+                              .store =
+                                  in_struct(&MaterialTimeStepReductionSettings::increase_factor)}),
+                  },
+                  {.description = "Use this group to allow material-triggered time step reduction",
+                      .required = false}),
 
               parameter<double>("TOLCONSTR",
                   {.description = "tolerance in the constr error norm for the newton iteration",

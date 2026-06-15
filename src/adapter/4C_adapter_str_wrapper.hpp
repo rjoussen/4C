@@ -291,14 +291,62 @@ namespace Adapter
       return structure_->perform_error_action(nonlinsoldiv);
     }
 
+    [[nodiscard]] bool supports_material_time_step_reduction() const override
+    {
+      return structure_->supports_material_time_step_reduction();
+    }
+
+    RetryStepReason consume_retry_step_reason() override
+    {
+      return structure_->consume_retry_step_reason();
+    }
+
+    [[nodiscard]] std::optional<Inpar::Solid::MaterialTimeStepReductionSettings>
+    material_time_step_reduction_settings() const override
+    {
+      return structure_->material_time_step_reduction_settings();
+    }
+
     /// tests if there are more time steps to do
     [[nodiscard]] bool not_finished() const override { return structure_->not_finished(); }
 
     /// set time step size
     void set_dt(const double dtnew) override { structure_->set_dt(dtnew); }
 
+    void reset_step_for_time_step_retry(double dtnew) override
+    {
+      structure_->reset_step_for_time_step_retry(dtnew);
+    }
+
+    void apply_time_step_for_next_step(double dtnew) override
+    {
+      structure_->apply_time_step_for_next_step(dtnew);
+    }
+
+    bool apply_scheduled_time_step_increase() override
+    {
+      return structure_->apply_scheduled_time_step_increase();
+    }
+
+    StepControlResult post_solve_control_result(
+        Inpar::Solid::ConvergenceStatus convergencestatus) override
+    {
+      return structure_->post_solve_control_result(convergencestatus);
+    }
+
     /// start new time step
     void prepare_time_step() override { structure_->prepare_time_step(); }
+
+    /// start new time step and return status
+    PrepareTimeStepStatus prepare_time_step_with_status() override
+    {
+      return structure_->prepare_time_step_with_status();
+    }
+
+    StepControlResult prepare_time_step_control_result() override
+    {
+      return structure_->prepare_time_step_control_result();
+    }
 
     /// update displacement
     void update_state_incrementally(

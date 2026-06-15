@@ -8,11 +8,13 @@
 #include "4C_structure_new_timint_implicit.hpp"
 
 #include "4C_fem_discretization.hpp"
+#include "4C_inpar_structure.hpp"
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
 #include "4C_io_pstream.hpp"
 #include "4C_linalg_blocksparsematrix.hpp"
 #include "4C_linalg_utils_sparse_algebra_io.hpp"
+#include "4C_material_time_step_request.hpp"
 #include "4C_solver_nonlin_nox_group.hpp"
 #include "4C_solver_nonlin_nox_linearsystem.hpp"
 #include "4C_solver_nonlin_nox_vector.hpp"
@@ -26,6 +28,8 @@
 
 #include <NOX_Abstract_Group.H>
 
+#include <algorithm>
+
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
@@ -36,6 +40,7 @@ void Solid::TimeInt::Implicit::setup()
   check_init();
 
   Solid::TimeInt::Base::setup();
+  validate_divergence_action_configuration();
 
   // ---------------------------------------------------------------------------
   // cast the base class integrator
@@ -78,6 +83,35 @@ void Solid::TimeInt::Implicit::setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+void Solid::TimeInt::Implicit::validate_divergence_action_configuration() const
+{
+  check_init_setup();
+
+  switch (get_divergence_action())
+  {
+    case Inpar::Solid::divcont_stop:
+    case Inpar::Solid::divcont_continue:
+    case Inpar::Solid::divcont_halve_step:
+    case Inpar::Solid::divcont_adapt_step:
+    case Inpar::Solid::divcont_adapt_penaltycontact:
+    case Inpar::Solid::divcont_repeat_simulation:
+      return;
+    case Inpar::Solid::divcont_repeat_step:
+      FOUR_C_THROW(
+          "DIVERCONT = repeat_step is not supported for structure_new implicit time integration. "
+          "Use halve_step or adapt_step instead.");
+    case Inpar::Solid::divcont_rand_adapt_step:
+    case Inpar::Solid::divcont_rand_adapt_step_ele_err:
+      FOUR_C_THROW(
+          "DIVERCONT = rand_adapt_step and rand_adapt_step_ele_err are not supported for "
+          "structure_new implicit time integration. Use halve_step or adapt_step instead.");
+    default:
+      FOUR_C_THROW("Unknown DIVERCONT case.");
+  }
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void Solid::TimeInt::Implicit::set_state(const std::shared_ptr<Core::LinAlg::Vector<double>>& x)
 {
   integrator_ptr()->set_state(*x);
@@ -107,10 +141,68 @@ void Solid::TimeInt::Implicit::prepare_time_step()
   double& time_np = data_global_state().get_time_np();
   time_np = data_global_state().get_time_n() + (*data_global_state().get_delta_time())[0]; */
 
-  ::NOX::Abstract::Group& grp = nln_solver().get_solution_group();
-  predictor().predict(grp);
+  const auto& status = prepare_time_step_with_status();
+  if (status != Adapter::PrepareTimeStepStatus::successful)
+  {
+    FOUR_C_THROW("prepare_time_step() was not successful.");
+  }
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+Adapter::PrepareTimeStepStatus Solid::TimeInt::Implicit::prepare_time_step_with_status()
+{
+  check_init_setup();
+  ::NOX::Abstract::Group& grp = nln_solver().get_solution_group();
+  retry_step_reason_ = Adapter::RetryStepReason::none;
+
+  try
+  {
+    // Predictor internals may call into NOX deeply (e.g. compute/post_predict hooks). Those paths
+    // must propagate MaterialTimeStepReductionRequestedFromNox unchanged so this seam can remap it
+    // into status-based retry control flow.
+    predictor().predict(grp);
+    return Adapter::PrepareTimeStepStatus::successful;
+  }
+  catch (const Internal::MaterialTimeStepReductionRequestedFromNox&)
+  {
+    if (Core::Mat::TimeStepReduction::consume_mpi_reduced_request())
+    {
+      retry_step_reason_ = Adapter::RetryStepReason::material_time_step_reduction;
+      return Adapter::PrepareTimeStepStatus::repeat_step;
+    }
+    return Adapter::PrepareTimeStepStatus::failed;
+  }
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+Adapter::StepControlResult Solid::TimeInt::Implicit::prepare_time_step_control_result()
+{
+  Adapter::StepControlResult result;
+  switch (prepare_time_step_with_status())
+  {
+    case Adapter::PrepareTimeStepStatus::successful:
+      result.action = Adapter::StepControlAction::proceed;
+      result.convergence_status = Inpar::Solid::conv_success;
+      break;
+    case Adapter::PrepareTimeStepStatus::repeat_step:
+      result.action = Adapter::StepControlAction::repeat_step;
+      result.convergence_status = Inpar::Solid::conv_fail_repeat;
+      result.retry_reason = consume_retry_step_reason();
+      if (result.retry_reason == Adapter::RetryStepReason::material_time_step_reduction)
+      {
+        result.proposed_time_step = compute_material_reduced_time_step();
+      }
+      break;
+    case Adapter::PrepareTimeStepStatus::failed:
+    default:
+      result.action = Adapter::StepControlAction::stop;
+      result.convergence_status = Inpar::Solid::conv_nonlin_fail;
+      break;
+  }
+  return result;
+}
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 int Solid::TimeInt::Implicit::integrate()
@@ -142,9 +234,7 @@ Inpar::Solid::ConvergenceStatus Solid::TimeInt::Implicit::solve()
   // reset the non-linear solver
   nln_solver().reset();
   // solve the non-linear problem
-  Inpar::Solid::ConvergenceStatus convstatus = nln_solver().solve();
-  // return convergence status
-  return perform_error_action(convstatus);
+  return nln_solver().solve();
 }
 
 /*----------------------------------------------------------------------------*
@@ -227,9 +317,17 @@ Inpar::Solid::ConvergenceStatus Solid::TimeInt::Implicit::perform_error_action(
     Inpar::Solid::ConvergenceStatus nonlinsoldiv)
 {
   check_init_setup();
+  retry_step_reason_ = Adapter::RetryStepReason::none;
+
+  if (Core::Mat::TimeStepReduction::consume_mpi_reduced_request())
+  {
+    retry_step_reason_ = Adapter::RetryStepReason::material_time_step_reduction;
+    return Inpar::Solid::conv_fail_repeat;
+  }
 
   if (nonlinsoldiv == Inpar::Solid::conv_success)
   {
+    check_for_material_time_step_increase();
     // Only relevant, if the input parameter DIVERCONT is used and set to divcontype_ == adapt_step:
     // In this case, the time step size is halved as consequence of a non-converging nonlinear
     // solver. After a prescribed number of converged time steps, the time step is doubled again.
@@ -267,14 +365,9 @@ Inpar::Solid::ConvergenceStatus Solid::TimeInt::Implicit::perform_error_action(
     }
     case Inpar::Solid::divcont_repeat_step:
     {
-      if (myrank == 0)
-        Core::IO::cout << "Nonlinear solver failed to converge repeat time step" << Core::IO::endl;
-
-      // reset step (e.g. quantities on element level or model specific stuff)
-      reset_step();
-
-      return Inpar::Solid::conv_fail_repeat;
-      break;
+      FOUR_C_THROW(
+          "DIVERCONT = repeat_step is no longer supported for structure_new implicit time "
+          "integration. Use halve_step or adapt_step instead.");
     }
     case Inpar::Solid::divcont_halve_step:
     {
@@ -286,24 +379,8 @@ Inpar::Solid::ConvergenceStatus Solid::TimeInt::Implicit::perform_error_action(
                        << "New time step: " << 0.5 * get_delta_time() << Core::IO::endl
                        << Core::IO::endl;
       }
-
-      // halve the time step size
-      set_delta_time(get_delta_time() * 0.5);
-      // update the number of max time steps if it does not exceed the largest possible value for
-      // the type int
-      if ((get_step_end() - get_step_np() + 1) > std::numeric_limits<int>::max() - get_step_end())
-        FOUR_C_THROW(" Your updated step number exceeds largest possible value for type int");
-      int endstep = get_step_end() + (get_step_end() - get_step_np()) + 1;
-      set_step_end(endstep);
-      // reset timen_ because it is set in the constructor
-      set_time_np(get_time_n() + get_delta_time());
-      // reset step (e.g. quantities on element level or model specific stuff)
-      reset_step();
-
-      integrator().update_constant_state_contributions();
-
+      retry_step_reason_ = Adapter::RetryStepReason::nonlinear_solver_time_step_reduction;
       return Inpar::Solid::conv_fail_repeat;
-      break;
     }
     case Inpar::Solid::divcont_adapt_step:
     {
@@ -316,75 +393,21 @@ Inpar::Solid::ConvergenceStatus Solid::TimeInt::Implicit::perform_error_action(
                        << Core::IO::endl;
       }
 
-      // halve the time step size
-      set_delta_time(get_delta_time() * 0.5);
-      // update the number of max time steps if it does not exceed the largest possible value for
-      // the type int
-      if ((get_step_end() - get_step_np() + 1) > std::numeric_limits<int>::max() - get_step_end())
-        FOUR_C_THROW(" Your updated step number exceeds largest possible value for type int");
-      int endstep = get_step_end() + (get_step_end() - get_step_np()) + 1;
-      set_step_end(endstep);
-      // reset timen_ because it is set in the constructor
-      set_time_np(get_time_n() + get_delta_time());
-
       set_div_con_refine_level(get_div_con_refine_level() + 1);
       set_div_con_num_fine_step(0);
 
       if (get_div_con_refine_level() == get_max_div_con_refine_level())
         FOUR_C_THROW(
             "Maximal divercont refinement level reached. Adapt your time basic time step size!");
-
-      // reset step (e.g. quantities on element level or model specific stuff)
-      reset_step();
-
-      integrator().update_constant_state_contributions();
-
+      retry_step_reason_ = Adapter::RetryStepReason::nonlinear_solver_time_step_reduction;
       return Inpar::Solid::conv_fail_repeat;
-      break;
     }
     case Inpar::Solid::divcont_rand_adapt_step:
     case Inpar::Solid::divcont_rand_adapt_step_ele_err:
     {
-      // generate random number between 0.51 and 1.99 (as mean value of random
-      // numbers generated on all processors), alternating values larger
-      // and smaller than 1.0
-      double proc_randnum_get = ((double)rand() / (double)RAND_MAX);
-      double proc_randnum = proc_randnum_get;
-      double randnum = 1.0;
-      MPI_Comm comm = discretization()->get_comm();
-      randnum = Core::Communication::sum_all(proc_randnum, comm);
-      const double numproc = Core::Communication::num_mpi_ranks(comm);
-      randnum /= numproc;
-      if (get_random_time_step_factor() > 1.0)
-        set_random_time_step_factor(randnum * 0.49 + 0.51);
-      else if (get_random_time_step_factor() < 1.0)
-        set_random_time_step_factor(randnum * 0.99 + 1.0);
-      else
-        set_random_time_step_factor(randnum * 1.48 + 0.51);
-
-      if (myrank == 0)
-      {
-        Core::IO::cout << "Nonlinear solver failed to converge: modifying time-step size by random "
-                          "number between 0.51 and 1.99 -> here: "
-                       << get_random_time_step_factor() << " !" << Core::IO::endl;
-      }
-      // multiply time-step size by random number
-      set_delta_time(get_delta_time() * get_random_time_step_factor());
-      // update maximum number of time steps
-      int endstep = (1.0 / get_random_time_step_factor()) * get_step_end() +
-                    (1.0 - (1.0 / get_random_time_step_factor())) * get_step_np() + 1;
-      if (endstep > std::numeric_limits<int>::max())
-        FOUR_C_THROW(" Your updated step number exceeds largest possible value for type int");
-      set_step_end(endstep);
-      // reset timen_ because it is set in the constructor
-      set_time_np(get_time_n() + get_delta_time());
-      // reset step (e.g. quantities on element level or model specific stuff)
-      reset_step();
-
-      integrator().update_constant_state_contributions();
-
-      return Inpar::Solid::conv_fail_repeat;
-      break;
+      FOUR_C_THROW(
+          "DIVERCONT = rand_adapt_step and rand_adapt_step_ele_err are no longer supported for "
+          "structure_new implicit time integration. Use halve_step or adapt_step instead.");
     }
     case Inpar::Solid::divcont_adapt_penaltycontact:
     {
@@ -424,11 +447,231 @@ Inpar::Solid::ConvergenceStatus Solid::TimeInt::Implicit::perform_error_action(
   return Inpar::Solid::conv_success;  // make compiler happy
 }  // PerformErrorAction()
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+Adapter::StepControlResult Solid::TimeInt::Implicit::post_solve_control_result(
+    Inpar::Solid::ConvergenceStatus convergencestatus)
+{
+  Adapter::StepControlResult result;
+  result.convergence_status = perform_error_action(convergencestatus);
+  result.retry_reason = consume_retry_step_reason();
+
+  if (result.convergence_status == Inpar::Solid::conv_success)
+  {
+    result.action = Adapter::StepControlAction::proceed;
+  }
+  else if (result.convergence_status == Inpar::Solid::conv_fail_repeat)
+  {
+    result.action = Adapter::StepControlAction::repeat_step;
+    if (result.retry_reason == Adapter::RetryStepReason::material_time_step_reduction)
+    {
+      result.proposed_time_step = compute_material_reduced_time_step();
+    }
+    else if (result.retry_reason == Adapter::RetryStepReason::nonlinear_solver_time_step_reduction)
+    {
+      result.proposed_time_step = compute_nonlinear_retry_time_step(0.5);
+    }
+  }
+  else
+  {
+    result.action = Adapter::StepControlAction::stop;
+  }
+
+  return result;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+Adapter::RetryStepReason Solid::TimeInt::Implicit::consume_retry_step_reason()
+{
+  check_init_setup();
+
+  const Adapter::RetryStepReason reason = retry_step_reason_;
+  retry_step_reason_ = Adapter::RetryStepReason::none;
+  return reason;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+std::optional<Inpar::Solid::MaterialTimeStepReductionSettings>
+Solid::TimeInt::Implicit::material_time_step_reduction_settings() const
+{
+  check_init_setup();
+
+  if (not get_data_sdyn().material_time_step_reduction_enabled()) return std::nullopt;
+  return get_data_sdyn().material_time_step_reduction_settings();
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void Solid::TimeInt::Implicit::reset_step_for_time_step_retry(const double dtnew)
+{
+  check_init_setup();
+
+  material_time_step_is_reduced_ = true;
+  material_time_step_reduction_num_fine_step_ = 0;
+  apply_time_step_change(dtnew, true);
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void Solid::TimeInt::Implicit::apply_time_step_for_next_step(const double dtnew)
+{
+  check_init_setup();
+  apply_time_step_change(dtnew, false);
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+bool Solid::TimeInt::Implicit::apply_scheduled_time_step_increase()
+{
+  check_init_setup();
+
+  if (not pending_time_step_increase_dt_.has_value()) return false;
+
+  const int myrank = data_global_state().get_my_rank();
+  const double old_dt = get_delta_time();
+  double new_dt = *pending_time_step_increase_dt_;
+  const Adapter::TimeStepIncreaseReason reason = pending_time_step_increase_reason_;
+
+  pending_time_step_increase_dt_.reset();
+  pending_time_step_increase_reason_ = Adapter::TimeStepIncreaseReason::none;
+
+  const double remaining_time = get_time_end() - get_time_n();
+  FOUR_C_ASSERT_ALWAYS(remaining_time >= 0.0,
+      "Remaining time to end time became negative (remaining = {}).", remaining_time);
+  new_dt = std::min(new_dt, remaining_time);
+
+  if (not(new_dt > 0.0 and old_dt > 0.0 and new_dt != old_dt)) return false;
+
+  if (myrank == 0)
+  {
+    switch (reason)
+    {
+      case Adapter::TimeStepIncreaseReason::material_recovery:
+      {
+        const double applied_factor = new_dt / old_dt;
+        Core::IO::cout << std::string(72, '*') << "\n"
+                       << "Material time step reduction recovery: increase timestep size by factor "
+                       << applied_factor << "." << Core::IO::endl
+                       << "Old time step: " << old_dt << Core::IO::endl
+                       << "New time step: " << new_dt << Core::IO::endl
+                       << std::string(72, '*') << "\n";
+        break;
+      }
+      case Adapter::TimeStepIncreaseReason::divergence_control_recovery:
+      {
+        Core::IO::cout << "Nonlinear solver successful. Double timestep size!" << Core::IO::endl;
+        break;
+      }
+      case Adapter::TimeStepIncreaseReason::none:
+      default:
+        break;
+    }
+  }
+
+  apply_time_step_change(new_dt, false);
+
+  if (reason == Adapter::TimeStepIncreaseReason::material_recovery and
+      new_dt >= data_sdyn().material_time_step_reduction_settings().max_timestep.value())
+  {
+    material_time_step_is_reduced_ = false;
+    material_time_step_reduction_num_fine_step_ = 0;
+  }
+
+  return true;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+std::optional<double> Solid::TimeInt::Implicit::compute_material_reduced_time_step() const
+{
+  check_init_setup();
+
+  if (not get_data_sdyn().material_time_step_reduction_enabled()) return std::nullopt;
+
+  const auto& settings = get_data_sdyn().material_time_step_reduction_settings();
+  const double new_dt = get_delta_time() * settings.factor;
+  if (new_dt < settings.min_timestep)
+  {
+    FOUR_C_THROW(
+        "A material evaluation requested a reduced time step at time t = {}, but reducing dt "
+        "would violate MATERIAL TIMESTEP REDUCTION/MIN_TIMESTEP. Current dt = {}, requested dt = "
+        "{}, MIN_TIMESTEP = {}.",
+        get_time_np(), get_delta_time(), new_dt, settings.min_timestep);
+  }
+
+  return new_dt;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void Solid::TimeInt::Implicit::schedule_time_step_increase(
+    const double new_dt, const Adapter::TimeStepIncreaseReason reason)
+{
+  check_init_setup();
+
+  FOUR_C_ASSERT_ALWAYS(new_dt > 0.0, "Scheduled time-step increase must be positive.");
+
+  pending_time_step_increase_dt_ = new_dt;
+  pending_time_step_increase_reason_ = reason;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void Solid::TimeInt::Implicit::check_for_material_time_step_increase()
+{
+  check_init_setup();
+
+  if (not material_time_step_is_reduced_ or not data_sdyn().material_time_step_reduction_enabled())
+    return;
+
+  const auto& material_ts_reduction = data_sdyn().material_time_step_reduction_settings();
+  const double max_timestep = material_ts_reduction.max_timestep.value();
+  const double old_dt = get_delta_time();
+
+  if (old_dt >= max_timestep)
+  {
+    material_time_step_is_reduced_ = false;
+    material_time_step_reduction_num_fine_step_ = 0;
+    return;
+  }
+
+  ++material_time_step_reduction_num_fine_step_;
+  if (material_time_step_reduction_num_fine_step_ < material_ts_reduction.steps_to_increase) return;
+
+  const double increase_factor = material_ts_reduction.increase_factor.value();
+  const double candidate_dt = old_dt * increase_factor;
+  const double new_dt = std::min(candidate_dt, max_timestep);
+
+  if (new_dt > old_dt)
+  {
+    schedule_time_step_increase(new_dt, Adapter::TimeStepIncreaseReason::material_recovery);
+  }
+  material_time_step_reduction_num_fine_step_ = 0;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void Solid::TimeInt::Implicit::apply_time_step_change(
+    const double new_dt, const bool reset_step_for_retry)
+{
+  check_init_setup();
+
+  FOUR_C_ASSERT_ALWAYS(new_dt > 0.0, "Time-step size must be positive.");
+
+  set_delta_time(new_dt);
+  set_time_np(get_time_n() + get_delta_time());
+
+  if (reset_step_for_retry) reset_step();
+  integrator().update_constant_state_contributions();
+}
+
 /*-----------------------------------------------------------------------------*
  * check, if according to divercont flag                             meier 01/15
  * time step size can be increased
  *-----------------------------------------------------------------------------*/
-void Solid::TimeInt::Implicit::check_for_time_step_increase(Inpar::Solid::ConvergenceStatus& status)
+void Solid::TimeInt::Implicit::check_for_time_step_increase(Inpar::Solid::ConvergenceStatus status)
 {
   check_init_setup();
 
@@ -442,28 +685,25 @@ void Solid::TimeInt::Implicit::check_for_time_step_increase(Inpar::Solid::Conver
 
     if (get_div_con_num_fine_step() == maxnumfinestep)
     {
-      // increase the step size if the remaining number of steps is a even number
-      if (((get_step_end() - get_step_np()) % 2) == 0 and get_step_end() != get_step_np())
-      {
-        if (data_global_state().get_my_rank() == 0)
-          Core::IO::cout << "Nonlinear solver successful. Double timestep size!" << Core::IO::endl;
-
-        set_div_con_refine_level(get_div_con_refine_level() - 1);
-        set_div_con_num_fine_step(0);
-
-        set_step_end(get_step_end() - (get_step_end() - get_step_np()) / 2);
-
-        // double the time step size
-        set_delta_time(get_delta_time() * 2.0);
-      }
-      else  // otherwise we have to wait one more time step until the step size can be increased
-      {
-        set_div_con_num_fine_step(get_div_con_num_fine_step() - 1);
-      }
+      set_div_con_refine_level(get_div_con_refine_level() - 1);
+      set_div_con_num_fine_step(0);
+      schedule_time_step_increase(
+          get_delta_time() * 2.0, Adapter::TimeStepIncreaseReason::divergence_control_recovery);
     }
     return;
   }
 }  // check_for_time_step_increase()
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+double Solid::TimeInt::Implicit::compute_nonlinear_retry_time_step(
+    const double scaling_factor) const
+{
+  check_init_setup();
+
+  FOUR_C_ASSERT_ALWAYS(scaling_factor > 0.0, "Time-step scaling factor must be positive.");
+  return get_delta_time() * scaling_factor;
+}
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

@@ -189,6 +189,9 @@ namespace Solid
       //! pre-operator for \ref evaluate_internal
       virtual void pre_evaluate_internal() { /* empty */ };
 
+      //! extend generic evaluation checks with material timestep-reduction request handling
+      bool eval_error_check() const override;
+
      private:
       //! apply the internal force contributions
       bool apply_force_internal();

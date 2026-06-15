@@ -11,6 +11,7 @@
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_geometry_periodic_boundingbox.hpp"
 #include "4C_global_data.hpp"
+#include "4C_inpar_structure.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
 #include "4C_structure_new_utils.hpp"
 #include "4C_utils_shared_ptr_from_ref.hpp"
@@ -51,6 +52,7 @@ Solid::TimeInt::BaseDataSDyn::BaseDataSDyn()
       maxdivconrefinementlevel_(-1),
       noxparams_(nullptr),
       ptc_delta_init_(0.0),
+      material_time_step_reduction_(std::nullopt),
       linsolvers_(nullptr),
       normtype_(Inpar::Solid::norm_vague),
       nox_normtype_(::NOX::Abstract::Vector::TwoNorm),
@@ -186,6 +188,24 @@ void Solid::TimeInt::BaseDataSDyn::init(const std::shared_ptr<Core::FE::Discreti
     maxdivconrefinementlevel_ = sdynparams.get<int>("MAXDIVCONREFINEMENTLEVEL");
     noxparams_ = std::make_shared<Teuchos::ParameterList>(xparams.sublist("NOX"));
     ptc_delta_init_ = sdynparams.get<double>("PTCDT");
+    material_time_step_reduction_ = std::nullopt;
+    if (sdynparams.isType<Inpar::Solid::MaterialTimeStepReductionSettings>(
+            "MATERIAL TIMESTEP REDUCTION"))
+    {
+      material_time_step_reduction_ =
+          sdynparams.get<Inpar::Solid::MaterialTimeStepReductionSettings>(
+              "MATERIAL TIMESTEP REDUCTION");
+
+      if (!material_time_step_reduction_->max_timestep.has_value())
+      {
+        material_time_step_reduction_->max_timestep = sdynparams.get<double>("TIMESTEP");
+      }
+      if (!material_time_step_reduction_->increase_factor.has_value())
+      {
+        material_time_step_reduction_->increase_factor =
+            1.0 / material_time_step_reduction_->factor;
+      }
+    }
   }
   // ---------------------------------------------------------------------------
   // initialize linear solver variables

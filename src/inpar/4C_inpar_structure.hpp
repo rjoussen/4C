@@ -15,6 +15,7 @@
 #include "4C_utils_exceptions.hpp"
 
 #include <map>
+#include <optional>
 #include <vector>
 
 FOUR_C_NAMESPACE_OPEN
@@ -220,6 +221,15 @@ namespace Inpar
     {
       bop_or,  ///<  or
       bop_and  ///<  and
+    };
+
+    struct MaterialTimeStepReductionSettings
+    {
+      double factor = 0.5;
+      double min_timestep = 1.0e-12;
+      int steps_to_increase = 4;
+      std::optional<double> max_timestep = std::nullopt;
+      std::optional<double> increase_factor = std::nullopt;
     };
 
     //!@}

@@ -56,6 +56,17 @@ namespace Adapter
     void post_output() override {};
 
    private:
+    //! Execute the action requested by a normalized step-control result.
+    bool handle_step_control_result(const StepControlResult& result);
+
+    /*!
+     * \brief Apply a structure-provided retry dt for a requested step repeat.
+     *
+     * The loop deliberately consumes the replacement dt from StepControlResult instead of
+     * recomputing reduction policy locally so the same contract can be reused by coupled drivers.
+     */
+    void apply_retry_time_step(const StepControlResult& result);
+
     /// explicit global problem context
     Global::Problem& problem_;
   };

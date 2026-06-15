@@ -12,6 +12,8 @@
 
 #include "4C_structure_new_timint_implicitbase.hpp"  // base class
 
+#include <optional>
+
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations ...
@@ -71,6 +73,12 @@ namespace Solid
       //! Prepare time step
       void prepare_time_step() override;
 
+      //! Prepare the next step and report whether the outer loop should proceed or repeat.
+      Adapter::PrepareTimeStepStatus prepare_time_step_with_status() override;
+
+      //! Return the adapter-level prepare-step decision, including retry metadata when needed.
+      Adapter::StepControlResult prepare_time_step_control_result() override;
+
       //! @name Accessors
       //! @{
       //! return the predictor
@@ -90,8 +98,31 @@ namespace Solid
       Inpar::Solid::ConvergenceStatus perform_error_action(
           Inpar::Solid::ConvergenceStatus nonlinsoldiv) override;
 
+      //! Return the adapter-level post-solve decision, including retries and deferred dt changes.
+      Adapter::StepControlResult post_solve_control_result(
+          Inpar::Solid::ConvergenceStatus convergencestatus) override;
+
+      //! The standalone structure time loop owns material timestep-reduction retry policy.
+      [[nodiscard]] bool supports_material_time_step_reduction() const override { return true; }
+
+      //! Return and clear the pending retry reason raised during prepare/solve handling.
+      Adapter::RetryStepReason consume_retry_step_reason() override;
+
+      //! Expose configured material timestep-reduction settings to adapter-level loop code.
+      [[nodiscard]] std::optional<Inpar::Solid::MaterialTimeStepReductionSettings>
+      material_time_step_reduction_settings() const override;
+
+      //! Reduce dt and reset state so the current step can be retried consistently.
+      void reset_step_for_time_step_retry(double dtnew) override;
+
+      //! Apply a deferred dt change for the next step without retrying the current one.
+      void apply_time_step_for_next_step(double dtnew) override;
+
+      //! Consume and apply a previously scheduled next-step dt increase, if any.
+      bool apply_scheduled_time_step_increase() override;
+
       //! check, if according to divercont flag time step size can be increased
-      void check_for_time_step_increase(Inpar::Solid::ConvergenceStatus& status);
+      void check_for_time_step_increase(Inpar::Solid::ConvergenceStatus status);
 
       //! returns pointer to generic implicit object
       std::shared_ptr<Solid::IMPLICIT::Generic> impl_int_ptr()
@@ -190,6 +221,24 @@ namespace Solid
       ///@}
 
      private:
+      //! Reject divergence-control modes that are not supported by structure_new implicit.
+      void validate_divergence_action_configuration() const;
+
+      //! Check whether repeated successful fine steps allow recovery of a previously reduced dt.
+      void check_for_material_time_step_increase();
+
+      //! Compute the reduced retry dt requested by material evaluation, including safety checks.
+      [[nodiscard]] std::optional<double> compute_material_reduced_time_step() const;
+
+      //! Compute the reduced retry dt requested by nonlinear divergence control.
+      [[nodiscard]] double compute_nonlinear_retry_time_step(double scaling_factor) const;
+
+      //! Store a dt increase to be applied at the next loop boundary after a successful step.
+      void schedule_time_step_increase(double new_dt, Adapter::TimeStepIncreaseReason reason);
+
+      //! apply a new time-step size locally and optionally reset the current step for retry
+      void apply_time_step_change(double new_dt, bool reset_step_for_retry);
+
       //! ptr to the implicit time integrator object
       std::shared_ptr<Solid::IMPLICIT::Generic> implint_ptr_;
 
@@ -201,6 +250,13 @@ namespace Solid
 
       //! ptr to the nox group object
       std::shared_ptr<::NOX::Abstract::Group> grp_ptr_;
+
+      Adapter::RetryStepReason retry_step_reason_ = Adapter::RetryStepReason::none;
+      int material_time_step_reduction_num_fine_step_ = 0;
+      std::optional<double> pending_time_step_increase_dt_;
+      Adapter::TimeStepIncreaseReason pending_time_step_increase_reason_ =
+          Adapter::TimeStepIncreaseReason::none;
+      bool material_time_step_is_reduced_ = false;
     };
   }  // namespace TimeInt
 }  // namespace Solid

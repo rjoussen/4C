@@ -33,6 +33,7 @@
 #include "4C_mat_par_bundle.hpp"
 #include "4C_mat_so3_material.hpp"
 #include "4C_mat_vplast_law.hpp"
+#include "4C_material_time_step_request.hpp"
 #include "4C_utils_enum.hpp"
 #include "4C_utils_exceptions.hpp"
 #include "4C_utils_function_of_time.hpp"
@@ -58,6 +59,27 @@ namespace
   // declare file-scope instance of the constant non-material tensors
   static ViscoplastUtils::ConstNonMatTensors const_non_mat_tensors =
       ViscoplastUtils::ConstNonMatTensors::instance();
+
+  bool request_time_step_reduction_for_error(const ViscoplastUtils::ErrorType& err_status)
+  {
+    const bool is_time_step_reducible_error =
+        err_status == ViscoplastUtils::ErrorType::no_convergence_local_newton ||
+        err_status == ViscoplastUtils::ErrorType::failed_solution_linear_system_lnl ||
+        err_status == ViscoplastUtils::ErrorType::overflow_error ||
+        err_status == ViscoplastUtils::ErrorType::negative_plastic_strain ||
+        err_status == ViscoplastUtils::ErrorType::failed_computation_flow_resistance_derivs;
+
+    if (!is_time_step_reducible_error) return false;
+
+    // Materials only report that a smaller global timestep could make this evaluation safe. The
+    // structural time integrator owns the policy decision: if MATERIALTIMEREDUCTION is disabled, it
+    // aborts with an explanatory error instead of silently letting the material choose a fallback.
+    Core::Mat::request_time_step_reduction(
+        "Mat::InelasticDefgradTransvIsotropElastViscoplast encountered " +
+        std::string(EnumTools::enum_name(err_status)) +
+        " during local viscoplastic return mapping.");
+    return true;
+  }
 
   double defgrad_difference_norm(
       const Core::LinAlg::Matrix<3, 3>& lhs, const Core::LinAlg::Matrix<3, 3>& rhs)
@@ -3327,6 +3349,13 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::return_mapping(
     // settings
     if (err_status != ViscoplastUtils::ErrorType::no_errors)
     {
+      if (request_time_step_reduction_for_error(err_status))
+      {
+        result.inv_plastic_defgrad = time_step_quantities_.last_plastic_defgrad_inverse[gp_];
+        result.plastic_strain = time_step_quantities_.last_plastic_strain[gp_];
+        return result;
+      }
+
       // output error and then throw (in order to display the error on
       // the right processor)
       const std::string extended_message =
@@ -3771,6 +3800,8 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::viscoplastic_correction(
         // if the halving number was exceeded --> return with error
         if (!halving_success)
         {
+          if (request_time_step_reduction_for_error(err_status)) return sol;
+
           const std::string extended_message =
               get_error_info(Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::
                       get_detailed_error_message_for_error_type(err_status));
@@ -3899,6 +3930,8 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::local_newton_loop(
       // for one-step processes, we account for the set divergence continuation strategy
       else
       {
+        if (request_time_step_reduction_for_error(err_status)) return;
+
         verify_local_newton_exit(conv_quantities, err_status);
         return;
       }
@@ -4519,6 +4552,11 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::manage_evaluation(
     // ERROR MANAGEMENT STRATEGY 1: substepping -> just exit, and see if a new halved
     // substep size is feasible
     if (parameter()->use_local_substepping())
+    {
+      eval_action = ViscoplastUtils::EvaluationAction::exit_with_error;
+      return;
+    }
+    else if (request_time_step_reduction_for_error(err_status))
     {
       eval_action = ViscoplastUtils::EvaluationAction::exit_with_error;
       return;

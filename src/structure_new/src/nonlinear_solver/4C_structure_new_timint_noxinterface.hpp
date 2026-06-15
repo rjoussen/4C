@@ -10,9 +10,12 @@
 
 #include "4C_config.hpp"
 
+#include "4C_inpar_structure.hpp"
 #include "4C_solver_nonlin_nox_enum_lists.hpp"
 #include "4C_solver_nonlin_nox_interface_jacobian.hpp"  // (2) base class: jacobian
 #include "4C_solver_nonlin_nox_interface_required.hpp"  // (1) base class: rhs, status tests and more
+
+#include <exception>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -44,6 +47,29 @@ namespace Solid
   {
     class Base;
     class BaseDataGlobalState;
+
+    namespace Internal
+    {
+      /*!
+       * \brief Internal control-flow signal for the new-structure NOX bridge.
+       *
+       * Materials must not throw this. Materials use
+       * Core::Mat::request_time_step_reduction(reason) to set a local, non-exceptional request.
+       * This exception is thrown only after structural evaluation has consumed that request,
+       * MPI-reduced it, and needs to escape NOX without losing the distinct timestep-reduction
+       * status.
+       */
+      class MaterialTimeStepReductionRequestedFromNox : public std::exception
+      {
+       public:
+        [[nodiscard]] const char* what() const noexcept override
+        {
+          return "A material triggered a timestep reduction during a NOX solve, at a place where "
+                 "this cannot be handled.";
+        }
+      };
+    }  // namespace Internal
+
     class NoxInterface : virtual public NOX::Nln::Interface::Required,
                          virtual public NOX::Nln::Interface::Jacobian
     {

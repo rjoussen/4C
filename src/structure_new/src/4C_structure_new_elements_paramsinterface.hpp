@@ -49,7 +49,12 @@ namespace Solid
       ele_error_negative_det_of_def_gradient = 1,  //!< negative determinant of deformation gradient
       ele_error_determinant_at_corner = 2,         /*!< invalid/negative jac determinant at the
                                                         element corner nodes */
-      ele_error_material_failed = 3,               //!< material evaluation failed
+      ele_error_material_failed = 3,               /*!< generic material evaluation failure. This is
+                                                        intentionally not used for material-triggered
+                                                        timestep reduction, which needs a distinct
+                                                        globally reduced request/status so the time
+                                                        integrator can repeat the step with a smaller
+                                                        dt instead of treating the failure as generic. */
       ele_error_determinant_analysis = 4 /*!< this flag is used to get an idea when the det
                                               analysis found an invalid element */
     };

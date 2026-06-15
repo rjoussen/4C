@@ -46,6 +46,7 @@ namespace Solid
   }  // namespace TimeInt
   namespace Predict
   {
+
     class Generic
     {
      public:

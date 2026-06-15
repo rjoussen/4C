@@ -192,7 +192,18 @@ Inpar::Solid::ConvergenceStatus Solid::Nln::SOLVER::Nox::solve()
 #endif
 
   // solve the non-linear step
-  ::NOX::StatusTest::StatusType finalstatus = nlnsolver_->solve();
+  ::NOX::StatusTest::StatusType finalstatus = ::NOX::StatusTest::Failed;
+  try
+  {
+    finalstatus = nlnsolver_->solve();
+  }
+  catch (const Solid::TimeInt::Internal::MaterialTimeStepReductionRequestedFromNox&)
+  {
+    // The MPI-reduced material request remains pending in Core::Mat::TimeStepReduction. Report the
+    // failed fill through the ordinary structural evaluation status; the time integrator resolves
+    // the pending request before applying generic element-failure handling.
+    return Inpar::Solid::conv_ele_fail;
+  }
 
   // Check if we do something special if the non-linear solver fails,
   // otherwise an error is thrown.
