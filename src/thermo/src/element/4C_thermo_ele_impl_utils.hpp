@@ -61,7 +61,7 @@ namespace Thermo
   template <>
   struct DisTypeToOptGaussRule<Core::FE::CellType::tet10>
   {
-    static constexpr Core::FE::GaussRule3D rule = Core::FE::GaussRule3D::tet_5point;
+    static constexpr Core::FE::GaussRule3D rule = Core::FE::GaussRule3D::tet_4point;
   };
   template <>
   struct DisTypeToOptGaussRule<Core::FE::CellType::wedge6>
@@ -228,7 +228,7 @@ namespace Thermo
   template <>
   struct DisTypeToNumGaussPoints<Core::FE::CellType::tet10>
   {
-    static constexpr int nquad = 5;
+    static constexpr int nquad = 4;
   };
   template <>
   struct DisTypeToNumGaussPoints<Core::FE::CellType::wedge6>
