@@ -294,8 +294,9 @@ namespace
 
     Core::LinAlg::Map row_map(-1, n_local_equations, 0, MPI_COMM_WORLD);
     Core::LinAlg::SparseMatrix jac(row_map, col_map, 1);
+    Core::LinAlg::Vector<double> locally_relevant_dofs(col_map, true);
 
-    update_jacobian(jac, boundary_conditions);
+    update_jacobian(jac, boundary_conditions, locally_relevant_dofs, 0.0);
     jac.complete();
 
     for (const auto& model : boundary_conditions.models)
@@ -306,7 +307,7 @@ namespace
       }
     }
 
-    update_jacobian(jac, boundary_conditions);
+    update_jacobian(jac, boundary_conditions, locally_relevant_dofs, 0.0);
 
     for (const auto& model : boundary_conditions.models)
     {

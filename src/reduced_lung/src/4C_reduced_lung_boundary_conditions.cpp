@@ -16,6 +16,7 @@
 #include "4C_utils_function_manager.hpp"
 #include "4C_utils_function_of_time.hpp"
 
+#include <cstdint>
 #include <map>
 #include <ranges>
 #include <tuple>
@@ -53,21 +54,66 @@ namespace ReducedLung
         return "unknown";
       }
 
-      void evaluate_function_value(const BoundaryConditionModel& model,
-          Core::LinAlg::Vector<double>& rhs, const Core::LinAlg::Vector<double>& dofs, double time)
+      /**
+       * The solution variable a boundary condition constrains. Several boundary condition types
+       * may constrain the same variable, and at most one of them may act on a given node.
+       */
+      enum class ConstrainedVariable : std::uint8_t
       {
-        if (model.function == nullptr)
+        Pressure,
+        Flow,
+      };
+
+      [[nodiscard]] ConstrainedVariable constrained_variable(Type type)
+      {
+        switch (type)
         {
-          FOUR_C_THROW(
-              "Boundary condition function not set for bc_function_id {}.", model.function_id);
+          case Type::Pressure:
+            return ConstrainedVariable::Pressure;
+          case Type::Flow:
+            return ConstrainedVariable::Flow;
         }
-        const double bc_value = model.function->evaluate(time);
+        FOUR_C_THROW(
+            "Boundary condition type '{}' constrains no known variable.", bc_type_label(type));
+      }
+
+      [[nodiscard]] const char* constrained_variable_label(ConstrainedVariable variable)
+      {
+        switch (variable)
+        {
+          case ConstrainedVariable::Pressure:
+            return "pressure";
+          case ConstrainedVariable::Flow:
+            return "flow";
+        }
+        return "unknown";
+      }
+
+      /**
+       * Constrain the boundary dof of every entry of @p model to @p bc_value.
+       */
+      void apply_dirichlet_residual(const BoundaryConditionModel& model,
+          Core::LinAlg::Vector<double>& rhs, const Core::LinAlg::Vector<double>& dofs,
+          double bc_value)
+      {
         for (size_t i = 0; i < model.data.size(); ++i)
         {
           const int local_dof_id = model.data.local_dof_id[i];
           const double res = dofs.local_values_as_span()[local_dof_id] - bc_value;
           rhs.replace_local_value(model.data.local_equation_id[i], res);
         }
+      }
+
+      void evaluate_function_value(const BoundaryConditionModel& model,
+          Core::LinAlg::Vector<double>& rhs, const Core::LinAlg::Vector<double>& dofs,
+          const AssemblyContext& assembly_context)
+      {
+        if (model.function == nullptr)
+        {
+          FOUR_C_THROW(
+              "Boundary condition function not set for bc_function_id {}.", model.function_id);
+        }
+        apply_dirichlet_residual(model, rhs, dofs, model.function->evaluate(assembly_context.time));
       }
 
       /**
@@ -137,8 +183,13 @@ namespace ReducedLung
         return definitions;
       }
 
-      void assemble_diagonal_jacobian(
-          const BoundaryConditionModel& model, Core::LinAlg::SparseMatrix& sysmat)
+      /**
+       * A value that does not depend on the solution contributes a single unit entry on the
+       * diagonal. Uses insert_my_values(), which needs an unfilled matrix.
+       */
+      void assemble_unit_diagonal_jacobian(const BoundaryConditionModel& model,
+          Core::LinAlg::SparseMatrix& sysmat, const Core::LinAlg::Vector<double>& /*dofs*/,
+          const AssemblyContext& /*assembly_context*/)
       {
         const double val = 1.0;
         for (size_t i = 0; i < model.data.size(); ++i)
@@ -207,7 +258,7 @@ namespace ReducedLung
       const auto definitions = index_boundary_condition_definitions(bc_parameters, bc_nodes);
 
       std::map<ModelKey, size_t> model_indices;
-      std::map<std::pair<int, Type>, int> bc_per_node_and_type;
+      std::map<std::pair<int, ConstrainedVariable>, int> bc_per_node_and_variable;
       int local_bc_id = 0;
 
       // Walk the constrained nodes grouped by the definition they refer to. Since a node carries
@@ -255,44 +306,45 @@ namespace ReducedLung
                 node_id, bc_id, element_id);
           }
 
-          // Enforce at most one boundary condition per (node, type). For a `bc_nodes` derived from
-          // the mesh this can never trigger, since a node carries exactly one `bc_id` and therefore
-          // appears in exactly one group. It guards callers that assemble `bc_nodes` themselves,
-          // which the unit tests do.
-          const auto duplicate_key = std::make_pair(node_id, bc_type);
-          auto duplicate_it = bc_per_node_and_type.find(duplicate_key);
-          if (duplicate_it != bc_per_node_and_type.end())
+          // Enforce at most one boundary condition per (node, constrained variable). For a
+          // `bc_nodes` derived from the mesh this can never trigger, since a node carries exactly
+          // one `bc_id` and therefore appears in exactly one group. It guards callers that
+          // assemble `bc_nodes` themselves, which the unit tests do.
+          const auto variable = constrained_variable(bc_type);
+          const auto duplicate_key = std::make_pair(node_id, variable);
+          auto duplicate_it = bc_per_node_and_variable.find(duplicate_key);
+          if (duplicate_it != bc_per_node_and_variable.end())
           {
             FOUR_C_THROW(
                 "Multiple {} boundary conditions assigned to node {} (definitions {} and {}).",
-                bc_type_label(bc_type), node_id, duplicate_it->second, bc_id);
+                constrained_variable_label(variable), node_id, duplicate_it->second, bc_id);
           }
-          bc_per_node_and_type.emplace(duplicate_key, bc_id);
+          bc_per_node_and_variable.emplace(duplicate_key, bc_id);
+
+          // The dof a condition acts on follows from the variable it constrains, not from its
+          // type.
           int dof_offset = 0;
-          if (bc_type == Type::Pressure)
+          switch (variable)
           {
-            // Pressure uses inlet/outlet pressure dofs on the attached element.
-            dof_offset = is_inlet ? 0 : 1;
-          }
-          else if (bc_type == Type::Flow)
-          {
-            if (is_inlet)
-            {
-              // Inlet flow dof is stored at the fixed offset 2.
-              dof_offset = 2;
-            }
-            else
-            {
-              // Outlet flow dof is always the last dof of the element.
-              const auto dof_it = global_dof_per_ele.find(element_id);
-              FOUR_C_ASSERT_ALWAYS(dof_it != global_dof_per_ele.end(),
-                  "Missing dof count for element {}.", element_id + 1);
-              dof_offset = dof_it->second - 1;
-            }
-          }
-          else
-          {
-            FOUR_C_THROW("Boundary condition type not implemented.");
+            case ConstrainedVariable::Pressure:
+              // Pressure uses inlet/outlet pressure dofs on the attached element.
+              dof_offset = is_inlet ? 0 : 1;
+              break;
+            case ConstrainedVariable::Flow:
+              if (is_inlet)
+              {
+                // Inlet flow dof is stored at the fixed offset 2.
+                dof_offset = 2;
+              }
+              else
+              {
+                // Outlet flow dof is always the last dof of the element.
+                const auto dof_it = global_dof_per_ele.find(element_id);
+                FOUR_C_ASSERT_ALWAYS(dof_it != global_dof_per_ele.end(),
+                    "Missing dof count for element {}.", element_id + 1);
+                dof_offset = dof_it->second - 1;
+              }
+              break;
           }
 
           const auto first_dof_it = first_global_dof_of_ele.find(element_id);
@@ -374,7 +426,8 @@ namespace ReducedLung
       for (auto& model : boundary_conditions.models)
       {
         model.residual_evaluator = evaluate_function_value;
-        model.jacobian_evaluator = assemble_diagonal_jacobian;
+        model.jacobian_evaluator = assemble_unit_diagonal_jacobian;
+        model.has_constant_jacobian = true;
       }
     }
 
@@ -382,23 +435,28 @@ namespace ReducedLung
         const BoundaryConditionContainer& boundary_conditions,
         const Core::LinAlg::Vector<double>& locally_relevant_dofs, double time)
     {
+      const AssemblyContext assembly_context{.time = time};
+
       for (const auto& model : boundary_conditions.models)
       {
-        model.residual_evaluator(model, rhs, locally_relevant_dofs, time);
+        model.residual_evaluator(model, rhs, locally_relevant_dofs, assembly_context);
       }
     }
 
-    void update_jacobian(
-        Core::LinAlg::SparseMatrix& sysmat, const BoundaryConditionContainer& boundary_conditions)
+    void update_jacobian(Core::LinAlg::SparseMatrix& sysmat,
+        const BoundaryConditionContainer& boundary_conditions,
+        const Core::LinAlg::Vector<double>& locally_relevant_dofs, double time)
     {
-      if (sysmat.filled())
-      {
-        return;
-      }
+      const AssemblyContext assembly_context{.time = time};
 
       for (const auto& model : boundary_conditions.models)
       {
-        model.jacobian_evaluator(model, sysmat);
+        // A constant row only needs to be inserted while the matrix graph is still being built.
+        if (model.has_constant_jacobian && sysmat.filled())
+        {
+          continue;
+        }
+        model.jacobian_evaluator(model, sysmat, locally_relevant_dofs, assembly_context);
       }
     }
   }  // namespace BoundaryConditions

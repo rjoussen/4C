@@ -53,6 +53,14 @@ namespace ReducedLung
     struct BoundaryConditionModel;
 
     /**
+     * @brief State the boundary condition evaluators may depend on.
+     */
+    struct AssemblyContext
+    {
+      double time = 0.0;
+    };
+
+    /**
      * @brief Shared data container for all boundary condition entities.
      *
      * Stores identifiers and dof mappings for the boundary condition equations. This uses a
@@ -99,13 +107,15 @@ namespace ReducedLung
     /**
      * @brief Function handle for evaluating the residuals.
      */
-    using ResidualEvaluator = std::function<void(const BoundaryConditionModel& model,
-        Core::LinAlg::Vector<double>& rhs, const Core::LinAlg::Vector<double>& dofs, double time)>;
+    using ResidualEvaluator =
+        std::function<void(const BoundaryConditionModel& model, Core::LinAlg::Vector<double>& rhs,
+            const Core::LinAlg::Vector<double>& dofs, const AssemblyContext& assembly_context)>;
     /**
      * @brief Function handle for evaluating the boundary condition Jacobian.
      */
-    using JacobianEvaluator = std::function<void(
-        const BoundaryConditionModel& model, Core::LinAlg::SparseMatrix& sysmat)>;
+    using JacobianEvaluator =
+        std::function<void(const BoundaryConditionModel& model, Core::LinAlg::SparseMatrix& sysmat,
+            const Core::LinAlg::Vector<double>& dofs, const AssemblyContext& assembly_context)>;
 
     /**
      * @brief Boundary condition model containing a homogeneous set of equations.
@@ -122,6 +132,9 @@ namespace ReducedLung
       BoundaryConditionData data;
       ResidualEvaluator residual_evaluator;
       JacobianEvaluator jacobian_evaluator;
+      //! False if the Jacobian row depends on the current iterate and must be reassembled on
+      //! every call.
+      bool has_constant_jacobian = true;
 
       /**
        * @brief Add a boundary condition entry to this model.
@@ -189,10 +202,11 @@ namespace ReducedLung
         const Core::LinAlg::Vector<double>& locally_relevant_dofs, double time);
 
     /**
-     * @brief Assemble the boundary condition Jacobian contributions once.
+     * @brief Assemble the boundary condition Jacobian contributions.
      */
-    void update_jacobian(
-        Core::LinAlg::SparseMatrix& sysmat, const BoundaryConditionContainer& boundary_conditions);
+    void update_jacobian(Core::LinAlg::SparseMatrix& sysmat,
+        const BoundaryConditionContainer& boundary_conditions,
+        const Core::LinAlg::Vector<double>& locally_relevant_dofs, double time);
   }  // namespace BoundaryConditions
 }  // namespace ReducedLung
 
