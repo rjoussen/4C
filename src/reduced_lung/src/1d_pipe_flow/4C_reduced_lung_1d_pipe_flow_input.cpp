@@ -176,9 +176,9 @@ Core::IO::InputSpec ReducedLung1dPipeFlow::valid_parameters()
 
                   group<Parameters::Geometry>("geometry_parameters",
                       {
-                          input_field<double>("reference_area_A0",
-                              {.description = "Reference area of element",
-                                  .store = in_struct(&Parameters::Geometry::reference_area_A0)}),
+                          input_field<double>("reference_radius_r0",
+                              {.description = "Reference radius of element",
+                                  .store = in_struct(&Parameters::Geometry::reference_radius_r0)}),
                           input_field<double>("thickness_th",
                               {.description = "Wall thickness of element",
                                   .store = in_struct(&Parameters::Geometry::thickness_th)}),
@@ -205,16 +205,6 @@ Core::IO::InputSpec ReducedLung1dPipeFlow::valid_parameters()
                                               "or reflection.",
                                   .store = in_struct(
                                       &Parameters::BoundaryConditions::condition_outflow)}),
-                          parameter<std::optional<double>>("cycle_period",
-                              {.description = "Duration of one cycle until next one starts, to "
-                                              "implement pulsatility (systolic vs diastolic).",
-                                  .store =
-                                      in_struct(&Parameters::BoundaryConditions::cycle_period)}),
-                          parameter<std::optional<double>>("pulse_width",
-                              {.description = "Duration of input pulse in the cycle - Heaviside "
-                                              "function = 1.",
-                                  .store =
-                                      in_struct(&Parameters::BoundaryConditions::pulse_width)}),
                       },
                       {.description = "Parameters of fluid",
                           .store = in_struct(&Parameters::boundary_conditions)}),
@@ -292,6 +282,12 @@ Core::IO::InputSpec ReducedLung1dPipeFlow::valid_parameters()
                                       {.description = "$k_{exp}$ in $l = k_l \\cdot r^{k_{exp}}$.",
                                           .store = in_struct(&Parameters::TerminalUnits::
                                                   StructuredTreeModel::length_exponent)}),
+                                  parameter<std::optional<double>>("cardiac_period",
+                                      {.description = "Duration of one cardiac cycle on which the "
+                                                      "structured tree impulse response is built. "
+                                                      "Defaults to the final time.",
+                                          .store = in_struct(&Parameters::TerminalUnits::
+                                                  StructuredTreeModel::cardiac_period)}),
                               },
                               {.description =
                                       "Structured tree outflow model (Olufsen et al., doi: "

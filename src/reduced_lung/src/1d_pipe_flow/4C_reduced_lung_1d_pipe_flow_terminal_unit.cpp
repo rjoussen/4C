@@ -450,8 +450,9 @@ namespace ReducedLung1DPipe
         // Create structured-tree model
         // Time step size
         const double dt = params.final_time / params.n_steps;
-        // read in cycle_period or final_time if no cycle_period is defined
-        const double period = params.boundary_conditions.cycle_period.value_or(params.final_time);
+        // read in cardiac_period or final_time if no cardiac_period is defined
+        const double period =
+            tu_params.structured_tree_model.cardiac_period.value_or(params.final_time);
 
         StructuredTreeTerminalUnit st =
             create_structured_tree_model(tu_params.structured_tree_model, global_id, root_radius,

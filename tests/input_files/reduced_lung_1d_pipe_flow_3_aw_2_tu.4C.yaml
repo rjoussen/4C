@@ -9,7 +9,7 @@ reduced_lung:
       density_rho: 1.176e-06
       viscosity_mu: 1.79105e-05
     geometry_parameters:
-      reference_area_A0:
+      reference_radius_r0:
         from_file: reduced_lung_1d_pipe_flow_3_aw_2_tu.json
       thickness_th:
         constant: 0.1

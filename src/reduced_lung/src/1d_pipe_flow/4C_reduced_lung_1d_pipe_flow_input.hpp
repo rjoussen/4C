@@ -39,7 +39,7 @@ namespace ReducedLung1dPipeFlow
     } material;
     struct Geometry
     {
-      Core::IO::InputField<double> reference_area_A0;
+      Core::IO::InputField<double> reference_radius_r0;
       Core::IO::InputField<double> thickness_th;
     } geometry;
     struct BoundaryConditions
@@ -48,8 +48,6 @@ namespace ReducedLung1dPipeFlow
       std::string output;
       int function_id_inflow;
       double condition_outflow;
-      std::optional<double> cycle_period;
-      std::optional<double> pulse_width;
       const Core::Utils::FunctionOfTime* bc_fct;
     } boundary_conditions;
 
@@ -132,13 +130,16 @@ namespace ReducedLung1dPipeFlow
 
       struct StructuredTreeModel
       {
-        Core::IO::InputField<double> exponent_xi;               /// radius relation
-        Core::IO::InputField<double> asymmetry_ratio_gamma;     /// asymmetry relation
-        Core::IO::InputField<double> termination_radius_r_min;  /// Minimum r where tree terminates
-        Core::IO::InputField<double> peripheral_resistance_R_peri;  /// R at term. arterioles
-        Core::IO::InputField<int> stiffness_function_id;            /// FUNCT ID for Eh_over_r(r)
-        Core::IO::InputField<double> length_coefficient;  /// Coefficient for length-radius relation
-        Core::IO::InputField<double> length_exponent;     /// Exponent for length-radius relation
+        Core::IO::InputField<double> exponent_xi;               ///< radius relation
+        Core::IO::InputField<double> asymmetry_ratio_gamma;     ///< asymmetry relation
+        Core::IO::InputField<double> termination_radius_r_min;  ///< Minimum r where tree terminates
+        Core::IO::InputField<double> peripheral_resistance_R_peri;  ///< R at term. arterioles
+        Core::IO::InputField<int> stiffness_function_id;            ///< FUNCT ID for Eh_over_r(r)
+        Core::IO::InputField<double>
+            length_coefficient;                        ///< Coefficient for length-radius relation
+        Core::IO::InputField<double> length_exponent;  ///< Exponent for length-radius relation
+        /// Duration of one cardiac cycle (structured tree impulse response built on this period)
+        std::optional<double> cardiac_period;
       } structured_tree_model;
     } terminal_units;
   };

@@ -11,8 +11,8 @@ reduced_lung:
       density_rho: 1060
       viscosity_mu: 4e-3
     geometry_parameters:
-      reference_area_A0:
-        constant: 2.2e-4
+      reference_radius_r0:
+        constant: 0.008368283871884005
       thickness_th:
         constant: 3e-4
     material_parameters:

@@ -91,8 +91,8 @@ namespace ReducedLung1dPipeFlow
       const int element_global_id = node.adjacent_elements()[0].global_id();
 
       const double Young_value = parameters.material.youngs_modulus_E.at(element_global_id);
-      const double A0_value = parameters.geometry.reference_area_A0.at(element_global_id);
-      const double r0_value = std::sqrt(A0_value / std::numbers::pi);
+      const double r0_value = parameters.geometry.reference_radius_r0.at(element_global_id);
+      const double A0_value = std::numbers::pi * r0_value * r0_value;
       const double th_value = parameters.geometry.thickness_th.at(element_global_id);
       const double beta_value =
           (std::sqrt(std::numbers::pi) * th_value * Young_value) /
@@ -540,8 +540,7 @@ namespace ReducedLung1dPipeFlow
         const int terminal_node_id = junction_info.node_ids.front();
         const auto* terminal_node = discretization->g_node(terminal_node_id);
         const int element_id = terminal_node->adjacent_elements()[0].global_id();
-        const double root_radius =
-            std::sqrt(input.geometry.reference_area_A0.at(element_id) / std::numbers::pi);
+        const double root_radius = input.geometry.reference_radius_r0.at(element_id);
 
         // Create terminal units
         ReducedLung1DPipe::TerminalUnit::TerminalUnitModel tu_model =
@@ -934,25 +933,6 @@ namespace ReducedLung1dPipeFlow
             double u_condition = boundary_u;
             double A_condition = boundary_A;
 
-            // precribed inflow
-            double heavyside = 1.0;
-            double time_cyc = time_n;
-            if (auto period = input.boundary_conditions.cycle_period)
-            {
-              while (time_cyc > *period)
-              {
-                time_cyc -= *period;
-              }
-            }
-
-            if (auto pulse = input.boundary_conditions.pulse_width)
-            {
-              if (time_cyc > *pulse)
-              {
-                heavyside = 0.0;
-              }
-            }
-
             // inlet
             if (normal_in_out[boundary_local_index] == -1)
             {
@@ -963,14 +943,14 @@ namespace ReducedLung1dPipeFlow
               // prescribed u
               if (input.boundary_conditions.input == "velocity")
               {
-                u_condition = input.boundary_conditions.bc_fct->evaluate(time_n, 0) * heavyside;
+                u_condition = input.boundary_conditions.bc_fct->evaluate(time_n, 0);
                 // A derived from characteristics and prescribed u
                 A_condition = (std::pow(u_condition - characteristic_W_outgoing, 4) / 64) *
                               std::pow(input.fluid.density_rho / beta_element, 2);
               }
               else if (input.boundary_conditions.input == "area")
               {
-                A_condition = input.boundary_conditions.bc_fct->evaluate(time_n, 0) * heavyside;
+                A_condition = input.boundary_conditions.bc_fct->evaluate(time_n, 0);
                 u_condition = characteristic_W_outgoing +
                               4 * std::pow(A_condition, 0.25) *
                                   std::sqrt(0.5 * beta_element / input.fluid.density_rho);
@@ -978,8 +958,7 @@ namespace ReducedLung1dPipeFlow
               else if (input.boundary_conditions.input == "pressure")
               {
                 // prescribed p from function
-                double pressure_fct =
-                    input.boundary_conditions.bc_fct->evaluate(time_n, 0) * heavyside;
+                double pressure_fct = input.boundary_conditions.bc_fct->evaluate(time_n, 0);
                 A_condition = std::pow((pressure_fct - boundary_Pext) / beta_element +
                                            std::sqrt(reference_area_element),
                     2);
@@ -991,7 +970,7 @@ namespace ReducedLung1dPipeFlow
               {
                 // Newton-Raphson iteration to get conditions for A and u
                 // Q = A(W1, W2) * u(W1,W2)
-                double flow_fct = input.boundary_conditions.bc_fct->evaluate(time_n, 0) * heavyside;
+                double flow_fct = input.boundary_conditions.bc_fct->evaluate(time_n, 0);
 
                 conditions_from_newton_raphson(input, flow_fct, reference_area_element,
                     characteristic_W_outgoing, beta_element, A_condition, u_condition);
