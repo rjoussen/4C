@@ -80,14 +80,14 @@ namespace ReducedLung1dPipeFlow
    * Get conditions for A and u when flow Q is prescribed. Computed through Newton-Raphson with
    * f = (W_in - W_out)^4 /1024 (rho/beta)^2 /2 * (W_in + W_out) .
    * W_out is known from the domain, W_in needs to be determined from prescribed Q.
-   *   * Constants needed for computation are passed in @param input and the prescribed flow in
-   *   @param Q_condition .
-   *   * Known parameters at the node are @param boundary_A0  @param characteristic_W_outgoing
+   * Constants needed for computation are passed in @param input and the prescribed flow in
+   * @param Q_condition .
+   * Known parameters at the node are @param boundary_A0 @param characteristic_W_outgoing
    * @param beta
    * The computed conditions for A and u are written to @param A_condition and @param u_condition
    */
-  void conditions_from_newton_raphson(const Parameters& input, const double& Q_condition,
-      const double& boundary_A0, const double& characteristic_W_outgoing, const double& beta,
+  void conditions_from_newton_raphson(const Parameters& input, const double Q_condition,
+      const double boundary_A0, const double characteristic_W_outgoing, const double beta,
       double& A_condition, double& u_condition);
 
   /**
@@ -122,8 +122,8 @@ namespace ReducedLung1dPipeFlow
    * Information of all nodes being part of the junction need to be stored locally
    * (vectors_junction) so that conditions A and u can be computed for all nodes on the process they
    * belong to.
-   * @param all_junctions contains the information of nodes of all junction son the rank
-   * @param dof_update is the vector where the conditions for the prmary variables are stored so
+   * @param all_junctions contains the information of nodes of all junctions on the rank
+   * @param dof_update is the vector where the conditions for the primary variables are stored so
    * that they can be applied to the rhs vector
    */
   void get_conditions_at_junctions(const double density_rho,

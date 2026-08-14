@@ -39,7 +39,6 @@ namespace ReducedLung1dPipeFlow
     } material;
     struct Geometry
     {
-      double reference_radius;
       Core::IO::InputField<double> reference_area_A0;
       Core::IO::InputField<double> thickness_th;
     } geometry;

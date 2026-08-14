@@ -65,7 +65,7 @@ namespace ReducedLung1DPipe
       return ogden_hyperelastic_model.elastic_pressure_grad_dp_el;
     }
 
-    double evaluate_kelvin_voigt_residual(double area_A, double velocity_u,
+    double evaluate_kelvin_voigt_residual(const double area_A, const double velocity_u,
         const double reference_area_A0, const double beta, const double Pext,
         const KelvinVoigt& kelvin_voigt_model, const double elastic_pressure_p_el,
         const RheologicalElasticityModel& terminal_unit_model)
@@ -240,7 +240,7 @@ namespace ReducedLung1DPipe
     }
 
     double TerminalUnitModel::evaluate_elastic_pressure(const double area_A, const double beta,
-        const double density_rho, const double characteristic_W_outgoing, double dt)
+        const double density_rho, const double characteristic_W_outgoing, const double dt)
     {
       // Only applicable for RheologicalElasticityModels
       auto* rheol_elastic = std::get_if<RheologicalElasticityModel>(&model);
@@ -249,8 +249,8 @@ namespace ReducedLung1DPipe
         FOUR_C_ASSERT(false, "Model is not RheologicalElasticityModel");
       }
 
-      const double velocity_u =
-          characteristic_W_outgoing - 4 * std::pow(area_A, 0.25) * sqrt(0.5 * beta / density_rho);
+      const double velocity_u = characteristic_W_outgoing -
+                                4 * std::pow(area_A, 0.25) * std::sqrt(0.5 * beta / density_rho);
       double flow_Q = velocity_u * area_A;
       // compute elastic pressure depending on ElasticityModel
       return std::visit(
@@ -270,14 +270,14 @@ namespace ReducedLung1DPipe
           rheol_elastic->elasticity_model);
     }
 
-    std::pair<double, double> TerminalUnitModel::evaluate_residual_jacobian(double area_A,
-        const double reference_area_A0, const double beta, double Pext, const double density_rho,
-        const double characteristic_W_outgoing, double dt)
+    std::pair<double, double> TerminalUnitModel::evaluate_residual_jacobian(const double area_A,
+        const double reference_area_A0, const double beta, const double Pext,
+        const double density_rho, const double characteristic_W_outgoing, const double dt)
     {
-      const double velocity_u =
-          characteristic_W_outgoing - 4 * std::pow(area_A, 0.25) * sqrt(0.5 * beta / density_rho);
+      const double velocity_u = characteristic_W_outgoing -
+                                4 * std::pow(area_A, 0.25) * std::sqrt(0.5 * beta / density_rho);
       double flow_Q = velocity_u * area_A;
-      double dQdA = velocity_u - std::pow(area_A, 0.25) * sqrt(0.5 * beta / density_rho);
+      double dQdA = velocity_u - std::pow(area_A, 0.25) * std::sqrt(0.5 * beta / density_rho);
 
       // Handle Windkessel model
       auto* windkessel = std::get_if<WindkesselModel>(&model);
