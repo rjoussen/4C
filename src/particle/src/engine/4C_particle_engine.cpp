@@ -567,7 +567,8 @@ void Particle::ParticleEngine::build_particle_to_particle_neighbors()
           // accumulate interaction cost for load balancing weight estimation, weighted by the
           // average of the dynamic load balance factors of the two interacting particle types
           bin_interaction_costs_[gidofbin] +=
-              0.5 * (typeweights_[type] + typeweights_[neighbortype]);
+              0.5 *
+              (typeweights_[static_cast<int>(type)] + typeweights_[static_cast<int>(neighbortype)]);
         }
       }
     }
@@ -1984,7 +1985,7 @@ void Particle::ParticleEngine::remove_particles_from_containers(
     // iterate in reversed order over particles to be removed
     std::set<int>::reverse_iterator rit;
     for (rit = particlestoremove[static_cast<int>(type)].rbegin();
-         rit != particlestoremove[static_cast<int>(type)].rend(); ++rit)
+        rit != particlestoremove[static_cast<int>(type)].rend(); ++rit)
       container->remove_particle(*rit);
   }
 
