@@ -15,7 +15,7 @@ jobs:
     name: Build 4C on macOS
     runs-on: macos-26
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: System preparation
         run: ./dependencies/darwin/prepare_system.sh
       - name: Restore dependencies cache
@@ -63,7 +63,7 @@ jobs:
     needs: build
     runs-on: macos-26
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: System preparation
         run: ./dependencies/darwin/prepare_system.sh
       - name: Restore dependencies cache
