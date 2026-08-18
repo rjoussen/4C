@@ -42,10 +42,10 @@ namespace SSI
   /// Type of coupling strategy between the two fields of the SSI problems
   enum class FieldCoupling
   {
-    volume_match,
-    volume_nonmatch,
-    boundary_nonmatch,
-    volumeboundary_match
+    volume_matching,
+    volume_nonmatching,
+    boundary_nonmatching,
+    volumeboundary_matching
   };
 
   //! type of scalar transport time integration

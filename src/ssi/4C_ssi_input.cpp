@@ -57,15 +57,9 @@ std::vector<Core::IO::InputSpec> SSI::valid_parameters()
                   .default_value = "nil"}),
 
           // Type of coupling strategy between the two fields
-          deprecated_selection<FieldCoupling>("FIELDCOUPLING",
-              {
-                  {"volume_matching", FieldCoupling::volume_match},
-                  {"volume_nonmatching", FieldCoupling::volume_nonmatch},
-                  {"boundary_nonmatching", FieldCoupling::boundary_nonmatch},
-                  {"volumeboundary_matching", FieldCoupling::volumeboundary_match},
-              },
-              {.description = "Type of coupling strategy between fields",
-                  .default_value = FieldCoupling::volume_match}),
+          parameter<FieldCoupling>(
+              "FIELDCOUPLING", {.description = "Type of coupling strategy between fields",
+                                   .default_value = FieldCoupling::volume_matching}),
 
           // Coupling strategy for SSI solvers
           parameter<SolutionSchemeOverFields>(

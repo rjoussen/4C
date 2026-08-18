@@ -270,15 +270,10 @@ void SSI::SSIBase::init_discretizations(MPI_Comm comm, const std::string& struct
 
   if (scatradis->num_global_nodes() == 0)
   {
-    if (fieldcoupling_ != SSI::FieldCoupling::volume_match and
-        fieldcoupling_ != SSI::FieldCoupling::volumeboundary_match)
-    {
-      FOUR_C_THROW(
-          "If 'FIELDCOUPLING' is NOT 'volume_matching' or 'volumeboundary_matching' in the SSI "
-          "CONTROL section cloning of the scatra discretization from the structure "
-          "discretization "
-          "is not supported!");
-    }
+    FOUR_C_ASSERT_ALWAYS(fieldcoupling_ == SSI::FieldCoupling::volume_matching or
+                             fieldcoupling_ == SSI::FieldCoupling::volumeboundary_matching,
+        "If the scatra discretization is empty, the input parameter 'FIELDCOUPLING' in the SSI "
+        "CONTROL section must be set to 'volume_matching' or 'volumeboundary_matching'!");
 
     // fill scatra discretization by cloning structure discretization
     Core::FE::clone_discretization<ScatraStructureCloneStrategy>(
@@ -365,17 +360,12 @@ void SSI::SSIBase::init_discretizations(MPI_Comm comm, const std::string& struct
   }
   else
   {
-    if (fieldcoupling_ == SSI::FieldCoupling::volume_match)
-    {
-      FOUR_C_THROW(
-          "Reading a TRANSPORT discretization from the input file for the input parameter "
-          "'FIELDCOUPLING volume_matching' in the SSI CONTROL section is not supported! As this "
-          "coupling relies on matching node (and sometimes element) IDs, the ScaTra "
-          "discretization "
-          "is cloned from the structure discretization. Delete the ScaTra discretization from "
-          "your "
-          "input file.");
-    }
+    FOUR_C_ASSERT_ALWAYS(fieldcoupling_ != SSI::FieldCoupling::volume_matching,
+        "Reading a TRANSPORT discretization from the input file for the input parameter "
+        "'FIELDCOUPLING volume_matching' in the SSI CONTROL section is not supported! As this "
+        "coupling relies on matching node (and sometimes element) IDs, the ScaTra discretization "
+        "is cloned from the structure discretization. Delete the ScaTra discretization from your "
+        "input file.");
 
     // copy conditions
     // this is actually only needed for copying TRANSPORT DIRICHLET/NEUMANN CONDITIONS
@@ -390,18 +380,15 @@ void SSI::SSIBase::init_discretizations(MPI_Comm comm, const std::string& struct
     // structure elements and check the impltype
     for (int i = 0; i < structdis->num_my_col_elements(); ++i)
     {
-      if (clonestrategy.get_impl_type(structdis->l_col_element(i)) != ScaTra::impltype_undefined)
-      {
-        FOUR_C_THROW(
-            "A TRANSPORT discretization is read from the input file, which is fine since the "
-            "scatra "
-            "discretization is not cloned from the structure discretization. But in the STRUCTURE "
-            "ELEMENTS section of the input file an ImplType that is NOT 'Undefined' is prescribed "
-            "which does not make sense if you don't want to clone the structure discretization. "
-            "Change the ImplType to 'Undefined' or decide to clone the scatra discretization "
-            "from "
-            "the structure discretization.");
-      }
+      FOUR_C_ASSERT_ALWAYS(
+          clonestrategy.get_impl_type(structdis->l_col_element(i)) == ScaTra::impltype_undefined,
+          "A TRANSPORT discretization is read from the input file, which is fine since the scatra "
+          "discretization is not cloned from the structure discretization. But in the 'STRUCTURE "
+          "ELEMENTS' or 'STRUCTURE GEOMETRY' section of the input file an ImplType that is NOT "
+          "'Undefined' is prescribed which does not make sense if you don't want to clone the "
+          "structure discretization.\n"
+          "Change the ImplType to 'Undefined' or decide to clone the scatra discretization from "
+          "the structure discretization.");
     }
   }
   // read in the micro field, has to be done after cloning of the scatra discretization
@@ -418,52 +405,50 @@ SSI::RedistributionType SSI::SSIBase::init_field_coupling(const std::string& str
   // initialize return variable
   auto redistribution_required{RedistributionType::none};
 
-  // safety check
+  // safety checks
   {
-    auto scatra_integrator = scatra_base_algorithm()->scatra_field();
+    const auto scatra_integrator = scatra_base_algorithm()->scatra_field();
     // check for ssi coupling condition
     std::vector<const Core::Conditions::Condition*> ssicoupling;
     scatra_integrator->discretization()->get_condition("SSICoupling", ssicoupling);
-    const bool havessicoupling = (ssicoupling.size() > 0);
+    const bool havessicoupling = ssicoupling.size() > 0;
 
-    if (havessicoupling and (fieldcoupling_ != SSI::FieldCoupling::boundary_nonmatch and
-                                fieldcoupling_ != SSI::FieldCoupling::volumeboundary_match))
-    {
-      FOUR_C_THROW(
-          "SSICoupling condition only valid in combination with FIELDCOUPLING set to "
-          "'boundary_nonmatching' or 'volumeboundary_matching' in SSI DYNAMIC section. ");
-    }
+    FOUR_C_ASSERT_ALWAYS(!havessicoupling or
+                             fieldcoupling_ == SSI::FieldCoupling::boundary_nonmatching or
+                             fieldcoupling_ == SSI::FieldCoupling::volumeboundary_matching,
+        "SSICoupling condition only valid in combination with FIELDCOUPLING set to "
+        "'boundary_nonmatching' or 'volumeboundary_matching' in SSI CONTROL section.");
 
-    if (fieldcoupling_ == SSI::FieldCoupling::volume_nonmatch)
+    if (fieldcoupling_ == SSI::FieldCoupling::volume_nonmatching)
     {
       const Teuchos::ParameterList& volmortarparams = problem->volmortar_params();
-      if (Teuchos::getIntegralValue<Coupling::VolMortar::CouplingType>(
-              volmortarparams, "COUPLINGTYPE") != Coupling::VolMortar::couplingtype_coninter)
-      {
-        FOUR_C_THROW(
-            "Volmortar coupling only tested for consistent interpolation, i.e. 'COUPLINGTYPE "
-            "coninter' in VOLMORTAR COUPLING section. Try other couplings at own risk.");
-      }
+      FOUR_C_ASSERT_ALWAYS(
+          Teuchos::getIntegralValue<Coupling::VolMortar::CouplingType>(
+              volmortarparams, "COUPLINGTYPE") == Coupling::VolMortar::couplingtype_coninter,
+          "Volmortar coupling currently only supported for consistent interpolation, i.e. "
+          "'COUPLINGTYPE coninter' in VOLMORTAR COUPLING section.");
     }
-    if (is_scatra_manifold() and fieldcoupling_ != SSI::FieldCoupling::volumeboundary_match)
-      FOUR_C_THROW("Solving manifolds only in combination with matching volumes and boundaries");
+
+    FOUR_C_ASSERT_ALWAYS(
+        !is_scatra_manifold() or fieldcoupling_ == SSI::FieldCoupling::volumeboundary_matching,
+        "Solving manifolds only in combination with matching volumes and boundaries");
   }
 
   // build SSI coupling class
   switch (fieldcoupling_)
   {
-    case SSI::FieldCoupling::volume_match:
+    case SSI::FieldCoupling::volume_matching:
       ssicoupling_ = std::make_shared<SSICouplingMatchingVolume>();
       break;
-    case SSI::FieldCoupling::volume_nonmatch:
+    case SSI::FieldCoupling::volume_nonmatching:
       ssicoupling_ = std::make_shared<SSICouplingNonMatchingVolume>();
       // redistribution is still performed inside
       redistribution_required = RedistributionType::binning;
       break;
-    case SSI::FieldCoupling::boundary_nonmatch:
+    case SSI::FieldCoupling::boundary_nonmatching:
       ssicoupling_ = std::make_shared<SSICouplingNonMatchingBoundary>();
       break;
-    case SSI::FieldCoupling::volumeboundary_match:
+    case SSI::FieldCoupling::volumeboundary_matching:
       ssicoupling_ = std::make_shared<SSICouplingMatchingVolumeAndBoundary>();
       redistribution_required = RedistributionType::match;
       break;
