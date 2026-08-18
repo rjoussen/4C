@@ -7,7 +7,6 @@
 
 #include "4C_reduced_lung_1d_pipe_flow_main.hpp"
 
-#include "4C_art_net_impl_stationary.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_general_assemblestrategy.hpp"
 #include "4C_fem_general_element.hpp"
@@ -16,22 +15,17 @@
 #include "4C_fem_general_utils_gausspoints.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io_discretization_visualization_writer_mesh.hpp"
-#include "4C_io_input_spec_builders.hpp"
-#include "4C_io_pstream.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
-#include "4C_mat_vplast_law.hpp"
 #include "4C_reduced_lung_1d_pipe_flow_input.hpp"
 #include "4C_reduced_lung_1d_pipe_flow_resulttest.hpp"
 #include "4C_reduced_lung_1d_pipe_flow_structured_tree.hpp"
 #include "4C_reduced_lung_1d_pipe_flow_terminal_unit.hpp"
-#include "4C_structure_new_timint_base.hpp"
 #include "4C_utils_function_of_time.hpp"
 #include "4C_utils_local_newton.hpp"
 
-#include <boost/graph/subgraph.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
 #include <algorithm>
@@ -88,7 +82,7 @@ namespace ReducedLung1dPipeFlow
   {
     // constants to be computed from the input parameters
     parameters.fluid.viscous_resistance_K_R =
-        8.0 * M_PI * parameters.fluid.viscosity_mu / parameters.fluid.density_rho;
+        8.0 * std::numbers::pi * parameters.fluid.viscosity_mu / parameters.fluid.density_rho;
 
     // elemental vectors
     for (const auto& node : discretization.my_row_node_range())
@@ -97,11 +91,11 @@ namespace ReducedLung1dPipeFlow
       const int element_global_id = node.adjacent_elements()[0].global_id();
 
       const double Young_value = parameters.material.youngs_modulus_E.at(element_global_id);
-      const double A0_value = parameters.geometry.reference_area_A0.at(element_global_id);
-      const double r0_value = std::sqrt(A0_value / M_PI);
+      const double r0_value = parameters.geometry.reference_radius_r0.at(element_global_id);
+      const double A0_value = std::numbers::pi * r0_value * r0_value;
       const double th_value = parameters.geometry.thickness_th.at(element_global_id);
       const double beta_value =
-          (sqrt(M_PI) * th_value * Young_value) /
+          (std::sqrt(std::numbers::pi) * th_value * Young_value) /
           ((1 - std::pow(parameters.material.poisson_ratio_nu, 2)) * A0_value);
 
       Young.replace_global_value(node_gid, Young_value);
@@ -141,16 +135,14 @@ namespace ReducedLung1dPipeFlow
       {
         for (int k = 0; k < 2; k++)
         {
-          {
-            Psi_matrix(i, j) += delta * flux_jacobian(k, i) * dNdxi_matrix(k, j) * inv_det;
-          }
+          Psi_matrix(i, j) += delta * flux_jacobian(k, i) * dNdxi_matrix(k, j) * inv_det;
         }
       }
     }
   }
 
-  void conditions_from_newton_raphson(const Parameters& input, const double& Q_condition,
-      const double& boundary_A0, const double& characteristic_W_outgoing, const double& beta,
+  void conditions_from_newton_raphson(const Parameters& input, const double Q_condition,
+      const double boundary_A0, const double characteristic_W_outgoing, const double beta,
       double& A_condition, double& u_condition)
   {
     const double rho_beta = input.fluid.density_rho / beta;
@@ -158,11 +150,11 @@ namespace ReducedLung1dPipeFlow
 
     auto residuum_and_jacobian = [&](double W_in) -> std::tuple<double, double>
     {
-      double f = residual_constant * pow(W_in - characteristic_W_outgoing, 4) *
+      double f = residual_constant * std::pow(W_in - characteristic_W_outgoing, 4) *
                      (W_in + characteristic_W_outgoing) -
                  Q_condition;
       double dfdW1 = rho_beta * rho_beta * (1.0 / 1024.0) *
-                     pow(W_in - characteristic_W_outgoing, 3) *
+                     std::pow(W_in - characteristic_W_outgoing, 3) *
                      (2.5 * W_in + 1.5 * characteristic_W_outgoing);
       return {f, dfdW1};
     };
@@ -170,7 +162,7 @@ namespace ReducedLung1dPipeFlow
     double W_in = Core::Utils::solve_local_newton(residuum_and_jacobian,
         2.0 * Q_condition / boundary_A0 - characteristic_W_outgoing, 1e-6, 100);
 
-    A_condition = rho_beta * rho_beta * pow(W_in - characteristic_W_outgoing, 4) / 1024.0;
+    A_condition = rho_beta * rho_beta * std::pow(W_in - characteristic_W_outgoing, 4) / 1024.0;
     u_condition = 0.5 * (W_in + characteristic_W_outgoing);
   }
 
@@ -196,8 +188,8 @@ namespace ReducedLung1dPipeFlow
     for (int i = 0; i < N_connected_nodes; i++)
     {
       f[i] = junction_velocity_u[i] +
-             junction_normal[i] * 4.0 * pow(junction_area_A[i], 0.25) *
-                 sqrt(0.5 * junction_beta[i] / density_rho) -
+             junction_normal[i] * 4.0 * std::pow(junction_area_A[i], 0.25) *
+                 std::sqrt(0.5 * junction_beta[i] / density_rho) -
              junction_characteristic_out[i];
     }
 
@@ -210,13 +202,15 @@ namespace ReducedLung1dPipeFlow
 
     // fill the entities that have to do with the pressure conservation
     // reference pressure
-    const double P0 = 0.5 * density_rho * pow(junction_velocity_u[0], 2) +
-                      junction_beta[0] * (sqrt(junction_area_A[0]) - sqrt(junction_ref_area_A0[0]));
+    const double P0 =
+        0.5 * density_rho * std::pow(junction_velocity_u[0], 2) +
+        junction_beta[0] * (std::sqrt(junction_area_A[0]) - std::sqrt(junction_ref_area_A0[0]));
     for (int i = 1; i < N_connected_nodes; i++)
     {
       f[N_connected_nodes + i] =
-          P0 - (0.5 * density_rho * pow(junction_velocity_u[i], 2) +
-                   junction_beta[i] * (sqrt(junction_area_A[i]) - sqrt(junction_ref_area_A0[i])));
+          P0 - (0.5 * density_rho * std::pow(junction_velocity_u[i], 2) +
+                   junction_beta[i] *
+                       (std::sqrt(junction_area_A[i]) - std::sqrt(junction_ref_area_A0[i])));
     }
   }
 
@@ -237,8 +231,9 @@ namespace ReducedLung1dPipeFlow
     for (int i = 0; i < N_connected_nodes; i++)
     {
       jacobian(i, i) = 1.0;
-      jacobian(i, i + N_connected_nodes) = junction_normal[i] * pow(junction_area_A[i], -0.75) *
-                                           sqrt(0.5 * junction_beta[i] / density_rho);
+      jacobian(i, i + N_connected_nodes) = junction_normal[i] *
+                                           std::pow(junction_area_A[i], -0.75) *
+                                           std::sqrt(0.5 * junction_beta[i] / density_rho);
     }
 
     // fill the entities that have to do with the mass conservation
@@ -252,7 +247,7 @@ namespace ReducedLung1dPipeFlow
     // fill the entities that have to do with the pressure conservation
     // reference pressure of first node in junction
     const double P_u = density_rho * junction_velocity_u[0];
-    const double P_A = 0.5 * junction_beta[0] / (sqrt(junction_area_A[0]));
+    const double P_A = 0.5 * junction_beta[0] / (std::sqrt(junction_area_A[0]));
     // pressure conservation
     for (int i = 1; i < N_connected_nodes; i++)
     {
@@ -260,7 +255,7 @@ namespace ReducedLung1dPipeFlow
       jacobian(N_connected_nodes + i, i) = -density_rho * junction_velocity_u[i];
       jacobian(N_connected_nodes + i, N_connected_nodes) = P_A;
       jacobian(N_connected_nodes + i, N_connected_nodes + i) =
-          -0.5 * junction_beta[i] / (sqrt(junction_area_A[i]));
+          -0.5 * junction_beta[i] / (std::sqrt(junction_area_A[i]));
     }
   }
 
@@ -352,7 +347,7 @@ namespace ReducedLung1dPipeFlow
       const Core::LinAlg::Vector<double>& normals, const Core::LinAlg::Vector<double>& solution,
       const std::vector<JunctionInfo>& all_junctions)
   {
-    for (const auto& [node_ids, node_owners] : all_junctions)
+    for (const auto& [node_ids, _] : all_junctions)
     {
       for (const auto global_node_id : node_ids)
       {
@@ -373,11 +368,12 @@ namespace ReducedLung1dPipeFlow
           const double normal_in_out = normals.get_values()[local_node_id];
           // derive flux over boundaries
           const double F1 = A_condition * u_condition;
-          const double F2 = 0.5 * pow(u_condition, 2) +
-                            (beta_node * (sqrt(A_condition) - sqrt(A0_node))) / density_rho;
+          const double F2 =
+              0.5 * std::pow(u_condition, 2) +
+              (beta_node * (std::sqrt(A_condition) - std::sqrt(A0_node))) / density_rho;
           const double F1_h = A_n * u_n;
-          const double F2_h =
-              0.5 * pow(u_n, 2) + (beta_node * (sqrt(A_n) - sqrt(A0_node))) / density_rho;
+          const double F2_h = 0.5 * std::pow(u_n, 2) +
+                              (beta_node * (std::sqrt(A_n) - std::sqrt(A0_node))) / density_rho;
 
           // set values in rhs_junction
           rhs_junction.replace_local_value(2 * local_node_id, normal_in_out * (F1_h - F1));
@@ -439,11 +435,11 @@ namespace ReducedLung1dPipeFlow
         *discretization);
 
     //  export to column vectors for parallel evaluation
-    FourC::Core::LinAlg::export_to(solution, solution_for_evaluation);
-    FourC::Core::LinAlg::export_to(reference_area_0, reference_area_0_evaluation);
-    FourC::Core::LinAlg::export_to(thickness_th, thickness_evaluation);
-    FourC::Core::LinAlg::export_to(Young, Young_evaluation);
-    FourC::Core::LinAlg::export_to(beta, beta_evaluation);
+    Core::LinAlg::export_to(solution, solution_for_evaluation);
+    Core::LinAlg::export_to(reference_area_0, reference_area_0_evaluation);
+    Core::LinAlg::export_to(thickness_th, thickness_evaluation);
+    Core::LinAlg::export_to(Young, Young_evaluation);
+    Core::LinAlg::export_to(beta, beta_evaluation);
 
     pressure_solution.put_scalar(0.0);
     flow_solution.put_scalar(0.0);
@@ -472,7 +468,7 @@ namespace ReducedLung1dPipeFlow
     Core::LinAlg::export_to(normals, normals_evaluation);
 
     // Get local rank
-    int mpi_rank = Core::Communication::my_mpi_rank(discretization->get_comm());
+    const int mpi_rank = Core::Communication::my_mpi_rank(discretization->get_comm());
     const auto comm = discretization->get_comm();
 
     /**************************
@@ -544,8 +540,7 @@ namespace ReducedLung1dPipeFlow
         const int terminal_node_id = junction_info.node_ids.front();
         const auto* terminal_node = discretization->g_node(terminal_node_id);
         const int element_id = terminal_node->adjacent_elements()[0].global_id();
-        const double root_radius =
-            std::sqrt(input.geometry.reference_area_A0.at(element_id) / std::numbers::pi);
+        const double root_radius = input.geometry.reference_radius_r0.at(element_id);
 
         // Create terminal units
         ReducedLung1DPipe::TerminalUnit::TerminalUnitModel tu_model =
@@ -616,11 +611,8 @@ namespace ReducedLung1dPipeFlow
 
     double time_n = 0.0;
     double dt = input.final_time / input.n_steps;
-    double min_time_step_size = 1.0;
 
     Core::FE::AssembleStrategy strategy(0, 0, mass_matrix, nullptr, rhs, nullptr, nullptr);
-    Core::FE::AssembleStrategy strategy_junction(
-        0, 0, nullptr, nullptr, rhs_junction, nullptr, nullptr);
 
     const auto compute_local_contributions =
         [&](Core::Elements::Element& element, Core::Elements::LocationArray& la,
@@ -744,22 +736,17 @@ namespace ReducedLung1dPipeFlow
         Core::LinAlg::Matrix<2, 2> H;
         H(0, 0) = velocity_u;
         H(0, 1) = area_A;
-        H(1, 0) = 0.5 * beta_element / (input.fluid.density_rho * sqrt(area_A));
+        H(1, 0) = 0.5 * beta_element / (input.fluid.density_rho * std::sqrt(area_A));
         H(1, 1) = velocity_u;
 
         // Define helpers for test functions Psi
         // characteristic speed lambda = |u +/- c|
-        double lambda_max = std::max(std::abs(velocity_u + sqrt(0.5 * beta_element * sqrt(area_A) /
-                                                                (input.fluid.density_rho))),
-            std::abs(
-                velocity_u - sqrt(0.5 * beta_element * sqrt(area_A) / (input.fluid.density_rho))));
-        // compute min timestep size for CFL condition
-        if (L / lambda_max < min_time_step_size)
-        {
-          min_time_step_size = L / lambda_max;
-        }
+        const double sound_speed =
+            std::sqrt(0.5 * beta_element * std::sqrt(area_A) / input.fluid.density_rho);
+        const double lambda_max =
+            std::max(std::abs(velocity_u + sound_speed), std::abs(velocity_u - sound_speed));
 
-        double delta = std::abs(0.5 * L / lambda_max);
+        const double delta = std::abs(0.5 * L / lambda_max);
         // Define the test functions according to Petrov Galerkin Psi = N + delta * H^T * dNdxi
         // * dxidx
         Core::LinAlg::Matrix<2, 2 * 2> Psi_matrix;
@@ -802,14 +789,16 @@ namespace ReducedLung1dPipeFlow
 
         // source term:F(U) = [0, f]
         // f = K_R * u - dp_dbeta dbeta_dx + dp_dA0 * dA0_dx
-        const double dp_dbeta = sqrt(area_A) - sqrt(reference_area_element);
+        const double dp_dbeta = std::sqrt(area_A) - std::sqrt(reference_area_element);
         //(A_0 (h_0 * dE/dx + dh_0/dx * E) - h_0 * E * dA_0/dx ) / A_0^2
         // assumption: thickness = const
         const double dbeta_dx =
-            (sqrt(M_PI) * ((thickness_element * dYoung_dxi_gp * inv_det) * reference_area_element) -
+            (std::sqrt(std::numbers::pi) *
+                    ((thickness_element * dYoung_dxi_gp * inv_det) * reference_area_element) -
                 thickness_element * Young_element * dA0_dxi_gp * inv_det) /
-            (pow(reference_area_element * (1 - pow(input.material.poisson_ratio_nu, 2)), 2));
-        const double dp_dA0 = ((-0.5) * beta_element) / sqrt(reference_area_element);
+            std::pow(
+                reference_area_element * (1 - std::pow(input.material.poisson_ratio_nu, 2)), 2);
+        const double dp_dA0 = ((-0.5) * beta_element) / std::sqrt(reference_area_element);
 
         Core::LinAlg::Matrix<2, 1> S;
         S.put_scalar(0.0);
@@ -874,19 +863,19 @@ namespace ReducedLung1dPipeFlow
           Core::LinAlg::Matrix<2, 2> H;
           H(0, 0) = boundary_u;
           H(0, 1) = boundary_A;
-          H(1, 0) = 0.5 * beta_element / (input.fluid.density_rho * sqrt(boundary_A));
+          H(1, 0) = 0.5 * beta_element / (input.fluid.density_rho * std::sqrt(boundary_A));
           H(1, 1) = boundary_u;
 
           // Define the test functions according to Petrov Galerkin Psi = N + delta * H^T *
-          // dNdxi
-          // * dxidx
-          double lambda_max = std::max(
-              std::abs(boundary_u +
-                       sqrt(0.5 * beta_element * sqrt(boundary_A) / (input.fluid.density_rho))),
-              std::abs(boundary_u -
-                       sqrt(0.5 * beta_element * sqrt(boundary_A) / (input.fluid.density_rho))));
-          double L = compute_length(element);
-          double delta = std::abs(0.5 * L / lambda_max);
+          // dNdxi * dxidx
+
+          // sound speed at boundary node
+          const double sound_speed_c_boundary =
+              std::sqrt(0.5 * beta_element * (std::sqrt(boundary_A) / input.fluid.density_rho));
+          const double lambda_max = std::max(std::abs(boundary_u + sound_speed_c_boundary),
+              std::abs(boundary_u - sound_speed_c_boundary));
+          const double L = compute_length(element);
+          const double delta = std::abs(0.5 * L / lambda_max);
           Core::LinAlg::Matrix<2, 2 * 2> Psi_matrix;
           compute_psi_matrix(Psi_matrix, N_matrix, dNdxi_matrix, H, L, delta);
           //++++++++++++++++++
@@ -894,10 +883,6 @@ namespace ReducedLung1dPipeFlow
           // read in current element values from solution vector
           double inner_A = local_solution[inner_A_index];
           double inner_u = local_solution[inner_A_index + 1];
-
-          // sound speed at boundary node
-          double sound_speed_c_boundary =
-              sqrt(0.5 * beta_element * (sqrt(boundary_A) / input.fluid.density_rho));
 
           double lambda_out =
               boundary_u + (normal_in_out[boundary_local_index]) * sound_speed_c_boundary;
@@ -919,13 +904,13 @@ namespace ReducedLung1dPipeFlow
           // extrapolation of variables at x = lambda * dt
           double A_l = N1 * boundary_A + N2 * inner_A;
           double u_l = N1 * boundary_u + N2 * inner_u;
-          double c_l = sqrt(beta_element * sqrt(A_l) / (2 * input.fluid.density_rho));
+          double c_l = std::sqrt(beta_element * std::sqrt(A_l) / (2 * input.fluid.density_rho));
 
           // defining outgoing characteristic at dt*lambda
           double characteristic_W_outgoing = u_l + normal_in_out[boundary_local_index] * 4 * c_l;
           // characteristics in reference state
-          double c_0 =
-              sqrt(beta_element * sqrt(reference_area_element) / (2 * input.fluid.density_rho));
+          double c_0 = std::sqrt(
+              beta_element * std::sqrt(reference_area_element) / (2 * input.fluid.density_rho));
 
           // if junction, update outgoing characteristics
           if (is_junction[boundary_local_index])
@@ -940,32 +925,13 @@ namespace ReducedLung1dPipeFlow
             }
           }
 
-          /*+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-          // when outer boundary, prescribed parameter and reflection boundary condition
-          /+********************************************************************************/
+          //-------------------------------------------------------------------------------
+          // when outer boundary: prescribed parameter and reflection boundary condition
+          //-------------------------------------------------------------------------------
           else
           {
             double u_condition = boundary_u;
             double A_condition = boundary_A;
-
-            // precribed inflow
-            double heavyside = 1.0;
-            double time_cyc = time_n;
-            if (auto period = input.boundary_conditions.cycle_period)
-            {
-              while (time_cyc > *period)
-              {
-                time_cyc -= *period;
-              }
-            }
-
-            if (auto pulse = input.boundary_conditions.pulse_width)
-            {
-              if (time_cyc > *pulse)
-              {
-                heavyside = 0.0;
-              }
-            }
 
             // inlet
             if (normal_in_out[boundary_local_index] == -1)
@@ -977,35 +943,34 @@ namespace ReducedLung1dPipeFlow
               // prescribed u
               if (input.boundary_conditions.input == "velocity")
               {
-                u_condition = input.boundary_conditions.bc_fct->evaluate(time_n, 0) * heavyside;
+                u_condition = input.boundary_conditions.bc_fct->evaluate(time_n, 0);
                 // A derived from characteristics and prescribed u
-                A_condition = (pow(u_condition - characteristic_W_outgoing, 4) / 64) *
-                              pow(input.fluid.density_rho / beta_element, 2);
+                A_condition = (std::pow(u_condition - characteristic_W_outgoing, 4) / 64) *
+                              std::pow(input.fluid.density_rho / beta_element, 2);
               }
               else if (input.boundary_conditions.input == "area")
               {
-                A_condition = input.boundary_conditions.bc_fct->evaluate(time_n, 0) * heavyside;
+                A_condition = input.boundary_conditions.bc_fct->evaluate(time_n, 0);
                 u_condition = characteristic_W_outgoing +
                               4 * std::pow(A_condition, 0.25) *
-                                  sqrt(0.5 * beta_element / input.fluid.density_rho);
+                                  std::sqrt(0.5 * beta_element / input.fluid.density_rho);
               }
               else if (input.boundary_conditions.input == "pressure")
               {
                 // prescribed p from function
-                double pressure_fct =
-                    input.boundary_conditions.bc_fct->evaluate(time_n, 0) * heavyside;
-                A_condition = pow(
-                    (pressure_fct - boundary_Pext) / beta_element + sqrt(reference_area_element),
+                double pressure_fct = input.boundary_conditions.bc_fct->evaluate(time_n, 0);
+                A_condition = std::pow((pressure_fct - boundary_Pext) / beta_element +
+                                           std::sqrt(reference_area_element),
                     2);
                 u_condition = characteristic_W_outgoing +
                               4 * std::pow(A_condition, 0.25) *
-                                  sqrt(0.5 * beta_element / input.fluid.density_rho);
+                                  std::sqrt(0.5 * beta_element / input.fluid.density_rho);
               }
               else if (input.boundary_conditions.input == "flow")
               {
                 // Newton-Raphson iteration to get conditions for A and u
                 // Q = A(W1, W2) * u(W1,W2)
-                double flow_fct = input.boundary_conditions.bc_fct->evaluate(time_n, 0) * heavyside;
+                double flow_fct = input.boundary_conditions.bc_fct->evaluate(time_n, 0);
 
                 conditions_from_newton_raphson(input, flow_fct, reference_area_element,
                     characteristic_W_outgoing, beta_element, A_condition, u_condition);
@@ -1027,20 +992,20 @@ namespace ReducedLung1dPipeFlow
                 FOUR_C_ASSERT(reflection_factor >= -1 && reflection_factor <= 1,
                     "Error in reflection factor computation.");
                 A_condition =
-                    pow((characteristic_W_outgoing - characteristic_W_incoming) * 0.25, 4) *
-                    pow(input.fluid.density_rho * 0.5 / beta_element, 2);
+                    std::pow((characteristic_W_outgoing - characteristic_W_incoming) * 0.25, 4) *
+                    std::pow(input.fluid.density_rho * 0.5 / beta_element, 2);
                 u_condition = (characteristic_W_outgoing + characteristic_W_incoming) * 0.5;
               }
               else if (input.boundary_conditions.output == "pressure")
               {
                 // prescribed p at outlet
-                A_condition = pow(
+                A_condition = std::pow(
                     (input.boundary_conditions.condition_outflow - boundary_Pext) / beta_element +
-                        sqrt(reference_area_element),
+                        std::sqrt(reference_area_element),
                     2);
                 u_condition = characteristic_W_outgoing -
                               4 * std::pow(A_condition, 0.25) *
-                                  sqrt(0.5 * beta_element / input.fluid.density_rho);
+                                  std::sqrt(0.5 * beta_element / input.fluid.density_rho);
               }
               else if (input.boundary_conditions.output == "terminal_unit")
               {
@@ -1066,7 +1031,7 @@ namespace ReducedLung1dPipeFlow
 
                 u_condition = characteristic_W_outgoing -
                               4 * std::pow(A_condition, 0.25) *
-                                  sqrt(0.5 * beta_element / input.fluid.density_rho);
+                                  std::sqrt(0.5 * beta_element / input.fluid.density_rho);
                 double Q_condition = A_condition * u_condition;
                 // update model data
                 terminal_unit.update_terminal_unit_data(Q_condition, dt, A_condition, beta_element,
@@ -1082,13 +1047,15 @@ namespace ReducedLung1dPipeFlow
                 (boundary_u + sound_speed_c_boundary) * dt / L < 1, "CFL condition violated.");
 
             double F1 = A_condition * u_condition;
-            double F2 = 0.5 * pow(u_condition, 2) +
-                        (beta_element * (sqrt(A_condition) - sqrt(reference_area_element))) /
-                            input.fluid.density_rho;
+            double F2 =
+                0.5 * std::pow(u_condition, 2) +
+                (beta_element * (std::sqrt(A_condition) - std::sqrt(reference_area_element))) /
+                    input.fluid.density_rho;
             double F1_h = boundary_A * boundary_u;
-            double F2_h = 0.5 * pow(boundary_u, 2) +
-                          (beta_element * (sqrt(boundary_A) - sqrt(reference_area_element))) /
-                              input.fluid.density_rho;
+            double F2_h =
+                0.5 * std::pow(boundary_u, 2) +
+                (beta_element * (std::sqrt(boundary_A) - std::sqrt(reference_area_element))) /
+                    input.fluid.density_rho;
 
             element_rhs(2 * boundary_local_index) +=
                 normal_in_out[boundary_local_index] * (F1_h - F1);
@@ -1167,24 +1134,25 @@ namespace ReducedLung1dPipeFlow
       rhs_junction->put_scalar(0.0);
       y->put_scalar(0.0);
 
-      // output for visualization
-      for (const auto& node : discretization->my_row_node_range())
-      {
-        int local_id = discretization->node_row_map()->lid(node.global_id());
-        int A_id = 2 * local_id;
-        FOUR_C_ASSERT(solution.get_values()[A_id] > 0,
-            "area in solution_np < 0 at node {}, time {}", node.global_id(), time_n);
-        double pressure_p =
-            beta.get_values()[local_id] *
-            (sqrt(solution.get_values()[A_id]) - sqrt(reference_area_0.get_values()[local_id]));
-        pressure_solution.replace_local_value(local_id, pressure_p);
-
-        flow_solution.replace_local_value(
-            local_id, solution.get_values()[A_id] * solution.get_values()[A_id + 1]);
-      }
-
       if ((i + 1) % input.result_every == 0)
       {
+        // output for visualization
+        for (const auto& node : discretization->my_row_node_range())
+        {
+          int local_id = discretization->node_row_map()->lid(node.global_id());
+          int A_id = 2 * local_id;
+          FOUR_C_ASSERT(solution.get_values()[A_id] > 0,
+              "area in solution_np < 0 at node {}, time {}", node.global_id(), time_n);
+          double pressure_p =
+              beta.get_values()[local_id] * (std::sqrt(solution.get_values()[A_id]) -
+                                                std::sqrt(reference_area_0.get_values()[local_id]));
+          pressure_solution.replace_local_value(local_id, pressure_p);
+          flow_solution.replace_local_value(
+              local_id, solution.get_values()[A_id] * solution.get_values()[A_id + 1]);
+          radius_solution.replace_local_value(
+              local_id, std::sqrt(solution.get_values()[A_id] / std::numbers::pi));
+        }
+
         TEUCHOS_FUNC_TIME_MONITOR("Write output");
         visualization_writer.reset();
         visualization_writer.append_element_owner("Owner");
@@ -1194,6 +1162,8 @@ namespace ReducedLung1dPipeFlow
             pressure_solution, Core::IO::OutputEntity::node, {"p"});
         visualization_writer.append_result_data_vector_with_context(
             flow_solution, Core::IO::OutputEntity::node, {"Q"});
+        visualization_writer.append_result_data_vector_with_context(
+            radius_solution, Core::IO::OutputEntity::node, {"r"});
 
         visualization_writer.write_to_disk(time_np, i + 1);
       }

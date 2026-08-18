@@ -9,16 +9,14 @@
 
 #include "4C_reduced_lung_1d_pipe_flow_resulttest.hpp"
 
-#include "4C_cardiovascular0d_arterialproxdist.hpp"
 #include "4C_comm_mpi_utils.hpp"
 #include "4C_fem_general_node.hpp"
 #include "4C_io_input_parameter_container.hpp"
-#include "4C_reduced_lung_1d_pipe_flow_main.hpp"
 #include "4C_reduced_lung_1d_pipe_flow_terminal_unit.hpp"
 #include "4C_utils_result_test.hpp"
 
 #include <cmath>
-#include <complex>
+#include <numbers>
 
 FOUR_C_NAMESPACE_OPEN
 // Constructor

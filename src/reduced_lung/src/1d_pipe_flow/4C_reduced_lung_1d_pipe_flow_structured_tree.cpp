@@ -7,8 +7,6 @@
 
 #include "4C_reduced_lung_1d_pipe_flow_structured_tree.hpp"
 
-#include "4C_comm_mpi_utils.hpp"
-#include "4C_comm_utils.hpp"
 #include "4C_global_data.hpp"
 #include "4C_utils_exceptions.hpp"
 #include "4C_utils_function.hpp"
@@ -168,7 +166,7 @@ namespace ReducedLung1DPipe
           double dt)
       {
         const double T = n_cycle * dt;
-        const double domega = 2.0 * M_PI / T;
+        const double domega = 2.0 * std::numbers::pi / T;
         const int n_half = n_cycle / 2;
         const int n_compute = std::min(n_half, max_frequencies);
         const int n_nodes = static_cast<int>(dag.size());
@@ -193,10 +191,10 @@ namespace ReducedLung1DPipe
         {
           const TreeDagNode& node = dag[i];
           node_data[i] = {node.radius * std::sqrt(rho / mu),
-              rho * node.wave_speed_c0 / (M_PI * node.radius * node.radius),
+              rho * node.wave_speed_c0 / (std::numbers::pi * node.radius * node.radius),
               node.length_L / node.wave_speed_c0,
               8.0 * mu * node.length_L /
-                  (M_PI * node.radius * node.radius * node.radius * node.radius)};
+                  (std::numbers::pi * node.radius * node.radius * node.radius * node.radius)};
         }
 
         for (int k = 0; k <= n_compute; ++k)

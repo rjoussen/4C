@@ -12,8 +12,8 @@ reduced_lung:
       density_rho: 1
       viscosity_mu: 0.035
     geometry_parameters:
-      reference_area_A0:
-        constant: 3.2168
+      reference_radius_r0:
+        constant: 1.0118988298619669
       thickness_th:
         constant: 0.05
     material_parameters:
@@ -25,7 +25,6 @@ reduced_lung:
       function_ID: 1
       output: reflection
       condition_outflow: 0
-      pulse_width: 0.2
 PROBLEM TYPE:
   PROBLEMTYPE: "Reduced_Lung_1D_Pipe_Flow"
 IO/RUNTIME VTK OUTPUT:
@@ -34,7 +33,7 @@ SOLVER 1:
   SOLVER: "UMFPACK"
   NAME: "Arterial_Network_Solver"
 FUNCT1:
-  - SYMBOLIC_FUNCTION_OF_TIME: "1 - cos(2*pi*t/0.2)"
+  - SYMBOLIC_FUNCTION_OF_TIME: "(1 - cos(2*pi*t/0.2)) * heaviside(0.2 - t)"
 
 NODE COORDS:
   - NODE 1 COORD 0.00 0.00 0.00

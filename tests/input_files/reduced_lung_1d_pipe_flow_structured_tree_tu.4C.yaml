@@ -11,8 +11,8 @@ reduced_lung:
       density_rho: 1.06
       viscosity_mu: 0.0488
     geometry_parameters:
-      reference_area_A0:
-        constant: 0.1256637061
+      reference_radius_r0:
+        constant: 0.2
       thickness_th:
         constant: 0.2171701685
     material_parameters:
@@ -22,14 +22,13 @@ reduced_lung:
     boundary_conditions:
       function_ID: 1
       input: flow
-      pulse_width: 0.3
-      cycle_period: 1
       output: terminal_unit
       condition_outflow: 0
     terminal_units:
       terminal_unit_type:
         constant: StructuredTree
       structured_tree_model:
+        cardiac_period: 1
         exponent_xi:
           constant: 2.76
         asymmetry_ratio_gamma:
@@ -50,7 +49,7 @@ SOLVER 1:
   SOLVER: "UMFPACK"
   NAME: "Arterial_Network_Solver"
 FUNCT1:
-  - SYMBOLIC_FUNCTION_OF_TIME: '190 * (1 - cos(2*pi*t/0.3))'
+  - SYMBOLIC_FUNCTION_OF_TIME: '190 * (1 - cos(2*pi*t/0.3)) * heaviside(0.3 - t)'
 FUNCT2:
   - VARFUNCTION: '2e7 *exp(-22.53*r)+8.65e5'
 

@@ -66,7 +66,7 @@ namespace ReducedLung1DPipe
      * @param density_rho fluid parameter
      * @param viscosity_mu fluid parameter
      * @param dt timestep-size
-     * @param period cycle_period or final time if no cycle_period defined
+     * @param period cardiac period or final time if no cardiac period defined
      * @return filled structured tree container
      */
     StructuredTreeTerminalUnit create_structured_tree_model(
