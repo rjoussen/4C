@@ -95,7 +95,7 @@ void Solid::TimIntCentrDiff::resize_m_step()
 
 /*----------------------------------------------------------------------*/
 /* Integrate step */
-int Solid::TimIntCentrDiff::integrate_step()
+void Solid::TimIntCentrDiff::integrate_step()
 {
   // time this step
   timer_->reset();
@@ -232,9 +232,6 @@ int Solid::TimIntCentrDiff::integrate_step()
 
   // update of end-velocities \f$V_{n+1}\f$
   veln_->update(dthalf, *accn_, 1.0);
-
-  // wassup?
-  return 0;
 }
 
 /*----------------------------------------------------------------------*/

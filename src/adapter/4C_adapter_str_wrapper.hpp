@@ -282,12 +282,11 @@ namespace Adapter
     [[nodiscard]] int num_step() const override { return structure_->num_step(); }
 
     /// integrate from t1 to t2
-    int integrate() override { return structure_->integrate(); }
+    void integrate() override { structure_->integrate(); }
 
-    //! do something in case nonlinear solution does not converge for some reason
-    Solid::ConvergenceStatus perform_error_action(Solid::ConvergenceStatus nonlinsoldiv) override
+    Solid::StepStatus perform_error_action(Solid::StepStatus solve_status) override
     {
-      return structure_->perform_error_action(nonlinsoldiv);
+      return structure_->perform_error_action(solve_status);
     }
 
     /// tests if there are more time steps to do
@@ -406,8 +405,7 @@ namespace Adapter
     //! @name Solver calls
     //@{
 
-    /// nonlinear solve
-    Solid::ConvergenceStatus solve() override { return structure_->solve(); }
+    [[nodiscard]] Solid::StepStatus solve() override { return structure_->solve(); }
 
     //! linear structure solve with just an interface load
     std::shared_ptr<Core::LinAlg::Vector<double>> solve_relaxation_linear() override

@@ -38,7 +38,7 @@ namespace Adapter
     StructureTimeLoop(Global::Problem& problem, std::shared_ptr<Structure> structure);
 
     /// actual time loop
-    int integrate() override;
+    void integrate() override;
 
     /// wrapper for things that should be done before updating
     void pre_update() override {};

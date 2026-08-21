@@ -10,8 +10,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_structure_new_input.hpp"
-#include "4C_utils_exceptions.hpp"
+#include "4C_adapter_str_structure.hpp"
 
 #include <Teuchos_RCPDecl.hpp>
 
@@ -72,7 +71,7 @@ namespace Solid
         virtual void refresh_after_redistribution() = 0;
 
         //! Solve the non-linear problem
-        virtual Solid::ConvergenceStatus solve() = 0;
+        [[nodiscard]] virtual Solid::StepStatus solve() = 0;
 
         /*! returns the nox group for external and internal use
          *

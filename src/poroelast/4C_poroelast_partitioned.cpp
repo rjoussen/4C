@@ -9,6 +9,7 @@
 
 #include "4C_adapter_fld_poro.hpp"
 #include "4C_adapter_str_fpsiwrapper.hpp"
+#include "4C_adapter_str_structure.hpp"
 #include "4C_global_data.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_structure_aux.hpp"
@@ -116,7 +117,9 @@ void PoroElast::Partitioned::do_struct_step()
   }
 
   // Newton-Raphson iteration
-  structure_field()->solve();
+  const auto structure_status = structure_field()->solve();
+  FOUR_C_ASSERT_ALWAYS(
+      structure_status == Solid::StepStatus::no_errors, "Structural solve failed.");
 }
 
 void PoroElast::Partitioned::do_fluid_step()

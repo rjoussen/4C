@@ -14,10 +14,26 @@
 #include "4C_adapter_field.hpp"
 #include "4C_fem_general_elements_paramsinterface.hpp"
 #include "4C_structure_new_input.hpp"
+#include "4C_utils_exceptions.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 #include "4C_utils_result_test.hpp"
 
+#include <cstdint>
+
 FOUR_C_NAMESPACE_OPEN
+
+namespace Solid
+{
+  /// Status of the current solid time-step.
+  enum class StepStatus : std::int8_t
+  {
+    no_errors,                //< no errors occurred so far
+    nonlinear_solver_failed,  //< nonlinear solver did not converge
+    linear_solver_failed,     //< linear solver did not converge
+    evaluation_failed,        //< evaluation of the residual or jacobian failed
+    fail_repeat               //< step failed and should be repeated
+  };
+}  // namespace Solid
 
 // forward declarations
 namespace Core::FE
@@ -304,11 +320,25 @@ namespace Adapter
 
     /// Take the time and integrate (time loop)
 
-    virtual int integrate() = 0;
+    virtual void integrate() = 0;
 
-    //! do something in case nonlinear solution does not converge for some reason
-    virtual Solid::ConvergenceStatus perform_error_action(
-        Solid::ConvergenceStatus nonlinsoldiv) = 0;
+    /**
+    @brief Transforms the step status.
+
+    A successful step status is returned directly as is.
+    If this function returns fail_repeat, it also is responsible for resetting the current step and
+    preparing the next step for retry.
+
+    @param step_status The status of the last solid evaluation or solve call.
+    @return The action to take in the time loop.
+     */
+    virtual Solid::StepStatus perform_error_action(Solid::StepStatus step_status)
+    {
+      // This base implementation only accepts successful steps and rejects all other statuses.
+      // Derived classes may override this to implement retry mechanisms.
+      if (step_status == Solid::StepStatus::no_errors) return Solid::StepStatus::no_errors;
+      FOUR_C_THROW("Structural solve failed.");
+    }
 
     /// tests if there are more time steps to do
     [[nodiscard]] virtual bool not_finished() const = 0;
@@ -431,14 +461,17 @@ namespace Adapter
 
     //! @name Solver calls
 
-    /*!
-    \brief nonlinear solve
+    /**
+    @brief nonlinear solve
 
     Do the nonlinear solve, i.e. (multiple) corrector,
     for the time step. All boundary conditions have
     been set.
-    */
-    virtual Solid::ConvergenceStatus solve() = 0;
+
+    @return the status of the nonlinear solve. Callers should check this status and take appropriate
+    action if the solve was not successful.
+     */
+    [[nodiscard]] virtual Solid::StepStatus solve() = 0;
 
     /*!
     \brief linear structure solve with just a interface load

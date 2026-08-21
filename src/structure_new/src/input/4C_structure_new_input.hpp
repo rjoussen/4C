@@ -12,9 +12,7 @@
 #include "4C_config.hpp"
 
 #include "4C_io_input_spec.hpp"
-#include "4C_utils_exceptions.hpp"
 
-#include <map>
 #include <vector>
 
 FOUR_C_NAMESPACE_OPEN
@@ -192,17 +190,6 @@ namespace Solid
     divcont_repeat_simulation,        ///< repeat the whole simulation
     divcont_adapt_penaltycontact,     ///< slightly adapt the penalty contact parameter if timestep
                                       ///< doesn't converge
-  };
-
-  /// Handling of non-converged nonlinear solver
-  enum ConvergenceStatus
-  {
-    conv_success = 0,      ///< converged successfully
-    conv_nonlin_fail = 1,  ///< nonlinear solution procedure failed
-    conv_lin_fail = 2,     ///< linear system failed
-    conv_ele_fail = 3,     ///< failure in element in form of negative Jac. det.
-    conv_fail_repeat = 4   ///< nonlinear solver failed, repeat step according to divercont action
-                           ///< set in input file
   };
 
   /// type of norm to check for convergence

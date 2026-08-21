@@ -123,7 +123,7 @@ namespace Solid
     //@}
 
     //! Do time integration of single step
-    int integrate_step() override;
+    void integrate_step() override;
 
     //! Create Edges of for discrete shell elements
     void initialize_edge_elements();
@@ -329,16 +329,7 @@ namespace Solid
     //! Keep your fingers crossed...
     bool converged();
 
-    /*!
-    \brief Solve nonlinear dynamic equilibrium
-
-    Do the nonlinear solve, i.e. (multiple) corrector,
-    for the time step. All boundary conditions have
-    been set.
-
-    \return Enum to indicate convergence status or failure
-    */
-    Solid::ConvergenceStatus solve() final;
+    [[nodiscard]] Solid::StepStatus solve() final;
 
     //! Do full Newton-Raphson iteration
     //!
@@ -596,7 +587,7 @@ namespace Solid
     std::shared_ptr<Core::LinAlg::Vector<double>> solve_relaxation_linear() override;
 
     //! check, if according to divercont flag time step size can be increased
-    void check_for_time_step_increase(Solid::ConvergenceStatus& status);
+    void check_for_time_step_increase(Solid::StepStatus& status);
 
 
     /*! \brief Prepare system for solving with Newton's method

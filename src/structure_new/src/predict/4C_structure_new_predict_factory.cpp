@@ -7,6 +7,8 @@
 
 #include "4C_structure_new_predict_factory.hpp"
 
+#include "4C_utils_exceptions.hpp"
+
 // supported predictor classes
 #include "4C_structure_new_predict_constdisvelaccpress.hpp"
 #include "4C_structure_new_predict_python_wrapper.hpp"

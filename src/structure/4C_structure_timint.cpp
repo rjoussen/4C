@@ -2363,8 +2363,10 @@ void Solid::TimInt::apply_force_internal(const double time, const double dt,
 }
 
 /*----------------------------------------------------------------------*/
-Solid::ConvergenceStatus Solid::TimInt::perform_error_action(Solid::ConvergenceStatus nonlinsoldiv)
+Solid::StepStatus Solid::TimInt::perform_error_action(Solid::StepStatus solve_status)
 {
+  if (solve_status == Solid::StepStatus::no_errors) return Solid::StepStatus::no_errors;
+
   // what to do when nonlinear solver does not converge
   switch (divcontype_)
   {
@@ -2375,15 +2377,12 @@ Solid::ConvergenceStatus Solid::TimInt::perform_error_action(Solid::ConvergenceS
 
       // we should not get here, FOUR_C_THROW for safety
       FOUR_C_THROW("Nonlinear solver did not converge! ");
-      return Solid::conv_nonlin_fail;
     }
     case Solid::divcont_continue:
     {
       // we should not get here, FOUR_C_THROW for safety
       FOUR_C_THROW("Nonlinear solver did not converge! ");
-      return Solid::conv_nonlin_fail;
     }
-    break;
     case Solid::divcont_repeat_step:
     {
       Core::IO::cout << "Nonlinear solver failed to converge repeat time step" << Core::IO::endl;
@@ -2391,9 +2390,8 @@ Solid::ConvergenceStatus Solid::TimInt::perform_error_action(Solid::ConvergenceS
       // reset step (e.g. quantities on element level)
       reset_step();
 
-      return Solid::conv_success;
+      return Solid::StepStatus::fail_repeat;
     }
-    break;
     case Solid::divcont_halve_step:
     {
       Core::IO::cout << "Nonlinear solver failed to converge at time t= " << timen_
@@ -2411,9 +2409,8 @@ Solid::ConvergenceStatus Solid::TimInt::perform_error_action(Solid::ConvergenceS
       // reset step (e.g. quantities on element level)
       reset_step();
 
-      return Solid::conv_success;
+      return Solid::StepStatus::fail_repeat;
     }
-    break;
     case Solid::divcont_adapt_step:
     {
       // maximal possible refinementlevel
@@ -2445,9 +2442,8 @@ Solid::ConvergenceStatus Solid::TimInt::perform_error_action(Solid::ConvergenceS
       // reset step (e.g. quantities on element level)
       reset_step();
 
-      return Solid::conv_success;
+      return Solid::StepStatus::fail_repeat;
     }
-    break;
     case Solid::divcont_rand_adapt_step:
     case Solid::divcont_rand_adapt_step_ele_err:
     {
@@ -2481,9 +2477,8 @@ Solid::ConvergenceStatus Solid::TimInt::perform_error_action(Solid::ConvergenceS
       // reset step (e.g. quantities on element level)
       reset_step();
 
-      return Solid::conv_success;
+      return Solid::StepStatus::fail_repeat;
     }
-    break;
     case Solid::divcont_adapt_penaltycontact:
     {
       // adapt penalty and search parameter
@@ -2491,37 +2486,35 @@ Solid::ConvergenceStatus Solid::TimInt::perform_error_action(Solid::ConvergenceS
       {
         cmtbridge_->get_strategy().modify_penalty();
       }
+      return Solid::StepStatus::fail_repeat;
     }
-    break;
     case Solid::divcont_repeat_simulation:
     {
-      if (nonlinsoldiv == Solid::conv_nonlin_fail)
+      if (solve_status == Solid::StepStatus::nonlinear_solver_failed)
       {
         Core::IO::cout << "Nonlinear solver failed to converge and DIVERCONT = "
                           "repeat_simulation, hence leaving structural time integration "
                        << Core::IO::endl;
       }
-      else if (nonlinsoldiv == Solid::conv_lin_fail)
+      else if (solve_status == Solid::StepStatus::linear_solver_failed)
       {
-        Core::IO::cout << "Linear solver failed to converge and DIVERCONT = "
+        Core::IO::cout << "Linear solver failed and DIVERCONT = "
                           "repeat_simulation, hence leaving structural time integration "
                        << Core::IO::endl;
       }
-      else if (nonlinsoldiv == Solid::conv_ele_fail)
+      else if (solve_status == Solid::StepStatus::evaluation_failed)
       {
         Core::IO::cout
             << "Element failure in form of a negative Jacobian determinant and DIVERCONT = "
                "repeat_simulation, hence leaving structural time integration "
             << Core::IO::endl;
       }
-      return nonlinsoldiv;  // so that time loop will be aborted
+      return solve_status;
     }
     default:
       FOUR_C_THROW("Unknown DIVER_CONT case");
-      return Solid::conv_nonlin_fail;
       break;
   }
-  return Solid::conv_success;  // make compiler happy
 }
 
 /*----------------------------------------------------------------------*/

@@ -114,7 +114,7 @@ namespace Solid
     void resize_m_step() override;
 
     //! Do time integration of single step
-    int integrate_step() override;
+    void integrate_step() override;
 
     //! Update configuration after time step
     //!

@@ -32,9 +32,9 @@ namespace Solid
 
       void setup() override;
 
-      int integrate() override;
+      void integrate() override;
 
-      int integrate_step() override;
+      void integrate_step() override;
 
       void prepare_time_step() override;
 
@@ -51,7 +51,7 @@ namespace Solid
 
       void reset_step() override;
 
-      Solid::ConvergenceStatus solve() override;
+      [[nodiscard]] Solid::StepStatus solve() override;
 
       void prepare_partition_step() override;
 

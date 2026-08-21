@@ -141,11 +141,11 @@ void Solid::TimeInt::Explicit::reset_step()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Solid::ConvergenceStatus Solid::TimeInt::Explicit::solve()
+Solid::StepStatus Solid::TimeInt::Explicit::solve()
 {
   check_init_setup();
   integrate_step();
-  return Solid::conv_success;
+  return Solid::StepStatus::no_errors;
 }
 
 /*----------------------------------------------------------------------------*
@@ -222,18 +222,17 @@ std::shared_ptr<Core::LinAlg::SparseMatrix> Solid::TimeInt::Explicit::get_stc_ma
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int Solid::TimeInt::Explicit::integrate()
+void Solid::TimeInt::Explicit::integrate()
 {
   FOUR_C_THROW(
       "The function is unused since the Adapter::StructureTimeLoop "
       "wrapper gives you all the flexibility you need.");
-  return 0;
 }
 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int Solid::TimeInt::Explicit::integrate_step()
+void Solid::TimeInt::Explicit::integrate_step()
 {
   check_init_setup();
   throw_if_state_not_in_sync_with_nox_group();
@@ -245,8 +244,9 @@ int Solid::TimeInt::Explicit::integrate_step()
   group.computeX(group, group.getX(), -1.0);
 
   // solve the non-linear problem
-  nln_solver().solve();
-  return 0;
+  const auto status = nln_solver().solve();
+  FOUR_C_ASSERT_ALWAYS(
+      status == Solid::StepStatus::no_errors, "Explicit structural nonlinear solve failed.");
 }
 
 

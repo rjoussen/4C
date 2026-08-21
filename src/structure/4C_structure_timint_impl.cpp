@@ -261,12 +261,11 @@ void Solid::TimIntImpl::setup()
 
 /*----------------------------------------------------------------------*/
 /* integrate step */
-int Solid::TimIntImpl::integrate_step()
+void Solid::TimIntImpl::integrate_step()
 {
-  int error = 0;
   predict();
-  error = solve();
-  return error;
+  const auto solve_status = solve();
+  FOUR_C_ASSERT_ALWAYS(solve_status == Solid::StepStatus::no_errors, "Nonlinear solve failed.");
 }
 
 void Solid::TimIntImpl::output(const bool forced_writerestart)
@@ -1184,9 +1183,7 @@ bool Solid::TimIntImpl::converged()
   return (conv and cc and ccontact);
 }
 
-/*----------------------------------------------------------------------*/
-/* solve equilibrium */
-Solid::ConvergenceStatus Solid::TimIntImpl::solve()
+Solid::StepStatus Solid::TimIntImpl::solve()
 {
   // safety check
   check_is_init();
@@ -1233,7 +1230,25 @@ Solid::ConvergenceStatus Solid::TimIntImpl::solve()
   int lnonlin_error = nonlin_error;
   nonlin_error = Core::Communication::max_all(lnonlin_error, discretization()->get_comm());
 
-  Solid::ConvergenceStatus status = static_cast<Solid::ConvergenceStatus>(nonlin_error);
+  // explicitly convert error code into status
+  Solid::StepStatus status = Solid::StepStatus::no_errors;
+  switch (nonlin_error)
+  {
+    case 0:
+      status = Solid::StepStatus::no_errors;
+      break;
+    case 1:
+      status = Solid::StepStatus::nonlinear_solver_failed;
+      break;
+    case 2:
+      status = Solid::StepStatus::linear_solver_failed;
+      break;
+    case 3:
+      status = Solid::StepStatus::evaluation_failed;
+      break;
+    default:
+      FOUR_C_THROW("Unexpected nonlinear solver return code {}.", nonlin_error);
+  }
 
   // Only relevant, if the input parameter DIVERCONT is used and set to divcontype_ == adapt_step:
   // In this case, the time step size is halved as consequence of a non-converging nonlinear solver.
@@ -3788,13 +3803,13 @@ int Solid::TimIntImpl::cmt_windk_constr_nonlinear_solve()
  * check, if according to divercont flag                             meier 01/15
  * time step size can be increased
  *-----------------------------------------------------------------------------*/
-void Solid::TimIntImpl::check_for_time_step_increase(Solid::ConvergenceStatus& status)
+void Solid::TimIntImpl::check_for_time_step_increase(Solid::StepStatus& status)
 {
   const int maxnumfinestep = 4;
 
   if (divcontype_ != Solid::divcont_adapt_step)
     return;
-  else if (status == Solid::conv_success and divconrefinementlevel_ != 0)
+  else if (status == Solid::StepStatus::no_errors and divconrefinementlevel_ != 0)
   {
     divconnumfinestep_++;
 

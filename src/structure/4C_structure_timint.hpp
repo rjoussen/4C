@@ -245,11 +245,7 @@ namespace Solid
     void prepare_time_step() override = 0;
 
     //! Do time integration of multiple steps
-    int integrate() override
-    {
-      FOUR_C_THROW("time loop moved to separate adapter");
-      return 0;
-    }
+    void integrate() override { FOUR_C_THROW("time loop moved to separate adapter"); }
 
     /// tests if there are more time steps to do
     bool not_finished() const override
@@ -257,19 +253,13 @@ namespace Solid
       return timen_ <= timemax_ + 1.0e-8 * (*dt_)[0] and stepn_ <= stepmax_;
     }
 
-    //! do something in case nonlinear solution does not converge for some reason
-    Solid::ConvergenceStatus perform_error_action(Solid::ConvergenceStatus nonlinsoldiv) override;
+    Solid::StepStatus perform_error_action(Solid::StepStatus solve_status) override;
 
     //! Do time integration of single step
-    virtual int integrate_step() = 0;
+    virtual void integrate_step() = 0;
 
 
-    /*! \brief Non-linear solve
-     *
-     *  Do the nonlinear solve, i.e. (multiple) corrector,
-     *  for the time step. All boundary conditions have been set.
-     */
-    Solid::ConvergenceStatus solve() override = 0;
+    [[nodiscard]] Solid::StepStatus solve() override = 0;
 
     //! Linear structure solve with just an interface load
     std::shared_ptr<Core::LinAlg::Vector<double>> solve_relaxation_linear() override = 0;

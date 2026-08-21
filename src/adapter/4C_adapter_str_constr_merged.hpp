@@ -151,7 +151,7 @@ namespace Adapter
     //@}
 
     /// Integrate from t1 to t2
-    int integrate() override { return structure_->integrate(); }
+    void integrate() override { structure_->integrate(); }
 
    private:
     /// the constraint map setup for full <-> stuct+constr transition

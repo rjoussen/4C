@@ -219,16 +219,7 @@ namespace Adapter
 
     /// Take the time and integrate (time loop)
 
-    int integrate() override = 0;
-
-    /// fixme: this can go when the old structure time integration is gone and PerformErrorAction is
-    /// only called in Solid::TimeInt::Implicit::Solve() and not on the structure in the adapter
-    /// time loop
-    Solid::ConvergenceStatus perform_error_action(Solid::ConvergenceStatus nonlinsoldiv) override
-    {
-      FOUR_C_THROW("You should not be here");
-      return nonlinsoldiv;
-    };
+    void integrate() override = 0;
 
     /// tests if there are more time steps to do
     [[nodiscard]] bool not_finished() const override = 0;
@@ -340,14 +331,7 @@ namespace Adapter
 
     //! @name Solver calls
 
-    /*!
-    \brief nonlinear solve
-
-    Do the nonlinear solve, i.e. (multiple) corrector,
-    for the time step. All boundary conditions have
-    been set.
-    */
-    Solid::ConvergenceStatus solve() override = 0;
+    [[nodiscard]] Solid::StepStatus solve() override = 0;
 
     /*!
     \brief linear structure solve with just a interface load

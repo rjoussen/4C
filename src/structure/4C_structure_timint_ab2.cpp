@@ -106,7 +106,7 @@ void Solid::TimIntAB2::resize_m_step()
 
 /*----------------------------------------------------------------------*/
 /* Integrate step */
-int Solid::TimIntAB2::integrate_step()
+void Solid::TimIntAB2::integrate_step()
 {
   // safety checks
   check_is_init();
@@ -246,8 +246,6 @@ int Solid::TimIntAB2::integrate_step()
   // *********** time measurement ***********
   dtsolve_ = timer_->wallTime() - dtcpu;
   // *********** time measurement ***********
-
-  return 0;
 }
 
 /*----------------------------------------------------------------------*/

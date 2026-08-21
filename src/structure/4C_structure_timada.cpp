@@ -142,7 +142,7 @@ Solid::TimAda::TimAda(const Teuchos::ParameterList& timeparams,  //!< TIS input 
 
 /*----------------------------------------------------------------------*/
 /* Integrate adaptively in time */
-int Solid::TimAda::integrate()
+void Solid::TimAda::integrate()
 {
   // finalize initialization
   // (only relevant if an auxiliary time integrator is used)
@@ -255,8 +255,6 @@ int Solid::TimAda::integrate()
                 << std::endl;
     }
   }
-
-  return 0;  // ToDo Provide meaningful error code here
 }
 
 /*----------------------------------------------------------------------*/

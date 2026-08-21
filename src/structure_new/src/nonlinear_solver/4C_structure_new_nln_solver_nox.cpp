@@ -182,7 +182,7 @@ void Solid::Nln::SOLVER::Nox::reset_params()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Solid::ConvergenceStatus Solid::Nln::SOLVER::Nox::solve()
+Solid::StepStatus Solid::Nln::SOLVER::Nox::solve()
 {
 #if !(FOUR_C_TRILINOS_INTERNAL_VERSION_GE(2025, 4))
   const auto solver_type =
@@ -212,31 +212,31 @@ Solid::ConvergenceStatus Solid::Nln::SOLVER::Nox::solve()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Solid::ConvergenceStatus Solid::Nln::SOLVER::Nox::convert_final_status(
+Solid::StepStatus Solid::Nln::SOLVER::Nox::convert_final_status(
     const ::NOX::StatusTest::StatusType& finalstatus) const
 {
-  Solid::ConvergenceStatus convstatus = Solid::conv_success;
+  Solid::StepStatus solve_status = Solid::StepStatus::no_errors;
 
   switch (finalstatus)
   {
     case ::NOX::StatusTest::Unevaluated:
-      convstatus = Solid::conv_ele_fail;
+      solve_status = Solid::StepStatus::evaluation_failed;
       break;
     case ::NOX::StatusTest::Unconverged:
     case ::NOX::StatusTest::Failed:
-      convstatus = Solid::conv_nonlin_fail;
+      solve_status = Solid::StepStatus::nonlinear_solver_failed;
       break;
     case ::NOX::StatusTest::Converged:
-      convstatus = Solid::conv_success;
+      solve_status = Solid::StepStatus::no_errors;
       break;
     default:
       FOUR_C_THROW(
           "Conversion of the ::NOX::StatusTest::StatusType to "
-          "a Solid::ConvergenceStatus is not possible!");
+          "a Solid::StepStatus is not possible!");
       break;
   }
 
-  return convstatus;
+  return solve_status;
 }
 
 /*----------------------------------------------------------------------------*
