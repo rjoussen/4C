@@ -529,7 +529,7 @@ void Solid::ModelEvaluator::BrownianDyn::reset_step_state()
   check_init_setup();
 
   if (global_state().get_my_rank() == 0)
-    std::cout << " NOTE: stochastic forces stay unchanged in case of DIVERCONT" << std::endl;
+    std::cout << "NOTE: stochastic forces stay unchanged during step reset.\n";
   /*
     // -------------------------------------------------------------------------
     // Generate new random forces

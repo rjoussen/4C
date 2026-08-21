@@ -90,5 +90,20 @@ RESULT DESCRIPTION:
       QUANTITY: "dispz"
       VALUE: 53.607296463520115
       TOLERANCE: 1e-08
+  - STRUCTURE:
+      SPECIAL: true
+      QUANTITY: "total_time"
+      VALUE: 1
+      TOLERANCE: 1e-16
+  - STRUCTURE:
+      SPECIAL: true
+      QUANTITY: time_step_size
+      VALUE: 0.25
+      TOLERANCE: 1e-16
+  - STRUCTURE:
+      SPECIAL: true
+      QUANTITY: total_num_steps
+      VALUE: 4
+      TOLERANCE: 1e-16
 FUNCT1:
   - SYMBOLIC_FUNCTION_OF_TIME: "t"
