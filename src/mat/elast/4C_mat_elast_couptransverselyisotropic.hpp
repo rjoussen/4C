@@ -218,11 +218,9 @@ namespace Mat
       /*!
        * \brief Reset the pseudo invariants and the jacobian determinant
        *
-       * \param[in] rcg   right cauchy green tensor in perturbed Voigt strain notation
-       * \param[in] param parameter list pointer (optional)
+       * \param[in] rcg right cauchy green tensor in perturbed Voigt strain notation
        */
-      int reset_invariants(const Core::LinAlg::SymmetricTensor<double, 3, 3>& rcg,
-          const Teuchos::ParameterList* params = nullptr);
+      void reset_invariants(const Core::LinAlg::SymmetricTensor<double, 3, 3>& rcg);
 
       /*!
        * \brief Add the material contributions to the second Piola Kirchhoff stress tensor
@@ -292,10 +290,6 @@ namespace Mat
       void update_elasticity_tensor(Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& cmat,
           const Core::LinAlg::SymmetricTensor<double, 3, 3>& rcg_inv_s) const;
 
-      /// error handling in case of a negative deformation gradient determinant
-      void error_handling(const Teuchos::ParameterList* params, std::stringstream& msg) const;
-
-     private:
       /// pointer to the fiber parameters
       my_params* params_ = nullptr;
 

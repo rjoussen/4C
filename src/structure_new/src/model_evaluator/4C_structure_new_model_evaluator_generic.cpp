@@ -235,21 +235,6 @@ bool Solid::ModelEvaluator::Generic::eval_error_check() const
               << Core::Communication::my_mpi_rank(gstate_ptr_->get_comm()) << ".\n";
   }
 
-  // --- Did the element evaluation detect an error? ---------------------------
-  ok = (ok and (not eval_data_ptr_->is_ele_eval_error()));
-
-  if (eval_data_ptr_->is_ele_eval_error())
-    std::cout << "ELEMENT EVALUATION failed on proc "
-                 "#"
-              << Core::Communication::my_mpi_rank(gstate_ptr_->get_comm()) << ".\n"
-              << "(Error: "
-              << Solid::Elements::eval_error_flag_to_string(
-                     eval_data_ptr_->get_ele_eval_error_flag())
-              << ")\n";
-
-  // reset the flag
-  eval_data_ptr_->set_ele_eval_error_flag(Solid::Elements::ele_error_none);
-
   // --- check for local errors on each proc and communicate the information ---
   int lerr = (ok ? 0 : 1);
   int gerr = 0;

@@ -42,40 +42,6 @@ namespace Solid
   {
     class BeamParamsInterface;
 
-    //! evaluation error flags
-    enum EvalErrorFlag : int
-    {
-      ele_error_none = 0,                          //!< no error occurred (default)
-      ele_error_negative_det_of_def_gradient = 1,  //!< negative determinant of deformation gradient
-      ele_error_determinant_at_corner = 2,         /*!< invalid/negative jac determinant at the
-                                                        element corner nodes */
-      ele_error_material_failed = 3,               //!< material evaluation failed
-      ele_error_determinant_analysis = 4 /*!< this flag is used to get an idea when the det
-                                              analysis found an invalid element */
-    };
-
-    //! Map evaluation error flag to a std::string
-    static inline std::string eval_error_flag_to_string(const EvalErrorFlag& errorflag)
-    {
-      switch (errorflag)
-      {
-        case ele_error_none:
-          return "ele_error_none";
-        case ele_error_negative_det_of_def_gradient:
-          return "ele_error_negative_det_of_def_gradient";
-        case ele_error_determinant_at_corner:
-          return "ele_error_determinant_at_corner";
-        case ele_error_material_failed:
-          return "ele_error_material_failed";
-        case ele_error_determinant_analysis:
-          return "ele_error_determinant_analysis";
-        default:
-          return "unknown";
-          break;
-      }
-      return "";
-    };  // EvalErrorFlag2String
-
     /*! \brief Parameter interface for the structural elements and the Solid::Integrator data
      * exchange
      *
@@ -98,9 +64,6 @@ namespace Solid
 
       //! return the predictor type
       virtual Solid::PredEnum get_predictor_type() const = 0;
-
-      /// Shall errors during the element evaluation be tolerated?
-      virtual bool is_tolerate_errors() const = 0;
 
       //! @name General time integration parameters
       //! @{
@@ -128,23 +91,6 @@ namespace Solid
 
       //! Is the current step a default step, or e.g. a line search step?
       virtual bool is_default_step() const = 0;
-      //! @}
-
-      //! @name Accessors
-      //! @{
-
-      //! get the evaluation error flag
-      virtual Solid::Elements::EvalErrorFlag get_ele_eval_error_flag() const = 0;
-
-      //! @}
-
-      //! @name Set functions
-      //! @{
-
-      /*! \brief set evaluation error flag
-       *
-       *  See the EvalErrorFlag enumerators for more information. */
-      virtual void set_ele_eval_error_flag(const EvalErrorFlag& error_flag) = 0;
       //! @}
 
       //! @name output related functions
