@@ -179,18 +179,11 @@ namespace Solid
   /// Handling of non-converged nonlinear solver
   enum class DivContAct : std::uint8_t
   {
-    stop,                     ///< abort simulation
-    ignore,                   ///< continue nevertheless
-    repeat_step,              ///< repeat time step
-    halve_step,               ///< halve time step and carry on with simulation
-    adapt_step,               ///< adapt (halve or double) time step and carry on with simulation
-    rand_adapt_step,          ///< adapt randomly time step and carry on with simulation
-    rand_adapt_step_ele_err,  ///< adapt randomly time step and carry on with simulation,
-                              ///< including acceptance of element errors in form of
-                              ///< negative Jacobian determinant
-    repeat_simulation,        ///< repeat the whole simulation
-    adapt_penaltycontact,     ///< slightly adapt the penalty contact parameter if timestep
-                              ///< doesn't converge
+    stop,                  ///< abort simulation
+    ignore,                ///< continue nevertheless
+    adapt_step,            ///< adapt (halve or double) time step and carry on with simulation
+    adapt_penaltycontact,  ///< slightly adapt the penalty contact parameter if timestep
+                           ///< doesn't converge
   };
 
   /// type of norm to check for convergence

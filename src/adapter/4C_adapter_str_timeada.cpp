@@ -199,7 +199,9 @@ void Adapter::StructureTimeAda::integrate()
       // call the predictor
       prepare_time_step();
 
-      auto solve_status = solve();
+      auto step_action = Solid::StepAction::accept_step;
+
+      const auto solve_status = solve();
 
       if (solve_status != Solid::StepStatus::no_errors)
       {
@@ -209,10 +211,10 @@ void Adapter::StructureTimeAda::integrate()
         // get the divergence action
         Solid::DivContAct div_action = stm_->data_sdyn().get_divergence_action();
 
-        solve_status = perform_error_action(div_action, stpsiznew);
+        step_action = perform_error_action(div_action, stpsiznew);
       }
 
-      if (solve_status == Solid::StepStatus::no_errors)
+      if (step_action == Solid::StepAction::accept_step)
       {
         // get local error vector on locerrdisn_
         evaluate_local_error_dis();
@@ -521,7 +523,7 @@ void Adapter::StructureTimeAda::update_period()
 }
 
 /*----------------------------------------------------------------------*/
-Solid::StepStatus Adapter::StructureTimeAda::perform_error_action(
+Solid::StepAction Adapter::StructureTimeAda::perform_error_action(
     const Solid::DivContAct& action, double& stepsizenew)
 {
   int myrank = Core::Communication::my_mpi_rank(stm_->discretization()->get_comm());
@@ -540,25 +542,13 @@ Solid::StepStatus Adapter::StructureTimeAda::perform_error_action(
   switch (action)
   {
     case Solid::DivContAct::stop:
+    {
       // write output
       output();
 
       // error and stop the simulation
       FOUR_C_THROW("Nonlinear solver did not converge! ");
-
-    case Solid::DivContAct::halve_step:
-      if (myrank == 0)
-      {
-        Core::IO::cout << "Nonlinear solver failed to converge at time t= " << stm_->get_time_np()
-                       << ". Divide timestep in half. "
-                       << "Old time step: " << stepsize_ << Core::IO::endl
-                       << "New time step: " << 0.5 * stepsize_ << Core::IO::endl
-                       << Core::IO::endl;
-      }
-
-      stepsizenew = 0.5 * stepsize_;
-      return Solid::StepStatus::fail_repeat;
-
+    }
     case Solid::DivContAct::ignore:
       if (myrank == 0)
       {
@@ -570,16 +560,12 @@ Solid::StepStatus Adapter::StructureTimeAda::perform_error_action(
             << Core::IO::endl;
       }
 
-      return Solid::StepStatus::no_errors;
+      return Solid::StepAction::accept_step;
 
     case Solid::DivContAct::adapt_step:
-    case Solid::DivContAct::rand_adapt_step:
-    case Solid::DivContAct::rand_adapt_step_ele_err:
       FOUR_C_THROW(
           "Adapt the time step is handled by the adaptive time marching integrator. Use\n"
-          "DIVERCONT = continue if you want to adapt the step size.");
-    case Solid::DivContAct::repeat_simulation:
-      FOUR_C_THROW("No use to repeat a simulation when it failed. Get a coffee instead.");
+          "DIVERCONT = ignore if you want to adapt the step size.");
     case Solid::DivContAct::adapt_penaltycontact:
     default:
       FOUR_C_THROW("I don't know what to do.");
