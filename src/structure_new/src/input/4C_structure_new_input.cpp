@@ -13,7 +13,9 @@
 #include "4C_io_input_spec_builders.hpp"
 #include "4C_rebalance.hpp"
 #include "4C_structure_new_timint_basedatasdyn.hpp"
+#include "4C_timestepping_time_step_control.hpp"
 #include "4C_utils_enum.hpp"
+
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -250,6 +252,7 @@ namespace Solid
                                          "stabilized Newton procedure",
                              .default_value = 0.1}),
 
+            TimeStepping::TimeStepControlSettings::input_spec(),
             parameter<double>("TOLCONSTR",
                 {.description = "tolerance in the constr error norm for the newton iteration",
                     .default_value = 1.0E-08}),
@@ -280,11 +283,6 @@ namespace Solid
                 {.description =
                         "What to do with time integration when Newton-Raphson iteration failed",
                     .default_value = DivContAct::stop}),
-
-            parameter<int>("MAXDIVCONREFINEMENTLEVEL",
-                {.description =
-                        "number of times timestep is halved in case nonlinear solver diverges",
-                    .default_value = 10}),
 
             deprecated_selection<Solid::NonlinSolTech>("NLNSOL",
                 {

@@ -45,10 +45,6 @@ namespace Adapter
 
     /// wrapper for things that should be done after solving the update
     void post_update() override {};
-
-   private:
-    /// explicit global problem context
-    Global::Problem& problem_;
   };
 
 }  // namespace Adapter

@@ -2363,9 +2363,9 @@ void Solid::TimInt::apply_force_internal(const double time, const double dt,
 }
 
 /*----------------------------------------------------------------------*/
-Solid::StepStatus Solid::TimInt::perform_error_action(Solid::StepStatus solve_status)
+Solid::StepAction Solid::TimInt::perform_error_action(Solid::StepStatus solve_status)
 {
-  if (solve_status == Solid::StepStatus::no_errors) return Solid::StepStatus::no_errors;
+  if (solve_status == Solid::StepStatus::no_errors) return Solid::StepAction::accept_step;
 
   // what to do when nonlinear solver does not converge
   switch (divcontype_)
@@ -2390,7 +2390,7 @@ Solid::StepStatus Solid::TimInt::perform_error_action(Solid::StepStatus solve_st
       // reset step (e.g. quantities on element level)
       reset_step();
 
-      return Solid::StepStatus::fail_repeat;
+      return Solid::StepAction::retry_step;
     }
     case Solid::DivContAct::halve_step:
     {
@@ -2409,7 +2409,7 @@ Solid::StepStatus Solid::TimInt::perform_error_action(Solid::StepStatus solve_st
       // reset step (e.g. quantities on element level)
       reset_step();
 
-      return Solid::StepStatus::fail_repeat;
+      return Solid::StepAction::retry_step;
     }
     case Solid::DivContAct::adapt_step:
     {
@@ -2442,7 +2442,7 @@ Solid::StepStatus Solid::TimInt::perform_error_action(Solid::StepStatus solve_st
       // reset step (e.g. quantities on element level)
       reset_step();
 
-      return Solid::StepStatus::fail_repeat;
+      return Solid::StepAction::retry_step;
     }
     case Solid::DivContAct::rand_adapt_step:
     case Solid::DivContAct::rand_adapt_step_ele_err:
@@ -2477,7 +2477,7 @@ Solid::StepStatus Solid::TimInt::perform_error_action(Solid::StepStatus solve_st
       // reset step (e.g. quantities on element level)
       reset_step();
 
-      return Solid::StepStatus::fail_repeat;
+      return Solid::StepAction::retry_step;
     }
     case Solid::DivContAct::adapt_penaltycontact:
     {
@@ -2486,7 +2486,7 @@ Solid::StepStatus Solid::TimInt::perform_error_action(Solid::StepStatus solve_st
       {
         cmtbridge_->get_strategy().modify_penalty();
       }
-      return Solid::StepStatus::fail_repeat;
+      return Solid::StepAction::retry_step;
     }
     case Solid::DivContAct::repeat_simulation:
     {
@@ -2509,7 +2509,7 @@ Solid::StepStatus Solid::TimInt::perform_error_action(Solid::StepStatus solve_st
                "repeat_simulation, hence leaving structural time integration "
             << Core::IO::endl;
       }
-      return solve_status;
+      return Solid::StepAction::stop_time_loop;
     }
     default:
       FOUR_C_THROW("Unknown DIVER_CONT case");

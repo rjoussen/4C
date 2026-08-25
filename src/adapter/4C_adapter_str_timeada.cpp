@@ -199,20 +199,21 @@ void Adapter::StructureTimeAda::integrate()
       // call the predictor
       prepare_time_step();
 
-      auto solve_status = solve();
+      auto step_action = Solid::StepAction::accept_step;
+
+      const auto solve_status = solve();
 
       if (solve_status != Solid::StepStatus::no_errors)
       {
-        // if not converged, then we have to restart the step over
         accepted = false;
 
         // get the divergence action
         Solid::DivContAct div_action = stm_->data_sdyn().get_divergence_action();
 
-        solve_status = perform_error_action(div_action, stpsiznew);
+        step_action = perform_error_action(div_action, stpsiznew);
       }
 
-      if (solve_status == Solid::StepStatus::no_errors)
+      if (step_action == Solid::StepAction::accept_step)
       {
         // get local error vector on locerrdisn_
         evaluate_local_error_dis();
@@ -521,7 +522,7 @@ void Adapter::StructureTimeAda::update_period()
 }
 
 /*----------------------------------------------------------------------*/
-Solid::StepStatus Adapter::StructureTimeAda::perform_error_action(
+Solid::StepAction Adapter::StructureTimeAda::perform_error_action(
     const Solid::DivContAct& action, double& stepsizenew)
 {
   int myrank = Core::Communication::my_mpi_rank(stm_->discretization()->get_comm());
@@ -557,7 +558,7 @@ Solid::StepStatus Adapter::StructureTimeAda::perform_error_action(
       }
 
       stepsizenew = 0.5 * stepsize_;
-      return Solid::StepStatus::fail_repeat;
+      return Solid::StepAction::retry_step;
 
     case Solid::DivContAct::ignore:
       if (myrank == 0)
@@ -570,7 +571,7 @@ Solid::StepStatus Adapter::StructureTimeAda::perform_error_action(
             << Core::IO::endl;
       }
 
-      return Solid::StepStatus::no_errors;
+      return Solid::StepAction::accept_step;
 
     case Solid::DivContAct::adapt_step:
     case Solid::DivContAct::rand_adapt_step:

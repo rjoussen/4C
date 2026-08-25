@@ -253,7 +253,7 @@ namespace Solid
       return timen_ <= timemax_ + 1.0e-8 * (*dt_)[0] and stepn_ <= stepmax_;
     }
 
-    Solid::StepStatus perform_error_action(Solid::StepStatus solve_status) override;
+    Solid::StepAction perform_error_action(Solid::StepStatus solve_status) override;
 
     //! Do time integration of single step
     virtual void integrate_step() = 0;
