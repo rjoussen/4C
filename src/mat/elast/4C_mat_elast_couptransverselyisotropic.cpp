@@ -15,7 +15,6 @@
 #include "4C_mat_elast_aniso_structuraltensor_strategy.hpp"
 #include "4C_mat_service.hpp"
 #include "4C_material_parameter_base.hpp"
-#include "4C_structure_new_elements_paramsinterface.hpp"
 
 #include <Teuchos_ParameterList.hpp>
 
@@ -176,7 +175,7 @@ void Mat::Elastic::CoupTransverselyIsotropic::add_stress_aniso_principal(
     const int gp, const int eleGID)
 {
   // direct return if an error occurred
-  if (reset_invariants(rcg, &params)) return;
+  reset_invariants(rcg);
 
   // switch to stress notation
   Core::LinAlg::SymmetricTensor<double, 3, 3> rcg_inv_s;
@@ -249,19 +248,14 @@ void Mat::Elastic::CoupTransverselyIsotropic::update_elasticity_tensor(
   }
 }
 
-int Mat::Elastic::CoupTransverselyIsotropic::reset_invariants(
-    const Core::LinAlg::SymmetricTensor<double, 3, 3>& rcg, const Teuchos::ParameterList* params)
+void Mat::Elastic::CoupTransverselyIsotropic::reset_invariants(
+    const Core::LinAlg::SymmetricTensor<double, 3, 3>& rcg)
 {
   // calculate the square root of the third invariant alias the determinant
   // of the deformation gradient
   const double I3 = Core::LinAlg::det(rcg);
-  if (I3 < 0.0)
-  {
-    std::stringstream msg;
-    msg << __LINE__ << " -- " << __PRETTY_FUNCTION__ << "I3 is negative!";
-    error_handling(params, msg);
-    return -1;
-  }
+  FOUR_C_ASSERT_ALWAYS(
+      I3 > 0.0, "Determinant of right Cauchy-Green tensor must be positive (value: {}).", I3);
 
   // jacobian determinant
   j_ = std::sqrt(I3);
@@ -276,8 +270,6 @@ int Mat::Elastic::CoupTransverselyIsotropic::reset_invariants(
   i5_ = aa_(0, 0) * (rcg_quad(0)) + aa_(1, 1) * (rcg_quad(1)) + aa_(2, 2) * (rcg_quad(2)) +
         2 * aa_(0, 1) * (rcg_quad(3)) + 2 * aa_(1, 2) * (rcg_quad(4)) +
         2 * aa_(0, 2) * (rcg_quad(5));
-
-  return 0;
 }
 
 void Mat::Elastic::CoupTransverselyIsotropic::update_second_piola_kirchhoff_stress(
@@ -312,23 +304,4 @@ void Mat::Elastic::CoupTransverselyIsotropic::update_second_piola_kirchhoff_stre
   }
 }
 
-void Mat::Elastic::CoupTransverselyIsotropic::error_handling(
-    const Teuchos::ParameterList* params, std::stringstream& msg) const
-{
-  if (params and params->isParameter("interface"))
-  {
-    std::shared_ptr<Core::Elements::ParamsInterface> interface_ptr = nullptr;
-    interface_ptr = params->get<std::shared_ptr<Core::Elements::ParamsInterface>>("interface");
-    std::shared_ptr<Solid::Elements::ParamsInterface> solid_params =
-        std::dynamic_pointer_cast<Solid::Elements::ParamsInterface>(interface_ptr);
-
-    if (solid_params->is_tolerate_errors())
-    {
-      solid_params->set_ele_eval_error_flag(Solid::Elements::ele_error_material_failed);
-      return;
-    }
-  }
-
-  FOUR_C_THROW("Uncaught error detected:\n{}", msg.str());
-}
 FOUR_C_NAMESPACE_CLOSE

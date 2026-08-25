@@ -138,13 +138,6 @@ namespace Solid
       //! get the current damping type [derived]
       [[nodiscard]] Solid::DampKind get_damping_type() const override;
 
-      //! get the tolerate errors indicator [derived]
-      [[nodiscard]] inline bool is_tolerate_errors() const override
-      {
-        check_init_setup();
-        return is_tolerate_errors_;
-      }
-
       //! get the structural time integration factor for the displacement [derived]
       [[nodiscard]] inline double get_tim_int_factor_disp() const override
       {
@@ -255,18 +248,6 @@ namespace Solid
         FOUR_C_ASSERT(model_ptr_, "No reference to the model evaluator available!");
 
         return *model_ptr_;
-      }
-
-      //!@name set routines which can be called inside of the element [derived]
-      //! @{
-
-      /*! \brief Set the element evaluation error flag inside the element
-       *
-       * @param[in] error_flag Error flag to be set
-       */
-      inline void set_ele_eval_error_flag(const Elements::EvalErrorFlag& error_flag) override
-      {
-        ele_eval_error_flag_ = error_flag;
       }
 
       /*! \brief Collects and calculates the update norm of the current processor
@@ -406,21 +387,6 @@ namespace Solid
         return static_cast<int>(c_it->second);
       }
 
-      /*! \brief Did an element evaluation error occur?
-       *
-       * @return Boolean flag to indicate occurrence error during element evaluation
-       */
-      bool is_ele_eval_error() const;
-
-      /*! brief Access the element evaluation error flag
-       *
-       * @return Flag describing errors during element evaluation
-       */
-      inline Solid::Elements::EvalErrorFlag get_ele_eval_error_flag() const override
-      {
-        return ele_eval_error_flag_;
-      }
-
       /*! @name Set routines which are used to set the parameters of the data container
        *
        *  \warning These functions are not allowed to be called by the elements!
@@ -434,15 +400,6 @@ namespace Solid
       inline void set_action_type(const Core::Elements::ActionType& actiontype)
       {
         ele_action_ = actiontype;
-      }
-
-      /*! \brief Set the tolerate errors flag
-       *
-       * @param[in] is_tolerate_errors Boolean flag to indicate error tolerance
-       */
-      inline void set_is_tolerate_error(const bool& is_tolerate_errors)
-      {
-        is_tolerate_errors_ = is_tolerate_errors;
       }
 
       /*! \brief Set the current step length
@@ -820,12 +777,6 @@ namespace Solid
 
       //! Current predictor type
       Solid::PredEnum predict_type_;
-
-      //! element evaluation error flag
-      Solid::Elements::EvalErrorFlag ele_eval_error_flag_;
-
-      //! tolerate errors flag
-      bool is_tolerate_errors_;
 
       //! total time for the evaluation
       double total_time_;

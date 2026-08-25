@@ -165,8 +165,6 @@ Solid::ModelEvaluator::Data::Data()
       isntmaps_filled_(false),
       ele_action_(Core::Elements::none),
       predict_type_(Solid::pred_vague),
-      ele_eval_error_flag_(Solid::Elements::ele_error_none),
-      is_tolerate_errors_(false),
       total_time_(-1.0),
       delta_time_(-1.0),
       step_length_(-1.0),
@@ -478,14 +476,6 @@ void Solid::ModelEvaluator::Data::reset_my_norms(const bool& isdefaultstep)
     std::map<NOX::Nln::StatusTest::QuantityType, std::size_t>::iterator dit;
     for (dit = my_dof_number_.begin(); dit != my_dof_number_.end(); ++dit) dit->second = 0;
   }
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-bool Solid::ModelEvaluator::Data::is_ele_eval_error() const
-{
-  check_init_setup();
-  return (ele_eval_error_flag_ != Solid::Elements::ele_error_none);
 }
 
 /*----------------------------------------------------------------------------*
