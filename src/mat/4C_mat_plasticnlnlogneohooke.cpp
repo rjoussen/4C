@@ -83,8 +83,7 @@ namespace
 
   std::pair<double, double> solve_newton_with_hardening_func(
       Mat::PAR::PlasticNlnLogNeoHooke* matparameter, double abs_dev_KH_trial,
-      double accplstrain_last, double dt, const Core::Utils::FunctionOfAnything& hardening_function,
-      bool error_tol)
+      double accplstrain_last, double dt, const Core::Utils::FunctionOfAnything& hardening_function)
   {
     const double visc = matparameter->visc_;            // viscosity
     const double eps = matparameter->rate_dependency_;  // rate dependency
@@ -116,7 +115,7 @@ namespace
 
   std::pair<double, double> solve_newton_with_parameters(
       Mat::PAR::PlasticNlnLogNeoHooke* matparameter, double abs_dev_KH_trial,
-      double accplstrain_last, double dt, bool error_tol)
+      double accplstrain_last, double dt)
   {
     // plastic material data
     const double yield = matparameter->yield_;          // initial yield stress
@@ -407,9 +406,6 @@ void Mat::PlasticNlnLogNeoHooke::evaluate(const Core::LinAlg::Tensor<double, 3, 
 
   FOUR_C_ASSERT(context.time_step_size, "Time step size not given in evaluation context.");
   const double dt = *context.time_step_size;
-  // check, if errors are tolerated or should throw a FOUR_C_THROW
-  bool error_tol = false;
-  if (params.isParameter("tolerate_errors")) error_tol = params.get<bool>("tolerate_errors");
 
   // plastic increment
   double Dgamma = 0.0;
@@ -506,10 +502,10 @@ void Mat::PlasticNlnLogNeoHooke::evaluate(const Core::LinAlg::Tensor<double, 3, 
   else  // -------------------------------------------------- plastic step
   {
     std::pair<double, double> gamma_and_derivative =
-        (hardening_function_) ? solve_newton_with_hardening_func(params_, abs_dev_KH_trial,
-                                    accplstrainlast_.at(gp), dt, *hardening_function_, error_tol)
-                              : solve_newton_with_parameters(params_, abs_dev_KH_trial,
-                                    accplstrainlast_.at(gp), dt, error_tol);
+        (hardening_function_)
+            ? solve_newton_with_hardening_func(
+                  params_, abs_dev_KH_trial, accplstrainlast_.at(gp), dt, *hardening_function_)
+            : solve_newton_with_parameters(params_, abs_dev_KH_trial, accplstrainlast_.at(gp), dt);
 
     Dgamma = gamma_and_derivative.first;
 

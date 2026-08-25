@@ -338,15 +338,11 @@ namespace Solid
     // void NewtonFull();
     int newton_full();
 
-    //! check for success of element evaluation in that no negative Jacobian
-    //! determinant occurred, otherwise return error code
-    int element_error_check(bool evalerr);
-
     //! check for success of linear solve otherwise return error code
     int lin_solve_error_check(int linerror);
 
     //! check for success of nonlinear solve otherwise return error code
-    int newton_full_error_check(int linerror, int eleerror);
+    int newton_full_error_check(int linerror);
 
     //! Do (so-called) modified Newton-Raphson iteration in which
     //! the initial tangent is kept and not adapted to the current
@@ -404,7 +400,7 @@ namespace Solid
     int uzawa_linear_newton_full();
 
     //! check for success of nonlinear solve otherwise return error code
-    int uzawa_linear_newton_full_error_check(int linerror, int eleerror);
+    int uzawa_linear_newton_full_error_check(int linerror);
 
     //! Do pseudo transient continuation non-linear iteration
     //!
