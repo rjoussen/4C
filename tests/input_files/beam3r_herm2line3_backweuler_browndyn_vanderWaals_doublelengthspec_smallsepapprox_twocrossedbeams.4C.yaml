@@ -202,3 +202,18 @@ RESULT DESCRIPTION:
       QUANTITY: "dispz"
       VALUE: 0
       TOLERANCE: 1e-10
+  - STRUCTURE:
+      SPECIAL: true
+      QUANTITY: total_time
+      VALUE: 0.025
+      TOLERANCE: 1e-16
+  - STRUCTURE:
+      SPECIAL: true
+      QUANTITY: time_step_size
+      VALUE: 6.25e-5
+      TOLERANCE: 1e-16
+  - STRUCTURE:
+      SPECIAL: true
+      QUANTITY: total_num_steps
+      VALUE: 84
+      TOLERANCE: 1e-16

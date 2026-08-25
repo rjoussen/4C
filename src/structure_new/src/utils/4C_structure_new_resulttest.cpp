@@ -562,6 +562,21 @@ std::optional<double> Solid::ResultTest::get_special_result(
   {
     return get_nodes_per_proc_number(quantity, special_status);
   }
+  else if (quantity == "time_step_size")
+  {
+    special_status = Status::evaluated;
+    return gstate_->get_delta_time()[0];
+  }
+  else if (quantity == "total_time")
+  {
+    special_status = Status::evaluated;
+    return gstate_->get_time_n();
+  }
+  else if (quantity == "total_num_steps")
+  {
+    special_status = Status::evaluated;
+    return gstate_->get_step_n();
+  }
   else if (quantity == "internal_energy" or quantity == "kinetic_energy" or
            quantity == "total_energy" or quantity == "beam_contact_penalty_potential" or
            quantity == "beam_interaction_potential" or
