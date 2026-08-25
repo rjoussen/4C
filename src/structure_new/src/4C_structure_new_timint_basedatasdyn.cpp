@@ -46,7 +46,7 @@ Solid::TimeInt::BaseDataSDyn::BaseDataSDyn()
       prestresstype_(Solid::PreStress::none),
       predtype_(Solid::pred_vague),
       nlnsolvertype_(Solid::soltech_vague),
-      divergenceaction_(Solid::divcont_stop),
+      divergenceaction_(Solid::DivContAct::stop),
       mid_time_energy_type_(Solid::midavg_vague),
       maxdivconrefinementlevel_(-1),
       noxparams_(nullptr),

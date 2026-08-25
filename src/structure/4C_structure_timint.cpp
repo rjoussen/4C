@@ -2370,7 +2370,7 @@ Solid::StepStatus Solid::TimInt::perform_error_action(Solid::StepStatus solve_st
   // what to do when nonlinear solver does not converge
   switch (divcontype_)
   {
-    case Solid::divcont_stop:
+    case Solid::DivContAct::stop:
     {
       // write restart output of last converged step before stopping
       output(true);
@@ -2378,12 +2378,12 @@ Solid::StepStatus Solid::TimInt::perform_error_action(Solid::StepStatus solve_st
       // we should not get here, FOUR_C_THROW for safety
       FOUR_C_THROW("Nonlinear solver did not converge! ");
     }
-    case Solid::divcont_continue:
+    case Solid::DivContAct::ignore:
     {
       // we should not get here, FOUR_C_THROW for safety
       FOUR_C_THROW("Nonlinear solver did not converge! ");
     }
-    case Solid::divcont_repeat_step:
+    case Solid::DivContAct::repeat_step:
     {
       Core::IO::cout << "Nonlinear solver failed to converge repeat time step" << Core::IO::endl;
 
@@ -2392,7 +2392,7 @@ Solid::StepStatus Solid::TimInt::perform_error_action(Solid::StepStatus solve_st
 
       return Solid::StepStatus::fail_repeat;
     }
-    case Solid::divcont_halve_step:
+    case Solid::DivContAct::halve_step:
     {
       Core::IO::cout << "Nonlinear solver failed to converge at time t= " << timen_
                      << ". Divide timestep in half. "
@@ -2411,7 +2411,7 @@ Solid::StepStatus Solid::TimInt::perform_error_action(Solid::StepStatus solve_st
 
       return Solid::StepStatus::fail_repeat;
     }
-    case Solid::divcont_adapt_step:
+    case Solid::DivContAct::adapt_step:
     {
       // maximal possible refinementlevel
       const int maxdivconrefinementlevel = 10;
@@ -2444,8 +2444,8 @@ Solid::StepStatus Solid::TimInt::perform_error_action(Solid::StepStatus solve_st
 
       return Solid::StepStatus::fail_repeat;
     }
-    case Solid::divcont_rand_adapt_step:
-    case Solid::divcont_rand_adapt_step_ele_err:
+    case Solid::DivContAct::rand_adapt_step:
+    case Solid::DivContAct::rand_adapt_step_ele_err:
     {
       // generate random number between 0.51 and 1.99 (as mean value of random
       // numbers generated on all processors), alternating values larger
@@ -2479,7 +2479,7 @@ Solid::StepStatus Solid::TimInt::perform_error_action(Solid::StepStatus solve_st
 
       return Solid::StepStatus::fail_repeat;
     }
-    case Solid::divcont_adapt_penaltycontact:
+    case Solid::DivContAct::adapt_penaltycontact:
     {
       // adapt penalty and search parameter
       if (have_contact_meshtying())
@@ -2488,7 +2488,7 @@ Solid::StepStatus Solid::TimInt::perform_error_action(Solid::StepStatus solve_st
       }
       return Solid::StepStatus::fail_repeat;
     }
-    case Solid::divcont_repeat_simulation:
+    case Solid::DivContAct::repeat_simulation:
     {
       if (solve_status == Solid::StepStatus::nonlinear_solver_failed)
       {

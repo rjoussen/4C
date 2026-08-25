@@ -241,7 +241,7 @@ Solid::StepStatus Solid::TimeInt::Implicit::perform_error_action(Solid::StepStat
   // what to do when nonlinear solver does not converge
   switch (get_divergence_action())
   {
-    case Solid::divcont_stop:
+    case Solid::DivContAct::stop:
     {
       // write restart output of last converged step before stopping
       output(true);
@@ -250,7 +250,7 @@ Solid::StepStatus Solid::TimeInt::Implicit::perform_error_action(Solid::StepStat
       FOUR_C_THROW("Nonlinear solver did not converge! ");
       break;
     }
-    case Solid::divcont_continue:
+    case Solid::DivContAct::ignore:
     {
       if (myrank == 0)
       {
@@ -262,7 +262,7 @@ Solid::StepStatus Solid::TimeInt::Implicit::perform_error_action(Solid::StepStat
       return Solid::StepStatus::no_errors;
       break;
     }
-    case Solid::divcont_repeat_step:
+    case Solid::DivContAct::repeat_step:
     {
       if (myrank == 0)
         Core::IO::cout << "Nonlinear solver failed to converge repeat time step" << Core::IO::endl;
@@ -273,7 +273,7 @@ Solid::StepStatus Solid::TimeInt::Implicit::perform_error_action(Solid::StepStat
       return Solid::StepStatus::fail_repeat;
       break;
     }
-    case Solid::divcont_halve_step:
+    case Solid::DivContAct::halve_step:
     {
       if (myrank == 0)
       {
@@ -302,7 +302,7 @@ Solid::StepStatus Solid::TimeInt::Implicit::perform_error_action(Solid::StepStat
       return Solid::StepStatus::fail_repeat;
       break;
     }
-    case Solid::divcont_adapt_step:
+    case Solid::DivContAct::adapt_step:
     {
       if (myrank == 0)
       {
@@ -339,8 +339,8 @@ Solid::StepStatus Solid::TimeInt::Implicit::perform_error_action(Solid::StepStat
       return Solid::StepStatus::fail_repeat;
       break;
     }
-    case Solid::divcont_rand_adapt_step:
-    case Solid::divcont_rand_adapt_step_ele_err:
+    case Solid::DivContAct::rand_adapt_step:
+    case Solid::DivContAct::rand_adapt_step_ele_err:
     {
       // generate random number between 0.51 and 1.99 (as mean value of random
       // numbers generated on all processors), alternating values larger
@@ -383,13 +383,13 @@ Solid::StepStatus Solid::TimeInt::Implicit::perform_error_action(Solid::StepStat
       return Solid::StepStatus::fail_repeat;
       break;
     }
-    case Solid::divcont_adapt_penaltycontact:
+    case Solid::DivContAct::adapt_penaltycontact:
     {
       // adapt penalty and search parameter
       FOUR_C_THROW("Not yet implemented for new structure time integration");
       break;
     }
-    case Solid::divcont_repeat_simulation:
+    case Solid::DivContAct::repeat_simulation:
     {
       if (solve_status == Solid::StepStatus::nonlinear_solver_failed and myrank == 0)
       {
@@ -418,7 +418,7 @@ void Solid::TimeInt::Implicit::check_for_time_step_increase(Solid::StepStatus& s
 
   const int maxnumfinestep = 4;
 
-  if (get_divergence_action() != Solid::divcont_adapt_step)
+  if (get_divergence_action() != Solid::DivContAct::adapt_step)
     return;
   else if (status == Solid::StepStatus::no_errors and get_div_con_refine_level() != 0)
   {
