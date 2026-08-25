@@ -475,8 +475,7 @@ namespace Solid
       /*! \brief Check the evaluation procedures for possible errors
        *
        *  In the standard case, we check for exceptions like overflow, invalid results
-       *  or divide by zero operations. Furthermore, we look for an (optional) parameter
-       *  named ele_eval_error_flag_. This is universal and should be usable by all model
+       *  or divide by zero operations. This is universal and should be usable by all model
        *  evaluators.
        *
        *  \return Boolean flag indicating success (true) or error (false)

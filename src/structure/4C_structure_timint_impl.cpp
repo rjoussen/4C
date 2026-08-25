@@ -1279,12 +1279,10 @@ int Solid::TimIntImpl::newton_full()
   // normdisi_ was already set in predictor; this is strictly >0
   timer_->reset();
 
-  int element_error = 0;
   int linsolve_error = 0;
   // equilibrium iteration loop
-  while (((not converged() and (not linsolve_error) and (not element_error)) and
-             (iter_ <= itermax_)) or
-         (iter_ <= itermin_))
+  while (
+      ((not converged() and (not linsolve_error)) and (iter_ <= itermax_)) or (iter_ <= itermin_))
   {
     // make negative residual
     fres_->scale(-1.0);
@@ -1349,22 +1347,9 @@ int Solid::TimIntImpl::newton_full()
     // create empty parameter list
     Teuchos::ParameterList params;
 
-    // set flag for element error in form of a negative Jacobian determinant
-    // in parameter list in case of potential continuation
-    if (divcontype_ == Solid::divcont_rand_adapt_step_ele_err)
-    {
-      params.set<bool>("tolerate_errors", true);
-      params.set<bool>("eval_error", false);
-    }
-
     // compute residual forces #fres_ and stiffness #stiff_
     // whose components are globally oriented
     evaluate_force_stiff_residual(params);
-
-    // check for element error in form of a negative Jacobian determinant
-    // in case of potential continuation
-    if (divcontype_ == Solid::divcont_rand_adapt_step_ele_err)
-      element_error = element_error_check(params.get<bool>("eval_error"));
 
     // blank residual at (locally oriented) Dirichlet DOFs
     // rotate to local co-ordinate systems
@@ -1520,24 +1505,18 @@ int Solid::TimIntImpl::newton_full()
   }
 
   // do nonlinear solver error check
-  return newton_full_error_check(linsolve_error, element_error);
+  return newton_full_error_check(linsolve_error);
 }
 
 /*----------------------------------------------------------------------*/
 /* error check for full Newton problems */
-int Solid::TimIntImpl::newton_full_error_check(int linerror, int eleerror)
+int Solid::TimIntImpl::newton_full_error_check(int linerror)
 {
   // if everything is fine print to screen and return
   if (converged())
   {
     if (myrank_ == 0) print_newton_conv();
     return 0;
-  }
-  // now some error checks: do we have an element problem
-  // only check if we continue in this case; other wise, we ignore the error
-  if (eleerror and divcontype_ == Solid::divcont_rand_adapt_step_ele_err)
-  {
-    return eleerror;
   }
   // do we have a problem in the linear solver
   // only check if we want to do something fancy other wise we ignore the error in the linear solver
@@ -1600,25 +1579,6 @@ int Solid::TimIntImpl::lin_solve_error_check(int linerror)
   {
     if (myrank_ == 0) Core::IO::cout << "Linear solver is having trouble " << Core::IO::endl;
     return 2;
-  }
-  else
-  {
-    return 0;
-  }
-}
-
-/*----------------------------------------------------------------------*/
-/* error check for element problems in form of a negative Jacobian determinant */
-int Solid::TimIntImpl::element_error_check(bool evalerr)
-{
-  // merely care about element problems if there is a fancy divcont action
-  // and element errors are considered
-  if (evalerr and (divcontype_ == Solid::divcont_rand_adapt_step_ele_err))
-  {
-    if (myrank_ == 0)
-      Core::IO::cout << "Element error in form of a negative Jacobian determinant "
-                     << Core::IO::endl;
-    return 3;
   }
   else
   {
@@ -1701,8 +1661,6 @@ int Solid::TimIntImpl::newton_ls()
     ***      Update right-hand side and stiffness matrix        ***
     ***************************************************************/
     Teuchos::ParameterList params;
-    params.set<bool>("tolerate_errors", true);
-    params.set<bool>("eval_error", false);
     if (fresn_str_ != nullptr)
     {
       // attention: though it is called rhs_norm it actually contains sum x_i^2, i.e. the square of
@@ -1718,8 +1676,7 @@ int Solid::TimIntImpl::newton_ls()
 #endif
       evaluate_force_stiff_residual(params);
 #ifdef FOUR_C_ENABLE_FE_TRAPPING
-      if (fetestexcept(FE_INVALID) || fetestexcept(FE_OVERFLOW) || fetestexcept(FE_DIVBYZERO) ||
-          params.get<bool>("eval_error") == true)
+      if (fetestexcept(FE_INVALID) || fetestexcept(FE_OVERFLOW) || fetestexcept(FE_DIVBYZERO))
         exceptcount = 1;
 #endif
       int tmp = 0;
@@ -1842,7 +1799,7 @@ int Solid::TimIntImpl::newton_ls()
   if (conman_->have_monitor()) conman_->compute_monitor_values(disn_);
 
   // do nonlinear solver error check
-  return newton_full_error_check(linsolve_error, 0);
+  return newton_full_error_check(linsolve_error);
 }
 
 
@@ -1928,11 +1885,6 @@ void Solid::TimIntImpl::ls_update_structural_rh_sand_stiff(bool& isexcept, doubl
   // whose components are globally oriented
   int exceptcount = 0;
   Teuchos::ParameterList params;
-  // elements may tolerate errors usually leading to dserrors
-  // in such cases the elements force the line search to reduce
-  // the step size by setting "eval_error" to true
-  params.set<bool>("tolerate_errors", true);
-  params.set<bool>("eval_error", false);
   // condensed degrees of freedom need to know the step reduction
   params.set<double>("alpha_ls", alpha_ls_);
   // line search needs to know the residuals of additional condensed dofs
@@ -1952,8 +1904,7 @@ void Solid::TimIntImpl::ls_update_structural_rh_sand_stiff(bool& isexcept, doubl
   }
 
 #ifdef FOUR_C_ENABLE_FE_TRAPPING
-  if (fetestexcept(FE_INVALID) || fetestexcept(FE_OVERFLOW) || fetestexcept(FE_DIVBYZERO) ||
-      params.get<bool>("eval_error") == true)
+  if (fetestexcept(FE_INVALID) || fetestexcept(FE_OVERFLOW) || fetestexcept(FE_DIVBYZERO))
     exceptcount = 1;
 #endif
 
@@ -2202,7 +2153,6 @@ void Solid::TimIntImpl::update_iter_incr_constr(
 int Solid::TimIntImpl::uzawa_linear_newton_full()
 {
   int linsolve_error = 0;
-  int element_error = 0;
   if (conman_->have_constraint())
   {
     // allocate additional vectors and matrices
@@ -2225,9 +2175,8 @@ int Solid::TimIntImpl::uzawa_linear_newton_full()
     timer_->reset();
 
     // equilibrium iteration loop
-    while (((not converged() and (not linsolve_error) and (not element_error)) and
-               (iter_ <= itermax_)) or
-           (iter_ <= itermin_))
+    while (
+        ((not converged() and (not linsolve_error)) and (iter_ <= itermax_)) or (iter_ <= itermin_))
     {
       // make negative residual
       fres_->scale(-1.0);
@@ -2284,22 +2233,9 @@ int Solid::TimIntImpl::uzawa_linear_newton_full()
       // create parameter list
       Teuchos::ParameterList params;
 
-      // set flag for element error in form of a negative Jacobian determinant
-      // in parameter list in case of potential continuation
-      if (divcontype_ == Solid::divcont_rand_adapt_step_ele_err)
-      {
-        params.set<bool>("tolerate_errors", true);
-        params.set<bool>("eval_error", false);
-      }
-
       // compute residual forces #fres_ and stiffness #stiff_
       // which contain forces and stiffness of constraints
       evaluate_force_stiff_residual(params);
-
-      // check for element error in form of a negative Jacobian determinant
-      // in case of potential continuation
-      if (divcontype_ == Solid::divcont_rand_adapt_step_ele_err)
-        element_error = element_error_check(params.get<bool>("eval_error"));
 
       // compute residual and stiffness of constraint equations
       conrhs = std::make_shared<Core::LinAlg::Vector<double>>(*(conman_->get_error()));
@@ -2364,11 +2300,11 @@ int Solid::TimIntImpl::uzawa_linear_newton_full()
   }
 
   // do nonlinear solver error check
-  return uzawa_linear_newton_full_error_check(linsolve_error, element_error);
+  return uzawa_linear_newton_full_error_check(linsolve_error);
 }
 
 /*----------------------------------------------------------------------------*/
-int Solid::TimIntImpl::uzawa_linear_newton_full_error_check(int linerror, int eleerror)
+int Solid::TimIntImpl::uzawa_linear_newton_full_error_check(int linerror)
 {
   // if everything is fine print to screen and return
   if (converged())
@@ -2383,13 +2319,6 @@ int Solid::TimIntImpl::uzawa_linear_newton_full_error_check(int linerror, int el
     if (myrank_ == 0) conman_->print_monitor_values();
 
     return 0;
-  }
-
-  // now some error checks: do we have an element problem
-  // only check if we continue in this case; other wise, we ignore the error
-  if (eleerror and (divcontype_ == Solid::divcont_rand_adapt_step_ele_err))
-  {
-    return eleerror;
   }
 
   // now some error checks
@@ -2795,12 +2724,10 @@ int Solid::TimIntImpl::ptc()
   fres_->norm_inf(&nc);
   double dti = 1 / ptcdt;
 
-  int element_error = 0;
   int linsolve_error = 0;
   // equilibrium iteration loop
-  while (((not converged() and (not linsolve_error) and (not element_error)) and
-             (iter_ <= itermax_)) or
-         (iter_ <= itermin_))
+  while (
+      ((not converged() and (not linsolve_error)) and (iter_ <= itermax_)) or (iter_ <= itermin_))
   {
     // make negative residual
     fres_->scale(-1.0);
@@ -2875,22 +2802,9 @@ int Solid::TimIntImpl::ptc()
     // create parameter list
     Teuchos::ParameterList params;
 
-    // set flag for element error in form of a negative Jacobian determinant
-    // in parameter list in case of potential continuation
-    if (divcontype_ == Solid::divcont_rand_adapt_step_ele_err)
-    {
-      params.set<bool>("tolerate_errors", true);
-      params.set<bool>("eval_error", false);
-    }
-
     // compute residual forces #fres_ and stiffness #stiff_
     // whose components are globally oriented
     evaluate_force_stiff_residual(params);
-
-    // check for element error in form of a negative Jacobian determinant
-    // in case of potential continuation
-    if (divcontype_ == Solid::divcont_rand_adapt_step_ele_err)
-      element_error = element_error_check(params.get<bool>("eval_error"));
 
     // blank residual at (locally oriented) Dirichlet DOFs
     // rotate to local co-ordinate systems
@@ -2992,7 +2906,7 @@ int Solid::TimIntImpl::ptc()
   }
 
   // do nonlinear solver error check
-  return newton_full_error_check(linsolve_error, element_error);
+  return newton_full_error_check(linsolve_error);
 }
 
 
