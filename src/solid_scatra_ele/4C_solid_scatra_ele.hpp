@@ -144,9 +144,9 @@ namespace Discret::Elements
 
     void set_params_interface_ptr(const Teuchos::ParameterList& p) override;
 
-    void vis_names(std::map<std::string, int>& names) override;
+    void vis_names(std::map<std::string, int>& names) const override;
 
-    bool vis_data(const std::string& name, std::vector<double>& data) override;
+    bool vis_data(const std::string& name, std::vector<double>& data) const override;
 
     /// return ScaTra::ImplType
     [[nodiscard]] ScaTra::ImplType impl_type() const { return properties_.impltype; }

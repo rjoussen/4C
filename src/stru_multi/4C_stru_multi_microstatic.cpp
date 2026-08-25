@@ -119,6 +119,9 @@ MultiScale::MicroStatic::MicroStatic(const int microdisnum, const double V0)
           .sublist("STRUCTURE");
   output_displacement_state_ = visualization_output_paramslist.get<bool>("DISPLACEMENT");
   output_element_owner_ = visualization_output_paramslist.get<bool>("ELEMENT_OWNER");
+  output_node_owner_ = visualization_output_paramslist.get<bool>("NODE_OWNER");
+  output_element_material_quantities_ =
+      visualization_output_paramslist.get<bool>("MATERIAL_ELEMENT_QUANTITIES");
   output_element_material_id_ = visualization_output_paramslist.get<bool>("ELEMENT_MAT_ID");
   output_stress_strain_ = visualization_output_paramslist.get<bool>("STRESS_STRAIN");
   gauss_point_data_output_type_ = Teuchos::getIntegralValue<Solid::GaussPointDataOutputType>(
@@ -781,6 +784,14 @@ void MultiScale::MicroStatic::runtime_output_step_state_microscale(
 
     // append element owner if desired
     if (output_element_owner_) micro_visualization_writer->append_element_owner("element_owner");
+
+    // append node owner
+    if (output_node_owner_) micro_visualization_writer->append_node_owner();
+
+    // append optional material element data stored in the material for visualization
+    // (vis_data()/vis_names())
+    if (output_element_material_quantities_)
+      micro_visualization_writer->append_material_element_data();
 
     // append element material IDs if desired
     if (output_element_material_id_) micro_visualization_writer->append_element_material_id();

@@ -24,6 +24,8 @@ Discret::Elements::StructureRuntimeOutputParams::StructureRuntimeOutputParams()
       output_acceleration_state_(false),
       output_contact_(false),
       output_element_owner_(false),
+      output_node_owner_(false),
+      output_element_material_quantities_(false),
       output_element_gid_(false),
       output_element_material_id_(false),
       output_element_ghosting_(false),
@@ -48,6 +50,9 @@ void Discret::Elements::StructureRuntimeOutputParams::init(
   output_acceleration_state_ = IO_vtk_structure_structure_paramslist.get<bool>("ACCELERATION");
   output_contact_ = IO_vtk_structure_structure_paramslist.get<bool>("OUTPUT_CONTACT");
   output_element_owner_ = IO_vtk_structure_structure_paramslist.get<bool>("ELEMENT_OWNER");
+  output_node_owner_ = IO_vtk_structure_structure_paramslist.get<bool>("NODE_OWNER");
+  output_element_material_quantities_ =
+      IO_vtk_structure_structure_paramslist.get<bool>("MATERIAL_ELEMENT_QUANTITIES");
   output_element_gid_ = IO_vtk_structure_structure_paramslist.get<bool>("ELEMENT_GID");
   output_element_material_id_ = IO_vtk_structure_structure_paramslist.get<bool>("ELEMENT_MAT_ID");
   output_element_ghosting_ = IO_vtk_structure_structure_paramslist.get<bool>("ELEMENT_GHOSTING");

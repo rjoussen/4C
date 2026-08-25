@@ -1223,7 +1223,7 @@ void Discret::Elements::Membrane<distype>::mem_nlnstiffmass(
  |  Return names of visualization data (public)                fb 09/15 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::Elements::Membrane<distype>::vis_names(std::map<std::string, int>& names)
+void Discret::Elements::Membrane<distype>::vis_names(std::map<std::string, int>& names) const
 {
   std::string result_thickness = "thickness";
 
@@ -1239,7 +1239,7 @@ void Discret::Elements::Membrane<distype>::vis_names(std::map<std::string, int>&
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 bool Discret::Elements::Membrane<distype>::vis_data(
-    const std::string& name, std::vector<double>& data)
+    const std::string& name, std::vector<double>& data) const
 {
   // Put the owner of this element into the file (use base class method for this)
   if (Core::Elements::Element::vis_data(name, data)) return true;

@@ -1082,14 +1082,14 @@ void Core::IO::DiscretizationWriter::write_element_data(bool writeowner)
     }
 
     // By applying gather_all we get the combined map including all elemental values
-    // which where found by vis_names
+    // which were found by vis_names
     Core::LinAlg::gather_all(names, get_comm());
 
     FOUR_C_ASSERT_ALWAYS(
         std::all_of(names.begin(), names.end(), [](const auto& pair) { return pair.second >= 1; }),
         "Dimension of all data must be at least 1");
 
-    // loop all names acquired form the elements and fill data vectors
+    // loop all names acquired from the elements and fill data vectors
     for (const auto& [name, dimension] : names)
     {
       std::vector<double> eledata(dimension);
@@ -1145,7 +1145,7 @@ void Core::IO::DiscretizationWriter::write_node_data(bool writeowner)
     }
 
     /* By applying gather_all we get the combined map including all nodal values
-     * which where found by vis_names
+     * which were found by vis_names
      */
     Core::LinAlg::gather_all(names, get_comm());
 

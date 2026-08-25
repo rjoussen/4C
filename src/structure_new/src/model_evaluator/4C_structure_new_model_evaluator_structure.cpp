@@ -748,9 +748,17 @@ void Solid::ModelEvaluator::Structure::write_output_runtime_structure(
         acceleration_state_vector, Core::IO::OutputEntity::dof, context);
   }
 
+  // append optional material element data stored in the material for visualization
+  // (vis_data()/vis_names())
+  if (structure_output_params.output_element_material_quantities())
+    vtu_writer_ptr_->append_material_element_data();
+
   // append element owner if desired
   if (structure_output_params.output_element_owner())
     vtu_writer_ptr_->append_element_owner("element_owner");
+
+  // append node owner
+  if (structure_output_params.output_node_owner()) vtu_writer_ptr_->append_node_owner();
 
   // append element GIDs if desired
   if (structure_output_params.output_element_gid())

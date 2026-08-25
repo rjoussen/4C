@@ -238,7 +238,7 @@ std::vector<double> Discret::Elements::RedAcinus::element_center_refe_coords()
 /*----------------------------------------------------------------------*
  |  Return names of visualization data                     ismail 01/10 |
  *----------------------------------------------------------------------*/
-void Discret::Elements::RedAcinus::vis_names(std::map<std::string, int>& names)
+void Discret::Elements::RedAcinus::vis_names(std::map<std::string, int>& names) const
 {
   std::shared_ptr<Core::Mat::Material> mat = material();
 
@@ -252,7 +252,8 @@ void Discret::Elements::RedAcinus::vis_names(std::map<std::string, int>& names)
 /*----------------------------------------------------------------------*
  |  Return visualization data (public)                     ismail 02/10 |
  *----------------------------------------------------------------------*/
-bool Discret::Elements::RedAcinus::vis_data(const std::string& name, std::vector<double>& data)
+bool Discret::Elements::RedAcinus::vis_data(
+    const std::string& name, std::vector<double>& data) const
 {
   // Put the owner of this element into the file (use base class method for this)
   if (Core::Elements::Element::vis_data(name, data)) return true;

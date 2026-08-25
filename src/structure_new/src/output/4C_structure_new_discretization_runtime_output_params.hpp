@@ -72,6 +72,20 @@ namespace Discret
         return output_element_owner_;
       }
 
+      /// whether to write the owner of nodes
+      [[nodiscard]] bool output_node_owner() const
+      {
+        check_init_setup();
+        return output_node_owner_;
+      }
+
+      /// whether to write material quantities
+      [[nodiscard]] bool output_element_material_quantities() const
+      {
+        check_init_setup();
+        return output_element_material_quantities_;
+      }
+
       /// whether to write the GIDs of elements
       [[nodiscard]] bool output_element_gid() const
       {
@@ -155,6 +169,12 @@ namespace Discret
 
       /// whether to write the owner of elements
       bool output_element_owner_;
+
+      /// whether to write the owner of nodes
+      bool output_node_owner_;
+
+      /// whether to write material quantities
+      bool output_element_material_quantities_;
 
       /// whether to write the element GIDs
       bool output_element_gid_;

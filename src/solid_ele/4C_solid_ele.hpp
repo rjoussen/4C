@@ -188,11 +188,11 @@ namespace Discret::Elements
              solid_ele_property_.element_technology == ElementTechnology::shell_eas_ans;
     }
 
-    void vis_names(std::map<std::string, int>& names) override;
+    void vis_names(std::map<std::string, int>& names) const override;
 
     void set_integration_rule(const Core::FE::GaussIntegration& integration_rule);
 
-    bool vis_data(const std::string& name, std::vector<double>& data) override;
+    bool vis_data(const std::string& name, std::vector<double>& data) const override;
 
     /*!
      * @brief Evaluate the Cauchy stress at @p xi with the normal vector @p n in the direction @p
