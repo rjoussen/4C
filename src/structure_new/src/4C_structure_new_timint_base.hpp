@@ -542,7 +542,7 @@ namespace Solid
       /// @name Pure virtual adapter functions (have to be implemented in the derived classes)
       /// @{
       /// integrate the current step (implicit and explicit)
-      virtual int integrate_step() = 0;
+      virtual void integrate_step() = 0;
       /// right-hand-side of Newton's method (implicit only)
       std::shared_ptr<const Core::LinAlg::Vector<double>> rhs() override { return get_f(); };
       [[nodiscard]] virtual std::shared_ptr<const Core::LinAlg::Vector<double>> get_f() const = 0;

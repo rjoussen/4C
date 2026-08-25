@@ -99,7 +99,7 @@ void Solid::TimIntExplEuler::resize_m_step()
 
 /*----------------------------------------------------------------------*/
 /* Integrate step */
-int Solid::TimIntExplEuler::integrate_step()
+void Solid::TimIntExplEuler::integrate_step()
 {
   // time this step
   timer_->reset();
@@ -238,9 +238,6 @@ int Solid::TimIntExplEuler::integrate_step()
   // *********** time measurement ***********
   dtsolve_ = timer_->wallTime() - dtcpu;
   // *********** time measurement ***********
-
-  // wassup?
-  return 0;
 }
 
 /*----------------------------------------------------------------------*/

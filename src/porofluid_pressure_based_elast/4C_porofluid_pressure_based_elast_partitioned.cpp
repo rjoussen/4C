@@ -9,7 +9,7 @@
 
 #include "4C_adapter_art_net.hpp"
 #include "4C_adapter_porofluid_pressure_based_wrapper.hpp"
-#include "4C_adapter_str_wrapper.hpp"
+#include "4C_adapter_str_structure.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_io.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
@@ -297,7 +297,9 @@ void PoroPressureBased::PorofluidElastPartitionedAlgorithm::do_struct_step()
   }
 
   // Newton-Raphson iteration
-  structure_algo()->solve();
+  const auto structure_status = structure_algo()->solve();
+  FOUR_C_ASSERT_ALWAYS(
+      structure_status == Solid::StepStatus::no_errors, "Structural solve failed.");
 
   return;
 }

@@ -9,6 +9,7 @@
 
 #include "4C_adapter_scatra_base_algorithm.hpp"
 #include "4C_adapter_str_ssiwrapper.hpp"
+#include "4C_adapter_str_structure.hpp"
 #include "4C_contact_nitsche_strategy_ssi.hpp"
 #include "4C_global_data.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
@@ -143,7 +144,9 @@ void SSI::SSIPart2WC::do_struct_step()
   }
 
   // Newton-Raphson iteration
-  structure_field()->solve();
+  const auto structure_status = structure_field()->solve();
+  FOUR_C_ASSERT_ALWAYS(
+      structure_status == Solid::StepStatus::no_errors, "Structural solve failed.");
 
   if (is_s2i_kinetics_with_pseudo_contact()) structure_field()->determine_stress_strain();
 

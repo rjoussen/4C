@@ -10,7 +10,7 @@
 #include "4C_adapter_art_net.hpp"
 #include "4C_adapter_porofluid_pressure_based_wrapper.hpp"
 #include "4C_adapter_scatra_base_algorithm.hpp"
-#include "4C_adapter_str_wrapper.hpp"
+#include "4C_adapter_str_structure.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
 #include "4C_porofluid_pressure_based_elast_base.hpp"
@@ -469,7 +469,9 @@ void PoroPressureBased::PorofluidElastScatraSequentialPartitionedAlgorithm::solv
     porofluid_elast_algo()->set_relaxed_fluid_solution();
 
     // 5) solve structure
-    porofluid_elast_algo()->structure_algo()->solve();
+    const auto structure_status = porofluid_elast_algo()->structure_algo()->solve();
+    FOUR_C_ASSERT_ALWAYS(
+        structure_status == Solid::StepStatus::no_errors, "Structural solve failed.");
 
     // 6) set mesh displacement and velocity fields on ScaTra
     set_porofluid_elast_solution();

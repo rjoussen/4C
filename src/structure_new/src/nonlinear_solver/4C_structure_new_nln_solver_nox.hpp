@@ -70,7 +70,7 @@ namespace Solid
         void refresh_after_redistribution() override { rebuild_problem_state(); }
 
         //! derived from the base class
-        Solid::ConvergenceStatus solve() override;
+        [[nodiscard]] Solid::StepStatus solve() override;
 
         //! returns the outer status test object pointer
         const ::NOX::StatusTest::Generic& get_outer_status_test() const
@@ -87,7 +87,7 @@ namespace Solid
         virtual void reset_params();
 
         //! Convert the final nox status into a structural status
-        Solid::ConvergenceStatus convert_final_status(
+        Solid::StepStatus convert_final_status(
             const ::NOX::StatusTest::StatusType& finalstatus) const;
 
        protected:

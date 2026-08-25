@@ -8,6 +8,7 @@
 #include "4C_fsi_dirichletneumannslideale.hpp"
 
 #include "4C_adapter_str_fsiwrapper.hpp"
+#include "4C_adapter_str_structure.hpp"
 #include "4C_coupling_adapter.hpp"
 #include "4C_coupling_adapter_mortar.hpp"
 #include "4C_fem_geometry_searchtree.hpp"
@@ -140,7 +141,9 @@ std::shared_ptr<Core::LinAlg::Vector<double>> FSI::DirichletNeumannSlideale::str
   {
     // normal structure solve
     structure_field()->apply_interface_forces(iforce);
-    structure_field()->solve();
+    const auto structure_status = structure_field()->solve();
+    FOUR_C_ASSERT_ALWAYS(
+        structure_status == Solid::StepStatus::no_errors, "Structural solve failed.");
     return structure_field()->extract_interface_dispnp();
   }
 }

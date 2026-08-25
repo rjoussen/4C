@@ -13,6 +13,8 @@
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
+#include <utility>
+
 FOUR_C_NAMESPACE_OPEN
 
 
@@ -20,30 +22,30 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 Adapter::StructureTimeLoop::StructureTimeLoop(
     Global::Problem& problem, std::shared_ptr<Structure> structure)
-    : StructureWrapper(structure), problem_(problem)
+    : StructureWrapper(std::move(structure)), problem_(problem)
 {
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int Adapter::StructureTimeLoop::integrate()
+void Adapter::StructureTimeLoop::integrate()
 {
   // error checking variables
-  Solid::ConvergenceStatus convergencestatus = Solid::conv_success;
+  Solid::StepStatus solve_status = Solid::StepStatus::no_errors;
 
   // target time #timen_ and step #stepn_ already set
   // time loop
-  while (not_finished() and
-         (convergencestatus == Solid::conv_success or convergencestatus == Solid::conv_fail_repeat))
+  while (not_finished() and (solve_status == Solid::StepStatus::no_errors or
+                                solve_status == Solid::StepStatus::fail_repeat))
   {
     // call the predictor
     prepare_time_step();
 
     // integrate time step, i.e. do corrector steps
     // after this step we hold disn_, etc
-    convergencestatus = solve();
+    solve_status = solve();
 
     // if everything is fine
-    if (convergencestatus == Solid::conv_success)
+    if (solve_status == Solid::StepStatus::no_errors)
     {
       // calculate stresses, strains and energies
       // note: this has to be done before the update since otherwise a potential
@@ -72,16 +74,12 @@ int Adapter::StructureTimeLoop::integrate()
     else if (Teuchos::getIntegralValue<Solid::IntegrationStrategy>(
                  problem_.structural_dynamic_params(), "INT_STRATEGY") == Solid::int_old)
     {
-      convergencestatus =
-          perform_error_action(convergencestatus);  // something went wrong update error code
-                                                    // according to chosen divcont action
+      solve_status = perform_error_action(solve_status);  // something went wrong update error code
+                                                          // according to chosen divcont action
     }
   }
 
   post_time_loop();
-
-  // that's it say what went wrong
-  return convergencestatus;
 }
 
 FOUR_C_NAMESPACE_CLOSE

@@ -94,7 +94,7 @@ namespace Solid
     /*! \brief Integrate in time
      * This is the key method here, i.e. the time integration algorithm.
      */
-    int integrate();
+    void integrate();
 
     /*! Finalize the class initialization
      * Merge() and ResizeMStep() need to be called after(!) both init()

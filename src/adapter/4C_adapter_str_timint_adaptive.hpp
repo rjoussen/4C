@@ -43,7 +43,7 @@ namespace Adapter
     //@{
 
     /// Integrate from \f$t_1\f$ to \f$t_2\f$
-    int integrate() override;
+    void integrate() override;
 
     /// prepare output (i.e. calculate stresses, strains, energies)
     void prepare_output(bool force_prepare) override;

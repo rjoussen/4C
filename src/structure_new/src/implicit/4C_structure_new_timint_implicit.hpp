@@ -10,6 +10,8 @@
 
 #include "4C_config.hpp"
 
+#include "4C_adapter_str_structure.hpp"
+#include "4C_structure_new_input.hpp"
 #include "4C_structure_new_nln_solver_generic.hpp"
 #include "4C_structure_new_timint_implicitbase.hpp"  // base class
 
@@ -45,9 +47,9 @@ namespace Solid
      public:
       void setup() override;
 
-      int integrate() override;
+      void integrate() override;
 
-      int integrate_step() override;
+      void integrate_step() override;
 
       /// set the state of the nox group and the global state data container
       /// see class \ref Adapter::StructureNew for a detailed documentation.
@@ -58,7 +60,7 @@ namespace Solid
        *  Do the nonlinear solve, i.e. (multiple) corrector,
        *  for the time step. All boundary conditions have
        *  been set. */
-      Solid::ConvergenceStatus solve() override;
+      [[nodiscard]] Solid::StepStatus solve() override;
 
       /** \brief Identify residual
        *
@@ -87,11 +89,10 @@ namespace Solid
         return nlnsolver_ptr_;
       };
 
-      //! do something in case nonlinear solution does not converge for some reason
-      Solid::ConvergenceStatus perform_error_action(Solid::ConvergenceStatus nonlinsoldiv) override;
+      Solid::StepStatus perform_error_action(Solid::StepStatus solve_status) override;
 
       //! check, if according to divercont flag time step size can be increased
-      void check_for_time_step_increase(Solid::ConvergenceStatus& status);
+      void check_for_time_step_increase(Solid::StepStatus& status);
 
       //! returns pointer to generic implicit object
       std::shared_ptr<Solid::IMPLICIT::Generic> impl_int_ptr()

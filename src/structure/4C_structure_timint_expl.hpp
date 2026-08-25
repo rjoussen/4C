@@ -111,7 +111,7 @@ namespace Solid
     void resize_m_step() override = 0;
 
     //! Do time integration of single step
-    int integrate_step() override = 0;
+    void integrate_step() override = 0;
 
     //! Update configuration after time step
     //!
@@ -335,13 +335,10 @@ namespace Solid
       return;
     }
 
-    /// Do the nonlinear solve, i.e. (multiple) corrector,
-    /// for the time step. All boundary conditions have
-    /// been set.
-    Solid::ConvergenceStatus solve() final
+    [[nodiscard]] Solid::StepStatus solve() final
     {
       integrate_step();
-      return Solid::conv_success;
+      return Solid::StepStatus::no_errors;
     }
 
     //! prepare partition step

@@ -7,8 +7,7 @@
 
 #include "4C_ehl_partitioned.hpp"
 
-#include "4C_adapter_coupling_ehl_mortar.hpp"
-#include "4C_adapter_str_wrapper.hpp"
+#include "4C_adapter_str_structure.hpp"
 #include "4C_global_data.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_lubrication_adapter.hpp"
@@ -153,7 +152,9 @@ void EHL::Partitioned::do_struct_step()
   }
 
   // Newton-Raphson iteration
-  structure_->solve();
+  const auto structure_status = structure_->solve();
+  FOUR_C_ASSERT_ALWAYS(
+      structure_status == Solid::StepStatus::no_errors, "Structural solve failed.");
 }
 
 

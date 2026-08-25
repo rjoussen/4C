@@ -1011,9 +1011,9 @@ void TSI::Partitioned::do_structure_step()
   /// solve structural system
   // do the nonlinear solve for the time step. All boundary conditions have
   // been set.
-  structure_field()->solve();
-
-  return;
+  const auto structure_status = structure_field()->solve();
+  FOUR_C_ASSERT_ALWAYS(
+      structure_status == Solid::StepStatus::no_errors, "Structural solve failed.");
 
 }  // do_structure_step()
 

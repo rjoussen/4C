@@ -9,6 +9,7 @@
 
 #include "4C_adapter_str_factory.hpp"
 #include "4C_adapter_str_pasiwrapper.hpp"
+#include "4C_adapter_str_structure.hpp"
 #include "4C_adapter_str_structure_new.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
@@ -147,7 +148,9 @@ void PaSI::PartitionedAlgo::struct_step()
     printf("-------------------- STRUCTURE SOLVER --------------------\n");
 
   // integrate structural time step
-  structurefield_->solve();
+  const auto structure_status = structurefield_->solve();
+  FOUR_C_ASSERT_ALWAYS(
+      structure_status == Solid::StepStatus::no_errors, "Structural solve failed.");
 }
 
 void PaSI::PartitionedAlgo::particle_step()

@@ -77,7 +77,7 @@ namespace Adapter
     void read_restart(int step) override;
 
     /// actual time loop
-    int integrate() override;
+    void integrate() override;
 
     /// wrapper for things that should be done before updating
     void pre_update() override {};
@@ -275,9 +275,8 @@ namespace Adapter
             0  ///< number of DOFs that have to be neglected for possible length scaling
     );
 
-    /// Perform error action once the nonlinear iteration fails
-    Solid::ConvergenceStatus perform_error_action(
-        const Solid::DivContAct& action, double& stepsizenew);
+    /// Perform adaptive-loop error action once the nonlinear iteration fails
+    Solid::StepStatus perform_error_action(const Solid::DivContAct& action, double& stepsizenew);
   };
 
 }  // namespace Adapter

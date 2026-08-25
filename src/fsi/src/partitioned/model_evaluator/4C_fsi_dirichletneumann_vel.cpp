@@ -9,6 +9,7 @@
 
 #include "4C_adapter_fld_fbi_movingboundary.hpp"
 #include "4C_adapter_str_fbiwrapper.hpp"
+#include "4C_adapter_str_structure.hpp"
 #include "4C_binstrategy.hpp"
 #include "4C_fbi_adapter_constraintbridge.hpp"
 #include "4C_fbi_beam_to_fluid_meshtying_output_writer.hpp"
@@ -118,7 +119,9 @@ std::shared_ptr<Core::LinAlg::Vector<double>> FSI::DirichletNeumannVel::struct_o
           "here! Change the IntStrategy in your Input file to Standard.\n");
   }
 
-  structure_field()->solve();
+  const auto structure_status = structure_field()->solve();
+  FOUR_C_ASSERT_ALWAYS(
+      structure_status == Solid::StepStatus::no_errors, "Structural solve failed.");
   structure_field()->write_gmsh_struct_output_step();
 
   if (fbi.get<int>("STARTSTEP") < step())

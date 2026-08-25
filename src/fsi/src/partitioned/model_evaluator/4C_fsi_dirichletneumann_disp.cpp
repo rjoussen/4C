@@ -8,6 +8,7 @@
 #include "4C_fsi_dirichletneumann_disp.hpp"
 
 #include "4C_adapter_str_fsiwrapper.hpp"
+#include "4C_adapter_str_structure.hpp"
 #include "4C_fsi_input.hpp"
 #include "4C_global_data.hpp"
 
@@ -88,7 +89,9 @@ std::shared_ptr<Core::LinAlg::Vector<double>> FSI::DirichletNeumannDisp::struct_
     else
       structure_field()->apply_interface_forces_temporary_deprecated(
           iforce);  // todo remove this line as soon as possible!
-    structure_field()->solve();
+    const auto structure_status = structure_field()->solve();
+    FOUR_C_ASSERT_ALWAYS(
+        structure_status == Solid::StepStatus::no_errors, "Structural solve failed.");
     structure_field()->write_gmsh_struct_output_step();
     return structure_field()->extract_interface_dispnp();
   }

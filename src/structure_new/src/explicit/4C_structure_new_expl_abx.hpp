@@ -11,6 +11,7 @@
 #include "4C_config.hpp"
 
 #include "4C_structure_new_expl_generic.hpp"
+#include "4C_utils_exceptions.hpp"
 
 #include <array>
 
