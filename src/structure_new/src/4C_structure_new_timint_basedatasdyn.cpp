@@ -12,6 +12,7 @@
 #include "4C_fem_geometry_periodic_boundingbox.hpp"
 #include "4C_global_data.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
+#include "4C_structure_new_input.hpp"
 #include "4C_structure_new_utils.hpp"
 #include "4C_timestepping_time_step_control.hpp"
 #include "4C_utils_shared_ptr_from_ref.hpp"
@@ -48,6 +49,7 @@ Solid::TimeInt::BaseDataSDyn::BaseDataSDyn()
       predtype_(Solid::pred_vague),
       nlnsolvertype_(Solid::soltech_vague),
       divergenceaction_(Solid::DivContAct::stop),
+      enable_material_time_step_reduction_(false),
       mid_time_energy_type_(Solid::midavg_vague),
       noxparams_(nullptr),
       ptc_delta_init_(0.0),
@@ -177,6 +179,8 @@ void Solid::TimeInt::BaseDataSDyn::init(const std::shared_ptr<Core::FE::Discreti
     predtype_ = Teuchos::getIntegralValue<Solid::PredEnum>(sdynparams, "PREDICT");
     nlnsolvertype_ = Teuchos::getIntegralValue<Solid::NonlinSolTech>(sdynparams, "NLNSOL");
     divergenceaction_ = Teuchos::getIntegralValue<Solid::DivContAct>(sdynparams, "DIVERCONT");
+    enable_material_time_step_reduction_ =
+        sdynparams.get<bool>("ENABLE_MATERIAL_TIME_STEP_REDUCTION");
     mid_time_energy_type_ =
         Teuchos::getIntegralValue<Solid::MidAverageEnum>(sdynparams, "MIDTIME_ENERGY_TYPE");
     noxparams_ = std::make_shared<Teuchos::ParameterList>(xparams.sublist("NOX"));

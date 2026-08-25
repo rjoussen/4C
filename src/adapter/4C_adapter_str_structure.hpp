@@ -346,11 +346,42 @@ namespace Adapter
       FOUR_C_THROW("Structural solve failed.");
     }
 
+    /*!
+     * \brief Whether this structure algorithm owns material-triggered timestep reduction.
+     *
+     * Material timestep reduction is only safe when the algorithm that calls solve() also has a
+     * retry policy for pending MPI-reduced material requests: it must reduce dt, restore the step
+     * state, and repeat the current global timestep consistently on all MPI ranks. Unsupported
+     * algorithms deliberately return false so material requests fail loudly instead of being
+     * silently ignored.
+     */
+    [[nodiscard]] virtual bool supports_material_time_step_reduction() const { return false; }
+
     /// tests if there are more time steps to do
     [[nodiscard]] virtual bool not_finished() const = 0;
 
     /// start new time step
     void prepare_time_step() override = 0;
+
+    /**
+    @brief Start a new time step and report whether preparation succeeded.
+
+    Unsuccessful preparation may occur for example during evaluation of the residual or jacobian in
+    a predictor call.
+
+    If callers use this method instead of the throwing alternative, they must check the returned
+    StepStatus and handle non-success
+
+    @return The status of the preparation.
+     */
+    [[nodiscard]] virtual Solid::StepStatus prepare_time_step_with_status()
+    {
+      // This base implementation calls the throwing version prepare_time_step() and
+      // returns success. Derived methods may override to catch errors during prepare_time_step()
+      // and convert them into a different step status.
+      prepare_time_step();
+      return Solid::StepStatus::no_errors;
+    }
 
     /// set time step size
     virtual void set_dt(const double dtnew) = 0;

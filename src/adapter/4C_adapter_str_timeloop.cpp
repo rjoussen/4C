@@ -8,6 +8,10 @@
 #include "4C_adapter_str_timeloop.hpp"
 
 #include "4C_adapter_str_structure.hpp"
+#include "4C_global_data.hpp"
+#include "4C_material_time_step_request.hpp"
+
+#include <utility>
 
 #include <utility>
 
@@ -29,8 +33,17 @@ void Adapter::StructureTimeLoop::integrate()
   // time loop
   while (not_finished())
   {
-    // call the predictor
-    prepare_time_step();
+    Core::Mat::TimeStepReduction::TimeStepRetryScope retry_scope(
+        supports_material_time_step_reduction());
+
+    const Solid::StepStatus prepare_status = prepare_time_step_with_status();
+    switch (perform_error_action(prepare_status))
+    {
+      case Solid::StepAction::retry_step:
+        continue;
+      case Solid::StepAction::accept_step:
+        break;  // do nothing
+    }
 
     // integrate time step, i.e. do corrector steps
     // after this step we hold disn_, etc

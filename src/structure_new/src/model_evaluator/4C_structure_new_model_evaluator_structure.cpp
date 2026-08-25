@@ -25,6 +25,7 @@
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "4C_linalg_vector.hpp"
+#include "4C_material_time_step_request.hpp"
 #include "4C_structure_new_dbc.hpp"
 #include "4C_structure_new_discretization_runtime_output_params.hpp"
 #include "4C_structure_new_error_evaluator.hpp"
@@ -310,6 +311,8 @@ bool Solid::ModelEvaluator::Structure::assemble_jacobian(
 bool Solid::ModelEvaluator::Structure::initialize_inertia_and_damping()
 {
   check_init_setup();
+  Core::Mat::TimeStepReduction::MaterialEvaluationScope material_time_step_request_scope(
+      global_state().get_comm());
 
   // currently a fixed number of matrix and vector pointers are supported
   std::array<std::shared_ptr<Core::LinAlg::Vector<double>>, 3> eval_vec = {
@@ -348,6 +351,8 @@ bool Solid::ModelEvaluator::Structure::initialize_inertia_and_damping()
 bool Solid::ModelEvaluator::Structure::apply_force_internal()
 {
   check_init_setup();
+  Core::Mat::TimeStepReduction::MaterialEvaluationScope material_time_step_request_scope(
+      global_state().get_comm());
 
   // currently a fixed number of matrix and vector pointers are supported
   std::array<std::shared_ptr<Core::LinAlg::Vector<double>>, 3> eval_vec = {
@@ -379,6 +384,8 @@ bool Solid::ModelEvaluator::Structure::apply_force_internal()
 bool Solid::ModelEvaluator::Structure::apply_force_external()
 {
   check_init_setup();
+  Core::Mat::TimeStepReduction::MaterialEvaluationScope material_time_step_request_scope(
+      global_state().get_comm());
 
   // Set to default value, because it is unnecessary for the
   // evaluate_neumann routine.
@@ -401,6 +408,8 @@ bool Solid::ModelEvaluator::Structure::apply_force_stiff_external()
   check_init_setup();
 
   if (pre_apply_force_stiff_external(fext_np(), *stiff_ptr_)) return true;
+  Core::Mat::TimeStepReduction::MaterialEvaluationScope material_time_step_request_scope(
+      global_state().get_comm());
 
   // set vector values needed by elements
   discret().clear_state();
@@ -442,6 +451,9 @@ bool Solid::ModelEvaluator::Structure::pre_apply_force_stiff_external(
 bool Solid::ModelEvaluator::Structure::apply_force_stiff_internal()
 {
   check_init_setup();
+  Core::Mat::TimeStepReduction::MaterialEvaluationScope material_time_step_request_scope(
+      global_state().get_comm());
+
   // currently a fixed number of matrix and vector pointers are supported
   std::array<std::shared_ptr<Core::LinAlg::Vector<double>>, 3> eval_vec = {
       nullptr, nullptr, nullptr};
@@ -469,6 +481,16 @@ bool Solid::ModelEvaluator::Structure::apply_force_stiff_internal()
   inertial_and_viscous_forces();
 
   return eval_error_check();
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+bool Solid::ModelEvaluator::Structure::eval_error_check() const
+{
+  const bool generic_ok = Generic::eval_error_check();
+  const bool global_material_time_step_reduction =
+      Core::Mat::TimeStepReduction::collect_local_requests();
+  return generic_ok and (not global_material_time_step_reduction);
 }
 
 /*----------------------------------------------------------------------------*

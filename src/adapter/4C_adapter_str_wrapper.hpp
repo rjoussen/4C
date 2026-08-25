@@ -289,6 +289,11 @@ namespace Adapter
       return structure_->perform_error_action(step_status);
     }
 
+    [[nodiscard]] bool supports_material_time_step_reduction() const override
+    {
+      return structure_->supports_material_time_step_reduction();
+    }
+
     /// tests if there are more time steps to do
     [[nodiscard]] bool not_finished() const override { return structure_->not_finished(); }
 
@@ -297,6 +302,11 @@ namespace Adapter
 
     /// start new time step
     void prepare_time_step() override { structure_->prepare_time_step(); }
+
+    Solid::StepStatus prepare_time_step_with_status() override
+    {
+      return structure_->prepare_time_step_with_status();
+    }
 
     /// update displacement
     void update_state_incrementally(

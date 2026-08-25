@@ -77,6 +77,8 @@ namespace Solid
       //! Prepare time step
       void prepare_time_step() override;
 
+      [[nodiscard]] Solid::StepStatus prepare_time_step_with_status() override;
+
       //! @name Accessors
       //! @{
       //! return the predictor
@@ -93,6 +95,9 @@ namespace Solid
       };
 
       Solid::StepAction perform_error_action(Solid::StepStatus solve_status) override;
+
+      //! The standalone structure time loop owns material timestep-reduction retry policy.
+      [[nodiscard]] bool supports_material_time_step_reduction() const override { return true; }
 
       void finalize_successful_step() override;
 

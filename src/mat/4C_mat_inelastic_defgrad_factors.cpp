@@ -34,6 +34,7 @@
 #include "4C_mat_par_bundle.hpp"
 #include "4C_mat_so3_material.hpp"
 #include "4C_mat_vplast_law.hpp"
+#include "4C_material_time_step_request.hpp"
 #include "4C_utils_enum.hpp"
 #include "4C_utils_exceptions.hpp"
 #include "4C_utils_function_of_time.hpp"
@@ -44,6 +45,7 @@
 #include <algorithm>
 #include <array>
 #include <cmath>
+#include <format>
 #include <map>
 #include <memory>
 #include <optional>
@@ -2694,10 +2696,13 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_additional_cmat
       reduced_kinematics.right_cauchy_green, temperature, err_status)
                              .inv_plastic_defgrad_wrt_cauchy_green;
 
-  FOUR_C_ASSERT_ALWAYS(err_status == ViscoplastUtils::ErrorType::no_errors,
-      "Could not evaluate additional stiffness matrix: {}",
-      ViscoplastUtils::get_detailed_error_message_for_error_type(err_status));
-
+  if (err_status != ViscoplastUtils::ErrorType::no_errors)
+  {
+    Core::Mat::TimeStepReduction::request(
+        std::format("Could not evaluate additional stiffness matrix: {}",
+            ViscoplastUtils::get_detailed_error_message_for_error_type(err_status)));
+    return;
+  }
   // compute additional term to stiffness matrix additional_cmat
   cmatadd.multiply_nn(2.0, dSdiFinj, diFinjdC, 1.0);
 }
@@ -2734,14 +2739,24 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_history_variables_wr
     jacMat = evaluate_local_newton_jacobian(CredM, temperature, current_sol,
         time_step_quantities_.last_plastic_strain[gp_],
         time_step_quantities_.last_plastic_defgrad_inverse[gp_], time_step_tracker_.dt, err_status);
-    FOUR_C_ASSERT_ALWAYS(
-        err_status == InelasticDefgradTransvIsotropElastViscoplastUtils::ErrorType::no_errors,
-        "Could not evaluate Jacobian in off-diagonal stiffness evaluation!");
+
+    if (err_status != InelasticDefgradTransvIsotropElastViscoplastUtils::ErrorType::no_errors)
+    {
+      Core::Mat::TimeStepReduction::request(
+          std::format("Could not evaluate Jacobian in off-diagonal stiffness evaluation: {}",
+              ViscoplastUtils::get_detailed_error_message_for_error_type(err_status)));
+      return {};
+    }
 
     // Assert that jacobian is not singular
-    FOUR_C_ASSERT_ALWAYS(abs(jacMat.determinant()) > 1.0e-10,
-        "Singular Jacobian in off-diagonal stiffness evaluation! Jacobian determinant: {}",
-        abs(jacMat.determinant()));
+    if (std::abs(jacMat.determinant()) <= 1.0e-10)
+    {
+      err_status = ViscoplastUtils::ErrorType::singular_jacobian;
+      Core::Mat::TimeStepReduction::request(std::format(
+          "Singular Jacobian in off-diagonal stiffness evaluation! Jacobian determinant: {}",
+          abs(jacMat.determinant())));
+      return {};
+    }
 
     // declare right-hand side (RHS) terms of the linear system of equations related to the
     // analytical linearization
@@ -2796,8 +2811,10 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_history_variables_wr
     if ((err != 0) || (err2 != 0))
     {
       err_status = ViscoplastUtils::ErrorType::failed_solution_analytic_linearization;
-      FOUR_C_THROW("Evaluation of linear system for off-diagonal stiffness has failed: {}",
-          get_detailed_error_message_for_error_type(err_status));
+      Core::Mat::TimeStepReduction::request(
+          std::format("Evaluation of linear system for off-diagonal stiffness has failed: {}",
+              get_detailed_error_message_for_error_type(err_status)));
+      return {};
     }
 
     // disassemble the solution vector
@@ -2847,9 +2864,13 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_od_stiff_mat(
       reduced_kinematics.right_cauchy_green, temperature, err_status)
                              .inv_plastic_defgrad_wrt_temperature;
 
-  FOUR_C_ASSERT_ALWAYS(err_status == ViscoplastUtils::ErrorType::no_errors,
-      "Could not evaluate off-diagonal stiffness matrix: {}",
-      ViscoplastUtils::get_detailed_error_message_for_error_type(err_status));
+  if (err_status != ViscoplastUtils::ErrorType::no_errors)
+  {
+    Core::Mat::TimeStepReduction::request(
+        std::format("Could not evaluate off-diagonal stiffness matrix: {}",
+            ViscoplastUtils::get_detailed_error_message_for_error_type(err_status)));
+    return;
+  }
 
   // compute off-diagonal stiffness contribution
   dstressdT.multiply_nn(1.0, dSdiFinj, diFinjTV, 1.0);
@@ -3180,9 +3201,10 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::constitutive_update(
     {
       // output error and then throw (in order to display the error on
       // the right processor)
-      FOUR_C_THROW("{}", get_error_warning_info(std::format(
-                             "Viscoplastic correction was not successful! Error status: {}",
-                             EnumTools::enum_name(err_status))));
+      Core::Mat::TimeStepReduction::request(
+          std::format("Viscoplastic correction was not successful! Error status: {}",
+              EnumTools::enum_name(err_status)));
+      return {.inv_plastic_defgrad = iFinM_pred, .plastic_strain = plastic_strain_pred};
     }
 
     // update inverse inelastic defgrad and plastic strain
@@ -3653,10 +3675,10 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::viscoplastic_correction(
         // if the halving number was exceeded --> return with error
         if (!halving_success)
         {
-          FOUR_C_THROW(
-              "{}", get_error_warning_info(std::format(
-                        "Maximum halving number for substepping was reached! Error status: {}",
-                        EnumTools::enum_name(err_status))));
+          Core::Mat::TimeStepReduction::request(
+              std::format("Maximum halving number for substepping was reached! Error status: {}",
+                  EnumTools::enum_name(err_status)));
+          return sol;
         }
       }
     }
@@ -3670,9 +3692,10 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::viscoplastic_correction(
         time_step_tracker_.dt, err_status);
     if (err_status != ViscoplastUtils::ErrorType::no_errors)
     {
-      FOUR_C_THROW("{}", get_error_warning_info(std::format(
-                             "There was an error within the local Newton! Error status: {}",
-                             EnumTools::enum_name(err_status))));
+      Core::Mat::TimeStepReduction::request(
+          std::format("There was an error within the local Newton! Error status: {}",
+              EnumTools::enum_name(err_status)));
+      return sol;
     }
 
     // update Local Newton quantities and reset iteration counter
@@ -3725,8 +3748,9 @@ Core::LinAlg::Matrix<10, 1> Mat::InelasticDefgradTransvIsotropElastViscoplast::l
     // without substepping, we throw directly
     else
     {
-      FOUR_C_THROW(
-          "{}", get_error_warning_info("Could not compute initial estimate for the local Newton!"));
+      Core::Mat::TimeStepReduction::request(
+          "Could not compute initial estimate for the local Newton!");
+      return temp10x1;
     }
   }
 
@@ -3874,9 +3898,9 @@ Core::LinAlg::Matrix<10, 1> Mat::InelasticDefgradTransvIsotropElastViscoplast::l
       default:
       {
         FOUR_C_THROW(
-            "{}", get_error_warning_info(std::format(
+            "{}", std::format(
                       "Invalid evaluation action {} for error status {} after Jacobian evaluation",
-                      EnumTools::enum_name(eval_action), EnumTools::enum_name(err_status))));
+                      EnumTools::enum_name(eval_action), EnumTools::enum_name(err_status)));
       }
     }
 
@@ -3936,9 +3960,8 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::verify_local_newton_exit
     case FourC::Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::LocalNewtonDiverCont::stop:
     {
       // throw error: there is no convergence
-      FOUR_C_THROW(
-          "{}", get_error_warning_info(
-                    ViscoplastUtils::get_detailed_error_message_for_error_type(err_status)));
+      Core::Mat::TimeStepReduction::request(
+          ViscoplastUtils::get_detailed_error_message_for_error_type(err_status));
       return;
     }
     case FourC::Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::LocalNewtonDiverCont::
@@ -3979,14 +4002,14 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::verify_local_newton_exit
           {
             if (!residual_within_bounds)
             {
-              FOUR_C_THROW(
-                  "{}", get_error_warning_info(std::format(
-                            "Residual {} exceeds the residual tolerance {} by more than the set "
-                            "exceedance tolerance factor {}! Error status: {}",
-                            local_newton_manager_.convergence_quantities().residual_norm,
-                            local_newton_manager_.params().res_tol,
-                            local_newton_manager_.params().max_exceedance_fact_res_tol,
-                            EnumTools::enum_name(err_status))));
+              Core::Mat::TimeStepReduction::request(
+                  std::format("Residual {} exceeds the residual tolerance {} by more than the set "
+                              "exceedance tolerance factor {}! Error status: {}",
+                      local_newton_manager_.convergence_quantities().residual_norm,
+                      local_newton_manager_.params().res_tol,
+                      local_newton_manager_.params().max_exceedance_fact_res_tol,
+                      EnumTools::enum_name(err_status)));
+              return;
             }
 
 
@@ -3997,14 +4020,14 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::verify_local_newton_exit
           {
             if (!incr_ratio_within_bounds)
             {
-              FOUR_C_THROW(
-                  "{}", get_error_warning_info(std::format(
-                            "Relative increment {} exceeds the increment tolerance {} by more "
-                            "than the set exceedance tolerance factor {}! Error status: {}",
-                            local_newton_manager_.convergence_quantities().increment_norm,
-                            local_newton_manager_.params().incr_tol,
-                            local_newton_manager_.params().max_exceedance_fact_incr_tol,
-                            EnumTools::enum_name(err_status))));
+              Core::Mat::TimeStepReduction::request(
+                  std::format("Relative increment {} exceeds the increment tolerance {} by more "
+                              "than the set exceedance tolerance factor {}! Error status: {}",
+                      local_newton_manager_.convergence_quantities().increment_norm,
+                      local_newton_manager_.params().incr_tol,
+                      local_newton_manager_.params().max_exceedance_fact_incr_tol,
+                      EnumTools::enum_name(err_status)));
+              return;
             }
 
             break;
@@ -4014,17 +4037,16 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::verify_local_newton_exit
           {
             if ((!residual_within_bounds) || (!incr_ratio_within_bounds))
             {
-              FOUR_C_THROW("{}",
-                  get_error_warning_info(std::format(
-                      "Residual {} and relative increment {} exceed the tolerances {} and {} by "
-                      "more than the set exceedance tolerance factors {} and {}! Error status: {}",
-                      local_newton_manager_.convergence_quantities().residual_norm,
-                      local_newton_manager_.convergence_quantities().increment_norm,
-                      local_newton_manager_.params().res_tol,
-                      local_newton_manager_.params().incr_tol,
-                      local_newton_manager_.params().max_exceedance_fact_res_tol,
-                      local_newton_manager_.params().max_exceedance_fact_incr_tol,
-                      EnumTools::enum_name(err_status))));
+              Core::Mat::TimeStepReduction::request(std::format(
+                  "Residual {} and relative increment {} exceed the tolerances {} and {} by "
+                  "more than the set exceedance tolerance factors {} and {}! Error status: {}",
+                  local_newton_manager_.convergence_quantities().residual_norm,
+                  local_newton_manager_.convergence_quantities().increment_norm,
+                  local_newton_manager_.params().res_tol, local_newton_manager_.params().incr_tol,
+                  local_newton_manager_.params().max_exceedance_fact_res_tol,
+                  local_newton_manager_.params().max_exceedance_fact_incr_tol,
+                  EnumTools::enum_name(err_status)));
+              return;
             }
 
             break;
@@ -4399,11 +4421,13 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::manage_evaluation(
     // without evaluation management strategy, we can throw directly
     else
     {
-      FOUR_C_THROW("{}", get_error_warning_info(std::format(
-                             "The Local Newton evaluation has failed and there is no evaluation "
-                             "management strategy "
-                             "selected! Error status: {}",
-                             EnumTools::enum_name(err_status))));
+      eval_action = ViscoplastUtils::EvaluationAction::exit_with_error;
+      Core::Mat::TimeStepReduction::request(
+          std::format("The Local Newton evaluation has failed and there is no evaluation "
+                      "management strategy "
+                      "selected! Error status: {}",
+              EnumTools::enum_name(err_status)));
+      return;
     }
   }
 }

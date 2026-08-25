@@ -474,12 +474,11 @@ namespace Solid
      protected:
       /*! \brief Check the evaluation procedures for possible errors
        *
-       *  In the standard case, we check for exceptions like overflow, invalid results
-       *  or divide by zero operations. This is universal and should be usable by all model
-       *  evaluators.
+       * In the standard case, this checks floating-point exceptions and the legacy
+       * element-evaluation error flag. Derived evaluators may extend this check with
+       * model-specific failure channels.
        *
        *  \return Boolean flag indicating success (true) or error (false)
-       *
        */
       virtual bool eval_error_check() const;
 

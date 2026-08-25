@@ -14,6 +14,7 @@
 #include "4C_io_pstream.hpp"
 #include "4C_linalg_sparsematrix.hpp"
 #include "4C_linalg_sparseoperator.hpp"
+#include "4C_material_time_step_request.hpp"
 #include "4C_solver_nonlin_nox_aux.hpp"
 #include "4C_solver_nonlin_nox_constraint_group.hpp"
 #include "4C_structure_new_dbc.hpp"
@@ -22,6 +23,23 @@
 #include "4C_structure_new_utils.hpp"
 
 FOUR_C_NAMESPACE_OPEN
+
+namespace
+{
+  /**
+   * @brief This helper must be called before returning false from a failed structural evaluation.
+   * NOX only sees a generic fill failure through the bool callback interface. Throwing this typed
+   * bridge signal preserves the already MPI-reduced material timestep request while control moves
+   * out of NOX. The bridge intentionally only observes the request: the policy site that reduces dt
+   * or aborts must consume it, so the support-scope contract still catches missed handling.
+   *
+   */
+  void throw_if_material_time_step_reduction_was_requested()
+  {
+    if (Core::Mat::TimeStepReduction::peek_mpi_reduced_request())
+      throw Solid::TimeInt::Internal::MaterialTimeStepReductionRequestedFromNox{};
+  }
+}  // namespace
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -87,7 +105,11 @@ bool Solid::TimeInt::NoxInterface::compute_f(const Core::LinAlg::Vector<double>&
 {
   check_init_setup();
 
-  if (not int_ptr_->apply_force(x, f)) return false;
+  if (not int_ptr_->apply_force(x, f))
+  {
+    throw_if_material_time_step_reduction_was_requested();
+    return false;
+  }
 
   /* Apply the DBC on the right hand side, since we need the Dirichlet free
    * right hand side inside NOX for the convergence check, etc.               */
@@ -103,7 +125,11 @@ bool Solid::TimeInt::NoxInterface::compute_jacobian(
 {
   check_init_setup();
 
-  if (not int_ptr_->apply_stiff(x, jac)) return false;
+  if (not int_ptr_->apply_stiff(x, jac))
+  {
+    throw_if_material_time_step_reduction_was_requested();
+    return false;
+  }
 
   /* We do not consider the jacobian DBC at this point. The Dirichlet conditions
    * are applied inside the NOX::Nln::LinearSystem::apply_jacobian_inverse()
@@ -120,7 +146,11 @@ bool Solid::TimeInt::NoxInterface::compute_f_and_jacobian(const Core::LinAlg::Ve
 {
   check_init_setup();
 
-  if (not int_ptr_->apply_force_stiff(x, rhs, jac)) return false;
+  if (not int_ptr_->apply_force_stiff(x, rhs, jac))
+  {
+    throw_if_material_time_step_reduction_was_requested();
+    return false;
+  }
 
   /* Apply the DBC on the right hand side, since we need the Dirichlet free
    * right hand side inside NOX for the convergence check, etc.               */

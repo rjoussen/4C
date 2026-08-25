@@ -13,6 +13,7 @@
 #include "4C_io_control.hpp"
 #include "4C_linalg_blocksparsematrix.hpp"
 #include "4C_linalg_utils_sparse_algebra_io.hpp"
+#include "4C_material_time_step_request.hpp"
 #include "4C_solver_nonlin_nox_group.hpp"
 #include "4C_solver_nonlin_nox_linearsystem.hpp"
 #include "4C_solver_nonlin_nox_vector.hpp"
@@ -106,12 +107,34 @@ void Solid::TimeInt::Implicit::prepare_partition_step()
  *----------------------------------------------------------------------------*/
 void Solid::TimeInt::Implicit::prepare_time_step()
 {
-  check_init_setup();
-
-  ::NOX::Abstract::Group& grp = nln_solver().get_solution_group();
-  predictor().predict(grp);
+  const auto prepare_status = prepare_time_step_with_status();
+  FOUR_C_ASSERT_ALWAYS(
+      prepare_status == Solid::StepStatus::no_errors, "Preparing structural time step failed.");
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+Solid::StepStatus Solid::TimeInt::Implicit::prepare_time_step_with_status()
+{
+  check_init_setup();
+
+  try
+  {
+    // Predictor internals may call into NOX deeply (e.g. compute/post_predict hooks). Those paths
+    // must propagate MaterialTimeStepReductionRequestedFromNox unchanged so this seam can remap it
+    // into retry control flow.
+    ::NOX::Abstract::Group& grp = nln_solver().get_solution_group();
+    predictor().predict(grp);
+    return Solid::StepStatus::no_errors;
+  }
+  catch (const Internal::MaterialTimeStepReductionRequestedFromNox&)
+  {
+    // The MPI-reduced material request remains pending in Core::Mat::TimeStepReduction. Report the
+    // failed fill through the ordinary structural evaluation status; perform_error_action()
+    // resolves the pending request before applying generic evaluation-failure handling.
+    return Solid::StepStatus::evaluation_failed;
+  }
+}
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Solid::TimeInt::Implicit::integrate()
@@ -272,6 +295,17 @@ Solid::StepAction Solid::TimeInt::Implicit::perform_error_action(Solid::StepStat
     }
     case StepStatus::evaluation_failed:
     {
+      if (Core::Mat::TimeStepReduction::consume_mpi_reduced_request())
+      {
+        if (get_data_sdyn().material_time_step_reduction_enabled())
+        {
+          prepare_retry_with_reduced_time_step();
+          return StepAction::retry_step;
+        }
+        FOUR_C_THROW(
+            "A material requested timestep reduction, but ENABLE_MATERIAL_TIME_STEP_REDUCTION is "
+            "disabled.");
+      }
       FOUR_C_THROW("Evaluation of the residual or jacobian failed!");
     }
     default:

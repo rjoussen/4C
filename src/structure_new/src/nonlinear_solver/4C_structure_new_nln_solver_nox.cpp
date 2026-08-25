@@ -15,6 +15,7 @@
 #include "4C_solver_nonlin_nox_problem.hpp"
 #include "4C_solver_nonlin_nox_scaling.hpp"
 #include "4C_solver_nonlin_nox_solver_factory.hpp"
+#include "4C_structure_new_input.hpp"
 #include "4C_structure_new_timint_base.hpp"
 #include "4C_structure_new_timint_noxinterface.hpp"
 #include "4C_structure_new_utils.hpp"
@@ -199,7 +200,18 @@ Solid::StepStatus Solid::Nln::SOLVER::Nox::solve()
 #endif
 
   // solve the non-linear step
-  ::NOX::StatusTest::StatusType finalstatus = nlnsolver_->solve();
+  ::NOX::StatusTest::StatusType finalstatus = ::NOX::StatusTest::Failed;
+  try
+  {
+    finalstatus = nlnsolver_->solve();
+  }
+  catch (const Solid::TimeInt::Internal::MaterialTimeStepReductionRequestedFromNox&)
+  {
+    // The MPI-reduced material request remains pending in Core::Mat::TimeStepReduction. Report the
+    // failed fill through the ordinary structural evaluation status; the time integrator resolves
+    // the pending request before applying generic element-failure handling.
+    return Solid::StepStatus::evaluation_failed;
+  }
 
   // Check if we do something special if the non-linear solver fails,
   // otherwise an error is thrown.
