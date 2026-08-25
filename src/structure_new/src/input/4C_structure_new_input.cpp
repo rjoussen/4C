@@ -280,8 +280,10 @@ namespace Solid
                     .default_value = norm_l2}),
 
             parameter<DivContAct>("DIVERCONT",
-                {.description =
-                        "What to do with time integration when Newton-Raphson iteration failed",
+                {.description = "Action to be taken in case the nonlinear solver does not "
+                                "converge. If `adapt_step`, the time-step size is adapted "
+                                "according to the `TIME STEP CONTROL` settings. `ignore` ignores "
+                                "the non-convergence and continues anyway.",
                     .default_value = DivContAct::stop}),
 
             deprecated_selection<Solid::NonlinSolTech>("NLNSOL",

@@ -1520,12 +1520,7 @@ int Solid::TimIntImpl::newton_full_error_check(int linerror)
   }
   // do we have a problem in the linear solver
   // only check if we want to do something fancy other wise we ignore the error in the linear solver
-  else if (linerror and (divcontype_ == Solid::DivContAct::halve_step or
-                            divcontype_ == Solid::DivContAct::adapt_step or
-                            divcontype_ == Solid::DivContAct::rand_adapt_step or
-                            divcontype_ == Solid::DivContAct::rand_adapt_step_ele_err or
-                            divcontype_ == Solid::DivContAct::repeat_step or
-                            divcontype_ == Solid::DivContAct::repeat_simulation or
+  else if (linerror and (divcontype_ == Solid::DivContAct::adapt_step or
                             divcontype_ == Solid::DivContAct::adapt_penaltycontact))
   {
     return linerror;
@@ -1547,14 +1542,8 @@ int Solid::TimIntImpl::newton_full_error_check(int linerror)
                        << Core::IO::endl;
       return 0;
     }
-    else if ((iter_ >= itermax_) and
-             (divcontype_ == Solid::DivContAct::halve_step or
-                 divcontype_ == Solid::DivContAct::adapt_step or
-                 divcontype_ == Solid::DivContAct::rand_adapt_step or
-                 divcontype_ == Solid::DivContAct::rand_adapt_step_ele_err or
-                 divcontype_ == Solid::DivContAct::repeat_step or
-                 divcontype_ == Solid::DivContAct::repeat_simulation or
-                 divcontype_ == Solid::DivContAct::adapt_penaltycontact))
+    else if ((iter_ >= itermax_) and (divcontype_ == Solid::DivContAct::adapt_step or
+                                         divcontype_ == Solid::DivContAct::adapt_penaltycontact))
     {
       if (myrank_ == 0)
         Core::IO::cout << "Newton unconverged in " << iter_ << " iterations " << Core::IO::endl;
@@ -1570,12 +1559,7 @@ int Solid::TimIntImpl::newton_full_error_check(int linerror)
 int Solid::TimIntImpl::lin_solve_error_check(int linerror)
 {
   // we only care about problems in the linear solver if we have a fancy divcont action
-  if (linerror and (divcontype_ == Solid::DivContAct::halve_step or
-                       divcontype_ == Solid::DivContAct::adapt_step or
-                       divcontype_ == Solid::DivContAct::rand_adapt_step or
-                       divcontype_ == Solid::DivContAct::rand_adapt_step_ele_err or
-                       divcontype_ == Solid::DivContAct::repeat_step or
-                       divcontype_ == Solid::DivContAct::repeat_simulation or
+  if (linerror and (divcontype_ == Solid::DivContAct::adapt_step or
                        divcontype_ == Solid::DivContAct::adapt_penaltycontact))
   {
     if (myrank_ == 0) Core::IO::cout << "Linear solver is having trouble " << Core::IO::endl;
@@ -2325,12 +2309,7 @@ int Solid::TimIntImpl::uzawa_linear_newton_full_error_check(int linerror)
   // now some error checks
   // do we have a problem in the linear solver
   // only check if we want to do something fancy other wise we ignore the error in the linear solver
-  if (linerror and (divcontype_ == Solid::DivContAct::halve_step or
-                       divcontype_ == Solid::DivContAct::adapt_step or
-                       divcontype_ == Solid::DivContAct::rand_adapt_step or
-                       divcontype_ == Solid::DivContAct::rand_adapt_step_ele_err or
-                       divcontype_ == Solid::DivContAct::repeat_step or
-                       divcontype_ == Solid::DivContAct::repeat_simulation or
+  if (linerror and (divcontype_ == Solid::DivContAct::adapt_step or
                        divcontype_ == Solid::DivContAct::adapt_penaltycontact))
   {
     return linerror;
@@ -2353,14 +2332,8 @@ int Solid::TimIntImpl::uzawa_linear_newton_full_error_check(int linerror)
       if (conman_->have_monitor()) conman_->compute_monitor_values(disn_);
       return 0;
     }
-    else if ((iter_ >= itermax_) and
-             (divcontype_ == Solid::DivContAct::halve_step or
-                 divcontype_ == Solid::DivContAct::adapt_step or
-                 divcontype_ == Solid::DivContAct::rand_adapt_step or
-                 divcontype_ == Solid::DivContAct::rand_adapt_step_ele_err or
-                 divcontype_ == Solid::DivContAct::repeat_step or
-                 divcontype_ == Solid::DivContAct::repeat_simulation or
-                 divcontype_ == Solid::DivContAct::adapt_penaltycontact))
+    else if ((iter_ >= itermax_) and (divcontype_ == Solid::DivContAct::adapt_step or
+                                         divcontype_ == Solid::DivContAct::adapt_penaltycontact))
     {
       if (myrank_ == 0)
         Core::IO::cout << "Newton unconverged in " << iter_ << " iterations " << Core::IO::endl;

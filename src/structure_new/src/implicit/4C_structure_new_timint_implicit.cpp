@@ -254,10 +254,14 @@ Solid::StepAction Solid::TimeInt::Implicit::perform_error_action(Solid::StepStat
           output(true);
           return StepAction::stop_time_loop;
         }
+        case DivContAct::adapt_penaltycontact:
+        {
+          FOUR_C_THROW("The option {} is not implemented in the new solid time integration.",
+              get_divergence_action());
+        }
         default:
         {
-          FOUR_C_THROW("DIVERCONT: {} is not implemented for the new solid time integration.",
-              get_divergence_action());
+          FOUR_C_THROW("Inconsistent divergence action.");
         }
       }
     }
