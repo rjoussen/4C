@@ -539,14 +539,14 @@ Solid::StepStatus Adapter::StructureTimeAda::perform_error_action(
   // + adapt_3D0Dptc_ele_err ??
   switch (action)
   {
-    case Solid::divcont_stop:
+    case Solid::DivContAct::stop:
       // write output
       output();
 
       // error and stop the simulation
       FOUR_C_THROW("Nonlinear solver did not converge! ");
 
-    case Solid::divcont_halve_step:
+    case Solid::DivContAct::halve_step:
       if (myrank == 0)
       {
         Core::IO::cout << "Nonlinear solver failed to converge at time t= " << stm_->get_time_np()
@@ -559,7 +559,7 @@ Solid::StepStatus Adapter::StructureTimeAda::perform_error_action(
       stepsizenew = 0.5 * stepsize_;
       return Solid::StepStatus::fail_repeat;
 
-    case Solid::divcont_continue:
+    case Solid::DivContAct::ignore:
       if (myrank == 0)
       {
         Core::IO::cout
@@ -572,15 +572,15 @@ Solid::StepStatus Adapter::StructureTimeAda::perform_error_action(
 
       return Solid::StepStatus::no_errors;
 
-    case Solid::divcont_adapt_step:
-    case Solid::divcont_rand_adapt_step:
-    case Solid::divcont_rand_adapt_step_ele_err:
+    case Solid::DivContAct::adapt_step:
+    case Solid::DivContAct::rand_adapt_step:
+    case Solid::DivContAct::rand_adapt_step_ele_err:
       FOUR_C_THROW(
           "Adapt the time step is handled by the adaptive time marching integrator. Use\n"
           "DIVERCONT = continue if you want to adapt the step size.");
-    case Solid::divcont_repeat_simulation:
+    case Solid::DivContAct::repeat_simulation:
       FOUR_C_THROW("No use to repeat a simulation when it failed. Get a coffee instead.");
-    case Solid::divcont_adapt_penaltycontact:
+    case Solid::DivContAct::adapt_penaltycontact:
     default:
       FOUR_C_THROW("I don't know what to do.");
   }

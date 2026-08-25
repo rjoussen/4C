@@ -276,21 +276,10 @@ namespace Solid
                 {.description = "type of norm to be applied to residuals",
                     .default_value = norm_l2}),
 
-            deprecated_selection<Solid::DivContAct>("DIVERCONT",
-                {
-                    {"stop", divcont_stop},
-                    {"continue", divcont_continue},
-                    {"repeat_step", divcont_repeat_step},
-                    {"halve_step", divcont_halve_step},
-                    {"adapt_step", divcont_adapt_step},
-                    {"rand_adapt_step", divcont_rand_adapt_step},
-                    {"rand_adapt_step_ele_err", divcont_rand_adapt_step_ele_err},
-                    {"repeat_simulation", divcont_repeat_simulation},
-                    {"adapt_penaltycontact", divcont_adapt_penaltycontact},
-                },
+            parameter<DivContAct>("DIVERCONT",
                 {.description =
                         "What to do with time integration when Newton-Raphson iteration failed",
-                    .default_value = divcont_stop}),
+                    .default_value = DivContAct::stop}),
 
             parameter<int>("MAXDIVCONREFINEMENTLEVEL",
                 {.description =
