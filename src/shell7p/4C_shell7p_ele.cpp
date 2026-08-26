@@ -271,13 +271,13 @@ void Discret::Elements::Shell7p::set_params_interface_ptr(const Teuchos::Paramet
 }
 
 
-void Discret::Elements::Shell7p::vis_names(std::map<std::string, int>& names)
+void Discret::Elements::Shell7p::vis_names(std::map<std::string, int>& names) const
 {
   solid_material()->vis_names(names);
 }  // vis_names()
 
 
-bool Discret::Elements::Shell7p::vis_data(const std::string& name, std::vector<double>& data)
+bool Discret::Elements::Shell7p::vis_data(const std::string& name, std::vector<double>& data) const
 {
   // Put the owner of this element into the file (use base class method for this)
   if (Core::Elements::Element::vis_data(name, data)) return true;

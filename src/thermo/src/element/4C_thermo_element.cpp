@@ -299,7 +299,7 @@ std::vector<std::shared_ptr<Core::Elements::Element>> Thermo::Element::surfaces(
 /*----------------------------------------------------------------------*
  | return visualization data (public)                        dano 09/09 |
  *----------------------------------------------------------------------*/
-bool Thermo::Element::vis_data(const std::string& name, std::vector<double>& data)
+bool Thermo::Element::vis_data(const std::string& name, std::vector<double>& data) const
 {
   // Put the owner of this element into the file (use base class method for this)
   if (Core::Elements::Element::vis_data(name, data)) return true;

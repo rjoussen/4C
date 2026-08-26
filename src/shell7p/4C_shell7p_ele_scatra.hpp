@@ -160,9 +160,9 @@ namespace Discret::Elements
 
     [[nodiscard]] const ScaTra::ImplType& impl_type() const { return impltype_; };
 
-    void vis_names(std::map<std::string, int>& names) override;
+    void vis_names(std::map<std::string, int>& names) const override;
 
-    bool vis_data(const std::string& name, std::vector<double>& data) override;
+    bool vis_data(const std::string& name, std::vector<double>& data) const override;
 
     [[nodiscard]] const double& get_thickness() const { return thickness_; }
 

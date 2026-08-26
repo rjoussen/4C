@@ -15,6 +15,7 @@
 #include "4C_io_visualization_manager.hpp"
 #include "4C_linalg_fevector.hpp"
 #include "4C_linalg_multi_vector.hpp"
+#include "4C_linalg_utils_densematrix_communication.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "4C_material_base.hpp"
 #include "4C_material_parameter_base.hpp"
@@ -434,6 +435,76 @@ namespace Core::IO
     visualization_manager_->get_visualization_data().set_cell_data_vector(
         resultname, owner_of_row_elements, 1);
   }
+
+  /*-----------------------------------------------------------------------------------------------*
+   *-----------------------------------------------------------------------------------------------*/
+  void DiscretizationVisualizationWriterMesh::append_node_owner()
+  {
+    Core::LinAlg::MultiVector<double> sysdata(*discretization_->node_row_map(), 1, true);
+
+    for (int i = 0; i < discretization_->node_row_map()->num_my_elements(); ++i)
+    {
+      sysdata.replace_local_value(i, 0, discretization_->l_row_node(i)->owner());
+    }
+
+    append_result_data_vector_with_context(sysdata, Core::IO::OutputEntity::node, {"Nodeowner"});
+  }
+
+  /*-----------------------------------------------------------------------------------------------*
+   *-----------------------------------------------------------------------------------------------*/
+  void DiscretizationVisualizationWriterMesh::append_material_element_data()
+  {
+    std::map<std::string, int> names_and_size;  // contains name and size of data
+
+    for (auto ele : discretization_->my_row_element_range())
+    {
+      if (!element_filter_(ele.user_element())) continue;
+      // get names and dimensions from every element
+      ele.user_element()->vis_names(names_and_size);
+    }
+
+    // By applying gather_all we get the combined map including all elemental values
+    // which were found by vis_names
+    Core::LinAlg::gather_all(names_and_size, discretization_->get_comm());
+
+    FOUR_C_ASSERT_ALWAYS(
+        std::ranges::all_of(names_and_size, [](const auto& pair) { return pair.second >= 1; }),
+        "Dimension of all data must be at least 1");
+
+    // loop all names acquired from the elements and fill data vectors
+    for (const auto& [name, dimension] : names_and_size)
+    {
+      std::vector<double> eledata(dimension);
+      const std::vector<std::optional<std::string>> variable_names(dimension, name);
+
+      // MultiVector stuff from the elements is put in
+      auto sysdata =
+          Core::LinAlg::MultiVector<double>(*discretization_->element_row_map(), dimension, true);
+
+      for (auto ele : discretization_->my_row_element_range())
+      {
+        if (!element_filter_(ele.user_element())) continue;
+
+        std::ranges::fill(eledata, 0.0);
+
+        // get data for a given name from element & put in sysdata
+        ele.user_element()->vis_data(name, eledata);
+
+        const int lid = discretization_->element_row_map()->lid(ele.user_element()->id());
+        FOUR_C_ASSERT_ALWAYS(lid >= 0, "Internal error: element not found in element_row_map()");
+
+        FOUR_C_ASSERT_ALWAYS(static_cast<int>(eledata.size()) == dimension,
+            "element manipulated size of visualization data");
+        for (int j = 0; j < dimension; ++j) sysdata.replace_local_value(lid, j, eledata[j]);
+      }
+
+      // Pass data to the output writer.
+
+      append_result_data_vector_with_context(
+          sysdata, Core::IO::OutputEntity::element, variable_names);
+    }
+  }
+
 
   /*-----------------------------------------------------------------------------------------------*
    *-----------------------------------------------------------------------------------------------*/

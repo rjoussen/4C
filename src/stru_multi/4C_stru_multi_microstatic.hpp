@@ -279,6 +279,12 @@ namespace MultiScale
     /// whether to write the owner of elements
     bool output_element_owner_;
 
+    /// whether to write the owner of nodes
+    bool output_node_owner_;
+
+    /// whether to write material element quantities
+    bool output_element_material_quantities_;
+
     /// whether to write the element material IDs
     bool output_element_material_id_;
 

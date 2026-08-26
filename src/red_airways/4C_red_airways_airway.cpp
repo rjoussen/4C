@@ -223,7 +223,8 @@ void Discret::Elements::RedAirway::print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  |  Return visualization data (public)                     ismail 02/10 |
  *----------------------------------------------------------------------*/
-bool Discret::Elements::RedAirway::vis_data(const std::string& name, std::vector<double>& data)
+bool Discret::Elements::RedAirway::vis_data(
+    const std::string& name, std::vector<double>& data) const
 {
   // Put the owner of this element into the file (use base class method for this)
   if (Core::Elements::Element::vis_data(name, data)) return true;

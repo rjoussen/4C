@@ -48,6 +48,14 @@ namespace Inpar
                 parameter<bool>("ELEMENT_OWNER",
                     {.description = "write element owner", .default_value = false}),
 
+                // whether to write node owner
+                parameter<bool>(
+                    "NODE_OWNER", {.description = "write node owner", .default_value = false}),
+
+                // whether to write material quantities
+                parameter<bool>("MATERIAL_ELEMENT_QUANTITIES",
+                    {.description = "write material element quantities", .default_value = false}),
+
                 // whether to write element GIDs
                 parameter<bool>("ELEMENT_GID",
                     {.description = "write 4C internal element GIDs", .default_value = false}),

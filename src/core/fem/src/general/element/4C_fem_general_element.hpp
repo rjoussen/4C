@@ -603,7 +603,7 @@ might become invalid after a redistribution of the discretization.
                         key names of data it wants to visualize and with int dimensions
                         of that data.
     */
-    virtual void vis_names(std::map<std::string, int>& names) { return; }
+    virtual void vis_names(std::map<std::string, int>& names) const { return; }
 
     /*!
     \brief Visuzalize the owner of the element using BINIO
@@ -630,7 +630,7 @@ might become invalid after a redistribution of the discretization.
     \param name (in):   Name of data that is currently processed for visualization
     \param data (out):  data to be filled by element if it recognizes the name
     */
-    virtual bool vis_data(const std::string& name, std::vector<double>& data)
+    virtual bool vis_data(const std::string& name, std::vector<double>& data) const
     {
       if (name == "Owner")
       {

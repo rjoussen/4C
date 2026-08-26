@@ -9,9 +9,13 @@ PROBLEM TYPE:
   PROBLEMTYPE: "porofluid_pressure_based_elasticity_scatra"
 IO/RUNTIME VTK OUTPUT:
   INTERVAL_STEPS: 1
+  OUTPUT_DATA_FORMAT: ascii
 IO/RUNTIME VTK OUTPUT/STRUCTURE:
   OUTPUT_STRUCTURE: true
   DISPLACEMENT: true
+  ELEMENT_OWNER: true
+  NODE_OWNER: true
+  MATERIAL_ELEMENT_QUANTITIES: true
 porofluid_elasticity_scatra_dynamic:
   output:
     result_data_every: 1

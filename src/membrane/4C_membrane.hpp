@@ -282,7 +282,7 @@ namespace Discret
                           key names of data it wants to visualize and with int dimensions
                           of that data.
       */
-      void vis_names(std::map<std::string, int>& names) override;
+      void vis_names(std::map<std::string, int>& names) const override;
 
       /*!
       \brief Query data to be visualized using BINIO of a given name
@@ -298,7 +298,7 @@ namespace Discret
       \param name (in):   Name of data that is currently processed for visualization
       \param data (out):  data to be filled by element if element recognizes the name
       */
-      bool vis_data(const std::string& name, std::vector<double>& data) override;
+      bool vis_data(const std::string& name, std::vector<double>& data) const override;
 
       //@}
 

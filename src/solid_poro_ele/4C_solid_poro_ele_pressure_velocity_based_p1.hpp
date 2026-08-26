@@ -205,9 +205,9 @@ namespace Discret::Elements
       return anisotropic_permeability_property_.nodal_coeffs_;
     }
 
-    void vis_names(std::map<std::string, int>& names) override;
+    void vis_names(std::map<std::string, int>& names) const override;
 
-    bool vis_data(const std::string& name, std::vector<double>& data) override;
+    bool vis_data(const std::string& name, std::vector<double>& data) const override;
 
     ScaTra::ImplType get_impl_type() { return poro_ele_property_.impltype; }
 

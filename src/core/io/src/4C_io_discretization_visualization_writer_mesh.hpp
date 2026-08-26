@@ -184,6 +184,20 @@ namespace Core::IO
     void append_element_owner(const std::string& resultname);
 
     /**
+     * \brief Write owner id for each node
+     */
+    void append_node_owner();
+
+    /**
+     * \brief Write optional material output for each element
+     *
+     * Materials have the option to have the methods vis_names() and vis_data() to visualize
+     * additional material quantities.
+     *
+     */
+    void append_material_element_data();
+
+    /**
      * \brief Write the 4C internal element GIDs for each element
      *
      * @param resultname (in) Name of the field in the visualization file

@@ -377,7 +377,8 @@ void Discret::Elements::SolidPoroPressureBased<dim>::unpack(
 }
 
 template <unsigned dim>
-void Discret::Elements::SolidPoroPressureBased<dim>::vis_names(std::map<std::string, int>& names)
+void Discret::Elements::SolidPoroPressureBased<dim>::vis_names(
+    std::map<std::string, int>& names) const
 {
   Core::Elements::Element::vis_names(names);
   solid_poro_material().vis_names(names);
@@ -385,7 +386,7 @@ void Discret::Elements::SolidPoroPressureBased<dim>::vis_names(std::map<std::str
 
 template <unsigned dim>
 bool Discret::Elements::SolidPoroPressureBased<dim>::vis_data(
-    const std::string& name, std::vector<double>& data)
+    const std::string& name, std::vector<double>& data) const
 {
   // Put the owner of this element into the file (use base class method for this)
   if (Core::Elements::Element::vis_data(name, data)) return true;
