@@ -16,9 +16,8 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Adapter::StructureTimeLoop::StructureTimeLoop(
-    Global::Problem& problem, std::shared_ptr<Structure> structure)
-    : StructureWrapper(std::move(structure)), problem_(problem)
+Adapter::StructureTimeLoop::StructureTimeLoop(std::shared_ptr<Structure> structure)
+    : StructureWrapper(std::move(structure))
 {
 }
 /*----------------------------------------------------------------------*/
