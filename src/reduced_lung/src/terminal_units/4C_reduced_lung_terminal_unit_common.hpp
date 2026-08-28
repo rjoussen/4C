@@ -27,10 +27,11 @@ namespace ReducedLung
 namespace ReducedLung::TerminalUnits
 {
   /**
-   * @brief Effective reference volume of one terminal-unit element.
+   * @brief Effective reference volume of one terminal-unit element and its pressure derivatives.
    *
-   * Terminal-unit physics needs both the reference volume and its reciprocal, so both are kept
-   * together and computed once per element rather than at every call site. Built through
+   * Recruitment makes the reference volume depend on the transpulmonary pressure. The derivatives
+   * vanish wherever the reference volume is constant within a Newton step, i.e. for terminal
+   * units without recruitment and for the frozen linearization. Built through
    * make_reference_volume_context().
    */
   struct ReferenceVolumeContext
@@ -39,14 +40,18 @@ namespace ReducedLung::TerminalUnits
     double v0_eff;
     ///< Reciprocal of the effective reference volume, cached because assembly mostly needs it.
     double inv_v0_eff;
+    ///< Derivative of the effective reference volume w.r.t. the transpulmonary pressure.
+    double dv0_dp;
   };
 
   /**
-   * @brief Assemble a reference volume context from the reference volume.
+   * @brief Assemble a reference volume context from the reference volume and its derivative.
    */
-  [[nodiscard]] inline ReferenceVolumeContext make_reference_volume_context(const double v0_eff)
+  [[nodiscard]] inline ReferenceVolumeContext make_reference_volume_context(
+      const double v0_eff, const double dv0_dp)
   {
-    return {.v0_eff = v0_eff, .inv_v0_eff = 1.0 / v0_eff};
+    const double inv_v0_eff = 1.0 / v0_eff;
+    return {.v0_eff = v0_eff, .inv_v0_eff = inv_v0_eff, .dv0_dp = dv0_dp};
   }
 
   /**
@@ -78,7 +83,8 @@ namespace ReducedLung::TerminalUnits
     std::vector<int> lid_q;
     ///< Current physical terminal-unit gas volumes.
     std::vector<double> volume_v;
-    ///< Effective reference volume of each element, consumed by elasticity and rheology.
+    ///< Effective reference volume of each element, seeded on model block creation and
+    ///< refreshed whenever the dof vector changes.
     std::vector<ReferenceVolumeContext> reference_volume_context;
 
     /**

@@ -280,6 +280,15 @@ Core::IO::InputSpec ReducedLung::valid_parameters()
                   .store = in_struct(&ReducedLungParameters::LungTree::TerminalUnits::
                           RecruitmentModel::time_law_type),
               }),
+          input_field<ReducedLungParameters::LungTree::TerminalUnits::RecruitmentModel::
+                  ReferenceVolumeLinearization>("reference_volume_linearization",
+              {
+                  .description = "Treatment of the reference volume in the Jacobian; Frozen "
+                                 "holds it at the last converged value and drops dV0/dp, "
+                                 "Coupled carries the derivative.",
+                  .store = in_struct(&ReducedLungParameters::LungTree::TerminalUnits::
+                          RecruitmentModel::reference_volume_linearization),
+              }),
           group<ReducedLungParameters::LungTree::TerminalUnits::RecruitmentModel::LinearPressure>(
               "linear_pressure",
               {

@@ -107,7 +107,7 @@ namespace ReducedLung
       model.data.volume_v.push_back(initial_volume);
       // Initial value of the cache the internal state updater recomputes on every dof change.
       model.data.reference_volume_context.push_back(
-          TerminalUnits::make_reference_volume_context(initial_volume));
+          TerminalUnits::make_reference_volume_context(initial_volume, 0.0));
 
       TerminalUnits::Rheology::append_model_parameters(model.rheological_model, global_element_id,
           parameters.lung_tree.terminal_units.rheological_model);

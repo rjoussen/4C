@@ -21,11 +21,12 @@ namespace ReducedLung::TerminalUnits::Recruitment
   namespace
   {
     /**
-     * Quasi-static recruitment target of one element.
+     * Quasi-static recruitment target of one element and its transpulmonary-pressure derivative.
      */
     struct TargetContext
     {
       double v0_target = 0.0;
+      double dv0_target_dp = 0.0;
     };
 
     /**
@@ -37,6 +38,15 @@ namespace ReducedLung::TerminalUnits::Recruitment
       return locally_relevant_dofs.local_values_as_span()[data.lid_p1[element_index]] -
              locally_relevant_dofs.local_values_as_span()[data.lid_p2[element_index]];
     }
+
+    /**
+     * Reference volume after the time law, and its transpulmonary-pressure derivative.
+     */
+    struct RelaxedReferenceVolume
+    {
+      double v0 = 0.0;
+      double dv0_dp = 0.0;
+    };
 
     /**
      * Evaluate the piecewise-linear pressure law on the active hysteresis branch.
@@ -51,11 +61,12 @@ namespace ReducedLung::TerminalUnits::Recruitment
                                : pressure_law.p_closing_min[element_index];
       const double p_max = p_min + pressure_law.delta_p_minmax[element_index];
 
-      if (transpulmonary_pressure_p_tp <= p_min) return {.v0_target = v0_min};
-      if (transpulmonary_pressure_p_tp >= p_max) return {.v0_target = v0_max};
+      if (transpulmonary_pressure_p_tp <= p_min) return {.v0_target = v0_min, .dv0_target_dp = 0.0};
+      if (transpulmonary_pressure_p_tp >= p_max) return {.v0_target = v0_max, .dv0_target_dp = 0.0};
 
       const double slope = (v0_max - v0_min) / pressure_law.delta_p_minmax[element_index];
-      return {.v0_target = v0_min + (transpulmonary_pressure_p_tp - p_min) * slope};
+      return {.v0_target = v0_min + (transpulmonary_pressure_p_tp - p_min) * slope,
+          .dv0_target_dp = slope};
     }
 
     /**
@@ -63,41 +74,67 @@ namespace ReducedLung::TerminalUnits::Recruitment
      *
      * Composes with any pressure law: it only sees the target and the state it relaxes from.
      */
-    [[nodiscard]] double apply_time_law(const TimeLaw& time_law, const size_t element_index,
-        const TargetContext& target, const double v0_n, const double dt)
+    [[nodiscard]] RelaxedReferenceVolume apply_time_law(const TimeLaw& time_law,
+        const size_t element_index, const TargetContext& target, const double v0_n, const double dt)
     {
       switch (time_law.type[element_index])
       {
         case TimeLawType::None:
-          return target.v0_target;
+          return {.v0 = target.v0_target, .dv0_dp = target.dv0_target_dp};
         case TimeLawType::ExponentialRelaxation:
         {
           const double relaxation = std::exp(-dt / time_law.tau[element_index]);
-          return relaxation * v0_n + (1.0 - relaxation) * target.v0_target;
+          return {.v0 = relaxation * v0_n + (1.0 - relaxation) * target.v0_target,
+              .dv0_dp = (1.0 - relaxation) * target.dv0_target_dp};
         }
       }
       FOUR_C_THROW("Unknown recruitment time-law type enum value.");
     }
 
     /**
-     * Reference volume of the new time step: the pressure law target, relaxed by the time law and
-     * kept inside [v0_min, v0_max].
+     * Reference volume of the new time step and its transpulmonary-pressure derivative: the
+     * pressure law target, relaxed by the time law and kept inside [v0_min, v0_max].
+     *
+     * The derivative vanishes on the clamped branches, where the reference volume no longer
+     * responds to pressure.
      */
-    [[nodiscard]] double evaluate_recruitment_law(const TerminalUnitData& data,
+    [[nodiscard]] ReferenceVolumeContext evaluate_recruitment_law(const TerminalUnitData& data,
         const LinearPressureRecruitment& recruitment_model,
         const Core::LinAlg::Vector<double>& locally_relevant_dofs, const size_t element_index,
         const double dt, TargetContext& target)
     {
       target = evaluate_linear_pressure_law(recruitment_model.pressure_law, element_index,
           transpulmonary_pressure(data, locally_relevant_dofs, element_index));
-      const double v0_next = apply_time_law(recruitment_model.time_law, element_index, target,
-          recruitment_model.v0_n[element_index], dt);
+      const RelaxedReferenceVolume relaxed = apply_time_law(recruitment_model.time_law,
+          element_index, target, recruitment_model.v0_n[element_index], dt);
 
       const double v0_min = recruitment_model.pressure_law.v0_min[element_index];
       const double v0_max = recruitment_model.pressure_law.v0_max[element_index];
-      if (v0_next <= v0_min) return v0_min;
-      if (v0_next >= v0_max) return v0_max;
-      return v0_next;
+      if (relaxed.v0 <= v0_min) return make_reference_volume_context(v0_min, 0.0);
+      if (relaxed.v0 >= v0_max) return make_reference_volume_context(v0_max, 0.0);
+      return make_reference_volume_context(relaxed.v0, relaxed.dv0_dp);
+    }
+
+    /**
+     * Effective reference volume of one recruiting element and its pressure derivatives.
+     *
+     * The frozen linearization keeps the reference volume at the last converged value and drops
+     * its pressure dependence from the Jacobian; the coupled one lets Newton see the law.
+     */
+    [[nodiscard]] ReferenceVolumeContext evaluate_reference_volume_context(
+        const TerminalUnitData& data, const LinearPressureRecruitment& recruitment_model,
+        const Core::LinAlg::Vector<double>& locally_relevant_dofs, const size_t element_index,
+        const double dt)
+    {
+      if (recruitment_model.reference_volume_linearization[element_index] ==
+          ReferenceVolumeLinearization::Frozen)
+      {
+        return make_reference_volume_context(recruitment_model.v0_n[element_index], 0.0);
+      }
+
+      TargetContext target;
+      return evaluate_recruitment_law(
+          data, recruitment_model, locally_relevant_dofs, element_index, dt, target);
     }
 
     /**
@@ -183,6 +220,9 @@ namespace ReducedLung::TerminalUnits::Recruitment
 
       recruitment_model.time_law.type.push_back(time_law_type);
       recruitment_model.time_law.tau.push_back(tau);
+      recruitment_model.reference_volume_linearization.push_back(
+          parameters.reference_volume_linearization.at(
+              global_element_id, "reference_volume_linearization"));
       recruitment_model.pressure_law.active_path_n.push_back(
           parameters.linear_pressure.initial_path.at(global_element_id, "initial_path"));
       recruitment_model.pressure_law.v0_min.push_back(v0_min);
@@ -237,18 +277,19 @@ namespace ReducedLung::TerminalUnits::Recruitment
             {
               for (size_t i = 0; i < data.number_of_elements(); ++i)
               {
-                data.reference_volume_context[i] = make_reference_volume_context(model.v0[i]);
+                data.reference_volume_context[i] = make_reference_volume_context(model.v0[i], 0.0);
               }
             };
           }
           else if constexpr (std::is_same_v<ModelType, LinearPressureRecruitment>)
           {
             return [&model](TerminalUnitData& data,
-                       const Core::LinAlg::Vector<double>& /*locally_relevant_dofs*/, double /*dt*/)
+                       const Core::LinAlg::Vector<double>& locally_relevant_dofs, const double dt)
             {
               for (size_t i = 0; i < data.number_of_elements(); ++i)
               {
-                data.reference_volume_context[i] = make_reference_volume_context(model.v0_n[i]);
+                data.reference_volume_context[i] =
+                    evaluate_reference_volume_context(data, model, locally_relevant_dofs, i, dt);
               }
             };
           }
@@ -284,8 +325,11 @@ namespace ReducedLung::TerminalUnits::Recruitment
               for (size_t i = 0; i < data.number_of_elements(); ++i)
               {
                 TargetContext target;
+                // The state advance always follows the coupled law; the linearization mode only
+                // decides whether Newton is told about the pressure dependence on the way there.
                 const double v0_next =
-                    evaluate_recruitment_law(data, model, locally_relevant_dofs, i, dt, target);
+                    evaluate_recruitment_law(data, model, locally_relevant_dofs, i, dt, target)
+                        .v0_eff;
 
                 // The law reads the state of the last converged step, so overwrite it afterwards.
                 model.v0_target[i] = target.v0_target;

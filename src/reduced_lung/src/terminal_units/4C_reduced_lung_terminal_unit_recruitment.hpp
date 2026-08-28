@@ -36,6 +36,8 @@ namespace ReducedLung::TerminalUnits
   using TimeLawType = ReducedLungParameters::LungTree::TerminalUnits::RecruitmentModel::TimeLawType;
   using HysteresisPath =
       ReducedLungParameters::LungTree::TerminalUnits::RecruitmentModel::HysteresisPath;
+  using ReferenceVolumeLinearization = ReducedLungParameters::LungTree::TerminalUnits::
+      RecruitmentModel::ReferenceVolumeLinearization;
 
   /**
    * @brief Terminal units whose reference volume is the geometry-derived constant.
@@ -92,6 +94,9 @@ namespace ReducedLung::TerminalUnits
   {
     LinearPressureLaw pressure_law;
     TimeLaw time_law;
+
+    ///< Whether the reference volume derivative enters the Jacobian or is dropped.
+    std::vector<ReferenceVolumeLinearization> reference_volume_linearization;
 
     ///< Reference volume of the last converged time step.
     std::vector<double> v0_n;
@@ -159,8 +164,10 @@ namespace ReducedLung::TerminalUnits::Recruitment
    * The returned callback refreshes TerminalUnitData::reference_volume_context of all elements in
    * one model block, so that elasticity and rheology can consume the reference volume without
    * knowing which recruitment law produced it. Everything reading the reference volume runs after
-   * it. Within a Newton step the reference volume stays at the last converged value; blocks
-   * without a recruitment law report the constant geometry-derived one.
+   * it. Under the frozen linearization the reference volume stays at the last converged value and
+   * the derivatives vanish; under the coupled one it follows the recruitment law within the Newton
+   * step, exactly as the end-of-timestep routine will advance it. Blocks without a recruitment law
+   * report the constant geometry-derived reference volume.
    */
   InternalStateUpdater make_internal_state_updater(const RecruitmentModel& recruitment_model);
 
