@@ -13,6 +13,7 @@
 #include "4C_linalg_map.hpp"
 #include "4C_reduced_lung_terminal_unit_common.hpp"
 #include "4C_reduced_lung_terminal_unit_elasticity.hpp"
+#include "4C_reduced_lung_terminal_unit_recruitment.hpp"
 #include "4C_reduced_lung_terminal_unit_rheology.hpp"
 
 #include <vector>
@@ -29,6 +30,7 @@ namespace ReducedLung::TerminalUnits
     TerminalUnitData data;
     RheologicalModel rheological_model;
     ElasticityModel elasticity_model;
+    RecruitmentModel recruitment_model;
     ResidualEvaluator residual_evaluator;
     JacobianEvaluator jacobian_evaluator;
     InternalStateUpdater internal_state_updater;
