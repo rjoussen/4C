@@ -73,7 +73,7 @@ Solid::TimIntImpl::TimIntImpl(const Teuchos::ParameterList& timeparams,
       itermin_(sdynparams.get<int>("MINITER")),
       time_step_control_settings_(TimeStepping::TimeStepControlSettings(
           sdynparams.get<TimeStepping::TimeStepControlSettings::InputParameters>(
-              "TIMESTEP CONTROL"),
+              "time_step_control"),
           timeparams.get<double>("TIMESTEP"), itermax_)),
       toldisi_(sdynparams.get<double>("TOLDISP")),
       tolfres_(sdynparams.get<double>("TOLRES")),

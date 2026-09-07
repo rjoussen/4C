@@ -20,10 +20,10 @@ STRUCTURAL DYNAMIC:
   MAXITER: 1
   DIVERCONT: "adapt_step"
   LINEAR_SOLVER: 1
-  TIMESTEP CONTROL:
-    DECREASE_FACTOR: 0.4
-    STEPS_TO_INCREASE: 1
-    INCREASE_FACTOR: 2
+  time_step_control:
+    decrease_factor: 0.4
+    steps_to_increase: 1
+    increase_factor: 2
 STRUCT NOX/Printing:
   Outer Iteration: false
   Outer Iteration StatusTest: false

@@ -182,7 +182,7 @@ void Solid::TimeInt::BaseDataSDyn::init(const std::shared_ptr<Core::FE::Discreti
     noxparams_ = std::make_shared<Teuchos::ParameterList>(xparams.sublist("NOX"));
     ptc_delta_init_ = sdynparams.get<double>("PTCDT");
     time_step_control_settings_ = TimeStepping::TimeStepControlSettings(
-        sdynparams.get<TimeStepping::TimeStepControlSettings::InputParameters>("TIMESTEP CONTROL"),
+        sdynparams.get<TimeStepping::TimeStepControlSettings::InputParameters>("time_step_control"),
         sdynparams.get<double>("TIMESTEP"), itermax_);
   }
   // ---------------------------------------------------------------------------

@@ -34,7 +34,7 @@ namespace TimeStepping
       bool reduce_to_max_time;
     };
 
-    /// Return the input specification for the TIMESTEP CONTROL parameter group.
+    /// Return the input specification for the time_step_control parameter group.
     [[nodiscard]] static Core::IO::InputSpec input_spec();
 
     /// Factor used to reduce the time-step size after a failed step.

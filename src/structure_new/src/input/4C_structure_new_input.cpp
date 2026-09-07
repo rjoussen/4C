@@ -282,7 +282,7 @@ namespace Solid
             parameter<DivContAct>("DIVERCONT",
                 {.description = "Action to be taken in case the nonlinear solver does not "
                                 "converge. If `adapt_step`, the time-step size is adapted "
-                                "according to the `TIMESTEP CONTROL` settings. `ignore` ignores "
+                                "according to the `time_step_control` settings. `ignore` ignores "
                                 "the non-convergence and continues anyway.",
                     .default_value = DivContAct::stop}),
 

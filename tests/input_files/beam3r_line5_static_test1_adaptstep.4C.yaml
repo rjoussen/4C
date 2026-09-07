@@ -18,8 +18,8 @@ STRUCTURAL DYNAMIC:
   MAXITER: 15
   DIVERCONT: "adapt_step"
   LINEAR_SOLVER: 1
-  TIMESTEP CONTROL:
-    STEPS_TO_INCREASE: 4
+  time_step_control:
+    steps_to_increase: 4
 SOLVER 1:
   SOLVER: "UMFPACK"
   NAME: "Structure_Solver"

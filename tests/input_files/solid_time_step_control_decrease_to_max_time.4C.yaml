@@ -15,8 +15,8 @@ STRUCTURAL DYNAMIC:
   MAXITER: 10
   DIVERCONT: "adapt_step"
   LINEAR_SOLVER: 1
-  TIMESTEP CONTROL:
-    REDUCE_TO_MAXTIME: true
+  time_step_control:
+    reduce_to_max_time: true
 STRUCT NOX/Printing:
   Outer Iteration: false
   Outer Iteration StatusTest: false

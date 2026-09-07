@@ -4,29 +4,29 @@ TITLE:
   - "  Step  1: dt=0.25, 4 Newton iterations, converged."
   - "  Step  2: dt=0.25, 3 Newton iterations, converged."
   - "  Step  3: dt=0.25, 3 Newton iterations, converged."
-  - "    -> STEPS_TO_INCREASE: 3 is reached, but increase blocked by average Newton iterations over the
+  - "    -> steps_to_increase: 3 is reached, but increase blocked by average Newton iterations over the
     last 3 steps (3.33 > 2)."
   - "  Step  4: dt=0.25, 3 Newton iterations, converged."
-  - "    -> STEPS_TO_INCREASE: 3 is reached, but increase blocked by average Newton iterations over the
+  - "    -> steps_to_increase: 3 is reached, but increase blocked by average Newton iterations over the
     last 3 steps (3 > 2)."
   - "  Step  5: dt=0.25, 2 Newton iterations, converged."
-  - "    -> STEPS_TO_INCREASE: 3 is reached, but increase blocked by average Newton iterations over the
+  - "    -> steps_to_increase: 3 is reached, but increase blocked by average Newton iterations over the
     last 3 steps (2.67 > 2)."
   - "  Step  6: dt=0.25, 2 Newton iterations, converged."
-  - "    -> STEPS_TO_INCREASE: 3 is reached, but increase blocked by average Newton iterations over the
+  - "    -> steps_to_increase: 3 is reached, but increase blocked by average Newton iterations over the
     last 3 steps (2.33 > 2)."
   - "  Step  7: dt=0.25, 2 Newton iterations, converged."
-  - "    -> STEPS_TO_INCREASE: 3 is reached, AND average Newton iterations over the last 3 steps fulfilled
+  - "    -> steps_to_increase: 3 is reached, AND average Newton iterations over the last 3 steps fulfilled
     (2 <= 2)."
   - "    -> dt increased to 0.25*2 = 0.5 for the next step."
   - "  Step  8: dt=0.5, 2 Newton iterations, converged."
   - "  Step  9: dt=0.5, 1 Newton iterations, converged."
   - "  Step 10: dt=0.5, 1 Newton iterations, converged."
-  - "    -> STEPS_TO_INCREASE: 3 is reached, AND average Newton iterations over the last 3 steps fulfilled
+  - "    -> steps_to_increase: 3 is reached, AND average Newton iterations over the last 3 steps fulfilled
     (1.63 <= 2)."
-  - "    -> dt increased to MAX_TIME_STEP=0.6 for the next step, since 0.5*2=1.0 > MAX_TIME_STEP=0.6."
+  - "    -> dt increased to max_time_step=0.6 for the next step, since 0.5*2=1.0 > max_time_step=0.6."
   - "  Step 11-15: dt=0.6, 1 Newton iterations, converged."
-  - "    -> no further increase because MAX_TIME_STEP=0.6 is reached."
+  - "    -> no further increase because max_time_step=0.6 is reached."
   - "  Final time-step size: dt=0.6, final time: t= 7*0.25 + 3*0.5 + 5*0.6 = 6.25"
 PROBLEM TYPE:
   PROBLEMTYPE: "Structure"
@@ -40,11 +40,11 @@ STRUCTURAL DYNAMIC:
   MAXITER: 5
   DIVERCONT: "adapt_step"
   LINEAR_SOLVER: 1
-  TIMESTEP CONTROL:
-    STEPS_TO_INCREASE: 3
-    MAX_TIMESTEP: 0.6
-    INCREASE_FACTOR: 2
-    MAX_AVERAGE_NONLINEAR_ITERATIONS: 2
+  time_step_control:
+    steps_to_increase: 3
+    max_time_step: 0.6
+    increase_factor: 2
+    max_average_nonlinear_iterations: 2
 STRUCT NOX/Printing:
   Outer Iteration: false
   Outer Iteration StatusTest: false

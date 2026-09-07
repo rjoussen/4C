@@ -28,9 +28,9 @@ STRUCTURAL DYNAMIC:
   MASSLIN: "rotations"
   NEGLECTINERTIA: true
   LINEAR_SOLVER: 1
-  TIMESTEP CONTROL:
-    STEPS_TO_INCREASE: 4
-    REDUCE_TO_MAXTIME: true
+  time_step_control:
+    steps_to_increase: 4
+    reduce_to_max_time: true
 STRUCTURAL DYNAMIC/ONESTEPTHETA:
   THETA: 1
 SOLVER 1:
