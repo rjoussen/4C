@@ -33,6 +33,27 @@ namespace
     EXPECT_NEAR(x, -0.271887376775884, 1e-8);
   }
 
+  TEST(CoreUtilsLocalNewtonTest, SolveLocalNewtonWithStatusReturnsNonConvergence)
+  {
+    auto residuum_and_jacobian = [](double x) -> std::tuple<double, double>
+    {
+      double residuum = x + 1.0;
+      double jacobian = -1.0;  // deliberately wrong jacobian to trigger non-convergence
+      return {residuum, jacobian};
+    };
+
+    auto result = Core::Utils::solve_local_newton_with_status(residuum_and_jacobian, 0.0, 1e-9, 1);
+
+    EXPECT_FALSE(result.is_converged);
+    EXPECT_EQ(result.iteration_count, 1);
+    EXPECT_NEAR(result.x, 1.0, 1e-12);
+    EXPECT_NEAR(result.jacobian, -1.0, 1e-12);
+    EXPECT_NEAR(result.residuum_norm, 2.0, 1e-12);
+
+    EXPECT_THROW((void)Core::Utils::solve_local_newton(residuum_and_jacobian, 0.0, 1e-9, 1),
+        Core::Exception);
+  }
+
 
   TEST(CoreUtilsLocalNewtonTest, NewtonVector)
   {
@@ -116,6 +137,7 @@ namespace
   };
 
   bool operator>(CustomScalarType x, CustomScalarType y) { return x.value_ > y.value_; }
+  bool operator<=(CustomScalarType x, CustomScalarType y) { return x.value_ <= y.value_; }
 
   struct CustomVectorType
   {
