@@ -148,7 +148,7 @@ void NOX::Nln::GroupBase::computeX(
   isValidRHS = userInterfacePtr->compute_f(
       xVector.get_linalg_vector(), RHSVector.get_linalg_vector(), NOX::Nln::FillType::Residual);
 
-  FOUR_C_ASSERT(isValidRHS, "NOX::Nln::GroupBase::computeF() - failed");
+  if (not isValidRHS) return ::NOX::Abstract::Group::ReturnType::Failed;
 
   return ::NOX::Abstract::Group::Ok;
 }
@@ -159,7 +159,7 @@ void NOX::Nln::GroupBase::computeX(
 
   isValidJacobian = linearSystemPtr->compute_jacobian(xVector);
 
-  FOUR_C_ASSERT(isValidJacobian, "NOX::Nln::GroupBase::computeJacobian() - failed");
+  if (not isValidJacobian) return ::NOX::Abstract::Group::ReturnType::Failed;
 
   return ::NOX::Abstract::Group::Ok;
 }
@@ -173,6 +173,7 @@ void NOX::Nln::GroupBase::computeX(
       isJacobian(), "NOX::Nln::GroupBase::computeGradient() - Jacobian is out of date wrt X!");
 
   isValidGrad = linearSystemPtr->apply_jacobian_transpose(RHSVector, gradVector);
+  if (not isValidGrad) return ::NOX::Abstract::Group::ReturnType::Failed;
 
   return ::NOX::Abstract::Group::Ok;
 }

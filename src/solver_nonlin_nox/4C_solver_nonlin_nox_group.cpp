@@ -129,13 +129,10 @@ void NOX::Nln::Group::set_skip_update_x(bool skipUpdateX) { skipUpdateX_ = skipU
 
   if (isF()) return ::NOX::Abstract::Group::Ok;
 
-  const bool success = userInterfacePtr->compute_f(
+  isValidRHS = userInterfacePtr->compute_f(
       xVector.get_linalg_vector(), RHSVector.get_linalg_vector(), NOX::Nln::FillType::Residual);
 
-  if (not success)
-  {
-    throw "NOX::Nln::Group::computeF() - fill failed";
-  }
+  if (not isValidRHS) return ::NOX::Abstract::Group::ReturnType::Failed;
 
   isValidRHS = true;
 
@@ -162,18 +159,16 @@ void NOX::Nln::Group::set_skip_update_x(bool skipUpdateX) { skipUpdateX_ = skipU
     isValidRHS = false;
     prePostOperatorPtr_->run_pre_compute_f(RHSVector.get_linalg_vector(), *this);
 
-    bool status = false;
     Teuchos::RCP<NOX::Nln::LinearSystem> nlnSharedLinearSystem =
         Teuchos::rcp_dynamic_cast<NOX::Nln::LinearSystem>(linearSystemPtr);
 
     if (nlnSharedLinearSystem.is_null())
       throw_error("compute_f_and_jacobian", "Dynamic cast of the shared linear system failed!");
 
-    status = nlnSharedLinearSystem->compute_f_and_jacobian(xVector, RHSVector);
-    if (!status) throw_error("compute_f_and_jacobian", "evaluation failed!");
+    isValidRHS = isValidJacobian =
+        nlnSharedLinearSystem->compute_f_and_jacobian(xVector, RHSVector);
 
-    isValidRHS = true;
-    isValidJacobian = true;
+    if (not isValidRHS or not isValidJacobian) return ::NOX::Abstract::Group::ReturnType::Failed;
 
     ret = ::NOX::Abstract::Group::Ok;
 

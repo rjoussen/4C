@@ -36,7 +36,8 @@ NOX::Nln::LineSearch::Backtrack::Backtrack(const Teuchos::RCP<::NOX::GlobalData>
       outer_tests_ptr_(outerTests),
       inner_tests_ptr_(innerTests)
 {
-  reset(gd, params);
+  const bool success = reset(gd, params);
+  FOUR_C_ASSERT_ALWAYS(success, "Reset of Backtrack line search failed!");
 }
 
 /*----------------------------------------------------------------------------*
@@ -126,45 +127,18 @@ bool NOX::Nln::LineSearch::Backtrack::compute(::NOX::Abstract::Group& grp, doubl
   grp.computeX(oldGrp, dir, step);
   ::NOX::Abstract::Group::ReturnType rtype = ::NOX::Abstract::Group::Ok;
   bool failed = false;
-  try
+  rtype = grp.computeF();
+
+  if (rtype != ::NOX::Abstract::Group::ReturnType::Ok)
   {
-    failed = false;
-    rtype = grp.computeF();
-    if (rtype != ::NOX::Abstract::Group::Ok) throw_error("compute", "Unable to compute F!");
+    utils_->out(::NOX::Utils::Warning)
+        << "Evaluation was not successful. The line search step length will be reduced!\n";
 
-    /* Safe-guarding of the inner status test:
-     * If the outer NormF test is converged for a full step length,
-     * we don't have to reduce the step length any further.
-     * This additional check becomes necessary, because of cancellation
-     * errors and related numerical artifacts. */
-    // check the outer status test for the full step length
-    outer_tests_ptr_->checkStatus(s, check_type_);
-
-    const NOX::Nln::Solver::LineSearchBased& lsSolver =
-        static_cast<const NOX::Nln::Solver::LineSearchBased&>(s);
-
-    const ::NOX::StatusTest::StatusType ostatus =
-        lsSolver.get_status<NOX::Nln::StatusTest::NormF>();
-
-    /* Skip the inner status test, if the outer NormF test is
-     * already converged! */
-    if (ostatus == ::NOX::StatusTest::Converged)
-    {
-      fp_except_.enable();
-      return true;
-    }
-  }
-  // catch error of the computeF method
-  catch (const char* e)
-  {
-    if (not fp_except_.shall_be_caught_) FOUR_C_THROW("An exception occurred: {}", e);
-
-    utils_->out(::NOX::Utils::Warning) << "WARNING: Error caught = " << e << "\n";
-
+    if (not fp_except_.shall_be_caught_) return false;
     status_ = NOX::Nln::Inner::StatusTest::status_step_too_long;
     failed = true;
   }
-  // clear the exception checks after the try/catch block
+  // clear the exception checks after the trial evaluation
   fp_except_.clear();
 
   // -------------------------------------------------
@@ -198,25 +172,21 @@ bool NOX::Nln::LineSearch::Backtrack::compute(::NOX::Abstract::Group& grp, doubl
     grp.computeX(oldGrp, dir, step);
     ++ls_iters_;
 
-    try
+    rtype = grp.computeF();
+    if (rtype != ::NOX::Abstract::Group::ReturnType::Ok)
     {
-      rtype = grp.computeF();
-      if (rtype != ::NOX::Abstract::Group::Ok) throw_error("compute", "Unable to compute F!");
-      status_ = inner_tests_ptr_->check_status(*this, s, grp, check_type_);
-      print_update(utils_->out(::NOX::Utils::InnerIteration));
-    }
-    // catch error of the computeF method
-    catch (const char* e)
-    {
-      if (not fp_except_.shall_be_caught_) FOUR_C_THROW("An exception occurred: {}", e);
+      utils_->out(::NOX::Utils::Warning)
+          << "Evaluation was not successful. The line search step length will be reduced!\n";
 
-      if (utils_->isPrintType(::NOX::Utils::Warning))
-        utils_->out() << "WARNING: Error caught = " << e << "\n";
+      if (not fp_except_.shall_be_caught_) return false;
 
       status_ = NOX::Nln::Inner::StatusTest::status_step_too_long;
     }
-
-    // clear the exception checks after the try/catch block
+    else
+    {
+      status_ = inner_tests_ptr_->check_status(*this, s, grp, check_type_);
+      print_update(utils_->out(::NOX::Utils::InnerIteration));
+    }
     fp_except_.clear();
   }
   // -------------------------------------------------
@@ -225,14 +195,18 @@ bool NOX::Nln::LineSearch::Backtrack::compute(::NOX::Abstract::Group& grp, doubl
   utils_->out(::NOX::Utils::InnerIteration) << ::NOX::Utils::fill(72, '=') << "\n";
 
   if (status_ == NOX::Nln::Inner::StatusTest::status_step_too_short)
-    throw_error("compute()",
-        "The current step is too short and no "
-        "restoration phase is implemented!");
+  {
+    utils_->out(::NOX::Utils::Warning) << "The current step is too short and no "
+                                       << "restoration phase is implemented!";
+    return false;
+  }
   else if (status_ == NOX::Nln::Inner::StatusTest::status_no_descent_direction)
-    throw_error("compute()", "The given search direction is no descent direction!");
-
+  {
+    utils_->out(::NOX::Utils::Warning) << "The given search direction is no descent direction!";
+    return false;
+  }
   fp_except_.enable();
-  return (status_ == NOX::Nln::Inner::StatusTest::status_converged ? true : false);
+  return (status_ == NOX::Nln::Inner::StatusTest::status_converged);
 }
 
 /*----------------------------------------------------------------------*

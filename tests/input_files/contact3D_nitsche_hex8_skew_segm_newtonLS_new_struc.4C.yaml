@@ -36,7 +36,7 @@ STRUCT NOX/Line Search:
 STRUCT NOX/Status Test:
   XML File: "contact3D_nitsche_hex8_skew_segm_newtonLS_new_struc.xml"
 STRUCT NOX/Line Search/Backtrack:
-  Allow Exceptions: true
+  Allow Exceptions: false
 SOLVER 1:
   SOLVER: "UMFPACK"
 MATERIALS:

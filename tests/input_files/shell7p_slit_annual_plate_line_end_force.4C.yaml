@@ -26,7 +26,7 @@ STRUCT NOX/Status Test:
 STRUCT NOX/Line Search:
   Method: "Backtrack"
 STRUCT NOX/Line Search/Backtrack:
-  Allow Exceptions: true
+  Allow Exceptions: false
 STRUCT NOX/Printing:
   Inner Iteration: false
   Outer Iteration StatusTest: false

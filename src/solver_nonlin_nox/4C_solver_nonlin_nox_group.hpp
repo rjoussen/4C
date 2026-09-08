@@ -76,18 +76,19 @@ namespace NOX
       void computeX(const ::NOX::Abstract::Group& grp, const ::NOX::Abstract::Vector& d,
           double step) override;
 
-      ::NOX::Abstract::Group::ReturnType computeF() override;
+      [[nodiscard]] ::NOX::Abstract::Group::ReturnType computeF() override;
 
-      ::NOX::Abstract::Group::ReturnType applyJacobianInverse(Teuchos::ParameterList& p,
-          const ::NOX::Abstract::Vector& input, ::NOX::Abstract::Vector& result) const override;
+      [[nodiscard]] ::NOX::Abstract::Group::ReturnType applyJacobianInverse(
+          Teuchos::ParameterList& p, const ::NOX::Abstract::Vector& input,
+          ::NOX::Abstract::Vector& result) const override;
 
       //! Compute and store \f$F(x)\f$ and the jacobian \f$\frac{\partial F(x)}{\partial x}\f$ at
       //! the same time. This can result in a huge performance gain in some special cases, e.g.
       //! contact problems.
-      virtual ::NOX::Abstract::Group::ReturnType compute_f_and_jacobian();
+      [[nodiscard]] virtual ::NOX::Abstract::Group::ReturnType compute_f_and_jacobian();
 
       //! set right hand side
-      ::NOX::Abstract::Group::ReturnType set_f(Teuchos::RCP<NOX::Nln::Vector> Fptr);
+      [[nodiscard]] ::NOX::Abstract::Group::ReturnType set_f(Teuchos::RCP<NOX::Nln::Vector> Fptr);
 
 #if !(FOUR_C_TRILINOS_INTERNAL_VERSION_GE(2025, 4))
       //! set the solution vector to zero

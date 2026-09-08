@@ -52,27 +52,29 @@ namespace NOX
       void computeX(const ::NOX::Abstract::Group& grp, const ::NOX::Abstract::Vector& d,
           double step) override;
 
-      ::NOX::Abstract::Group::ReturnType computeF() override;
+      [[nodiscard]] ::NOX::Abstract::Group::ReturnType computeF() override;
 
-      ::NOX::Abstract::Group::ReturnType computeJacobian() override;
+      [[nodiscard]] ::NOX::Abstract::Group::ReturnType computeJacobian() override;
 
-      ::NOX::Abstract::Group::ReturnType computeGradient() override;
+      [[nodiscard]] ::NOX::Abstract::Group::ReturnType computeGradient() override;
 
-      ::NOX::Abstract::Group::ReturnType computeNewton(Teuchos::ParameterList& params) override;
+      [[nodiscard]] ::NOX::Abstract::Group::ReturnType computeNewton(
+          Teuchos::ParameterList& params) override;
 
       //@}
 
       /** @name Jacobian operations. */
       //@{
 
-      ::NOX::Abstract::Group::ReturnType applyJacobian(
+      [[nodiscard]] ::NOX::Abstract::Group::ReturnType applyJacobian(
           const ::NOX::Abstract::Vector& input, ::NOX::Abstract::Vector& result) const override;
 
-      ::NOX::Abstract::Group::ReturnType applyJacobianTranspose(
+      [[nodiscard]] ::NOX::Abstract::Group::ReturnType applyJacobianTranspose(
           const ::NOX::Abstract::Vector& input, ::NOX::Abstract::Vector& result) const override;
 
-      ::NOX::Abstract::Group::ReturnType applyJacobianInverse(Teuchos::ParameterList& params,
-          const ::NOX::Abstract::Vector& input, ::NOX::Abstract::Vector& result) const override;
+      [[nodiscard]] ::NOX::Abstract::Group::ReturnType applyJacobianInverse(
+          Teuchos::ParameterList& params, const ::NOX::Abstract::Vector& input,
+          ::NOX::Abstract::Vector& result) const override;
 
       //@}
 

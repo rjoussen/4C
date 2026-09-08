@@ -42,7 +42,12 @@ bool NOX::Nln::Direction::Newton::compute(::NOX::Abstract::Vector& dir,
   // Compute F and Jacobian at current solution at once.
   status = nlnSoln->compute_f_and_jacobian();
   if (status != ::NOX::Abstract::Group::Ok)
-    throw_error("compute", "Unable to compute F and/or Jacobian at once");
+  {
+    if (utils_->isPrintType(::NOX::Utils::Warning))
+      utils_->out() << "NOX::Nln::Direction::Newton::compute - "
+                    << "Unable to compute F and/or Jacobian at once\n";
+    return false;
+  }
 
   // ------------------------------------------------
   // call base class version

@@ -169,9 +169,8 @@ std::vector<Core::IO::InputSpec> NOX::valid_parameters()
                               "step size between line search iterations",
                   .default_value = 0.5}),
           parameter<bool>("Allow Exceptions",
-              {.description =
-                      "Set to true, if exceptions during the force evaluation and backtracking "
-                      "routine should be allowed.",
+              {.description = "If set to true, failed evaluations during the line search are "
+                              "recovered by reducing the step size.",
                   .default_value = false})},
       {.required = false}));
 
