@@ -150,8 +150,8 @@ void PoroPressureBased::PorofluidElastScatraArteryCouplingNodeToPointAlgorithm::
 {
   if (my_mpi_rank_ == 0)
   {
-    std::cout << "\nSummary of coupling pairs (segments):" << '\n';
-    std::cout << "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^" << '\n';
+    std::cout << "\nSummary of node-to-point coupling pairs:" << '\n';
+    std::cout << "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^" << '\n';
   }
   Core::Communication::barrier(get_comm());
   for (const auto& coupled_ele_pair : coupled_ele_pairs_)

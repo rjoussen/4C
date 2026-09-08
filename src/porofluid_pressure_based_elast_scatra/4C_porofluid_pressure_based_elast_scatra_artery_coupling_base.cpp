@@ -103,6 +103,14 @@ void PoroPressureBased::PorofluidElastScatraArteryCouplingBaseAlgorithm::
   {
     value--;
   }
+
+  FOUR_C_ASSERT_ALWAYS(coupled_dofs_artery_.size() == coupled_dofs_homogenized_.size(),
+      "Size mismatch in node-to-point coupling condition: 'COUPLEDDOF_REDUCED' has {} entries, "
+      "'COUPLEDDOF_PORO' has {} entries.",
+      coupled_dofs_artery_.size(), coupled_dofs_homogenized_.size());
+
+  // update number of coupled DOFs
+  num_coupled_dofs_ = static_cast<int>(coupled_dofs_homogenized_.size());
 }
 
 /*----------------------------------------------------------------------*
