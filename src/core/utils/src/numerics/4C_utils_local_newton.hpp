@@ -18,7 +18,10 @@
 #include "4C_linalg_tensor.hpp"
 #include "4C_utils_fad.hpp"
 
+#include <algorithm>
+#include <cmath>
 #include <functional>
+#include <limits>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -26,6 +29,27 @@ namespace Core::Utils
 {
   constexpr double LOCAL_NEWTON_DEFAULT_TOLERANCE = 1e-12;
   constexpr unsigned LOCAL_NEWTON_DEFAULT_MAXIMUM_ITERATIONS = 50;
+
+  /// Result of a local Newton solve that may end without convergence.
+  template <typename VectorType, typename JacobianType>
+  struct LocalNewtonResult
+  {
+    /// Final Newton iterate. If \c is_converged is true, this is the converged solution. Otherwise,
+    /// this is the last computed iterate.
+    VectorType x;
+
+    /// Jacobian evaluated at x.
+    JacobianType jacobian;
+
+    /// L2 norm of the residual evaluated at x.
+    double residuum_norm;
+
+    /// Number of Newton iterations performed.
+    unsigned iteration_count;
+
+    /// Whether the Newton method converged within the maximum number of iterations.
+    bool is_converged;
+  };
 
   /// @brief Free functions defining a Newton iterations for different scalar, vector and jacobian
   /// types.
@@ -111,6 +135,52 @@ namespace Core::Utils
   /// @}
 
   /*!
+   * @brief Runs the local Newton method and returns a LocalNewtonResult.
+   *
+   * @tparam ScalarType The type of the scalar used within the method (type of tolerance / type of
+   * residuum norm).
+   * @tparam VectorType The type of the residuum and the unknowns.
+   * @tparam ResiduumAndJacobianEvaluator A class that defines the operator() with the signature
+   * std::tuple<VectorType, JacobianType>(VectorType) that evaluates the residuum and its
+   * jacobian at a specific point.
+   * @param residuum_and_jacobian_evaluator A function object that evaluates the residuum and its
+   * jacobian at a specific point.
+   * @param x_0 Initial guess for the solution
+   * @param tolerance The tolerance that is used for a convergence criterion.
+   * @param max_iterations Maximum allowed number of newton iterations
+   * @return The final Newton state. If the method did not converge within the maximum number of
+   * iterations, this is reported via LocalNewtonResult::is_converged instead of throwing.
+   */
+  template <typename ScalarType, typename VectorType, typename ResiduumAndJacobianEvaluator>
+  auto solve_local_newton_with_status(ResiduumAndJacobianEvaluator residuum_and_jacobian_evaluator,
+      VectorType x_0, const ScalarType tolerance = LOCAL_NEWTON_DEFAULT_TOLERANCE,
+      const unsigned max_iterations = LOCAL_NEWTON_DEFAULT_MAXIMUM_ITERATIONS)
+      -> LocalNewtonResult<VectorType,
+          std::tuple_element_t<1, decltype(residuum_and_jacobian_evaluator(x_0))>>
+  {
+    auto [residuum, jacobian] = residuum_and_jacobian_evaluator(x_0);
+    auto residuum_norm = l2_norm(residuum);
+
+    unsigned iteration = 0;
+    while (residuum_norm > tolerance && iteration < max_iterations)
+    {
+      local_newton_iteration(x_0, residuum, std::move(jacobian));
+
+      std::tie(residuum, jacobian) = residuum_and_jacobian_evaluator(x_0);
+      residuum_norm = l2_norm(residuum);
+
+      ++iteration;
+    }
+
+    const bool is_converged = (residuum_norm <= tolerance);
+    return {.x = std::move(x_0),
+        .jacobian = std::move(jacobian),
+        .residuum_norm = FADUtils::cast_to_double(residuum_norm),
+        .iteration_count = iteration,
+        .is_converged = is_converged};
+  }
+
+  /*!
    * @brief Finds the root of a function (scalar or vector valued) using the Newton-Raphson method
    * starting from the initial guess @p x_0.
    *
@@ -176,13 +246,13 @@ namespace Core::Utils
    *   }, 1e-9);
    * @endcode
    *
-   * @tparam ScalarType The type of the scalar used within method (type of tolerance or norm of
-   * residuum).
+   * @tparam ScalarType The type of the scalar used within the method (type of tolerance / type of
+   * residuum norm).
    * @tparam VectorType The type of the residuum and the unknowns.
    * @tparam ResiduumAndJacobianEvaluator A class that defines the operator() with the signature
-   * std::tuple<VectorType, JacobianType>(VectorType) that evaluates the residuum and it's
+   * std::tuple<VectorType, JacobianType>(VectorType) that evaluates the residuum and its
    * jacobian at a specific point.
-   * @param residuum_and_jacobian_evaluator A function object that evaluates the residuum and it's
+   * @param residuum_and_jacobian_evaluator A function object that evaluates the residuum and its
    * jacobian at a specific point.
    * @param x_0 Initial guess for the solution
    * @param tolerance The tolerance that is used for a convergence criterion.
@@ -199,28 +269,19 @@ namespace Core::Utils
       -> std::tuple<VectorType,
           std::tuple_element_t<1, decltype(residuum_and_jacobian_evaluator(x_0))>>
   {
-    auto [residuum, jacobian] = residuum_and_jacobian_evaluator(x_0);
+    auto result = solve_local_newton_with_status(
+        residuum_and_jacobian_evaluator, x_0, tolerance, max_iterations);
 
-    unsigned iteration = 0;
-    while (l2_norm(residuum) > tolerance)
+    if (!result.is_converged)
     {
-      if (iteration > max_iterations)
-      {
-        FOUR_C_THROW(
-            "The local Newton method did not converge within {} iterations. Residuum is {:.3e} > "
-            "{:.3e}.",
-            max_iterations, FADUtils::cast_to_double(l2_norm(residuum)),
-            FADUtils::cast_to_double(tolerance));
-      }
-
-      local_newton_iteration(x_0, residuum, std::move(jacobian));
-
-      std::tie(residuum, jacobian) = residuum_and_jacobian_evaluator(x_0);
-
-      ++iteration;
+      FOUR_C_THROW(
+          "The local Newton method did not converge within {} iterations. Residuum is {:.3e} > "
+          "{:.3e}.",
+          max_iterations, FADUtils::cast_to_double(result.residuum_norm),
+          FADUtils::cast_to_double(tolerance));
     }
 
-    return {x_0, jacobian};
+    return {std::move(result.x), std::move(result.jacobian)};
   }
 
   /*!
@@ -230,13 +291,13 @@ namespace Core::Utils
    * @note in contrast to @p solve_local_newton_and_return_jacobian, this function does not return
    * the jacobian at the root of the function. The remaining syntax is identical.
    *
-   * @tparam ScalarType The type of the scalar used within method (type of tolerance or norm of
-   * residuum).
+   * @tparam ScalarType The type of the scalar used within the method (type of tolerance / type of
+   * residuum norm).
    * @tparam VectorType The type of the residuum and the unknowns.
    * @tparam ResiduumAndJacobianEvaluator A class that defines the operator() with the signature
-   * std::tuple<VectorType, JacobianType>(VectorType) that evaluates the residuum and it's
+   * std::tuple<VectorType, JacobianType>(VectorType) that evaluates the residuum and its
    * jacobian at a specific point.
-   * @param residuum_and_jacobian_evaluator A function object that evaluates the residuum and it's
+   * @param residuum_and_jacobian_evaluator A function object that evaluates the residuum and its
    * jacobian at a specific point.
    * @param x_0 Initial guess for the solution
    * @param tolerance The tolerance that is used for a convergence criterion.
