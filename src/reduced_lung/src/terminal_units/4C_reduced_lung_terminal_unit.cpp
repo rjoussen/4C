@@ -11,6 +11,7 @@
 
 #include "4C_reduced_lung_helpers.hpp"
 #include "4C_reduced_lung_terminal_unit_elasticity.hpp"
+#include "4C_reduced_lung_terminal_unit_recruitment.hpp"
 #include "4C_reduced_lung_terminal_unit_rheology.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -140,28 +141,60 @@ namespace ReducedLung
       {
         auto elastic_pressure_evaluator =
             Elasticity::make_elastic_pressure_evaluator(model.elasticity_model);
-        auto elastic_pressure_gradient_evaluator =
-            Elasticity::make_elastic_pressure_gradient_evaluator(model.elasticity_model);
+        auto elastic_pressure_partials_evaluator =
+            Elasticity::make_elastic_pressure_partials_evaluator(model.elasticity_model);
 
         model.residual_evaluator =
             Rheology::make_residual_evaluator(model.rheological_model, elastic_pressure_evaluator);
         model.jacobian_evaluator = Rheology::make_jacobian_evaluator(
-            model.rheological_model, elastic_pressure_gradient_evaluator);
-        model.internal_state_updater =
+            model.rheological_model, elastic_pressure_partials_evaluator);
+        // Assembly reads the reference volume from TerminalUnitData::reference_volume_context, so
+        // refreshing it is part of bringing the model block in sync with the dof vector. The
+        // solver runs the state updaters whenever the dofs change, before any assembler. The
+        // recruitment updater produces the reference volume the rheology one consumes, so it
+        // goes first.
+        auto recruitment_state_updater =
+            Recruitment::make_internal_state_updater(model.recruitment_model);
+        auto rheology_state_updater =
             Rheology::make_internal_state_updater(model.rheological_model);
-        model.end_of_timestep_routine =
+        model.internal_state_updater =
+            [recruitment_state_updater, rheology_state_updater](TerminalUnitData& data,
+                const Core::LinAlg::Vector<double>& locally_relevant_dofs, const double dt)
+        {
+          recruitment_state_updater(data, locally_relevant_dofs, dt);
+          rheology_state_updater(data, locally_relevant_dofs, dt);
+        };
+        auto rheology_end_of_timestep_routine =
             Rheology::make_end_of_timestep_routine(model.rheological_model);
+        auto recruitment_end_of_timestep_routine =
+            Recruitment::make_end_of_timestep_routine(model.recruitment_model);
+        model.end_of_timestep_routine =
+            [recruitment_state_updater, rheology_end_of_timestep_routine,
+                recruitment_end_of_timestep_routine](TerminalUnitData& data,
+                const Core::LinAlg::Vector<double>& locally_relevant_dofs, const double dt)
+        {
+          // Sync once more at the converged solution: the last solver state sync is not
+          // guaranteed to have happened at this dof vector, and both history updates below must
+          // see the reference volume of the time step that just converged.
+          recruitment_state_updater(data, locally_relevant_dofs, dt);
+          rheology_end_of_timestep_routine(data, locally_relevant_dofs, dt);
+          recruitment_end_of_timestep_routine(data, locally_relevant_dofs, dt);
+        };
         auto elasticity_output_evaluator =
             Elasticity::make_output_evaluator(model.elasticity_model);
         auto rheology_output_evaluator = Rheology::make_output_evaluator(model.rheological_model);
+        auto recruitment_output_evaluator =
+            Recruitment::make_output_evaluator(model.recruitment_model);
         const OutputEvaluator volume_output_evaluator = append_volume_output;
         model.output_evaluator = [elasticity_output_evaluator, rheology_output_evaluator,
+                                     recruitment_output_evaluator,
                                      volume_output_evaluator](const TerminalUnitData& data,
                                      ReducedLung::RuntimeOutputCollector& collector,
                                      ReducedLungParameters::OutputVerbosity verbosity)
         {
           elasticity_output_evaluator(data, collector, verbosity);
           rheology_output_evaluator(data, collector, verbosity);
+          recruitment_output_evaluator(data, collector, verbosity);
           volume_output_evaluator(data, collector, verbosity);
         };
       }
