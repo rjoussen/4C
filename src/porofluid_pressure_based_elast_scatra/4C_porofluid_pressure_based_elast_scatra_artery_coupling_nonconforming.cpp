@@ -141,21 +141,29 @@ void PoroPressureBased::PorofluidElastScatraArteryCouplingNonConformingAlgorithm
       "This method should only be called for node-to-point coupling.");
 
   // get the node IDs of coupled 1D nodes from the input file
-  std::vector<const Core::Conditions::Condition*> artery_coupling_ids;
-  artery_dis_->get_condition(condition_name_, artery_coupling_ids);
-  coupling_nodes_for_node_to_point_.resize(artery_coupling_ids.size());
+  std::vector<const Core::Conditions::Condition*> artery_coupling_condition_ids;
+  artery_dis_->get_condition(condition_name_, artery_coupling_condition_ids);
+  coupling_nodes_for_node_to_point_.resize(artery_coupling_condition_ids.size());
 
-  for (unsigned iter = 0; iter < artery_coupling_ids.size(); ++iter)
+  for (unsigned condition_id = 0; condition_id < artery_coupling_condition_ids.size();
+      ++condition_id)
   {
-    const std::vector<int>* ArteryNodeIds = (artery_coupling_ids[iter])->get_nodes();
-    for (const auto coupling_id : *ArteryNodeIds)
+    const std::vector<int>* artery_node_ids =
+        artery_coupling_condition_ids[condition_id]->get_nodes();
+
+    // node-to-point coupling couples exactly one node per condition.
+    const std::size_t num_nodes = (artery_node_ids == nullptr) ? 0 : artery_node_ids->size();
+    FOUR_C_ASSERT_ALWAYS(num_nodes == 1,
+        "Each node-to-point coupling condition ('{}') must reference exactly one artery node, "
+        "but condition {} references {} node(s).",
+        condition_name_, condition_id + 1, num_nodes);
+
+    coupling_nodes_for_node_to_point_[condition_id] = (*artery_node_ids)[0];
+
+    if (my_mpi_rank_ == 0)
     {
-      coupling_nodes_for_node_to_point_[iter] = coupling_id;
-      if (my_mpi_rank_ == 0)
-      {
-        std::cout << "Artery Coupling Node Id " << iter + 1
-                  << " from Input = " << coupling_nodes_for_node_to_point_[iter] << "\n";
-      }
+      std::cout << "Artery Coupling Node Id " << condition_id + 1
+                << " from Input = " << coupling_nodes_for_node_to_point_[condition_id] << "\n";
     }
   }
 }
@@ -278,7 +286,7 @@ void PoroPressureBased::PorofluidElastScatraArteryCouplingNonConformingAlgorithm
   if (my_mpi_rank_ == 0)
   {
     std::cout << "\nFound " << total_numactive_pairs
-              << " Artery-to-PoroMultiphaseScatra coupling pairs (segments)" << '\n';
+              << " Artery-to-porofluid_pressure_based coupling pairs (segments)" << '\n';
   }
 
   nearby_ele_pairs_.clear();
@@ -297,19 +305,23 @@ void PoroPressureBased::PorofluidElastScatraArteryCouplingNonConformingAlgorithm
       artery_coupling_deps().porofluid_pressure_based_dynamic_parameters->sublist(
           "artery_coupling");
 
-  int num_active_pairs = std::accumulate(nearby_ele_pairs_.begin(), nearby_ele_pairs_.end(), 0,
-      [](int a, auto b) { return a + (static_cast<int>(b.second.size())); });
+  std::vector<const Core::Conditions::Condition*> coupling_conditions;
+  artery_dis_->get_condition(condition_name_, coupling_conditions);
+  FOUR_C_ASSERT_ALWAYS(coupling_conditions.size() == coupling_nodes_for_node_to_point_.size(),
+      "Number of coupling conditions does not match the number of coupling nodes.");
 
-  coupled_ele_pairs_.resize(num_active_pairs);
+  const int max_possible_pairs = std::accumulate(nearby_ele_pairs_.begin(), nearby_ele_pairs_.end(),
+      0, [](const int a, const auto& b) { return a + static_cast<int>(b.second.size()); });
+  coupled_ele_pairs_.clear();
+  coupled_ele_pairs_.reserve(max_possible_pairs);
 
   // loop over pairs found by search
-  int coupled_ele_pair_idx = 0;
-  for (const auto& nearby_ele_iter : nearby_ele_pairs_)
+  for (const auto& [artery_ele_gid, homogenized_ele_gids] : nearby_ele_pairs_)
   {
     // create vector of active coupling pairs
     std::vector<Core::Elements::Element const*> coupled_elements(2);
     // assign artery element
-    coupled_elements[0] = artery_dis_->g_element(nearby_ele_iter.first);
+    coupled_elements[0] = artery_dis_->g_element(artery_ele_gid);
 
     // get nodes of artery element
     const Core::Nodes::Node* const* nodes_artery = coupled_elements[0]->nodes();
@@ -317,64 +329,57 @@ void PoroPressureBased::PorofluidElastScatraArteryCouplingNonConformingAlgorithm
     // loop over nodes of the artery element
     for (int i = 0; i < coupled_elements[0]->num_node(); i++)
     {
-      // loop over prescribed couplings nodes from input
+      // loop over prescribed coupling nodes from input
       for (unsigned int j = 0; j < coupling_nodes_for_node_to_point_.size(); j++)
       {
-        // check if artery node is prescribed coupling node
-        if (nodes_artery[i]->id() == coupling_nodes_for_node_to_point_[j])
+        // artery node must be a prescribed coupling node
+        if (nodes_artery[i]->id() != coupling_nodes_for_node_to_point_[j]) continue;
+
+        // get coupling type (ARTERY or AIRWAY?)
+        const auto coupling_element_type =
+            coupling_conditions[j]->parameters().get<std::string>("COUPLING_TYPE");
+
+        // recompute coupling dofs for this coupling node
+        recompute_coupled_dofs_for_node_to_point_coupling(coupling_conditions, j);
+
+        // get penalty parameter
+        const auto penalty = coupling_conditions[j]->parameters().get<double>("PENALTY");
+
+        // get eta (parameter coordinate of corresponding node)
+        const int eta_ntp = (i == 0) ? -1 : 1;
+
+        // loop over assigned 2D/3D elements
+        for (const int homogenized_ele_gid : homogenized_ele_gids)
         {
-          // get coupling type (ARTERY or AIRWAY ?)
-          std::vector<const Core::Conditions::Condition*> coupling_condition;
-          artery_dis_->get_condition(condition_name_, coupling_condition);
-          const auto coupling_element_type_ =
-              (coupling_condition[j])->parameters().get<std::string>("COUPLING_TYPE");
+          // assign 2D/3D element
+          coupled_elements[1] = homogenized_dis_->g_element(homogenized_ele_gid);
 
-          // recompute coupling dofs
-          recompute_coupled_dofs_for_node_to_point_coupling(coupling_condition, j);
+          // only pairs whose 2D/3D element is owned by this proc are evaluated by this proc
+          if (coupled_elements[1]->owner() != my_mpi_rank_) continue;
 
-          // get penalty parameter
-          const auto penalty = coupling_condition[j]->parameters().get<double>("PENALTY");
-
-          // get eta (parameter coordinate of corresponding node)
-          const int eta_ntp = (i == 0) ? -1 : 1;
-
-          // loop over assigned 2D/3D elements
-          for (const auto homogenized_ele_iter : nearby_ele_iter.second)
-          {
-            // assign 2D/3D element
-            coupled_elements[1] = homogenized_dis_->g_element(homogenized_ele_iter);
-
-            // only those pairs, where the 3D element is owned by this proc actually evaluated by
-            // this proc
-            if (coupled_elements[1]->owner() == my_mpi_rank_)
-            {
-              // construct, init and setup coupling pairs
-              const std::shared_ptr<PorofluidElastScatraArteryCouplingPairBase> current_pair =
-                  create_new_artery_coupling_pair(
-                      coupled_elements, artery_coupling_deps().spatial_dimension);
-              current_pair->init(coupled_elements, coupling_params_, porofluid_coupling_params,
-                  coupled_dofs_homogenized_, coupled_dofs_artery_, scale_vector_, function_vector_,
-                  condition_name_, penalty, coupling_element_type_, eta_ntp,
-                  artery_coupling_deps().function_of_anything_by_id, my_mpi_rank_);
-              // add to the list of current contact pairs
-              coupled_ele_pairs_[coupled_ele_pair_idx] = current_pair;
-              coupled_ele_pair_idx++;
-            }
-          }
+          // construct, init and setup coupling pair
+          const std::shared_ptr<PorofluidElastScatraArteryCouplingPairBase> current_pair =
+              create_new_artery_coupling_pair(
+                  coupled_elements, artery_coupling_deps().spatial_dimension);
+          current_pair->init(coupled_elements, coupling_params_, porofluid_coupling_params,
+              coupled_dofs_homogenized_, coupled_dofs_artery_, scale_vector_, function_vector_,
+              condition_name_, penalty, coupling_element_type, eta_ntp,
+              artery_coupling_deps().function_of_anything_by_id, my_mpi_rank_);
+          // add to the list of current coupling pairs
+          coupled_ele_pairs_.push_back(current_pair);
         }
       }
     }
   }
-  coupled_ele_pairs_.resize(coupled_ele_pair_idx);
+
 
   // output
-  int total_num_active_pairs = 0;
-  num_active_pairs = static_cast<int>(coupled_ele_pairs_.size());
-  total_num_active_pairs = Core::Communication::sum_all(num_active_pairs, get_comm());
+  const int num_active_pairs = static_cast<int>(coupled_ele_pairs_.size());
+  const int total_num_active_pairs = Core::Communication::sum_all(num_active_pairs, get_comm());
   if (my_mpi_rank_ == 0)
   {
     std::cout << "\nFound " << total_num_active_pairs
-              << " Artery-to-PoroMultiphaseScatra coupling pairs (segments)" << '\n';
+              << " Artery-to-porofluid_pressure_based node-to-point coupling pairs" << '\n';
   }
 
   nearby_ele_pairs_.clear();
@@ -459,7 +464,8 @@ void PoroPressureBased::PorofluidElastScatraArteryCouplingNonConformingAlgorithm
   else
   {
     FOUR_C_THROW(
-        "Only porofluid and scatra-discretizations are supported for linebased-coupling so far");
+        "Only porofluid and scatra-discretizations are supported for non-conforming coupling so "
+        "far");
   }
 
   // evaluate all pairs
