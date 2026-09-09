@@ -104,25 +104,6 @@ If a Rayleigh damping is used, two parameters vary the effect of the damping:
 - ``M_DAMP`` Rayleigh-coefficient for Rayleigh damping proportional to mass matrix (:math:`M_\text{DAMP} \times M`)
 - ``K_DAMP`` Rayleigh-coefficient for Rayleigh damping proportional to initial/reference stiffness matrix (:math:`K_\text{DAMP} \times K`)
 
-
-**Convergence difficulties**
-
-If the solution does not converge within ``MAXITER`` iterations,
-one can define the behavior for the step with the parameter ``DIVERCONT``:
-
-- ``stop``: stop the simulation
-- ``continue``: Simply ignore the missing convergence and continue
-- ``repeat_step``: Repeat the step (I don't know the benefit of doing a failed simulation again)
-- ``halve_step``: Reduce the step size of the current increment by 50%.
-- ``adapt_step``: As halve_step reducing the step size by 50%, but checking against the maximum number of cutbacks,
-  which can be given in ``MAXDIVCONREFINEMENTLEVEL`` (default: 10).
-  Also the step size may increase by 2 if convergence is achieved four times successively.
-- ``rand_adapt_step``: Changing the time step size by a factor between 0.51 and 1.99, chosen by random number generator.
-  Step size change is alternating between values larger and smaller than 1.0 in consecutive time steps.
-- ``repeat_simulation``: (what the name says - I don't know what it's good for...)
-- ``adapat_penaltycontact``: (is not yet implemented for the new time integration scheme)
-
-
 .. _structdynamics_theory:
 
 
