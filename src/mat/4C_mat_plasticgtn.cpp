@@ -24,6 +24,7 @@
 #include "4C_mat_stvenantkirchhoff.hpp"
 #include "4C_material_base.hpp"
 #include "4C_material_parameter_base.hpp"
+#include "4C_material_time_step_request.hpp"
 #include "4C_structure_new_input.hpp"
 #include "4C_utils_enum.hpp"
 #include "4C_utils_function.hpp"
@@ -343,8 +344,15 @@ void Mat::PlasticGTN::evaluate(const Core::LinAlg::Tensor<double, 3, 3>* defgrad
     x(3) = f_n;
     x(4) = 0.0;
 
-    x = Core::Utils::solve_local_newton(
+    const auto local_newton_result = Core::Utils::solve_local_newton_with_status(
         local_system_evaluator, x, TOL * sigmastar_n, max_local_iters);
+
+    if (not local_newton_result.is_converged)
+    {
+      Core::Mat::TimeStepReduction::request("Local Newton did not converge.");
+    }
+
+    x = local_newton_result.x;
 
     p_n1 = x(0);
     q_n1 = x(1);

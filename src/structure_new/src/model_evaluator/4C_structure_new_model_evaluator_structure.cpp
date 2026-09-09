@@ -25,6 +25,7 @@
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "4C_linalg_vector.hpp"
+#include "4C_material_time_step_request.hpp"
 #include "4C_structure_new_dbc.hpp"
 #include "4C_structure_new_discretization_runtime_output_params.hpp"
 #include "4C_structure_new_error_evaluator.hpp"
@@ -1363,7 +1364,10 @@ void Solid::ModelEvaluator::Structure::evaluate_internal(Teuchos::ParameterList&
   // this is about to go, once the old time integration is deleted
   params_interface2_parameter_list(eval_data_ptr(), p);
 
-  discret().evaluate(p, eval_mat[0], eval_mat[1], eval_vec[0], eval_vec[1], eval_vec[2]);
+  const auto comm = global_state().get_comm();
+  const auto evaluation = [&]
+  { discret().evaluate(p, eval_mat[0], eval_mat[1], eval_vec[0], eval_vec[1], eval_vec[2]); };
+  Core::Mat::TimeStepReduction::run_and_synchronize_request(comm, evaluation);
   discret().clear_state();
 }
 
@@ -1398,7 +1402,11 @@ void Solid::ModelEvaluator::Structure::evaluate_internal_specified_elements(
   // this is about to go, once the old time integration is deleted
   params_interface2_parameter_list(eval_data_ptr(), p);
 
-  Core::FE::evaluate(*discret_ptr(), p, *eval_mat, *eval_vec, ele_map_to_be_evaluated);
+  const auto comm = global_state().get_comm();
+  const auto evaluation = [&]
+  { Core::FE::evaluate(*discret_ptr(), p, *eval_mat, *eval_vec, ele_map_to_be_evaluated); };
+
+  Core::Mat::TimeStepReduction::run_and_synchronize_request(comm, evaluation);
 
   discret().clear_state();
 }
@@ -1427,7 +1435,10 @@ void Solid::ModelEvaluator::Structure::evaluate_neumann(Teuchos::ParameterList& 
   }
   if (not p.isType<std::shared_ptr<Core::Elements::ParamsInterface>>("interface"))
     FOUR_C_THROW("The given parameter has the wrong type!");
-  discret().evaluate_neumann(p, eval_vec, eval_mat.get());
+
+  const auto comm = global_state().get_comm();
+  const auto evaluation = [&] { discret().evaluate_neumann(p, eval_vec, eval_mat.get()); };
+  Core::Mat::TimeStepReduction::run_and_synchronize_request(comm, evaluation);
   discret().clear_state();
 }
 
