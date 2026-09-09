@@ -298,6 +298,11 @@ namespace Adapter
     /// start new time step
     void prepare_time_step() override { structure_->prepare_time_step(); }
 
+    Solid::StepStatus prepare_time_step_with_status() override
+    {
+      return structure_->prepare_time_step_with_status();
+    }
+
     /// update displacement
     void update_state_incrementally(
         std::shared_ptr<const Core::LinAlg::Vector<double>> disi  ///< iterative solution increment

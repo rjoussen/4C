@@ -2038,10 +2038,11 @@ namespace Mat
         const Core::LinAlg::Matrix<3, 3>& FredM, const double temperature);
 
     /*!
-     * @brief Gets extensive error / warning message to be displayed, which is useful for debugging
-     * the time integration in more detail. This message contains a base error message which
-     * describes what failed in short form - this is then extended with information on the element
-     * ID, the Gauss Point, the last_ values and so on...
+     * @brief With assertions disabled, this just returns the \p base_error_string. If assertions
+     * are enables, it returns an extensive error / warning message to be displayed, which is useful
+     * for debugging the time integration in more detail. This message contains a base error message
+     * which describes what failed in short form - this is then extended with information on the
+     * element ID, the Gauss Point, the last_ values and so on...
      *
      * @param[in] base_error_string base error message to be extended
      * with further information
