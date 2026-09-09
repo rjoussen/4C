@@ -28,7 +28,8 @@ namespace ReducedLung
     {
       //  write only core fields (p_1, p_2, q_in, q_out)
       minimal,
-      //  include minimal + advanced model outputs (currently e.g. area, volume where available).
+      //  include minimal + advanced model outputs (currently e.g. area, volume, v_0 where
+      //  available).
       medium,
       // include medium + model-internal diagnostic quantities (e.g. flow_k_turb, elastic_pressure,
       // maxwell_pressure).

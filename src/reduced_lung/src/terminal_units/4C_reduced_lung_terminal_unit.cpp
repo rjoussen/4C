@@ -125,9 +125,12 @@ namespace ReducedLung
       if (verbosity >= ReducedLungParameters::OutputVerbosity::medium)
       {
         auto& volume_vec = collector.get_or_create_vector("volume");
+        auto& reference_volume_vec = collector.get_or_create_vector("v_0");
         for (size_t i = 0; i < data.number_of_elements(); ++i)
         {
           volume_vec.replace_local_value(data.local_element_id[i], data.volume_v[i]);
+          reference_volume_vec.replace_local_value(
+              data.local_element_id[i], data.reference_volume_context[i].v0_eff);
         }
       }
     }

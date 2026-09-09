@@ -547,10 +547,12 @@ namespace
     const auto output_evaluator =
         TerminalUnits::Recruitment::make_output_evaluator(recruitable_fixture.recruitment_model);
 
+    // The effective reference volume itself is emitted for every terminal unit by the generic
+    // volume output, so recruitment only owns the target it relaxes towards.
     RuntimeOutputCollector collector_before_update(output_map);
     output_evaluator(recruitable_fixture.data, collector_before_update,
         ReducedLungParameters::OutputVerbosity::high);
-    EXPECT_DOUBLE_EQ(collector_before_update.vectors.at("v_0").local_values_as_span()[0], 1.2);
+    EXPECT_FALSE(collector_before_update.vectors.contains("v_0"));
     EXPECT_DOUBLE_EQ(
         collector_before_update.vectors.at("v0_target").local_values_as_span()[0], 1.2);
 
@@ -559,7 +561,6 @@ namespace
     RuntimeOutputCollector collector_after_update(output_map);
     output_evaluator(recruitable_fixture.data, collector_after_update,
         ReducedLungParameters::OutputVerbosity::high);
-    EXPECT_DOUBLE_EQ(collector_after_update.vectors.at("v_0").local_values_as_span()[0], 1.4);
     EXPECT_DOUBLE_EQ(collector_after_update.vectors.at("v0_target").local_values_as_span()[0], 1.4);
 
     // Below high verbosity nothing is emitted at all.
@@ -567,6 +568,58 @@ namespace
     output_evaluator(
         recruitable_fixture.data, medium_collector, ReducedLungParameters::OutputVerbosity::medium);
     EXPECT_TRUE(medium_collector.vectors.empty());
+  }
+
+  // The effective reference volume is a property of every terminal unit, not just of recruiting
+  // ones, so the composed evaluator has to emit it from medium verbosity on in both cases.
+  TEST(TerminalUnitOutputTests, ComposedEvaluatorEmitsVolumeAndReferenceVolumeAtMediumVerbosity)
+  {
+    const TerminalUnitModelCase base_case{.name = "output",
+        .rheological_model_type = RheologicalModelType::KelvinVoigt,
+        .elasticity_model_type = ElasticityModelType::Linear,
+        .kelvin_voigt_eta = {0.0, 0.0, 0.0},
+        .maxwell_e_m = {1.0, 1.0, 1.0},
+        .maxwell_eta_m = {1.0, 1.0, 1.0},
+        .linear_elasticity_e = {1.0, 1.0, 1.0},
+        .ogden_kappa = {1.0, 1.0, 1.0},
+        .ogden_beta = {2.0, 2.0, 2.0}};
+
+    Core::LinAlg::Map output_map(-1, 1, 0, MPI_COMM_WORLD);
+
+    // Construction seeds the current volume to the reference volume; the gas volume is moved off
+    // that value here so that the two fields cannot be confused for one another.
+    constexpr double current_volume = 7.5;
+
+    const auto collect_volume_output = [&](const RecruitmentModelType recruitment_model_type)
+    {
+      auto model_case = base_case;
+      model_case.recruitment_model_type = recruitment_model_type;
+      const auto params = make_terminal_unit_parameters(model_case);
+
+      TerminalUnitContainer terminal_units;
+      TerminalUnits::ModelRegistry::add_terminal_unit_with_model_selection(terminal_units, 0, 0,
+          1.0, params, RheologicalModelType::KelvinVoigt, ElasticityModelType::Linear,
+          recruitment_model_type);
+      TerminalUnits::create_evaluators(terminal_units);
+      auto& model = terminal_units.models.front();
+      model.data.volume_v[0] = current_volume;
+
+      RuntimeOutputCollector collector(output_map);
+      model.output_evaluator(model.data, collector, ReducedLungParameters::OutputVerbosity::medium);
+      return collector;
+    };
+
+    // A block without recruitment holds a constant reference volume seeded from the geometry.
+    const auto none_collector = collect_volume_output(RecruitmentModelType::None);
+    EXPECT_DOUBLE_EQ(none_collector.vectors.at("volume").local_values_as_span()[0], current_volume);
+    EXPECT_NEAR(none_collector.vectors.at("v_0").local_values_as_span()[0],
+        4.0 / 3.0 * std::numbers::pi, 1e-14);
+
+    // A recruiting block reports the same fields, its reference volume still at initial_v0.
+    const auto recruitment_collector = collect_volume_output(RecruitmentModelType::LinearPressure);
+    EXPECT_DOUBLE_EQ(
+        recruitment_collector.vectors.at("volume").local_values_as_span()[0], current_volume);
+    EXPECT_DOUBLE_EQ(recruitment_collector.vectors.at("v_0").local_values_as_span()[0], 1.2);
   }
 
   // Tests model registration + analytic Jacobian by comparing against FD residual derivatives.
