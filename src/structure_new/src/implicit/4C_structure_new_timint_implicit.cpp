@@ -341,7 +341,7 @@ void Solid::TimeInt::Implicit::set_new_time_step_size(const double new_dt)
 
   const double old_dt = get_delta_time();
 
-  FOUR_C_ASSERT(new_dt > 0.0, "Time-step size must be positive.");
+  FOUR_C_ASSERT_ALWAYS(new_dt > 0.0, "Time-step size must be positive.");
   FOUR_C_ASSERT(std::abs(new_dt - old_dt) > std::numeric_limits<double>::epsilon(),
       "New time-step size must be different from the current time-step size.");
 
