@@ -13,6 +13,7 @@
 #include "4C_io_input_spec_builders.hpp"
 #include "4C_rebalance.hpp"
 #include "4C_structure_new_timint_basedatasdyn.hpp"
+#include "4C_timestepping_step_reduction_request.hpp"
 #include "4C_timestepping_time_step_control.hpp"
 #include "4C_utils_enum.hpp"
 
@@ -285,6 +286,8 @@ namespace Solid
                                 "according to the `time_step_control` settings. `ignore` ignores "
                                 "the non-convergence and continues anyway.",
                     .default_value = DivContAct::stop}),
+
+            Core::Mat::TimeStepReduction::allow_requests_input_spec(),
 
             deprecated_selection<Solid::NonlinSolTech>("NLNSOL",
                 {

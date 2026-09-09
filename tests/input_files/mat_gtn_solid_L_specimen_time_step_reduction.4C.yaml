@@ -1,0 +1,147 @@
+TITLE:
+  - "L-specimen"
+  - "GTN porous-plasticity damage model"
+
+PROBLEM TYPE:
+  PROBLEMTYPE: "Structure"
+
+IO:
+  STRUCT_STRESS: "Cauchy"
+  STRUCT_STRAIN: "LOG"
+  VERBOSITY: "Standard"
+
+# IO/MONITOR STRUCTURE DBC:
+#   INTERVAL_STEPS: 1
+
+# IO/RUNTIME VTK OUTPUT:
+#   INTERVAL_STEPS: 1
+#   EVERY_ITERATION: false
+
+# IO/RUNTIME VTK OUTPUT/STRUCTURE:
+#   OUTPUT_STRUCTURE: true
+#   DISPLACEMENT: true
+#   STRESS_STRAIN: true
+#   GAUSS_POINT_DATA_OUTPUT_TYPE: nodes
+
+SOLVER 1:
+  SOLVER: "MUMPS"
+  NAME: "Structure_Solver"
+
+STRUCTURAL DYNAMIC:
+  DYNAMICTYPE: "Statics"
+  RESTARTEVERY: 5
+  TIMESTEP: 0.5
+  NUMSTEP: 100000
+  MAXTIME: 10.0
+  TOLDISP: 1e-4
+  TOLRES: 1e-4
+  #  NORM_RESF: Rel
+  #  NORM_DISP: Rel
+  MAXITER: 500
+  LINEAR_SOLVER: 1
+  PREDICT: TangDis
+  # DIVERCONT: adapt_step
+  ALLOW_MATERIAL_TIME_STEP_REDUCTION: true
+  time_step_control:
+    decrease_factor: 0.8
+    steps_to_increase: 4
+    reduce_to_max_time: true
+
+STRUCT NOX/Printing:
+  Inner Iteration: false
+  Outer Iteration StatusTest: false
+
+# ─── Materials ────────────────────────────────────────────────────────────
+MATERIALS:
+  - MAT: 2
+    MAT_Struct_PlasticGTN:
+      YOUNG: 200000.0 # E [MPa]
+      NUE: 0.3
+      DENS: 7.85e-3 # [g/mm3]
+      YIELD: 450.0 # initial yield stress [MPa]
+      ISOHARD: 0
+      HARDENING_FUNC: 1
+      TOL: 1.0e-8
+      MAXITER: 100
+      F0: 0.005
+      FN: 0.005
+      EN: 0.15
+      SN: 0.15
+      FC: 1 # 0.05
+      KAPPA: 4.0
+      EF: 0.005
+      K1: 1.5
+      K2: 1.0
+      K3: 2.25
+#      residual_stiffness_factor: 0.005
+
+# Isotropic hardening: sigma_y(epbar) = 450 + 300*(1-exp(-15*epbar)) [MPa]
+FUNCT1:
+  - VARFUNCTION: "450.0 + 300.0*(1.0 - exp(-15.0*epsp))"
+
+# logarithmic increasing displacement
+FUNCT2:
+  - SYMBOLIC_FUNCTION_OF_SPACE_TIME: "20*log10(t+1)"
+
+# ─── Boundary conditions ───────────────────────────────────────────────────
+# Tag 2: ligament (y=0, x in [a,W])        -> uy = 0 (crack-plane symmetry)
+# Tag 3: upper pin-hole arc (y >= y_pin)   -> ux=0, uy=DISP*t (pin loading)
+#   The upper half of the hole is where the pin bears against the specimen
+#   in mode-I tension; the lower half is traction-free.
+#   ux=0 on the same surface prevents rigid-body translation in x.
+# Tag 4: z=0 face                           -> uz = 0 (mid-plane symmetry)
+DESIGN POINT DIRICH CONDITIONS:
+  - NODE_SET_NAME: "bottom"
+    NUMDOF: 3
+    ONOFF: [1, 1, 0]
+    VAL: [0.0, 0.0, 0.0]
+    FUNCT: [0, 0, 0]
+  - NODE_SET_NAME: "arm"
+    NUMDOF: 3
+    ONOFF: [0, 1, 0]
+    VAL: [0.0, 0.5, 0.0]
+    FUNCT: [0, 2, 0]
+    TAG: "monitor_reaction"
+  - NODE_SET_NAME: "z0_face"
+    NUMDOF: 3
+    ONOFF: [0, 0, 1]
+    VAL: [0.0, 0.0, 0.0]
+    FUNCT: [0, 0, 0]
+  - NODE_SET_NAME: "z1_face"
+    NUMDOF: 3
+    ONOFF: [0, 0, 1]
+    VAL: [0.0, 0.0, 0.0]
+    FUNCT: [0, 0, 0]
+
+# ─── Geometry ───────────────────────────────────────────────────────────────
+STRUCTURE GEOMETRY:
+  ELEMENT_BLOCKS:
+    - ID: 1
+      SOLID:
+        HEX8:
+          MAT: 2 # GTN damage material
+          KINEM: nonlinear
+  FILE: mat_gtn_solid_L_specimen_time_step_reduction.e
+
+RESULT DESCRIPTION:
+  - STRUCTURE:
+      SPECIAL: true
+      QUANTITY: total_time
+      VALUE: 10
+      TOLERANCE: 1e-16
+  - STRUCTURE:
+      SPECIAL: true
+      QUANTITY: total_num_steps
+      VALUE: 115
+      TOLERANCE: 1e-16
+  - STRUCTURE:
+      SPECIAL: true
+      QUANTITY: time_step_size
+      VALUE: 2.36355993600056991e-02
+      TOLERANCE: 1e-16
+  - STRUCTURE:
+      DIS: structure
+      NODE: 48
+      QUANTITY: dispx
+      VALUE: -7.43266601105287261
+      TOLERANCE: 1e-16
