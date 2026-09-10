@@ -38,22 +38,22 @@ namespace TimeStepping
     [[nodiscard]] static Core::IO::InputSpec input_spec();
 
     /// Factor used to reduce the time-step size after a failed step.
-    double decrease_factor;
+    const double decrease_factor;
     /// Minimum allowed absolute time-step size.
-    double min_time_step;
+    const double min_time_step;
     /// Number of accepted steps before a time-step increase may be attempted.
-    size_t steps_to_increase;
+    const size_t steps_to_increase;
     /// Maximum allowed time-step size during recovery.
-    double max_time_step;
+    const double max_time_step;
     /// Factor used to increase the time-step size during recovery.
-    double increase_factor;
+    const double increase_factor;
     /// Maximum average Newton iterations allowed for a time-step increase.
-    double max_average_nonlinear_iterations;
+    const double max_average_nonlinear_iterations;
     /// Whether the last step may be shortened to reach the final time exactly.
-    bool reduce_to_max_time;
+    const bool reduce_to_max_time;
 
     /// Default constructor.
-    TimeStepControlSettings() = default;
+    // TimeStepControlSettings() = default;
 
     /**
      * \brief Construct settings from parsed input parameters.

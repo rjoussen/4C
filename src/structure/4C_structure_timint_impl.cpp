@@ -129,8 +129,10 @@ Solid::StepAction Solid::TimIntImpl::perform_error_action(Solid::StepStatus solv
       return StepAction::accept_step;
     case StepStatus::nonlinear_solver_failed:
     {
-      if (write_cout) std::cout << "Nonlinear solver did not converge!\n";
       const auto divergence_action = divcontype_;
+      if (write_cout)
+        std::cout << "Nonlinear solver did not converge!\n"
+                  << "DIVERCONT is set to: " << EnumTools::enum_name(divergence_action) << "\n";
       switch (divergence_action)
       {
         case DivContAct::adapt_step:
@@ -146,13 +148,14 @@ Solid::StepAction Solid::TimIntImpl::perform_error_action(Solid::StepStatus solv
         case DivContAct::stop:
         {
           output(true);
-          FOUR_C_THROW("Abort due to DIVERCONT: {}.", divergence_action);
+          FOUR_C_THROW("Nonlinear solver did not converge. Aborting since DIVERCONT is set to {}.",
+              divergence_action);
         }
         case DivContAct::adapt_penaltycontact:
         {
           if (have_contact_meshtying())
           {
-            if (write_cout) std::cout << "Adapting penalty parameter.\n";
+            if (write_cout) std::cout << "Adapting the contact penalty parameter.\n";
             cmtbridge_->get_strategy().modify_penalty();
             reset_step();
             return StepAction::retry_step;
@@ -178,7 +181,10 @@ Solid::StepAction Solid::TimIntImpl::perform_error_action(Solid::StepStatus solv
       FOUR_C_THROW("Evaluation of the residual or jacobian failed!");
     }
     default:
-      FOUR_C_THROW("Inconsistent step status.");
+      FOUR_C_THROW(
+          "Detected an unexpected step status: {}. A default action is required, but reaching this "
+          "branch indicates an unexpected state.",
+          solve_status);
   }
 }
 

@@ -42,43 +42,45 @@ namespace TimeStepping
     return group<InputParameters>("time_step_control",
         {
             parameter<double>("decrease_factor",
-                {.description = "Factor applied to the global time-step size when a "
-                                "time-step retry is requested",
+                {.description =
+                        "Factor applied to the global time-step size when a time-step retry is "
+                        "requested",
                     .default_value = 0.5,
                     .validator = Validators::in_range(Validators::excl(0.0), Validators::excl(1.0)),
                     .store =
                         in_struct(&TimeStepControlSettings::InputParameters::decrease_factor)}),
             parameter<double>("min_time_step_ratio",
-                {.description = "Minimum allowed global time-step size during "
-                                "time-step reduction, relative to the initial time-step size",
+                {.description = "Minimum allowed global time-step size during time-step reduction, "
+                                "relative to the initial time-step size",
                     .default_value = 1.0e-3,
                     .validator = Validators::in_range(Validators::excl(0.0), Validators::excl(1.0)),
                     .store =
                         in_struct(&TimeStepControlSettings::InputParameters::min_time_step_ratio)}),
             parameter<int>("steps_to_increase",
-                {.description = "Number of consecutively accepted time-steps on a reduced "
-                                "time-step size before increasing the global time-step size again",
+                {.description =
+                        "Number of consecutively accepted time-steps on a reduced time-step size "
+                        "before increasing the global time-step size again",
                     .default_value = 10,
                     .validator = Validators::positive<int>(),
                     .store =
                         in_struct(&TimeStepControlSettings::InputParameters::steps_to_increase)}),
             parameter<std::optional<double>>("max_time_step",
                 {.description =
-                        "Maximum allowed global time-step size during "
-                        "time-step recovery. If omitted, the initial time-step size is used and "
-                        "increase is only attempted if the current time-step size is smaller than "
-                        "the initial time-step size. If this is larger than the initial time-step "
-                        "size, time-step increase is attempted even if the time-step size has "
-                        "never been reduced.If this is smaller than the initial time-step size, "
-                        "time-step increase is only attempted once the current time-step size has "
-                        "been reduced below this value.",
+                        "Maximum allowed global time-step size during time-step recovery. "
+                        "If omitted, the initial time-step size is used and increase is only "
+                        "attempted if the current time-step size is smaller than the initial "
+                        "time-step size. If this is larger than the initial time-step size, "
+                        "time-step increase is attempted even if the time-step size has never "
+                        "been reduced. If this is smaller than the initial time-step size, "
+                        "time-step increase is only attempted once the current time-step size "
+                        "has been reduced below this value.",
                     .validator = Validators::null_or(Validators::positive<double>()),
                     .store = in_struct(&TimeStepControlSettings::InputParameters::max_time_step)}),
             parameter<std::optional<double>>("increase_factor",
-                {.description = "Factor applied when increasing the global time-step size "
-                                "during time-step increase. If omitted, "
-                                "increase_factor = 1/decrease_factor. If 1.0, the time step is "
-                                "never increased.",
+                {.description =
+                        "Factor applied when increasing the global time-step size during time-step "
+                        "increase. If omitted, increase_factor = 1/decrease_factor. If 1.0, the "
+                        "time step is never increased.",
                     .validator = Validators::null_or(Validators::in_range(
                         Validators::incl(1.0), std::numeric_limits<double>::max())),
                     .store =
@@ -87,15 +89,15 @@ namespace TimeStepping
                 {.description =
                         "Time-step increase is attempted only if the average number of Newton "
                         "iterations over the last step_to_increase steps is below this value. "
-                        "If omitted, time-step increase is attempted regardless of the "
-                        "number of Newton iterations.",
+                        "If omitted, time-step increase is attempted regardless of the number of "
+                        "Newton iterations.",
                     .validator = Validators::null_or(Validators::positive<double>()),
                     .store = in_struct(&TimeStepControlSettings::InputParameters::
                             max_average_nonlinear_iterations)}),
             parameter<bool>("reduce_to_max_time",
-                {.description = "If true, the last time-step size of the simulation is reduced to "
-                                "exactly reach the "
-                                "specified maximum simulation time.",
+                {.description =
+                        "If true, the last time-step size of the simulation is reduced to exactly "
+                        "reach the specified maximum simulation time.",
                     .default_value = false,
                     .store =
                         in_struct(&TimeStepControlSettings::InputParameters::reduce_to_max_time)}),

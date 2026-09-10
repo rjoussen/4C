@@ -239,7 +239,7 @@ namespace Solid
       [[nodiscard]] const TimeStepping::TimeStepControlSettings& time_step_control_settings() const
       {
         check_init_setup();
-        return time_step_control_settings_;
+        return *time_step_control_settings_;
       }
 
       /// Returns nox parameters
@@ -621,7 +621,7 @@ namespace Solid
       Solid::MidAverageEnum mid_time_energy_type_;
 
       /// settings for time-step control
-      TimeStepping::TimeStepControlSettings time_step_control_settings_;
+      std::optional<TimeStepping::TimeStepControlSettings> time_step_control_settings_;
 
       /// nox parameters list
       std::shared_ptr<Teuchos::ParameterList> noxparams_;

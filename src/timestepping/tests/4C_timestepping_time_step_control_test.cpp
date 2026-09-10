@@ -175,8 +175,17 @@ namespace
 
   TEST(TimeStepControlTest, DoesNotReduceToMaxTimeWhenDisabled)
   {
-    TimeStepControlSettings settings_no_reduce_to_maxtime = settings;
-    settings_no_reduce_to_maxtime.reduce_to_max_time = false;
+    TimeStepControlSettings settings_no_reduce_to_maxtime(
+        TimeStepControlSettings::InputParameters{
+            .decrease_factor = 0.5,
+            .min_time_step_ratio = 1.0e-1,  // minimum time-step is 0.05
+            .steps_to_increase = 2,
+            .max_time_step = 0.5,
+            .increase_factor = 2.0,
+            .max_average_nonlinear_iterations = 3,
+            .reduce_to_max_time = false,
+        },
+        0.5, 5);
 
     double current_dt = 0.5;
     EXPECT_EQ(compute_time_step_after_successful_step(current_dt, settings_no_reduce_to_maxtime,
