@@ -1338,8 +1338,6 @@ void Solid::ModelEvaluator::Structure::evaluate_internal(
     std::shared_ptr<Core::LinAlg::SparseOperator>* eval_mat,
     std::shared_ptr<Core::LinAlg::Vector<double>>* eval_vec)
 {
-  pre_evaluate_internal();
-
   Teuchos::ParameterList p;
   p.set<std::shared_ptr<Core::Elements::ParamsInterface>>("interface", eval_data_ptr());
 
@@ -1374,8 +1372,6 @@ void Solid::ModelEvaluator::Structure::evaluate_internal_specified_elements(
     std::shared_ptr<Core::LinAlg::Vector<double>>* eval_vec,
     const Core::LinAlg::Map* ele_map_to_be_evaluated)
 {
-  pre_evaluate_internal();
-
   Teuchos::ParameterList p;
   p.set<std::shared_ptr<Core::Elements::ParamsInterface>>("interface", eval_data_ptr());
 
@@ -1713,8 +1709,6 @@ void Solid::ModelEvaluator::Structure::determine_strain_energy(
   std::array<std::shared_ptr<Core::LinAlg::Vector<double>>, 3> eval_vec = {
       nullptr, nullptr, nullptr};
   std::array<std::shared_ptr<Core::LinAlg::SparseOperator>, 2> eval_mat = {nullptr, nullptr};
-
-  pre_evaluate_internal();
 
   Teuchos::ParameterList p;
   p.set<std::shared_ptr<Core::Elements::ParamsInterface>>("interface", eval_data_ptr());

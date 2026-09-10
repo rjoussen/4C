@@ -184,10 +184,6 @@ namespace Solid
 
       //! @}
 
-     protected:
-      //! pre-operator for \ref evaluate_internal
-      virtual void pre_evaluate_internal() { /* empty */ };
-
      private:
       //! apply the internal force contributions
       bool apply_force_internal();
