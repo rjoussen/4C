@@ -91,26 +91,9 @@ std::vector<Core::IO::InputSpec> ScaTra::valid_parameters()
               "VELFUNCNO", {.description = "function number for scalar transport velocity field",
                                .default_value = -1}),
 
-
-
-          deprecated_selection<ScaTra::InitialField>("INITIALFIELD",
-              {
-                  {"zero_field", initfield_zero_field},
-                  {"field_by_function", initfield_field_by_function},
-                  {"field_by_condition", initfield_field_by_condition},
-                  {"disturbed_field_by_function", initfield_disturbed_field_by_function},
-                  {"1D_DISCONTPV", initfield_discontprogvar_1D},
-                  {"FLAME_VORTEX_INTERACTION", initfield_flame_vortex_interaction},
-                  {"RAYTAYMIXFRAC", initfield_raytaymixfrac},
-                  {"L_shaped_domain", initfield_Lshapeddomain},
-                  {"facing_flame_fronts", initfield_facing_flame_fronts},
-                  {"oracles_flame", initfield_oracles_flame},
-                  {"high_forced_hit", initialfield_forced_hit_high_Sc},
-                  {"low_forced_hit", initialfield_forced_hit_low_Sc},
-                  {"algebraic_field_dependence", initialfield_algebraic_field_dependence},
-              },
-              {.description = "Initial Field for transport problem",
-                  .default_value = initfield_zero_field}),
+          parameter<ScaTra::InitialField>(
+              "INITIALFIELD", {.description = "Initial Field for transport problem",
+                                  .default_value = ScaTra::InitialField::zero_field}),
 
           parameter<int>(
               "INITFUNCNO", {.description = "function number for scalar transport initial field",

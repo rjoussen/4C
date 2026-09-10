@@ -232,7 +232,7 @@ namespace ScaTra
     (*scalarvariancespectrum_n_)[0] = 0.0;
     for (std::size_t rr = 1; rr < wavenumbers_->size(); rr++)
     {
-      if (init_field_type == ScaTra::initialfield_forced_hit_low_Sc)
+      if (init_field_type == ScaTra::InitialField::forced_hit_low_Sc)
       {
         if ((*wavenumbers_)[rr] > 0.0 and (*wavenumbers_)[rr] <= 2.0)
           (*scalarvariancespectrum_n_)[rr] = 0.1 * 1.0;
@@ -240,7 +240,7 @@ namespace ScaTra
           (*scalarvariancespectrum_n_)[rr] =
               0.1 * pow(2.0, 5.0 / 3.0) * pow((*wavenumbers_)[rr], -5.0 / 3.0);
       }
-      else if (init_field_type == ScaTra::initialfield_forced_hit_high_Sc)
+      else if (init_field_type == ScaTra::InitialField::forced_hit_high_Sc)
       {
         if ((*wavenumbers_)[rr] > 0.0 and (*wavenumbers_)[rr] <= 2.0)
           (*scalarvariancespectrum_n_)[rr] = 0.1 * 1.0;

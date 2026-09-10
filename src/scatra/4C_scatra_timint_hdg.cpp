@@ -537,7 +537,7 @@ void ScaTra::TimIntHDG::set_initial_field(const ScaTra::InitialField init, const
 {
   switch (init)
   {
-    case ScaTra::initfield_zero_field:
+    case ScaTra::InitialField::zero_field:
     {
       // set initial field to zero
       phin_->put_scalar(0.0);
@@ -546,7 +546,7 @@ void ScaTra::TimIntHDG::set_initial_field(const ScaTra::InitialField init, const
       intphinp_->put_scalar(0.0);
       break;
     }
-    case ScaTra::initfield_field_by_function:
+    case ScaTra::InitialField::field_by_function:
     {
       // set initial field defined by function
       Teuchos::ParameterList eleparams;

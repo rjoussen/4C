@@ -77,10 +77,10 @@ void ScaTra::ScaTraTimIntElchSCL::setup()
 
   auto initial_field_type =
       Teuchos::getIntegralValue<ScaTra::InitialField>(elchparams_->sublist("SCL"), "INITIALFIELD");
-  if (!(initial_field_type == ScaTra::initfield_zero_field ||
-          initial_field_type == ScaTra::initfield_field_by_function ||
-          initial_field_type == ScaTra::initfield_field_by_condition))
-    FOUR_C_THROW("input type not supported");
+  FOUR_C_ASSERT_ALWAYS(initial_field_type == ScaTra::InitialField::zero_field or
+                           initial_field_type == ScaTra::InitialField::field_by_function or
+                           initial_field_type == ScaTra::InitialField::field_by_condition,
+      "Initial field type not supported for coupled SCL problem");
 
   sdyn_micro->set("INITIALFIELD", initial_field_type);
   sdyn_micro->set("INITFUNCNO", elchparams_->sublist("SCL").get<int>("INITFUNCNO"));

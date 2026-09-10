@@ -465,8 +465,8 @@ Teuchos::ParameterList SSTI::SSTIAlgorithm::clone_thermo_params(
       Teuchos::getIntegralValue<ScaTra::InitialField>(thermoparams, "INITIALFIELD");
   switch (initial_field)
   {
-    case ScaTra::initfield_field_by_function:
-    case ScaTra::initfield_field_by_condition:
+    case ScaTra::InitialField::field_by_function:
+    case ScaTra::InitialField::field_by_condition:
     {
       thermoparams_copy.set("INITIALFIELD", initial_field);
       break;
