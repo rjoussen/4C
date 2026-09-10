@@ -403,12 +403,10 @@ namespace ReducedLung::TerminalUnits::Recruitment
             {
               if (verbosity < ReducedLungParameters::OutputVerbosity::high) return;
 
-              auto& v0 = collector.get_or_create_vector("v_0");
               auto& v0_target = collector.get_or_create_vector("v0_target");
 
               for (size_t i = 0; i < data.number_of_elements(); ++i)
               {
-                v0.replace_local_value(data.local_element_id[i], model.v0_n[i]);
                 v0_target.replace_local_value(data.local_element_id[i], model.v0_target[i]);
               }
             };
