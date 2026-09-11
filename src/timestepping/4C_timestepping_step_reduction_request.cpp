@@ -5,7 +5,7 @@
 //
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
-#include "4C_material_time_step_request.hpp"
+#include "4C_timestepping_step_reduction_request.hpp"
 
 #include "4C_comm_mpi_utils.hpp"
 #include "4C_io_input_spec_builders.hpp"
@@ -113,7 +113,7 @@ namespace
 
 }  // namespace
 
-[[nodiscard]] Core::IO::InputSpec Core::Mat::TimeStepReduction::input_spec()
+[[nodiscard]] Core::IO::InputSpec Core::Mat::TimeStepReduction::allow_requests_input_spec()
 {
   using namespace Core::IO::InputSpecBuilders;
 

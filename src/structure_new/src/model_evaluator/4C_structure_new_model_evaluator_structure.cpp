@@ -25,7 +25,6 @@
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "4C_linalg_vector.hpp"
-#include "4C_material_time_step_request.hpp"
 #include "4C_structure_new_dbc.hpp"
 #include "4C_structure_new_discretization_runtime_output_params.hpp"
 #include "4C_structure_new_error_evaluator.hpp"
@@ -35,6 +34,7 @@
 #include "4C_structure_new_timint_basedataio.hpp"
 #include "4C_structure_new_timint_basedataio_runtime_vtk_output.hpp"
 #include "4C_structure_new_timint_implicit.hpp"
+#include "4C_timestepping_step_reduction_request.hpp"
 #include "4C_utils_exceptions.hpp"
 
 #include <Teuchos_ParameterList.hpp>

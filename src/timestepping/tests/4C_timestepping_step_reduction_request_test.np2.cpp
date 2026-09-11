@@ -7,7 +7,7 @@
 
 #include <gtest/gtest.h>
 
-#include "4C_material_time_step_request.hpp"
+#include "4C_timestepping_step_reduction_request.hpp"
 
 #include "4C_comm_mpi_utils.hpp"
 #include "4C_unittest_utils_assertions_test.hpp"

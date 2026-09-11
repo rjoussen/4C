@@ -34,7 +34,7 @@
 #include "4C_mat_par_bundle.hpp"
 #include "4C_mat_so3_material.hpp"
 #include "4C_mat_vplast_law.hpp"
-#include "4C_material_time_step_request.hpp"
+#include "4C_timestepping_step_reduction_request.hpp"
 #include "4C_utils_enum.hpp"
 #include "4C_utils_exceptions.hpp"
 #include "4C_utils_function_of_time.hpp"

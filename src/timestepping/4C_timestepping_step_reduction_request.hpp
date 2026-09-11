@@ -5,8 +5,8 @@
 //
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
-#ifndef FOUR_C_MATERIAL_TIME_STEP_REQUEST_HPP
-#define FOUR_C_MATERIAL_TIME_STEP_REQUEST_HPP
+#ifndef FOUR_C_TIMESTEPPING_STEP_REDUCTION_REQUEST_HPP
+#define FOUR_C_TIMESTEPPING_STEP_REDUCTION_REQUEST_HPP
 
 #include "4C_config.hpp"
 
@@ -21,13 +21,6 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Core::Mat::TimeStepReduction
 {
-  /*!
-   * \brief Return the input specification for enabling material time-step-reduction requests.
-   *
-   * Algorithms supporting material time-step-reduction requests should include this option in their
-   * input specification and pass the parsed value to \c run_and_detect_synchronized_request().
-   */
-  [[nodiscard]] Core::IO::InputSpec input_spec();
 
   /*!
    * \brief Request a retry of the current time-step with a smaller time-step size.
@@ -42,6 +35,14 @@ namespace Core::Mat::TimeStepReduction
    * @param reason Short diagnostic text explaining why the material requests a smaller time-step.
    */
   [[noreturn]] void request(const std::string& reason);
+
+  /*!
+   * \brief Return the input specification for enabling material time-step-reduction requests.
+   *
+   * Algorithms supporting material time-step-reduction requests should include this option in their
+   * input specification and pass the parsed value to \c run_and_detect_synchronized_request().
+   */
+  [[nodiscard]] Core::IO::InputSpec allow_requests_input_spec();
 
   /*!
    * \brief Run \p evaluation and synchronize rank-local material time-step-reduction requests.
