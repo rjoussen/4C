@@ -185,16 +185,12 @@ std::vector<Core::IO::InputSpec> ElCh::valid_parameters()
                                      .default_value = -1}),
           parameter<double>("ADAPTED_TIME_STEP_SIZE",
               {.description = "new time step size.", .default_value = -1.0}),
-
-          deprecated_selection<ScaTra::InitialField>("INITIALFIELD",
-              {
-                  {"zero_field", ScaTra::initfield_zero_field},
-                  {"field_by_function", ScaTra::initfield_field_by_function},
-                  {"field_by_condition", ScaTra::initfield_field_by_condition},
-              },
+          parameter<ScaTra::InitialField>("INITIALFIELD",
               {.description = "Initial Field for scalar transport problem",
-                  .default_value = ScaTra::initfield_zero_field}),
-
+                  .default_value = ScaTra::InitialField::zero_field,
+                  .validator = in_set<ScaTra::InitialField>(
+                      {ScaTra::InitialField::zero_field, ScaTra::InitialField::field_by_function,
+                          ScaTra::InitialField::field_by_condition})}),
           parameter<int>(
               "INITFUNCNO", {.description = "function number for scalar transport initial field",
                                 .default_value = -1})},

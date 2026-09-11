@@ -1870,14 +1870,14 @@ void ScaTra::ScaTraTimIntImpl::set_initial_field(
 {
   switch (init)
   {
-    case ScaTra::initfield_zero_field:
+    case ScaTra::InitialField::zero_field:
     {
       phin_->put_scalar(0.0);
       phinp_->put_scalar(0.0);
       break;
     }
-    case ScaTra::initfield_field_by_function:
-    case ScaTra::initfield_disturbed_field_by_function:
+    case ScaTra::InitialField::field_by_function:
+    case ScaTra::InitialField::disturbed_field_by_function:
     {
       const Core::LinAlg::Map* dofrowmap = discret_->dof_row_map();
 
@@ -1925,7 +1925,7 @@ void ScaTra::ScaTraTimIntImpl::set_initial_field(
       phinp_->update(1.0, *phin_, 0.0);
 
       // add random perturbation for initial field of turbulent flows
-      if (init == ScaTra::initfield_disturbed_field_by_function)
+      if (init == ScaTra::InitialField::disturbed_field_by_function)
       {
         // random noise is relative to difference of max-min values of initial profile
         double perc =
@@ -1957,7 +1957,7 @@ void ScaTra::ScaTraTimIntImpl::set_initial_field(
       }
       break;
     }
-    case ScaTra::initfield_field_by_condition:
+    case ScaTra::InitialField::field_by_condition:
     {
       // set initial field for ALL existing scatra fields in condition
       const std::string field = "ScaTra";
@@ -2001,252 +2001,8 @@ void ScaTra::ScaTraTimIntImpl::set_initial_field(
 
       break;
     }
-    // discontinuous 0-1 field for progress variable in 1-D
-    case ScaTra::initfield_discontprogvar_1D:
-    {
-      const Core::LinAlg::Map* dofrowmap = discret_->dof_row_map();
-
-      for (auto lnode : discret_->my_row_node_range())
-      {
-        // the set of degrees of freedom associated with the node
-        std::vector<int> nodedofset = discret_->dof(0, lnode);
-
-        // get coordinate
-        const double x = lnode.x()[0];
-
-        int numdofs = static_cast<int>(nodedofset.size());
-        for (int k = 0; k < numdofs; ++k)
-        {
-          const int dofgid = nodedofset[k];
-          int doflid = dofrowmap->lid(dofgid);
-
-          double initialval = 0.0;
-          if (x > -1e-10) initialval = 1.0;
-
-          phin_->replace_local_value(doflid, initialval);
-          // initialize also the solution vector. These values are a pretty good guess for the
-          // solution after the first time step (much better than starting with a zero vector)
-          phinp_->replace_local_value(doflid, initialval);
-        }
-      }
-      break;
-    }
-    // reconstructed initial profile for progress variable in x2-direction from
-    // Lessani and Papalexandris (2006), also used in Moureau et al. (2007, 2009),
-    // for two-dimensional flame-vortex interaction problem (x2=0-200)
-    case ScaTra::initfield_flame_vortex_interaction:
-    {
-      // locations separating region 1 from region 2 and region 2 from region 3
-      const double loc12 = 98.5;
-      const double loc23 = 103.0;
-
-      // define parameters for region 1 (exponential function for curve fitting)
-      const double beta1 = 1.65;
-      const double delta1 = 1.0;
-      const double trans1 = 100.0;
-
-      // define parameters for region 2 (linear function for curve fitting)
-      const double abs2 = 0.0879;
-      const double fac2 = 0.139309333;
-      const double trans2 = 98.5;
-
-      // define parameters for region 3 (exponential function for curve fitting)
-      const double beta3 = 3.506209;
-      const double delta3 = 4.28875;
-      const double trans3 = 103.0;
-
-      const Core::LinAlg::Map* dofrowmap = discret_->dof_row_map();
-
-      // define variable
-      double initialval = 0.0;
-
-      for (auto lnode : discret_->my_row_node_range())
-      {
-        // the set of degrees of freedom associated with the node
-        std::vector<int> nodedofset = discret_->dof(0, lnode);
-
-        // get x2-coordinate
-        const double x2 = lnode.x()[1];
-
-        int numdofs = static_cast<int>(nodedofset.size());
-        for (int k = 0; k < numdofs; ++k)
-        {
-          const int dofgid = nodedofset[k];
-          int doflid = dofrowmap->lid(dofgid);
-
-          if (x2 < loc12 - 1e-10)
-            initialval = (1.0 - (1.0 / beta1)) * exp((x2 - trans1) / delta1);
-          else if (x2 > loc23 + 1e-10)
-            initialval = 1.0 - (exp((1.0 - beta3) * (x2 - trans3) / delta3) / beta3);
-          else
-            initialval = fac2 * (x2 - trans2) + abs2;
-
-          phin_->replace_local_value(doflid, initialval);
-          // initialize also the solution vector. These values are a pretty good guess for the
-          // solution after the first time step (much better than starting with a zero vector)
-          phinp_->replace_local_value(doflid, initialval);
-        }
-      }
-      break;
-    }
-    // initial mixture-fraction profile for Rayleigh-Taylor instability
-    case ScaTra::initfield_raytaymixfrac:
-    {
-      // define interface thickness, sinusoidal disturbance wave amplitude and pi
-      const double delta = 0.002;
-      const double alpha = 0.001;
-
-      const Core::LinAlg::Map* dofrowmap = discret_->dof_row_map();
-
-      for (auto lnode : discret_->my_row_node_range())
-      {
-        // the set of degrees of freedom associated with the node
-        std::vector<int> nodedofset = discret_->dof(0, lnode);
-
-        // get x1- and x2-coordinate
-        const double x1 = lnode.x()[0];
-        const double x2 = lnode.x()[1];
-
-        // interface disturbance
-        double x2_int = 0.0;
-        x2_int -= std::cos(4 * std::numbers::pi * x1);
-        x2_int -= std::cos(14 * std::numbers::pi * x1);
-        x2_int -= std::cos(23 * std::numbers::pi * x1);
-        x2_int -= std::cos(28 * std::numbers::pi * x1);
-        x2_int -= std::cos(33 * std::numbers::pi * x1);
-        x2_int -= std::cos(42 * std::numbers::pi * x1);
-        x2_int -= std::cos(51 * std::numbers::pi * x1);
-        x2_int -= std::cos(59 * std::numbers::pi * x1);
-        x2_int *= alpha;
-
-        const double value = (x2_int - x2) / (2.0 * delta);
-
-        // values required for tanh-distribution
-        const double vp = exp(value);
-        const double vm = exp(-value);
-
-        int numdofs = static_cast<int>(nodedofset.size());
-        for (int k = 0; k < numdofs; ++k)
-        {
-          const int dofgid = nodedofset[k];
-          int doflid = dofrowmap->lid(dofgid);
-
-          // compute tanh-distribution
-          double initialval = 0.0;
-          initialval = 0.5 * (1.0 + (vp - vm) / (vp + vm));
-
-          phin_->replace_local_value(doflid, initialval);
-          // initialize also the solution vector. These values are a pretty good guess for the
-          // solution after the first time step (much better than starting with a zero vector)
-          phinp_->replace_local_value(doflid, initialval);
-        }
-      }
-      break;
-    }
-    // initial field for skew convection of L-shaped domain
-    case ScaTra::initfield_Lshapeddomain:
-    {
-      const Core::LinAlg::Map* dofrowmap = discret_->dof_row_map();
-
-      for (auto lnode : discret_->my_row_node_range())
-      {
-        // the set of degrees of freedom associated with the node
-        std::vector<int> nodedofset = discret_->dof(0, lnode);
-
-        // get x1- and x2-coordinate
-        const double x1 = lnode.x()[0];
-        const double x2 = lnode.x()[1];
-
-        int numdofs = static_cast<int>(nodedofset.size());
-        for (int k = 0; k < numdofs; ++k)
-        {
-          const int dofgid = nodedofset[k];
-          int doflid = dofrowmap->lid(dofgid);
-
-          // compute initial values 0.0 or 1.0 depending on geometrical location
-          double initialval = 0.0;
-          if ((x1 <= 0.25 and x2 <= 0.5) or (x1 <= 0.5 and x2 <= 0.25)) initialval = 1.0;
-
-          phin_->replace_local_value(doflid, initialval);
-          // initialize also the solution vector. These values are a pretty good
-          // guess for the solution after the first time step (much better than
-          // starting with a zero vector)
-          phinp_->replace_local_value(doflid, initialval);
-        }
-      }
-      break;
-    }
-    case ScaTra::initfield_facing_flame_fronts:
-    {
-      const Core::LinAlg::Map* dofrowmap = discret_->dof_row_map();
-
-      for (auto lnode : discret_->my_row_node_range())
-      {
-        // the set of degrees of freedom associated with the node
-        std::vector<int> nodedofset = discret_->dof(0, lnode);
-
-        // get x1- and x2-coordinate
-        const double x1 = lnode.x()[0];
-
-        int numdofs = static_cast<int>(nodedofset.size());
-        for (int k = 0; k < numdofs; ++k)
-        {
-          const int dofgid = nodedofset[k];
-          int doflid = dofrowmap->lid(dofgid);
-          // evaluate component k of spatial function
-
-          double initialval;
-          if (x1 < 0.0)
-            initialval = -(x1 + 0.75);
-          else
-            initialval = x1 - 0.75;
-
-          phin_->replace_local_value(doflid, initialval);
-          // initialize also the solution vector. These values are a pretty good guess for the
-          // solution after the first time step (much better than starting with a zero vector)
-          phinp_->replace_local_value(doflid, initialval);
-        }
-      }
-      break;
-    }
-    case ScaTra::initfield_oracles_flame:
-    {
-      const Core::LinAlg::Map* dofrowmap = discret_->dof_row_map();
-
-      const double eps = 0.00152;
-
-      for (auto lnode : discret_->my_row_node_range())
-      {
-        // the set of degrees of freedom associated with the node
-        std::vector<int> nodedofset = discret_->dof(0, lnode);
-
-        // get x2-coordinate
-        const double x2 = lnode.x()[1];
-
-        int numdofs = static_cast<int>(nodedofset.size());
-        for (int k = 0; k < numdofs; ++k)
-        {
-          const int dofgid = nodedofset[k];
-          int doflid = dofrowmap->lid(dofgid);
-          // evaluate component k of spatial function
-
-          double initval = 0.0;
-
-          // initial plane implementation for periodic spanwise boundary
-          if (x2 >= 0.0)
-            initval = (x2 - 0.0354) - eps;
-          else
-            initval = (-0.0354 - x2) - eps;
-          phin_->replace_local_value(doflid, initval);
-          // initialize also the solution vector. These values are a pretty good guess for the
-          // solution after the first time step (much better than starting with a zero vector)
-          phinp_->replace_local_value(doflid, initval);
-        }
-      }
-      break;
-    }
-    case ScaTra::initialfield_forced_hit_high_Sc:
-    case ScaTra::initialfield_forced_hit_low_Sc:
+    case ScaTra::InitialField::forced_hit_high_Sc:
+    case ScaTra::InitialField::forced_hit_low_Sc:
     {
       // initialize calculation of initial field based on fast Fourier transformation
       HomoIsoTurbInitialScalarField HitInitialScalarField(*this, init);

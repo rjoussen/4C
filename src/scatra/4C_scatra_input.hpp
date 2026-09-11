@@ -12,6 +12,7 @@
 
 #include "4C_io_input_spec.hpp"
 
+#include <cstdint>
 #include <utility>
 #include <vector>
 
@@ -55,21 +56,14 @@ namespace ScaTra
   };
 
   /// initial field for scalar transport problem
-  enum InitialField
+  enum class InitialField : std::uint8_t
   {
-    initfield_zero_field,
-    initfield_field_by_function,
-    initfield_field_by_condition,
-    initfield_disturbed_field_by_function,
-    initfield_discontprogvar_1D,
-    initfield_flame_vortex_interaction,
-    initfield_raytaymixfrac,
-    initfield_Lshapeddomain,
-    initfield_facing_flame_fronts,
-    initfield_oracles_flame,
-    initialfield_forced_hit_high_Sc,
-    initialfield_forced_hit_low_Sc,
-    initialfield_algebraic_field_dependence
+    zero_field,
+    field_by_function,
+    field_by_condition,
+    disturbed_field_by_function,
+    forced_hit_high_Sc,
+    forced_hit_low_Sc
   };
 
   /// form of convective term

@@ -17,6 +17,7 @@ FOUR_C_NAMESPACE_OPEN
 std::vector<Core::IO::InputSpec> STI::valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
+  using namespace Core::IO::InputSpecBuilders::Validators;
 
   std::vector<Core::IO::InputSpec> specs;
   specs.push_back(group("STI DYNAMIC",
@@ -52,14 +53,12 @@ std::vector<Core::IO::InputSpec> STI::valid_parameters()
                   .default_value = CouplingType::undefined}),
 
           // specification of initial temperature field
-          deprecated_selection<ScaTra::InitialField>("THERMO_INITIALFIELD",
-              {
-                  {"zero_field", ScaTra::initfield_zero_field},
-                  {"field_by_function", ScaTra::initfield_field_by_function},
-                  {"field_by_condition", ScaTra::initfield_field_by_condition},
-              },
-              {.description = "initial temperature field for scatra-thermo interaction problems",
-                  .default_value = ScaTra::initfield_zero_field}),
+          parameter<ScaTra::InitialField>("THERMO_INITIALFIELD",
+              {.description = "Initial Field for scatra-thermo interaction problems",
+                  .default_value = ScaTra::InitialField::zero_field,
+                  .validator = in_set<ScaTra::InitialField>(
+                      {ScaTra::InitialField::zero_field, ScaTra::InitialField::field_by_function,
+                          ScaTra::InitialField::field_by_condition})}),
 
           // function number for initial temperature field
           parameter<int>("THERMO_INITFUNCNO",

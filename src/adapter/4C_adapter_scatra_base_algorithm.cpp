@@ -122,10 +122,10 @@ Adapter::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(Global::Problem& problem,
       // scatra2 get's in initial functions from FS3I DYNAMICS
       switch (initial_field)
       {
-        case ScaTra::initfield_zero_field:
+        case ScaTra::InitialField::zero_field:
           scatratimeparams->set<int>("INITFUNCNO", -1);
           break;
-        case ScaTra::initfield_field_by_function:
+        case ScaTra::InitialField::field_by_function:
           scatratimeparams->set<int>("INITFUNCNO", prbdyn.get<int>("STRUCTSCAL_INITFUNCNO"));
           break;
         default:

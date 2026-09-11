@@ -16,6 +16,7 @@ FOUR_C_NAMESPACE_OPEN
 std::vector<Core::IO::InputSpec> FS3I::valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
+  using namespace Core::IO::InputSpecBuilders::Validators;
 
   std::vector<Core::IO::InputSpec> specs;
   specs.push_back(group("FS3I DYNAMIC",
@@ -63,13 +64,11 @@ std::vector<Core::IO::InputSpec> FS3I::valid_parameters()
                   .default_value = ScaTra::convform_conservative}),
 
 
-          deprecated_selection<ScaTra::InitialField>("STRUCTSCAL_INITIALFIELD",
-              {
-                  {"zero_field", ScaTra::initfield_zero_field},
-                  {"field_by_function", ScaTra::initfield_field_by_function},
-              },
+          parameter<ScaTra::InitialField>("STRUCTSCAL_INITIALFIELD",
               {.description = "Initial Field for structure scalar transport problem",
-                  .default_value = ScaTra::initfield_zero_field}),
+                  .default_value = ScaTra::InitialField::zero_field,
+                  .validator = in_set<ScaTra::InitialField>({ScaTra::InitialField::zero_field,
+                      ScaTra::InitialField::field_by_function})}),
 
           parameter<int>("STRUCTSCAL_INITFUNCNO",
               {.description = "function number for structure scalar transport initial field",

@@ -19,6 +19,7 @@ FOUR_C_NAMESPACE_OPEN
 std::vector<Core::IO::InputSpec> SSTI::valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
+  using namespace Core::IO::InputSpecBuilders::Validators;
 
   std::vector<Core::IO::InputSpec> specs;
   specs.push_back(group("SSTI CONTROL",
@@ -117,13 +118,13 @@ std::vector<Core::IO::InputSpec> SSTI::valid_parameters()
               {.description = "initial function for thermo field", .default_value = -1}),
           parameter<int>("LINEAR_SOLVER",
               {.description = "linear solver for thermo field", .default_value = -1}),
-          deprecated_selection<ScaTra::InitialField>("INITIALFIELD",
-              {
-                  {"field_by_function", ScaTra::InitialField::initfield_field_by_function},
-                  {"field_by_condition", ScaTra::InitialField::initfield_field_by_condition},
-              },
-              {.description = "defines, how to set the initial field",
-                  .default_value = ScaTra::InitialField::initfield_field_by_function})},
+          parameter<ScaTra::InitialField>("INITIALFIELD",
+              {.description = "Initial Field for the thermo field of solid-scatra-thermo "
+                              "interaction problems",
+                  .default_value = ScaTra::InitialField::field_by_function,
+                  .validator =
+                      in_set<ScaTra::InitialField>({ScaTra::InitialField::field_by_function,
+                          ScaTra::InitialField::field_by_condition})})},
       {.required = false}));
   return specs;
 }

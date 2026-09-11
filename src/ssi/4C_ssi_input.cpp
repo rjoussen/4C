@@ -18,6 +18,7 @@ FOUR_C_NAMESPACE_OPEN
 std::vector<Core::IO::InputSpec> SSI::valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
+  using namespace Core::IO::InputSpecBuilders::Validators;
 
   std::vector<Core::IO::InputSpec> specs;
   specs.push_back(group("SSI CONTROL",
@@ -188,15 +189,12 @@ std::vector<Core::IO::InputSpec> SSI::valid_parameters()
                       "activate meshtying between all manifold fields in case they intersect?",
                   .default_value = false}),
 
-
-          deprecated_selection<ScaTra::InitialField>("INITIALFIELD",
-              {
-                  {"zero_field", ScaTra::initfield_zero_field},
-                  {"field_by_function", ScaTra::initfield_field_by_function},
-                  {"field_by_condition", ScaTra::initfield_field_by_condition},
-              },
+          parameter<ScaTra::InitialField>("INITIALFIELD",
               {.description = "Initial field for scalar transport on manifold",
-                  .default_value = ScaTra::initfield_zero_field}),
+                  .default_value = ScaTra::InitialField::zero_field,
+                  .validator = in_set<ScaTra::InitialField>(
+                      {ScaTra::InitialField::zero_field, ScaTra::InitialField::field_by_function,
+                          ScaTra::InitialField::field_by_condition})}),
 
           parameter<int>("INITFUNCNO",
               {.description = "function number for scalar transport on manifold initial field",

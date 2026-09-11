@@ -165,13 +165,13 @@ Teuchos::ParameterList SSI::Utils::clone_scatra_manifold_params(
   scatra_manifold_params.set("INITIALFIELD", initial_field);
   switch (initial_field)
   {
-    case ScaTra::initfield_zero_field:
-    case ScaTra::initfield_field_by_condition:
+    case ScaTra::InitialField::zero_field:
+    case ScaTra::InitialField::field_by_condition:
     {
       scatra_manifold_params.set<int>("INITFUNCNO", -1);
       break;
     }
-    case ScaTra::initfield_field_by_function:
+    case ScaTra::InitialField::field_by_function:
     {
       scatra_manifold_params.set<int>("INITFUNCNO", sublist_manifold_params.get<int>("INITFUNCNO"));
       break;
