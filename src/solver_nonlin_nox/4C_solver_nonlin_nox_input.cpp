@@ -167,12 +167,7 @@ std::vector<Core::IO::InputSpec> NOX::valid_parameters()
           parameter<double>("Reduction Factor",
               {.description = "A multiplier between zero and one that reduces the "
                               "step size between line search iterations",
-                  .default_value = 0.5}),
-          parameter<bool>("Allow Exceptions",
-              {.description =
-                      "Set to true, if exceptions during the force evaluation and backtracking "
-                      "routine should be allowed.",
-                  .default_value = false})},
+                  .default_value = 0.5})},
       {.required = false}));
 
   // sub-sub-list "Polynomial"

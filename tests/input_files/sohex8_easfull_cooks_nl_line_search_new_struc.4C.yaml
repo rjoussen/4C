@@ -20,8 +20,6 @@ STRUCT NOX/Status Test:
   XML File: "sohex8_eas_new_struc.xml"
 STRUCT NOX/Line Search:
   Method: "Backtrack"
-STRUCT NOX/Line Search/Backtrack:
-  Allow Exceptions: true
 STRUCT NOX/Printing:
   Warning: false
   Inner Iteration: false

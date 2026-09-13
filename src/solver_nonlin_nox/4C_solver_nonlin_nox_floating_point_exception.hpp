@@ -30,12 +30,6 @@ namespace NOX
     class FloatingPointException
     {
      public:
-      /** \brief Wrapper function which disables the floating point exception
-       *  checks if desired.
-       *
-       *  */
-      void precompute() const;
-
       /** \brief Wrapper function which checks, clears and re-enables the
        *  floating point exception checks if desired
        *
@@ -72,10 +66,6 @@ namespace NOX
        *
        *  */
       void enable() const;
-
-      /** set this variable to TRUE if you want to disable the floating point
-       *  exception checks for a moment. */
-      bool shall_be_caught_ = false;
     };
   }  // namespace Nln
 }  // namespace NOX

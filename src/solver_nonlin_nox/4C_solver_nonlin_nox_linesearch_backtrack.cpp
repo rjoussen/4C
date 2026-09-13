@@ -67,8 +67,6 @@ bool NOX::Nln::LineSearch::Backtrack::reset(
   check_type_ = Teuchos::getIntegralValue<::NOX::StatusTest::CheckType>(
       params, "Inner Status Test Check Type");
 
-  fp_except_.shall_be_caught_ = p.get("Allow Exceptions", false);
-
   prePostOperatorPtr_ = Teuchos::make_rcp<PrePostOperator>(params);
 
   return true;
@@ -91,7 +89,7 @@ void NOX::Nln::LineSearch::Backtrack::reset()
 bool NOX::Nln::LineSearch::Backtrack::compute(::NOX::Abstract::Group& grp, double& step,
     const ::NOX::Abstract::Vector& dir, const ::NOX::Solver::Generic& s)
 {
-  fp_except_.precompute();
+  fp_except_.disable();
   // -------------------------------------------------
   // (re)set important line search parameters
   // -------------------------------------------------
@@ -157,8 +155,6 @@ bool NOX::Nln::LineSearch::Backtrack::compute(::NOX::Abstract::Group& grp, doubl
   // catch error of the computeF method
   catch (const char* e)
   {
-    if (not fp_except_.shall_be_caught_) FOUR_C_THROW("An exception occurred: {}", e);
-
     utils_->out(::NOX::Utils::Warning) << "WARNING: Error caught = " << e << "\n";
 
     status_ = NOX::Nln::Inner::StatusTest::status_step_too_long;
@@ -208,8 +204,6 @@ bool NOX::Nln::LineSearch::Backtrack::compute(::NOX::Abstract::Group& grp, doubl
     // catch error of the computeF method
     catch (const char* e)
     {
-      if (not fp_except_.shall_be_caught_) FOUR_C_THROW("An exception occurred: {}", e);
-
       if (utils_->isPrintType(::NOX::Utils::Warning))
         utils_->out() << "WARNING: Error caught = " << e << "\n";
 

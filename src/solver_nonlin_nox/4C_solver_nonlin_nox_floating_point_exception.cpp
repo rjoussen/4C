@@ -18,7 +18,6 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------------*/
 void NOX::Nln::FloatingPointException::disable() const
 {
-  if (not shall_be_caught_) return;
 #ifdef FOUR_C_ENABLE_FE_TRAPPING
   fedisableexcept(FE_INVALID | FE_DIVBYZERO | FE_OVERFLOW);
 #endif
@@ -28,7 +27,6 @@ void NOX::Nln::FloatingPointException::disable() const
  *----------------------------------------------------------------------------*/
 void NOX::Nln::FloatingPointException::clear() const
 {
-  if (not shall_be_caught_) return;
 #ifdef FOUR_C_ENABLE_FE_TRAPPING
   feclearexcept(FE_ALL_EXCEPT);
 #endif
@@ -63,15 +61,10 @@ int NOX::Nln::FloatingPointException::check_and_print(std::ostream& os)
  *----------------------------------------------------------------------------*/
 void NOX::Nln::FloatingPointException::enable() const
 {
-  if (not shall_be_caught_) return;
 #ifdef FOUR_C_ENABLE_FE_TRAPPING
   feenableexcept(FE_INVALID | FE_DIVBYZERO | FE_OVERFLOW);
 #endif
 }
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-void NOX::Nln::FloatingPointException::precompute() const { disable(); }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
