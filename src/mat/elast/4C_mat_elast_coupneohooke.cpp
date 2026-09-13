@@ -9,7 +9,7 @@
 
 #include "4C_material_parameter_base.hpp"
 
-#include <limits>
+#include <cmath>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -56,14 +56,15 @@ void Mat::Elastic::CoupNeoHooke::add_derivatives_principal(Core::LinAlg::Matrix<
 
   dPI(0) += c;
   // computing exp(log(a)*b) is faster than pow(a,b)
-  if (prinv(2) > 0)
-  {
-    const double prinv2_to_beta_m1 = std::exp(std::log(prinv(2)) * (-beta - 1.));
-    dPI(2) -= c * prinv2_to_beta_m1;
-    ddPII(2) += c * (beta + 1.) * prinv2_to_beta_m1 / prinv(2);
-  }
-  else
-    dPI(2) = ddPII(2) = std::numeric_limits<double>::quiet_NaN();
+  const double prinv2_to_beta_m1 = std::exp(std::log(prinv(2)) * (-beta - 1.));
+  dPI(2) -= c * prinv2_to_beta_m1;
+  ddPII(2) += c * (beta + 1.) * prinv2_to_beta_m1 / prinv(2);
+  FOUR_C_ASSERT_ALWAYS(std::isfinite(dPI(2)),
+      "Error in principal derivative computation. Derivative of strain energy wrt. I3 = {}",
+      dPI(2));
+  FOUR_C_ASSERT_ALWAYS(std::isfinite(ddPII(2)),
+      "Error in principal derivative computation. Second derivative of strain energy wrt. I3 = {}",
+      ddPII(2));
 }
 
 void Mat::Elastic::CoupNeoHooke::add_third_derivatives_principal_iso(
