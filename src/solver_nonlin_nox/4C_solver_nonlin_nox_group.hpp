@@ -76,11 +76,10 @@ namespace NOX
       void computeX(const ::NOX::Abstract::Group& grp, const ::NOX::Abstract::Vector& d,
           double step) override;
 
-      [[nodiscard]] ::NOX::Abstract::Group::ReturnType computeF() override;
+      ::NOX::Abstract::Group::ReturnType computeF() override;
 
-      [[nodiscard]] ::NOX::Abstract::Group::ReturnType applyJacobianInverse(
-          Teuchos::ParameterList& p, const ::NOX::Abstract::Vector& input,
-          ::NOX::Abstract::Vector& result) const override;
+      ::NOX::Abstract::Group::ReturnType applyJacobianInverse(Teuchos::ParameterList& p,
+          const ::NOX::Abstract::Vector& input, ::NOX::Abstract::Vector& result) const override;
 
       //! Compute and store \f$F(x)\f$ and the jacobian \f$\frac{\partial F(x)}{\partial x}\f$ at
       //! the same time. This can result in a huge performance gain in some special cases, e.g.

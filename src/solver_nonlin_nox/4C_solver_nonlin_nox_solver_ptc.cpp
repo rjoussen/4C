@@ -345,7 +345,7 @@ void NOX::Nln::Solver::PseudoTransient::create_group_pre_post_operator()
   ok = lineSearchPtr->compute(soln, stepSize, *dirPtr, *this);
   /* call the computeF routine again, to be sure that it has been evaluated!
    * (this becomes necessary for a Full Step method call!) */
-  ok &= (solnPtr->computeF() == ::NOX::Abstract::Group::ReturnType::Ok);
+  solnPtr->computeF();
   usePseudoTransientResidual_ = false;
   // evaluate the model reduction ratio if desired
   if (ok) eval_model_reduction_ratio();

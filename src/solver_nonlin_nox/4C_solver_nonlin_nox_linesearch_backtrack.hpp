@@ -42,13 +42,12 @@ namespace NOX
             Teuchos::ParameterList& params);
 
         /// hard reset
-        [[nodiscard]] bool reset(
-            const Teuchos::RCP<::NOX::GlobalData>& gd, Teuchos::ParameterList& params);
+        void reset(const Teuchos::RCP<::NOX::GlobalData>& gd, Teuchos::ParameterList& params);
 
         /// weak reset
         void reset();
 
-        [[nodiscard]] bool compute(::NOX::Abstract::Group& newgrp, double& step,
+        bool compute(::NOX::Abstract::Group& newgrp, double& step,
             const ::NOX::Abstract::Vector& dir, const ::NOX::Solver::Generic& s) override;
 
         [[nodiscard]] NOX::Nln::Inner::StatusTest::StatusType check_inner_status(

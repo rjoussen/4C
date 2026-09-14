@@ -46,8 +46,8 @@ namespace NOX
 
         //! @name ::NOX::LineSearch::Generic
         //! @{
-        [[nodiscard]] bool compute(::NOX::Abstract::Group& grp, double& step,
-            const ::NOX::Abstract::Vector& dir, const ::NOX::Solver::Generic& s) override = 0;
+        bool compute(::NOX::Abstract::Group& grp, double& step, const ::NOX::Abstract::Vector& dir,
+            const ::NOX::Solver::Generic& s) override = 0;
         //! @}
 
         //! @name NOX::Nln::Inner::StatusTest::Interface::Required

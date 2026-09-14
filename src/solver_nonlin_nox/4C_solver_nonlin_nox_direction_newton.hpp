@@ -28,7 +28,7 @@ namespace NOX
         //! Constructor
         Newton(const Teuchos::RCP<::NOX::GlobalData>& gd, Teuchos::ParameterList& params);
 
-        [[nodiscard]] bool compute(::NOX::Abstract::Vector& dir, ::NOX::Abstract::Group& group,
+        bool compute(::NOX::Abstract::Vector& dir, ::NOX::Abstract::Group& group,
             const ::NOX::Solver::Generic& solver) override;
 
        private:
