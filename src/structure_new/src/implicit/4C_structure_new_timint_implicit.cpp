@@ -13,6 +13,7 @@
 #include "4C_io_control.hpp"
 #include "4C_linalg_blocksparsematrix.hpp"
 #include "4C_linalg_utils_sparse_algebra_io.hpp"
+#include "4C_material_step_reduction_request.hpp"
 #include "4C_solver_nonlin_nox_group.hpp"
 #include "4C_solver_nonlin_nox_linearsystem.hpp"
 #include "4C_solver_nonlin_nox_vector.hpp"
@@ -25,7 +26,6 @@
 #include "4C_structure_new_timint_base.hpp"
 #include "4C_structure_new_timint_noxinterface.hpp"
 #include "4C_structure_new_utils.hpp"
-#include "4C_timestepping_step_reduction_request.hpp"
 #include "4C_timestepping_time_step_control.hpp"
 #include "4C_utils_enum.hpp"
 #include "4C_utils_exceptions.hpp"
@@ -124,7 +124,7 @@ Solid::StepStatus Solid::TimeInt::Implicit::prepare_time_step_with_status()
 
   const bool allow_requests = get_data_sdyn().allow_material_time_step_reduction();
   const bool request_detected =
-      Core::Mat::TimeStepReduction::run_and_detect_synchronized_request(allow_requests, predict);
+      Core::Mat::StepReduction::run_and_detect_synchronized_request(allow_requests, predict);
   if (request_detected) return Solid::StepStatus::time_step_reduction_requested;
 
   return Solid::StepStatus::no_errors;
@@ -167,7 +167,7 @@ Solid::StepStatus Solid::TimeInt::Implicit::solve()
 
   const bool allow_requests = get_data_sdyn().allow_material_time_step_reduction();
   const bool request_detected =
-      Core::Mat::TimeStepReduction::run_and_detect_synchronized_request(allow_requests, solve);
+      Core::Mat::StepReduction::run_and_detect_synchronized_request(allow_requests, solve);
 
   if (request_detected) return Solid::StepStatus::time_step_reduction_requested;
 

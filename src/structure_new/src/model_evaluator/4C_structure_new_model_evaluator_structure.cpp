@@ -25,6 +25,7 @@
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "4C_linalg_vector.hpp"
+#include "4C_material_step_reduction_request.hpp"
 #include "4C_structure_new_dbc.hpp"
 #include "4C_structure_new_discretization_runtime_output_params.hpp"
 #include "4C_structure_new_error_evaluator.hpp"
@@ -34,7 +35,6 @@
 #include "4C_structure_new_timint_basedataio.hpp"
 #include "4C_structure_new_timint_basedataio_runtime_vtk_output.hpp"
 #include "4C_structure_new_timint_implicit.hpp"
-#include "4C_timestepping_step_reduction_request.hpp"
 #include "4C_utils_exceptions.hpp"
 
 #include <Teuchos_ParameterList.hpp>
@@ -1367,7 +1367,7 @@ void Solid::ModelEvaluator::Structure::evaluate_internal(Teuchos::ParameterList&
   const auto comm = global_state().get_comm();
   const auto evaluation = [&]
   { discret().evaluate(p, eval_mat[0], eval_mat[1], eval_vec[0], eval_vec[1], eval_vec[2]); };
-  Core::Mat::TimeStepReduction::run_and_synchronize_request(comm, evaluation);
+  Core::Mat::StepReduction::run_and_synchronize_request(comm, evaluation);
   discret().clear_state();
 }
 
@@ -1406,7 +1406,7 @@ void Solid::ModelEvaluator::Structure::evaluate_internal_specified_elements(
   const auto evaluation = [&]
   { Core::FE::evaluate(*discret_ptr(), p, *eval_mat, *eval_vec, ele_map_to_be_evaluated); };
 
-  Core::Mat::TimeStepReduction::run_and_synchronize_request(comm, evaluation);
+  Core::Mat::StepReduction::run_and_synchronize_request(comm, evaluation);
 
   discret().clear_state();
 }
@@ -1438,7 +1438,7 @@ void Solid::ModelEvaluator::Structure::evaluate_neumann(Teuchos::ParameterList& 
 
   const auto comm = global_state().get_comm();
   const auto evaluation = [&] { discret().evaluate_neumann(p, eval_vec, eval_mat.get()); };
-  Core::Mat::TimeStepReduction::run_and_synchronize_request(comm, evaluation);
+  Core::Mat::StepReduction::run_and_synchronize_request(comm, evaluation);
   discret().clear_state();
 }
 

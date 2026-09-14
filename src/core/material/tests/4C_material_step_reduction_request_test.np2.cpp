@@ -7,7 +7,7 @@
 
 #include <gtest/gtest.h>
 
-#include "4C_timestepping_step_reduction_request.hpp"
+#include "4C_material_step_reduction_request.hpp"
 
 #include "4C_comm_mpi_utils.hpp"
 #include "4C_unittest_utils_assertions_test.hpp"
@@ -21,9 +21,9 @@
 namespace
 {
   using namespace FourC;
-  using namespace FourC::Core::Mat::TimeStepReduction;
+  using namespace FourC::Core::Mat::StepReduction;
 
-  void request_time_step_reduction_on_rank_1(const std::string& reason)
+  void request_reduction_on_rank_1(const std::string& reason)
   {
     if (Core::Communication::my_mpi_rank(MPI_COMM_WORLD) == 1) request(reason);
   }
@@ -33,7 +33,7 @@ namespace
     run_and_synchronize_request(MPI_COMM_WORLD, [] {});
   }
 
-  TEST(MaterialTimeStepRequest, EvaluationWithoutRequestReturnsFalse)
+  TEST(MaterialStepReductionRequest, EvaluationWithoutRequestReturnsFalse)
   {
     const bool request_occurred =
         run_and_detect_synchronized_request(true, evaluate_without_request);
@@ -41,19 +41,19 @@ namespace
     EXPECT_FALSE(request_occurred);
   }
 
-  TEST(MaterialTimeStepRequest, RequestOnOneRankIsDetectedOnEveryRank)
+  TEST(MaterialStepReductionRequest, RequestOnOneRankIsDetectedOnEveryRank)
   {
     const bool request_occurred = run_and_detect_synchronized_request(true,
         []
         {
           run_and_synchronize_request(
-              MPI_COMM_WORLD, [] { request_time_step_reduction_on_rank_1("rank 1 requested."); });
+              MPI_COMM_WORLD, [] { request_reduction_on_rank_1("rank 1 requested."); });
         });
 
     EXPECT_TRUE(request_occurred);
   }
 
-  TEST(MaterialTimeStepRequest, SequentialSynchronizationRegionsAreAllowed)
+  TEST(MaterialStepReductionRequest, SequentialSynchronizationRegionsAreAllowed)
   {
     const bool request_occurred = run_and_detect_synchronized_request(true,
         []
@@ -65,42 +65,42 @@ namespace
     EXPECT_FALSE(request_occurred);
   }
 
-  TEST(MaterialTimeStepRequest, SynchronizationWithoutRequestDoesNotRequireDetectionRegion)
+  TEST(MaterialStepReductionRequest, SynchronizationWithoutRequestDoesNotRequireDetectionRegion)
   {
     run_and_synchronize_request(MPI_COMM_WORLD, [] {});
   }
 
-  TEST(MaterialTimeStepRequest, RequestOutsideSynchronizationRegionThrows)
+  TEST(MaterialStepReductionRequest, RequestOutsideSynchronizationRegionThrows)
   {
     FOUR_C_EXPECT_THROW_WITH_MESSAGE(std::ignore = run_and_detect_synchronized_request(
                                          true, [] { request("all ranks requested."); }),
         Core::Exception,
-        "A material requested time-step reduction in an evaluation path that does not support "
+        "A material requested step reduction in an evaluation path that does not support "
         "it.\nReason: all ranks requested.\n");
   }
 
-  TEST(MaterialTimeStepRequest, RequestInsideSynchronizationOutsideDetectionRegionThrows)
+  TEST(MaterialStepReductionRequest, RequestInsideSynchronizationOutsideDetectionRegionThrows)
   {
     FOUR_C_EXPECT_THROW_WITH_MESSAGE(
         { run_and_synchronize_request(MPI_COMM_WORLD, [] { request("all ranks requested."); }); },
         Core::Exception,
-        "A material requested time-step reduction but the calling algorithm does not support "
+        "A material requested step reduction but the calling algorithm does not support "
         "it.\nReason: all ranks requested.\n");
 
     EXPECT_NO_THROW(run_and_synchronize_request(MPI_COMM_WORLD, [] {}));
   }
 
-  TEST(MaterialTimeStepRequest, NestedRequestDetectionRegionsThrow)
+  TEST(MaterialStepReductionRequest, NestedRequestDetectionRegionsThrow)
   {
     FOUR_C_EXPECT_THROW_WITH_MESSAGE(
         std::ignore = run_and_detect_synchronized_request(
             true, [] { std::ignore = run_and_detect_synchronized_request(true, [] {}); }),
         Core::Exception,
-        "Nested Core::Mat::TimeStepReduction::run_and_detect_synchronized_request() calls are not "
+        "Nested Core::Mat::StepReduction::run_and_detect_synchronized_request() calls are not "
         "supported");
   }
 
-  TEST(MaterialTimeStepRequest, NestedRequestSynchronizationRegionsThrow)
+  TEST(MaterialStepReductionRequest, NestedRequestSynchronizationRegionsThrow)
   {
     FOUR_C_EXPECT_THROW_WITH_MESSAGE(
         std::ignore = run_and_detect_synchronized_request(true,
@@ -110,11 +110,11 @@ namespace
                   MPI_COMM_WORLD, [] { run_and_synchronize_request(MPI_COMM_WORLD, [] {}); });
             }),
         Core::Exception,
-        "Nested Core::Mat::TimeStepReduction::run_and_synchronize_request() calls are not "
+        "Nested Core::Mat::StepReduction::run_and_synchronize_request() calls are not "
         "supported");
   }
 
-  TEST(MaterialTimeStepRequest, UnrelatedExceptionPropagatesAndResetsEvaluationState)
+  TEST(MaterialStepReductionRequest, UnrelatedExceptionPropagatesAndResetsEvaluationState)
   {
     FOUR_C_EXPECT_THROW_WITH_MESSAGE(std::ignore = run_and_detect_synchronized_request(true,
                                          []
@@ -128,7 +128,7 @@ namespace
     EXPECT_FALSE(run_and_detect_synchronized_request(true, evaluate_without_request));
   }
 
-  TEST(MaterialTimeStepRequest, DisabledRequestDetectionRegionThrowsDiagnostic)
+  TEST(MaterialStepReductionRequest, DisabledRequestDetectionRegionThrowsDiagnostic)
   {
     FOUR_C_EXPECT_THROW_WITH_MESSAGE(
         std::ignore = run_and_detect_synchronized_request(false,
@@ -137,8 +137,8 @@ namespace
               run_and_synchronize_request(MPI_COMM_WORLD, [] { request("all ranks requested."); });
             }),
         Core::Exception,
-        "A material requested time-step reduction, but ALLOW_MATERIAL_TIME_STEP_REDUCTION is "
-        "disabled.\nReason: all ranks requested.");
+        "A material requested step reduction, but the calling algorithm disabled handling of these "
+        "requests.\nReason: all ranks requested.");
 
     EXPECT_FALSE(run_and_detect_synchronized_request(true, evaluate_without_request));
   }
