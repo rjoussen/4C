@@ -89,7 +89,6 @@ void NOX::Nln::LineSearch::Backtrack::reset()
 bool NOX::Nln::LineSearch::Backtrack::compute(::NOX::Abstract::Group& grp, double& step,
     const ::NOX::Abstract::Vector& dir, const ::NOX::Solver::Generic& s)
 {
-  fp_except_.disable();
   // -------------------------------------------------
   // (re)set important line search parameters
   // -------------------------------------------------
@@ -123,45 +122,29 @@ bool NOX::Nln::LineSearch::Backtrack::compute(::NOX::Abstract::Group& grp, doubl
   // -------------------------------------------------
   grp.computeX(oldGrp, dir, step);
   ::NOX::Abstract::Group::ReturnType rtype = ::NOX::Abstract::Group::Ok;
-  bool failed = false;
-  try
+
+  rtype = grp.computeF();
+  if (rtype != ::NOX::Abstract::Group::Ok) throw_error("compute", "Unable to compute F!");
+
+  /* Safe-guarding of the inner status test:
+   * If the outer NormF test is converged for a full step length,
+   * we don't have to reduce the step length any further.
+   * This additional check becomes necessary, because of cancellation
+   * errors and related numerical artifacts. */
+  // check the outer status test for the full step length
+  outer_tests_ptr_->checkStatus(s, check_type_);
+
+  const NOX::Nln::Solver::LineSearchBased& lsSolver =
+      static_cast<const NOX::Nln::Solver::LineSearchBased&>(s);
+
+  const ::NOX::StatusTest::StatusType ostatus = lsSolver.get_status<NOX::Nln::StatusTest::NormF>();
+
+  /* Skip the inner status test, if the outer NormF test is
+   * already converged! */
+  if (ostatus == ::NOX::StatusTest::Converged)
   {
-    failed = false;
-    rtype = grp.computeF();
-    if (rtype != ::NOX::Abstract::Group::Ok) throw_error("compute", "Unable to compute F!");
-
-    /* Safe-guarding of the inner status test:
-     * If the outer NormF test is converged for a full step length,
-     * we don't have to reduce the step length any further.
-     * This additional check becomes necessary, because of cancellation
-     * errors and related numerical artifacts. */
-    // check the outer status test for the full step length
-    outer_tests_ptr_->checkStatus(s, check_type_);
-
-    const NOX::Nln::Solver::LineSearchBased& lsSolver =
-        static_cast<const NOX::Nln::Solver::LineSearchBased&>(s);
-
-    const ::NOX::StatusTest::StatusType ostatus =
-        lsSolver.get_status<NOX::Nln::StatusTest::NormF>();
-
-    /* Skip the inner status test, if the outer NormF test is
-     * already converged! */
-    if (ostatus == ::NOX::StatusTest::Converged)
-    {
-      fp_except_.enable();
-      return true;
-    }
+    return true;
   }
-  // catch error of the computeF method
-  catch (const char* e)
-  {
-    utils_->out(::NOX::Utils::Warning) << "WARNING: Error caught = " << e << "\n";
-
-    status_ = NOX::Nln::Inner::StatusTest::status_step_too_long;
-    failed = true;
-  }
-  // clear the exception checks after the try/catch block
-  fp_except_.clear();
 
   // -------------------------------------------------
   // print header if desired
@@ -171,11 +154,9 @@ bool NOX::Nln::LineSearch::Backtrack::compute(::NOX::Abstract::Group& grp, doubl
                                             << ::NOX::Utils::fill(72, '=') << "\n"
                                             << "-- Backtrack Line Search -- \n";
 
-  if (not failed)
-  {
-    status_ = inner_tests_ptr_->check_status(*this, s, grp, check_type_);
-    print_update(utils_->out(::NOX::Utils::InnerIteration));
-  }
+  status_ = inner_tests_ptr_->check_status(*this, s, grp, check_type_);
+  print_update(utils_->out(::NOX::Utils::InnerIteration));
+
   // -------------------------------------------------
   // inner backtracking loop
   // -------------------------------------------------
@@ -194,24 +175,10 @@ bool NOX::Nln::LineSearch::Backtrack::compute(::NOX::Abstract::Group& grp, doubl
     grp.computeX(oldGrp, dir, step);
     ++ls_iters_;
 
-    try
-    {
-      rtype = grp.computeF();
-      if (rtype != ::NOX::Abstract::Group::Ok) throw_error("compute", "Unable to compute F!");
-      status_ = inner_tests_ptr_->check_status(*this, s, grp, check_type_);
-      print_update(utils_->out(::NOX::Utils::InnerIteration));
-    }
-    // catch error of the computeF method
-    catch (const char* e)
-    {
-      if (utils_->isPrintType(::NOX::Utils::Warning))
-        utils_->out() << "WARNING: Error caught = " << e << "\n";
-
-      status_ = NOX::Nln::Inner::StatusTest::status_step_too_long;
-    }
-
-    // clear the exception checks after the try/catch block
-    fp_except_.clear();
+    rtype = grp.computeF();
+    if (rtype != ::NOX::Abstract::Group::Ok) throw_error("compute", "Unable to compute F!");
+    status_ = inner_tests_ptr_->check_status(*this, s, grp, check_type_);
+    print_update(utils_->out(::NOX::Utils::InnerIteration));
   }
   // -------------------------------------------------
   // print footer if desired
@@ -225,7 +192,6 @@ bool NOX::Nln::LineSearch::Backtrack::compute(::NOX::Abstract::Group& grp, doubl
   else if (status_ == NOX::Nln::Inner::StatusTest::status_no_descent_direction)
     throw_error("compute()", "The given search direction is no descent direction!");
 
-  fp_except_.enable();
   return (status_ == NOX::Nln::Inner::StatusTest::status_converged ? true : false);
 }
 

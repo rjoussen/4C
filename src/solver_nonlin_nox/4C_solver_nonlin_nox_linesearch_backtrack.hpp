@@ -10,7 +10,6 @@
 
 #include "4C_config.hpp"
 
-#include "4C_solver_nonlin_nox_floating_point_exception.hpp"
 #include "4C_solver_nonlin_nox_forward_decl.hpp"
 #include "4C_solver_nonlin_nox_inner_statustest_generic.hpp"
 #include "4C_solver_nonlin_nox_linesearch_generic.hpp"  // base class
@@ -85,9 +84,6 @@ namespace NOX
         void throw_error(const std::string& functionName, const std::string& errorMsg) const;
 
        private:
-        //! handle floating point exceptions
-        FloatingPointException fp_except_;
-
         //! inner iteration counter
         int ls_iters_;
 

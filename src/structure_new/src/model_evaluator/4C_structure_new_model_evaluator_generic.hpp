@@ -471,18 +471,6 @@ namespace Solid
       const Solid::TimeInt::Base& tim_int() const;
       //! @}
 
-     protected:
-      /*! \brief Check the evaluation procedures for possible errors
-       *
-       *  In the standard case, we check for exceptions like overflow, invalid results
-       *  or divide by zero operations. This is universal and should be usable by all model
-       *  evaluators.
-       *
-       *  \return Boolean flag indicating success (true) or error (false)
-       *
-       */
-      virtual bool eval_error_check() const;
-
       //! @name internal accessors
       //! @{
       //! Returns the model evaluator data container

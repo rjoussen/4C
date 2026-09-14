@@ -340,7 +340,7 @@ bool Solid::ModelEvaluator::Structure::initialize_inertia_and_damping()
   // assemble the rayleigh damping matrix
   rayleigh_damping_matrix();
 
-  return eval_error_check();
+  return true;
 }
 
 /*----------------------------------------------------------------------------*
@@ -371,7 +371,7 @@ bool Solid::ModelEvaluator::Structure::apply_force_internal()
   // evaluate inertia and visco forces
   inertial_and_viscous_forces();
 
-  return eval_error_check();
+  return true;
 }
 
 /*----------------------------------------------------------------------------*
@@ -391,7 +391,7 @@ bool Solid::ModelEvaluator::Structure::apply_force_external()
   discret().set_state(0, "displacement new", *global_state().get_dis_np());
   evaluate_neumann(*global_state().get_fext_np(), nullptr);
 
-  return eval_error_check();
+  return true;
 }
 
 /*----------------------------------------------------------------------------*
@@ -420,8 +420,7 @@ bool Solid::ModelEvaluator::Structure::apply_force_stiff_external()
      * matrix. */
     evaluate_neumann(*global_state().get_fext_np(), Core::Utils::shared_ptr_from_ref(*stiff_ptr_));
   }
-
-  return eval_error_check();
+  return true;
 }
 
 /*----------------------------------------------------------------------------*
@@ -468,7 +467,7 @@ bool Solid::ModelEvaluator::Structure::apply_force_stiff_internal()
   // evaluate inertial and viscous forces
   inertial_and_viscous_forces();
 
-  return eval_error_check();
+  return true;
 }
 
 /*----------------------------------------------------------------------------*

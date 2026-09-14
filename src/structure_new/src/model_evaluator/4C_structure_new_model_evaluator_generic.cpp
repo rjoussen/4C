@@ -8,7 +8,6 @@
 #include "4C_structure_new_model_evaluator_generic.hpp"
 
 #include "4C_comm_mpi_utils.hpp"
-#include "4C_solver_nonlin_nox_floating_point_exception.hpp"
 #include "4C_structure_new_model_evaluator_data.hpp"
 #include "4C_structure_new_timint_base.hpp"
 #include "4C_structure_new_utils.hpp"
@@ -218,28 +217,6 @@ std::shared_ptr<Core::LinAlg::Vector<double>> Solid::ModelEvaluator::Generic::ge
   fext_incr->update(-1.0, fextn, 1.0);
 
   return fext_incr;
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-bool Solid::ModelEvaluator::Generic::eval_error_check() const
-{
-  // --- Did an exception occur during the evaluation process? -----------------
-  bool ok = true;
-  int fp_err = NOX::Nln::FloatingPointException::check_and_print(std::cout);
-  if (fp_err)
-  {
-    ok = false;
-    std::cout << "FLOATING POINT EXCEPTION occurred on proc "
-                 "#"
-              << Core::Communication::my_mpi_rank(gstate_ptr_->get_comm()) << ".\n";
-  }
-
-  // --- check for local errors on each proc and communicate the information ---
-  int lerr = (ok ? 0 : 1);
-  int gerr = 0;
-  gerr = Core::Communication::sum_all(lerr, gstate_ptr_->get_comm());
-  return (gerr == 0);
 }
 
 FOUR_C_NAMESPACE_CLOSE
