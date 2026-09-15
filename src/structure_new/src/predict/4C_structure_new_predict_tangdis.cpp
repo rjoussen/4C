@@ -128,7 +128,7 @@ void Solid::Predict::TangDis::compute(::NOX::Abstract::Group& grp)
   // For safety purposes, we set the dbc_incr vector to zero
   dbc_incr_ptr_->put_scalar(0.0);
 
-  impl_int().model_eval().predict(get_type());
+  impl_int().model_eval().predict();
 }
 
 /*----------------------------------------------------------------------------*
