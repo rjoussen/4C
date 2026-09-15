@@ -164,7 +164,6 @@ Solid::ModelEvaluator::Data::Data()
       issetup_(false),
       isntmaps_filled_(false),
       ele_action_(Core::Elements::none),
-      predict_type_(Solid::pred_vague),
       total_time_(-1.0),
       delta_time_(-1.0),
       step_length_(-1.0),

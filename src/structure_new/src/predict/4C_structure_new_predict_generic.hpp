@@ -78,6 +78,9 @@ namespace Solid
       //! Pre-/Postprocess the specific predictor step
       void predict(::NOX::Abstract::Group& grp);
 
+      //! Reset the predictor state
+      virtual void reset_state();
+
       //! Calculate the specific predictor step
       virtual void compute(::NOX::Abstract::Group& grp) = 0;
 

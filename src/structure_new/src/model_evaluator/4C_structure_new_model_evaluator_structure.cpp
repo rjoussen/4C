@@ -1461,7 +1461,6 @@ void Solid::ModelEvaluator::Structure::predict(const Solid::PredEnum& pred_type)
 {
   // set the element action
   eval_data().set_action_type(Core::Elements::struct_calc_predict);
-  eval_data().set_predictor_type(pred_type);
 
   if (discret().time_ele_evaluations()) discret().reset_element_eval_timers();
 
