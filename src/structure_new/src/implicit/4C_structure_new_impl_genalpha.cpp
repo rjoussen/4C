@@ -195,7 +195,7 @@ void Solid::IMPLICIT::GenAlpha::set_state(const Core::LinAlg::Vector<double>& x)
 {
   check_init_setup();
 
-  if (is_predictor_state()) return;
+  if (global_state().is_predict()) return;
 
   update_constant_state_contributions();
 

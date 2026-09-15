@@ -152,11 +152,6 @@ namespace Solid
         return timintfactor_vel_;
       }
 
-
-
-      //! is the current state the predictor state?
-      bool is_predictor_state() const;
-
       //! mutable access to the stress data vector
       std::shared_ptr<std::vector<char>>& stress_data_ptr() override;
 

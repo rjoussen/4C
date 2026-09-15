@@ -103,7 +103,7 @@ void Solid::IMPLICIT::GenAlphaLieGroup::set_state(const Core::LinAlg::Vector<dou
 {
   check_init_setup();
 
-  if (is_predictor_state()) return;
+  if (global_state().is_predict()) return;
 
   update_constant_state_contributions();
 

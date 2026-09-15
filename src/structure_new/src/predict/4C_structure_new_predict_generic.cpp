@@ -85,7 +85,6 @@ void Solid::Predict::Generic::reset_state()
 {
   check_init_setup();
   gstate_ptr_->is_predict() = false;
-  implint_ptr_->set_is_predictor_state(false);
 }
 
 /*----------------------------------------------------------------------------*
@@ -106,9 +105,9 @@ void Solid::Predict::Generic::post_predict(::NOX::Abstract::Group& grp)
   NOX::Nln::Group* nlngrp_ptr = dynamic_cast<NOX::Nln::Group*>(&grp);
   FOUR_C_ASSERT(nlngrp_ptr != nullptr, "Group cast failed!");
   // evaluate the right hand side and the jacobian
-  implint_ptr_->set_is_predictor_state(true);
+  gstate_ptr_->is_predict() = true;
   nlngrp_ptr->compute_f_and_jacobian();
-  implint_ptr_->set_is_predictor_state(false);
+  gstate_ptr_->is_predict() = false;
 }
 
 /*----------------------------------------------------------------------------*

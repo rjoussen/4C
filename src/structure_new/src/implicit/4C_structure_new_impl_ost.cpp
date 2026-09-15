@@ -153,7 +153,7 @@ void Solid::IMPLICIT::OneStepTheta::set_state(const Core::LinAlg::Vector<double>
 {
   check_init_setup();
 
-  if (is_predictor_state()) return;
+  if (global_state().is_predict()) return;
 
   update_constant_state_contributions();
 

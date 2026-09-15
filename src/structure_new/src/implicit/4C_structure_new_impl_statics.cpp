@@ -60,7 +60,7 @@ void Solid::IMPLICIT::Statics::post_setup()
 void Solid::IMPLICIT::Statics::set_state(const Core::LinAlg::Vector<double>& x)
 {
   check_init_setup();
-  if (is_predictor_state()) return;
+  if (global_state().is_predict()) return;
 
   std::shared_ptr<Core::LinAlg::Vector<double>> disnp_ptr = global_state().extract_displ_entries(x);
   global_state().get_dis_np()->scale(1.0, *disnp_ptr);
