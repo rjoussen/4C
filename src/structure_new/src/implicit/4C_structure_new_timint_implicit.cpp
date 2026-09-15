@@ -221,6 +221,12 @@ const ::NOX::Abstract::Group& Solid::TimeInt::Implicit::get_solution_group() con
   return nln_solver().get_solution_group();
 }
 
+void Solid::TimeInt::Implicit::reset_step()
+{
+  ImplicitBase::reset_step();
+  predictor().reset_state();
+}
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Solid::StepAction Solid::TimeInt::Implicit::perform_error_action(Solid::StepStatus solve_status)

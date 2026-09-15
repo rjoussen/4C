@@ -125,17 +125,24 @@ void Solid::Predict::TangDis::compute(::NOX::Abstract::Group& grp)
   // set the consistent state in the models (e.g. structure and contact models)
   impl_int().reset_model_states(x_nln.get_linalg_vector());
 
-  // For safety purposes, we set the dbc_incr vector to zero
-  dbc_incr_ptr_->put_scalar(0.0);
+  // For safety purposes, invalidate dbc_incr
+  dbc_incr_ptr_ = nullptr;
 
   impl_int().model_eval().predict();
+}
+
+void Solid::Predict::TangDis::reset_state()
+{
+  Generic::reset_state();
+  apply_linear_reaction_forces_ = false;
+  dbc_incr_ptr_ = nullptr;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 const Core::LinAlg::Vector<double>& Solid::Predict::TangDis::get_dbc_incr() const
 {
-  FOUR_C_ASSERT(dbc_incr_ptr_, "The dbc increment is not initialized!");
+  FOUR_C_ASSERT_ALWAYS(dbc_incr_ptr_, "The dbc increment is not initialized!");
   return *dbc_incr_ptr_;
 }
 
