@@ -80,7 +80,7 @@ void Solid::Predict::ConstDisVelAccPress::compute(::NOX::Abstract::Group& grp)
       break;
     }
   }
-  impl_int().model_eval().predict(get_type());
+  impl_int().model_eval().predict();
 
   // If the const predictors failed e.g. due to too little history information,
   // we use the tangdis predictor as fallback predictor.

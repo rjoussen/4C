@@ -1457,7 +1457,7 @@ void Solid::ModelEvaluator::Structure::read_restart(Core::IO::DiscretizationRead
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::ModelEvaluator::Structure::predict(const Solid::PredEnum& pred_type)
+void Solid::ModelEvaluator::Structure::predict()
 {
   // set the element action
   eval_data().set_action_type(Core::Elements::struct_calc_predict);

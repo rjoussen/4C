@@ -128,7 +128,7 @@ void Solid::Predict::TangDis::compute(::NOX::Abstract::Group& grp)
   // For safety purposes, invalidate dbc_incr
   dbc_incr_ptr_ = nullptr;
 
-  impl_int().model_eval().predict(get_type());
+  impl_int().model_eval().predict();
 }
 
 void Solid::Predict::TangDis::reset_state()
