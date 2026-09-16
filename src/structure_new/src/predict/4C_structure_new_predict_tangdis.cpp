@@ -62,8 +62,6 @@ void Solid::Predict::TangDis::compute(::NOX::Abstract::Group& grp)
   FOUR_C_ASSERT(grp_ptr != nullptr, "Dynamic cast failed!");
   grp_ptr->reset_pre_post_operator(nox_params().sublist("Group Options"));
 
-  impl_int().eval_data().set_predictor_type(Solid::pred_tangdis);
-
   // ---------------------------------------------------------------------------
   // calculate the dbc increment on the dirichlet boundary
   // ---------------------------------------------------------------------------
@@ -131,8 +129,6 @@ void Solid::Predict::TangDis::compute(::NOX::Abstract::Group& grp)
   dbc_incr_ptr_->put_scalar(0.0);
 
   impl_int().model_eval().predict(get_type());
-
-  impl_int().eval_data().set_predictor_type(Solid::pred_vague);
 }
 
 /*----------------------------------------------------------------------------*
