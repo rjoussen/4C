@@ -21,26 +21,11 @@ namespace Solid
   {
     class Generic;
 
-    /*! \brief Factory to build the desired predictor
+    /**
+     * @brief Build a predictor of the given type
      *
-     *  */
-    class Factory
-    {
-     public:
-      //! constructor
-      Factory();
-
-      //! destructor
-      virtual ~Factory() = default;
-
-      //! build the desired predictor
-      std::shared_ptr<Solid::Predict::Generic> build_predictor(
-          const Solid::PredictorType& predType) const;
-    };
-
-    /*! \brief Non-member function, which relates to the Solid::Predict::Factory class
-     *
-     * \note Call this method from outside!
+     * @param predType The type of predictor to build
+     * @return std::shared_ptr<Solid::Predict::Generic>
      */
     std::shared_ptr<Solid::Predict::Generic> build_predictor(const Solid::PredictorType& predType);
 

@@ -7,6 +7,7 @@
 
 #include "4C_structure_new_predict_factory.hpp"
 
+#include "4C_structure_new_input.hpp"
 #include "4C_utils_exceptions.hpp"
 
 // supported predictor classes
@@ -18,15 +19,8 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Solid::Predict::Factory::Factory()
-{
-  // empty
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-std::shared_ptr<Solid::Predict::Generic> Solid::Predict::Factory::build_predictor(
-    const Solid::PredictorType& predType) const
+std::shared_ptr<Solid::Predict::Generic> Solid::Predict::build_predictor(
+    const Solid::PredictorType& predType)
 {
   std::shared_ptr<Solid::Predict::Generic> predictor = nullptr;
 
@@ -60,15 +54,6 @@ std::shared_ptr<Solid::Predict::Generic> Solid::Predict::Factory::build_predicto
   }
 
   return predictor;
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-std::shared_ptr<Solid::Predict::Generic> Solid::Predict::build_predictor(
-    const Solid::PredictorType& predType)
-{
-  Factory factory;
-  return factory.build_predictor(predType);
 }
 
 FOUR_C_NAMESPACE_CLOSE
