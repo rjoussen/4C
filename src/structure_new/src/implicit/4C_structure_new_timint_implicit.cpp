@@ -62,7 +62,7 @@ void Solid::TimeInt::Implicit::setup()
   // ---------------------------------------------------------------------------
   // build predictor
   // ---------------------------------------------------------------------------
-  const Solid::PredEnum predtype = data_sdyn().get_predictor_type();
+  const Solid::PredictorType predtype = data_sdyn().get_predictor_type();
   predictor_ptr_ = Solid::Predict::build_predictor(predtype);
   predictor_ptr_->init(predtype, implint_ptr_, dbc_ptr(), data_global_state_ptr(), data_io_ptr(),
       data_sdyn().get_nox_params_ptr());

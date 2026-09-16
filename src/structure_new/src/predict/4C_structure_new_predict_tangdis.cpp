@@ -152,7 +152,7 @@ bool Solid::Predict::TangDis::pre_apply_force_external(Core::LinAlg::Vector<doub
 {
   check_init_setup();
 
-  if (get_type() != Solid::pred_tangdis_constfext) return false;
+  if (get_type() != Solid::PredictorType::tangdis_constfext) return false;
 
   if (apply_linear_reaction_forces_)
   {

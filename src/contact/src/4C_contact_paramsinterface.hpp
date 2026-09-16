@@ -25,7 +25,7 @@ namespace NOX
 }  // namespace NOX
 namespace Solid
 {
-  enum PredEnum : int;
+  enum class PredictorType : int;
 }  // namespace Solid
 
 namespace CONTACT
