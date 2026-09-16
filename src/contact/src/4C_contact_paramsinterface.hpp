@@ -49,9 +49,6 @@ namespace CONTACT
     //! get the predictor status
     virtual bool is_predictor() const = 0;
 
-    //! Is the current state coming from a predictor step?
-    virtual bool is_predictor_state() const = 0;
-
     //! get the current step length
     virtual double get_step_length() const = 0;
 

@@ -479,19 +479,6 @@ void Solid::ModelEvaluator::Data::reset_my_norms(const bool& isdefaultstep)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool Solid::ModelEvaluator::Data::is_predictor_state() const
-{
-  check_init_setup();
-
-  const Solid::IMPLICIT::Generic* impl_ptr =
-      dynamic_cast<const Solid::IMPLICIT::Generic*>(&tim_int().integrator());
-
-  if (not impl_ptr) return false;
-  return impl_ptr->is_predictor_state();
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
 Solid::DampKind Solid::ModelEvaluator::Data::get_damping_type() const
 {
   check_init_setup();
