@@ -13,6 +13,7 @@
 #include "4C_io_control.hpp"
 #include "4C_linalg_blocksparsematrix.hpp"
 #include "4C_linalg_utils_sparse_algebra_io.hpp"
+#include "4C_material_step_reduction_request.hpp"
 #include "4C_solver_nonlin_nox_group.hpp"
 #include "4C_solver_nonlin_nox_linearsystem.hpp"
 #include "4C_solver_nonlin_nox_vector.hpp"
@@ -62,7 +63,7 @@ void Solid::TimeInt::Implicit::setup()
   // ---------------------------------------------------------------------------
   // build predictor
   // ---------------------------------------------------------------------------
-  const Solid::PredEnum predtype = data_sdyn().get_predictor_type();
+  const Solid::PredictorType predtype = data_sdyn().get_predictor_type();
   predictor_ptr_ = Solid::Predict::build_predictor(predtype);
   predictor_ptr_->init(predtype, implint_ptr_, dbc_ptr(), data_global_state_ptr(), data_io_ptr(),
       data_sdyn().get_nox_params_ptr());
@@ -106,12 +107,28 @@ void Solid::TimeInt::Implicit::prepare_partition_step()
  *----------------------------------------------------------------------------*/
 void Solid::TimeInt::Implicit::prepare_time_step()
 {
+  const auto prepare_status = prepare_time_step_with_status();
+  FOUR_C_ASSERT_ALWAYS(
+      prepare_status == Solid::StepStatus::no_errors, "Preparing structural time step failed.");
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+Solid::StepStatus Solid::TimeInt::Implicit::prepare_time_step_with_status()
+{
   check_init_setup();
 
   ::NOX::Abstract::Group& grp = nln_solver().get_solution_group();
-  predictor().predict(grp);
-}
 
+  const auto predict = [&] { predictor().predict(grp); };
+
+  const bool allow_requests = get_data_sdyn().allow_material_time_step_reduction();
+  const bool request_detected =
+      Core::Mat::StepReduction::run_and_detect_synchronized_request(allow_requests, predict);
+  if (request_detected) return Solid::StepStatus::time_step_reduction_requested;
+
+  return Solid::StepStatus::no_errors;
+}
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Solid::TimeInt::Implicit::integrate()
@@ -144,7 +161,17 @@ Solid::StepStatus Solid::TimeInt::Implicit::solve()
   // reset the non-linear solver
   nln_solver().reset();
   // solve the non-linear problem
-  return nln_solver().solve();
+
+  auto step_status = Solid::StepStatus::no_errors;
+  const auto solve = [&] { step_status = nln_solver().solve(); };
+
+  const bool allow_requests = get_data_sdyn().allow_material_time_step_reduction();
+  const bool request_detected =
+      Core::Mat::StepReduction::run_and_detect_synchronized_request(allow_requests, solve);
+
+  if (request_detected) return Solid::StepStatus::time_step_reduction_requested;
+
+  return step_status;
 }
 
 /*----------------------------------------------------------------------------*
@@ -221,6 +248,12 @@ const ::NOX::Abstract::Group& Solid::TimeInt::Implicit::get_solution_group() con
   return nln_solver().get_solution_group();
 }
 
+void Solid::TimeInt::Implicit::reset_step()
+{
+  ImplicitBase::reset_step();
+  predictor().reset_state();
+}
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Solid::StepAction Solid::TimeInt::Implicit::perform_error_action(Solid::StepStatus solve_status)
@@ -276,6 +309,11 @@ Solid::StepAction Solid::TimeInt::Implicit::perform_error_action(Solid::StepStat
     case StepStatus::evaluation_failed:
     {
       FOUR_C_THROW("Evaluation of the residual or jacobian failed!");
+    }
+    case StepStatus::time_step_reduction_requested:
+    {
+      prepare_retry_with_reduced_time_step();
+      return StepAction::retry_step;
     }
     default:
       FOUR_C_THROW(

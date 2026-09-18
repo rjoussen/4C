@@ -206,7 +206,7 @@ namespace Solid
       };
 
       /// Returns predictor type
-      Solid::PredEnum get_predictor_type() const
+      Solid::PredictorType get_predictor_type() const
       {
         check_init_setup();
         return predtype_;
@@ -251,6 +251,13 @@ namespace Solid
 
       /// Returns the initial pseudo time step for the PTC method
       double get_initial_ptc_pseudo_time_step() const { return ptc_delta_init_; }
+
+      /// Returns whether the material-triggered time-step reduction is allowed
+      [[nodiscard]] bool allow_material_time_step_reduction() const
+      {
+        check_init_setup();
+        return allow_material_time_step_reduction_;
+      }
       ///@}
 
       /// @name Get mutable linear solver variables (read only access)
@@ -609,13 +616,16 @@ namespace Solid
       Solid::PreStress prestresstype_;
 
       /// type of the predictor
-      Solid::PredEnum predtype_;
+      Solid::PredictorType predtype_;
 
       /// type of nonlinear solver
       Solid::NonlinSolTech nlnsolvertype_;
 
       /// action to be performed when the non-linear solver diverges
       Solid::DivContAct divergenceaction_;
+
+      /// whether material-requested evaluation failures reduce and retry the time step
+      bool allow_material_time_step_reduction_;
 
       /// mid-time energy type
       Solid::MidAverageEnum mid_time_energy_type_;
