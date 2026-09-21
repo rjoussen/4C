@@ -183,8 +183,6 @@ void CONTACT::TSIInterface::assemble_lin_slip(Core::LinAlg::SparseMatrix& linsli
 
   double frcoeff_in =
       interface_params().get<double>("FRCOEFF");  // the friction coefficient from the input
-  double ct_input = interface_params().get<double>("SEMI_SMOOTH_CT");
-  double cn_input = interface_params().get<double>("SEMI_SMOOTH_CN");
 
   // some things that are not implemented
   const bool gp_slip = interface_params().get<bool>("GP_SLIP_INCR");
@@ -237,8 +235,9 @@ void CONTACT::TSIInterface::assemble_lin_slip(Core::LinAlg::SparseMatrix& linsli
     std::map<int, double> dfrdT, dfrdD;
     cnode->deriv_fr_coeff_temp(frcoeff_in, dfrdT, dfrdD);
 
-    double cn = cn_input;
-    double ct = ct_input;
+    const int local_id = cnValues_->get_map().lid(gid);
+    const double cn = cnValues_->get_values()[local_id];
+    const double ct = ctValues_->get_values()[local_id];
 
     double fac = lm_n - cn * wgap;
     for (CI p = dfrdT.begin(); p != dfrdT.end(); ++p)
@@ -421,11 +420,8 @@ void CONTACT::TSIInterface::assemble_lin_dm_x(Core::LinAlg::SparseMatrix* linD_X
           lm = 0.;
         else
         {
-          double dval = 1.;
-          if (cnode->mo_data().get_d().size() == 0)
-            continue;
-          else
-            cnode->mo_data().get_d()[cnode->id()];
+          if (cnode->mo_data().get_d().size() == 0) continue;
+          const double dval = cnode->mo_data().get_d()[cnode->id()];
           const Core::LinAlg::Matrix<3, 1> lmc(cnode->mo_data().lm(), true);
           const Core::LinAlg::Matrix<3, 1> n(cnode->mo_data().n(), true);
           const Core::LinAlg::Matrix<3, 1> jump(frnode->fri_data().jump(), true);
@@ -613,10 +609,11 @@ void CONTACT::TSIInterface::assemble_dm_lin_diss(Core::LinAlg::SparseMatrix* d_L
           derivDiss[p->first] -= ((lm(i) - lm_n * n(i)) * p->second) / (dt * dval);
         for (_cip p = derivN[i].begin(); p != derivN[i].end(); ++p)
           derivDiss[p->first] += ((lm_n * jump(i) + jump_n * lm(i)) * p->second) / (dt * dval);
-        for (_cim p = derivD.begin(); p != derivD.end(); ++p)
-          derivDiss[p->first] +=
-              (-lm.dot(jump) + lm.dot(n) * jump.dot(n)) / (dt * dval * dval) * (-p->second);
       }
+      /// Normalization: \f$\partial(1/\mathrm{dval})=-\partial\mathrm{dval}/\mathrm{dval}^2\f$.
+      // Add this scalar contribution once, outside the spatial-component loop.
+      for (_cim p = derivD.begin(); p != derivD.end(); ++p)
+        derivDiss[p->first] += (lm.dot(jump) - lm_n * jump_n) / (dt * dval * dval) * p->second;
 
       // put everything together*******************************************
       /**************************************************** D-matrix ******/
