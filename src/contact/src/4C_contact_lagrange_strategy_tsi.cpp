@@ -668,6 +668,11 @@ void CONTACT::LagrangeStrategyTsi::evaluate(
     sysmat->assign(0, 1, Core::LinAlg::DataAccess::Copy, *kst);
     sysmat->assign(1, 0, Core::LinAlg::DataAccess::Copy, *kts);
     sysmat->assign(1, 1, Core::LinAlg::DataAccess::Copy, *ktt);
+    // Old time-weighted contact loads in rs/rt remain even after all nodes have opened.
+    combined_RHS->put_scalar(0.);
+    CONTACT::Utils::add_vector(rs, *combined_RHS);
+    CONTACT::Utils::add_vector(rt, *combined_RHS);
+    combined_RHS->scale(-1.);
     return;
   }
 
