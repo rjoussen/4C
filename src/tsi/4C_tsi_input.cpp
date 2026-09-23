@@ -167,22 +167,86 @@ std::vector<Core::IO::InputSpec> TSI::valid_parameters()
       {.required = false}));
 
   /*----------------------------------------------------------------------*/
-  /* parameters for tsi contact */
+  /**
+   * Constitutive model for condensed Lagrange-multiplier TSI contact.
+   *
+   * Notation follows Seitz (2019), Computational Methods for Thermo-Elasto-Plastic Contact,
+   * Section 2.7, especially Eqs. (2.125)--(2.130). Side (1) is the source ("slave" in the
+   * input), side (2) the target ("master"), and n is the outward source normal.
+   * Compressive contact pressure is denoted by p_n <= 0.
+   * The heat-transfer inputs are the pressure-independent constants in Eq. (2.127):
+   * \f[
+   *   \bar\gamma^{(1)}=\text{HEATTRANSSLAVE},\qquad
+   *   \bar\gamma^{(2)}=\text{HEATTRANSMASTER},\qquad
+   *   \gamma^{(i)}=|p_n|\bar\gamma^{(i)} .
+   * \f]
+   * They define the contact heat conductivity and dissipation split ratio of Eq. (2.130):
+   * \f[
+   *   \beta_c=\frac{\bar\gamma^{(1)}\bar\gamma^{(2)}}
+   *                 {\bar\gamma^{(1)}+\bar\gamma^{(2)}},\qquad
+   *   \delta_c=\frac{\bar\gamma^{(1)}}{\bar\gamma^{(1)}+\bar\gamma^{(2)}} .
+   * \f]
+   * Both constants must be nonnegative and their sum positive. The effective conductance
+   * is beta_c |p_n|; equal constants split frictional heat equally between the bodies.
+   *
+   * With the projection chi_t onto the target surface, the temperature jump and outward
+   * contact heat fluxes in Eqs. (2.128)--(2.129) are
+   * \f[
+   *   [\![T]\!]=T^{(1)}-(T^{(2)}\circ\chi_t),\qquad
+   *   q_c^{(1)}=\beta_c|p_n|[\![T]\!]-\delta_c\,t_\tau\cdot v_\tau,\qquad
+   *   q_c^{(2)}=-\beta_c|p_n|[\![T]\!]-(1-\delta_c)t_\tau\cdot v_\tau,\qquad
+   *   q_c^{(1)}+q_c^{(2)}=-t_\tau\cdot v_\tau .
+   * \f]
+   * Thus negative q_c supplies heat to a body.
+   * The frictional power t_tau . v_tau is only the mechanical part of the total contact
+   * dissipation D_c in Eq. (2.120), which also includes heat-transfer terms.
+   *
+   * Coulomb friction uses mu_0 = FrCoeffOrBound from the contact condition, T_0 = TEMP_REF,
+   * and T_d = TEMP_DAMAGE. Eqs. (2.124)--(2.125) give
+   * \f[
+   *   \vartheta_c=\max(T^{(1)},T^{(2)}\circ\chi_t),\qquad
+   *   \mu(\vartheta_c)=\mu_0\frac{(\vartheta_c-T_d)^2}{(T_d-T_0)^2},\qquad
+   *   \|t_\tau\|\leq\mu(\vartheta_c)|p_n| .
+   * \f]
+   * TEMP_DAMAGE must exceed TEMP_REF. The coefficient equals mu_0 at TEMP_REF and
+   * vanishes at TEMP_DAMAGE. This is an unclamped quadratic: it increases again above
+   * TEMP_DAMAGE and exceeds mu_0 below TEMP_REF. The default large damage temperature
+   * makes friction approximately temperature independent at ordinary temperatures.
+   *
+   * The Nitsche parameters below are legacy registrations; the condensed multiplier
+   * implementation does not use them. PENALTYPARAM_THERMO does not enable penalty TSI contact.
+   */
   specs.push_back(group("TSI CONTACT",
       {parameter<double>("HEATTRANSSLAVE",
-           {.description = "Heat transfer parameter for slave side in thermal contact",
+           {.description = "Source-side heat-transfer constant gamma_bar^(1) (Seitz, Eq. 2.127). "
+                           "Conductance is beta_c*abs(p_n), with beta_c = "
+                           "gamma_bar^(1)*gamma_bar^(2)/(gamma_bar^(1)+gamma_bar^(2)). "
+                           "The source receives delta_c = "
+                           "gamma_bar^(1)/(gamma_bar^(1)+gamma_bar^(2)) of the frictional heat. "
+                           "Both coefficients must be nonnegative with a positive sum.",
                .default_value = 0.0}),
           parameter<double>("HEATTRANSMASTER",
-              {.description = "Heat transfer parameter for master side in thermal contact",
+              {.description =
+                      "Target-side heat-transfer constant gamma_bar^(2) (Seitz, Eq. 2.127). "
+                      "Conductance is beta_c*abs(p_n), with beta_c = "
+                      "gamma_bar^(1)*gamma_bar^(2)/(gamma_bar^(1)+gamma_bar^(2)). "
+                      "The target receives 1-delta_c = "
+                      "gamma_bar^(2)/(gamma_bar^(1)+gamma_bar^(2)) of the frictional heat. "
+                      "Both coefficients must be nonnegative with a positive sum.",
                   .default_value = 0.0}),
           parameter<double>("TEMP_DAMAGE",
               {.description =
-                      "damage temperature at contact interface: friction coefficient zero there",
+                      "T_d in mu(vartheta_c) = mu_0*(vartheta_c-T_d)^2/(T_d-T_0)^2 "
+                      "(Seitz, Eq. 2.125); vartheta_c is the maximum contact-side temperature. "
+                      "Must exceed TEMP_REF. Friction vanishes here but is not clamped: "
+                      "it increases again above this temperature.",
                   .default_value = 1.0e12}),
 
           parameter<double>(
-              "TEMP_REF", {.description = "reference temperature at contact interface: "
-                                          "friction coefficient equals the given value",
+              "TEMP_REF", {.description = "T_0 in the quadratic temperature-dependent friction "
+                                          "law (Seitz, Eq. 2.125). When vartheta_c equals T_0, "
+                                          "mu equals mu_0 = "
+                                          "FrCoeffOrBound from the Coulomb contact condition.",
                               .default_value = 0.0}),
 
           parameter<bool>("CONDENSED_LM_INCREMENTS",
@@ -192,19 +256,23 @@ std::vector<Core::IO::InputSpec> TSI::valid_parameters()
                   .default_value = false}),
 
           parameter<double>("NITSCHE_THETA_TSI",
-              {.description = "+1: symmetric, 0: non-symmetric, -1: skew-symmetric",
+              {.description = "Legacy Nitsche option: +1 symmetric, 0 non-symmetric, "
+                              "-1 skew-symmetric. Unused by condensed TSI contact.",
                   .default_value = 0.0}),
 
           parameter<CONTACT::NitscheWeighting>("NITSCHE_WEIGHTING_TSI",
-              {.description = "how to weight consistency terms in Nitsche contact formulation",
+              {.description = "Legacy weighting of Nitsche consistency terms. "
+                              "Unused by condensed TSI contact.",
                   .default_value = CONTACT::NitscheWeighting::harmonic}),
 
           parameter<bool>("NITSCHE_PENALTY_ADAPTIVE_TSI",
-              {.description = "adapt penalty parameter after each converged time step",
+              {.description = "Legacy Nitsche penalty adaptation after each converged time step. "
+                              "Unused by condensed TSI contact.",
                   .default_value = true}),
 
           parameter<double>("PENALTYPARAM_THERMO",
-              {.description = "Penalty parameter for Nitsche solution strategy",
+              {.description = "Legacy thermal Nitsche penalty parameter. Unused by condensed "
+                              "TSI contact; setting it does not enable penalty TSI contact.",
                   .default_value = 0.0})},
       {.required = false}));
   return specs;
