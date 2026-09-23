@@ -286,20 +286,31 @@ void CONTACT::TSIInterface::assemble_lin_conduct(Core::LinAlg::SparseMatrix& lin
   // nothing to do if no active contact nodes
   if (activenodes_->num_my_elements() == 0) return;
 
-  // heat transfer factors
-  const double alpha_s = interface_params().get<double>("HEATTRANSSLAVE");
-  const double alpha_m = interface_params().get<double>("HEATTRANSMASTER");
-  const double beta_bar = alpha_s * alpha_m / (alpha_s + alpha_m);
-  const double delta_bar = alpha_s / (alpha_s + alpha_m);
+  // Surface conductance per unit pressure: gamma_bar^(1) and gamma_bar^(2)
+  // in Seitz (2019), Eq. (2.127).
+  const double gamma_bar_source = interface_params().get<double>("HEATTRANSSLAVE");
+  const double gamma_bar_target = interface_params().get<double>("HEATTRANSMASTER");
+  if (gamma_bar_source < 0. || gamma_bar_target < 0. || gamma_bar_source + gamma_bar_target <= 0.)
+    FOUR_C_THROW(
+        "TSI contact requires nonnegative HEATTRANSSLAVE and HEATTRANSMASTER with a "
+        "positive sum.");
+  // The two surface resistances act in series; delta_c is the source's share of frictional heat.
+  const double beta_c = gamma_bar_source * gamma_bar_target / (gamma_bar_source + gamma_bar_target);
+  const double delta_c = gamma_bar_source / (gamma_bar_source + gamma_bar_target);
 
+  // Outward heat flux: differentiate the thermal multiplier and its mortar weight.
   assemble_dual_mass_lumped(linConductThermoLMglobal, linConductDISglobal);
 
-  assemble_lin_dm_x(&linConductDISglobal, nullptr, -delta_bar, LinDM_Diss, activenodes_);
+  // Frictional heating enters as -delta_c*D*diss, since diss is negative for generated heat.
+  // Both factors vary with displacement: first differentiate D, then diss.
+  assemble_lin_dm_x(&linConductDISglobal, nullptr, -delta_c, LinDM_Diss, activenodes_);
   assemble_dm_lin_diss(
-      &linConductDISglobal, nullptr, &linConductContactLMglobal, nullptr, -delta_bar);
+      &linConductDISglobal, nullptr, &linConductContactLMglobal, nullptr, -delta_c);
 
-  assemble_dm_l_mn(-beta_bar, &linConductTEMPglobal);
-  assemble_lin_l_mn_dm_temp(-beta_bar, &linConductDISglobal, &linConductContactLMglobal);
+  // Conductance is beta_c times compressive pressure. Differentiate temperatures first,
+  // then the pressure and geometry-dependent mortar weights.
+  assemble_dm_l_mn(-beta_c, &linConductTEMPglobal);
+  assemble_lin_l_mn_dm_temp(-beta_c, &linConductDISglobal, &linConductContactLMglobal);
 
   return;
 }
@@ -320,6 +331,7 @@ void CONTACT::TSIInterface::assemble_dual_mass_lumped(
     if (conode->owner() != Core::Communication::my_mpi_rank(get_comm()))
       FOUR_C_THROW("AssembleDualMass: Node ownership inconsistency!");
 
+    // thermo_lm is outward heat flux q_c^(1); a negative value heats the source body.
     double thermo_lm = conode->tsi_data().thermo_lm();
     std::map<int, std::map<int, double>>& derivDualMass = conode->data().get_deriv_d();
 
@@ -425,6 +437,12 @@ void CONTACT::TSIInterface::assemble_lin_dm_x(Core::LinAlg::SparseMatrix* linD_X
           const Core::LinAlg::Matrix<3, 1> lmc(cnode->mo_data().lm(), true);
           const Core::LinAlg::Matrix<3, 1> n(cnode->mo_data().n(), true);
           const Core::LinAlg::Matrix<3, 1> jump(frnode->fri_data().jump(), true);
+          /// Negative frictional power per area:
+          /// \f$\mathrm{diss}=-\mathrm{lmc}\cdot(I-n\otimes n)\mathrm{jump}/
+          /// (\mathrm{dt}\,\mathrm{dval})\f$.
+          /// Subtract the normal work; divide out the mortar weight dval and the timestep dt.
+          /// lmc is minus the traction; tangential jump/(dt*dval) is minus the slip velocity.
+          /// Thus generated heat t_tau.v_tau is -diss.
           double diss = (-lmc.dot(jump) + lmc.dot(n) * jump.dot(n)) / (dt * dval);
           lm = diss;
         }
@@ -434,6 +452,7 @@ void CONTACT::TSIInterface::assemble_lin_dm_x(Core::LinAlg::SparseMatrix* linD_X
       {
         const Core::LinAlg::Matrix<3, 1> contact_LM(cnode->mo_data().lm(), true);
         const Core::LinAlg::Matrix<3, 1> n(cnode->mo_data().n(), true);
+        // contact_LM is minus the physical traction: lm = -p_n is positive in compression.
         lm = contact_LM.dot(n);
         break;
       }
@@ -572,18 +591,17 @@ void CONTACT::TSIInterface::assemble_dm_lin_diss(Core::LinAlg::SparseMatrix* d_L
     // get nodal normal
     const Core::LinAlg::Matrix<3, 1> n(cnode->mo_data().n(), true);
 
-    // projection into tangential plane = 1 - n \otimes n
+    // Remove normal components before computing frictional work.
     Core::LinAlg::Matrix<3, 3> tang_proj(Core::LinAlg::Initialization::zero);
     for (int i = 0; i < 3; ++i) tang_proj(i, i) = 1.;
     tang_proj.multiply_nt(-1., n, n, 1.);
 
-    // get D entry of this node
-    // remember: D is diagonal
+    // jump already contains the diagonal mortar weight dval; its normalization also varies.
     int id = cnode->id();
     const std::map<int, double>& derivD = cnode->data().get_deriv_d(id);
     const double dval = cnode->mo_data().get_d()[cnode->id()];
 
-    // get nodal values
+    // Weighted slip increment and mechanical multiplier (minus the physical contact traction).
     Core::LinAlg::Matrix<3, 1> jump(fnode->fri_data().jump());
     const Core::LinAlg::Matrix<3, 1> lm(cnode->mo_data().lm());
     Core::LinAlg::Matrix<3, 1> lm_t;
@@ -597,16 +615,18 @@ void CONTACT::TSIInterface::assemble_dm_lin_diss(Core::LinAlg::SparseMatrix* d_L
     // linearization w.r.t. displacements
     if (d_LinDissDISP != nullptr || m_LinDissDISP != nullptr)
     {
-      // get nodal jump and deriv
+      // Each derivative map is keyed by displacement DOF.
       const std::vector<std::map<int, double>>& derivJump = fnode->fri_data().get_deriv_jump();
       const std::vector<Core::Gen::Pairedvector<int, double>>& derivN = cnode->data().get_deriv_n();
 
-      // calculate derivative of Dissipation *******************************
+      // Differentiate diss = -(lm.dot(jump)-lm_n*jump_n)/(dt*dval) at fixed lm.
       std::map<int, double> derivDiss;
       for (int i = 0; i < 3; ++i)
       {
+        // Slip changes: only the tangential part of lm does frictional work.
         for (_cim p = derivJump[i].begin(); p != derivJump[i].end(); ++p)
           derivDiss[p->first] -= ((lm(i) - lm_n * n(i)) * p->second) / (dt * dval);
+        // Rotation of n changes both normal projections in lm_n*jump_n.
         for (_cip p = derivN[i].begin(); p != derivN[i].end(); ++p)
           derivDiss[p->first] += ((lm_n * jump(i) + jump_n * lm(i)) * p->second) / (dt * dval);
       }
@@ -642,7 +662,9 @@ void CONTACT::TSIInterface::assemble_dm_lin_diss(Core::LinAlg::SparseMatrix* d_L
           }
     }  // linearization w.r.t. displacements
 
-    // linearization wrt contact Lagrange multiplier
+    /// At fixed geometry, \f$\partial_{\mathrm{lm}}\mathrm{diss}
+    /// =-\mathrm{jump\_tan}/(\mathrm{dt}\,\mathrm{dval})\f$.
+    // The D/M weights below distribute this nodal derivative to source/target equations.
     if (d_LinDissContactLM != nullptr)
       // put everything together*******************************************
       /**************************************************** D-matrix ******/

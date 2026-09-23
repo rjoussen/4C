@@ -871,4 +871,15 @@ namespace
     check_coupled_strategy(false, false);
   }
 
+  TEST_F(TSIInterfaceTest, RejectsInvalidHeatTransferParameters)
+  {
+    Core::LinAlg::SparseMatrix disp(*dofs, 6), temp(*dofs, 6), thermo_lm(*dofs, 6), lm(*dofs, 6);
+    for (const auto& coefficients : {std::array{0., 0.}, std::array{-1., 2.}, std::array{2., -1.}})
+    {
+      data->i_mortar().set("HEATTRANSSLAVE", coefficients[0]);
+      data->i_mortar().set("HEATTRANSMASTER", coefficients[1]);
+      EXPECT_THROW(interface->assemble_lin_conduct(disp, temp, thermo_lm, lm), Core::Exception);
+    }
+  }
+
 }  // namespace
