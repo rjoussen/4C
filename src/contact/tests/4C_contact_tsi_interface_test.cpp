@@ -866,4 +866,9 @@ namespace
     check_coupled_strategy(false);
   }
 
+  TEST_F(TSIInterfaceTest, OpenContactRetainsOldTimeForcesAndClearsMultipliers)
+  {
+    check_coupled_strategy(false, false);
+  }
+
 }  // namespace
