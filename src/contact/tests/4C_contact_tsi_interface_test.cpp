@@ -882,4 +882,164 @@ namespace
     }
   }
 
+  TEST_F(TSIInterfaceTest, FrictionalHeatPartitionAndEnergyBalance)
+  {
+    data->i_mortar().set("HEATTRANSSLAVE", 1.).set("HEATTRANSMASTER", 2.);
+    data->i_mortar().set("LM_QUAD", Mortar::lagmult_undefined);
+    auto* target = dynamic_cast<CONTACT::Node*>(interface->discret().g_node(1));
+    target->initialize_tsi_data_container(0., 100.);
+    source->tsi_data().temp() = target->tsi_data().temp() = 0.;
+    source->data().get_deriv_d()[0];
+    source->mo_data().get_m()[1] = 2.;  // Partition of unity: sum(M) = D.
+    source->mo_data().lm()[0] = 3.;
+    source->mo_data().lm()[1] = 4.;
+    source->mo_data().lm()[2] = 10.;
+    for (double timestep : {0.5, 0.05, 0.005})
+    {
+      data->i_mortar().set("TIMESTEP", timestep);
+      source->fri_data().jump()[0] = 2. * timestep * 0.3;
+      source->fri_data().jump()[1] = 2. * timestep * 0.4;
+      source->fri_data().jump()[2] = 2. * timestep * 7.;
+      Core::LinAlg::SparseMatrix disp(*dofs, 6, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX);
+      Core::LinAlg::SparseMatrix temp(*dofs, 6, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX);
+      Core::LinAlg::SparseMatrix q(*dofs, 6, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX);
+      Core::LinAlg::SparseMatrix lm(*dofs, 6, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX);
+      interface->assemble_lin_conduct(disp, temp, q, lm);
+      double contact_rhs = 0.;
+      for (int d = 0; d < 3; ++d)
+        contact_rhs += column(lm, d).local_values_as_span()[0] * source->mo_data().lm()[d];
+      const double source_flux = -contact_rhs / column(q, 0).local_values_as_span()[0];
+      EXPECT_NEAR(source_flux, -2.5 / 3., 1.e-12);
+
+      Core::LinAlg::SparseMatrix heating(
+          *dofs, 6, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX);
+      interface->assemble_dm_lin_diss(nullptr, nullptr, nullptr, &heating, 1.);
+      double target_heating = 0.;
+      for (int d = 0; d < 3; ++d)
+        target_heating += column(heating, d).local_values_as_span()[3] * source->mo_data().lm()[d];
+      const double target_flux = -2. * source_flux + target_heating;
+      EXPECT_NEAR(target_flux, -2. * 2.5 * 2. / 3., 1.e-12);
+      const double mechanical_work = 2. * timestep * (3. * 0.3 + 4. * 0.4);
+      EXPECT_NEAR(-timestep * (2. * source_flux + target_flux), mechanical_work, 1.e-12);
+    }
+  }
+
+  TEST_F(TSIInterfaceTest, TargetHeatingJacobian)
+  {
+    auto set_displacement = [&](double x)
+    {
+      source->mo_data().n()[0] = std::sin(0.3 + x);
+      source->mo_data().n()[2] = std::cos(0.3 + x);
+      source->mo_data().get_d()[0] = 2. + 0.7 * x;
+      source->mo_data().get_m()[1] = 3. - 0.4 * x;
+      source->fri_data().jump()[0] = 0.4 + 0.7 * x;
+      source->fri_data().jump()[1] = 0.2 - 0.3 * x;
+      source->fri_data().jump()[2] = 0.1 + 0.2 * x;
+    };
+    set_displacement(0.);
+    source->data().get_deriv_d()[0][0] = 0.7;
+    source->data().get_deriv_m()[1][0] = -0.4;
+    for (int d = 0; d < 3; ++d)
+    {
+      source->data().get_deriv_n()[d].resize(1);
+      source->data().get_deriv_n()[d][0] = std::array{std::cos(0.3), 0., -std::sin(0.3)}[d];
+      source->fri_data().get_deriv_jump()[d][0] = std::array{0.7, -0.3, 0.2}[d];
+    }
+    Core::LinAlg::SparseMatrix disp(*dofs, 6, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX);
+    Core::LinAlg::SparseMatrix lm(*dofs, 6, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX);
+    interface->assemble_dm_lin_diss(nullptr, &disp, nullptr, &lm, 1.);
+    interface->assemble_lin_dm_x(
+        nullptr, &disp, -1., CONTACT::TSIInterface::LinDM_Diss, data->active_nodes());
+    auto residual = [&]() { return source->mo_data().get_m()[1] * dissipation(); };
+    auto check = [&](Core::LinAlg::SparseMatrix& matrix, int col, auto perturb)
+    {
+      const auto tangent = column(matrix, col);
+      perturb(eps);
+      const double plus = residual();
+      perturb(-eps);
+      const double minus = residual();
+      perturb(0.);
+      EXPECT_NEAR(tangent.local_values_as_span()[3], (plus - minus) / (2. * eps), 1.e-8);
+    };
+    check(disp, 0, set_displacement);
+    for (int d = 0; d < 3; ++d)
+    {
+      const double base = source->mo_data().lm()[d];
+      check(lm, d, [&](double increment) { source->mo_data().lm()[d] = base + increment; });
+    }
+  }
+
+  TEST_F(TSIInterfaceTest, StickSlipTransitionsDoNotCommitHistory)
+  {
+    data->s_node_row_map() = data->active_nodes();
+    data->i_mortar().set("ADHESION", CONTACT::AdhesionType::none);
+    data->i_mortar().set("REGULARIZED_NORMAL_CONTACT", false);
+    source->active() = true;
+    source->fri_data().slip() = false;
+    source->data().active_old() = true;
+    source->fri_data().slip_old() = false;
+    source->data().getg() = 0.;
+    source->tsi_data().temp() = source->tsi_data().temp_target() = 0.;
+    source->mo_data().lm()[0] = 1.;
+    source->mo_data().lm()[1] = 0.;
+    source->mo_data().lm()[2] = 5.;
+    source->fri_data().jump()[0] = source->fri_data().jump()[1] = 0.;
+    EXPECT_TRUE(interface->update_active_set_semi_smooth());
+    EXPECT_FALSE(source->fri_data().slip());
+    source->fri_data().jump()[0] = 0.2;  // |lambda_t + ct*j_t| = 1.6 > 1.5.
+    EXPECT_FALSE(interface->update_active_set_semi_smooth());
+    EXPECT_TRUE(source->fri_data().slip());
+    EXPECT_TRUE(interface->update_active_set_semi_smooth());
+    EXPECT_FALSE(source->fri_data().slip_old());
+    source->fri_data().jump()[0] = 0.;
+    EXPECT_FALSE(interface->update_active_set_semi_smooth());
+    EXPECT_FALSE(source->fri_data().slip());
+    // Heating reduces the friction bound and triggers slip without changing the load.
+    source->tsi_data().temp() = 50.;
+    EXPECT_FALSE(interface->update_active_set_semi_smooth());
+    EXPECT_TRUE(source->fri_data().slip());
+    source->mo_data().lm()[2] = -1.;
+    EXPECT_FALSE(interface->update_active_set_semi_smooth());
+    EXPECT_FALSE(source->active());
+    EXPECT_FALSE(source->fri_data().slip());
+    EXPECT_TRUE(source->data().active_old());
+  }
+
+  TEST_F(TSIInterfaceTest, RelativeMovementUsesOnlyCommittedMortarHistory)
+  {
+    data->s_node_row_map() = data->active_nodes();
+    data->slave_node_col_map() = data->active_nodes();
+    data->i_mortar().set("STRATEGY", CONTACT::SolvingStrategy::lagmult);
+    data->i_mortar().set("SEMI_SMOOTH_NEWTON", true);
+    data->i_mortar().set("PENALTYPARAM", 1.);
+    source->active() = true;
+    source->data().getg() = 0.;
+    source->fri_data().get_source_nodes().insert(0);
+    source->fri_data().get_target_nodes().insert(1);
+    auto* target = dynamic_cast<CONTACT::Node*>(interface->discret().g_node(1));
+    target->xspatial()[0] = 4.;
+    source->data().get_deriv_d()[0][0] = 0.2;
+    source->data().get_deriv_m()[1][0] = 1.;
+    auto coordinates = std::make_shared<Core::LinAlg::Vector<double>>(*dofs, true);
+    auto evaluate = [&](double x)
+    {
+      source->mo_data().get_d()[0] = 2. + 0.2 * x;
+      source->mo_data().get_m()[1] = 3. + x;
+      coordinates->get_values()[0] = 1. + x;
+      interface->evaluate_relative_movement(coordinates, nullptr, nullptr);
+      return source->fri_data().jump()[0];
+    };
+    interface->store_to_old(Mortar::StrategyBase::dm);
+    EXPECT_NEAR(evaluate(0.2), 0.752, 1.e-14);
+    EXPECT_NEAR(evaluate(0.2), 0.752, 1.e-14);
+    EXPECT_NEAR(evaluate(0.1), 0.378, 1.e-14);
+    const double tangent = source->fri_data().get_deriv_jump()[0][0];
+    EXPECT_NEAR((evaluate(0.1 + eps) - evaluate(0.1 - eps)) / (2. * eps), tangent, 1.e-8);
+    EXPECT_NEAR(evaluate(0.), 0., 1.e-14);  // Discarded iterates did not advance history.
+    evaluate(0.1);
+    interface->store_to_old(Mortar::StrategyBase::dm);
+    EXPECT_NEAR(evaluate(0.1), 0., 1.e-14);
+    EXPECT_NEAR(evaluate(0.2), 0.376, 1.e-14);
+  }
+
 }  // namespace

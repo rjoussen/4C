@@ -1,0 +1,209 @@
+# Two HEX8 elements and four steps: preload, two diagonal sliding steps, then opening.
+# E=1e6 gives a demanding pressure scale; full Newton uses no line search.
+# Theta=0.5 carries half of the last frictional heat into the opening step.
+# Dropping that old contact load changes final temperatures by up to 21.7 K,
+# despite convergence of all four steps. The temperature references catch it.
+# Heat capacity is lumped here; separate analytical tests cover consistent-capacity undershoot.
+TITLE:
+  - "Two-element TSI Coulomb contact: compress, slide diagonally, then release"
+PROBLEM TYPE:
+  PROBLEMTYPE: Thermo_Structure_Interaction
+IO/RUNTIME VTK OUTPUT:
+  INTERVAL_STEPS: 1
+IO/RUNTIME VTK OUTPUT/STRUCTURE:
+  OUTPUT_STRUCTURE: true
+  DISPLACEMENT: true
+THERMAL DYNAMIC/RUNTIME VTK OUTPUT:
+  OUTPUT_THERMO: true
+  TEMPERATURE: true
+STRUCTURAL DYNAMIC:
+  DYNAMICTYPE: Statics
+  LINEAR_SOLVER: 1
+THERMAL DYNAMIC:
+  DYNAMICTYPE: OneStepTheta
+  LINEAR_SOLVER: 1
+  LUMPCAPA: true
+THERMAL DYNAMIC/ONESTEPTHETA:
+  THETA: 0.5
+TSI DYNAMIC:
+  NUMSTEP: 4
+  MAXTIME: 0.4
+  TIMESTEP: 0.1
+  ITEMAX: 50
+TSI DYNAMIC/MONOLITHIC:
+  LINEAR_SOLVER: 1
+  MERGE_TSI_BLOCK_MATRIX: true
+  NORMCOMBI_RESFINC: And
+CONTACT DYNAMIC:
+  STRATEGY: Lagrange
+  SYSTEM: Condensed
+  LINEAR_SOLVER: 1
+  FRICTION: Coulomb
+  # Scale the active-set weights for E=1e6; keep strong contact pressures.
+  SEMI_SMOOTH_CN: 1000
+  SEMI_SMOOTH_CT: 1000.0
+MORTAR COUPLING:
+  LM_SHAPEFCN: Dual
+MORTAR COUPLING/PARALLEL REDISTRIBUTION:
+  PARALLEL_REDIST: None
+TSI CONTACT:
+  CONDENSED_LM_INCREMENTS: true
+  HEATTRANSSLAVE: 10
+  HEATTRANSMASTER: 10
+  TEMP_REF: 0
+  TEMP_DAMAGE: 1000000000000
+SOLVER 1:
+  SOLVER: UMFPACK
+MATERIALS:
+  - MAT: 1
+    MAT_Struct_ThermoStVenantK:
+      YOUNGNUM: 1
+      YOUNG: [1000000.0]
+      NUE: 0
+      DENS: 1
+      THEXPANS: 0
+      INITTEMP: 0
+  - MAT: 2
+    MAT_Fourier:
+      CAPA: 10
+      CONDUCT:
+        constant: [1]
+CLONING MATERIAL MAP:
+  - SRC_FIELD: structure
+    SRC_MAT: 1
+    TAR_FIELD: thermo
+    TAR_MAT: 2
+# Step 1 compresses, steps 2-3 slide, step 4 opens all four contact nodes.
+# With theta=0.5, half the previous sliding step's heat load must survive opening.
+# Before the opening-load fix, node 9 ends at 35.21112768 instead of 51.38293197.
+FUNCT1:
+  - SYMBOLIC_FUNCTION_OF_SPACE_TIME: a
+  - VARIABLE: 0
+    NAME: a
+    TYPE: linearinterpolation
+    NUMPOINTS: 4
+    TIMES: [0, 0.1, 0.3, 0.4]
+    VALUES: [0, 1, 1, -0.2]
+FUNCT2:
+  - SYMBOLIC_FUNCTION_OF_SPACE_TIME: a
+  - VARIABLE: 0
+    NAME: a
+    TYPE: linearinterpolation
+    NUMPOINTS: 4
+    TIMES: [0, 0.1, 0.3, 0.4]
+    VALUES: [0, 0, 1, 1]
+DESIGN SURF DIRICH CONDITIONS:
+  - E: 1
+    NUMDOF: 3
+    ONOFF: [1, 1, 1]
+    VAL: [0, 0, 0]
+    FUNCT: [0, 0, 0]
+  - E: 2
+    NUMDOF: 3
+    ONOFF: [1, 1, 1]
+    VAL: [0.2, 0.1, -0.1]
+    FUNCT: [2, 2, 1]
+DESIGN SURF MORTAR CONTACT CONDITIONS 3D:
+  - E: 3
+    InterfaceID: 1
+    Side: Master
+    FrCoeffOrBound: 0.2
+  - E: 4
+    InterfaceID: 1
+    Side: Slave
+    Initialization: Active
+    FrCoeffOrBound: 0.2
+DSURF-NODE TOPOLOGY:
+  - "NODE 1 DSURFACE 1"
+  - "NODE 2 DSURFACE 1"
+  - "NODE 3 DSURFACE 1"
+  - "NODE 4 DSURFACE 1"
+  - "NODE 13 DSURFACE 2"
+  - "NODE 14 DSURFACE 2"
+  - "NODE 15 DSURFACE 2"
+  - "NODE 16 DSURFACE 2"
+  - "NODE 5 DSURFACE 3"
+  - "NODE 6 DSURFACE 3"
+  - "NODE 7 DSURFACE 3"
+  - "NODE 8 DSURFACE 3"
+  - "NODE 9 DSURFACE 4"
+  - "NODE 10 DSURFACE 4"
+  - "NODE 11 DSURFACE 4"
+  - "NODE 12 DSURFACE 4"
+NODE COORDS:
+  - "NODE 1 COORD -1 -1 0"
+  - "NODE 2 COORD 2 -1 0"
+  - "NODE 3 COORD 2 2 0"
+  - "NODE 4 COORD -1 2 0"
+  - "NODE 5 COORD -1 -1 1"
+  - "NODE 6 COORD 2 -1 1"
+  - "NODE 7 COORD 2 2 1"
+  - "NODE 8 COORD -1 2 1"
+  - "NODE 9 COORD 0 0 1"
+  - "NODE 10 COORD 1 0 1"
+  - "NODE 11 COORD 1 1 1"
+  - "NODE 12 COORD 0 1 1"
+  - "NODE 13 COORD 0 0 2"
+  - "NODE 14 COORD 1 0 2"
+  - "NODE 15 COORD 1 1 2"
+  - "NODE 16 COORD 0 1 2"
+STRUCTURE ELEMENTS:
+  - "1 SOLIDSCATRA HEX8 1 2 3 4 5 6 7 8 MAT 1 KINEM nonlinear TYPE Undefined"
+  - "2 SOLIDSCATRA HEX8 9 10 11 12 13 14 15 16 MAT 1 KINEM nonlinear TYPE Undefined"
+# Regression values after opening. These check both bodies and heat diffusion
+# away from contact; they fail if the previous-step contact heat is dropped.
+RESULT DESCRIPTION:
+  - THERMAL:
+      DIS: thermo
+      NODE: 1
+      QUANTITY: temp
+      VALUE: 1.407997252689348
+      TOLERANCE: 1e-7
+  - THERMAL:
+      DIS: thermo
+      NODE: 5
+      QUANTITY: temp
+      VALUE: 42.74180003787091
+      TOLERANCE: 1e-7
+  - THERMAL:
+      DIS: thermo
+      NODE: 7
+      QUANTITY: temp
+      VALUE: 66.1958676676158
+      TOLERANCE: 1e-7
+  - THERMAL:
+      DIS: thermo
+      NODE: 9
+      QUANTITY: temp
+      VALUE: 51.38293197474298
+      TOLERANCE: 1e-7
+  - THERMAL:
+      DIS: thermo
+      NODE: 11
+      QUANTITY: temp
+      VALUE: 59.1205033484752
+      TOLERANCE: 1e-7
+  - THERMAL:
+      DIS: thermo
+      NODE: 13
+      QUANTITY: temp
+      VALUE: 1.783043995413979
+      TOLERANCE: 1e-7
+  - STRUCTURE:
+      DIS: structure
+      NODE: 9
+      QUANTITY: dispx
+      VALUE: 0.2
+      TOLERANCE: 1e-8
+  - STRUCTURE:
+      DIS: structure
+      NODE: 9
+      QUANTITY: dispy
+      VALUE: 0.1
+      TOLERANCE: 1e-8
+  - STRUCTURE:
+      DIS: structure
+      NODE: 9
+      QUANTITY: dispz
+      VALUE: 0.02
+      TOLERANCE: 1e-8

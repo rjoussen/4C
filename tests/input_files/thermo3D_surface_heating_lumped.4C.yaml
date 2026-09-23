@@ -1,0 +1,73 @@
+TITLE:
+  - "Unit HEX8 heated on one face: capacity discretization and heat balance"
+  - "Uniform tangentially; exact discrete two-face solution of (M/dt+theta*K)T=theta*f."
+  - "For consistent M the remote face undershoots at dt=0.001; lumping preserves positivity."
+  - "The mean temperature is 0.0005: unit capacity times volume times mean equals input heat."
+PROBLEM TYPE:
+  PROBLEMTYPE: Thermo
+THERMAL DYNAMIC:
+  DYNAMICTYPE: OneStepTheta
+  TIMESTEP: 0.001
+  MAXTIME: 0.001
+  NUMSTEP: 1
+  LINEAR_SOLVER: 1
+  LUMPCAPA: true
+THERMAL DYNAMIC/ONESTEPTHETA:
+  THETA: 0.5
+SOLVER 1:
+  SOLVER: UMFPACK
+MATERIALS:
+  - MAT: 1
+    MAT_Fourier:
+      CAPA: 1
+      CONDUCT:
+        constant: [1]
+FUNCT1:
+  - SYMBOLIC_FUNCTION_OF_SPACE_TIME: "1000*t"
+DESIGN SURF NEUMANN CONDITIONS:
+  - E: 1
+    NUMDOF: 1
+    ONOFF: [1]
+    VAL: [1]
+    FUNCT: [1]
+DSURF-NODE TOPOLOGY:
+  - "NODE 1 DSURFACE 1"
+  - "NODE 2 DSURFACE 1"
+  - "NODE 3 DSURFACE 1"
+  - "NODE 4 DSURFACE 1"
+NODE COORDS:
+  - "NODE 1 COORD 0 0 0"
+  - "NODE 2 COORD 1 0 0"
+  - "NODE 3 COORD 1 1 0"
+  - "NODE 4 COORD 0 1 0"
+  - "NODE 5 COORD 0 0 1"
+  - "NODE 6 COORD 1 0 1"
+  - "NODE 7 COORD 1 1 1"
+  - "NODE 8 COORD 0 1 1"
+THERMO ELEMENTS:
+  - "1 THERMO HEX8 1 2 3 4 5 6 7 8 MAT 1"
+RESULT DESCRIPTION:
+  - THERMAL:
+      DIS: thermo
+      NODE: 1
+      QUANTITY: temp
+      VALUE: 0.000999001996007984
+      TOLERANCE: 1e-11
+  - THERMAL:
+      DIS: thermo
+      NODE: 1
+      QUANTITY: rate
+      VALUE: 1.998003992015968
+      TOLERANCE: 1e-11
+  - THERMAL:
+      DIS: thermo
+      NODE: 5
+      QUANTITY: temp
+      VALUE: 9.9800399201602046e-07
+      TOLERANCE: 1e-11
+  - THERMAL:
+      DIS: thermo
+      NODE: 5
+      QUANTITY: rate
+      VALUE: 0.0019960079840320409
+      TOLERANCE: 1e-11
