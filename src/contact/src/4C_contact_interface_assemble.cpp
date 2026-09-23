@@ -2918,6 +2918,8 @@ void CONTACT::Interface::assemble_lin_slip(Core::LinAlg::SparseMatrix& linslipLM
         }
 
         // 2) Entries on right hand side
+        // Seitz (2019), Eq. (4.23), slip branch: group (|a|-b)*lambda_t-b*ct*jump_t
+        // before multiplying, to avoid subtracting two pressure-squared terms.
         /******************************************************************/
         if (constr_direction_ == CONTACT::ConstraintDirection::xyz)
         {
@@ -2929,8 +2931,8 @@ void CONTACT::Interface::assemble_lin_slip(Core::LinAlg::SparseMatrix& linslipLM
           double valuetxi1 =
               -(euclidean)*ztxi / (znor - cn * wgap) + frcoeff * (ztxi + ct * jumptxi);
 #else
-          double valuetxi1 =
-              -(euclidean)*ztxi + (frcoeff * (znor - cn * wgap)) * (ztxi + ct * jumptxi);
+          double valuetxi1 = -(euclidean - frcoeff * (znor - cn * wgap)) * ztxi +
+                             frcoeff * (znor - cn * wgap) * ct * jumptxi;
 #endif
 
           for (int j = 0; j < Interface::n_dim(); j++)
@@ -2946,8 +2948,8 @@ void CONTACT::Interface::assemble_lin_slip(Core::LinAlg::SparseMatrix& linslipLM
             double valueteta1 =
                 -(euclidean)*zteta / (znor - cn * wgap) + frcoeff * (zteta + ct * jumpteta);
 #else
-            double valueteta1 =
-                -(euclidean)*zteta + (frcoeff * (znor - cn * wgap)) * (zteta + ct * jumpteta);
+            double valueteta1 = -(euclidean - frcoeff * (znor - cn * wgap)) * zteta +
+                                frcoeff * (znor - cn * wgap) * ct * jumpteta;
 #endif
 
             for (int j = 0; j < Interface::n_dim(); j++) rhsnode(j) += valueteta1 * teta[j];
@@ -2963,8 +2965,8 @@ void CONTACT::Interface::assemble_lin_slip(Core::LinAlg::SparseMatrix& linslipLM
           double valuetxi1 =
               -(euclidean)*ztxi / (znor - cn * wgap) + frcoeff * (ztxi + ct * jumptxi);
 #else
-          double valuetxi1 =
-              -(euclidean)*ztxi + (frcoeff * (znor - cn * wgap)) * (ztxi + ct * jumptxi);
+          double valuetxi1 = -(euclidean - frcoeff * (znor - cn * wgap)) * ztxi +
+                             frcoeff * (znor - cn * wgap) * ct * jumptxi;
 #endif
           rhsnode(0) = valuetxi1;
           lm[0] = cnode->dofs()[1];
@@ -2976,8 +2978,8 @@ void CONTACT::Interface::assemble_lin_slip(Core::LinAlg::SparseMatrix& linslipLM
             double valueteta1 =
                 -(euclidean)*zteta / (znor - cn * wgap) + frcoeff * (zteta + ct * jumpteta);
 #else
-            double valueteta1 =
-                -(euclidean)*zteta + (frcoeff * (znor - cn * wgap)) * (zteta + ct * jumpteta);
+            double valueteta1 = -(euclidean - frcoeff * (znor - cn * wgap)) * zteta +
+                                frcoeff * (znor - cn * wgap) * ct * jumpteta;
 #endif
             rhsnode(1) = valueteta1;
 
