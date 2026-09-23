@@ -9,7 +9,9 @@
 
 #include "4C_contact_tsi_interface.hpp"
 
+#include "4C_contact_abstract_data_container.hpp"
 #include "4C_contact_friction_node.hpp"
+#include "4C_contact_lagrange_strategy_tsi.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io_control.hpp"
@@ -17,6 +19,7 @@
 
 #include <array>
 #include <cmath>
+#include <optional>
 
 namespace
 {
@@ -421,6 +424,31 @@ namespace
     {
       const double base = source->mo_data().lm()[d];
       check(lm, d, [&](double increment) { source->mo_data().lm()[d] = base + increment; });
+    }
+  }
+
+  TEST_F(TSIInterfaceTest, RecreatedStrategyStartsWithZeroContactNorms)
+  {
+    auto params = data->i_mortar();
+    params.set("SYSTEM", CONTACT::SystemType::condensed);
+    params.set("STRATEGY", CONTACT::SolvingStrategy::lagmult);
+    params.sublist("PARALLEL REDISTRIBUTION")
+        .set("PARALLEL_REDIST", Mortar::ParallelRedist::redist_none);
+    Core::LinAlg::Map nodes(2, 0, MPI_COMM_WORLD);
+    std::optional<CONTACT::LagrangeStrategyTsi> strategy;
+    for (int construction = 0; construction < 2; ++construction)
+    {
+      strategy.emplace(std::make_shared<CONTACT::AbstractStrategyDataContainer>(), dofs.get(),
+          &nodes, params, std::vector<std::shared_ptr<CONTACT::Interface>>{interface}, 3,
+          MPI_COMM_WORLD, 0., 7);
+      EXPECT_EQ(strategy->mech_contact_res_, 0.);
+      EXPECT_EQ(strategy->mech_contact_incr_, 0.);
+      EXPECT_EQ(strategy->thermo_contact_incr_, 0.);
+      // Reuse storage containing nonzero norms from a previous strategy.
+      strategy->mech_contact_res_ = 1.;
+      strategy->mech_contact_incr_ = 2.;
+      strategy->thermo_contact_incr_ = 3.;
+      strategy.reset();
     }
   }
 
