@@ -319,6 +319,52 @@ void CONTACT::LagrangeStrategyTsi::evaluate(
     rt.update((1. - tsi_alpha_), tmp, 1.);
   }
 
+  const bool condense_lm_increments = params().get<bool>("CONDENSED_LM_INCREMENTS", false);
+  if (condense_lm_increments)
+  {
+    // Seitz (2019), Eqs. (4.62)-(4.64), pp. 122-123: condense Newton increments,
+    // including the current contact forces (4.9), (4.59) in the residual.
+    Core::LinAlg::Vector<double> current_lm_active(*gactivedofs_, true);
+    Core::LinAlg::export_to(*z_, current_lm_active);
+    Core::LinAlg::Vector<double> current_lm(*gsdofrowmap_, true);
+    Core::LinAlg::export_to(current_lm_active, current_lm);
+    Core::LinAlg::Vector<double> source_force(*gsdofrowmap_, true);
+    Core::LinAlg::Vector<double> target_force(*gtdofrowmap_, true);
+    dmatrix_->multiply(false, current_lm, source_force);
+    mmatrix_->multiply(true, current_lm, target_force);
+    source_force.scale(1. - alphaf_);
+    target_force.scale(-(1. - alphaf_));
+    CONTACT::Utils::add_vector(source_force, rs);
+    CONTACT::Utils::add_vector(target_force, rs);
+
+    Core::LinAlg::Vector<double> current_q_active(*thermo_act_dofs, true);
+    if (z_thermo_) Core::LinAlg::export_to(*z_thermo_, current_q_active);
+    Core::LinAlg::Vector<double> current_q_all(*coupST->source_dof_map(), true);
+    Core::LinAlg::export_to(current_q_active, current_q_all);
+    const auto current_q_coupled = coupST->source_to_target(current_q_all);
+    Core::LinAlg::Vector<double> current_q(*gsdofrowmap_, true);
+    Core::LinAlg::export_to(*current_q_coupled, current_q);
+    dmatrix_->multiply(false, current_q, source_force);
+    mmatrix_->multiply(true, current_q, target_force);
+    target_force.scale(-1.);
+    Core::LinAlg::Vector<double> heating(*gtdofrowmap_, true);
+    m_LinDissContactLM.multiply(false, current_lm_active, heating);
+    target_force.update(1., heating, 1.);
+    Core::LinAlg::Vector<double> heat_force(*coupST->target_dof_map(), true);
+    Core::LinAlg::export_to(source_force, heat_force);
+    Core::LinAlg::Vector<double> target_heat_force(*coupST->target_dof_map(), true);
+    Core::LinAlg::export_to(target_force, target_heat_force);
+    heat_force.update(1., target_heat_force, 1.);
+    rt.update(tsi_alpha_, *coupST->target_to_source(heat_force), 1.);
+
+    // Eq. (4.60): the thermal constraint is homogeneous and linear in the two multipliers.
+    dcTdLMt.complete(*gsdofrowmap_, *gactivedofs_);
+    dcTdLMc.multiply(false, current_lm_active, *rcTa);
+    Core::LinAlg::Vector<double> thermal_constraint(*gactivedofs_, true);
+    dcTdLMt.multiply(false, current_q, thermal_constraint);
+    rcTa->update(1., thermal_constraint, 1.);
+  }
+
   // map containing the inactive and non-contact structural dofs
   std::shared_ptr<Core::LinAlg::Map> str_gni_dofs = Core::LinAlg::split_map(
       *Core::LinAlg::split_map(*gdisprowmap_, *gtdofrowmap_), *gactivedofs_);
@@ -561,19 +607,19 @@ void CONTACT::LagrangeStrategyTsi::evaluate(
     return;
   }
 
+  if (!condense_lm_increments)
+  {
+    // AssembleLinStick/Slip assumes multiplier increments. Shift its constraint residual when
+    // the legacy formulation solves for the absolute mechanical multiplier instead.
+    tmpv = std::make_shared<Core::LinAlg::Vector<double>>(*gactivedofs_);
+    auto current_lm = std::make_shared<Core::LinAlg::Vector<double>>(*gactivedofs_);
+    Core::LinAlg::export_to(*z_, *current_lm);
+    dcsdLMc->multiply(false, *current_lm, *tmpv);
+    tmpv->scale(-1.);
+    CONTACT::Utils::add_vector(*tmpv, *rcsa);
+    tmpv = nullptr;
+  }
 
-  // we need to add another term, since AssembleLinStick/Slip assumes that we solve
-  // for the Lagrange multiplier increments. However, we solve for the LM directly.
-  // We can do that, since the system is linear in the LMs.
-  tmpv = std::make_shared<Core::LinAlg::Vector<double>>(*gactivedofs_);
-  std::shared_ptr<Core::LinAlg::Vector<double>> tmpv2 =
-      std::make_shared<Core::LinAlg::Vector<double>>(*gactivedofs_);
-  Core::LinAlg::export_to(*z_, *tmpv2);
-  dcsdLMc->multiply(false, *tmpv2, *tmpv);
-  tmpv->scale(-1.);
-  CONTACT::Utils::add_vector(*tmpv, *rcsa);
-  tmpv = nullptr;
-  tmpv2 = nullptr;
 
   dcTdLMt.complete(*gsdofrowmap_, *gactivedofs_);
   Core::LinAlg::SparseMatrix test(
@@ -716,6 +762,13 @@ void CONTACT::LagrangeStrategyTsi::evaluate(
       Coupling::Adapter::CouplingTargetConverter(*coupST),
       Coupling::Adapter::CouplingTargetConverter(*coupST), ktt_new, true, true);
   CONTACT::Utils::add_vector(*rcsa, *combined_RHS);
+  if (condense_lm_increments)
+  {
+    Core::LinAlg::Vector<double> thermal_constraint_coupled(*coupST->target_dof_map(), true);
+    Core::LinAlg::export_to(*rcTa, thermal_constraint_coupled);
+    auto thermal_constraint_residual = coupST->target_to_source(thermal_constraint_coupled);
+    CONTACT::Utils::add_vector(*thermal_constraint_residual, *combined_RHS);
+  }
 
   // (3) condensed parts
   // second row
@@ -835,6 +888,7 @@ void CONTACT::LagrangeStrategyTsi::recover_coupled(
     std::shared_ptr<Core::LinAlg::Vector<double>> tinc,
     std::shared_ptr<Coupling::Adapter::Coupling> coupST)
 {
+  const bool condense_lm_increments = params().get<bool>("CONDENSED_LM_INCREMENTS", false);
   std::shared_ptr<Core::LinAlg::Vector<double>> z_old = nullptr;
   if (z_ != nullptr) z_old = std::make_shared<Core::LinAlg::Vector<double>>(*z_);
   std::shared_ptr<Core::LinAlg::Vector<double>> z_thermo_old = nullptr;
@@ -857,6 +911,11 @@ void CONTACT::LagrangeStrategyTsi::recover_coupled(
     lmc_a_new.update(1., tmp, 1.);
     dinvA_->multiply(false, lmc_a_new, tmp);
     tmp.scale(-1. / (1. - alphaf_));
+    if (condense_lm_increments && z_old)
+    {
+      Core::LinAlg::export_to(*z_old, lmc_a_new);
+      tmp.update(1., lmc_a_new, 1.);
+    }
     z_ = std::make_shared<Core::LinAlg::Vector<double>>(*gsdofrowmap_);
     Core::LinAlg::export_to(tmp, *z_);
 
@@ -874,6 +933,11 @@ void CONTACT::LagrangeStrategyTsi::recover_coupled(
     lmt_a_new.update(1., tmp2, 1.);
     dinvAthr_->multiply(false, lmt_a_new, tmp2);
     tmp2.scale(-1. / (tsi_alpha_));
+    if (condense_lm_increments && z_thermo_old)
+    {
+      Core::LinAlg::export_to(*z_thermo_old, lmt_a_new);
+      tmp2.update(1., lmt_a_new, 1.);
+    }
     z_thermo_ = std::make_shared<Core::LinAlg::Vector<double>>(*thermo_s_dofs_);
     Core::LinAlg::export_to(tmp2, *z_thermo_);
   }
