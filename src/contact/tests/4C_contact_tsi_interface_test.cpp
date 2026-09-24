@@ -15,7 +15,11 @@
 #include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io_control.hpp"
+#include "4C_linalg_blocksparsematrix.hpp"
+#include "4C_linalg_mapextractor.hpp"
+#include "4C_linalg_serialdensesolver.hpp"
 #include "4C_linalg_sparsematrix.hpp"
+#include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 
 #include <array>
 #include <cmath>
@@ -66,6 +70,9 @@ namespace
   class TSIInterfaceTest : public ::testing::Test
   {
    protected:
+    void check_coupled_strategy(
+        bool finite_difference, bool active = true, bool equilibrium = false);
+
     void SetUp() override
     {
       Global::Problem::instance()->set_spatial_approximation_type(
@@ -450,6 +457,413 @@ namespace
       strategy->thermo_contact_incr_ = 3.;
       strategy.reset();
     }
+  }
+
+  using ContactVectors = CONTACT::TsiContactLinearization::Vectors;
+
+  ContactVectors apply_linearization(
+      const CONTACT::TsiContactLinearization& system, const ContactVectors& increment)
+  {
+    ContactVectors result;
+    for (int row = 0; row < 4; ++row)
+    {
+      result[row] =
+          std::make_shared<Core::LinAlg::Vector<double>>(system.residual[row]->get_map(), true);
+      for (int col = 0; col < 4; ++col)
+      {
+        if (!system.matrix[row][col]) continue;
+        const auto& block = *system.matrix[row][col];
+        Core::LinAlg::Vector<double> x(block.domain_map(), true), y(block.range_map(), true);
+        Core::LinAlg::export_to(*increment[col], x);
+        block.multiply(false, x, y);
+        CONTACT::Utils::add_vector(y, *result[row]);
+      }
+    }
+    return result;
+  }
+
+  ContactVectors solve_linearization(const CONTACT::TsiContactLinearization& system,
+      const std::array<std::shared_ptr<const Core::LinAlg::Map>, 2>& dbc)
+  {
+    const auto comm = system.residual[0]->get_map().get_comm();
+    std::array<std::vector<int>, 4> gids;
+    std::array<int, 5> offset{};
+    ContactVectors basis, result;
+    for (int block = 0; block < 4; ++block)
+    {
+      const auto& map = system.residual[block]->get_map();
+      std::vector<int> local;
+      for (int i = 0; i < map.num_my_elements(); ++i) local.push_back(map.gid(i));
+      for (const auto& rank : Core::Communication::all_gather(local, comm))
+        gids[block].insert(gids[block].end(), rank.begin(), rank.end());
+      offset[block + 1] = offset[block] + gids[block].size();
+      basis[block] = std::make_shared<Core::LinAlg::Vector<double>>(map, true);
+      result[block] = std::make_shared<Core::LinAlg::Vector<double>>(map, true);
+    }
+    const int size = offset[4];
+    Core::LinAlg::SerialDenseMatrix matrix(size, size, true);
+    Core::LinAlg::SerialDenseVector rhs(size), solution(size);
+    std::vector<int> constrained(size, 0);
+    for (int row = 0; row < 4; ++row)
+      for (int i = 0; i < static_cast<int>(gids[row].size()); ++i)
+      {
+        const int lid = system.residual[row]->get_map().lid(gids[row][i]);
+        rhs[offset[row] + i] = lid < 0 ? 0. : -system.residual[row]->local_values_as_span()[lid];
+        if (row < 2 && dbc[row] && dbc[row]->lid(gids[row][i]) >= 0)
+          constrained[offset[row] + i] = 1;
+      }
+    rhs = Core::Communication::sum_all(rhs, comm);
+    constrained = Core::Communication::sum_all(constrained, comm);
+    for (int col = 0; col < 4; ++col)
+      for (int j = 0; j < static_cast<int>(gids[col].size()); ++j)
+      {
+        const int lid = basis[col]->get_map().lid(gids[col][j]);
+        if (lid >= 0) basis[col]->get_values()[lid] = 1.;
+        const auto action = apply_linearization(system, basis);
+        std::vector<double> column(size, 0.);
+        for (int row = 0; row < 4; ++row)
+          for (int i = 0; i < static_cast<int>(gids[row].size()); ++i)
+          {
+            const int local = action[row]->get_map().lid(gids[row][i]);
+            if (local >= 0) column[offset[row] + i] = action[row]->local_values_as_span()[local];
+          }
+        column = Core::Communication::sum_all(column, comm);
+        for (int i = 0; i < size; ++i) matrix(i, offset[col] + j) = column[i];
+        if (lid >= 0) basis[col]->get_values()[lid] = 0.;
+      }
+    for (int i = 0; i < size; ++i)
+      if (constrained[i])
+      {
+        for (int j = 0; j < size; ++j) matrix(i, j) = matrix(j, i) = 0.;
+        matrix(i, i) = 1.;
+        rhs[i] = 0.;
+      }
+    Core::LinAlg::SerialDenseSolver solver;
+    solver.set_matrix(matrix);
+    solver.set_vectors(solution, rhs);
+    solver.factor_with_equilibration(true);
+    FOUR_C_ASSERT_ALWAYS(solver.solve() == 0, "Uncondensed TSI verification solve failed");
+    for (int block = 0; block < 4; ++block)
+      for (int i = 0; i < static_cast<int>(gids[block].size()); ++i)
+      {
+        const int lid = result[block]->get_map().lid(gids[block][i]);
+        if (lid >= 0) result[block]->get_values()[lid] = solution[offset[block] + i];
+      }
+    return result;
+  }
+
+  // Supply already integrated mortar data to the production coupled assembly.
+  // The interface tests exercise geometry derivatives; integration regressions use the real mesh.
+  class AssembledTSIStrategy : public CONTACT::LagrangeStrategyTsi
+  {
+   public:
+    AssembledTSIStrategy(const Teuchos::ParameterList& params,
+        const std::shared_ptr<CONTACT::TSIInterface>& interface,
+        const std::shared_ptr<Core::LinAlg::Map>& dis,
+        const std::shared_ptr<Core::LinAlg::Map>& nodes,
+        const std::shared_ptr<Core::LinAlg::Map>& source,
+        const std::shared_ptr<Core::LinAlg::Map>& target,
+        const std::shared_ptr<Core::LinAlg::Map>& thermal, double alpha, double theta, bool active,
+        double mortar_weight = 2.)
+        : CONTACT::LagrangeStrategyTsi(std::make_shared<CONTACT::AbstractStrategyDataContainer>(),
+              dis.get(), nodes.get(), params, {interface}, 3, MPI_COMM_WORLD, alpha, 7)
+    {
+      gdisprowmap_ = gstdofrowmap_ = dis;
+      gsdofrowmap_ = source;
+      gactivedofs_ = active ? source : std::make_shared<Core::LinAlg::Map>(0, 0, MPI_COMM_WORLD);
+      gtdofrowmap_ = target;
+      const int node = 0;
+      gsnoderowmap_ = std::make_shared<Core::LinAlg::Map>(1, 1, &node, 0, MPI_COMM_WORLD);
+      gactivenodes_ = gactiven_ =
+          active ? gsnoderowmap_ : std::make_shared<Core::LinAlg::Map>(0, 0, MPI_COMM_WORLD);
+      dmatrix_ = std::make_shared<Core::LinAlg::SparseMatrix>(*source, 1);
+      mmatrix_ = std::make_shared<Core::LinAlg::SparseMatrix>(*source, 1);
+      for (int d = 0; d < 3; ++d)
+      {
+        dmatrix_->assemble(mortar_weight, d, d);
+        mmatrix_->assemble(mortar_weight, d, d + 3);
+      }
+      dmatrix_->complete(*source, *source);
+      mmatrix_->complete(*target, *source);
+      tsi_alpha_ = theta;
+      fscn_ = std::make_shared<Core::LinAlg::Vector<double>>(*dis, true);
+      ftcn_ = std::make_shared<Core::LinAlg::Vector<double>>(*thermal, true);
+      fscn_->put_scalar(0.1);
+      ftcn_->put_scalar(0.2);
+    }
+
+    void set_coupled_multipliers(const Core::LinAlg::Vector<double>& mechanical,
+        const Core::LinAlg::Vector<double>& thermal, Coupling::Adapter::Coupling& coupling)
+    {
+      z_ = std::make_shared<Core::LinAlg::Vector<double>>(mechanical);
+      z_thermo_ = std::make_shared<Core::LinAlg::Vector<double>>(thermal);
+      store_nodal_quantities(Mortar::StrategyBase::lmupdate, coupling);
+      store_nodal_quantities(Mortar::StrategyBase::lmThermo, coupling);
+    }
+
+    std::shared_ptr<const Core::LinAlg::Vector<double>> thermal_multiplier() const
+    {
+      return z_thermo_;
+    }
+
+   protected:
+    void prepare_coupled_contact(const Core::LinAlg::Vector<double>&,
+        const Core::LinAlg::Vector<double>&, Coupling::Adapter::Coupling&) override
+    {
+    }
+  };
+
+  void TSIInterfaceTest::check_coupled_strategy(
+      bool finite_difference, bool active, bool equilibrium)
+  {
+    auto map = [](std::initializer_list<int> ids)
+    {
+      return std::make_shared<Core::LinAlg::Map>(
+          ids.size(), ids.size(), ids.begin(), 0, MPI_COMM_WORLD);
+    };
+    auto source_dofs = map({0, 1, 2}), target_dofs = map({3, 4, 5});
+    auto thermal = map({6, 7}), thermal_source = map({6}), nodes = map({0, 1});
+    auto full = map({0, 1, 2, 3, 4, 5, 6, 7}), empty = map({});
+    auto coupling = std::make_shared<Coupling::Adapter::Coupling>();
+    auto thermal_on_structure = map({0, 3});
+    coupling->setup_coupling(thermal, thermal, thermal_on_structure, thermal_on_structure);
+    data->s_node_row_map() = data->slave_node_col_map() = data->active_nodes();
+    data->slave_dof_row_map() = data->slave_dof_col_map() = source_dofs;
+    data->master_dof_row_map() = data->master_dof_col_map() = target_dofs;
+    data->active_n() = data->active_nodes();
+    data->active_t() = data->slip_t();
+    data->i_mortar().set("HEATTRANSSLAVE", 1.).set("HEATTRANSMASTER", 2.);
+    data->i_mortar().set("LM_QUAD", Mortar::lagmult_undefined);
+    source->data().get_deriv_d()[0];
+    source->data().get_deriv_m()[1];
+    source->mo_data().get_m()[1] = 2.;
+    source->data().getg() = -0.1;
+    source->data().get_deriv_g()[2] = 2.;
+    source->data().get_deriv_g()[5] = -2.;
+    for (int d = 0; d < 2; ++d)
+    {
+      source->fri_data().get_deriv_jump()[d][d] = 2.;
+      source->fri_data().get_deriv_jump()[d][d + 3] = -2.;
+    }
+    source->tsi_data().temp() = 20.;
+    source->tsi_data().temp_target() = 40.;
+    source->tsi_data().deriv_temp_target_temp()[3] = 1.;
+    auto* target = dynamic_cast<CONTACT::Node*>(interface->discret().g_node(1));
+    target->initialize_tsi_data_container(0., 100.);
+    target->tsi_data().temp() = 40.;
+    if (!active)
+    {
+      data->active_nodes() = data->slip_nodes() = data->active_n() = data->active_t() =
+          data->slip_t() = empty;
+    }
+    if (equilibrium)
+    {
+      // Pythagorean tangential traction and slip give an exact Coulomb equilibrium.
+      // A non-binary mortar inverse exposes cancellation when absolute forces
+      // are projected onto the slip equations before their residual is formed.
+      source->mo_data().get_d()[0] = source->mo_data().get_m()[1] = 3.;
+      source->data().getg() = 0.;
+      source->fri_data().jump()[0] = 3.;
+      source->fri_data().jump()[1] = 4.;
+      source->tsi_data().temp() = source->tsi_data().temp_target() = 0.;
+      target->tsi_data().temp() = 0.;
+      data->i_mortar().set("HEATTRANSMASTER", 1.).set("FRCOEFF", 0.5);
+    }
+    auto params = data->i_mortar();
+    params.set("CONDENSED_LM_INCREMENTS", true);
+    params.set("SYSTEM", CONTACT::SystemType::condensed);
+    params.set("STRATEGY", CONTACT::SolvingStrategy::lagmult);
+    params.sublist("PARALLEL REDISTRIBUTION")
+        .set("PARALLEL_REDIST", Mortar::ParallelRedist::redist_none);
+    Core::LinAlg::MultiMapExtractor extractor(*full, {dofs, thermal});
+    // Nonzero bulk coupling and nontrivial time weights exercise all elimination terms.
+    for (const auto weights : {std::array{0., 1.}, std::array{0.25, 0.6}})
+    {
+      if (equilibrium && weights[0] != 0.) continue;
+      AssembledTSIStrategy strategy(params, interface, dofs, nodes, source_dofs, target_dofs,
+          thermal, weights[0], weights[1], active, equilibrium ? 3. : 2.);
+      EXPECT_EQ(strategy.mech_contact_res_, 0.);
+      EXPECT_EQ(strategy.mech_contact_incr_, 0.);
+      EXPECT_EQ(strategy.thermo_contact_incr_, 0.);
+      Core::LinAlg::Vector<double> lm(*source_dofs, true), q(*thermal_source, true);
+      for (int d = 0; d < 3; ++d) lm.get_values()[d] = std::array{-2., -3., 5.}[d];
+      q.get_values()[0] = 1.7;
+      if (equilibrium)
+      {
+        for (int d = 0; d < 3; ++d) lm.get_values()[d] = std::array{30000., 40000., 100000.}[d];
+        q.get_values()[0] = -250000. / 3.;
+      }
+      strategy.set_coupled_multipliers(lm, q, *coupling);
+      auto matrix = std::make_shared<
+          Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
+          extractor, extractor, 8, true, false);
+      for (int i = 0; i < 6; ++i)
+      {
+        matrix->matrix(0, 0).assemble(10. + i, i, i);
+        for (int j = 0; j < 2; ++j)
+        {
+          matrix->matrix(0, 1).assemble(0.03 * (i + 1) * (j + 1), i, 6 + j);
+          matrix->matrix(1, 0).assemble(-0.02 * (i + 1) * (j + 1), 6 + j, i);
+        }
+      }
+      for (int i = 0; i < 2; ++i) matrix->matrix(1, 1).assemble(4. + i, 6 + i, 6 + i);
+      matrix->complete();
+      auto rhs = std::make_shared<Core::LinAlg::Vector<double>>(*full, true);
+      for (int i = 0; i < 8; ++i) rhs->get_values()[i] = 0.2 * (i + 1);
+      if (equilibrium)
+      {
+        for (int d = 0; d < 3; ++d)
+        {
+          rhs->get_values()[d] = 3. * lm.local_values_as_span()[d];
+          rhs->get_values()[d + 3] = -rhs->get_values()[d];
+        }
+        rhs->get_values()[6] = rhs->get_values()[7] = -250000.;
+      }
+      auto dis = std::make_shared<Core::LinAlg::Vector<double>>(*dofs, true);
+      auto temp = std::make_shared<Core::LinAlg::Vector<double>>(*thermal, true);
+      std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> bulk =
+          matrix->clone(Core::LinAlg::DataAccess::Copy);
+      bulk->complete();
+      const auto bulk_rhs = std::make_shared<Core::LinAlg::Vector<double>>(*rhs);
+      if (equilibrium)
+      {
+        // Balanced bulk/contact loads and zero contact constraints need no Newton step.
+        strategy.evaluate(matrix, rhs, coupling, dis, temp);
+        double norm = 0.;
+        rhs->norm_2(&norm);
+        EXPECT_LT(norm, 1.e-8);
+        continue;
+      }
+      CONTACT::TsiContactLinearization uncondensed;
+      strategy.evaluate(matrix, rhs, coupling, dis, temp, &uncondensed);
+      for (int d = 0; d < 3; ++d)
+      {
+        EXPECT_NEAR(uncondensed.residual[0]->local_values_as_span()[d],
+            -0.2 * (d + 1) + weights[0] * 0.1 +
+                (active ? 1. - weights[0] : 0.) * 2. * lm.local_values_as_span()[d],
+            1.e-13);
+        EXPECT_NEAR(uncondensed.residual[0]->local_values_as_span()[d + 3],
+            -0.2 * (d + 4) + weights[0] * 0.1 -
+                (active ? 1. - weights[0] : 0.) * 2. * lm.local_values_as_span()[d],
+            1.e-13);
+      }
+      if (finite_difference)
+      {
+        CONTACT::TsiContactLinearization::Vectors direction;
+        for (int block = 0; block < 4; ++block)
+          direction[block] = std::make_shared<Core::LinAlg::Vector<double>>(
+              uncondensed.residual[block]->get_map(), true);
+        // Every column, including temperature-sensitive friction, rather than a
+        // single random direction. Old time forces stay fixed in every probe.
+        for (int col = 0; col < 4; ++col)
+          for (int local = 0; local < direction[col]->local_length(); ++local)
+          {
+            direction[col]->get_values()[local] = 1.;
+            const auto exact = apply_linearization(uncondensed, direction);
+            auto probe = [&](double h)
+            {
+              Core::LinAlg::Vector<double> perturbed_lm(lm), perturbed_q(q);
+              perturbed_lm.update(h, *direction[2], 1.);
+              perturbed_q.update(h, *direction[3], 1.);
+              strategy.set_coupled_multipliers(perturbed_lm, perturbed_q, *coupling);
+              const auto u = direction[0]->local_values_as_span();
+              const auto t = direction[1]->local_values_as_span();
+              source->data().getg() = -0.1 + h * 2. * (u[2] - u[5]);
+              source->fri_data().jump()[0] = 0.4 + h * 2. * (u[0] - u[3]);
+              source->fri_data().jump()[1] = 0.2 + h * 2. * (u[1] - u[4]);
+              source->tsi_data().temp() = 20. + h * t[0];
+              source->tsi_data().temp_target() = target->tsi_data().temp() = 40. + h * t[1];
+              std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> perturbed_matrix =
+                  bulk->clone(Core::LinAlg::DataAccess::Copy);
+              perturbed_matrix->complete();
+              auto perturbed_rhs = std::make_shared<Core::LinAlg::Vector<double>>(*bulk_rhs);
+              for (int row = 0; row < 2; ++row)
+              {
+                Core::LinAlg::Vector<double> residual_change(
+                    uncondensed.residual[row]->get_map(), true);
+                for (int column = 0; column < 2; ++column)
+                {
+                  Core::LinAlg::Vector<double> term(residual_change.get_map(), true);
+                  bulk->matrix(row, column).multiply(false, *direction[column], term);
+                  residual_change.update(-h, term, 1.);
+                }
+                CONTACT::Utils::add_vector(residual_change, *perturbed_rhs);
+              }
+              CONTACT::TsiContactLinearization snapshot;
+              strategy.evaluate(perturbed_matrix, perturbed_rhs, coupling, dis, temp, &snapshot);
+              return snapshot;
+            };
+            const auto plus = probe(eps), minus = probe(-eps);
+            probe(0.);
+            for (int row = 0; row < 4; ++row)
+            {
+              Core::LinAlg::Vector<double> error(*plus.residual[row]);
+              error.update(-1., *minus.residual[row], 1.);
+              error.scale(0.5 / eps);
+              error.update(-1., *exact[row], 1.);
+              double norm = 0.;
+              error.norm_2(&norm);
+              EXPECT_LT(norm, 2.e-7) << "block " << row << ',' << col << ", column " << local;
+            }
+            direction[col]->get_values()[local] = 0.;
+          }
+        continue;
+      }
+      const std::array<std::shared_ptr<const Core::LinAlg::Map>, 2> dbc{map({3}), empty};
+      const auto expected = solve_linearization(uncondensed, dbc);
+      CONTACT::TsiContactLinearization condensed;
+      for (int row = 0; row < 2; ++row)
+      {
+        condensed.residual[row] = extractor.extract_vector(*rhs, row);
+        condensed.residual[row]->scale(-1.);
+        for (int col = 0; col < 2; ++col)
+          condensed.matrix[row][col] =
+              std::make_shared<Core::LinAlg::SparseMatrix>(matrix->matrix(row, col));
+      }
+      condensed.residual[2] = std::make_shared<Core::LinAlg::Vector<double>>(*empty, true);
+      condensed.residual[3] = std::make_shared<Core::LinAlg::Vector<double>>(*empty, true);
+      auto actual = solve_linearization(condensed, dbc);
+      strategy.recover_coupled(actual[0], actual[1], coupling);
+      actual[2] = std::make_shared<Core::LinAlg::Vector<double>>(*strategy.lagrange_multiplier());
+      actual[3] = std::make_shared<Core::LinAlg::Vector<double>>(*strategy.thermal_multiplier());
+      if (!active)
+      {
+        double norm = 0.;
+        actual[2]->norm_2(&norm);
+        EXPECT_EQ(norm, 0.);
+        actual[3]->norm_2(&norm);
+        EXPECT_EQ(norm, 0.);
+        for (int i = 0; i < 2; ++i)
+          EXPECT_NEAR(uncondensed.residual[1]->local_values_as_span()[i],
+              -0.2 * (7 + i) + (1. - weights[1]) * 0.2, 1.e-13);
+      }
+      actual[2]->update(-1., lm, 1.);
+      actual[3]->update(-1., q, 1.);
+      for (int block = 0; block < 4; ++block)
+      {
+        Core::LinAlg::Vector<double> difference(expected[block]->get_map(), true);
+        Core::LinAlg::export_to(*actual[block], difference);
+        difference.update(-1., *expected[block], 1.);
+        double error = 0.;
+        difference.norm_2(&error);
+        EXPECT_LT(error, 1.e-10) << "block " << block;
+      }
+    }
+  }
+
+  TEST_F(TSIInterfaceTest, CondensationPreservesHighPressureEquilibrium)
+  {
+    check_coupled_strategy(false, true, true);
+  }
+
+  TEST_F(TSIInterfaceTest, AssembledCoupledJacobianMatchesEveryFiniteDifferenceColumn)
+  {
+    check_coupled_strategy(true);
+  }
+
+  TEST_F(TSIInterfaceTest, CondensationAndRecoveryMatchFullMultiplierSolve)
+  {
+    check_coupled_strategy(false);
   }
 
 }  // namespace
