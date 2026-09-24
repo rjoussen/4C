@@ -185,6 +185,12 @@ std::vector<Core::IO::InputSpec> TSI::valid_parameters()
                                           "friction coefficient equals the given value",
                               .default_value = 0.0}),
 
+          parameter<bool>("CONDENSED_LM_INCREMENTS",
+              {.description =
+                      "Condense and recover mechanical and thermal contact Lagrange multiplier "
+                      "increments. If false, retain the legacy absolute-multiplier condensation.",
+                  .default_value = false}),
+
           parameter<double>("NITSCHE_THETA_TSI",
               {.description = "+1: symmetric, 0: non-symmetric, -1: skew-symmetric",
                   .default_value = 0.0}),
