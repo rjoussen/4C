@@ -15,6 +15,8 @@
 #include "4C_coupling_adapter.hpp"
 #include "4C_utils_exceptions.hpp"
 
+#include <array>
+
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
@@ -37,6 +39,16 @@ namespace FSI
 
 namespace CONTACT
 {
+  /** Uncondensed assembly exposed to regression tests, before Dirichlet elimination.
+   * Blocks are displacement, temperature, mechanical multiplier and thermal multiplier.
+   * Ordinary solves allocate no snapshot; verification algorithms live in the tests. */
+  struct TsiContactLinearization
+  {
+    using Vectors = std::array<std::shared_ptr<Core::LinAlg::Vector<double>>, 4>;
+    std::array<std::array<std::shared_ptr<Core::LinAlg::SparseMatrix>, 4>, 4> matrix;
+    Vectors residual;
+  };
+
   // forward declaration
   // class WearInterface;
   /*!
@@ -109,7 +121,8 @@ namespace CONTACT
         std::shared_ptr<Core::LinAlg::Vector<double>>& combined_RHS,
         std::shared_ptr<Coupling::Adapter::Coupling> coupST,
         std::shared_ptr<const Core::LinAlg::Vector<double>> dis,
-        std::shared_ptr<const Core::LinAlg::Vector<double>> temp);
+        std::shared_ptr<const Core::LinAlg::Vector<double>> temp,
+        TsiContactLinearization* linearization = nullptr);
 
     /*!
     \brief Overload CONTACT::LagrangeStrategy::recover as this is called in the structure
@@ -178,6 +191,10 @@ namespace CONTACT
     double thermo_contact_incr_ = 0.;
 
    protected:
+    /// Integrate contact and update its branches before assembling the coupled equations.
+    virtual void prepare_coupled_contact(const Core::LinAlg::Vector<double>& dis,
+        const Core::LinAlg::Vector<double>& temp, Coupling::Adapter::Coupling& coupling);
+
     // don't want = operator and cctor
     LagrangeStrategyTsi operator=(const LagrangeStrategyTsi& old) = delete;
     LagrangeStrategyTsi(const LagrangeStrategyTsi& old) = delete;

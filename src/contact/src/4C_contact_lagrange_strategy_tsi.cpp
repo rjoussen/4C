@@ -100,22 +100,16 @@ void CONTACT::LagrangeStrategyTsi::set_state(
 }
 
 
-void CONTACT::LagrangeStrategyTsi::evaluate(
-    std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> sysmat,
-    std::shared_ptr<Core::LinAlg::Vector<double>>& combined_RHS,
-    std::shared_ptr<Coupling::Adapter::Coupling> coupST,
-    std::shared_ptr<const Core::LinAlg::Vector<double>> dis,
-    std::shared_ptr<const Core::LinAlg::Vector<double>> temp)
+void CONTACT::LagrangeStrategyTsi::prepare_coupled_contact(const Core::LinAlg::Vector<double>& dis,
+    const Core::LinAlg::Vector<double>& temp, Coupling::Adapter::Coupling& coupling)
 {
-  if (thermo_s_dofs_ == nullptr) thermo_s_dofs_ = coupST->target_to_source_map(*gsdofrowmap_);
-
   // set the new displacements
-  set_state(Mortar::state_new_displacement, *dis);
+  set_state(Mortar::state_new_displacement, dis);
 
   for (unsigned i = 0; i < interface_.size(); ++i) interface_[i]->initialize();
 
   // set new temperatures
-  std::shared_ptr<Core::LinAlg::Vector<double>> temp2 = coupST->source_to_target(*temp);
+  std::shared_ptr<Core::LinAlg::Vector<double>> temp2 = coupling.source_to_target(temp);
   set_state(Mortar::state_temperature, *temp2);
 
   // error checks
@@ -136,6 +130,19 @@ void CONTACT::LagrangeStrategyTsi::evaluate(
 
   // init lin-matrices
   initialize();
+}
+
+void CONTACT::LagrangeStrategyTsi::evaluate(
+    std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> sysmat,
+    std::shared_ptr<Core::LinAlg::Vector<double>>& combined_RHS,
+    std::shared_ptr<Coupling::Adapter::Coupling> coupST,
+    std::shared_ptr<const Core::LinAlg::Vector<double>> dis,
+    std::shared_ptr<const Core::LinAlg::Vector<double>> temp,
+    TsiContactLinearization* linearization)
+{
+  if (thermo_s_dofs_ == nullptr) thermo_s_dofs_ = coupST->target_to_source_map(*gsdofrowmap_);
+
+  prepare_coupled_contact(*dis, *temp, *coupST);
 
   // get the necessary maps on the thermo dofs
   std::shared_ptr<Core::LinAlg::Map> gactive_themo_dofs =
@@ -395,6 +402,63 @@ void CONTACT::LagrangeStrategyTsi::evaluate(
   // the additional displacement linearizations
   kss->complete();
   kts->complete(*gdisprowmap_, *coupST->source_dof_map());
+
+  if (linearization)
+  {
+    auto& a = linearization->matrix;
+    a = {};
+    a[0][0] = std::make_shared<Core::LinAlg::SparseMatrix>(*kss);
+    a[0][1] = std::make_shared<Core::LinAlg::SparseMatrix>(*kst);
+    a[1][0] = std::make_shared<Core::LinAlg::SparseMatrix>(*kts);
+    a[1][1] = std::make_shared<Core::LinAlg::SparseMatrix>(*ktt);
+
+    auto force = std::make_shared<Core::LinAlg::SparseMatrix>(*gdisprowmap_, 100);
+    Core::LinAlg::matrix_add(*dmatrix_, false, 1., *force, 0.);
+    Core::LinAlg::matrix_add(*mmatrix_, true, -1., *force, 1.);
+    force->complete(*gsdofrowmap_, *gdisprowmap_);
+    a[0][2] = std::make_shared<Core::LinAlg::SparseMatrix>(*force);
+    a[0][2]->scale(1. - alphaf_);
+    a[1][2] = std::make_shared<Core::LinAlg::SparseMatrix>(m_LinDissContactLM_thermoRow);
+    a[1][2]->scale(tsi_alpha_);
+    a[1][3] = std::make_shared<Core::LinAlg::SparseMatrix>(*thermo_all_dofs, 100);
+    Coupling::Adapter::MatrixRowColTransform()(*force, tsi_alpha_,
+        Coupling::Adapter::CouplingTargetConverter(*coupST),
+        Coupling::Adapter::CouplingTargetConverter(*coupST), *a[1][3], false, false);
+    a[1][3]->complete(*thermo_s_dofs_, *thermo_all_dofs);
+
+    a[2][0] = std::make_shared<Core::LinAlg::SparseMatrix>(*dcsdd);
+    a[2][1] = std::make_shared<Core::LinAlg::SparseMatrix>(*gactivedofs_, 100);
+    Coupling::Adapter::MatrixColTransform()(*gactivedofs_, *gstdofrowmap_, dcsdT, 1.,
+        Coupling::Adapter::CouplingTargetConverter(*coupST), *a[2][1], false, false);
+    a[2][1]->complete(*thermo_all_dofs, *gactivedofs_);
+    a[2][2] = std::make_shared<Core::LinAlg::SparseMatrix>(*dcsdLMc);
+    a[3][0] = std::make_shared<Core::LinAlg::SparseMatrix>(*thermo_act_dofs, 100);
+    Coupling::Adapter::MatrixRowTransform()(
+        dcTdd, 1., Coupling::Adapter::CouplingTargetConverter(*coupST), *a[3][0], false);
+    a[3][0]->complete(*gdisprowmap_, *thermo_act_dofs);
+    a[3][1] = std::make_shared<Core::LinAlg::SparseMatrix>(*thermo_act_dofs, 100);
+    Coupling::Adapter::MatrixRowColTransform()(dcTdT, 1.,
+        Coupling::Adapter::CouplingTargetConverter(*coupST),
+        Coupling::Adapter::CouplingTargetConverter(*coupST), *a[3][1], false, false);
+    a[3][1]->complete(*thermo_all_dofs, *thermo_act_dofs);
+    a[3][2] = std::make_shared<Core::LinAlg::SparseMatrix>(*thermo_act_dofs, 100);
+    Coupling::Adapter::MatrixRowTransform()(
+        dcTdLMc, 1., Coupling::Adapter::CouplingTargetConverter(*coupST), *a[3][2], false);
+    a[3][2]->complete(*gactivedofs_, *thermo_act_dofs);
+    a[3][3] = std::make_shared<Core::LinAlg::SparseMatrix>(*thermo_act_dofs, 100);
+    Coupling::Adapter::MatrixRowColTransform()(dcTdLMt, 1.,
+        Coupling::Adapter::CouplingTargetConverter(*coupST),
+        Coupling::Adapter::CouplingTargetConverter(*coupST), *a[3][3], false, false);
+    a[3][3]->complete(*thermo_s_dofs_, *thermo_act_dofs);
+    Core::LinAlg::Vector<double> constraint(*coupST->target_dof_map(), true);
+    Core::LinAlg::export_to(*rcTa, constraint);
+    auto constraint_thermal = coupST->target_to_source(constraint);
+    linearization->residual = {std::make_shared<Core::LinAlg::Vector<double>>(rs),
+        std::make_shared<Core::LinAlg::Vector<double>>(rt),
+        std::make_shared<Core::LinAlg::Vector<double>>(*rcsa),
+        std::make_shared<Core::LinAlg::Vector<double>>(*thermo_act_dofs, true)};
+    Core::LinAlg::export_to(*constraint_thermal, *linearization->residual[3]);
+  }
 
   // split matrix blocks in 3 rows: Active, Target and (Inactive+others)
   std::shared_ptr<Core::LinAlg::SparseMatrix> kss_ni, kss_m, kss_a, kst_ni, kst_m, kst_a, kts_ni,
