@@ -1,0 +1,297 @@
+TITLE:
+  - "This tests tsi contact in 3D with coulomb friction. A semi-circle is pressed onto a box and then
+    slid along it, generating heat due to friction. No other heat sources are present and the thermal
+    expansion of the material is set to 0. The friction coefficient is set to 0.4 initially and reduces
+    with rising temperature. The heat transfer parameters are set such that 62.5% of the frictional heat
+    is transferred into the box."
+
+PROBLEM TYPE:
+  PROBLEMTYPE: "Thermo_Structure_Interaction"
+
+CONTACT DYNAMIC:
+  LINEAR_SOLVER: 1
+  SEMI_SMOOTH_CN: 500
+  SEMI_SMOOTH_CT: 500
+  FRICTION: Coulomb
+
+MORTAR COUPLING/PARALLEL REDISTRIBUTION:
+  PARALLEL_REDIST: "None"
+
+TSI CONTACT:
+  HEATTRANSSLAVE: 10
+  HEATTRANSMASTER: 6
+  TEMP_REF: 20
+  TEMP_DAMAGE: 120
+
+THERMAL DYNAMIC/RUNTIME VTK OUTPUT:
+  OUTPUT_THERMO: true
+  TEMPERATURE: true
+IO/RUNTIME VTK OUTPUT:
+  INTERVAL_STEPS: 1
+IO/RUNTIME VTK OUTPUT/STRUCTURE:
+  OUTPUT_STRUCTURE: true
+  DISPLACEMENT: true
+  NODE_GID: true
+  ELEMENT_GID: true
+
+STRUCTURAL DYNAMIC:
+  DYNAMICTYPE: "Statics"
+  LINEAR_SOLVER: 1
+
+THERMAL DYNAMIC:
+  INITIALFIELD: "field_by_function"
+  INITFUNCNO: 1
+  LINEAR_SOLVER: 1
+
+TSI DYNAMIC:
+  NUMSTEP: 20000
+  MAXTIME: 2
+  TIMESTEP: 0.1
+
+TSI DYNAMIC/MONOLITHIC:
+  CONVTOL: 0.0001
+  TOLINC: 1e-07
+  LINEAR_SOLVER: 1
+  MERGE_TSI_BLOCK_MATRIX: true
+
+SOLVER 1:
+  SOLVER: Superlu
+
+MATERIALS:
+  - MAT: 1
+    MAT_Struct_ThermoStVenantK:
+      YOUNGNUM: 1
+      YOUNG: [100]
+      NUE: 0.3
+      DENS: 0
+      THEXPANS: 0
+      INITTEMP: 20
+  - MAT: 2
+    MAT_Struct_ThermoStVenantK:
+      YOUNGNUM: 1
+      YOUNG: [500]
+      NUE: 0.3
+      DENS: 0
+      THEXPANS: 0
+      INITTEMP: 20
+  - MAT: 10
+    MAT_Fourier:
+      CAPA: 2
+      CONDUCT:
+        constant: [1]
+
+CLONING MATERIAL MAP:
+  - SRC_FIELD: "structure"
+    SRC_MAT: 1
+    TAR_FIELD: "thermo"
+    TAR_MAT: 10
+  - SRC_FIELD: "structure"
+    SRC_MAT: 2
+    TAR_FIELD: "thermo"
+    TAR_MAT: 10
+
+FUNCT1:
+  - SYMBOLIC_FUNCTION_OF_SPACE_TIME: "20"
+FUNCT2:
+  - SYMBOLIC_FUNCTION_OF_SPACE_TIME: "vertical_displacement"
+  - TYPE: linearinterpolation
+    NAME: "vertical_displacement"
+    NUMPOINTS: 3
+    TIMES: [0, 1, 2]
+    VALUES: [0, 0.5, 0.5]
+    VARIABLE: 0
+FUNCT3:
+  - SYMBOLIC_FUNCTION_OF_SPACE_TIME: "horizontal_displacement"
+  - TYPE: linearinterpolation
+    NAME: "horizontal_displacement"
+    NUMPOINTS: 3
+    TIMES: [0, 1, 2]
+    VALUES: [0, 0, 4]
+    VARIABLE: 0
+
+DESIGN SURF DIRICH CONDITIONS:
+  - NODE_SET_NAME: semi_circle_top
+    NUMDOF: 3
+    ONOFF: [1, 1, 1]
+    VAL: [1, -1, 0]
+    FUNCT: [3, 2, null]
+  - NODE_SET_NAME: box_bottom
+    NUMDOF: 3
+    ONOFF: [1, 1, 1]
+    VAL: [0, 0, 0]
+    FUNCT: [0, 0, 0]
+
+DESIGN SURF MORTAR CONTACT CONDITIONS 3D:
+  - NODE_SET_NAME: box_top
+    InterfaceID: 1
+    Side: "Slave"
+    FrCoeffOrBound: 0.4
+  - NODE_SET_NAME: semi_circle_contact
+    InterfaceID: 1
+    Side: "Master"
+    FrCoeffOrBound: 0.4
+
+STRUCTURE GEOMETRY:
+  FILE: "tsi_contact3D_friction_semi_circle_on_box.msh"
+  ELEMENT_BLOCKS:
+    - NAME: box
+      SOLIDSCATRA:
+        HEX8:
+          MAT: 1
+          KINEM: nonlinear
+          TYPE: Undefined
+    - NAME: "semi_circle"
+      SOLIDSCATRA:
+        HEX8:
+          MAT: 2
+          KINEM: nonlinear
+          TYPE: Undefined
+
+RESULT DESCRIPTION:
+  ## Points on box
+  # Beginning of contact
+  - STRUCTURE:
+      DIS: "structure"
+      NODE: 3
+      QUANTITY: "dispx"
+      VALUE: 2.79939398330228628e-01
+      TOLERANCE: 1e-10
+  - STRUCTURE:
+      DIS: "structure"
+      NODE: 3
+      QUANTITY: "dispy"
+      VALUE: -4.41834064292152773e-01
+      TOLERANCE: 1e-10
+  - THERMAL:
+      DIS: "thermo"
+      NODE: 3
+      QUANTITY: "temp"
+      VALUE: 22.7085534188435325
+      TOLERANCE: 1e-10
+      # Middle of contact
+  - STRUCTURE:
+      DIS: "structure"
+      NODE: 50
+      QUANTITY: "dispx"
+      VALUE: 2.57044512213929266e-01
+      TOLERANCE: 1e-10
+  - STRUCTURE:
+      DIS: "structure"
+      NODE: 50
+      QUANTITY: "dispy"
+      VALUE: -3.78501638633656601e-01
+      TOLERANCE: 1e-10
+  - STRUCTURE:
+      DIS: "structure"
+      NODE: 50
+      QUANTITY: "dispz"
+      VALUE: 2.32203167550883889e-02
+      TOLERANCE: 1e-10
+  - THERMAL:
+      DIS: "thermo"
+      NODE: 50
+      QUANTITY: "temp"
+      VALUE: 26.0572016711386922
+      TOLERANCE: 1e-10
+      # Directly behind contact
+  - STRUCTURE:
+      DIS: "structure"
+      NODE: 124
+      QUANTITY: "dispx"
+      VALUE: 1.89857493160045743e-01
+      TOLERANCE: 1e-10
+  - STRUCTURE:
+      DIS: "structure"
+      NODE: 124
+      QUANTITY: "dispy"
+      VALUE: -8.98302112634036670e-02
+      TOLERANCE: 1e-10
+  - THERMAL:
+      DIS: "thermo"
+      NODE: 124
+      QUANTITY: "temp"
+      VALUE: 24.2683259103012325
+      TOLERANCE: 1e-10
+      # Far away from contact
+  - STRUCTURE:
+      DIS: "structure"
+      NODE: 19
+      QUANTITY: "dispx"
+      VALUE: 3.65604683406191913e-02
+      TOLERANCE: 1e-10
+  - STRUCTURE:
+      DIS: "structure"
+      NODE: 19
+      QUANTITY: "dispy"
+      VALUE: 1.25057872894673797e-02
+      TOLERANCE: 1e-10
+  - THERMAL:
+      DIS: "thermo"
+      NODE: 19
+      QUANTITY: "temp"
+      VALUE: 20.0744398216616418
+      TOLERANCE: 1e-10
+      ## Points on semi-circle
+      # Left of contact
+  - STRUCTURE:
+      DIS: "structure"
+      NODE: 11
+      QUANTITY: "dispx"
+      VALUE: 3.97221340256167332e+00
+      TOLERANCE: 1e-10
+  - STRUCTURE:
+      DIS: "structure"
+      NODE: 11
+      QUANTITY: "dispy"
+      VALUE: -4.62962838783356978e-01
+      TOLERANCE: 1e-10
+  - THERMAL:
+      DIS: "thermo"
+      NODE: 11
+      QUANTITY: "temp"
+      VALUE: 24.5292329185809272
+      TOLERANCE: 1e-10
+      # Middle of contact
+  - STRUCTURE:
+      DIS: "structure"
+      NODE: 70
+      QUANTITY: "dispx"
+      VALUE: 3.98068056939424864e+00
+      TOLERANCE: 1e-10
+  - STRUCTURE:
+      DIS: "structure"
+      NODE: 70
+      QUANTITY: "dispy"
+      VALUE: -4.50378643895434971e-01
+      TOLERANCE: 1e-10
+  - STRUCTURE:
+      DIS: "structure"
+      NODE: 70
+      QUANTITY: "dispz"
+      VALUE: 8.93350568872749301e-03
+      TOLERANCE: 1e-10
+  - THERMAL:
+      DIS: "thermo"
+      NODE: 70
+      QUANTITY: "temp"
+      VALUE: 26.0667039944667138
+      TOLERANCE: 1e-10
+      # Right of contact
+  - STRUCTURE:
+      DIS: "structure"
+      NODE: 162
+      QUANTITY: "dispx"
+      VALUE: 3.98815903318233511e+00
+      TOLERANCE: 1e-10
+  - STRUCTURE:
+      DIS: "structure"
+      NODE: 162
+      QUANTITY: "dispy"
+      VALUE: -4.68196179666041046e-01
+      TOLERANCE: 1e-10
+  - THERMAL:
+      DIS: "thermo"
+      NODE: 162
+      QUANTITY: "temp"
+      VALUE: 25.3182477056444100
+      TOLERANCE: 1e-10

@@ -54,8 +54,8 @@ repos:
         args: [--autofix, --no-ensure-ascii, --no-sort-keys]
       - id: trailing-whitespace
         name: Trim trailing whitespace
-        # Do not modify reference vtu files, since we generate these and do not hand-edit them.
-        exclude: "vtu$"
+        # Do not modify generated mesh files, since we do not hand-edit them.
+        exclude: "(msh|vtu)$"
         # Do not trim trailing whitespace in C++ files. It is not trivial to trim whitespace
         # correctly, e.g., when inside a string literal. Clang-format will do this correctly.
         exclude_types: [c, c++]
