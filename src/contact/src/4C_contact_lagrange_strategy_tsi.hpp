@@ -65,21 +65,12 @@ namespace CONTACT
 
     //! @name Evaluation methods
 
-    /*!
-      \brief Set current state
-      ...Standard Implementation in Abstract Strategy:
-      All interfaces are called to set the current deformation state
-      (u, xspatial) in their nodes. Additionally, the new contact
-      element areas are computed.
-
-      ... + Overloaded Implementation in Poro Lagrange Strategy
-      Set structure & fluid velocity and lagrangean multiplier to Contact nodes data container!!!
-
-      \param statetype (in): enumerator defining which quantity to set (see mortar_interface.H for
-      an overview) \param vec (in): current global state of the quantity defined by statetype
+    /**
+     * @brief set the temperature on the contact source nodes.
+     *
+     * @param temperature vector
      */
-    void set_state(
-        const Mortar::StateType& statetype, const Core::LinAlg::Vector<double>& vec) override;
+    void set_temperature(const Core::LinAlg::Vector<double>& temperature);
 
     // Overload CONTACT::AbstractStrategy::apply_force_stiff_cmt as this is called in the structure
     // --> to early for monolithically coupled algorithms!
@@ -107,7 +98,6 @@ namespace CONTACT
      */
     virtual void evaluate(std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> sysmat,
         std::shared_ptr<Core::LinAlg::Vector<double>>& combined_RHS,
-        std::shared_ptr<Coupling::Adapter::Coupling> coupST,
         std::shared_ptr<const Core::LinAlg::Vector<double>> dis,
         std::shared_ptr<const Core::LinAlg::Vector<double>> temp);
 
@@ -118,13 +108,21 @@ namespace CONTACT
     */
     void recover(std::shared_ptr<Core::LinAlg::Vector<double>> disi) override { return; };
 
-    virtual void recover_coupled(
-        std::shared_ptr<Core::LinAlg::Vector<double>> sinc,  /// displacement  increment
-        std::shared_ptr<Core::LinAlg::Vector<double>> tinc,  /// thermal  increment
-        std::shared_ptr<Coupling::Adapter::Coupling> coupST);
+    bool redistribute_contact(std::shared_ptr<const Core::LinAlg::Vector<double>> dis,
+        std::shared_ptr<const Core::LinAlg::Vector<double>> vel) override
+    {
+      FOUR_C_ASSERT_ALWAYS(params().sublist("PARALLEL REDISTRIBUTION")
+                                   .get<Mortar::ParallelRedist>("PARALLEL_REDIST") ==
+                               Mortar::ParallelRedist::redist_none,
+          "Parallel redistribution is not implemented for TSI Lagrange strategy.");
+      return true;
+    }
 
-    void store_nodal_quantities(
-        Mortar::StrategyBase::QuantityType type, Coupling::Adapter::Coupling& coupST);
+    virtual void recover_coupled(
+        std::shared_ptr<Core::LinAlg::Vector<double>> sinc,   /// displacement  increment
+        std::shared_ptr<Core::LinAlg::Vector<double>> tinc);  /// thermal increment
+
+    void store_nodal_quantities(Mortar::StrategyBase::QuantityType type) override;
 
     /*!
      \brief Update contact at end of time step
@@ -165,10 +163,12 @@ namespace CONTACT
         std::shared_ptr<const Core::LinAlg::Vector<double>> dis,
         std::shared_ptr<CONTACT::ParamsInterface> cparams_ptr) override;
 
-    void set_coupling(std::shared_ptr<Coupling::Adapter::Coupling> coupST)
+    void set_coupling(std::shared_ptr<Coupling::Adapter::Coupling> thermo_to_solid_coupling)
     {
-      structure_thermo_coupling_ = coupST;
-    };
+      FOUR_C_ASSERT_ALWAYS(
+          thermo_to_solid_coupling != nullptr, "The thermo-to-solid coupling must not be null.");
+      thermo_to_solid_coupling_ = thermo_to_solid_coupling;
+    }
 
     //@}
 
@@ -218,7 +218,7 @@ namespace CONTACT
         rt_a_;  // Part of structural residual that corresponds to active source rows
 
     // pointer to TSI coupling object
-    std::shared_ptr<Coupling::Adapter::Coupling> structure_thermo_coupling_;
+    std::shared_ptr<Coupling::Adapter::Coupling> thermo_to_solid_coupling_;
   };  // class LagrangeStrategyTsi
 
   namespace Utils
