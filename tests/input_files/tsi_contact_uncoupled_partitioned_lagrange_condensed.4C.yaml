@@ -1,0 +1,158 @@
+TITLE:
+  - "Two-element structure-only TSI contact: partitioned condensed Lagrange"
+
+PROBLEM TYPE:
+  PROBLEMTYPE: Thermo_Structure_Interaction
+
+STRUCTURAL DYNAMIC:
+  DYNAMICTYPE: Statics
+  LINEAR_SOLVER: 1
+
+THERMAL DYNAMIC:
+  LINEAR_SOLVER: 1
+
+TSI DYNAMIC:
+  MAXTIME: 1
+  TIMESTEP: 1
+  COUPALGO: tsi_iterstagg
+
+TSI CONTACT:
+  ENABLE_COUPLED_CONTACT: false
+
+CONTACT DYNAMIC:
+  LINEAR_SOLVER: 1
+
+MORTAR COUPLING/PARALLEL REDISTRIBUTION:
+  PARALLEL_REDIST: None
+
+SOLVER 1:
+  SOLVER: Superlu
+
+MATERIALS:
+  - MAT: 1
+    MAT_Struct_ThermoStVenantK:
+      YOUNGNUM: 1
+      YOUNG: [1000]
+      NUE: 0.3
+      DENS: 1
+      THEXPANS: 0
+      INITTEMP: 0
+  - MAT: 2
+    MAT_Fourier:
+      CAPA: 1
+      CONDUCT:
+        constant: [1]
+
+CLONING MATERIAL MAP:
+  - SRC_FIELD: structure
+    SRC_MAT: 1
+    TAR_FIELD: thermo
+    TAR_MAT: 2
+
+DESIGN SURF DIRICH CONDITIONS:
+  - E: 1
+    NUMDOF: 3
+    ONOFF: [1, 1, 1]
+    VAL: [0, 0, 0]
+    FUNCT: [0, 0, 0]
+  - E: 4
+    NUMDOF: 3
+    ONOFF: [0, 0, 1]
+    VAL: [0, 0, -0.02]
+    FUNCT: [0, 0, 0]
+
+DESIGN VOL DIRICH CONDITIONS:
+  - E: 1
+    NUMDOF: 3
+    ONOFF: [1, 1, 0]
+    VAL: [0, 0, 0]
+    FUNCT: [0, 0, 0]
+
+DESIGN SURF THERMO NEUMANN CONDITIONS:
+  - E: 4
+    NUMDOF: 1
+    ONOFF: [1]
+    VAL: [10]
+    FUNCT: [0]
+
+DESIGN SURF MORTAR CONTACT CONDITIONS 3D:
+  - E: 2
+    InterfaceID: 1
+    Side: Slave
+    Initialization: Active
+  - E: 3
+    InterfaceID: 1
+    Side: Master
+
+DSURF-NODE TOPOLOGY:
+  - "NODE 1 DSURFACE 1"
+  - "NODE 2 DSURFACE 1"
+  - "NODE 3 DSURFACE 1"
+  - "NODE 4 DSURFACE 1"
+  - "NODE 5 DSURFACE 2"
+  - "NODE 6 DSURFACE 2"
+  - "NODE 7 DSURFACE 2"
+  - "NODE 8 DSURFACE 2"
+  - "NODE 9 DSURFACE 3"
+  - "NODE 10 DSURFACE 3"
+  - "NODE 11 DSURFACE 3"
+  - "NODE 12 DSURFACE 3"
+  - "NODE 13 DSURFACE 4"
+  - "NODE 14 DSURFACE 4"
+  - "NODE 15 DSURFACE 4"
+  - "NODE 16 DSURFACE 4"
+
+DVOL-NODE TOPOLOGY:
+  - "NODE 9 DVOL 1"
+  - "NODE 10 DVOL 1"
+  - "NODE 11 DVOL 1"
+  - "NODE 12 DVOL 1"
+  - "NODE 13 DVOL 1"
+  - "NODE 14 DVOL 1"
+  - "NODE 15 DVOL 1"
+  - "NODE 16 DVOL 1"
+
+NODE COORDS:
+  - "NODE 1 COORD 0 0 0"
+  - "NODE 2 COORD 1 0 0"
+  - "NODE 3 COORD 1 1 0"
+  - "NODE 4 COORD 0 1 0"
+  - "NODE 5 COORD 0 0 1"
+  - "NODE 6 COORD 1 0 1"
+  - "NODE 7 COORD 1 1 1"
+  - "NODE 8 COORD 0 1 1"
+  - "NODE 9 COORD 0 0 1"
+  - "NODE 10 COORD 1 0 1"
+  - "NODE 11 COORD 1 1 1"
+  - "NODE 12 COORD 0 1 1"
+  - "NODE 13 COORD 0 0 2"
+  - "NODE 14 COORD 1 0 2"
+  - "NODE 15 COORD 1 1 2"
+  - "NODE 16 COORD 0 1 2"
+
+STRUCTURE ELEMENTS:
+  - "1 SOLIDSCATRA HEX8 1 2 3 4 5 6 7 8 MAT 1 KINEM nonlinear TYPE Undefined"
+  - "2 SOLIDSCATRA HEX8 9 10 11 12 13 14 15 16 MAT 1 KINEM nonlinear TYPE Undefined"
+
+RESULT DESCRIPTION:
+  - STRUCTURE:
+      DIS: structure
+      NODE: 5
+      QUANTITY: dispz
+      NAME: lower_contact_surface_vertical_displacement
+      VALUE: -0.01
+      TOLERANCE: 1e-10
+  - THERMAL:
+      DIS: thermo
+      NODE: 13
+      QUANTITY: temp
+      VALUE: 14.2124038337559675
+      TOLERANCE: 1e-10
+      NAME: temperature_in_heated_element
+  - THERMAL:
+      DIS: thermo
+      NODE: 5
+      QUANTITY: temp
+      VALUE: 0.0
+      TOLERANCE: 1e-10
+      NAME: temperature_at_lower_contact_surface
