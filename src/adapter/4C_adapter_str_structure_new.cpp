@@ -346,16 +346,19 @@ void Adapter::StructureBaseAlgorithmNew::set_model_types(
   {
     // what's the current problem type?
     Core::ProblemType probtype = problem->get_problem_type();
-    // ToDo: once the new structural time integration can handle
-    //       condensed contact formulations, the model_evaluator
-    //       can have its contact model. For now, the TSI Lagrange
-    //       strategy resides in the TSI algorithm.
     if (probtype == Core::ProblemType::tsi)
     {
-      const Teuchos::ParameterList& contact = problem->contact_dynamic_params();
-      if (Teuchos::getIntegralValue<CONTACT::SolvingStrategy>(contact, "STRATEGY") ==
-          CONTACT::SolvingStrategy::nitsche)
+      const bool is_coupled_tsi_contact_enabled =
+          problem->tsi_contact_params().get<bool>("ENABLE_COUPLED_CONTACT");
+      if (is_coupled_tsi_contact_enabled)
+      {
+        // coupled tsi contact is set up in the tsi algorithm.
+      }
+      else
+      {
+        // use structural-only contact
         modeltypes.insert(Solid::model_contact);
+      }
     }
     else
       modeltypes.insert(Solid::model_contact);

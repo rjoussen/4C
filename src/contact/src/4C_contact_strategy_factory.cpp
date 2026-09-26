@@ -12,6 +12,7 @@
 #include "4C_contact_constitutivelaw_interface.hpp"
 #include "4C_contact_element.hpp"
 #include "4C_contact_friction_node.hpp"
+#include "4C_contact_input.hpp"
 #include "4C_contact_lagrange_strategy.hpp"
 #include "4C_contact_lagrange_strategy_tsi.hpp"
 #include "4C_contact_lagrange_strategy_wear.hpp"
@@ -104,13 +105,6 @@ void CONTACT::STRATEGY::Factory::read_and_check_input(Teuchos::ParameterList& pa
         "Maximum allowed value of load balance for dynamic parallel redistribution must be "
         ">= 1.0");
   }
-
-  if (problemtype == Core::ProblemType::tsi &&
-      Teuchos::getIntegralValue<Mortar::ParallelRedist>(
-          mortarParallelRedistParams, "PARALLEL_REDIST") != Mortar::ParallelRedist::redist_none &&
-      Teuchos::getIntegralValue<CONTACT::SolvingStrategy>(contact, "STRATEGY") !=
-          CONTACT::SolvingStrategy::nitsche)
-    FOUR_C_THROW("Parallel redistribution not yet implemented for TSI problems");
 
   if (const int solverNumber = contact.get<int>("LINEAR_SOLVER");
       solverNumber != -1 &&
@@ -320,25 +314,6 @@ void CONTACT::STRATEGY::Factory::read_and_check_input(Teuchos::ParameterList& pa
 
 
     // ---------------------------------------------------------------------
-    // thermal-structure-interaction contact
-    // ---------------------------------------------------------------------
-    if (problemtype == Core::ProblemType::tsi &&
-        Teuchos::getIntegralValue<Mortar::ShapeFcn>(mortar, "LM_SHAPEFCN") ==
-            Mortar::shape_standard &&
-        Teuchos::getIntegralValue<Mortar::LagMultQuad>(mortar, "LM_QUAD") != Mortar::lagmult_const)
-      FOUR_C_THROW("Thermal contact only for dual shape functions");
-
-    if (problemtype == Core::ProblemType::tsi &&
-        Teuchos::getIntegralValue<CONTACT::SystemType>(contact, "SYSTEM") !=
-            CONTACT::SystemType::condensed)
-      FOUR_C_THROW("Thermal contact only for dual shape functions with condensed system");
-
-    // no nodal scaling in for thermal-structure-interaction
-    if (problemtype == Core::ProblemType::tsi &&
-        tsic.get<double>("TEMP_DAMAGE") <= tsic.get<double>("TEMP_REF"))
-      FOUR_C_THROW("damage temperature must be greater than reference temperature");
-
-    // ---------------------------------------------------------------------
     // contact with wear
     // ---------------------------------------------------------------------
     if (Teuchos::getIntegralValue<Wear::WearLaw>(wearlist, "WEARLAW") == Wear::wear_none &&
@@ -463,8 +438,7 @@ void CONTACT::STRATEGY::Factory::read_and_check_input(Teuchos::ParameterList& pa
   else if (Teuchos::getIntegralValue<Mortar::AlgorithmType>(mortar, "ALGORITHM") ==
            Mortar::algorithm_nts)
   {
-    if (problemtype == Core::ProblemType::poroelast or problemtype == Core::ProblemType::fpsi or
-        problemtype == Core::ProblemType::tsi)
+    if (problemtype == Core::ProblemType::poroelast or problemtype == Core::ProblemType::fpsi)
       FOUR_C_THROW("NTS only for problem type: structure");
   }  // END NTS CHECKS
 
@@ -604,6 +578,8 @@ void CONTACT::STRATEGY::Factory::read_and_check_input(Teuchos::ParameterList& pa
   if (problemtype == Core::ProblemType::tsi)
   {
     params.set<CONTACT::Problemtype>("PROBTYPE", CONTACT::Problemtype::tsi);
+    // store whether coupled contact is enabled for TSI problems
+    params.set<bool>("COUPLED_TSI_CONTACT", tsic.get<bool>("ENABLE_COUPLED_CONTACT"));
   }
   else if (problemtype == Core::ProblemType::ssi)
   {
@@ -689,9 +665,11 @@ void CONTACT::STRATEGY::Factory::build_interfaces(const Teuchos::ParameterList& 
   auto algo = Teuchos::getIntegralValue<Mortar::AlgorithmType>(params, "ALGORITHM");
 
   bool friplus = false;
-  if ((wlaw != Wear::wear_none) ||
-      (params.get<CONTACT::Problemtype>("PROBTYPE") == CONTACT::Problemtype::tsi))
-    friplus = true;
+  if ((wlaw != Wear::wear_none)) friplus = true;
+  if (params.get<CONTACT::Problemtype>("PROBTYPE") == CONTACT::Problemtype::tsi)
+  {
+    if (params.get<bool>("COUPLED_TSI_CONTACT")) friplus = true;
+  }
 
   // only for poro
   bool isporo = (params.get<CONTACT::Problemtype>("PROBTYPE") == CONTACT::Problemtype::poroelast) ||
@@ -1320,11 +1298,18 @@ std::shared_ptr<CONTACT::Interface> CONTACT::STRATEGY::Factory::create_interface
         newinterface = std::make_shared<Wear::WearInterface>(
             interface_data_ptr, id, comm, dim, icparams, selfcontact);
       }
-      else if (icparams.get<CONTACT::Problemtype>("PROBTYPE") == CONTACT::Problemtype::tsi &&
-               stype == CONTACT::SolvingStrategy::lagmult)
+      else if (icparams.get<CONTACT::Problemtype>("PROBTYPE") == CONTACT::Problemtype::tsi)
       {
-        newinterface = std::make_shared<CONTACT::TSIInterface>(
-            interface_data_ptr, id, comm, dim, icparams, selfcontact);
+        if (icparams.get<bool>("COUPLED_TSI_CONTACT"))
+        {
+          newinterface = std::make_shared<CONTACT::TSIInterface>(
+              interface_data_ptr, id, comm, dim, icparams, selfcontact);
+        }
+        else
+        {
+          newinterface = std::make_shared<CONTACT::Interface>(
+              interface_data_ptr, id, comm, dim, icparams, selfcontact);
+        }
       }
       else
         newinterface = std::make_shared<CONTACT::Interface>(
@@ -1593,9 +1578,18 @@ std::shared_ptr<CONTACT::AbstractStrategy> CONTACT::STRATEGY::Factory::build_str
     }
     else if (params.get<CONTACT::Problemtype>("PROBTYPE") == CONTACT::Problemtype::tsi)
     {
-      data_ptr = std::make_shared<CONTACT::AbstractStrategyDataContainer>();
-      strategy_ptr = std::make_shared<LagrangeStrategyTsi>(data_ptr, dof_row_map, node_row_map,
-          params, interfaces, dim, comm_ptr, dummy, dof_offset);
+      if (params.get<bool>("COUPLED_TSI_CONTACT"))
+      {
+        data_ptr = std::make_shared<CONTACT::AbstractStrategyDataContainer>();
+        strategy_ptr = std::make_shared<LagrangeStrategyTsi>(data_ptr, dof_row_map, node_row_map,
+            params, interfaces, dim, comm_ptr, dummy, dof_offset);
+      }
+      else
+      {
+        data_ptr = std::make_shared<CONTACT::AbstractStrategyDataContainer>();
+        strategy_ptr = std::make_shared<LagrangeStrategy>(data_ptr, dof_row_map, node_row_map,
+            params, interfaces, dim, comm_ptr, dummy, dof_offset);
+      }
     }
     else
     {
