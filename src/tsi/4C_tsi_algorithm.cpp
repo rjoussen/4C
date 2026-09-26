@@ -10,6 +10,7 @@
 #include "4C_adapter_str_factory.hpp"
 #include "4C_adapter_str_structure_new.hpp"
 #include "4C_adapter_str_wrapper.hpp"
+#include "4C_contact_input.hpp"
 #include "4C_contact_lagrange_strategy_tsi.hpp"
 #include "4C_contact_meshtying_contact_bridge.hpp"
 #include "4C_contact_strategy_factory.hpp"
@@ -21,10 +22,12 @@
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
 #include "4C_mortar_multifield_coupling.hpp"
+#include "4C_structure_new_input.hpp"
 #include "4C_thermo_adapter.hpp"
 #include "4C_tsi_input.hpp"
 #include "4C_tsi_problem_access.hpp"
 #include "4C_tsi_utils.hpp"
+#include "4C_utils_exceptions.hpp"
 #include "4C_utils_parameter_list.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -118,15 +121,6 @@ TSI::Algorithm::Algorithm(MPI_Comm comm)
       *(thermo_field()->discretization()->node_row_map()), 3, true);
   tempnp_ = std::make_shared<Core::LinAlg::MultiVector<double>>(
       *(structure_field()->discretization()->node_row_map()), 1, true);
-
-  // setup coupling object for matching discretization
-  if (matchinggrid_)
-  {
-    structure_thermo_coupling_ = std::make_shared<Coupling::Adapter::Coupling>();
-    structure_thermo_coupling_->setup_coupling(*structure_field()->discretization(),
-        *thermo_field()->discretization(), *structure_field()->discretization()->node_row_map(),
-        *thermo_field()->discretization()->node_row_map(), 1, true);
-  }
 
   // setup mortar coupling
   if (problem_->get_problem_type() == Core::ProblemType::tsi)
@@ -227,14 +221,7 @@ void TSI::Algorithm::apply_thermo_coupling_state(
 
   // set new temperatures to contact
   if (contact_strategy_lagrange_ != nullptr)
-  {
-    FOUR_C_ASSERT_ALWAYS(structure_thermo_coupling_ != nullptr,
-        "Invalid configuration: structure_thermo_coupling_ is required for contact with thermal "
-        "coupling, but is only initialized for matching grids. Either disable TSI contact or use "
-        "matching grids.");
-    contact_strategy_lagrange_->set_state(Mortar::state_temperature,
-        *structure_thermo_coupling_->source_to_target(*thermo_field()->tempnp()));
-  }
+    contact_strategy_lagrange_->set_temperature(*thermo_field()->tempnp());
 }  // apply_thermo_coupling_state()
 
 
@@ -265,87 +252,114 @@ void TSI::Algorithm::apply_struct_coupling_state(
 /*----------------------------------------------------------------------*/
 void TSI::Algorithm::prepare_contact_strategy()
 {
-  auto stype = Teuchos::getIntegralValue<CONTACT::SolvingStrategy>(
-      problem_->contact_dynamic_params(), "STRATEGY");
+  // skip if no contact conditions are present
+  std::vector<const Core::Conditions::Condition*> contact_conditions;
+  structure_field()->discretization()->get_condition("Contact", contact_conditions);
+  if (contact_conditions.empty()) return;
 
-  if (stype == CONTACT::SolvingStrategy::lagmult)
+  const bool thermo_coupled_contact =
+      problem_->tsi_contact_params().get<bool>("ENABLE_COUPLED_CONTACT");
+  const auto tsi_coupling_scheme =
+      problem_->tsi_dynamic_params().get<TSI::SolutionSchemeOverFields>("COUPALGO");
+  const auto contact_strategy =
+      problem_->contact_dynamic_params().get<CONTACT::SolvingStrategy>("STRATEGY");
+
+  // early return for structure-only contact (no thermal coupling)
+  if (not thermo_coupled_contact)
   {
-    if (structure_field()->have_model(Solid::model_contact))
+    FOUR_C_ASSERT_ALWAYS(structure_field()->have_model(Solid::ModelType::model_contact),
+        "Structure-only contact requires the structural contact model to be enabled.");
+
+    if (tsi_coupling_scheme == TSI::SolutionSchemeOverFields::Monolithic)
     {
-      FOUR_C_THROW(
-          "structure should not have a Lagrange strategy ... as long as condensed"
-          "contact formulations are not moved to the new structural time integration");
+      // Structure-only contact in monolithic TSI currently supports only penalty contact. Condensed
+      // Lagrange contact requires multiplier recovery through the monolithic TSI system, while
+      // saddle-point Lagrange contact introduces an unsupported additional structural block.
+      // Nitsche contact is excluded because its mechanical traction depends on the
+      // temperature-dependent constitutive response without providing the corresponding temperature
+      // linearization.
+      FOUR_C_ASSERT_ALWAYS(contact_strategy == CONTACT::SolvingStrategy::penalty,
+          "Structure-only contact in monlithic TSI currently requires the penalty strategy.");
     }
-
-    std::vector<const Core::Conditions::Condition*> ccond;
-    structure_field()->discretization()->get_condition("Contact", ccond);
-    if (ccond.size() == 0) return;
-
-    // ---------------------------------------------------------------------
-    // create the contact factory
-    // ---------------------------------------------------------------------
-    CONTACT::STRATEGY::Factory factory;
-    factory.init(structure_field()->discretization());
-    factory.setup(problem_->n_dim());
-
-    // check the problem dimension
-    factory.check_dimension();
-
-    // create some local variables (later to be stored in strategy)
-    std::vector<std::shared_ptr<CONTACT::Interface>> interfaces;
-    Teuchos::ParameterList cparams;
-
-    // read and check contact input parameters
-    factory.read_and_check_input(cparams);
-
-    // ---------------------------------------------------------------------
-    // build the contact interfaces
-    // ---------------------------------------------------------------------
-    // FixMe Would be great, if we get rid of these poro parameters...
-    bool poro_source = false;
-    bool poro_target = false;
-    factory.build_interfaces(cparams, interfaces, poro_source, poro_target);
-
-    // ---------------------------------------------------------------------
-    // build the solver strategy object
-    // ---------------------------------------------------------------------
-    contact_strategy_lagrange_ = std::dynamic_pointer_cast<CONTACT::LagrangeStrategyTsi>(
-        factory.build_strategy(cparams, poro_source, poro_target, 1e8, interfaces));
-
-    // build the search tree
-    factory.build_search_tree(interfaces);
-
-    // print final screen output
-    factory.print(interfaces, *contact_strategy_lagrange_, cparams);
-
-    // ---------------------------------------------------------------------
-    // final touches to the contact strategy
-    // ---------------------------------------------------------------------
-
-    contact_strategy_lagrange_->store_dirichlet_status(structure_field()->get_dbc_map_extractor());
-
-    std::shared_ptr<Core::LinAlg::Vector<double>> zero_disp =
-        std::make_shared<Core::LinAlg::Vector<double>>(*structure_field()->dof_row_map(), true);
-    contact_strategy_lagrange_->set_state(Mortar::state_new_displacement, *zero_disp);
-    contact_strategy_lagrange_->save_reference_state(zero_disp);
-    contact_strategy_lagrange_->evaluate_reference_state();
-    contact_strategy_lagrange_->inttime_init();
-    contact_strategy_lagrange_->set_time_integration_info(structure_field()->tim_int_param(),
-        Teuchos::getIntegralValue<Solid::DynamicType>(
-            problem_->structural_dynamic_params(), "DYNAMICTYPE"));
-    contact_strategy_lagrange_->redistribute_contact(
-        structure_field()->dispn(), structure_field()->veln());
-
-    if (contact_strategy_lagrange_ != nullptr)
-    {
-      FOUR_C_ASSERT_ALWAYS(structure_thermo_coupling_ != nullptr,
-          "Invalid configuration: structure_thermo_coupling_ is required for contact with thermal "
-          "coupling, but is only initialized for matching grids. Either disable TSI contact or use "
-          "matching grids.");
-      contact_strategy_lagrange_->set_alphaf_thermo(problem_->thermal_dynamic_params());
-      contact_strategy_lagrange_->set_coupling(structure_thermo_coupling_);
-    }
+    return;
   }
+
+  // consistency checks for coupled TSI contact
+  FOUR_C_ASSERT_ALWAYS(tsi_coupling_scheme == TSI::SolutionSchemeOverFields::Monolithic,
+      "Coupled TSI contact requires the monolithic TSI solver.");
+  FOUR_C_ASSERT_ALWAYS(
+      matchinggrid_, "Coupled TSI contact not implemented for non-matching grids.");
+  FOUR_C_ASSERT_ALWAYS(contact_strategy == CONTACT::SolvingStrategy::lagmult,
+      "Coupled TSI contact only implemented for the Lagrange-multiplier strategy.");
+
+  // security check
+  FOUR_C_ASSERT_ALWAYS(not structure_field()->have_model(Solid::ModelType::model_contact),
+      "Coupled TSI contact is owned by the TSI algorithm and must not also be enabled in "
+      "the structural contact model.");
+
+  // ---------------------------------------------------------------------
+  // create the contact factory
+  // ---------------------------------------------------------------------
+  CONTACT::STRATEGY::Factory factory;
+  factory.init(structure_field()->discretization());
+  factory.setup(problem_->n_dim());
+
+  // check the problem dimension
+  factory.check_dimension();
+
+  // create some local variables (later to be stored in strategy)
+  std::vector<std::shared_ptr<CONTACT::Interface>> interfaces;
+  Teuchos::ParameterList cparams;
+
+  // read and check contact input parameters
+  factory.read_and_check_input(cparams);
+
+  // ---------------------------------------------------------------------
+  // build the contact interfaces
+  // ---------------------------------------------------------------------
+  // FixMe Would be great, if we get rid of these poro parameters...
+  bool poro_source = false;
+  bool poro_target = false;
+  factory.build_interfaces(cparams, interfaces, poro_source, poro_target);
+
+  // ---------------------------------------------------------------------
+  // build the solver strategy object
+  // ---------------------------------------------------------------------
+  contact_strategy_lagrange_ = std::dynamic_pointer_cast<CONTACT::LagrangeStrategyTsi>(
+      factory.build_strategy(cparams, poro_source, poro_target, 1e8, interfaces));
+  FOUR_C_ASSERT_ALWAYS(contact_strategy_lagrange_ != nullptr,
+      "Failed to create a contact strategy object for coupled TSI contact.");
+  // build the search tree
+  factory.build_search_tree(interfaces);
+
+  // print final screen output
+  factory.print(interfaces, *contact_strategy_lagrange_, cparams);
+
+  // ---------------------------------------------------------------------
+  // final touches to the contact strategy
+  // ---------------------------------------------------------------------
+
+  contact_strategy_lagrange_->store_dirichlet_status(structure_field()->get_dbc_map_extractor());
+
+  std::shared_ptr<Core::LinAlg::Vector<double>> zero_disp =
+      std::make_shared<Core::LinAlg::Vector<double>>(*structure_field()->dof_row_map(), true);
+  contact_strategy_lagrange_->set_state(Mortar::state_new_displacement, *zero_disp);
+  contact_strategy_lagrange_->save_reference_state(zero_disp);
+  contact_strategy_lagrange_->evaluate_reference_state();
+  contact_strategy_lagrange_->inttime_init();
+  contact_strategy_lagrange_->set_time_integration_info(structure_field()->tim_int_param(),
+      Teuchos::getIntegralValue<Solid::DynamicType>(
+          problem_->structural_dynamic_params(), "DYNAMICTYPE"));
+  contact_strategy_lagrange_->redistribute_contact(
+      structure_field()->dispn(), structure_field()->veln());
+  contact_strategy_lagrange_->set_alphaf_thermo(problem_->thermal_dynamic_params());
+
+  // set the coupling object for the contact strategy
+  auto thermo_to_solid_coupling = std::make_shared<Coupling::Adapter::Coupling>();
+  thermo_to_solid_coupling->setup_coupling(*structure_field()->discretization(),
+      *thermo_field()->discretization(), *structure_field()->discretization()->node_row_map(),
+      *thermo_field()->discretization()->node_row_map(), 1, true);
+  contact_strategy_lagrange_->set_coupling(thermo_to_solid_coupling);
 }
 
 void TSI::Algorithm::post_setup()
