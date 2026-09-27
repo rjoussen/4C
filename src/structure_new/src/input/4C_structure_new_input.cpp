@@ -281,9 +281,14 @@ namespace Solid
 
             parameter<DivContAct>("DIVERCONT",
                 {.description = "Action to be taken in case the nonlinear solver does not "
-                                "converge. If `adapt_step`, the time-step size is adapted "
-                                "according to the `time_step_control` settings. `ignore` ignores "
-                                "the non-convergence and continues anyway.",
+                                "converge.",
+                    .enum_value_descriptions =
+                        {
+                            {DivContAct::ignore, "Ignore the non-convergence and continue anyway."},
+                            {DivContAct::adapt_step,
+                                "Adapt the time-step size according to the `time_step_control` "
+                                "settings."},
+                        },
                     .default_value = DivContAct::stop}),
 
             deprecated_selection<Solid::NonlinSolTech>("NLNSOL",

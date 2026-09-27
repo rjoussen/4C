@@ -9,7 +9,6 @@
 
 #include "4C_utils_enum.hpp"
 #include "4C_utils_exceptions.hpp"
-#include "4C_utils_std23_unreachable.hpp"
 
 #include <algorithm>
 #include <iomanip>
@@ -19,25 +18,6 @@
 
 
 FOUR_C_NAMESPACE_OPEN
-
-std::string Core::IO::MeshInput::describe(VerbosityLevel level)
-{
-  switch (level)
-  {
-    case VerbosityLevel::none:
-      return "no output";
-    case VerbosityLevel::summary:
-      return "output of summary for blocks and sets";
-    case VerbosityLevel::detailed_summary:
-      return "output of summary for each block and set";
-    case VerbosityLevel::detailed:
-      return "detailed output for each block and set";
-    case VerbosityLevel::full:
-      return "detailed output, even for nodes and element connectivities";
-  }
-  std23::unreachable();
-}
-
 
 template <unsigned dim>
 Core::IO::MeshInput::Mesh<dim>::Mesh() : raw_mesh_(Utils::make_owner<RawMesh<dim>>())

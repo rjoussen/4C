@@ -28,6 +28,7 @@ class Schema:
     title: NotSetAlias[str] | None = NotSet(str)
     description: NotSetAlias[str] | None = NotSet(str)
     default: NotSetAlias | None = NotSet()
+    markdown_enum_descriptions: NotSetAlias[Sequence[str]] = NotSet(list)
 
     def to_dict(self) -> dict:
         def convert_type(schema_type, class_name) -> str:
@@ -44,6 +45,7 @@ class Schema:
         if self.description is not None:
             add_if_set(data, "description", self.description)
         add_if_set(data, "default", self.default)
+        add_if_set(data, "markdownEnumDescriptions", self.markdown_enum_descriptions)
 
         if isinstance(self.schema_type, list):
             data["type"] = [convert_type(t, "Type") for t in self.schema_type]

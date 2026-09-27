@@ -1654,13 +1654,12 @@ e: A
       not_allowed,
     };
 
-    const auto spec = parameter<Enum>("e",
-        {
-            .description = "This is an enum parameter",
-            .enum_value_description = [](Enum e) -> std::string
-            { return e == Enum::allowed ? "allowed value" : "not allowed value"; },
-            .validator = Validators::in_set({Enum::allowed}),
-        });
+    const auto spec =
+        parameter<Enum>("e", {
+                                 .description = "This is an enum parameter",
+                                 .enum_value_descriptions = {{Enum::allowed, "allowed value"}},
+                                 .validator = Validators::in_set({Enum::allowed}),
+                             });
 
     {
       SCOPED_TRACE("Only print description for validator values");
@@ -1674,6 +1673,28 @@ choices:
     description: "allowed value"
 )");
     }
+  }
+
+  TEST(InputSpecTest, EnumMetadataAllowsDescriptionsForSelectedValues)
+  {
+    enum Enum
+    {
+      described,
+      undescribed,
+    };
+
+    const auto spec =
+        parameter<Enum>("e", {.enum_value_descriptions = {{Enum::described, "A description"}}});
+
+    const auto metadata = Helpers::emit_metadata(spec);
+    EXPECT_EQ(metadata, R"(name: e
+type: enum
+required: true
+choices:
+  - name: described
+    description: "A description"
+  - name: undescribed
+)");
   }
 
   TEST(InputSpecTest, OptionalParameterValidationComplex)

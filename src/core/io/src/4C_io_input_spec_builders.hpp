@@ -27,6 +27,7 @@
 #include <concepts>
 #include <deque>
 #include <functional>
+#include <map>
 #include <optional>
 #include <ostream>
 #include <tuple>
@@ -767,18 +768,18 @@ namespace Core::IO
         std::conditional_t<OptionalType<T>, RejectTag, std::variant<std::monostate, T>>;
 
     /**
-     * Function type for a function that describes enum values.
+     * Map type for descriptions of enum values.
      */
     template <typename T>
-    using EnumValueDescriptionFunction = std::function<std::string(T)>;
+    using EnumValueDescriptionMap = std::map<T, std::string>;
 
     /**
-     * The type used for the enum value description. If T is not an enum type, this is
+     * The type used for enum value descriptions. If T is not an enum type, this is
      * equal to RejectTag.
      */
     template <typename T>
-    using EnumValueDescription =
-        std::conditional_t<std::is_enum_v<T>, EnumValueDescriptionFunction<T>, RejectTag>;
+    using EnumValueDescriptions =
+        std::conditional_t<std::is_enum_v<T>, EnumValueDescriptionMap<T>, RejectTag>;
 
 
     /**
@@ -800,9 +801,11 @@ namespace Core::IO
       std::string description{};
 
       /**
-       * An optional description of the enum values. This is only possible for enum types.
+       * Optional descriptions for enum values. This is only possible for enum types.
+       * Expands to a map of enum values to string descriptions. Missing enum values are allowed and
+       * produce no description in the metadata.
        */
-      EnumValueDescription<T> enum_value_description{};
+      EnumValueDescriptions<T> enum_value_descriptions{};
 
       /**
        * The default value of the parameter. If this field is set, the parameter does not need to be
@@ -964,7 +967,7 @@ namespace Core::IO
 
       std::string description{};
 
-      InputSpecBuilders::EnumValueDescriptionFunction<T> enum_value_description{};
+      InputSpecBuilders::EnumValueDescriptions<RemoveOptional<T>> enum_value_descriptions{};
 
       std::variant<std::monostate, StoredType> default_value{};
 
@@ -2031,20 +2034,20 @@ void Core::IO::Internal::ParameterSpec<T>::emit_metadata(
       data.validator->emit_metadata(node);
 
       // Post-process all emitted values and append their descriptions if available
-      if (data.enum_value_description)
+      auto choices_node = node.node["choices"];
+      for (auto choice_node : choices_node.children())
       {
-        auto choices_node = node.node["choices"];
-        for (auto choice_node : choices_node.children())
-        {
-          const auto choice_name = choice_node["name"].val();
-          const auto choice_name_sv = std::string_view{choice_name.data(), choice_name.size()};
-          const auto choice_value = EnumTools::enum_cast<RemoveOptional<T>>(choice_name_sv);
-          FOUR_C_ASSERT(choice_value,
-              "Internal error: emitted enum value '{}' is not a valid enum constant.",
-              choice_name_sv);
+        const auto choice_name = choice_node["name"].val();
+        const auto choice_name_sv = std::string_view{choice_name.data(), choice_name.size()};
+        const auto choice_value = EnumTools::enum_cast<RemoveOptional<T>>(choice_name_sv);
+        FOUR_C_ASSERT(choice_value,
+            "Internal error: emitted enum value '{}' is not a valid enum constant.",
+            choice_name_sv);
 
-          emit_value_as_yaml(
-              node.wrap(choice_node["description"]), data.enum_value_description(*choice_value));
+        if (const auto description = data.enum_value_descriptions.find(*choice_value);
+            description != data.enum_value_descriptions.end())
+        {
+          emit_value_as_yaml(node.wrap(choice_node["description"]), description->second);
         }
       }
     }
@@ -2058,10 +2061,10 @@ void Core::IO::Internal::ParameterSpec<T>::emit_metadata(
         auto choice_node = choices_node.append_child();
         choice_node |= ryml::MAP;
         emit_value_as_yaml(node.wrap(choice_node["name"]), choice);
-        if (data.enum_value_description)
+        if (const auto description = data.enum_value_descriptions.find(choice);
+            description != data.enum_value_descriptions.end())
         {
-          emit_value_as_yaml(
-              node.wrap(choice_node["description"]), data.enum_value_description(choice));
+          emit_value_as_yaml(node.wrap(choice_node["description"]), description->second);
         }
       }
     }
@@ -2547,7 +2550,7 @@ Core::IO::InputSpec Core::IO::InputSpecBuilders::parameter(
   internal_data.store = data.store ? data.store : in_container<T>(name);
 
   if constexpr (std::is_enum_v<T>)
-    internal_data.enum_value_description = data.enum_value_description;
+    internal_data.enum_value_descriptions = data.enum_value_descriptions;
 
   if (internal_data.default_value.index() == 1 &&
       !Internal::validate_helper(std::get<1>(internal_data.default_value), data.validator))

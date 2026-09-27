@@ -180,7 +180,16 @@ namespace CommonParameters
             {
                 .description = "Choose verbosity of reporting element, node and set info for "
                                "the external mesh file after reading.",
-                .enum_value_description = Core::IO::MeshInput::describe,
+                .enum_value_descriptions = {{Core::IO::MeshInput::VerbosityLevel::none,
+                                                "no output"},
+                    {Core::IO::MeshInput::VerbosityLevel::summary,
+                        "output of summary for blocks and sets"},
+                    {Core::IO::MeshInput::VerbosityLevel::detailed_summary,
+                        "output of summary for each block and set"},
+                    {Core::IO::MeshInput::VerbosityLevel::detailed,
+                        "detailed output for each block and set"},
+                    {Core::IO::MeshInput::VerbosityLevel::full,
+                        "detailed output, even for nodes and element connectivities"}},
                 .default_value = Core::IO::MeshInput::VerbosityLevel::none,
             }),
         // Once we support more formats, we should add a "TYPE" parameter for the file format.
@@ -232,19 +241,6 @@ namespace CommonParameters
       add_knotvector_section(specs, field);
     }
 
-    const auto describe = [](Core::IO::FieldDataBasis basis) -> std::string
-    {
-      switch (basis)
-      {
-        case Core::IO::FieldDataBasis::cells:
-          return "Field data is defined on the cells";
-        case Core::IO::FieldDataBasis::points:
-          return "Field data is defined on the points";
-        default:
-          FOUR_C_THROW("Unknown FieldDataBasis enum value");
-      }
-    };
-
     specs.push_back(list("fields",
         all_of({parameter<std::string>(
                     "name", {.description = "Name of the field. This is used to refer to the field "
@@ -273,7 +269,11 @@ namespace CommonParameters
                         {all_of({
                             parameter<Core::IO::FieldDataBasis>("basis",
                                 {.description = "The basis on which the field data is defined.",
-                                    .enum_value_description = describe}),
+                                    .enum_value_descriptions =
+                                        {{Core::IO::FieldDataBasis::cells,
+                                             "Field data is defined on the cells"},
+                                            {Core::IO::FieldDataBasis::points,
+                                                "Field data is defined on the points"}}}),
                             parameter<std::optional<std::string>>("key",
                                 {.description =
                                         "The key under which the field data is stored in the "

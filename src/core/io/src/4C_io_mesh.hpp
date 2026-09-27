@@ -52,11 +52,6 @@ namespace Core::IO::MeshInput
     return static_cast<int>(lhs) > static_cast<int>(rhs);
   }
 
-  /**
-   * Describe each of the VerbosityLevel options.
-   */
-  std::string describe(VerbosityLevel level);
-
 
   template <unsigned dim>
   class CellBlock;

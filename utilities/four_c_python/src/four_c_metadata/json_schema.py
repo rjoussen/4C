@@ -89,9 +89,14 @@ def create_schema_from_primitive(primitive: Primitive) -> Schema:
 
 
 def create_schema_from_enum(enum: Enum) -> Schema:
-    schema_type = Types.string(validators=[Validators.enum(enum.choices)])
-
-    return create_schema(enum, schema_type)
+    schema = create_schema(
+        enum, Types.string(validators=[Validators.enum(enum.choices)])
+    )
+    if any(description is not None for description in enum.choices_description):
+        schema.markdown_enum_descriptions = [
+            description or "" for description in enum.choices_description
+        ]
+    return schema
 
 
 def schema_from(spec: InputSpec | All_Of | One_Of) -> Schema:
