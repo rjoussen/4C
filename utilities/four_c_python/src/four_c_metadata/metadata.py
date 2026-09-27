@@ -389,7 +389,7 @@ class Enum(InputSpec):
         choices: Sequence[str | None],
         name: NotSetAlias[str] = NotSetString,
         description: NotSetAlias[str] = NotSetString,
-        choices_description: Sequence[str] = [],
+        choices_description: Sequence[str | None] = (),
         required: bool = True,
         noneable: bool = False,
         validator: ValidatorAlias = None,
@@ -402,14 +402,18 @@ class Enum(InputSpec):
             name: Name
             description: Description
             required: True if parameter is required
+            choices_description: Description of the choices
             noneable: True if parameter can be None
             validator: Validator callable
             default: Default value
         """
         super().__init__("enum", name, description, required, noneable, validator)
+        choices_description = list(choices_description)
         if noneable:
             # None is a valid value additionally if noneable
             choices = list(choices) + [None]
+            if choices_description:
+                choices_description.append(None)
         if check_if_set(default):
             if default not in choices:
                 raise ValueError(
@@ -437,11 +441,16 @@ class Enum(InputSpec):
             enum
         """
         data_dict.pop("type", None)
-        choices = [c["name"] for c in data_dict.pop("choices")]
-        # TODO add description from choices
+        choices_data = data_dict.pop("choices")
+        choices = [choice["name"] for choice in choices_data]
+        choices_description = [choice.get("description") for choice in choices_data]
         if "validator" in data_dict:
             data_dict["validator"] = validator_from_dict(data_dict["validator"])
-        return cls(choices=choices, **data_dict)
+        return cls(
+            choices=choices,
+            choices_description=choices_description,
+            **data_dict,
+        )
 
     def __str__(self) -> str:  # pragma: no cover
         """String method."""
