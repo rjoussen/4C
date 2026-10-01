@@ -5083,6 +5083,12 @@ void CONTACT::LagrangeStrategy::update(std::shared_ptr<const Core::LinAlg::Vecto
   // abstract routine
   CONTACT::AbstractStrategy::update(dis);
 
+  // With FRLESS_FIRST, nodes that came into contact in this time step were treated as
+  // frictionless and have no jump data. The relative movement is not evaluated in the predictor
+  // of the Lagrange multiplier strategy, so evaluate it here based on the converged state
+  // (analogous to evaluate_reference_state()).
+  if (friction_ && params().get<bool>("FRLESS_FIRST")) evaluate_relative_movement();
+
   if (fconservation_ == nullptr) return;
 }
 

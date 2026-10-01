@@ -38,6 +38,8 @@
 #include <Teuchos_Time.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
+#include <algorithm>
+
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
@@ -6270,6 +6272,7 @@ void CONTACT::Interface::evaluate_relative_movement(
 
   // parameters
   double pp = interface_params().get<double>("PENALTYPARAM");
+  const bool frictionless_first = interface_params().get<bool>("FRLESS_FIRST");
 
   // loop over all source row nodes on the current interface
   for (int i = 0; i < source_row_nodes()->num_my_elements(); ++i)
@@ -6342,6 +6345,21 @@ void CONTACT::Interface::evaluate_relative_movement(
 
     if (activeinfuture)
     {
+      // A node that was not active in the last converged time step has no
+      // meaningful old mortar mappings. If friction should be considered from the
+      // first contact step onwards, this will lead to a fatal error since the jump
+      // cannot be computed.
+      // With FRLESS_FIRST, the first contact step is considered frictionless,
+      // so no history is required. The jump vector and its derivative are set to zero.
+      if (frictionless_first and not cnode->data().active_old())
+      {
+        std::fill_n(cnode->fri_data().jump(), n_dim(), 0.0);
+        auto& deriv_jump = cnode->fri_data().get_deriv_jump();
+        deriv_jump.clear();
+        deriv_jump.resize(cnode->num_dof());
+        continue;
+      }
+
       Core::Gen::Pairedvector<int, double>& dmap = cnode->mo_data().get_d();
       Core::Gen::Pairedvector<int, double>& dmapold = cnode->fri_data().get_d_old();
 
@@ -6433,11 +6451,9 @@ void CONTACT::Interface::evaluate_relative_movement(
       // linearization of jump vector
 
       // reset derivative map of jump
-      for (auto& j : cnode->fri_data().get_deriv_jump())
-      {
-        j.clear();
-      }
-      (cnode->fri_data().get_deriv_jump()).resize(0);
+      auto& deriv_jump = cnode->fri_data().get_deriv_jump();
+      deriv_jump.clear();
+      deriv_jump.resize(cnode->num_dof());
 
       /*** 01  **********************************************************/
 
