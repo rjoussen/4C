@@ -194,9 +194,6 @@ namespace Mat
     //! initial, reference temperature
     virtual double init_temp() const { return params_->inittemp_; }
 
-    void stress_temperature_modulus_and_deriv(Core::LinAlg::SymmetricTensor<double, 3, 3>& stm,
-        Core::LinAlg::SymmetricTensor<double, 3, 3>& stm_dT, int gp) override;
-
     Core::LinAlg::SymmetricTensor<double, 3, 3> evaluate_d_stress_d_scalar(
         const Core::LinAlg::Tensor<double, 3, 3>& defgrad,
         const Core::LinAlg::SymmetricTensor<double, 3, 3>& glstrain,
@@ -328,14 +325,17 @@ namespace Mat
 
     //@}
 
-    void reinit(double temperature, unsigned gp) override;
+   protected:
+    [[nodiscard]] StressTemperatureModulus evaluate_stress_temperature_modulus(
+        double temperature, const KinematicState& kinematic_state, int gp) override;
+
+    [[nodiscard]] HeatSource evaluate_additional_heat_source(const double temperature,
+        const KinematicState& kinematic_state, const EvaluationContext<3>& context, const int gp,
+        const int eleGID) override;
 
    private:
     //! my material parameters
     Mat::PAR::ThermoPlasticHyperElast* params_;
-
-    //! current temperature (set by Reinit())
-    double current_temperature_{};
 
     //! @name Internal / history variables
 
