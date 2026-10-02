@@ -357,20 +357,26 @@ void Mat::ThermoPlasticHyperElast::stress_temperature_modulus_and_deriv(double t
   const auto inverse_cauchy_green = Core::LinAlg::inv(cauchy_green);
   const double jacobian = std::sqrt(Core::LinAlg::det(cauchy_green));
 
+  // The thermoelastic heating requires the partial derivatives of the stress w.r.t. the
+  // temperature at fixed strain and fixed internal variables. The plastic part of the stress only
+  // depends on the temperature through the internal variables (return mapping), hence only the
+  // thermal stress S_T = (T - T_0) . stm contributes. Since m_0 is constant, stm does not
+  // depend on the temperature.
   setup_cthermo(stm, jacobian, inverse_cauchy_green);
-  stm_dT = cmat_kd_t_->at(gp);
+  stm_dT = {};
 
+  // stm = m_0/2 . (J + 1/J) . C^{-1}, cf. setup_cthermo()
   // with dJ/dE = J . C^{-1} and dC^{-1}/dE = -2 . C^{-1} \odot C^{-1}:
-  // dstm/dE = m_0 . (J - 1/J) . C^{-1} \otimes C^{-1} - 2 . m_0 . (J + 1/J) . C^{-1} \odot C^{-1}
+  // dstm/dE = m_0/2 . (J - 1/J) . C^{-1} \otimes C^{-1} - m_0 . (J + 1/J) . C^{-1} \odot C^{-1}
   const double m_0 = st_modulus();
   const auto inverse_cauchy_green_full = Core::LinAlg::get_full(inverse_cauchy_green);
   const auto inverse_cauchy_green_odot = Core::LinAlg::assume_symmetry(
       0.5 *
       (Core::LinAlg::einsum<"ik", "jl">(inverse_cauchy_green_full, inverse_cauchy_green_full) +
           Core::LinAlg::einsum<"il", "jk">(inverse_cauchy_green_full, inverse_cauchy_green_full)));
-  stm_dE = m_0 * (jacobian - 1.0 / jacobian) *
+  stm_dE = m_0 / 2.0 * (jacobian - 1.0 / jacobian) *
                Core::LinAlg::dyadic(inverse_cauchy_green, inverse_cauchy_green) -
-           2.0 * m_0 * (jacobian + 1.0 / jacobian) * inverse_cauchy_green_odot;
+           m_0 * (jacobian + 1.0 / jacobian) * inverse_cauchy_green_odot;
 }
 
 Mat::HeatSource Mat::ThermoPlasticHyperElast::evaluate_additional_heat_source(
@@ -402,36 +408,20 @@ Mat::ThermoPlasticHyperElast::evaluate_d_stress_d_scalar(
     const Core::LinAlg::SymmetricTensor<double, 3, 3>& glstrain,
     const Teuchos::ParameterList& params, const EvaluationContext<3>& context, int gp, int eleGID)
 {
-  // obtain the temperature
-  const double temperature = [&]()
-  {
-    if (params.isParameter("temperature"))
-    {
-      return params.get<double>("temperature");
-    }
-    else
-    {
-      return params_->inittemp_;
-    }
-  }();
+  // total derivative of the stress w.r.t. the temperature at fixed strain:
+  // dS/dT = d(S_plastic)/dT + d(S_T)/dT
+  // with the temperature dependence of the plastic stress through the return mapping (computed
+  // in evaluate()) and the thermal stress S_T = (T - T_0) . m_0/2 . (J + 1/J) . C^{-1}
 
   // inverse of right Cauchy-Green tensor = F^{-1} . F^{-T}
   Core::LinAlg::SymmetricTensor<double, 3, 3> cauchygreen =
       Core::LinAlg::assume_symmetry(Core::LinAlg::transpose(defgrad) * defgrad);
   Core::LinAlg::SymmetricTensor<double, 3, 3> Cinv = Core::LinAlg::inv(cauchygreen);
 
-  // get the temperature-dependent mechanical material tangent
-  Core::LinAlg::SymmetricTensor<double, 3, 3> dS_dT{};
-  Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3> cmat_T;
-  setup_cmat_thermo(temperature, cmat_T, defgrad);
-  // evaluate mechanical stress part
-  dS_dT = Core::LinAlg::ddot(cmat_T, glstrain);
+  Core::LinAlg::SymmetricTensor<double, 3, 3> dS_dT = cmat_kd_t_->at(gp);
 
-  // get the temperature-dependent material tangent
   Core::LinAlg::SymmetricTensor<double, 3, 3> ctemp{};
   setup_cthermo(ctemp, Core::LinAlg::det(defgrad), Cinv);
-
-  // add the derivatives of thermal stress w.r.t temperature
   dS_dT += ctemp;
 
   return dS_dT;

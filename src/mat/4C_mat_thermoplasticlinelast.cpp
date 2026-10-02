@@ -759,9 +759,7 @@ Mat::HeatSource Mat::ThermoPlasticLinElast::evaluate_additional_heat_source(
 
   HeatSource source;
   source.value = -inverse_time_step * mechanical_kinematic_dissipation(gp);
-  source.derivative_wrt_strain =
-      -inverse_time_step * Core::LinAlg::make_symmetric_tensor_from_stress_like_voigt_matrix(
-                               dissipation_linearised_for_coupl_cond(gp));
+  source.derivative_wrt_strain = -inverse_time_step * dmech_d_.at(gp);
   return source;
 }
 
