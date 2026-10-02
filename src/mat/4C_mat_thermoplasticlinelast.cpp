@@ -740,12 +740,29 @@ void Mat::ThermoPlasticLinElast::evaluate(const Core::LinAlg::Tensor<double, 3, 
  | calculate stress-temperature modulus and thermal derivative          |
  |   for coupled thermomechanics                                        |
  *----------------------------------------------------------------------*/
-void Mat::ThermoPlasticLinElast::stress_temperature_modulus_and_deriv(
+void Mat::ThermoPlasticLinElast::stress_temperature_modulus_and_deriv(double temperature,
     Core::LinAlg::SymmetricTensor<double, 3, 3>& stm,
-    Core::LinAlg::SymmetricTensor<double, 3, 3>& stm_dT, int gp)
+    Core::LinAlg::SymmetricTensor<double, 3, 3>& stm_dT,
+    Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& stm_dE,
+    const KinematicState& kinematic_state, int gp)
 {
   setup_cthermo(stm);
   stm_dT = Core::LinAlg::TensorGenerators::full<3, 3>(0.0);
+}
+
+Mat::HeatSource Mat::ThermoPlasticLinElast::evaluate_additional_heat_source(
+    const double temperature, const KinematicState& kinematic_state,
+    const EvaluationContext<3>& context, const int gp, const int eleGID)
+{
+  FOUR_C_ASSERT(context.time_step_size != nullptr, "Time-step size is required for heating");
+  const double inverse_time_step = 1.0 / *context.time_step_size;
+
+  HeatSource source;
+  source.value = -inverse_time_step * mechanical_kinematic_dissipation(gp);
+  source.derivative_wrt_strain =
+      -inverse_time_step * Core::LinAlg::make_symmetric_tensor_from_stress_like_voigt_matrix(
+                               dissipation_linearised_for_coupl_cond(gp));
+  return source;
 }
 
 /*----------------------------------------------------------------------*
@@ -1277,11 +1294,6 @@ bool Mat::ThermoPlasticLinElast::evaluate_output_data(
   }
 
   return false;
-}
-
-void Mat::ThermoPlasticLinElast::reinit(double temperature, unsigned gp)
-{
-  current_temperature_ = temperature;
 }
 
 FOUR_C_NAMESPACE_CLOSE

@@ -1137,8 +1137,10 @@ Core::LinAlg::Matrix<6, 1> Mat::MultiplicativeSplitDefgradElastHyper::evaluate_o
 }
 
 void Mat::MultiplicativeSplitDefgradElastHyper::stress_temperature_modulus_and_deriv(
-    Core::LinAlg::SymmetricTensor<double, 3, 3>& stm,
-    Core::LinAlg::SymmetricTensor<double, 3, 3>& stm_dT, const int gp)
+    double temperature, Core::LinAlg::SymmetricTensor<double, 3, 3>& stm,
+    Core::LinAlg::SymmetricTensor<double, 3, 3>& stm_dT,
+    Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& stm_dE,
+    const KinematicState& kinematic_state, const int gp)
 {
   // this contribution is intentionally neglected so far.
   stm.fill(0.0);
@@ -1146,8 +1148,8 @@ void Mat::MultiplicativeSplitDefgradElastHyper::stress_temperature_modulus_and_d
 }
 
 Mat::HeatSource Mat::MultiplicativeSplitDefgradElastHyper::evaluate_additional_heat_source(
-    const EvaluationContext<3>& context, const int gp, const int eleGID,
-    const Core::LinAlg::Matrix<3, 3>* current_defgrad, const double current_temperature)
+    const double temperature, const KinematicState& kinematic_state,
+    const EvaluationContext<3>& context, const int gp, const int eleGID)
 {
   HeatSource heat_source;
 
@@ -1166,7 +1168,9 @@ Mat::HeatSource Mat::MultiplicativeSplitDefgradElastHyper::evaluate_additional_h
                 facdefgradin[0].second))
     {
       heat_source = viscoplastic_factor->evaluate_taylor_quinney_heat_source(context, gp, eleGID,
-          current_defgrad, Core::LinAlg::identity_matrix<3>(), current_temperature);
+          kinematic_state.deformation_gradient(),
+          Core::LinAlg::get_full(Core::LinAlg::TensorGenerators::identity<double, 3, 3>),
+          temperature);
     }
   }
   else if (num_contributions > 1)

@@ -230,10 +230,14 @@ Mat::ThermoStVenantKirchhoff::evaluate_d_stress_d_scalar(
   return dS_dT;
 }
 
-void Mat::ThermoStVenantKirchhoff::stress_temperature_modulus_and_deriv(
+void Mat::ThermoStVenantKirchhoff::stress_temperature_modulus_and_deriv(double temperature,
     Core::LinAlg::SymmetricTensor<double, 3, 3>& stm,
-    Core::LinAlg::SymmetricTensor<double, 3, 3>& stm_dT, int gp)
+    Core::LinAlg::SymmetricTensor<double, 3, 3>& stm_dT,
+    Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& stm_dE,
+    const KinematicState& kinematic_state, int gp)
 {
+  // the temperature-dependent moduli are evaluated at the current temperature
+  reinit(temperature, gp);
   setup_cthermo(stm);
   get_cthermo_at_tempnp_t(stm_dT);
 }

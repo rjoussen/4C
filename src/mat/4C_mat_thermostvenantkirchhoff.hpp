@@ -169,7 +169,8 @@ namespace Mat
     //! Return quick accessible material parameter data
     Core::Mat::PAR::Parameter* parameter() const override { return params_; }
 
-    void reinit(double temperature, unsigned gp) override;
+    //! set the current temperature
+    void reinit(double temperature, unsigned gp);
 
     Core::LinAlg::SymmetricTensor<double, 3, 3> evaluate_d_stress_d_scalar(
         const Core::LinAlg::Tensor<double, 3, 3>& defgrad,
@@ -177,8 +178,11 @@ namespace Mat
         const Teuchos::ParameterList& params, const EvaluationContext<3>& context, int gp,
         int eleGID) override;
 
-    void stress_temperature_modulus_and_deriv(Core::LinAlg::SymmetricTensor<double, 3, 3>& stm,
-        Core::LinAlg::SymmetricTensor<double, 3, 3>& stm_dT, int gp) override;
+    void stress_temperature_modulus_and_deriv(double temperature,
+        Core::LinAlg::SymmetricTensor<double, 3, 3>& stm,
+        Core::LinAlg::SymmetricTensor<double, 3, 3>& stm_dT,
+        Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& stm_dE,
+        const KinematicState& kinematic_state, int gp) override;
 
     //! general thermal tangent of material law depending on stress-temperature modulus
     static void fill_cthermo(Core::LinAlg::SymmetricTensor<double, 3, 3>& ctemp, double m);

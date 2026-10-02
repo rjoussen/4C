@@ -241,8 +241,15 @@ namespace Mat
     //! check if history variables are already initialised
     bool initialized() const { return (isinit_ and (!strainplcurr_.empty())); }
 
-    void stress_temperature_modulus_and_deriv(Core::LinAlg::SymmetricTensor<double, 3, 3>& stm,
-        Core::LinAlg::SymmetricTensor<double, 3, 3>& stm_dT, int gp) override;
+    void stress_temperature_modulus_and_deriv(double temperature,
+        Core::LinAlg::SymmetricTensor<double, 3, 3>& stm,
+        Core::LinAlg::SymmetricTensor<double, 3, 3>& stm_dT,
+        Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& stm_dE,
+        const KinematicState& kinematic_state, int gp) override;
+
+    [[nodiscard]] HeatSource evaluate_additional_heat_source(const double temperature,
+        const KinematicState& kinematic_state, const EvaluationContext<3>& context, const int gp,
+        const int eleGID) override;
 
     Core::LinAlg::SymmetricTensor<double, 3, 3> evaluate_d_stress_d_scalar(
         const Core::LinAlg::Tensor<double, 3, 3>& defgrad,
@@ -338,14 +345,9 @@ namespace Mat
     bool evaluate_output_data(
         const std::string& name, Core::LinAlg::SerialDenseMatrix& data) const override;
 
-    void reinit(double temperature, unsigned gp) override;
-
    private:
     //! my material parameters
     Mat::PAR::ThermoPlasticLinElast* params_;
-
-    //! current temperature (set by Reinit())
-    double current_temperature_{};
 
     //! plastic history vector
     //! old plastic strain at t_n

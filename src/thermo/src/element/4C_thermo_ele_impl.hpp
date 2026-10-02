@@ -221,27 +221,6 @@ namespace Discret
 
       //! @}
 
-      //! @name linear, small strain thermoplasticity solved with TSI
-      //! @{
-
-      //! calculate internal dissipation arising when a thermo-elasto-plastic
-      //! material is used
-      //! Clausius-Duhem inequality is no longer = 0, but > 0:
-      //! mechanical energy dissipates as heat
-      void linear_dissipation_fint(
-          const Core::Elements::Element* ele,  //!< the element whose matrix is calculated
-          Core::LinAlg::Matrix<nen_ * numdofpernode_, 1>* efint,  //!< internal force
-          Teuchos::ParameterList& params);
-
-      //! calculate terms of dissipation for thermo-mechanical
-      //! system matrix k_Td used in case of plastic material
-      void linear_dissipation_coupled_tang(
-          const Core::Elements::Element* ele,  // the element whose matrix is calculated
-          Core::LinAlg::Matrix<nen_ * numdofpernode_, nsd_ * nen_ * numdofpernode_>*
-              etangcoupl,  // k_Td
-          Teuchos::ParameterList& params);
-
-      //! @}
 
       //! @name geometrically nonlinear TSI analysis
       //! @{
@@ -280,58 +259,8 @@ namespace Discret
           const Core::LinAlg::Matrix<nsd_, nen_>* N_XYZ                //!< gradient-operator
       ) const;
 
-      //! build linearisation of Jacobian w.r.t. d: dJ_dd
-      void calculate_linearisation_of_jacobian(
-          Core::LinAlg::Matrix<1, nsd_ * nen_ * numdofpernode_>& dJ_dd,  //!<  [out] dJ_dd
-          const double J,                                                //!< Jacobian
-          const Core::LinAlg::Matrix<nsd_, nen_>& N_XYZ,  //!< linear gradient of shape functions
-          const Core::LinAlg::Matrix<nsd_, nsd_>& defgrd_inv  //!< inverse of F
-      ) const;
-
-      /*!
-       * @brief Compute the rate and the inverse of the right Cauchy-Green tensor
-       *
-       * @param[out] Cratevct \f$\dot{\mathbf{C}}\f$ in strain-like Voigt notation
-       * @param[out] Cinvvct \f$\mathbf{C}^{-1}\f$ in stress-like Voigt notation
-       * @param[out] Cinv \f$\mathbf{C}^{-1}\f$ as matrix
-       * @param[in] defgrd deformation gradient \f$\mathbf{F}\f$
-       * @param[in] defgrdrate time derivative of the deformation gradient \f$\dot{\mathbf{F}}\f$
-       * @param[in] invdefgrd inverse deformation gradient \f$\mathbf{F}^{-1}\f$
-       */
-      void calculate_cauchy_greens(Core::LinAlg::Matrix<6, 1>& Cratevct,
-          Core::LinAlg::Matrix<6, 1>& Cinvvct, Core::LinAlg::Matrix<nsd_, nsd_>& Cinv,
-          const Core::LinAlg::Matrix<nsd_, nsd_>* defgrd,
-          const Core::LinAlg::Matrix<nsd_, nsd_>* defgrdrate,
-          const Core::LinAlg::Matrix<nsd_, nsd_>* invdefgrd) const;
-
       /// @}
 
-      //! @name finite strain thermoplasticity solved with TSI
-      //! @{
-
-      //! calculate internal dissipation arising when a thermo-elasto-plastic
-      //! material is used within geometrically nonlinear analysis
-      //! Clausius-Duhem inequality is no longer = 0, but > 0:
-      //! mechanical energy dissipates as heat
-      void nonlinear_dissipation_fint_tang(
-          const Core::Elements::Element* ele,  //!< the element whose matrix is calculated
-          const std::vector<double>& disp,     //!< current displacements
-          Core::LinAlg::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>*
-              econd,                                              //!< conductivity matrix
-          Core::LinAlg::Matrix<nen_ * numdofpernode_, 1>* efint,  //!< internal force
-          Teuchos::ParameterList& params);
-
-      //! calculate terms of dissipation for thermo-mechanical system matrix k_Td
-      //! used in case of plastic material within geometrically nonlinear analysis
-      void nonlinear_dissipation_coupled_tang(
-          const Core::Elements::Element* ele,  //!< the element whose matrix is calculated
-          const std::vector<double>& disp,     //!< current displacements
-          const std::vector<double>& vel,      //!< current velocities
-          Core::LinAlg::Matrix<nen_ * numdofpernode_, nsd_ * nen_ * numdofpernode_>*
-              etangcoupl,  //!< k_Td
-          Teuchos::ParameterList& params);
-
-      /// @}
 
       //! get the body force
       virtual void radiation(
@@ -473,8 +402,6 @@ namespace Discret
       //! @name material related stuff
       //! @{
 
-      //! flag plastic material is used
-      bool plasticmat_;
 
       //! nurbs specific: element knots
       std::vector<Core::LinAlg::SerialDenseVector> myknots_;

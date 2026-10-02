@@ -288,10 +288,11 @@ namespace Mat
         const Teuchos::ParameterList& params, const EvaluationContext<3>& context, int gp,
         int eleGID) override;
 
-    void reinit(double temperature, unsigned gp) override { /* do nothing */ };
-
-    void stress_temperature_modulus_and_deriv(Core::LinAlg::SymmetricTensor<double, 3, 3>& stm,
-        Core::LinAlg::SymmetricTensor<double, 3, 3>& stm_dT, const int gp) override;
+    void stress_temperature_modulus_and_deriv(double temperature,
+        Core::LinAlg::SymmetricTensor<double, 3, 3>& stm,
+        Core::LinAlg::SymmetricTensor<double, 3, 3>& stm_dT,
+        Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& stm_dE,
+        const KinematicState& kinematic_state, const int gp) override;
 
     /*!
      * @brief Evaluate the heat source produced by this material. Currently, this is only
@@ -303,13 +304,15 @@ namespace Mat
      * @param[in] eleGID global element ID
      * @param[in] defgrad Deformation gradient
      * @param[in] current_temperature Absolute current temperature
-     * @return mechanical dissipation heat source and derivatives w.r.t. temperature and the right
-     *         Cauchy-Green tensor
+     * @return mechanical dissipation heat source and derivatives w.r.t. temperature and the
+     *         Green-Lagrange strain
      */
-    [[nodiscard]] HeatSource evaluate_additional_heat_source(const EvaluationContext<3>& context,
-        const int gp, const int eleGID, const Core::LinAlg::Matrix<3, 3>* current_defgrad,
-        const double current_temperature);
+   protected:
+    [[nodiscard]] HeatSource evaluate_additional_heat_source(const double temperature,
+        const KinematicState& kinematic_state, const EvaluationContext<3>& context, const int gp,
+        const int eleGID) override;
 
+   public:
     double evaluate_cauchy_n_dir_and_derivatives(const Core::LinAlg::Tensor<double, 3, 3>& defgrd,
         const Core::LinAlg::Tensor<double, 3>& n, const Core::LinAlg::Tensor<double, 3>& dir,
         Core::LinAlg::Matrix<3, 1>* d_cauchyndir_dn, Core::LinAlg::Matrix<3, 1>* d_cauchyndir_ddir,
