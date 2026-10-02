@@ -6325,6 +6325,9 @@ void CONTACT::Interface::evaluate_relative_movement(
     else if (contact_strategy == CONTACT::SolvingStrategy::lagmult and
              interface_params().get<bool>("SEMI_SMOOTH_NEWTON"))
     {
+      // Besides the nodes that become active in the subsequent active set update, the currently
+      // active nodes are considered as well, since this function is also called without such an
+      // update, e.g. for the reference state or after a restart.
       if ((nz - cn * gap > 0) or cnode->active())
       {
         activeinfuture = true;
@@ -6350,8 +6353,22 @@ void CONTACT::Interface::evaluate_relative_movement(
       // first contact step onwards, this will lead to a fatal error since the jump
       // cannot be computed.
       // With FRLESS_FIRST, the first contact step is considered frictionless,
-      // so no history is required. The jump vector and its derivative are set to zero.
-      if (frictionless_first and not cnode->data().active_old())
+      // so no history is required.
+      const bool first_frictionless_step = frictionless_first and not cnode->data().active_old();
+
+      // check if there are entries in the old D map
+      if (not first_frictionless_step and cnode->fri_data().get_d_old().size() < 1)
+        FOUR_C_THROW("Error in Interface::evaluate_relative_movement(): No old D-Map!");
+
+      // A node without current mortar mappings has no projection onto the target surface, e.g.
+      // after sliding off its edge during the Newton iterations. Thus, it is not in contact in the
+      // current configuration and there is no relative movement with respect to the target
+      // surface. Such a node is only considered here if it is currently active (see above).
+      const bool no_projection = cnode->mo_data().get_m().empty();
+
+      // In both cases, the jump cannot be computed and is not required. The jump vector and its
+      // derivative are set to zero.
+      if (first_frictionless_step or no_projection)
       {
         std::fill_n(cnode->fri_data().jump(), n_dim(), 0.0);
         auto& deriv_jump = cnode->fri_data().get_deriv_jump();
@@ -6364,10 +6381,6 @@ void CONTACT::Interface::evaluate_relative_movement(
       Core::Gen::Pairedvector<int, double>& dmapold = cnode->fri_data().get_d_old();
 
       std::set<int> source_nodes = cnode->fri_data().get_source_nodes();
-
-      // check if there are entries in the old D map
-      if (dmapold.size() < 1)
-        FOUR_C_THROW("Error in Interface::evaluate_relative_movement(): No old D-Map!");
 
       std::map<int, double>::iterator colcurr;
       std::set<int>::iterator s_curr;
@@ -6397,12 +6410,6 @@ void CONTACT::Interface::evaluate_relative_movement(
 
       const std::set<int>& target_nodes_current = cnode->fri_data().get_target_nodes();
       const std::set<int>& target_nodes_old = cnode->fri_data().get_target_nodes_old();
-
-      // check if there are entries in the M map
-      if (mmap.size() < 1)
-      {
-        FOUR_C_THROW("Error in Interface::evaluate_relative_movement(): No M-Map!");
-      }
 
       // check if there are entries in the old M map
       if (mmapold.size() < 1)
