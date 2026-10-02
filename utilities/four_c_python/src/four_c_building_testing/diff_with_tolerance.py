@@ -180,9 +180,17 @@ def cli():
         data_b = read_csv(file_b)
 
         # Compare the data values.
-        if np.allclose(data_a, data_b, rtol=r_tol, atol=a_tol):
+        comparison_result = np.isclose(data_a, data_b, rtol=r_tol, atol=a_tol)
+
+        if np.all(comparison_result):
             print("CSV comparison successful!")
         else:
+            # print the first 10 differences
+            for index in np.argwhere(~comparison_result)[:10]:
+                index = tuple(int(i) for i in index)
+                print(
+                    f"Difference at index {index}: {data_a[index]} vs {data_b[index]}"
+                )
             raise ValueError("CSV comparison failed!")
 
     elif file_ending_a == ".yaml":
