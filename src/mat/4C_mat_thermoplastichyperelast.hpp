@@ -304,12 +304,6 @@ namespace Mat
         const Core::LinAlg::SymmetricTensor<double, 3, 3>& Cinv  //!< inverse of Cauchy-Green tensor
     ) const;
 
-    //! computes temperature-dependent isotropic mechanical elasticity tensor in
-    //! matrix notion for 3d
-    void setup_cmat_thermo(const double temperature,
-        Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& cmat_T,
-        const Core::LinAlg::Tensor<double, 3, 3>& defgrd) const;
-
     //! calculates stress-temperature modulus
     double st_modulus() const;
 
