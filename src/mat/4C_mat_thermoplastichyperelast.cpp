@@ -354,12 +354,17 @@ Mat::StressTemperatureModulus Mat::ThermoPlasticHyperElast::evaluate_stress_temp
   const auto inverse_cauchy_green = Core::LinAlg::inv(cauchy_green);
   const double jacobian = std::sqrt(Core::LinAlg::det(cauchy_green));
 
+  // The thermoelastic heating requires the partial derivatives of the stress w.r.t. the
+  // temperature at fixed strain and fixed internal variables. The plastic part of the stress only
+  // depends on the temperature through the internal variables (return mapping), hence only the
+  // thermal stress S_T = (T - T_0) . stm contributes. Since m_0 is constant, stm does not
+  // depend on the temperature.
   StressTemperatureModulus stress_temperature_modulus;
   setup_cthermo(stress_temperature_modulus.value, jacobian, inverse_cauchy_green);
-  stress_temperature_modulus.derivative_wrt_temperature = cmat_kd_t_->at(gp);
 
+  // stm = m_0/2 . (J + 1/J) . C^{-1}, cf. setup_cthermo()
   // with dJ/dE = J . C^{-1} and dC^{-1}/dE = -2 . C^{-1} \odot C^{-1}:
-  // dstm/dE = m_0 . (J - 1/J) . C^{-1} \otimes C^{-1} - 2 . m_0 . (J + 1/J) . C^{-1} \odot C^{-1}
+  // dstm/dE = m_0/2 . (J - 1/J) . C^{-1} \otimes C^{-1} - m_0 . (J + 1/J) . C^{-1} \odot C^{-1}
   const double m_0 = st_modulus();
   const auto inverse_cauchy_green_full = Core::LinAlg::get_full(inverse_cauchy_green);
   const auto inverse_cauchy_green_odot = Core::LinAlg::assume_symmetry(
@@ -367,9 +372,9 @@ Mat::StressTemperatureModulus Mat::ThermoPlasticHyperElast::evaluate_stress_temp
       (Core::LinAlg::einsum<"ik", "jl">(inverse_cauchy_green_full, inverse_cauchy_green_full) +
           Core::LinAlg::einsum<"il", "jk">(inverse_cauchy_green_full, inverse_cauchy_green_full)));
   stress_temperature_modulus.derivative_wrt_strain =
-      m_0 * (jacobian - 1.0 / jacobian) *
+      m_0 / 2.0 * (jacobian - 1.0 / jacobian) *
           Core::LinAlg::dyadic(inverse_cauchy_green, inverse_cauchy_green) -
-      2.0 * m_0 * (jacobian + 1.0 / jacobian) * inverse_cauchy_green_odot;
+      m_0 * (jacobian + 1.0 / jacobian) * inverse_cauchy_green_odot;
   return stress_temperature_modulus;
 }
 
@@ -402,36 +407,22 @@ Mat::ThermoPlasticHyperElast::evaluate_d_stress_d_scalar(
     const Core::LinAlg::SymmetricTensor<double, 3, 3>& glstrain,
     const Teuchos::ParameterList& params, const EvaluationContext<3>& context, int gp, int eleGID)
 {
-  // obtain the temperature
-  const double temperature = [&]()
-  {
-    if (params.isParameter("temperature"))
-    {
-      return params.get<double>("temperature");
-    }
-    else
-    {
-      return params_->inittemp_;
-    }
-  }();
+  // total derivative of the stress w.r.t. the temperature at fixed strain:
+  // dS/dT = d(S_plastic)/dT + d(S_T)/dT
+  // with the temperature dependence of the plastic stress through the return mapping and the
+  // thermal stress S_T = (T - T_0) . m_0/2 . (J + 1/J) . C^{-1}.
+  // d(S_plastic)/dT is stored by evaluate(), which therefore has to be called for the current
+  // state at this Gauss point first.
 
   // inverse of right Cauchy-Green tensor = F^{-1} . F^{-T}
   Core::LinAlg::SymmetricTensor<double, 3, 3> cauchygreen =
       Core::LinAlg::assume_symmetry(Core::LinAlg::transpose(defgrad) * defgrad);
   Core::LinAlg::SymmetricTensor<double, 3, 3> Cinv = Core::LinAlg::inv(cauchygreen);
 
-  // get the temperature-dependent mechanical material tangent
-  Core::LinAlg::SymmetricTensor<double, 3, 3> dS_dT{};
-  Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3> cmat_T;
-  setup_cmat_thermo(temperature, cmat_T, defgrad);
-  // evaluate mechanical stress part
-  dS_dT = Core::LinAlg::ddot(cmat_T, glstrain);
+  Core::LinAlg::SymmetricTensor<double, 3, 3> dS_dT = cmat_kd_t_->at(gp);
 
-  // get the temperature-dependent material tangent
   Core::LinAlg::SymmetricTensor<double, 3, 3> ctemp{};
   setup_cthermo(ctemp, Core::LinAlg::det(defgrad), Cinv);
-
-  // add the derivatives of thermal stress w.r.t temperature
   dS_dT += ctemp;
 
   return dS_dT;
@@ -1176,50 +1167,6 @@ void Mat::ThermoPlasticHyperElast::calculate_current_bebar(
   bebarcurr_->at(gp).update(third_Ibar_1, id2, 1.0);
 
 }  // calculate_current_bebar()
-
-
-/*----------------------------------------------------------------------*
- | computes temperature-dependent isotropic                  dano 09/13 |
- | elasticity tensor in matrix notion for 3d, second(!) order tensor    |
- *----------------------------------------------------------------------*/
-void Mat::ThermoPlasticHyperElast::setup_cmat_thermo(const double temperature,
-    Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& cmat_T,
-    const Core::LinAlg::Tensor<double, 3, 3>& defgrd) const
-{
-  // temperature-dependent material tangent
-  // cmat_T = cmat_vol,dT = dstresstemp/dE = 2 dstresstemp/dC
-  //        = (T - T_0) . m_0/2.0 . (J - 1/J) (C^{-1} \otimes C^{-1}) -
-  //          - (T - T_0) . m_0 . (J + 1/J) ( Cinv boeppel Cinv )
-
-  // calculate the temperature difference
-  // Delta T = T - T_0
-  const double deltaT = temperature - (params_->inittemp_);
-
-  // get stress-temperature modulus
-  double m_0 = st_modulus();
-  // get Jacobi
-  double J = Core::LinAlg::det(defgrd);
-  // calculate the right Cauchy Green (RCG) deformation tensor and its inverse
-  Core::LinAlg::SymmetricTensor<double, 3, 3> RCG =
-      Core::LinAlg::assume_symmetry(Core::LinAlg::transpose(defgrd) * defgrd);
-  Core::LinAlg::SymmetricTensor<double, 3, 3> invRCG = Core::LinAlg::inv(RCG);
-
-  // clear the material tangent
-  Core::LinAlg::Matrix<6, 6> cmat_view = Core::LinAlg::make_stress_like_voigt_view(cmat_T);
-  const Core::LinAlg::Matrix<3, 3> invRCG_mat =
-      Core::LinAlg::make_matrix(Core::LinAlg::get_full(invRCG));
-  cmat_view.clear();
-
-  // cmat_T = 2 . dS_vol,dT/dd
-  //        = (T - T_0) . m_0/2 . (J - 1/J) (C^{-1} \otimes C^{-1})
-  //          - (T - T_0) . m_0 . (J + 1/J) ( Cinv boeppel Cinv )
-  Core::LinAlg::FourTensorOperations::add_elasticity_tensor_product(
-      cmat_view, (deltaT * m_0 / 2.0 * (J - 1 / J)), invRCG_mat, invRCG_mat, 1.0);
-  Core::LinAlg::FourTensorOperations::add_kronecker_tensor_product(
-      cmat_view, (-deltaT * m_0 * (J + 1 / J)), invRCG_mat, invRCG_mat, 1.0);
-
-
-}  // SetupCmatThermo()
 
 
 /*----------------------------------------------------------------------*
