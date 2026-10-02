@@ -169,9 +169,6 @@ namespace Mat
     //! Return quick accessible material parameter data
     Core::Mat::PAR::Parameter* parameter() const override { return params_; }
 
-    //! set the current temperature
-    void reinit(double temperature, unsigned gp);
-
     Core::LinAlg::SymmetricTensor<double, 3, 3> evaluate_d_stress_d_scalar(
         const Core::LinAlg::Tensor<double, 3, 3>& defgrad,
         const Core::LinAlg::SymmetricTensor<double, 3, 3>& glstrain,
@@ -186,27 +183,46 @@ namespace Mat
         double temperature, const KinematicState& kinematic_state, int gp) override;
 
    private:
+    //! returns the temperature from the parameter list, or the initial temperature if not given
+    double temperature_from_params(const Teuchos::ParameterList& params) const;
+
     //! computes isotropic elasticity tensor in matrix notion for 3d
-    void setup_cmat(Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& cmat) const;
+    void setup_cmat(
+        double temperature, Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& cmat) const;
 
     //! computes temperature dependent isotropic elasticity tensor in matrix
     //! notion for 3d
-    void setup_cthermo(Core::LinAlg::SymmetricTensor<double, 3, 3>& ctemp) const;
+    void setup_cthermo(
+        double temperature, Core::LinAlg::SymmetricTensor<double, 3, 3>& ctemp) const;
 
     //! calculates stress-temperature modulus
-    double st_modulus() const;
+    double st_modulus(double temperature) const;
 
-    //! calculates stress-temperature modulus
-    double get_st_modulus_t() const;
+    //! calculates derivative of stress-temperature modulus w.r.t. temperature
+    double get_st_modulus_t(double temperature) const;
+
+    //! calculates second derivative of stress-temperature modulus w.r.t. temperature
+    double get_st_modulus_tt(double temperature) const;
+
+    //! calculates the partial derivative of the stress w.r.t. temperature at fixed strain
+    Core::LinAlg::SymmetricTensor<double, 3, 3> evaluate_partial_d_stress_d_temperature(
+        double temperature, const Core::LinAlg::SymmetricTensor<double, 3, 3>& glstrain) const;
 
     //! calculates derivative of Cmat with respect to current temperatures
     //! only in case of temperature-dependent material parameters
-    void get_cmat_at_tempnp_t(Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& derivcmat) const;
+    void get_cmat_at_tempnp_t(
+        double temperature, Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& derivcmat) const;
+
+    //! calculates second derivative of Cmat with respect to current temperatures
+    //! only in case of temperature-dependent material parameters
+    void get_cmat_at_tempnp_tt(
+        double temperature, Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& derivcmat) const;
 
     //! calculates derivative of Cmat with respect to current temperatures
     //! only in case of temperature-dependent material parameters
-    void get_cthermo_at_tempnp_t(Core::LinAlg::SymmetricTensor<double, 3, 3>&
-            derivctemp  //!< linearisation of ctemp w.r.t. T
+    void get_cthermo_at_tempnp_t(
+        double temperature, Core::LinAlg::SymmetricTensor<double, 3, 3>&
+                                derivctemp  //!< linearisation of ctemp w.r.t. T
     ) const;
 
     //! calculate temperature dependent material parameter and return value
@@ -221,11 +237,15 @@ namespace Mat
         const double& tempnp                     // tmpr (i) current temperature
     ) const;
 
+    //! calculate second derivative of temperature dependent material parameter w.r.t.
+    //! temperature
+    double get_mat_parameter_at_tempnp_tt(
+        const std::vector<double>* paramvector,  //!< (i) given parameter is a vector
+        const double& tempnp                     //!< (i) current temperature
+    ) const;
+
     //! my material parameters
     Mat::PAR::ThermoStVenantKirchhoff* params_;
-
-    //! current temperature (set by Reinit())
-    double current_temperature_{};
 
   };  // ThermoStVenantKirchhoff
 }  // namespace Mat

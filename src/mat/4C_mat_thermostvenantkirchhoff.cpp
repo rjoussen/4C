@@ -131,33 +131,17 @@ void Mat::ThermoStVenantKirchhoff::evaluate(const Core::LinAlg::Tensor<double, 3
     Core::LinAlg::SymmetricTensor<double, 3, 3>& stress,
     Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& cmat, int gp, int eleGID)
 {
-  // fixme this backwards compatibility modification should be moved outside
-  // use initial value as a default value
-  const double temperature = [&]()
-  {
-    if (params.isParameter("temperature"))
-    {
-      return params.get<double>("temperature");
-    }
-    else
-    {
-      // std::cout << "using initial temperature" << std::endl;
-      return params_->thetainit_;
-    }
-  }();
+  const double temperature = temperature_from_params(params);
 
-  reinit(temperature, gp);  // fixme call this before
-
-  setup_cmat(cmat);
+  setup_cmat(temperature, cmat);
   // purely mechanical part
   stress = Core::LinAlg::ddot(cmat, glstrain);
 
   // additive thermal part
   double Tref = params_->thetainit_;
-  double m = st_modulus();
+  double m = st_modulus(temperature);
 
-  stress +=
-      m * (current_temperature_ - Tref) * Core::LinAlg::TensorGenerators::identity<double, 3, 3>;
+  stress += m * (temperature - Tref) * Core::LinAlg::TensorGenerators::identity<double, 3, 3>;
 
 }  // STR_Evaluate()
 
@@ -171,14 +155,19 @@ double Mat::ThermoStVenantKirchhoff::strain_energy(
   if (youngs_is_temp_dependent())
     FOUR_C_THROW("Calculation of strain energy only for constant Young's modulus");
   Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3> cmat;
-  setup_cmat(cmat);
+  // Young's modulus is constant, i.e., the temperature does not matter
+  setup_cmat(params_->thetainit_, cmat);
   Core::LinAlg::SymmetricTensor<double, 3, 3> s = Core::LinAlg::ddot(cmat, glstrain);
   return .5 * Core::LinAlg::ddot(s, glstrain);
 }
 
-void Mat::ThermoStVenantKirchhoff::reinit(double temperature, unsigned gp)
+double Mat::ThermoStVenantKirchhoff::temperature_from_params(
+    const Teuchos::ParameterList& params) const
 {
-  current_temperature_ = temperature;
+  // fixme this backwards compatibility modification should be moved outside
+  // use initial value as a default value
+  return params.isParameter("temperature") ? params.get<double>("temperature")
+                                           : params_->thetainit_;
 }
 
 Core::LinAlg::SymmetricTensor<double, 3, 3>
@@ -187,26 +176,21 @@ Mat::ThermoStVenantKirchhoff::evaluate_d_stress_d_scalar(
     const Core::LinAlg::SymmetricTensor<double, 3, 3>& glstrain,
     const Teuchos::ParameterList& params, const EvaluationContext<3>& context, int gp, int eleGID)
 {
-  const double temperature = [&]()
-  {
-    if (params.isParameter("temperature"))
-    {
-      return params.get<double>("temperature");
-    }
-    else
-    {
-      return params_->thetainit_;
-    }
-  }();
+  // The stress only depends on the strain and the temperature (no internal variables). Hence, the
+  // total derivative of the stress w.r.t. the temperature equals its partial derivative.
+  return evaluate_partial_d_stress_d_temperature(temperature_from_params(params), glstrain);
+}
 
-  reinit(temperature, gp);  // fixme call this before
-
+Core::LinAlg::SymmetricTensor<double, 3, 3>
+Mat::ThermoStVenantKirchhoff::evaluate_partial_d_stress_d_temperature(
+    const double temperature, const Core::LinAlg::SymmetricTensor<double, 3, 3>& glstrain) const
+{
   Core::LinAlg::SymmetricTensor<double, 3, 3> dS_dT{};
 
-  // total derivative of stress (mechanical + thermal part) wrt. temperature
+  // partial derivative of stress (mechanical + thermal part) wrt. temperature at fixed strain
   // calculate derivative of cmat w.r.t. T_{n+1}
   Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3> cmat_T;
-  get_cmat_at_tempnp_t(cmat_T);
+  get_cmat_at_tempnp_t(temperature, cmat_T);
 
   // evaluate mechanical stress part
   // \f \sigma = {\mathbf C}_{,T} \,\varepsilon_{\rm GL} \f
@@ -214,17 +198,17 @@ Mat::ThermoStVenantKirchhoff::evaluate_d_stress_d_scalar(
 
   // calculate the temperature difference
   // Delta T = T - T_0
-  const double deltaT = current_temperature_ - params_->thetainit_;
+  const double deltaT = temperature - params_->thetainit_;
 
   // calculate derivative of ctemp w.r.t. T_{n+1}
   Core::LinAlg::SymmetricTensor<double, 3, 3> ctemp_T;
-  get_cthermo_at_tempnp_t(ctemp_T);
+  get_cthermo_at_tempnp_t(temperature, ctemp_T);
 
   // temperature dependent stress part
   // sigma = C_T . Delta T = m . I . Delta T
   dS_dT += deltaT * ctemp_T;
 
-  setup_cthermo(ctemp_T);
+  setup_cthermo(temperature, ctemp_T);
   dS_dT += ctemp_T;
 
   return dS_dT;
@@ -233,12 +217,34 @@ Mat::ThermoStVenantKirchhoff::evaluate_d_stress_d_scalar(
 Mat::StressTemperatureModulus Mat::ThermoStVenantKirchhoff::evaluate_stress_temperature_modulus(
     double temperature, const KinematicState& kinematic_state, int gp)
 {
-  // the temperature-dependent moduli are evaluated at the current temperature
-  reinit(temperature, gp);
+  // The thermal stress of this material is
+  //
+  //   S = C(T) : E + m(T) . (T - T_0) . I
+  //
+  // and the thermoelastic heating is T . partial S/partial T : dE/dt with the partial derivative
+  // of S w.r.t. T at fixed strain. Hence, the stress-temperature modulus is the complete partial
+  // derivative, which for a temperature-dependent Young's modulus depends on the strain:
+  //
+  //   partial S/partial T         = C_T : E + (m + m_T . (T - T_0)) . I
+  //   partial^2 S/partial T^2     = C_TT : E + (2 . m_T + m_TT . (T - T_0)) . I
+  //   partial^2 S/partial T dE    = C_T
+  //
+  // Since this material has no internal variables, the partial derivative coincides with the
+  // total derivative used for the structural coupling term (cf. evaluate_d_stress_d_scalar()).
+  const Core::LinAlg::SymmetricTensor<double, 3, 3>& strain = kinematic_state.strain;
+  const double delta_temperature = temperature - params_->thetainit_;
 
   StressTemperatureModulus stress_temperature_modulus;
-  setup_cthermo(stress_temperature_modulus.value);
-  get_cthermo_at_tempnp_t(stress_temperature_modulus.derivative_wrt_temperature);
+  stress_temperature_modulus.value = evaluate_partial_d_stress_d_temperature(temperature, strain);
+
+  Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3> cmat_TT;
+  get_cmat_at_tempnp_tt(temperature, cmat_TT);
+  stress_temperature_modulus.derivative_wrt_temperature =
+      Core::LinAlg::ddot(cmat_TT, strain) +
+      (2.0 * get_st_modulus_t(temperature) + get_st_modulus_tt(temperature) * delta_temperature) *
+          Core::LinAlg::TensorGenerators::identity<double, 3, 3>;
+
+  get_cmat_at_tempnp_t(temperature, stress_temperature_modulus.derivative_wrt_strain);
   return stress_temperature_modulus;
 }
 
@@ -247,7 +253,7 @@ Mat::StressTemperatureModulus Mat::ThermoStVenantKirchhoff::evaluate_stress_temp
  | for 3d                                                               |
  *----------------------------------------------------------------------*/
 void Mat::ThermoStVenantKirchhoff::setup_cmat(
-    Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& cmat) const
+    const double temperature, Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& cmat) const
 {
   // get material parameters
   // Young's modulus (modulus of elasticity)
@@ -255,7 +261,7 @@ void Mat::ThermoStVenantKirchhoff::setup_cmat(
 
   if (youngs_is_temp_dependent())
   {
-    Emod = get_mat_parameter_at_tempnp(&(params_->youngs_), current_temperature_);
+    Emod = get_mat_parameter_at_tempnp(&(params_->youngs_), temperature);
   }
   // young's modulus is constant
   else
@@ -270,10 +276,10 @@ void Mat::ThermoStVenantKirchhoff::setup_cmat(
 /*----------------------------------------------------------------------*
  | calculates stress-temperature modulus                     dano 04/10 |
  *----------------------------------------------------------------------*/
-double Mat::ThermoStVenantKirchhoff::st_modulus() const
+double Mat::ThermoStVenantKirchhoff::st_modulus(const double temperature) const
 {
   const double Emod = youngs_is_temp_dependent()
-                          ? get_mat_parameter_at_tempnp(&(params_->youngs_), current_temperature_)
+                          ? get_mat_parameter_at_tempnp(&(params_->youngs_), temperature)
                           : params_->youngs_[0];
 
   // initialise the parameters for the lame constants
@@ -316,9 +322,9 @@ double Mat::ThermoStVenantKirchhoff::st_modulus() const
  | elasticity tensor in matrix notion for 3d, second(!) order tensor    |
  *----------------------------------------------------------------------*/
 void Mat::ThermoStVenantKirchhoff::setup_cthermo(
-    Core::LinAlg::SymmetricTensor<double, 3, 3>& ctemp) const
+    const double temperature, Core::LinAlg::SymmetricTensor<double, 3, 3>& ctemp) const
 {
-  double m = st_modulus();
+  double m = st_modulus(temperature);
   fill_cthermo(ctemp, m);
 }
 
@@ -415,11 +421,27 @@ double Mat::ThermoStVenantKirchhoff::get_mat_parameter_at_tempnp_t(
 }  // get_mat_parameter_at_tempnp_t()
 
 
+double Mat::ThermoStVenantKirchhoff::get_mat_parameter_at_tempnp_tt(
+    const std::vector<double>* paramvector, const double& tempnp) const
+{
+  // Param = a + b . T + c . T^2 + d . T^3 + ...
+  // d^2(Param)/dT^2 = 2 . c + 3 . 2 . d . T + ...
+  double parambytempnp = 0.0;
+  double tempnp_pow = 1.0;
+  for (unsigned i = 2; i < (*paramvector).size(); ++i)
+  {
+    parambytempnp += i * (i - 1) * (*paramvector)[i] * tempnp_pow;
+    tempnp_pow *= tempnp;
+  }
+  return parambytempnp;
+}
+
+
 /*----------------------------------------------------------------------*
  | calculate linearisation of stress-temperature modulus     dano 04/10 |
  | w.r.t. T_{n+1} for k_dT, k_TT                                        |
  *----------------------------------------------------------------------*/
-double Mat::ThermoStVenantKirchhoff::get_st_modulus_t() const
+double Mat::ThermoStVenantKirchhoff::get_st_modulus_t(const double temperature) const
 {
   // build the derivative of the stress-temperature modulus w.r.t. T_{n+1}
   // m = - (2 . mu + 3 . lambda) . varalpha_T
@@ -428,7 +450,7 @@ double Mat::ThermoStVenantKirchhoff::get_st_modulus_t() const
 
   if (youngs_is_temp_dependent())
   {
-    const double Ederiv = get_mat_parameter_at_tempnp_t(&(params_->youngs_), current_temperature_);
+    const double Ederiv = get_mat_parameter_at_tempnp_t(&(params_->youngs_), temperature);
 
     // initialise the parameters for the lame constants
     const double nu = params_->poissonratio_;
@@ -463,20 +485,47 @@ double Mat::ThermoStVenantKirchhoff::get_st_modulus_t() const
 
 }  // get_st_modulus_t()
 
+double Mat::ThermoStVenantKirchhoff::get_st_modulus_tt(const double temperature) const
+{
+  // m = -(2 . mu + 3 . lambda) . varalpha_T is linear in E(T)
+  if (!youngs_is_temp_dependent()) return 0.0;
+
+  const double Ederiv2 = get_mat_parameter_at_tempnp_tt(&(params_->youngs_), temperature);
+  const double nu = params_->poissonratio_;
+  const double mu = 0.5 * Ederiv2 / (1.0 + nu);
+  const double lambda = Ederiv2 * nu / ((1.0 + nu) * (1.0 - 2.0 * nu));
+  return (-1.0) * (2.0 * mu + 3.0 * lambda) * params_->thermexpans_;
+}
+
 /*----------------------------------------------------------------------*
  | computes thermal derivative of the isotropic elasticity   dano 01/13 |
  | tensor in matrix notion for 3d for k_dT                              |
  *----------------------------------------------------------------------*/
 void Mat::ThermoStVenantKirchhoff::get_cmat_at_tempnp_t(
-    Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& derivcmat) const
+    const double temperature, Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& derivcmat) const
 {
   if (youngs_is_temp_dependent())
   {
-    const double Ederiv = get_mat_parameter_at_tempnp_t(&(params_->youngs_), current_temperature_);
+    const double Ederiv = get_mat_parameter_at_tempnp_t(&(params_->youngs_), temperature);
     // Poisson's ratio (Querdehnzahl)
     const double nu = params_->poissonratio_;
 
     derivcmat = StVenantKirchhoff::evaluate_stress_linearization(Ederiv, nu);
+  }
+  else
+  {
+    derivcmat = {};
+  }
+}
+
+
+void Mat::ThermoStVenantKirchhoff::get_cmat_at_tempnp_tt(
+    const double temperature, Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& derivcmat) const
+{
+  if (youngs_is_temp_dependent())
+  {
+    const double Ederiv2 = get_mat_parameter_at_tempnp_tt(&(params_->youngs_), temperature);
+    derivcmat = StVenantKirchhoff::evaluate_stress_linearization(Ederiv2, params_->poissonratio_);
   }
   else
   {
@@ -490,9 +539,9 @@ void Mat::ThermoStVenantKirchhoff::get_cmat_at_tempnp_t(
  | elasticity tensor in matrix notion for 3d, 2nd order tensor          |
  *----------------------------------------------------------------------*/
 void Mat::ThermoStVenantKirchhoff::get_cthermo_at_tempnp_t(
-    Core::LinAlg::SymmetricTensor<double, 3, 3>& derivctemp) const
+    const double temperature, Core::LinAlg::SymmetricTensor<double, 3, 3>& derivctemp) const
 {
-  double m_T = get_st_modulus_t();
+  double m_T = get_st_modulus_t(temperature);
 
   fill_cthermo(derivctemp, m_T);
 }
