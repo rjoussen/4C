@@ -6326,7 +6326,14 @@ void CONTACT::Interface::evaluate_relative_movement(
     else if (contact_strategy == CONTACT::SolvingStrategy::lagmult and
              interface_params().get<bool>("SEMI_SMOOTH_NEWTON"))
     {
-      if ((nz - cn * gap > 0) or cnode->active())
+      // Besides the nodes that become active in the subsequent active set update, the currently
+      // active nodes are considered as well, since the active set is not always updated based on
+      // this criterion afterwards, e.g. in the predictor of the old structural time integration or
+      // in the first predictor step, where the initial active set from the input is used.
+      // Currently active nodes without mortar mappings are excluded. They have no projection onto
+      // the target surface, e.g. after sliding off its edge during the Newton iterations, and
+      // become inactive in the subsequent active set update.
+      if ((nz - cn * gap > 0) or (cnode->active() and not cnode->mo_data().get_m().empty()))
       {
         activeinfuture = true;
       }
