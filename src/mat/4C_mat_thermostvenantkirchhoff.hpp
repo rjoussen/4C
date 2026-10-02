@@ -198,12 +198,23 @@ namespace Mat
     //! calculates stress-temperature modulus
     double st_modulus() const;
 
-    //! calculates stress-temperature modulus
+    //! calculates derivative of stress-temperature modulus w.r.t. temperature
     double get_st_modulus_t() const;
+
+    //! calculates second derivative of stress-temperature modulus w.r.t. temperature
+    double get_st_modulus_tt() const;
+
+    //! calculates the partial derivative of the stress w.r.t. temperature at fixed strain
+    Core::LinAlg::SymmetricTensor<double, 3, 3> evaluate_partial_d_stress_d_temperature(
+        const Core::LinAlg::SymmetricTensor<double, 3, 3>& glstrain) const;
 
     //! calculates derivative of Cmat with respect to current temperatures
     //! only in case of temperature-dependent material parameters
     void get_cmat_at_tempnp_t(Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& derivcmat) const;
+
+    //! calculates second derivative of Cmat with respect to current temperatures
+    //! only in case of temperature-dependent material parameters
+    void get_cmat_at_tempnp_tt(Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& derivcmat) const;
 
     //! calculates derivative of Cmat with respect to current temperatures
     //! only in case of temperature-dependent material parameters
@@ -221,6 +232,13 @@ namespace Mat
     double get_mat_parameter_at_tempnp_t(
         const std::vector<double>* paramvector,  //!< (i) given parameter is a vector
         const double& tempnp                     // tmpr (i) current temperature
+    ) const;
+
+    //! calculate second derivative of temperature dependent material parameter w.r.t.
+    //! temperature
+    double get_mat_parameter_at_tempnp_tt(
+        const std::vector<double>* paramvector,  //!< (i) given parameter is a vector
+        const double& tempnp                     //!< (i) current temperature
     ) const;
 
     //! my material parameters
