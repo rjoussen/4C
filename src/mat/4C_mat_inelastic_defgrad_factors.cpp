@@ -2894,10 +2894,11 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_od_stiff_mat(
 Mat::HeatSource
 Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_taylor_quinney_heat_source(
     const Mat::EvaluationContext<3>& context, const int gp, const int eleGID,
-    const Core::LinAlg::Matrix<3, 3>* defgrad, const Core::LinAlg::Matrix<3, 3>& iFin_other,
-    const double temperature)
+    const Core::LinAlg::Tensor<double, 3, 3>& defgrad,
+    const Core::LinAlg::Tensor<double, 3, 3>& iFin_other, const double temperature)
 {
-  const ReducedKinematics reduced_kinematics = evaluate_reduced_kinematics(*defgrad, iFin_other);
+  const ReducedKinematics reduced_kinematics =
+      evaluate_reduced_kinematics(make_matrix_view(defgrad), make_matrix_view(iFin_other));
 
   ViscoplastUtils::ErrorType err_status = ViscoplastUtils::ErrorType::no_errors;
 
@@ -2930,11 +2931,12 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_taylor_quinney_heat_
     constitutive_update(reduced_kinematics.defgrad, temperature);
   }
 
-  auto local_integration_input = ViscoplastUtils::LocalIntegrationInput{{.defgrad = *defgrad,
-      .temperature = temperature,
-      .last_inv_inelastic_defgrad = time_step_quantities_.last_plastic_defgrad_inverse[gp_],
-      .last_plastic_strain = time_step_quantities_.last_plastic_strain[gp_],
-      .step = time_step_tracker_.dt}};
+  auto local_integration_input =
+      ViscoplastUtils::LocalIntegrationInput{{.defgrad = make_matrix_view(defgrad),
+          .temperature = temperature,
+          .last_inv_inelastic_defgrad = time_step_quantities_.last_plastic_defgrad_inverse[gp_],
+          .last_plastic_strain = time_step_quantities_.last_plastic_strain[gp_],
+          .step = time_step_tracker_.dt}};
 
   // evaluate the relevant linearizations, using cached values when available
   const auto history_variables_wrt_cauchy_green =
@@ -2968,10 +2970,15 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_taylor_quinney_heat_
   heat_source.value = parameter()->taylor_quinney_coefficient() *
                       thermo_mechanical_coupling_state.equiv_stress *
                       thermo_mechanical_coupling_state.plastic_strain_rate;
-  heat_source.derivative_wrt_cauchy_green = compute_taylor_quinney_wrt_cauchygreen(
+  Core::LinAlg::Matrix<6, 1> derivative_wrt_cauchy_green;
+  derivative_wrt_cauchy_green.update_t(ViscoplastUtils::compute_taylor_quinney_wrt_cauchygreen(
       parameter()->taylor_quinney_coefficient(), thermo_mechanical_coupling_state,
-      thermo_mechanical_coupling_state_derivatives, history_variables_wrt_cauchy_green);
-  heat_source.derivative_wrt_temperature = compute_taylor_quinney_wrt_temperature(
+      thermo_mechanical_coupling_state_derivatives, history_variables_wrt_cauchy_green));
+  // d/dE = 2 d/dC
+  heat_source.derivative_wrt_strain =
+      2.0 * Core::LinAlg::make_symmetric_tensor_from_stress_like_voigt_matrix(
+                derivative_wrt_cauchy_green);
+  heat_source.derivative_wrt_temperature = ViscoplastUtils::compute_taylor_quinney_wrt_temperature(
       parameter()->taylor_quinney_coefficient(), thermo_mechanical_coupling_state,
       thermo_mechanical_coupling_state_derivatives, history_variables_wrt_temperature);
 
@@ -4383,6 +4390,7 @@ Mat::HeatSource Mat::InelasticDefgradTransvIsotropElastViscoplast::
 
   // Finite-difference linearization w.r.t. the right Cauchy-Green tensor.
   {
+    Core::LinAlg::SymmetricTensor<double, 3, 3> derivative_wrt_cauchy_green{};
     Core::LinAlg::Matrix<3, 3> iFredM(Core::LinAlg::Initialization::zero);
     iFredM.invert(FredM);
 
@@ -4415,10 +4423,12 @@ Mat::HeatSource Mat::InelasticDefgradTransvIsotropElastViscoplast::
         // state_quantities_
         constitutive_update(perturbed_FM, temperature);
 
-        result.derivative_wrt_cauchy_green(i) +=
+        derivative_wrt_cauchy_green(std::get<0>(indices_array[i]), std::get<1>(indices_array[i])) +=
             delta_sign / (4.0 * pert_fact) * evaluate_taylor_quinney(state_quantities_);
       }
     }
+    // d/dE = 2 d/dC
+    result.derivative_wrt_strain = 2.0 * derivative_wrt_cauchy_green;
   }
 
   // Finite-difference linearization w.r.t. temperature.
