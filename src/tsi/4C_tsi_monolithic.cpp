@@ -987,6 +987,19 @@ void TSI::Monolithic::setup_system_matrix()
 
   if (!matchinggrid_) k_ts_ = volcoupl_->apply_matrix_mapping21(*k_ts_);
 
+  // add the derivative of the mechanical heat source evaluated by the structural elements
+  if (d_heat_source_d_displacement_ != nullptr)
+  {
+    auto k_ts_with_heat_source = std::make_shared<Core::LinAlg::SparseMatrix>(
+        *thermo_field()->dof_row_map(), 81, true, true);
+    k_ts_with_heat_source->add(*k_ts_, false, 1.0, 0.0);
+    k_ts_with_heat_source->add(
+        *d_heat_source_d_displacement_, false, thermo_internal_force_timefac(), 1.0);
+    k_ts_with_heat_source->complete(
+        *structure_field()->dof_row_map(0), *thermo_field()->dof_row_map());
+    k_ts_ = k_ts_with_heat_source;
+  }
+
   systemmatrix_->assign(1, 0, Core::LinAlg::DataAccess::Share, *k_ts_);
 
   /*----------------------------------------------------------------------*/
@@ -1693,6 +1706,41 @@ void TSI::Monolithic::apply_str_coupl_matrix(
 }  // apply_str_coupl_matrix()
 
 
+std::optional<double> TSI::Monolithic::heat_source_timefac_d() const
+{
+  switch (strmethodname_)
+  {
+    case Solid::DynamicType::Statics:
+      // velocities V_{n+1} = (D_{n+1} - D_n)/Dt
+      return 1.0 / dt();
+    case Solid::DynamicType::OneStepTheta:
+      return 1.0 / (sdyn_.sublist("ONESTEPTHETA").get<double>("THETA") * dt());
+    case Solid::DynamicType::GenAlpha:
+      return sdyn_.sublist("GENALPHA").get<double>("GAMMA") /
+             (sdyn_.sublist("GENALPHA").get<double>("BETA") * dt());
+    default:
+      FOUR_C_THROW("Unknown structural time integrator for the mechanical heat source.");
+  }
+}
+
+
+double TSI::Monolithic::thermo_internal_force_timefac() const
+{
+  const Teuchos::ParameterList& tdyn = problem_->thermal_dynamic_params();
+  switch (Teuchos::getIntegralValue<Thermo::DynamicType>(tdyn, "DYNAMICTYPE"))
+  {
+    case Thermo::DynamicType::Statics:
+      return 1.0;
+    case Thermo::DynamicType::OneStepTheta:
+      return tdyn.sublist("ONESTEPTHETA").get<double>("THETA");
+    case Thermo::DynamicType::GenAlpha:
+      return tdyn.sublist("GENALPHA").get<double>("ALPHA_F");
+    default:
+      FOUR_C_THROW("Unknown thermal time integrator.");
+  }
+}
+
+
 /*----------------------------------------------------------------------*
  | evaluate thermal-mechanical system matrix at state        dano 03/11 |
  *----------------------------------------------------------------------*/
@@ -1778,7 +1826,7 @@ void TSI::Monolithic::apply_thermo_coupl_matrix(
   // set the variables that are needed by the elements
   thermo_field()->discretization()->set_state(0, "temperature", *thermo_field()->tempnp());
 
-  apply_struct_coupling_state(structure_field()->dispnp(), vel_);
+  set_struct_states_on_thermo(structure_field()->dispnp(), vel_);
 
   // build specific assemble strategy for the thermal-mechanical system matrix
   // from the point of view of ThermoField:

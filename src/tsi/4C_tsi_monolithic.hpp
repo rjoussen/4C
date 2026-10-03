@@ -125,6 +125,12 @@ namespace TSI
         std::shared_ptr<Core::LinAlg::SparseMatrix> k_st  //!< mechanical-thermal stiffness matrix
     );
 
+    //! derivative of the structural velocities w.r.t. the displacements
+    [[nodiscard]] std::optional<double> heat_source_timefac_d() const override;
+
+    //! time integration factor of the thermal internal force
+    [[nodiscard]] double thermo_internal_force_timefac() const;
+
     //! Evaluate thermal-mechanical system matrix
     void apply_thermo_coupl_matrix(
         std::shared_ptr<Core::LinAlg::SparseMatrix> k_ts  //!< thermal-mechanical tangent matrix

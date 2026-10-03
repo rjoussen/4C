@@ -712,6 +712,8 @@ void Thermo::TimInt::apply_force_tang_internal(
 
   discret_->clear_state();
 
+  add_coupled_internal_force(*temp, *fint, tang.get(), p.get<double>("timefac", 1.0));
+
   // that's it
   return;
 
@@ -761,6 +763,8 @@ void Thermo::TimInt::apply_force_tang_internal(
 
   discret_->clear_state();
 
+  add_coupled_internal_force(*temp, *fint, tang.get(), p.get<double>("timefac", 1.0));
+
   // that's it
   return;
 
@@ -794,7 +798,42 @@ void Thermo::TimInt::apply_force_internal(
   // call the element evaluate()
   discret_->evaluate(p, nullptr, nullptr, fint, nullptr, nullptr);
   discret_->clear_state();
+
+  add_coupled_internal_force(*temp, *fint, nullptr, 1.0);
 }  // apply_force_tang_internal()
+
+
+void Thermo::TimInt::set_coupled_internal_force(
+    std::shared_ptr<const Core::LinAlg::Vector<double>> force,
+    std::shared_ptr<const Core::LinAlg::SparseMatrix> tangent,
+    std::shared_ptr<const Core::LinAlg::Vector<double>> linearization_temperature)
+{
+  FOUR_C_ASSERT_ALWAYS(
+      force != nullptr && tangent != nullptr && linearization_temperature != nullptr,
+      "The coupled internal force requires the force, its tangent and the linearization "
+      "temperatures.");
+  coupled_force_ = std::move(force);
+  coupled_tangent_ = std::move(tangent);
+  coupled_linearization_temperature_ = std::move(linearization_temperature);
+}
+
+
+void Thermo::TimInt::add_coupled_internal_force(const Core::LinAlg::Vector<double>& temp,
+    Core::LinAlg::Vector<double>& fint, Core::LinAlg::SparseMatrix* tang,
+    const double timefac) const
+{
+  if (coupled_force_ == nullptr) return;
+
+  // F_int += force + tangent . (T - T*)
+  Core::LinAlg::Vector<double> temperature_difference(temp);
+  temperature_difference.update(-1.0, *coupled_linearization_temperature_, 1.0);
+  Core::LinAlg::Vector<double> linearized_force(*coupled_force_);
+  coupled_tangent_->multiply(false, temperature_difference, linearized_force);
+  linearized_force.update(1.0, *coupled_force_, 1.0);
+  fint.update(1.0, linearized_force, 1.0);
+
+  if (tang != nullptr) tang->add(*coupled_tangent_, false, timefac, 1.0);
+}
 
 
 /*----------------------------------------------------------------------*

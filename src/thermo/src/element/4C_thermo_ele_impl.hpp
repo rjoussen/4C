@@ -199,35 +199,12 @@ namespace Discret
 
       //! @}
 
-      //! @name geometrically linear TSI
-      //! @{
-
-      //! Calculate element vectors (internal/external) and a few matrices
-      //! considering current displacement solution
-      void linear_disp_contribution(const Core::Elements::Element* ele, const double time,
-          const std::vector<double>& disp, const std::vector<double>& vel,
-          Core::LinAlg::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>* econd,
-          Core::LinAlg::Matrix<nen_ * numdofpernode_, 1>* efint,
-          const Teuchos::ParameterList& params);
-
-      //! calculate thermal-mechanical system matrix term needed in monolithic TSI
-      void linear_coupled_tang(
-          const Core::Elements::Element* ele,  //!< the element whose matrix is calculated
-          const std::vector<double>& disp,     //!< current displacements
-          const std::vector<double>& vel,      //!< current velocities
-          Core::LinAlg::Matrix<nen_ * numdofpernode_, nsd_ * nen_ * numdofpernode_>*
-              etangcoupl,  //!< k_Tu matrix
-          const Teuchos::ParameterList& params);
-
-      //! @}
-
-
       //! @name geometrically nonlinear TSI analysis
       //! @{
 
-      //! calculate element vectors (internal/external) and a few matrices
-      //! considering current displacement solution
-      //! --> all terms are coupled to the displacements/velocities
+      //! calculate element vectors (internal/external) and a few matrices on the deformed
+      //! configuration (conduction and capacity; the mechanical heat source is evaluated by the
+      //! structural elements)
       void nonlinear_thermo_disp_contribution(
           const Core::Elements::Element* ele,  //!< the element whose matrix is calculated
           const double time,                   //!< current time
@@ -242,7 +219,8 @@ namespace Discret
           Core::LinAlg::Matrix<nen_ * numdofpernode_, 1>* efint,  //!< internal force
           Teuchos::ParameterList& params);
 
-      //! calculate thermal-mechanical system matrix k_Td needed in monolithic TSI
+      //! calculate the derivative of the conduction w.r.t. the displacements (part of k_Td
+      //! needed in monolithic TSI)
       void nonlinear_coupled_tang(
           const Core::Elements::Element* ele,  //!< current element whose terms are calculated
           const std::vector<double>& disp,     //!< current displacements
@@ -252,13 +230,6 @@ namespace Discret
           Teuchos::ParameterList& params  //!< parameter list, containing e.g., dt,theta
       );
 
-      //! build nonlinear B-operator
-      void calculate_bop(
-          Core::LinAlg::Matrix<6, nsd_ * nen_ * numdofpernode_>* bop,  //!< nonlinear B-operator
-          const Core::LinAlg::Matrix<nsd_, nsd_>* defgrd,              //!< deformation gradient
-          const Core::LinAlg::Matrix<nsd_, nen_>* N_XYZ                //!< gradient-operator
-      ) const;
-
       /// @}
 
 
@@ -267,17 +238,6 @@ namespace Discret
           const Core::Elements::Element* ele,  //!< current element we are dealing with
           const double time                    //!< current times
       );
-
-      //! build linear B-operator
-      void calculate_boplin(
-          Core::LinAlg::Matrix<6, nsd_ * nen_ * numdofpernode_>* boplin,  //!< linear B-operator
-          const Core::LinAlg::Matrix<nsd_, nen_>* N_XYZ                   //!< gradient-operator
-      ) const;
-
-      //! get corresponding structural material
-      std::shared_ptr<Core::Mat::Material> get_str_material(
-          const Core::Elements::Element* ele  //!< the element whose matrix is calculated
-      ) const;
 
       //! calculate reactive term
       void calculate_reactive_term(

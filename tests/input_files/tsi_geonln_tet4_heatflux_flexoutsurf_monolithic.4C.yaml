@@ -488,14 +488,14 @@ RESULT DESCRIPTION:
       DIS: "thermo"
       NODE: 39
       QUANTITY: "temp"
-      VALUE: 2660.615106763484
+      VALUE: 2660.675679563053
       TOLERANCE: 1e-06
       NAME: "temp(7,1,-0.5)"
   - THERMAL:
       DIS: "thermo"
       NODE: 5
       QUANTITY: "temp"
-      VALUE: 3947.701514089731
+      VALUE: 3947.843877530532
       TOLERANCE: 1e-06
       NAME: "temp(10,0,-0.5)"
   - STRUCTURE:
@@ -509,13 +509,13 @@ RESULT DESCRIPTION:
       DIS: "structure"
       NODE: 39
       QUANTITY: "dispx"
-      VALUE: 0.1989966948307577
+      VALUE: 0.198999099003187
       TOLERANCE: 1e-09
       NAME: "ux(7,1,-0.5)"
   - STRUCTURE:
       DIS: "structure"
       NODE: 5
       QUANTITY: "dispx"
-      VALUE: 0.4121105355406316
+      VALUE: 0.4121190337568614
       TOLERANCE: 1e-09
       NAME: "ux(10,0,-0.5)"

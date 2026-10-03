@@ -620,7 +620,7 @@ RESULT DESCRIPTION:
       DIS: "structure"
       NODE: 115
       QUANTITY: "dispx"
-      VALUE: -0.0782096658827689
+      VALUE: -0.07820886174338881
       TOLERANCE: 1e-08
       NAME: "ux_top_out"
   - STRUCTURE:
@@ -641,7 +641,7 @@ RESULT DESCRIPTION:
       DIS: "structure"
       NODE: 82
       QUANTITY: "dispx"
-      VALUE: -0.08057243233007202
+      VALUE: -0.08057250965965472
       TOLERANCE: 1e-09
       NAME: "ux_neck"
   - STRUCTURE:
