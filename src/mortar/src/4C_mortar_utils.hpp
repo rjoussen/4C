@@ -44,6 +44,9 @@ namespace Mortar
   /*!
   \brief Convex hull points are sorted in order to obtain final clip polygon
 
+  The clip polygon starts at the point with the smallest x-value and runs clockwise. Points closer
+  than tol to the line between their neighbors are removed.
+
   \param out (in): bool to switch output on/off
   \param transformed (in): coordinates of vertex objects transformed into auxiliary plane
   \param collconvexhull (in): vector of vertex objects to be sorted
