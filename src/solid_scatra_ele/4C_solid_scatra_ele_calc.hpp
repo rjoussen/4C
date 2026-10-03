@@ -90,6 +90,28 @@ namespace Discret::Elements
         const Core::Elements::LocationArray& la, Teuchos::ParameterList& params,
         Core::LinAlg::SerialDenseMatrix& stiffness_matrix_dScalar);
 
+    /*!
+     * @brief Evaluate the mechanical heat source of a thermo-solid material for the thermal
+     * equation
+     *
+     * The heat source is evaluated with the kinematics of the solid formulation at the material
+     * points of the element. It has to be called after the evaluation of the stress at the same
+     * state. The rows of all outputs refer to the temperature dofs (second dofset).
+     *
+     * @param heat_source_vector (out) : contribution to the thermal internal force (optional)
+     * @param d_heat_source_d_temperature (out) : its derivative w.r.t. the temperatures
+     * (optional)
+     * @param d_heat_source_d_displacement (out) : its derivative w.r.t. the displacements
+     * (optional, requires the parameter "timefac_d", i.e. the derivative of the velocities w.r.t.
+     * the displacements)
+     */
+    void evaluate_mechanical_heat_source(const Core::Elements::Element& ele,
+        Mat::So3Material& solid_material, const Core::FE::Discretization& discretization,
+        const Core::Elements::LocationArray& la, Teuchos::ParameterList& params,
+        Core::LinAlg::SerialDenseVector* heat_source_vector,
+        Core::LinAlg::SerialDenseMatrix* d_heat_source_d_temperature,
+        Core::LinAlg::SerialDenseMatrix* d_heat_source_d_displacement);
+
     double get_normal_cauchy_stress_at_xi(const Core::Elements::Element& ele,
         Mat::So3Material& solid_material, const std::vector<double>& disp,
         const std::vector<double>& scalars, const Core::LinAlg::Tensor<double, 3>& xi,

@@ -56,6 +56,24 @@ int Discret::Elements::SolidScatra<dim>::evaluate(Teuchos::ParameterList& params
           },
           *solid_scatra_calc_variant_);
       return 0;
+    case Core::Elements::struct_calc_mechanical_heat_source:
+      std::visit(
+          [&](auto& interface)
+          {
+            interface->evaluate_mechanical_heat_source(
+                *this, solid_material(), discretization, la, params, &elevec1, &elemat1, nullptr);
+          },
+          *solid_scatra_calc_variant_);
+      return 0;
+    case Core::Elements::struct_calc_mechanical_heat_source_d_displacement:
+      std::visit(
+          [&](auto& interface)
+          {
+            interface->evaluate_mechanical_heat_source(
+                *this, solid_material(), discretization, la, params, nullptr, nullptr, &elemat1);
+          },
+          *solid_scatra_calc_variant_);
+      return 0;
     case Core::Elements::struct_calc_nlnstiff:
     {
       std::visit(

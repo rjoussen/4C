@@ -51,6 +51,10 @@ namespace Core::Elements
 
     struct_calc_ptcstiff,   //!< calculate artificial stiffness due to PTC solution strategy
     struct_calc_stifftemp,  //!< TSI specific: mechanical-thermal stiffness
+    struct_calc_mechanical_heat_source,  //!< TSI specific: mechanical heat source of the material
+                                         //!< and its temperature derivative (thermal rows)
+    struct_calc_mechanical_heat_source_d_displacement,  //!< TSI specific: displacement derivative
+                                                        //!< of the mechanical heat source
     struct_calc_global_gpstresses_map,  //!< basically calc_struct_stress but with assembly of
                                         //!< global gpstresses map
     struct_calc_brownianforce,  //!< thermal (i.e., stochastic) and damping forces according to
@@ -121,6 +125,10 @@ namespace Core::Elements
       return struct_poro_calc_scatracoupling;
     else if (action == "calc_struct_stiffscalar")
       return calc_struct_stiffscalar;
+    else if (action == "struct_calc_mechanical_heat_source")
+      return struct_calc_mechanical_heat_source;
+    else if (action == "struct_calc_mechanical_heat_source_d_displacement")
+      return struct_calc_mechanical_heat_source_d_displacement;
     else
       return none;
   }
@@ -182,6 +190,10 @@ namespace Core::Elements
         return "struct_calc_ptcstiff";
       case struct_calc_stifftemp:
         return "struct_calc_stifftemp";
+      case struct_calc_mechanical_heat_source:
+        return "struct_calc_mechanical_heat_source";
+      case struct_calc_mechanical_heat_source_d_displacement:
+        return "struct_calc_mechanical_heat_source_d_displacement";
       case struct_calc_global_gpstresses_map:
         return "struct_calc_global_gpstresses_map";
       case struct_calc_brownianforce:
