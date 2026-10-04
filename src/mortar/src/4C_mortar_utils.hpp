@@ -30,25 +30,23 @@ namespace Mortar
 {
 
   /*!
-  \brief Sort vector in ascending order
-
-  This routine is taken from Trilinos MOERTEL package.
-
-  \param dlist (in): vector to be sorted (unsorted on input, sorted on output)
-  \param N (in):     length of vector to be sorted
-  \param list2 (in): another vector which is sorted accordingly
-  */
-  void sort(double* dlist, int N, int* list2);
-
-
-  /*!
   \brief Convex hull points are sorted in order to obtain final clip polygon
+
+  The clip polygon is computed in two steps:
+  1. The exact convex hull of the given points is computed with Andrew's monotone chain
+     algorithm, which does not depend on the order of (nearly) collinear points.
+  2. Points that form an almost straight line with their neighbors on this hull are removed,
+     i.e. if the cross product of the two adjacent edges is smaller than tol. The straightest
+     point is removed first. If less than three points remain, there is no clip polygon.
+
+  The clip polygon starts at the point with the smallest x-value (and the smallest y-value among
+  those) and runs clockwise.
 
   \param out (in): bool to switch output on/off
   \param transformed (in): coordinates of vertex objects transformed into auxiliary plane
   \param collconvexhull (in): vector of vertex objects to be sorted
   \param respoly (out): vector of vertex objects for result polygon
-  \param tol (in): clipping tolerance for close vertices detection
+  \param tol (in): tolerance for the removal of almost straight points
   \return number of removed points from collconvexhull
 
   */

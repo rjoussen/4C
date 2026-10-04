@@ -19,409 +19,102 @@
 #include "4C_structure_new_timint_base.hpp"
 #include "4C_utils_exceptions.hpp"
 
+#include <algorithm>
+#include <numeric>
+
 FOUR_C_NAMESPACE_OPEN
 
-/*!
-\brief Sort vector in ascending order
-
-This routine is taken from Trilinos MOERTEL package.
-
-\param dlist (in): vector to be sorted (unsorted on input, sorted on output)
-\param N (in):     length of vector to be sorted
-\param list2 (in): another vector which is sorted accordingly
-
-*/
-void Mortar::sort(double* dlist, int N, int* list2)
-{
-  int l, r, j, i, flag;
-  int RR2;
-  double dRR, dK;
-
-  if (N <= 1) return;
-
-  l = N / 2 + 1;
-  r = N - 1;
-  l = l - 1;
-  dRR = dlist[l - 1];
-  dK = dlist[l - 1];
-
-  if (list2 != nullptr)
-  {
-    RR2 = list2[l - 1];
-    while (r != 0)
-    {
-      j = l;
-      flag = 1;
-
-      while (flag == 1)
-      {
-        i = j;
-        j = j + j;
-
-        if (j > r + 1)
-          flag = 0;
-        else
-        {
-          if (j < r + 1)
-            if (dlist[j] > dlist[j - 1]) j = j + 1;
-
-          if (dlist[j - 1] > dK)
-          {
-            dlist[i - 1] = dlist[j - 1];
-            list2[i - 1] = list2[j - 1];
-          }
-          else
-          {
-            flag = 0;
-          }
-        }
-      }
-      dlist[i - 1] = dRR;
-      list2[i - 1] = RR2;
-
-      if (l == 1)
-      {
-        dRR = dlist[r];
-        RR2 = list2[r];
-        dK = dlist[r];
-        dlist[r] = dlist[0];
-        list2[r] = list2[0];
-        r = r - 1;
-      }
-      else
-      {
-        l = l - 1;
-        dRR = dlist[l - 1];
-        RR2 = list2[l - 1];
-        dK = dlist[l - 1];
-      }
-    }
-    dlist[0] = dRR;
-    list2[0] = RR2;
-  }
-  else
-  {
-    while (r != 0)
-    {
-      j = l;
-      flag = 1;
-      while (flag == 1)
-      {
-        i = j;
-        j = j + j;
-        if (j > r + 1)
-          flag = 0;
-        else
-        {
-          if (j < r + 1)
-            if (dlist[j] > dlist[j - 1]) j = j + 1;
-          if (dlist[j - 1] > dK)
-          {
-            dlist[i - 1] = dlist[j - 1];
-          }
-          else
-          {
-            flag = 0;
-          }
-        }
-      }
-      dlist[i - 1] = dRR;
-      if (l == 1)
-      {
-        dRR = dlist[r];
-        dK = dlist[r];
-        dlist[r] = dlist[0];
-        r = r - 1;
-      }
-      else
-      {
-        l = l - 1;
-        dRR = dlist[l - 1];
-        dK = dlist[l - 1];
-      }
-    }
-    dlist[0] = dRR;
-  }
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- |  Sort points to obtain final clip polygon                  popp 11/08|
- *----------------------------------------------------------------------*/
 int Mortar::sort_convex_hull_points(bool out, Core::LinAlg::SerialDenseMatrix& transformed,
     std::vector<Vertex>& collconvexhull, std::vector<Vertex>& respoly, double& tol)
 {
-  //**********************************************************************
-  // - this yields the final clip polygon
-  // - sanity of the generated output is checked
-  //**********************************************************************
+  // The tolerance is not used while building the hull, since points could then be removed based
+  // on neighbors that are not part of the final polygon. Removing the straightest point first
+  // keeps real corners of tiny polygons, in which several points are below the tolerance.
+  const int np = static_cast<int>(collconvexhull.size());
 
-  // (1) Find point with smallest x-value
-  // (if more than 1 point with identical x-value exists, choose the one with the smallest y-value)
-
-  // initialize starting point
-  int startindex = 0;
-  std::array<double, 2> startpoint = {transformed(0, 0), transformed(1, 0)};
-
-  int np = (int)collconvexhull.size();
-  for (int i = 1; i < np; ++i)
+  // sort points lexicographically w.r.t. their x- and y-values
+  auto is_smaller = [&](int a, int b)
   {
-    if (transformed(0, i) < startpoint[0])
-    {
-      startpoint[0] = transformed(0, i);
-      startpoint[1] = transformed(1, i);
-      startindex = i;
-    }
-    else if (transformed(0, i) == startpoint[0])
-    {
-      if (transformed(1, i) < startpoint[1])
-      {
-        startpoint[1] = transformed(1, i);
-        startindex = i;
-      }
-    }
-    else
-    {
-      // do nothing: starting point did not change
-    }
-  }
+    if (transformed(0, a) != transformed(0, b)) return transformed(0, a) < transformed(0, b);
+    return transformed(1, a) < transformed(1, b);
+  };
+  std::vector<int> sorted(np);
+  std::iota(sorted.begin(), sorted.end(), 0);
+  std::sort(sorted.begin(), sorted.end(), is_smaller);
 
-  if (out)
-    std::cout << "Start of convex hull: Index " << startindex << "\t" << startpoint[0] << "\t"
-              << startpoint[1] << std::endl;
+  // a-b-c rotates clockwise
+  auto is_clockwise = [&](int a, int b, int c)
+  {
+    const double abx = transformed(0, b) - transformed(0, a);
+    const double aby = transformed(1, b) - transformed(1, a);
+    const double acx = transformed(0, c) - transformed(0, a);
+    const double acy = transformed(1, c) - transformed(1, a);
+    return abx * acy - aby * acx < 0.0;
+  };
 
-  // (2) Sort remaining points ascending w.r.t their angle with the y-axis
-  // (if more than 1 point with identical angle exists, sort ascending w.r.t. their y-value)
-  std::vector<double> cotangle;
-  std::vector<double> yvalues;
-  std::vector<int> sorted;
-  std::vector<int> onxline;
-
+  // (1) exact convex hull: upper chain from left to right, then lower chain from right to left
+  std::vector<int> hull;
   for (int i = 0; i < np; ++i)
   {
-    // do nothing for starting point
-    if (i == startindex) continue;
-
-    // compute angle and store
-    double xdiff = transformed(0, i) - startpoint[0];
-    double ydiff = transformed(1, i) - startpoint[1];
-
-    if (xdiff < 0) FOUR_C_THROW("Found point with x < x_start for convex hull!");
-    if (xdiff >= tol)
-    {
-      cotangle.push_back(ydiff / xdiff);
-      sorted.push_back(i);
-    }
-    else
-    {
-      // these points need further investigation
-      onxline.push_back(i);
-    }
+    while (hull.size() >= 2 and not is_clockwise(hull[hull.size() - 2], hull.back(), sorted[i]))
+      hull.pop_back();
+    hull.push_back(sorted[i]);
   }
-
-  // check points on x-line with starting point and only add
-  // those with min and max value in y-direction
+  const std::size_t upper_size = hull.size();
+  for (int i = np - 2; i >= 0; --i)
   {
-    double y_max = std::numeric_limits<double>::min();
-    double y_min = std::numeric_limits<double>::max();
-    int i_max = -1;
-    int i_min = -1;
-    for (size_t i = 0; i < onxline.size(); ++i)
-    {
-      const double yval = transformed(1, onxline[i]) - startpoint[1];
-      if (yval < y_min && yval < 0.0)
-      {
-        y_min = yval;
-        i_min = onxline[i];
-      }
-      else if (yval > y_max && yval > 0.0)
-      {
-        y_max = yval;
-        i_max = onxline[i];
-      }
-    }
-    if (i_max > -1)
-    {
-      cotangle.push_back(std::numeric_limits<double>::max());
-      sorted.push_back(i_max);
-    }
-    if (i_min > -1)
-    {
-      cotangle.push_back(-std::numeric_limits<double>::max());
-      sorted.push_back(i_min);
-    }
+    while (hull.size() > upper_size and
+           not is_clockwise(hull[hull.size() - 2], hull.back(), sorted[i]))
+      hull.pop_back();
+    hull.push_back(sorted[i]);
   }
+  // the lower chain ends at the starting point again
+  if (hull.size() > 1) hull.pop_back();
 
-  // start index not yet included
-  np = (int)sorted.size() + 1;
-
-  if (out)
+  // (2) remove points that form an almost straight line with their neighbors, starting with the
+  // straightest one (if less than three points remain, there is no clip polygon)
+  // (the cross product of the two adjacent edges is negative for clockwise corners)
+  // Note: the cross product is an area, but tol is a length (scaled with the element size), as in
+  // the inside/outside checks of the polygon clipping. Thus, on small polygons, real corners can
+  // be removed. Dividing the cross product by the distance between the two neighbors would turn it
+  // into the distance of the point from the edge between them, consistent with the clipping. This
+  // is not done yet, since it changes the results of many tests slightly.
+  auto clockwise_rotation = [&](std::size_t k)
   {
-    std::cout << "Unsorted convex hull:\n";
-    std::cout << "Index " << startindex << "\t" << startpoint[0] << "\t" << startpoint[1]
-              << std::endl;
-    for (int i = 0; i < np - 1; ++i)
-      std::cout << "Index " << sorted[i] << "\t" << transformed(0, sorted[i]) << "\t"
-                << transformed(1, sorted[i]) << "\t" << cotangle[i] << std::endl;
-  }
-
-  // check if sizes are correct
-  if ((int)cotangle.size() != np - 1) FOUR_C_THROW("Size went wrong for cot angle!");
-
-  // now sort descending w.r.t cotangle = ascending w.r.t angle
-  Mortar::sort(cotangle.data(), np - 1, sorted.data());
-  std::reverse(cotangle.begin(), cotangle.end());
-  std::reverse(sorted.begin(), sorted.end());
-
-  // get associated y-values
-  for (int i = 0; i < np - 1; ++i) yvalues.push_back(transformed(1, sorted[i]));
-
-  // now sort ascending w.r.t value wherever angles are identical
-  // (bubblesort: we might need np-2 rounds if all np-1 angles identical)
-  for (int round = 0; round < np - 2; ++round)
-    for (int i = 0; i < np - 2; ++i)
-      if (cotangle[i] == cotangle[i + 1])
-        if (yvalues[i] > yvalues[i + 1])
-        {
-          std::swap(cotangle[i], cotangle[i + 1]);
-          std::swap(yvalues[i], yvalues[i + 1]);
-          std::swap(sorted[i], sorted[i + 1]);
-        }
-
-  if (out)
+    const int a = hull[(k + hull.size() - 1) % hull.size()];
+    const int b = hull[k];
+    const int c = hull[(k + 1) % hull.size()];
+    const double abx = transformed(0, b) - transformed(0, a);
+    const double aby = transformed(1, b) - transformed(1, a);
+    const double bcx = transformed(0, c) - transformed(0, b);
+    const double bcy = transformed(1, c) - transformed(1, b);
+    return -(abx * bcy - aby * bcx);
+  };
+  while (hull.size() >= 3)
   {
-    std::cout << "Sorted convex hull:\n";
-    std::cout << "Index " << startindex << "\t" << startpoint[0] << "\t" << startpoint[1]
-              << std::endl;
-    for (int i = 0; i < np - 1; ++i)
-      std::cout << "Index " << sorted[i] << "\t" << transformed(0, sorted[i]) << "\t"
-                << transformed(1, sorted[i]) << "\t" << cotangle[i] << std::endl;
+    std::size_t straightest = 0;
+    for (std::size_t k = 1; k < hull.size(); ++k)
+      if (clockwise_rotation(k) < clockwise_rotation(straightest)) straightest = k;
+    if (clockwise_rotation(straightest) >= tol) break;
+    hull.erase(hull.begin() + straightest);
   }
 
-  // (3) Go through sorted list of points
-  // (keep adding points as long as the last 3 points rotate clockwise)
-  // (if 3 points rotate counter-clockwise, do NOT add current point and continue)
+  // start again at the point with the smallest x-value, if the starting point was removed
+  std::rotate(hull.begin(), std::min_element(hull.begin(), hull.end(), is_smaller), hull.end());
 
-  // always push pack starting point
-  Vertex* current = &collconvexhull[startindex];
-  respoly.push_back(Vertex(current->coord(), current->v_type(), current->nodeids(), nullptr,
-      nullptr, false, false, nullptr, -1.0));
+  for (int i : hull)
+  {
+    const Vertex& current = collconvexhull[i];
+    respoly.push_back(Vertex(current.coord(), current.v_type(), current.nodeids(), nullptr, nullptr,
+        false, false, nullptr, -1.0));
+
+    if (out)
+      std::cout << "Clip polygon point " << i << "\t" << transformed(0, i) << "\t"
+                << transformed(1, i) << std::endl;
+  }
 
   // number of points removed from convex hull
-  int removed = (int)collconvexhull.size() - np;
-
-  // go through sorted list and check for clockwise rotation
-  std::vector<bool> haveremovedthis(np - 1);
-  for (int i = 0; i < np - 1; ++i) haveremovedthis[i] = false;
-
-  for (int i = 0; i < np - 1; ++i)
-  {
-    std::array<double, 2> edge1 = {0.0, 0.0};
-    std::array<double, 2> edge2 = {0.0, 0.0};
-
-    // first triple
-    if (i == 0)
-    {
-      edge1[0] = transformed(0, sorted[0]) - startpoint[0];
-      edge1[1] = transformed(1, sorted[0]) - startpoint[1];
-      edge2[0] = transformed(0, sorted[1]) - transformed(0, sorted[0]);
-      edge2[1] = transformed(1, sorted[1]) - transformed(1, sorted[0]);
-    }
-
-    // standard case
-    else if (i < np - 2)
-    {
-      // go back and find first non-removed partner
-      bool foundpartner = false;
-      int k = i - 1;
-
-      while (foundpartner == false)
-      {
-        // found non-removed partner
-        if (haveremovedthis[k] == false)
-        {
-          edge1[0] = transformed(0, sorted[i]) - transformed(0, sorted[k]);
-          edge1[1] = transformed(1, sorted[i]) - transformed(1, sorted[k]);
-          edge2[0] = transformed(0, sorted[i + 1]) - transformed(0, sorted[i]);
-          edge2[1] = transformed(1, sorted[i + 1]) - transformed(1, sorted[i]);
-          foundpartner = true;
-        }
-        else
-        {
-          // decrease counter
-          k -= 1;
-
-          // use starting point if all in between removed
-          if (k < 0)
-          {
-            edge1[0] = transformed(0, sorted[i]) - startpoint[0];
-            edge1[1] = transformed(1, sorted[i]) - startpoint[1];
-            edge2[0] = transformed(0, sorted[i + 1]) - transformed(0, sorted[i]);
-            edge2[1] = transformed(1, sorted[i + 1]) - transformed(1, sorted[i]);
-            foundpartner = true;
-          }
-        }
-      }
-    }
-
-    // last triple
-    else /* if i = np-1 */
-    {
-      // go back and find first non-removed partner
-      bool foundpartner = false;
-      int k = i - 1;
-
-      while (foundpartner == false)
-      {
-        // found non-removed partner
-        if (haveremovedthis[k] == false)
-        {
-          edge1[0] = transformed(0, sorted[i]) - transformed(0, sorted[k]);
-          edge1[1] = transformed(1, sorted[i]) - transformed(1, sorted[k]);
-          edge2[0] = startpoint[0] - transformed(0, sorted[i]);
-          edge2[1] = startpoint[1] - transformed(1, sorted[i]);
-          foundpartner = true;
-        }
-        else
-        {
-          // decrease counter
-          k -= 1;
-
-          // use starting point if all in between removed
-          if (k < 0)
-          {
-            edge1[0] = transformed(0, sorted[i]) - startpoint[0];
-            edge1[1] = transformed(1, sorted[i]) - startpoint[1];
-            edge2[0] = startpoint[0] - transformed(0, sorted[i]);
-            edge2[1] = startpoint[1] - transformed(1, sorted[i]);
-            foundpartner = true;
-          }
-        }
-      }
-    }
-
-    // check for clockwise rotation
-    double cw = edge1[0] * edge2[1] - edge1[1] * edge2[0];
-
-    // add point to convex hull if clockwise triple
-    // (use tolerance to remove almost straight lines of 3 points)
-    if (cw <= -tol)
-    {
-      Vertex* current = &collconvexhull[sorted[i]];
-      respoly.push_back(Vertex(current->coord(), current->v_type(), current->nodeids(), nullptr,
-          nullptr, false, false, nullptr, -1.0));
-    }
-    // mark vertex as "removed" if counter-clockwise triple
-    else
-    {
-      removed++;
-      haveremovedthis[i] = true;
-    }
-  }
-
-  return removed;
+  return np - static_cast<int>(respoly.size());
 }
 
 /*----------------------------------------------------------------------*/
