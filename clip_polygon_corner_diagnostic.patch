@@ -1,0 +1,115 @@
+Diagnostic for dropped corners in 3D mortar clip polygons (not for merging).
+Reports every clip polygon on main that lost a real corner; see the comments in the code below.
+
+Usage on main:
+  git apply clip_polygon_corner_diagnostic.patch
+  (build, run a test, search its output for "CLIP POLYGON CORNER DROPPED")
+  git checkout src/mortar/src/4C_mortar_utils.cpp
+
+Example (fsi_ves_mono_mtrss_ost_ost_slidrot):
+  CLIP POLYGON CORNER DROPPED: the clip polygon lost 0.218935 (25.1025 %) of the area 0.872163 of
+  the convex hull, but removing 1 almost straight points explains at most 4.61986e-09
+
+--- a/src/mortar/src/4C_mortar_utils.cpp
++++ b/src/mortar/src/4C_mortar_utils.cpp
+@@ -19,6 +19,11 @@
+ #include "4C_structure_new_timint_base.hpp"
+ #include "4C_utils_exceptions.hpp"
+
++#include <algorithm>
++#include <array>
++#include <cmath>
++#include <iostream>
++
+ FOUR_C_NAMESPACE_OPEN
+
+ /*!
+@@ -421,6 +426,88 @@
+     }
+   }
+
++  //**********************************************************************
++  // DIAGNOSTIC (not for merging): detect clip polygons that lost a real corner
++  //
++  // The clip polygon should be the convex hull of the candidate points, minus points that form
++  // an almost straight line with their neighbors. Such a point is only removed if the cross
++  // product of its two adjacent edges is smaller than tol, i.e. if the triangle it forms with its
++  // neighbors has an area smaller than tol/2. Removing k points therefore loses less than
++  // k * tol/2 of area. If the clip polygon lost more area than that compared to the exact convex
++  // hull, a real corner was dropped by the sorting above.
++  //**********************************************************************
++  {
++    const int num_candidates = static_cast<int>(collconvexhull.size());
++
++    // (a) exact convex hull of all candidate points (Andrew's monotone chain, no tolerance)
++    auto cross = [&](int a, int b, int c)
++    {
++      return (transformed(0, b) - transformed(0, a)) * (transformed(1, c) - transformed(1, a)) -
++             (transformed(1, b) - transformed(1, a)) * (transformed(0, c) - transformed(0, a));
++    };
++    std::vector<int> by_x(num_candidates);
++    for (int i = 0; i < num_candidates; ++i) by_x[i] = i;
++    std::sort(by_x.begin(), by_x.end(),
++        [&](int a, int b)
++        {
++          if (transformed(0, a) != transformed(0, b)) return transformed(0, a) < transformed(0, b);
++          return transformed(1, a) < transformed(1, b);
++        });
++    std::vector<int> exact_hull;
++    for (int i = 0; i < num_candidates; ++i)  // upper chain, left to right
++    {
++      while (exact_hull.size() >= 2 and
++             cross(exact_hull[exact_hull.size() - 2], exact_hull.back(), by_x[i]) >= 0.0)
++        exact_hull.pop_back();
++      exact_hull.push_back(by_x[i]);
++    }
++    const std::size_t upper_size = exact_hull.size();
++    for (int i = num_candidates - 2; i >= 0; --i)  // lower chain, right to left
++    {
++      while (exact_hull.size() > upper_size and
++             cross(exact_hull[exact_hull.size() - 2], exact_hull.back(), by_x[i]) >= 0.0)
++        exact_hull.pop_back();
++      exact_hull.push_back(by_x[i]);
++    }
++    exact_hull.pop_back();  // the lower chain ends at the starting point again
++
++    // (b) areas of the exact convex hull and of the clip polygon (planar polygons in 3D)
++    auto area = [](const std::vector<const double*>& points)
++    {
++      std::array<double, 3> sum = {0.0, 0.0, 0.0};
++      for (std::size_t i = 1; i + 1 < points.size(); ++i)
++      {
++        std::array<double, 3> a, b;
++        for (int k = 0; k < 3; ++k)
++        {
++          a[k] = points[i][k] - points[0][k];
++          b[k] = points[i + 1][k] - points[0][k];
++        }
++        sum[0] += a[1] * b[2] - a[2] * b[1];
++        sum[1] += a[2] * b[0] - a[0] * b[2];
++        sum[2] += a[0] * b[1] - a[1] * b[0];
++      }
++      return 0.5 * std::sqrt(sum[0] * sum[0] + sum[1] * sum[1] + sum[2] * sum[2]);
++    };
++    std::vector<const double*> hull_points, clip_points;
++    for (int i : exact_hull) hull_points.push_back(collconvexhull[i].coord().data());
++    if (respoly.size() >= 3)  // less than three points: no clip polygon
++      for (const Vertex& vertex : respoly) clip_points.push_back(vertex.coord().data());
++    const double hull_area = area(hull_points);
++    const double clip_area = area(clip_points);
++
++    // (c) compare the lost area with what the removal of almost straight points can explain
++    const int num_removed = num_candidates - static_cast<int>(clip_points.size());
++    const double lost_area = hull_area - clip_area;
++    const double max_lost_area_from_tolerance = 0.5 * tol * num_removed;
++    if (lost_area > max_lost_area_from_tolerance)
++      std::cout << "CLIP POLYGON CORNER DROPPED: the clip polygon lost " << lost_area << " ("
++                << 100.0 * lost_area / hull_area << " %) of the area " << hull_area
++                << " of the convex hull, but removing " << num_removed
++                << " almost straight points explains at most " << max_lost_area_from_tolerance
++                << std::endl;
++  }
++
+   return removed;
+ }
+
