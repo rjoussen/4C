@@ -917,6 +917,7 @@ __four_c_test_restart(BASED_ON ${current} SAME_FILE RESTART_STEP 100 RESTART_OUT
 __four_c_test_vtk(BASED_ON ${current_restart} PVD_RESULT_FILE xxx-restart-structure.pvd REFERENCE_TEST ${current} PVD_REFERENCE_FILE xxx-structure.pvd TOLERANCE 1e-15 TIME_STEPS 0.1 0.5 1.0)
 __four_c_test_restart(BASED_ON ${current} TEST_FILE mat_iso_viscoplast_refJC_adaptive_estimate_interp_equiv_stress_history.4C.yaml NP 2 RESTART_STEP 100 RESTART_OUTPUT_PREFIX "xxx-restart-aei-equiv-stress-history")
 __four_c_test_restart(BASED_ON ${current} TEST_FILE mat_iso_viscoplast_refJC_adaptive_estimate_interp_user_set_starting_point.4C.yaml NP 2 RESTART_STEP 100 RESTART_OUTPUT_PREFIX "xxx-restart-aei-user-set-starting-point")
+four_c_test(TEST_FILE mat_iso_viscoplast_refJC_log_timint_material_time_step_reduction.4C.yaml NP 2)
 four_c_test(TEST_FILE mat_iso_viscoplast_refJC_log_timint_substepping.4C.yaml RETURN_AS current)
 four_c_test(TEST_FILE mat_iso_thermoviscoplast_refJC_log_timint_tsi_monolithic.4C.yaml RETURN_AS current)
 __four_c_test_restart(BASED_ON ${current} SAME_FILE RESTART_STEP 90)
