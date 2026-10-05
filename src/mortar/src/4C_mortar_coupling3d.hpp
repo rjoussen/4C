@@ -323,6 +323,17 @@ namespace Mortar
         std::vector<std::vector<Core::Gen::Pairedvector<int, double>>>& linvertex, double tol);
 
     /*!
+     \brief Whether an ambiguous Delaunay triangulation is replaced by center_triangulation()
+
+     If the vertices of a clip polygon lie (almost) on one circle, e.g. for a rectangle or a
+     symmetric trapezoid, its Delaunay triangulation is not unique and decided by round-off.
+     The integrals depend on the chosen triangulation, so for mortar terms that are evaluated in
+     every Newton iteration, the choice can change between iterations and make Newton cycle.
+
+     */
+    virtual bool center_triangulation_if_ambiguous() const { return false; }
+
+    /*!
      \brief Check / set projection status of slave nodes (3D)
 
      This method checks for all slave nodes if they are part of the clip

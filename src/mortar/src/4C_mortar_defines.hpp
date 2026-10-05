@@ -28,8 +28,9 @@ FOUR_C_NAMESPACE_OPEN
 #define MORTARPROJLIM 1.0e-8 /* exact projection limit (no tolerance!) */
 
 // MORTAR PROJECTION AND INTEGRATION (3D)
-#define MORTARCLIPTOL 1.0e-8 /* tolerance for polygon clipping */
-#define MORTARINTLIM 1.0e-12 /* min(area-%) cell/slave for integration */
+#define MORTARCLIPTOL 1.0e-8     /* tolerance for polygon clipping */
+#define MORTARINTLIM 1.0e-12     /* min(area-%) cell/slave for integration */
+#define MORTARDELAUNAYTOL 1.0e-6 /* rel. tolerance for cocircular points in Delaunay triang. */
 
 FOUR_C_NAMESPACE_CLOSE
 

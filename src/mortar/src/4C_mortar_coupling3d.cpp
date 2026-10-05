@@ -2945,6 +2945,11 @@ bool Mortar::Coupling3d::delaunay_triangulation(
         const double diff = abs(dist - radius1);
         if (diff < close[t]) close[t] = diff;
 
+        // the vertex lies (almost) on the circumcircle, so the Delaunay triangulation is not
+        // unique: use the center-based triangulation instead, which involves no such decision
+        if (center_triangulation_if_ambiguous() and diff < MORTARDELAUNAYTOL * radius1)
+          return false;
+
         // check for bad triangle (without tolerance)
         if (dist < radius1) bad[t] = true;
       }

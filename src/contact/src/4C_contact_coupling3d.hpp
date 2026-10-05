@@ -54,6 +54,13 @@ namespace CONTACT
     //! @name Evlauation methods
 
     /*!
+     \brief Contact terms are evaluated in every Newton iteration, so an ambiguous Delaunay
+     triangulation is replaced by the center-based one
+
+     */
+    bool center_triangulation_if_ambiguous() const override { return true; }
+
+    /*!
      \brief Build auxiliary plane from source element (3D)
 
      Derived version, also doing normal linearization.
