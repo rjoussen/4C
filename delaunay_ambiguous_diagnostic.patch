@@ -1,0 +1,39 @@
+Diagnostic for ambiguous Delaunay triangulations in 3D mortar integration (not for merging).
+Reports every clip polygon vertex that lies within a relative distance of 1e-6 of the
+circumcircle of a triangle, and on which side round-off put it; see the comments in the code below.
+
+Usage on main:
+  git apply delaunay_ambiguous_diagnostic.patch
+  (build, run a test, search its output for "AMBIGUOUS DELAUNAY TRIANGULATION")
+  git checkout src/mortar/src/4C_mortar_coupling3d.cpp
+
+--- a/src/mortar/src/4C_mortar_coupling3d.cpp
++++ b/src/mortar/src/4C_mortar_coupling3d.cpp
+@@ -2945,6 +2945,27 @@
+         const double diff = abs(dist - radius1);
+         if (diff < close[t]) close[t] = diff;
+
++        //**********************************************************************
++        // DIAGNOSTIC (not for merging): detect ambiguous Delaunay triangulations
++        //
++        // If vertex k lies (almost) on the circumcircle of triangle t, both diagonals of the
++        // quadrilateral formed by them are valid Delaunay triangulations, and the decision below
++        // (dist < radius1, without tolerance) is made by round-off. The relative tolerance is the
++        // one used by the fix (MORTARDELAUNAYTOL). Comparing the reported decision between Newton
++        // iterations for the same element pair shows whether the triangulation flips.
++        //**********************************************************************
++        {
++          const double relative_tolerance = 1.0e-6;
++          if (diff < relative_tolerance * radius1)
++            std::cout << "AMBIGUOUS DELAUNAY TRIANGULATION: source element "
++                      << source_element().id() << ", target element " << target_element().id()
++                      << ", polygon with " << clipsize << " vertices: vertex " << k
++                      << " is at a relative distance of " << (dist - radius1) / radius1
++                      << " from the circumcircle of triangle (" << idx0 << ", " << idx1 << ", "
++                      << idx2 << "), decided " << (dist < radius1 ? "inside" : "outside")
++                      << std::endl;
++        }
++
+         // check for bad triangle (without tolerance)
+         if (dist < radius1) bad[t] = true;
+       }
