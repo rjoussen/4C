@@ -44,7 +44,7 @@ namespace
         const double temperature, const Core::LinAlg::SymmetricTensor<double, 3, 3>& strain)
     {
       return material_->evaluate_mechanical_heat_source(temperature,
-          Mat::KinematicState::from_linear_strain(strain, strain_rate_), context_, 0, 0);
+          {.strain = strain, .strain_rate = strain_rate_, .defgrad = std::nullopt}, context_, 0, 0);
     }
 
     const double initial_temperature_ = 290.0;

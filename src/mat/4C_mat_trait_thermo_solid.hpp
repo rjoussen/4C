@@ -9,7 +9,6 @@
 
 #include "4C_linalg_symmetric_tensor.hpp"
 #include "4C_linalg_tensor.hpp"
-#include "4C_linalg_tensor_generators.hpp"
 #include "4C_mat_monolithic_solid_scalar_material.hpp"
 #include "4C_mat_so3_material.hpp"
 #include "4C_utils_exceptions.hpp"
@@ -64,30 +63,10 @@ namespace Mat
     //! deformation gradient passed to the material, if available
     std::optional<Core::LinAlg::Tensor<double, 3, 3>> defgrad;
 
-    [[nodiscard]] static KinematicState from_linear_strain(
-        const Core::LinAlg::SymmetricTensor<double, 3, 3>& strain,
-        const Core::LinAlg::SymmetricTensor<double, 3, 3>& strain_rate)
-    {
-      return {.strain = strain, .strain_rate = strain_rate, .defgrad = std::nullopt};
-    }
-
-    [[nodiscard]] static KinematicState from_deformation_gradient(
-        const Core::LinAlg::Tensor<double, 3, 3>& defgrad,
-        const Core::LinAlg::Tensor<double, 3, 3>& defgrad_rate)
-    {
-      const Core::LinAlg::SymmetricTensor<double, 3, 3> strain =
-          0.5 * (Core::LinAlg::assume_symmetry(Core::LinAlg::transpose(defgrad) * defgrad) -
-                    Core::LinAlg::TensorGenerators::identity<double, 3, 3>);
-      const auto strain_rate =
-          0.5 * Core::LinAlg::assume_symmetry(Core::LinAlg::transpose(defgrad) * defgrad_rate +
-                                              Core::LinAlg::transpose(defgrad_rate) * defgrad);
-      return {.strain = strain, .strain_rate = strain_rate, .defgrad = defgrad};
-    }
-
     [[nodiscard]] const Core::LinAlg::Tensor<double, 3, 3>& deformation_gradient() const
     {
       if (!defgrad.has_value())
-        FOUR_C_THROW("The deformation gradient is only available for finite strains.");
+        FOUR_C_THROW("The kinematic state does not contain the deformation gradient.");
       return *defgrad;
     }
   };

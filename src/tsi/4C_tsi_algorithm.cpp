@@ -264,7 +264,7 @@ void TSI::Algorithm::apply_struct_coupling_state(
     std::shared_ptr<const Core::LinAlg::Vector<double>> disp,
     std::shared_ptr<const Core::LinAlg::Vector<double>> vel)
 {
-  set_struct_states_on_thermo(disp, vel);
+  set_struct_states_on_thermo(disp);
 
   FOUR_C_ASSERT_ALWAYS(disp != nullptr && vel != nullptr,
       "The mechanical heat source requires the structural displacements and velocities.");
@@ -273,23 +273,15 @@ void TSI::Algorithm::apply_struct_coupling_state(
 
 
 void TSI::Algorithm::set_struct_states_on_thermo(
-    std::shared_ptr<const Core::LinAlg::Vector<double>> disp,
-    std::shared_ptr<const Core::LinAlg::Vector<double>> vel)
+    std::shared_ptr<const Core::LinAlg::Vector<double>> disp)
 {
+  if (disp == nullptr) return;
+
   if (matchinggrid_)
-  {
-    if (disp != nullptr) thermo_field()->discretization()->set_state(1, "displacement", *disp);
-    if (vel != nullptr) thermo_field()->discretization()->set_state(1, "velocity", *vel);
-  }
+    thermo_field()->discretization()->set_state(1, "displacement", *disp);
   else
-  {
-    if (disp != nullptr)
-      thermo_field()->discretization()->set_state(
-          1, "displacement", *volcoupl_->apply_vector_mapping21(*disp));
-    if (vel != nullptr)
-      thermo_field()->discretization()->set_state(
-          1, "velocity", *volcoupl_->apply_vector_mapping21(*vel));
-  }
+    thermo_field()->discretization()->set_state(
+        1, "displacement", *volcoupl_->apply_vector_mapping21(*disp));
 }  // set_struct_states_on_thermo()
 
 
