@@ -90,6 +90,33 @@ namespace Discret::Elements
         const Core::Elements::LocationArray& la, Teuchos::ParameterList& params,
         Core::LinAlg::SerialDenseMatrix& stiffness_matrix_dScalar);
 
+    /*!
+     * @brief Evaluate the mechanical heat source of a thermo-solid material for the thermal
+     * equation
+     *
+     * The heat source is evaluated with the kinematics that the solid formulation passes to the
+     * material. Materials with internal variables evaluate it at the state of their last
+     * evaluation, i.e., this has to be called after the evaluation of the stress at the same
+     * state. The rows of all outputs refer to the temperature dofs (second dofset).
+     *
+     * @param context (in) : evaluation context, the point-wise entries are set by the element
+     * @param d_velocity_d_displacement (in) : derivative of the velocities w.r.t. the
+     * displacements due to the time integration (required for @p d_heat_source_d_displacement)
+     * @param heat_source (out) : contribution to the thermal internal force
+     * @param d_heat_source_d_temperature (out) : its derivative w.r.t. the temperatures
+     * (optional)
+     * @param d_heat_source_d_displacement (out) : its derivative w.r.t. the displacements
+     * (optional)
+     */
+    void evaluate_mechanical_heat_source(const Core::Elements::Element& ele,
+        Mat::So3Material& solid_material, const Core::FE::Discretization& discretization,
+        const Core::Elements::LocationArray& la,
+        const Mat::EvaluationContext<Core::FE::dim<celltype>>& context,
+        std::optional<double> d_velocity_d_displacement,
+        Core::LinAlg::SerialDenseVector& heat_source,
+        Core::LinAlg::SerialDenseMatrix* d_heat_source_d_temperature,
+        Core::LinAlg::SerialDenseMatrix* d_heat_source_d_displacement);
+
     double get_normal_cauchy_stress_at_xi(const Core::Elements::Element& ele,
         Mat::So3Material& solid_material, const std::vector<double>& disp,
         const std::vector<double>& scalars, const Core::LinAlg::Tensor<double, 3>& xi,
