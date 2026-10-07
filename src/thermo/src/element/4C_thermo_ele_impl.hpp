@@ -209,7 +209,6 @@ namespace Discret
           const Core::Elements::Element* ele,  //!< the element whose matrix is calculated
           const double time,                   //!< current time
           const std::vector<double>& disp,     //!< current displacements
-          const std::vector<double>& vel,      //!< current velocities
           Core::LinAlg::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>*
               econd,  //!< conductivity matrix
           Core::LinAlg::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>*
@@ -223,18 +222,10 @@ namespace Discret
       void nonlinear_coupled_tang(
           const Core::Elements::Element* ele,  //!< current element whose terms are calculated
           const std::vector<double>& disp,     //!< current displacements
-          const std::vector<double>& vel,      //!< current velocities
           Core::LinAlg::Matrix<nen_ * numdofpernode_, nsd_ * nen_ * numdofpernode_>*
               etangcoupl,                 //!< k_Tu matrix
           Teuchos::ParameterList& params  //!< parameter list, containing e.g., dt,theta
       );
-
-      //! build nonlinear B-operator
-      void calculate_bop(
-          Core::LinAlg::Matrix<6, nsd_ * nen_ * numdofpernode_>* bop,  //!< nonlinear B-operator
-          const Core::LinAlg::Matrix<nsd_, nsd_>* defgrd,              //!< deformation gradient
-          const Core::LinAlg::Matrix<nsd_, nen_>* N_XYZ                //!< gradient-operator
-      ) const;
 
       /// @}
 
@@ -244,23 +235,6 @@ namespace Discret
           const Core::Elements::Element* ele,  //!< current element we are dealing with
           const double time                    //!< current times
       );
-
-      //! build linear B-operator
-      void calculate_boplin(
-          Core::LinAlg::Matrix<6, nsd_ * nen_ * numdofpernode_>* boplin,  //!< linear B-operator
-          const Core::LinAlg::Matrix<nsd_, nen_>* N_XYZ                   //!< gradient-operator
-      ) const;
-
-      //! get corresponding structural material
-      std::shared_ptr<Core::Mat::Material> get_str_material(
-          const Core::Elements::Element* ele  //!< the element whose matrix is calculated
-      ) const;
-
-      //! calculate reactive term
-      void calculate_reactive_term(
-          const Core::LinAlg::Matrix<6, 1>* ctemp,     //!< temperature-dependent material tangent
-          const Core::LinAlg::Matrix<6, 1>* strainvel  //!< strain rate
-      ) const;
 
       //! determine heat flux and conductivity tensor
       //! based on material law
@@ -285,7 +259,6 @@ namespace Discret
       //! compute heatflux and temperature gradient in nonlinear case
       void nonlinear_heatflux_tempgrad(const Core::Elements::Element* ele,  //!< the current element
           const std::vector<double>& disp,                //!< element displacements
-          const std::vector<double>& vel,                 //!< element velocities
           Core::LinAlg::Matrix<nquad_, nsd_>* eheatflux,  //!< [out] heat fluxes at Gauss points
           Core::LinAlg::Matrix<nquad_, nsd_>*
               etempgrad,                  //!< [out] temperature gradients at Gauss points
@@ -306,10 +279,9 @@ namespace Discret
           Teuchos::ParameterList& params  //!< parameter list, containing analytical solution
       );
 
-      //! Compute nodal position and velocity
-      inline void initial_and_current_nodal_position_velocity(const Core::Elements::Element* ele,
-          const std::vector<double>& disp, const std::vector<double>& vel,
-          Core::LinAlg::Matrix<nen_, nsd_>& xcurr, Core::LinAlg::Matrix<nen_, nsd_>& xcurrrate);
+      //! Compute current nodal position
+      inline void initial_and_current_nodal_position(const Core::Elements::Element* ele,
+          const std::vector<double>& disp, Core::LinAlg::Matrix<nen_, nsd_>& xcurr);
 
       //! prepare the evaluation of NURBS shape functions
       virtual void prepare_nurbs_eval(
@@ -335,10 +307,9 @@ namespace Discret
               efluxz  //!< element heat flux in z-direction
       );
 
-      //! extract displacement and velocity vector from discretization
-      void extract_disp_vel(const Core::FE::Discretization& discretization,
-          const Core::Elements::LocationArray& la, std::vector<double>& mydisp,
-          std::vector<double>& myvel) const;
+      //! extract displacement vector from discretization
+      void extract_disp(const Core::FE::Discretization& discretization,
+          const Core::Elements::LocationArray& la, std::vector<double>& mydisp) const;
 
       //! actual values of temperatures T_{n+1}
       Core::LinAlg::Matrix<nen_, 1> etempn_;

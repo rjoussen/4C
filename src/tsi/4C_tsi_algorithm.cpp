@@ -350,26 +350,18 @@ std::shared_ptr<Core::LinAlg::SparseMatrix> TSI::Algorithm::apply_struct_couplin
   FOUR_C_ASSERT_ALWAYS(disp != nullptr && vel != nullptr,
       "The mechanical heat source requires the structural displacements and velocities.");
 
-  set_struct_states_on_thermo(*disp, *vel);
+  set_struct_states_on_thermo(*disp);
   return evaluate_mechanical_heat_source(disp, vel, d_velocity_d_displacement);
 }  // apply_struct_coupling_state()
 
 
-void TSI::Algorithm::set_struct_states_on_thermo(
-    const Core::LinAlg::Vector<double>& disp, const Core::LinAlg::Vector<double>& vel)
+void TSI::Algorithm::set_struct_states_on_thermo(const Core::LinAlg::Vector<double>& disp)
 {
   if (matchinggrid_)
-  {
     thermo_field()->discretization()->set_state(1, "displacement", disp);
-    thermo_field()->discretization()->set_state(1, "velocity", vel);
-  }
   else
-  {
     thermo_field()->discretization()->set_state(
         1, "displacement", *volcoupl_->apply_vector_mapping21(disp));
-    thermo_field()->discretization()->set_state(
-        1, "velocity", *volcoupl_->apply_vector_mapping21(vel));
-  }
 }  // set_struct_states_on_thermo()
 
 
