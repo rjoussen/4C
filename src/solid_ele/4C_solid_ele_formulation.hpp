@@ -67,6 +67,15 @@ namespace Discret::Elements
   template <typename SolidFormulation>
   constexpr bool has_condensed_contribution = SolidFormulation::has_condensed_contribution;
 
+  /*!
+   * @brief a trait for solid formulation determining whether the formulation provides the rate of
+   * the strain that it passes to the material and the linearization of this rate
+   *
+   * @tparam SolidFormulation
+   */
+  template <typename SolidFormulation>
+  constexpr bool has_strain_rate = requires { typename SolidFormulation::StrainRateContainer; };
+
   namespace Internal
   {
     /*!
@@ -508,6 +517,103 @@ namespace Discret::Elements
                            linearization, stress, integration_factor),
             Internal::get_additional_tuple(preparation_data, history_data, gp),
             std::forward_as_tuple(stiffness_matrix)));
+  }
+
+  /*!
+   * @brief Evaluate the rate of the strain that the solid formulation passes to the material
+   *
+   * @param F (in) : deformation gradient passed to the material
+   * @param linearization (in) : linearization container of the solid formulation
+   * @param nodal_velocities (in) : nodal velocities (ordered node by node)
+   * @return rate of the strain and the quantities needed for its linearization
+   */
+  template <typename SolidFormulation, Core::FE::CellType celltype>
+    requires has_strain_rate<SolidFormulation>
+  inline typename SolidFormulation::StrainRateContainer evaluate_strain_rate(
+      const JacobianMapping<celltype>& jacobian_mapping,
+      const Core::LinAlg::Tensor<double, Core::FE::dim<celltype>, Core::FE::dim<celltype>>& F,
+      const typename SolidFormulation::LinearizationContainer& linearization,
+      const Core::LinAlg::Matrix<Core::FE::num_nodes(celltype) * Core::FE::dim<celltype>, 1>&
+          nodal_velocities,
+      const PreparationData<SolidFormulation>& preparation_data,
+      SolidFormulationHistory<SolidFormulation>& history_data, const int gp)
+  {
+    return std::apply([](auto&&... args)
+        { return SolidFormulation::evaluate_strain_rate(std::forward<decltype(args)>(args)...); },
+        std::tuple_cat(std::forward_as_tuple(jacobian_mapping, F, linearization, nodal_velocities),
+            Internal::get_additional_tuple(preparation_data, history_data, gp)));
+  }
+
+  /*!
+   * @brief Add factor . (dE/dd)^T : Y to @p vector, where E is the strain that the solid
+   * formulation passes to the material and Y is a symmetric (stress-like) tensor
+   *
+   * @param F (in) : deformation gradient passed to the material
+   */
+  template <typename SolidFormulation, Core::FE::CellType celltype>
+    requires has_strain_rate<SolidFormulation>
+  inline void add_d_strain_d_displacements_contraction(
+      const JacobianMapping<celltype>& jacobian_mapping,
+      const Core::LinAlg::Tensor<double, Core::FE::dim<celltype>, Core::FE::dim<celltype>>& F,
+      const typename SolidFormulation::LinearizationContainer& linearization,
+      const Core::LinAlg::SymmetricTensor<double, Core::FE::dim<celltype>, Core::FE::dim<celltype>>&
+          Y,
+      const double factor, const PreparationData<SolidFormulation>& preparation_data,
+      SolidFormulationHistory<SolidFormulation>& history_data, const int gp,
+      Core::LinAlg::Matrix<Core::FE::num_nodes(celltype) * Core::FE::dim<celltype>, 1>& vector)
+  {
+    std::apply(
+        [](auto&&... args)
+        {
+          SolidFormulation::add_d_strain_d_displacements_contraction(
+              std::forward<decltype(args)>(args)...);
+        },
+        std::tuple_cat(std::forward_as_tuple(jacobian_mapping, F, linearization, Y, factor),
+            Internal::get_additional_tuple(preparation_data, history_data, gp),
+            std::forward_as_tuple(vector)));
+  }
+
+  /*!
+   * @brief Add factor . (dE'/dd)^T : Y to @p vector, where E' is the rate of the strain that the
+   * solid formulation passes to the material and Y is a symmetric (stress-like) tensor
+   *
+   * The velocities depend on the displacements through the time integration with
+   * dv/dd = timefac_d . I.
+   *
+   * @param F (in) : deformation gradient passed to the material
+   * @param strain_rate (in) : rate of the strain, see evaluate_strain_rate()
+   * @param timefac_d (in) : derivative of the velocities w.r.t. the displacements
+   */
+  template <typename SolidFormulation, Core::FE::CellType celltype>
+    requires has_strain_rate<SolidFormulation>
+  inline void add_d_strain_rate_d_displacements_contraction(
+      const JacobianMapping<celltype>& jacobian_mapping,
+      const Core::LinAlg::Tensor<double, Core::FE::dim<celltype>, Core::FE::dim<celltype>>& F,
+      const typename SolidFormulation::LinearizationContainer& linearization,
+      const typename SolidFormulation::StrainRateContainer& strain_rate,
+      const Core::LinAlg::SymmetricTensor<double, Core::FE::dim<celltype>, Core::FE::dim<celltype>>&
+          Y,
+      const double timefac_d, const double factor,
+      const PreparationData<SolidFormulation>& preparation_data,
+      SolidFormulationHistory<SolidFormulation>& history_data, const int gp,
+      Core::LinAlg::Matrix<Core::FE::num_nodes(celltype) * Core::FE::dim<celltype>, 1>& vector)
+  {
+    // dependence via the velocities: the strain only depends on the displacements, hence
+    // dE'/dv = dE/dd
+    add_d_strain_d_displacements_contraction<SolidFormulation>(jacobian_mapping, F, linearization,
+        Y, timefac_d * factor, preparation_data, history_data, gp, vector);
+
+    // dependence via the displacements at fixed velocities
+    std::apply(
+        [](auto&&... args)
+        {
+          SolidFormulation::add_d_strain_rate_d_displacements_at_fixed_velocities_contraction(
+              std::forward<decltype(args)>(args)...);
+        },
+        std::tuple_cat(
+            std::forward_as_tuple(jacobian_mapping, F, linearization, strain_rate, Y, factor),
+            Internal::get_additional_tuple(preparation_data, history_data, gp),
+            std::forward_as_tuple(vector)));
   }
 
   /*!
