@@ -193,20 +193,20 @@ RESULT DESCRIPTION:
       DIS: "thermo"
       NODE: 1
       QUANTITY: "temp"
-      VALUE: 347.23435464012715
+      VALUE: 347.23435462786387
       TOLERANCE: 1e-09
       NAME: "T(x=0)"
   - THERMAL:
       DIS: "thermo"
       NODE: 2
       QUANTITY: "temp"
-      VALUE: 347.23435464012715
+      VALUE: 347.23435462786387
       TOLERANCE: 1e-09
       NAME: "T(x=2)"
   - THERMAL:
       DIS: "thermo"
       NODE: 9
       QUANTITY: "temp"
-      VALUE: 347.23435464012715
+      VALUE: 347.23435462786387
       TOLERANCE: 1e-09
       NAME: "T(x=4)"

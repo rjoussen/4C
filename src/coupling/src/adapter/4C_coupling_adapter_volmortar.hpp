@@ -128,6 +128,21 @@ namespace Coupling::Adapter
     std::shared_ptr<Core::LinAlg::SparseMatrix> apply_matrix_mapping21(
         const Core::LinAlg::SparseMatrix& mat) const;
 
+    /*!
+    \brief Transposed mortar mapping from 1 to 2, i.e., P12^T . vec, for dual quantities, e.g.,
+    forces, assembled into the dofs of field 1
+
+    */
+    std::shared_ptr<Core::LinAlg::Vector<double>> apply_transposed_vector_mapping12(
+        const Core::LinAlg::Vector<double>& vec) const;
+
+    /*!
+    \brief Transposed mortar mapping from 1 to 2 for the rows of a matrix, i.e., P12^T . mat
+
+    */
+    std::shared_ptr<Core::LinAlg::SparseMatrix> apply_transposed_matrix_mapping12(
+        const Core::LinAlg::SparseMatrix& mat) const;
+
     //@}
 
     //! assign materials

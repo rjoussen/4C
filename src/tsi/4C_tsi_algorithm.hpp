@@ -17,7 +17,10 @@
 #include "4C_adapter_algorithmbase.hpp"
 #include "4C_coupling_adapter.hpp"
 #include "4C_coupling_adapter_volmortar.hpp"
+#include "4C_linalg_sparsematrix.hpp"
 #include "4C_linalg_vector.hpp"
+
+#include <optional>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -134,9 +137,33 @@ namespace TSI
     void apply_thermo_coupling_state(std::shared_ptr<const Core::LinAlg::Vector<double>> temp,
         std::shared_ptr<const Core::LinAlg::Vector<double>> temp_res = nullptr);
 
-    //! apply structural displacements and velocities on thermo discretization
-    void apply_struct_coupling_state(std::shared_ptr<const Core::LinAlg::Vector<double>> disp,
-        std::shared_ptr<const Core::LinAlg::Vector<double>> vel);
+    /*!
+     * @brief Apply structural displacements and velocities on thermo discretization and hand the
+     * mechanical heat source of the structure at this state to the thermal field
+     *
+     * The structural elements evaluate the heat source of their materials with their own
+     * kinematics, at the given displacements and velocities and the temperatures the structure is
+     * evaluated with, i.e., the initial temperatures in one-way coupling. The thermal field keeps
+     * the heat source fixed until it is applied again.
+     *
+     * Materials with internal variables evaluate the heat source at the state of their last
+     * evaluation. In iterative partitioned schemes with relaxation of the displacements, the given
+     * displacements differ from this state, and the two coincide only at convergence.
+     *
+     * @param d_velocity_d_displacement derivative of the velocities w.r.t. the displacements due to
+     * the structural time integration. If given, the derivatives of the heat source are evaluated
+     * as well: the one w.r.t. the temperatures is handed to the thermal field.
+     * @return derivative of the heat source w.r.t. the displacements (rows: thermal dofs) if
+     * @p d_velocity_d_displacement is given, nullptr otherwise
+     */
+    std::shared_ptr<Core::LinAlg::SparseMatrix> apply_struct_coupling_state(
+        std::shared_ptr<const Core::LinAlg::Vector<double>> disp,
+        std::shared_ptr<const Core::LinAlg::Vector<double>> vel,
+        std::optional<double> d_velocity_d_displacement = std::nullopt);
+
+    //! set structural displacements and velocities on thermo discretization
+    void set_struct_states_on_thermo(
+        const Core::LinAlg::Vector<double>& disp, const Core::LinAlg::Vector<double>& vel);
 
     //! Prepare a ptr to the contact strategy from the structural field,
     //! store it in tsi and hand it to the thermal field
@@ -192,6 +219,18 @@ namespace TSI
     std::shared_ptr<Mortar::MultiFieldCoupling> mortar_coupling_;
 
     //@}
+
+   private:
+    //! evaluate the mechanical heat source with the structural elements and hand it to the
+    //! thermal field, see apply_struct_coupling_state()
+    std::shared_ptr<Core::LinAlg::SparseMatrix> evaluate_mechanical_heat_source(
+        const std::shared_ptr<const Core::LinAlg::Vector<double>>& disp,
+        const std::shared_ptr<const Core::LinAlg::Vector<double>>& vel,
+        std::optional<double> d_velocity_d_displacement);
+
+    //! temperatures (thermal dofs) the structure is evaluated with, i.e., the ones last applied to
+    //! the structure or the initial ones
+    std::shared_ptr<const Core::LinAlg::Vector<double>> structure_temperature_;
   };  // Algorithm
 }  // namespace TSI
 

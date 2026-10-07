@@ -389,7 +389,7 @@ void Thermo::TimIntOneStepTheta::apply_force_tang_internal(const double time,  /
   Teuchos::ParameterList p;
   // set parameters
   p.set<double>("theta", theta_);
-  p.set<double>("timefac", theta_);
+  p.set<double>("timefac", internal_force_timefac());
   p.set<bool>("lump capa matrix", lumpcapa_);
   // call the base function
   TimInt::apply_force_tang_internal(p, time, dt, temp, tempi, fcap, fint, tang);

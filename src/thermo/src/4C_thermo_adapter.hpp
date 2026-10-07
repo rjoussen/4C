@@ -173,6 +173,25 @@ namespace Thermo
     /// reset everything to beginning of time step, for adaptivity
     virtual void reset_step() = 0;
 
+    /*!
+     * @brief Set an additional contribution of a coupled field to the internal force
+     *
+     * The contribution enters the internal force at the end of the time step and is weighted by
+     * the time integrator like all other internal forces. It is kept fixed, i.e., it does not
+     * change with the temperatures, until it is set again.
+     *
+     * @param force contribution to the internal force
+     * @param tangent derivative of the contribution w.r.t. the temperatures, which is added to the
+     * tangent if given (filled)
+     */
+    virtual void set_coupled_internal_force(
+        std::shared_ptr<const Core::LinAlg::Vector<double>> force,
+        std::shared_ptr<const Core::LinAlg::SparseMatrix> tangent) = 0;
+
+    //! weight of the internal force at the end of the time step in the time integration, which is
+    //! also applied to the tangent of set_coupled_internal_force()
+    [[nodiscard]] virtual double internal_force_timefac() const = 0;
+
     //@}
 
     //! @name Solver calls

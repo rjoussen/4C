@@ -1363,13 +1363,13 @@ RESULT DESCRIPTION:
       DIS: "thermo"
       NODE: 1
       QUANTITY: "temp"
-      VALUE: 274.0311782387195
+      VALUE: 274.0311782036972
       TOLERANCE: 1e-08
       NAME: "temp_x0"
   - THERMAL:
       DIS: "thermo"
       NODE: 135
       QUANTITY: "temp"
-      VALUE: 273.5462315971227
+      VALUE: 273.5462315658579
       TOLERANCE: 1e-08
       NAME: "temp_x1"

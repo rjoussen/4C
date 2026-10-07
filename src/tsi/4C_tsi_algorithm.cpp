@@ -20,14 +20,100 @@
 #include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
+#include "4C_linalg_utils_sparse_algebra_assemble.hpp"
+#include "4C_mat_so3_material.hpp"
 #include "4C_mortar_multifield_coupling.hpp"
+#include "4C_solid_scatra_ele.hpp"
 #include "4C_thermo_adapter.hpp"
 #include "4C_tsi_input.hpp"
 #include "4C_tsi_problem_access.hpp"
 #include "4C_tsi_utils.hpp"
+#include "4C_utils_demangle.hpp"
 #include "4C_utils_parameter_list.hpp"
 
 FOUR_C_NAMESPACE_OPEN
+
+namespace
+{
+  //! mechanical heat source assembled into the temperature dofs of the structural discretization
+  struct AssembledHeatSource
+  {
+    std::shared_ptr<Core::LinAlg::Vector<double>> heat_source;
+    //! derivatives, only evaluated if the derivative of the velocities w.r.t. the displacements is
+    //! given
+    std::shared_ptr<Core::LinAlg::SparseMatrix> d_heat_source_d_temperature;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> d_heat_source_d_displacement;
+  };
+
+  //! assemble the heat source at the states set on @p structure_discretization
+  AssembledHeatSource assemble_mechanical_heat_source(
+      Core::FE::Discretization& structure_discretization, const double total_time,
+      const double time_step_size, const std::optional<double> d_velocity_d_displacement)
+  {
+    const Mat::EvaluationContext<3> context{.total_time = &total_time,
+        .time_step_size = &time_step_size,
+        .xi = nullptr,
+        .ref_coords = nullptr};
+
+    const bool evaluate_derivatives = d_velocity_d_displacement.has_value();
+
+    // rows: temperature dofs of the structural discretization, i.e., the thermal dofs for
+    // matching grids and the auxiliary temperature dofs for volume coupling
+    const Core::LinAlg::Map& temperature_row_map = *structure_discretization.dof_row_map(1);
+    AssembledHeatSource assembled{
+        .heat_source = std::make_shared<Core::LinAlg::Vector<double>>(temperature_row_map, true),
+        .d_heat_source_d_temperature = nullptr,
+        .d_heat_source_d_displacement = nullptr};
+    if (evaluate_derivatives)
+    {
+      assembled.d_heat_source_d_temperature =
+          std::make_shared<Core::LinAlg::SparseMatrix>(temperature_row_map, 81, true, true);
+      assembled.d_heat_source_d_displacement =
+          std::make_shared<Core::LinAlg::SparseMatrix>(temperature_row_map, 81, true, true);
+    }
+
+    Core::Elements::LocationArray la(structure_discretization.num_dof_sets());
+    Core::LinAlg::SerialDenseVector element_heat_source;
+    Core::LinAlg::SerialDenseMatrix element_d_heat_source_d_temperature;
+    Core::LinAlg::SerialDenseMatrix element_d_heat_source_d_displacement;
+    for (auto ele : structure_discretization.my_col_element_range())
+    {
+      auto& element = dynamic_cast<Discret::Elements::SolidScatra<3>&>(*ele.user_element());
+      element.location_vector(structure_discretization, la);
+
+      element_heat_source.size(la[1].size());
+      if (evaluate_derivatives)
+      {
+        element_d_heat_source_d_temperature.shape(la[1].size(), la[1].size());
+        element_d_heat_source_d_displacement.shape(la[1].size(), la[0].size());
+      }
+
+      element.evaluate_mechanical_heat_source(structure_discretization, la, context,
+          d_velocity_d_displacement, element_heat_source,
+          evaluate_derivatives ? &element_d_heat_source_d_temperature : nullptr,
+          evaluate_derivatives ? &element_d_heat_source_d_displacement : nullptr);
+
+      Core::LinAlg::assemble(
+          *assembled.heat_source, element_heat_source, la[1].lm_, la[1].lmowner_);
+      if (evaluate_derivatives)
+      {
+        assembled.d_heat_source_d_temperature->assemble(element.id(), la[1].stride_,
+            element_d_heat_source_d_temperature, la[1].lm_, la[1].lmowner_, la[1].lm_);
+        assembled.d_heat_source_d_displacement->assemble(element.id(), la[0].stride_,
+            element_d_heat_source_d_displacement, la[1].lm_, la[1].lmowner_, la[0].lm_);
+      }
+    }
+
+    if (evaluate_derivatives)
+    {
+      assembled.d_heat_source_d_temperature->complete();
+      assembled.d_heat_source_d_displacement->complete(
+          *structure_discretization.dof_row_map(0), temperature_row_map);
+    }
+
+    return assembled;
+  }
+}  // namespace
 
 //! Note: The order of calling the two BaseAlgorithm-constructors is
 //! important here! In here control file entries are written. And these entries
@@ -78,6 +164,8 @@ TSI::Algorithm::Algorithm(MPI_Comm comm)
   {
     Thermo::BaseAlgorithm thermo(problem_->tsi_dynamic_params(), thermodis);
     thermo_ = thermo.thermo_field();
+    structure_temperature_ =
+        std::make_shared<Core::LinAlg::Vector<double>>(*thermo_field()->tempnp());
 
     //  // access structural dynamic params list which will be possibly modified while creating the
     //  time integrator
@@ -102,6 +190,16 @@ TSI::Algorithm::Algorithm(MPI_Comm comm)
     adapterbase_ptr->setup();
     structure_ =
         std::dynamic_pointer_cast<Adapter::StructureWrapper>(adapterbase_ptr->structure_field());
+
+    // the mechanical heat source is evaluated by the structural elements
+    for (auto ele : structdis->my_col_element_range())
+    {
+      const Core::Elements::Element& element = *ele.user_element();
+      FOUR_C_ASSERT_ALWAYS(
+          dynamic_cast<const Discret::Elements::SolidScatra<3>*>(&element) != nullptr,
+          "TSI is only implemented for 3D SOLIDSCATRA elements, but element {} is a {}.",
+          element.id(), Core::Utils::get_dynamic_type_name(element));
+    }
 
     if (restart &&
         Teuchos::getIntegralValue<TSI::SolutionSchemeOverFields>(problem_->tsi_dynamic_params(),
@@ -212,6 +310,9 @@ void TSI::Algorithm::apply_thermo_coupling_state(
     std::shared_ptr<const Core::LinAlg::Vector<double>> temp,
     std::shared_ptr<const Core::LinAlg::Vector<double>> temp_res)
 {
+  if (temp != nullptr)
+    structure_temperature_ = std::make_shared<Core::LinAlg::Vector<double>>(*temp);
+
   if (matchinggrid_)
   {
     if (temp != nullptr) structure_field()->discretization()->set_state(1, "temperature", *temp);
@@ -241,25 +342,72 @@ void TSI::Algorithm::apply_thermo_coupling_state(
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
-void TSI::Algorithm::apply_struct_coupling_state(
+std::shared_ptr<Core::LinAlg::SparseMatrix> TSI::Algorithm::apply_struct_coupling_state(
     std::shared_ptr<const Core::LinAlg::Vector<double>> disp,
-    std::shared_ptr<const Core::LinAlg::Vector<double>> vel)
+    std::shared_ptr<const Core::LinAlg::Vector<double>> vel,
+    std::optional<double> d_velocity_d_displacement)
+{
+  FOUR_C_ASSERT_ALWAYS(disp != nullptr && vel != nullptr,
+      "The mechanical heat source requires the structural displacements and velocities.");
+
+  set_struct_states_on_thermo(*disp, *vel);
+  return evaluate_mechanical_heat_source(disp, vel, d_velocity_d_displacement);
+}  // apply_struct_coupling_state()
+
+
+void TSI::Algorithm::set_struct_states_on_thermo(
+    const Core::LinAlg::Vector<double>& disp, const Core::LinAlg::Vector<double>& vel)
 {
   if (matchinggrid_)
   {
-    if (disp != nullptr) thermo_field()->discretization()->set_state(1, "displacement", *disp);
-    if (vel != nullptr) thermo_field()->discretization()->set_state(1, "velocity", *vel);
+    thermo_field()->discretization()->set_state(1, "displacement", disp);
+    thermo_field()->discretization()->set_state(1, "velocity", vel);
   }
   else
   {
-    if (disp != nullptr)
-      thermo_field()->discretization()->set_state(
-          1, "displacement", *volcoupl_->apply_vector_mapping21(*disp));
-    if (vel != nullptr)
-      thermo_field()->discretization()->set_state(
-          1, "velocity", *volcoupl_->apply_vector_mapping21(*vel));
+    thermo_field()->discretization()->set_state(
+        1, "displacement", *volcoupl_->apply_vector_mapping21(disp));
+    thermo_field()->discretization()->set_state(
+        1, "velocity", *volcoupl_->apply_vector_mapping21(vel));
   }
-}  // apply_struct_coupling_state()
+}  // set_struct_states_on_thermo()
+
+
+std::shared_ptr<Core::LinAlg::SparseMatrix> TSI::Algorithm::evaluate_mechanical_heat_source(
+    const std::shared_ptr<const Core::LinAlg::Vector<double>>& disp,
+    const std::shared_ptr<const Core::LinAlg::Vector<double>>& vel,
+    const std::optional<double> d_velocity_d_displacement)
+{
+  // The heat source is evaluated at the temperatures the structure is evaluated with, such that it
+  // is consistent with the state of materials with internal variables. The structure resets its
+  // displacements and velocities before each of its evaluations.
+  Core::FE::Discretization& structure_discretization = *structure_field()->discretization();
+  structure_discretization.set_state(0, "displacement", *disp);
+  structure_discretization.set_state(0, "velocity", *vel);
+  structure_discretization.set_state(1, "temperature",
+      matchinggrid_ ? *structure_temperature_
+                    : *volcoupl_->apply_vector_mapping12(*structure_temperature_));
+
+  auto [heat_source, d_heat_source_d_temperature, d_heat_source_d_displacement] =
+      assemble_mechanical_heat_source(
+          structure_discretization, time(), dt(), d_velocity_d_displacement);
+
+  if (!matchinggrid_)
+  {
+    // the heat source is a dual quantity: transfer it with the transposed projection
+    heat_source = volcoupl_->apply_transposed_vector_mapping12(*heat_source);
+    if (d_heat_source_d_temperature != nullptr)
+    {
+      d_heat_source_d_temperature = volcoupl_->apply_matrix_mapping12(
+          *volcoupl_->apply_transposed_matrix_mapping12(*d_heat_source_d_temperature));
+      d_heat_source_d_displacement =
+          volcoupl_->apply_transposed_matrix_mapping12(*d_heat_source_d_displacement);
+    }
+  }
+
+  thermo_field()->set_coupled_internal_force(heat_source, d_heat_source_d_temperature);
+  return d_heat_source_d_displacement;
+}  // evaluate_mechanical_heat_source()
 
 
 /*----------------------------------------------------------------------*/
