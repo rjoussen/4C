@@ -138,8 +138,8 @@ namespace TSI
         std::shared_ptr<const Core::LinAlg::Vector<double>> temp_res = nullptr);
 
     /*!
-     * @brief Apply structural displacements and velocities on thermo discretization and hand the
-     * mechanical heat source of the structure at this state to the thermal field
+     * @brief Apply structural displacements on thermo discretization and hand the mechanical heat
+     * source of the structure at the given displacements and velocities to the thermal field
      *
      * The structural elements evaluate the heat source of their materials with their own
      * kinematics, at the given displacements and velocities and the temperatures the structure is
@@ -161,9 +161,8 @@ namespace TSI
         std::shared_ptr<const Core::LinAlg::Vector<double>> vel,
         std::optional<double> d_velocity_d_displacement = std::nullopt);
 
-    //! set structural displacements and velocities on thermo discretization
-    void set_struct_states_on_thermo(
-        const Core::LinAlg::Vector<double>& disp, const Core::LinAlg::Vector<double>& vel);
+    //! set structural displacements on thermo discretization
+    void set_struct_states_on_thermo(const Core::LinAlg::Vector<double>& disp);
 
     //! Prepare a ptr to the contact strategy from the structural field,
     //! store it in tsi and hand it to the thermal field
