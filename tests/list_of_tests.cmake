@@ -2418,6 +2418,7 @@ four_c_test(TEST_FILE truss3_torsion3_quadratic_static_onebeambending.4C.yaml NP
 four_c_test(TEST_FILE tsi_contact3D_conduction.4C.yaml NP 2)
 four_c_test(TEST_FILE tsi_contact3D_mortar_symmetry.4C.yaml NP 2)
 four_c_test(TEST_FILE tsi_contact3D_multiple_interfaces.4C.yaml NP 2)
+four_c_test(TEST_FILE tsi_contact3D_coulomb_friction.4C.yaml NP 2 REQUIRED_DEPENDENCIES GMSH)
 four_c_test(TEST_FILE tsi_geonln_heatconvection_fbar_genalpha_monolithic.4C.yaml NP 2)
 four_c_test(TEST_FILE tsi_geonln_heatconvection_fbar_monolithic.4C.yaml NP 2)
 four_c_test(TEST_FILE tsi_geonln_heatconvection_iterstagg.4C.yaml NP 2)

@@ -1,0 +1,237 @@
+TITLE:
+  - "This tests TSI contact in 3D with coulomb friction. A stiff box is pressed onto a softer, larger
+    box and then slid along it at constant speed, generating frictional heat. The contact first sticks
+    and then transitions to slip. Frictional heat is only generated during slip. The heat transfer parameters
+    are chosen such that 62.5% of it is transferred into the lower box. The friction coefficient is set
+    to 0.4 initially and reduces with rising temperature down to approximately 0.3. The thermal expansion
+    is set to 0, so all heat comes from friction."
+
+PROBLEM TYPE:
+  PROBLEMTYPE: "Thermo_Structure_Interaction"
+
+CONTACT DYNAMIC:
+  LINEAR_SOLVER: 1
+  SEMI_SMOOTH_CN: 500
+  SEMI_SMOOTH_CT: 1000
+  FRICTION: Coulomb
+
+MORTAR COUPLING/PARALLEL REDISTRIBUTION:
+  PARALLEL_REDIST: "None"
+
+TSI CONTACT:
+  HEATTRANSSLAVE: 6
+  HEATTRANSMASTER: 10
+  TEMP_REF: 20
+  TEMP_DAMAGE: 120
+
+THERMAL DYNAMIC/RUNTIME VTK OUTPUT:
+  OUTPUT_THERMO: true
+  TEMPERATURE: true
+IO/RUNTIME VTK OUTPUT:
+  INTERVAL_STEPS: 1
+IO/RUNTIME VTK OUTPUT/STRUCTURE:
+  OUTPUT_STRUCTURE: true
+  DISPLACEMENT: true
+  NODE_GID: true
+  ELEMENT_GID: true
+
+STRUCTURAL DYNAMIC:
+  DYNAMICTYPE: "Statics"
+  PREDICT: ConstVel
+  LINEAR_SOLVER: 1
+
+THERMAL DYNAMIC:
+  LUMPCAPA: true
+  INITIALFIELD: "field_by_function"
+  INITFUNCNO: 1
+  LINEAR_SOLVER: 1
+
+TSI DYNAMIC:
+  NUMSTEP: 20000
+  MAXTIME: 1.5
+  TIMESTEP: 0.05
+
+TSI DYNAMIC/MONOLITHIC:
+  CONVTOL: 0.0001
+  TOLINC: 1e-07
+  LINEAR_SOLVER: 1
+  MERGE_TSI_BLOCK_MATRIX: true
+
+SOLVER 1:
+  SOLVER: Superlu
+
+MATERIALS:
+  - MAT: 1
+    MAT_Struct_ThermoStVenantK:
+      YOUNGNUM: 1
+      YOUNG: [100]
+      NUE: 0.3
+      DENS: 0
+      THEXPANS: 0
+      INITTEMP: 20
+  - MAT: 2
+    MAT_Struct_ThermoStVenantK:
+      YOUNGNUM: 1
+      YOUNG: [500]
+      NUE: 0.3
+      DENS: 0
+      THEXPANS: 0
+      INITTEMP: 20
+  - MAT: 10
+    MAT_Fourier:
+      CAPA: 0.2
+      CONDUCT:
+        constant: [0.05]
+
+CLONING MATERIAL MAP:
+  - SRC_FIELD: "structure"
+    SRC_MAT: 1
+    TAR_FIELD: "thermo"
+    TAR_MAT: 10
+  - SRC_FIELD: "structure"
+    SRC_MAT: 2
+    TAR_FIELD: "thermo"
+    TAR_MAT: 10
+
+FUNCT1:
+  - SYMBOLIC_FUNCTION_OF_SPACE_TIME: "20"
+FUNCT2:
+  - SYMBOLIC_FUNCTION_OF_SPACE_TIME: "vertical_displacement"
+  - TYPE: linearinterpolation
+    NAME: "vertical_displacement"
+    NUMPOINTS: 3
+    TIMES: [0, 0.5, 1.5]
+    VALUES: [0, 0.1, 0.1]
+    VARIABLE: 0
+FUNCT3:
+  - SYMBOLIC_FUNCTION_OF_SPACE_TIME: "horizontal_displacement"
+  - TYPE: linearinterpolation
+    NAME: "horizontal_displacement"
+    NUMPOINTS: 3
+    TIMES: [0, 0.5, 1.5]
+    VALUES: [0, 0, 1.0]
+    VARIABLE: 0
+
+DESIGN SURF DIRICH CONDITIONS:
+  - NODE_SET_NAME: upper_box_top
+    NUMDOF: 3
+    ONOFF: [1, 1, 1]
+    VAL: [1, -1, 0]
+    FUNCT: [3, 2, null]
+  - NODE_SET_NAME: lower_box_bottom
+    NUMDOF: 3
+    ONOFF: [1, 1, 1]
+    VAL: [0, 0, 0]
+    FUNCT: [0, 0, 0]
+
+DESIGN SURF MORTAR CONTACT CONDITIONS 3D:
+  - NODE_SET_NAME: upper_box_contact
+    InterfaceID: 1
+    Side: "Slave"
+    FrCoeffOrBound: 0.4
+  - NODE_SET_NAME: lower_box_contact
+    InterfaceID: 1
+    Side: "Master"
+    FrCoeffOrBound: 0.4
+
+STRUCTURE GEOMETRY:
+  FILE: "tsi_contact3D_coulomb_friction.msh"
+  ELEMENT_BLOCKS:
+    - NAME: lower_box
+      SOLIDSCATRA:
+        HEX8:
+          MAT: 1
+          KINEM: nonlinear
+          TYPE: Undefined
+    - NAME: upper_box
+      SOLIDSCATRA:
+        HEX8:
+          MAT: 2
+          KINEM: nonlinear
+          TYPE: Undefined
+
+RESULT DESCRIPTION:
+  - THERMAL:
+      DIS: thermo
+      NODE: 100
+      NAME: lower box contact center
+      QUANTITY: temp
+      VALUE: 32.7799905594623340
+      TOLERANCE: 1e-10
+  - STRUCTURE:
+      DIS: structure
+      NODE: 100
+      NAME: lower box contact center
+      QUANTITY: dispx
+      VALUE: 0.0674888882979974014
+      TOLERANCE: 1e-10
+  - STRUCTURE:
+      DIS: structure
+      NODE: 100
+      NAME: lower box contact center
+      QUANTITY: dispy
+      VALUE: -0.0770661813266943496
+      TOLERANCE: 1e-10
+  - THERMAL:
+      DIS: thermo
+      NODE: 47
+      NAME: lower box before contact
+      QUANTITY: temp
+      VALUE: 22.7681664718492520
+      TOLERANCE: 1e-10
+  - THERMAL:
+      DIS: thermo
+      NODE: 104
+      NAME: lower box after contact
+      QUANTITY: temp
+      VALUE: 32.4064321930055925
+      TOLERANCE: 1e-10
+  - THERMAL:
+      DIS: thermo
+      NODE: 38
+      NAME: lower box far from contact
+      QUANTITY: temp
+      VALUE: 21.0753054911070308
+      TOLERANCE: 1e-10
+  - THERMAL:
+      DIS: thermo
+      NODE: 126
+      NAME: upper box contact center
+      QUANTITY: temp
+      VALUE: 32.6844026057453547
+      TOLERANCE: 1e-10
+  - STRUCTURE:
+      DIS: structure
+      NODE: 126
+      NAME: upper box contact center
+      QUANTITY: dispx
+      VALUE: 0.961512499369464924
+      TOLERANCE: 1e-10
+  - STRUCTURE:
+      DIS: structure
+      NODE: 126
+      NAME: upper box contact center
+      QUANTITY: dispy
+      VALUE: -0.0815097374223052590
+      TOLERANCE: 1e-10
+  - THERMAL:
+      DIS: thermo
+      NODE: 128
+      NAME: upper box far from contact
+      QUANTITY: temp
+      VALUE: 22.3359677139769808
+      TOLERANCE: 1e-10
+  - STRUCTURE:
+      DIS: structure
+      NODE: 128
+      NAME: upper box far from contact
+      QUANTITY: dispx
+      VALUE: 1
+      TOLERANCE: 1e-10
+  - STRUCTURE:
+      DIS: structure
+      NODE: 128
+      NAME: upper box far from contact
+      QUANTITY: dispy
+      VALUE: -0.1
+      TOLERANCE: 1e-10
