@@ -696,9 +696,9 @@ void TSI::Partitioned::outer_iteration_loop()
           if (del_ == nullptr)  // first iteration, itnum==1
           {
             del_ = std::make_shared<Core::LinAlg::Vector<double>>(
-                *(thermo_field()->dof_row_map(0)), true);
+                *(structure_field()->dof_row_map(0)), true);
             delhist_ = std::make_shared<Core::LinAlg::Vector<double>>(
-                *(thermo_field()->dof_row_map(0)), true);
+                *(structure_field()->dof_row_map(0)), true);
             del_->put_scalar(1.0e20);
             delhist_->put_scalar(0.0);
           }
@@ -706,7 +706,16 @@ void TSI::Partitioned::outer_iteration_loop()
           // calculate difference of current (i+1) and old (i) residual vector
           // delhist = ( r^{i+1}_{n+1} - r^i_{n+1} )
           // update history vector old increment r^i_{n+1}
-          delhist_->update(1.0, *del_, 0.0);  // r^i_{n+1}
+          // residual r^{i+1}_{n+1} = d~^{i+1}_{n+1} - d^i_{n+1} between the new structural solution
+          // and the (relaxed) displacements the thermal field was solved with
+          Core::LinAlg::Vector<double> residual(*(structure_field()->dispnp()));
+          residual.update(-1.0, *dispnp, 1.0);
+
+          delhist_->update(1.0, *del_, 0.0);        // r^i_{n+1}
+          delhist_->update(1.0, residual, (-1.0));  // update r^{i+1}_{n+1}
+
+          // del_ = r^{i+1}_{n+1}
+          del_->update(1.0, residual, 0.0);
           // den = |r^{i+1} - r^{i}|^2
           double den = 0.0;
           delhist_->norm_2(&den);
@@ -745,7 +754,7 @@ void TSI::Partitioned::outer_iteration_loop()
               // overwrite temp_ with relaxed solution vector
               // d^{i+1} = omega^{i+1} . d^{i+1} + (1- omega^{i+1}) d^i
               //         = d^i + omega^{i+1} * ( d^{i+1} - d^i )
-              dispnp->update(omega, *dispincnp_, 1.0);
+              dispnp->update(omega, residual, 1.0);
             }
             // another notation of relaxation according to Paper by Irons & Tuck (1969)
             // 1. calculate an Aitken factor mu == relaxation factor
@@ -758,7 +767,7 @@ void TSI::Partitioned::outer_iteration_loop()
               // d^{i+1} = d^{i+1} - mu^{i+1} * r^{i+1}
               //         = d^{i+1} - mu^{i+1} * ( d^{i+1} - d^i )
               //         = (1 - mu^{i+1}) d^{i+1} + mu^{i+1} d^i
-              dispnp->update(1.0, *(structure_field()->dispnp()), (-mu_), *dispincnp_, 0.0);
+              dispnp->update(1.0, *(structure_field()->dispnp()), (-mu_), residual, 0.0);
             }
           }  // itnum>1
         }  // dynamic relaxation
