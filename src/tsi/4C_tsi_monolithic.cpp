@@ -1754,7 +1754,6 @@ void TSI::Monolithic::apply_thermo_coupl_matrix(
   const Teuchos::ParameterList& tdyn = problem_->thermal_dynamic_params();
   tparams.set<Thermo::DynamicType>(
       "time integrator", Teuchos::getIntegralValue<Thermo::DynamicType>(tdyn, "DYNAMICTYPE"));
-  tparams.set<Solid::DynamicType>("structural time integrator", strmethodname_);
   switch (Teuchos::getIntegralValue<Thermo::DynamicType>(tdyn, "DYNAMICTYPE"))
   {
     // static analysis
@@ -1785,41 +1784,12 @@ void TSI::Monolithic::apply_thermo_coupl_matrix(
     }
   }  // switch (Thermo::DynamicType)
 
-  switch (strmethodname_)
-  {
-    case Solid::DynamicType::Statics:
-    {
-      // continue
-      break;
-    }
-    case Solid::DynamicType::OneStepTheta:
-    {
-      // put the structural theta value to the thermal parameter list
-      double str_theta = sdyn_.sublist("ONESTEPTHETA").get<double>("THETA");
-      tparams.set("str_theta", str_theta);
-      break;
-    }
-    case Solid::DynamicType::GenAlpha:
-    {
-      // put the structural theta value to the thermal parameter list
-      double str_beta = sdyn_.sublist("GENALPHA").get<double>("BETA");
-      double str_gamma = sdyn_.sublist("GENALPHA").get<double>("GAMMA");
-
-      tparams.set("str_beta", str_beta);
-      tparams.set("str_gamma", str_gamma);
-      break;
-    }
-    default:
-      FOUR_C_THROW("Don't know what to do...");
-      break;
-  }
-
 
   thermo_field()->discretization()->clear_state(true);
   // set the variables that are needed by the elements
   thermo_field()->discretization()->set_state(0, "temperature", *thermo_field()->tempnp());
 
-  set_struct_states_on_thermo(*structure_field()->dispnp(), *vel_);
+  set_struct_states_on_thermo(*structure_field()->dispnp());
 
   // build specific assemble strategy for the thermal-mechanical system matrix
   // from the point of view of ThermoField:
@@ -1859,7 +1829,6 @@ void TSI::Monolithic::apply_thermo_coupl_matrix_conv_bc(
     const Teuchos::ParameterList& tdyn = problem_->thermal_dynamic_params();
     tparams.set<Thermo::DynamicType>(
         "time integrator", Teuchos::getIntegralValue<Thermo::DynamicType>(tdyn, "DYNAMICTYPE"));
-    tparams.set<Solid::DynamicType>("structural time integrator", strmethodname_);
     switch (Teuchos::getIntegralValue<Thermo::DynamicType>(tdyn, "DYNAMICTYPE"))
     {
       // static analysis
@@ -1873,9 +1842,6 @@ void TSI::Monolithic::apply_thermo_coupl_matrix_conv_bc(
         // K_Td = theta . k_Td^e
         double theta = tdyn.sublist("ONESTEPTHETA").get<double>("THETA");
         tparams.set("theta", theta);
-        // put the structural theta value to the thermal parameter list
-        double str_theta = sdyn_.sublist("ONESTEPTHETA").get<double>("THETA");
-        tparams.set("str_theta", str_theta);
         break;
       }
       case Thermo::DynamicType::GenAlpha:
@@ -1883,12 +1849,6 @@ void TSI::Monolithic::apply_thermo_coupl_matrix_conv_bc(
         // K_Td = alphaf . k_Td^e
         double alphaf = tdyn.sublist("GENALPHA").get<double>("ALPHA_F");
         tparams.set("alphaf", alphaf);
-
-        // put the structural theta value to the thermal parameter list
-        double str_beta = sdyn_.sublist("GENALPHA").get<double>("BETA");
-        double str_gamma = sdyn_.sublist("GENALPHA").get<double>("GAMMA");
-        tparams.set("str_beta", str_beta);
-        tparams.set("str_gamma", str_gamma);
         break;
       }
       case Thermo::DynamicType::Undefined:
@@ -1902,7 +1862,7 @@ void TSI::Monolithic::apply_thermo_coupl_matrix_conv_bc(
     thermo_field()->discretization()->clear_state(true);
     // set the variables that are needed by the elements
     thermo_field()->discretization()->set_state(0, "temperature", *thermo_field()->tempnp());
-    set_struct_states_on_thermo(*structure_field()->dispnp(), *vel_);
+    set_struct_states_on_thermo(*structure_field()->dispnp());
 
     // build specific assemble strategy for the thermal-mechanical system matrix
     // from the point of view of ThermoField:
