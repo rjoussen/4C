@@ -199,6 +199,27 @@ double Discret::Elements::SolidScatra<dim>::get_normal_cauchy_stress_at_xi(
       solid_material(), disp, scalars, xi, n, dir, linearizations);
 }
 
+template <unsigned dim>
+void Discret::Elements::SolidScatra<dim>::evaluate_mechanical_heat_source(
+    const Core::FE::Discretization& discretization, const Core::Elements::LocationArray& la,
+    const Mat::EvaluationContext<dim>& context, std::optional<double> d_velocity_d_displacement,
+    Core::LinAlg::SerialDenseVector& heat_source,
+    Core::LinAlg::SerialDenseMatrix* d_heat_source_d_temperature,
+    Core::LinAlg::SerialDenseMatrix* d_heat_source_d_displacement)
+{
+  FOUR_C_ASSERT(solid_scatra_calc_variant_.has_value(),
+      "The solid-scatra calculation interface is not initialized for element id {}.", id());
+
+  std::visit(
+      [&](auto& interface)
+      {
+        interface->evaluate_mechanical_heat_source(*this, solid_material(), discretization, la,
+            context, d_velocity_d_displacement, heat_source, d_heat_source_d_temperature,
+            d_heat_source_d_displacement);
+      },
+      *solid_scatra_calc_variant_);
+}
+
 template int Discret::Elements::SolidScatra<2>::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
@@ -229,5 +250,18 @@ template double Discret::Elements::SolidScatra<3>::get_normal_cauchy_stress_at_x
     const Core::LinAlg::Tensor<double, 3>& xi, const Core::LinAlg::Tensor<double, 3>& n,
     const Core::LinAlg::Tensor<double, 3>& dir,
     Discret::Elements::SolidScatraCauchyNDirLinearizations<3>& linearizations);
+
+template void Discret::Elements::SolidScatra<2>::evaluate_mechanical_heat_source(
+    const Core::FE::Discretization& discretization, const Core::Elements::LocationArray& la,
+    const Mat::EvaluationContext<2>& context, std::optional<double> d_velocity_d_displacement,
+    Core::LinAlg::SerialDenseVector& heat_source,
+    Core::LinAlg::SerialDenseMatrix* d_heat_source_d_temperature,
+    Core::LinAlg::SerialDenseMatrix* d_heat_source_d_displacement);
+template void Discret::Elements::SolidScatra<3>::evaluate_mechanical_heat_source(
+    const Core::FE::Discretization& discretization, const Core::Elements::LocationArray& la,
+    const Mat::EvaluationContext<3>& context, std::optional<double> d_velocity_d_displacement,
+    Core::LinAlg::SerialDenseVector& heat_source,
+    Core::LinAlg::SerialDenseMatrix* d_heat_source_d_temperature,
+    Core::LinAlg::SerialDenseMatrix* d_heat_source_d_displacement);
 
 FOUR_C_NAMESPACE_CLOSE

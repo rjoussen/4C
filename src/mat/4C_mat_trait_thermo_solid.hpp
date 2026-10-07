@@ -61,7 +61,7 @@ namespace Mat
     Core::LinAlg::SymmetricTensor<double, 3, 3> strain;
     //! rate of the strain
     Core::LinAlg::SymmetricTensor<double, 3, 3> strain_rate;
-    //! deformation gradient, only available for finite strains
+    //! deformation gradient passed to the material, if available
     std::optional<Core::LinAlg::Tensor<double, 3, 3>> defgrad;
 
     [[nodiscard]] static KinematicState from_linear_strain(
