@@ -16,6 +16,7 @@
 #include "4C_linalg_tensor_generators.hpp"
 #include "4C_mat_monolithic_solid_scalar_material.hpp"
 #include "4C_mat_so3_material.hpp"
+#include "4C_mat_trait_thermo_solid.hpp"
 #include "4C_solid_ele_calc_displacement_based.hpp"
 #include "4C_solid_ele_calc_displacement_based_linear_kinematics.hpp"
 #include "4C_solid_ele_calc_eas.hpp"
@@ -556,6 +557,130 @@ void Discret::Elements::SolidScatraEleCalc<celltype, SolidFormulation>::evaluate
               }
             });
       });
+}
+
+template <Core::FE::CellType celltype, typename SolidFormulation>
+void Discret::Elements::SolidScatraEleCalc<celltype,
+    SolidFormulation>::evaluate_mechanical_heat_source(const Core::Elements::Element& ele,
+    Mat::So3Material& solid_material, const Core::FE::Discretization& discretization,
+    const Core::Elements::LocationArray& la, Teuchos::ParameterList& params,
+    Core::LinAlg::SerialDenseVector& heat_source,
+    Core::LinAlg::SerialDenseMatrix* d_heat_source_d_temperature,
+    Core::LinAlg::SerialDenseMatrix* d_heat_source_d_displacement)
+{
+  auto* thermo_solid = dynamic_cast<Mat::Trait::ThermoSolid*>(&solid_material);
+  if (thermo_solid == nullptr) return;
+
+  // The heat source requires the rate of the strain passed to the material and its
+  // linearization, which the solid formulation has to provide. The material is 3D.
+  if constexpr (num_dim_ != 3 || !has_strain_rate<SolidFormulation>)
+  {
+    FOUR_C_THROW(
+        "The mechanical heat source is not implemented for the element technology or dimension of "
+        "element {}.",
+        ele.id());
+  }
+  else
+  {
+    // views on the element vectors and matrices (rows: temperature dofs)
+    Core::LinAlg::Matrix<num_nodes_, 1> force(heat_source, true);
+    std::optional<Core::LinAlg::Matrix<num_nodes_, num_nodes_>> d_force_d_temperature{};
+    std::optional<Core::LinAlg::Matrix<num_nodes_, num_dof_per_ele_>> d_force_d_displacement{};
+    if (d_heat_source_d_temperature != nullptr)
+      d_force_d_temperature.emplace(*d_heat_source_d_temperature, true);
+    if (d_heat_source_d_displacement != nullptr)
+      d_force_d_displacement.emplace(*d_heat_source_d_displacement, true);
+
+    const ElementNodes<celltype> nodal_coordinates =
+        evaluate_element_nodes<celltype>(ele, discretization, la[0].lm_);
+
+    FOUR_C_ASSERT_ALWAYS(discretization.has_state(0, "velocity"),
+        "The mechanical heat source requires the velocities of element {}.", ele.id());
+    const Core::LinAlg::Matrix<num_dof_per_ele_, 1> nodal_velocities(
+        Core::FE::extract_values_as_array<num_dof_per_ele_>(
+            *discretization.get_state(0, "velocity"), la[0].lm_)
+            .data());
+
+    constexpr bool temperature_is_scalar = true;
+    const std::optional<Core::LinAlg::Matrix<num_nodes_, 1>> nodal_temperatures =
+        extract_my_nodal_scalars<celltype, temperature_is_scalar>(
+            ele, discretization, la, "temperature");
+    FOUR_C_ASSERT_ALWAYS(nodal_temperatures.has_value(),
+        "The mechanical heat source requires the temperatures of element {}.", ele.id());
+
+    // derivative of the velocities w.r.t. the displacements due to the time integration
+    const double timefac_d =
+        d_force_d_displacement.has_value() ? params.get<double>("timefac_d") : 0.0;
+
+    const PreparationData<SolidFormulation> preparation_data =
+        prepare(ele, nodal_coordinates, history_data_);
+
+    const double* total_time =
+        params.isParameter("total time") ? &params.get<double>("total time") : nullptr;
+    const double* time_step_size =
+        params.isParameter("delta time") ? &params.get<double>("delta time") : nullptr;
+
+    for_each_gauss_point(nodal_coordinates, element_properties_, stiffness_matrix_integration_,
+        [&](const Core::LinAlg::Tensor<double, num_dim_>& xi,
+            const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
+            const JacobianMapping<celltype>& jacobian_mapping, double integration_factor, int gp)
+        {
+          const double temperature =
+              interpolate_quantity_to_point(shape_functions, *nodal_temperatures);
+
+          evaluate(ele, nodal_coordinates, xi, shape_functions, jacobian_mapping, preparation_data,
+              history_data_, gp,
+              [&](const Core::LinAlg::Tensor<double, num_dim_, num_dim_>& deformation_gradient,
+                  const Core::LinAlg::SymmetricTensor<double, num_dim_, num_dim_>& gl_strain,
+                  const auto& linearization)
+              {
+                const auto strain_rate =
+                    evaluate_strain_rate<SolidFormulation>(jacobian_mapping, deformation_gradient,
+                        linearization, nodal_velocities, preparation_data, history_data_, gp);
+
+                const auto gp_ref_coord = evaluate_reference_coordinate<celltype>(
+                    nodal_coordinates.reference_coordinates, shape_functions.shapefunctions_);
+                const Mat::EvaluationContext<num_dim_> context{.total_time = total_time,
+                    .time_step_size = time_step_size,
+                    .xi = &xi,
+                    .ref_coords = &gp_ref_coord};
+
+                const Mat::HeatSource source =
+                    thermo_solid->evaluate_mechanical_heat_source(temperature,
+                        {.strain = gl_strain,
+                            .strain_rate = strain_rate.strain_rate,
+                            .defgrad = deformation_gradient},
+                        context, gp, ele.id());
+
+                const auto& N = shape_functions.shapefunctions_;
+
+                // the heat source enters the thermal internal force with a negative sign
+                force.update(-integration_factor * source.value, N, 1.0);
+
+                if (d_force_d_temperature.has_value())
+                {
+                  d_force_d_temperature->multiply_nt(
+                      -integration_factor * source.derivative_wrt_temperature, N, N, 1.0);
+                }
+
+                if (d_force_d_displacement.has_value())
+                {
+                  Core::LinAlg::Matrix<num_dof_per_ele_, 1> d_source_d_displacement(
+                      Core::LinAlg::Initialization::zero);
+                  add_d_strain_d_displacements_contraction<SolidFormulation>(jacobian_mapping,
+                      deformation_gradient, linearization, source.derivative_wrt_strain, 1.0,
+                      preparation_data, history_data_, gp, d_source_d_displacement);
+                  add_d_strain_rate_d_displacements_contraction<SolidFormulation>(jacobian_mapping,
+                      deformation_gradient, linearization, strain_rate,
+                      source.derivative_wrt_strain_rate, timefac_d, 1.0, preparation_data,
+                      history_data_, gp, d_source_d_displacement);
+
+                  d_force_d_displacement->multiply_nt(
+                      -integration_factor, N, d_source_d_displacement, 1.0);
+                }
+              });
+        });
+  }
 }
 
 template <Core::FE::CellType celltype, typename SolidFormulation>
