@@ -196,29 +196,6 @@ namespace Discret
 
       //! @}
 
-      //! @name geometrically linear TSI
-      //! @{
-
-      //! Calculate element vectors (internal/external) and a few matrices
-      //! considering current displacement solution
-      void linear_disp_contribution(const Core::Elements::Element* ele, const double time,
-          const std::vector<double>& disp, const std::vector<double>& vel,
-          Core::LinAlg::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>* econd,
-          Core::LinAlg::Matrix<nen_ * numdofpernode_, 1>* efint,
-          const Teuchos::ParameterList& params);
-
-      //! calculate thermal-mechanical system matrix term needed in monolithic TSI
-      void linear_coupled_tang(
-          const Core::Elements::Element* ele,  //!< the element whose matrix is calculated
-          const std::vector<double>& disp,     //!< current displacements
-          const std::vector<double>& vel,      //!< current velocities
-          Core::LinAlg::Matrix<nen_ * numdofpernode_, nsd_ * nen_ * numdofpernode_>*
-              etangcoupl,  //!< k_Tu matrix
-          const Teuchos::ParameterList& params);
-
-      //! @}
-
-
       //! @name geometrically nonlinear TSI analysis
       //! @{
 

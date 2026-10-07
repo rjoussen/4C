@@ -480,7 +480,7 @@ void Thermo::TimIntGenAlpha::apply_force_tang_internal(const double time,  //!< 
   p.set<double>("gamma", gamma_);
   // set the mid-temperature rate R_{n+alpha_m} required for fcapm_
   p.set<std::shared_ptr<const Core::LinAlg::Vector<double>>>("mid-temprate", ratem_);
-  p.set<double>("timefac", alphaf_);
+  p.set<double>("timefac", internal_force_timefac());
 
   //! call the base function
   TimInt::apply_force_tang_internal(p, time, dt, temp, tempi, fcap, fint, tang);
