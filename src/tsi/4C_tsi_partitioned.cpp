@@ -95,6 +95,11 @@ void TSI::Partitioned::read_restart(int step)
 
   // structural and thermal contact
   prepare_contact_strategy();
+
+  // The structure is evaluated with the converged temperatures, except for one-way displacement
+  // coupling, where it keeps the initial ones.
+  if (coupling_ != TSI::SolutionSchemeOverFields::OneWay or !displacementcoupling_)
+    apply_thermo_coupling_state(thermo_field()->tempnp());
 }  // read_restart()
 
 

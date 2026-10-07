@@ -125,6 +125,9 @@ namespace TSI
         std::shared_ptr<Core::LinAlg::SparseMatrix> k_st  //!< mechanical-thermal stiffness matrix
     );
 
+    //! derivative of the structural velocities w.r.t. the displacements due to the time integration
+    [[nodiscard]] double d_velocity_d_displacement() const;
+
     //! Evaluate thermal-mechanical system matrix
     void apply_thermo_coupl_matrix(
         std::shared_ptr<Core::LinAlg::SparseMatrix> k_ts  //!< thermal-mechanical tangent matrix
@@ -294,6 +297,9 @@ namespace TSI
     //! off diagonal matrixes
     std::shared_ptr<Core::LinAlg::SparseMatrix> k_st_;
     std::shared_ptr<Core::LinAlg::SparseMatrix> k_ts_;
+
+    //! derivative of the mechanical heat source w.r.t. the displacements (rows: thermal dofs)
+    std::shared_ptr<Core::LinAlg::SparseMatrix> d_heat_source_d_displacement_;
 
     bool merge_tsi_blockmatrix_;  //!< bool whether TSI block matrix is merged
 

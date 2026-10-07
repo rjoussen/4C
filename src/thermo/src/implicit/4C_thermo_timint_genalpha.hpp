@@ -72,6 +72,8 @@ namespace Thermo
     //! Return name
     Thermo::DynamicType method_name() const override { return Thermo::DynamicType::GenAlpha; }
 
+    [[nodiscard]] double internal_force_timefac() const override { return alphaf_; }
+
     //! Consistent predictor with constant temperatures
     //! and consistent temperature rates and temperatures
     void predict_const_temp_consist_rate() override;
