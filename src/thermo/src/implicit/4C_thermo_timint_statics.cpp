@@ -273,7 +273,7 @@ void Thermo::TimIntStatics::apply_force_tang_internal(const double time,  //!< e
   //! create the parameters for the discretization
   Teuchos::ParameterList p;
   //! set parameters
-  p.set<double>("timefac", 1.);
+  p.set<double>("timefac", internal_force_timefac());
 
   //! call the base function
   TimInt::apply_force_tang_internal(p, time, dt, temp, tempi, fint, tang);

@@ -280,6 +280,31 @@ Coupling::Adapter::MortarVolCoupl::apply_matrix_mapping21(
 }
 
 /*----------------------------------------------------------------------*/
+std::shared_ptr<Core::LinAlg::Vector<double>>
+Coupling::Adapter::MortarVolCoupl::apply_transposed_vector_mapping12(
+    const Core::LinAlg::Vector<double>& vec) const
+{
+  check_setup();
+  check_init();
+
+  auto mapvec = std::make_shared<Core::LinAlg::Vector<double>>(p12_->domain_map(), true);
+  p12_->multiply(true, vec, *mapvec);
+
+  return mapvec;
+}
+
+/*----------------------------------------------------------------------*/
+std::shared_ptr<Core::LinAlg::SparseMatrix>
+Coupling::Adapter::MortarVolCoupl::apply_transposed_matrix_mapping12(
+    const Core::LinAlg::SparseMatrix& mat) const
+{
+  check_setup();
+  check_init();
+
+  return Core::LinAlg::matrix_multiply(*p12_, true, mat, false, false, false, true);
+}
+
+/*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 std::shared_ptr<Core::LinAlg::Vector<double>> Coupling::Adapter::MortarVolCoupl::target_to_source(
     const Core::LinAlg::Vector<double>& mv) const

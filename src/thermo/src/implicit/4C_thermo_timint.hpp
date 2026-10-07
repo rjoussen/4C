@@ -130,6 +130,10 @@ namespace Thermo
     //! quantities
     void reset_step() override;
 
+    void set_coupled_internal_force(std::shared_ptr<const Core::LinAlg::Vector<double>> force,
+        std::shared_ptr<const Core::LinAlg::SparseMatrix> tangent,
+        std::shared_ptr<const Core::LinAlg::Vector<double>> temperatures) override;
+
     //! set the initial thermal field
     void set_initial_field(const Thermo::InitialField,  //!< type of initial field
         const int startfuncno                           //!< number of spatial function
@@ -241,6 +245,12 @@ namespace Thermo
         const std::shared_ptr<Core::LinAlg::Vector<double>> tempi,  //!< incremental temperatures
         std::shared_ptr<Core::LinAlg::Vector<double>> fint          //!< internal force
     );
+
+    //! add the internal force contribution of a coupled field at the temperatures @p temp and its
+    //! tangent scaled with @p timefac, see set_coupled_internal_force()
+    void add_coupled_internal_force(Core::LinAlg::Vector<double>& fint,
+        Core::LinAlg::SparseMatrix* tang, const double timefac,
+        const Core::LinAlg::Vector<double>& temp) const;
 
     //@}
 
@@ -463,6 +473,15 @@ namespace Thermo
 
     std::shared_ptr<Core::LinAlg::MultiVector<double>>
         conductivity_;  //!< global conducitivity vector
+
+    //! contribution of a coupled field to the internal force
+    std::shared_ptr<const Core::LinAlg::Vector<double>> coupled_force_;
+
+    //! derivative of the contribution of a coupled field w.r.t. the temperatures
+    std::shared_ptr<const Core::LinAlg::SparseMatrix> coupled_tangent_;
+
+    //! temperatures the contribution of a coupled field was evaluated at
+    std::shared_ptr<const Core::LinAlg::Vector<double>> coupled_temperatures_;
   };
 }  // namespace Thermo
 

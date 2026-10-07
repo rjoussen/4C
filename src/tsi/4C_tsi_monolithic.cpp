@@ -152,7 +152,10 @@ void TSI::Monolithic::read_restart(int step)
 
   // pass the current coupling variables to the respective field
   // second read_restart needed due to the coupling variables
-  apply_struct_coupling_state(structure_field()->dispnp(), structure_field()->velnp());
+  // (the heat source is evaluated at the temperatures applied to the structure)
+  apply_thermo_coupling_state(thermo_field()->tempnp());
+  d_heat_source_d_displacement_ = apply_struct_coupling_state(
+      structure_field()->dispnp(), structure_field()->velnp(), d_velocity_d_displacement());
   thermo_field()->read_restart(step);
   thermo_field()->discretization()->clear_state(true);
 
@@ -203,7 +206,8 @@ void TSI::Monolithic::prepare_time_step()
   print_header();
 
   // pass the current coupling variables to the respective fields
-  apply_struct_coupling_state(structure_field()->dispnp(), structure_field()->velnp());
+  d_heat_source_d_displacement_ = apply_struct_coupling_state(
+      structure_field()->dispnp(), structure_field()->velnp(), d_velocity_d_displacement());
   apply_thermo_coupling_state(thermo_field()->tempnp());
 
   // call the predictor
@@ -834,7 +838,8 @@ void TSI::Monolithic::evaluate(std::shared_ptr<Core::LinAlg::Vector<double>> ste
     vel_ = structure_field()->velnp();
 
   // pass the structural values to the thermo field
-  apply_struct_coupling_state(structure_field()->dispnp(), vel_);
+  d_heat_source_d_displacement_ =
+      apply_struct_coupling_state(structure_field()->dispnp(), vel_, d_velocity_d_displacement());
 
   // monolithic TSI accesses the linearised thermo problem
   //   evaluate_rhs_tang_residual() and
@@ -982,11 +987,27 @@ void TSI::Monolithic::setup_system_matrix()
   apply_thermo_coupl_matrix(k_ts_);
   apply_thermo_coupl_matrix_conv_bc(k_ts_);
 
-  k_ts_->complete(*(thermo_field()->discretization()->dof_row_map(1)),
-      *(thermo_field()->discretization()->dof_row_map(0)));
+  // add the derivative of the mechanical heat source evaluated by the structural elements, which
+  // enters the thermal internal force (for non-matching grids, it is added after the mapping)
+  if (matchinggrid_ and d_heat_source_d_displacement_ != nullptr)
+    k_ts_->add(
+        *d_heat_source_d_displacement_, false, thermo_field()->internal_force_timefac(), 1.0);
 
-  if (!matchinggrid_) k_ts_ = volcoupl_->apply_matrix_mapping21(*k_ts_);
+  if (!matchinggrid_)
+  {
+    // the mapping requires a filled matrix with the auxiliary displacement dofs as domain
+    k_ts_->complete(*(thermo_field()->discretization()->dof_row_map(1)),
+        *(thermo_field()->discretization()->dof_row_map(0)));
+    k_ts_ = volcoupl_->apply_matrix_mapping21(*k_ts_);
+    if (d_heat_source_d_displacement_ != nullptr)
+    {
+      k_ts_->un_complete();
+      k_ts_->add(
+          *d_heat_source_d_displacement_, false, thermo_field()->internal_force_timefac(), 1.0);
+    }
+  }
 
+  // like k_st_, the block is completed together with the system matrix
   systemmatrix_->assign(1, 0, Core::LinAlg::DataAccess::Share, *k_ts_);
 
   /*----------------------------------------------------------------------*/
@@ -1693,6 +1714,26 @@ void TSI::Monolithic::apply_str_coupl_matrix(
 }  // apply_str_coupl_matrix()
 
 
+double TSI::Monolithic::d_velocity_d_displacement() const
+{
+  // derivative of the structural velocities w.r.t. the displacements
+  switch (strmethodname_)
+  {
+    case Solid::DynamicType::Statics:
+      // V_{n+1} = (D_{n+1} - D_n) / dt, cf. evaluate()
+      return 1.0 / dt();
+    case Solid::DynamicType::OneStepTheta:
+      return 1.0 / (sdyn_.sublist("ONESTEPTHETA").get<double>("THETA") * dt());
+    case Solid::DynamicType::GenAlpha:
+      return sdyn_.sublist("GENALPHA").get<double>("GAMMA") /
+             (sdyn_.sublist("GENALPHA").get<double>("BETA") * dt());
+    default:
+      FOUR_C_THROW(
+          "The structural time integrator is not supported for the mechanical heat source.");
+  }
+}
+
+
 /*----------------------------------------------------------------------*
  | evaluate thermal-mechanical system matrix at state        dano 03/11 |
  *----------------------------------------------------------------------*/
@@ -1778,7 +1819,7 @@ void TSI::Monolithic::apply_thermo_coupl_matrix(
   // set the variables that are needed by the elements
   thermo_field()->discretization()->set_state(0, "temperature", *thermo_field()->tempnp());
 
-  apply_struct_coupling_state(structure_field()->dispnp(), vel_);
+  set_struct_states_on_thermo(*structure_field()->dispnp(), *vel_);
 
   // build specific assemble strategy for the thermal-mechanical system matrix
   // from the point of view of ThermoField:
@@ -1861,7 +1902,7 @@ void TSI::Monolithic::apply_thermo_coupl_matrix_conv_bc(
     thermo_field()->discretization()->clear_state(true);
     // set the variables that are needed by the elements
     thermo_field()->discretization()->set_state(0, "temperature", *thermo_field()->tempnp());
-    apply_struct_coupling_state(structure_field()->dispnp(), vel_);
+    set_struct_states_on_thermo(*structure_field()->dispnp(), *vel_);
 
     // build specific assemble strategy for the thermal-mechanical system matrix
     // from the point of view of ThermoField:

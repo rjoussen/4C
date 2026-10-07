@@ -60,6 +60,8 @@ namespace Thermo
     //! Return name
     Thermo::DynamicType method_name() const override { return Thermo::DynamicType::Statics; }
 
+    [[nodiscard]] double internal_force_timefac() const override { return 1.0; }
+
     //! Consistent predictor with constant temperatures
     //! and consistent temperature rates and temperatures
     void predict_const_temp_consist_rate() override;
