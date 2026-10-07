@@ -3396,7 +3396,7 @@ RESULT DESCRIPTION:
       DIS: "thermo"
       NODE: 800
       QUANTITY: "temp"
-      VALUE: 291.01506028776043
+      VALUE: 291.01375447629107
       TOLERANCE: 1e-08
   - THERMAL:
       DIS: "thermo"
