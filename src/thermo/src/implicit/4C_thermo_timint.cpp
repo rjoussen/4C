@@ -712,8 +712,7 @@ void Thermo::TimInt::apply_force_tang_internal(
 
   discret_->clear_state();
 
-  // that's it
-  return;
+  add_coupled_internal_force(*fint, tang.get(), p.get<double>("timefac"));
 
 }  // apply_force_tang_internal()
 
@@ -761,8 +760,7 @@ void Thermo::TimInt::apply_force_tang_internal(
 
   discret_->clear_state();
 
-  // that's it
-  return;
+  add_coupled_internal_force(*fint, tang.get(), p.get<double>("timefac"));
 
 }  // apply_force_tang_internal()
 
@@ -794,7 +792,30 @@ void Thermo::TimInt::apply_force_internal(
   // call the element evaluate()
   discret_->evaluate(p, nullptr, nullptr, fint, nullptr, nullptr);
   discret_->clear_state();
-}  // apply_force_tang_internal()
+
+  add_coupled_internal_force(*fint, nullptr, 1.0);
+}  // apply_force_internal()
+
+
+void Thermo::TimInt::set_coupled_internal_force(
+    std::shared_ptr<const Core::LinAlg::Vector<double>> force,
+    std::shared_ptr<const Core::LinAlg::SparseMatrix> tangent)
+{
+  FOUR_C_ASSERT_ALWAYS(force != nullptr, "The coupled internal force is required.");
+  coupled_force_ = std::move(force);
+  coupled_tangent_ = std::move(tangent);
+}
+
+
+void Thermo::TimInt::add_coupled_internal_force(Core::LinAlg::Vector<double>& fint,
+    Core::LinAlg::SparseMatrix* tang, const double timefac) const
+{
+  if (coupled_force_ == nullptr) return;
+
+  fint.update(1.0, *coupled_force_, 1.0);
+  if (tang != nullptr && coupled_tangent_ != nullptr)
+    tang->add(*coupled_tangent_, false, timefac, 1.0);
+}
 
 
 /*----------------------------------------------------------------------*

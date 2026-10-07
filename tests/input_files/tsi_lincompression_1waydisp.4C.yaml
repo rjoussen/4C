@@ -221,17 +221,17 @@ RESULT DESCRIPTION:
       DIS: "thermo"
       NODE: 1
       QUANTITY: "temp"
-      VALUE: 760.0952686952845
+      VALUE: 699.3094337207211
       TOLERANCE: 1e-06
   - THERMAL:
       DIS: "thermo"
       NODE: 2
       QUANTITY: "temp"
-      VALUE: 760.0952686952847
+      VALUE: 699.3094337207244
       TOLERANCE: 1e-06
   - THERMAL:
       DIS: "thermo"
       NODE: 9
       QUANTITY: "temp"
-      VALUE: 760.0952686952845
+      VALUE: 699.3094337207211
       TOLERANCE: 1e-06

@@ -177,34 +177,34 @@ RESULT DESCRIPTION:
       DIS: "structure"
       NODE: 2
       QUANTITY: "dispx"
-      VALUE: -0.37993931946502507
+      VALUE: -0.37995484995937734
       TOLERANCE: 1e-09
       NAME: "ux(x=2)"
   - STRUCTURE:
       DIS: "structure"
       NODE: 9
       QUANTITY: "dispx"
-      VALUE: -0.7598786389300503
+      VALUE: -0.7599096999187548
       TOLERANCE: 1e-09
       NAME: "ux(x=4)"
   - THERMAL:
       DIS: "thermo"
       NODE: 1
       QUANTITY: "temp"
-      VALUE: 347.2505898406338
+      VALUE: 346.5212035009845
       TOLERANCE: 1e-08
       NAME: "T(x=0)"
   - THERMAL:
       DIS: "thermo"
       NODE: 2
       QUANTITY: "temp"
-      VALUE: 347.2505898406338
+      VALUE: 346.5212035009845
       TOLERANCE: 1e-08
       NAME: "T(x=2)"
   - THERMAL:
       DIS: "thermo"
       NODE: 9
       QUANTITY: "temp"
-      VALUE: 347.2505898406338
+      VALUE: 346.5212035009845
       TOLERANCE: 1e-08
       NAME: "T(x=4)"
