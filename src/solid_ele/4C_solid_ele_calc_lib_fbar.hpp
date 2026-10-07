@@ -16,6 +16,7 @@
 #include "4C_linalg_fixedsizematrix_voigt_notation.hpp"
 #include "4C_linalg_tensor_generators.hpp"
 #include "4C_solid_ele_calc_lib.hpp"
+#include "4C_solid_ele_calc_lib_strain_rate.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -153,6 +154,55 @@ namespace Discret::Elements
         stiffness_matrix(idof, jdof) += Hop(jdof) * (bops(idof, 0) + bopccg(idof, 0));
       }
     }
+  }
+
+  /*!
+   * @brief Rate of the strain that F-bar passes to the material, together with the quantities
+   * needed for its linearization
+   */
+  template <Core::FE::CellType celltype>
+  struct FBarStrainRateContainer
+  {
+    //! rate of the modified strain passed to the material
+    Core::LinAlg::SymmetricTensor<double, Core::FE::dim<celltype>, Core::FE::dim<celltype>>
+        strain_rate{};
+
+    //! rate of the compatible deformation gradient
+    Core::LinAlg::Tensor<double, Core::FE::dim<celltype>, Core::FE::dim<celltype>>
+        deformation_gradient_rate{};
+
+    //! Hop . v, i.e., d(phi)/dt = phi/3 . Hop . v
+    double fbar_h_operator_rate = 0.0;
+
+    //! derivative of Hop . v w.r.t. the displacements at fixed velocities
+    Core::LinAlg::Matrix<Core::FE::num_nodes(celltype) * Core::FE::dim<celltype>, 1>
+        d_fbar_h_operator_rate_d_displacements{Core::LinAlg::Initialization::zero};
+  };
+
+  /*!
+   * @brief Add factor . d(tr(F^-1 . dF/dt))/dd at fixed velocities to @p vector
+   *
+   * d(tr(F^-1 . dF/dt)) = -(F^-1 . dF/dt . F^-1)^T : dF
+   *
+   * @param F (in) : compatible deformation gradient
+   * @param F_rate (in) : rate of the compatible deformation gradient
+   * @param N_XYZ (in) : derivatives of the shape functions w.r.t. the reference coordinates
+   */
+  template <Core::FE::CellType celltype>
+  void add_d_trace_velocity_gradient_d_displacements(
+      const Core::LinAlg::Tensor<double, Core::FE::dim<celltype>, Core::FE::dim<celltype>>& F,
+      const Core::LinAlg::Tensor<double, Core::FE::dim<celltype>, Core::FE::dim<celltype>>& F_rate,
+      const std::array<Core::LinAlg::Tensor<double, Core::FE::dim<celltype>>,
+          Core::FE::num_nodes(celltype)>& N_XYZ,
+      const double factor,
+      Core::LinAlg::Matrix<Core::FE::num_nodes(celltype) * Core::FE::dim<celltype>, 1>& vector)
+  {
+    constexpr int dim = Core::FE::dim<celltype>;
+    const auto F_inv = Core::LinAlg::inv(F);
+    const auto M = F_inv * F_rate * F_inv;
+    for (int node = 0; node < Core::FE::num_nodes(celltype); ++node)
+      for (int a = 0; a < dim; ++a)
+        for (int i = 0; i < dim; ++i) vector(node * dim + a) -= factor * M(i, a) * N_XYZ[node](i);
   }
 }  // namespace Discret::Elements
 

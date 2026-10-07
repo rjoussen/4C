@@ -15,6 +15,7 @@
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_solid_ele_calc.hpp"
 #include "4C_solid_ele_calc_lib.hpp"
+#include "4C_solid_ele_calc_lib_strain_rate.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -40,6 +41,7 @@ namespace Discret::Elements
     static constexpr bool has_condensed_contribution = false;
 
     using LinearizationContainer = DisplacementBasedLinearizationContainer<celltype>;
+    using StrainRateContainer = Discret::Elements::StrainRateContainer<celltype>;
 
     template <typename Evaluator>
     static inline auto evaluate(const Core::Elements::Element& ele,
@@ -233,6 +235,50 @@ namespace Discret::Elements
     {
       Discret::Elements::add_stiffness_matrix<celltype>(
           jacobian_mapping, F, stress, integration_factor, stiffness_matrix);
+    }
+
+    static StrainRateContainer evaluate_strain_rate(
+        const JacobianMapping<celltype>& jacobian_mapping,
+        const Core::LinAlg::Tensor<double, Core::FE::dim<celltype>, Core::FE::dim<celltype>>& F,
+        const DisplacementBasedLinearizationContainer<celltype>& linearization,
+        const Core::LinAlg::Matrix<Core::FE::num_nodes(celltype) * Core::FE::dim<celltype>, 1>&
+            nodal_velocities)
+    {
+      StrainRateContainer strain_rate{};
+      strain_rate.deformation_gradient_rate =
+          evaluate_deformation_gradient_rate<celltype>(jacobian_mapping.N_XYZ, nodal_velocities);
+      // dE/dt = sym(F^T . dF/dt)
+      strain_rate.strain_rate =
+          evaluate_green_lagrange_strain_rate<celltype>(F, strain_rate.deformation_gradient_rate);
+      return strain_rate;
+    }
+
+    static void add_d_strain_d_displacements_contraction(
+        const JacobianMapping<celltype>& jacobian_mapping,
+        const Core::LinAlg::Tensor<double, Core::FE::dim<celltype>, Core::FE::dim<celltype>>& F,
+        const DisplacementBasedLinearizationContainer<celltype>& linearization,
+        const Core::LinAlg::SymmetricTensor<double, Core::FE::dim<celltype>,
+            Core::FE::dim<celltype>>& Y,
+        const double factor,
+        Core::LinAlg::Matrix<Core::FE::num_nodes(celltype) * Core::FE::dim<celltype>, 1>& vector)
+    {
+      // dE = sym(F^T . dF)
+      Discret::Elements::add_internal_force_vector(jacobian_mapping, F, Y, factor, vector);
+    }
+
+    static void add_d_strain_rate_d_displacements_at_fixed_velocities_contraction(
+        const JacobianMapping<celltype>& jacobian_mapping,
+        const Core::LinAlg::Tensor<double, Core::FE::dim<celltype>, Core::FE::dim<celltype>>& F,
+        const DisplacementBasedLinearizationContainer<celltype>& linearization,
+        const StrainRateContainer& strain_rate,
+        const Core::LinAlg::SymmetricTensor<double, Core::FE::dim<celltype>,
+            Core::FE::dim<celltype>>& Y,
+        const double factor,
+        Core::LinAlg::Matrix<Core::FE::num_nodes(celltype) * Core::FE::dim<celltype>, 1>& vector)
+    {
+      // d(dE/dt) = sym((dF/dt)^T . dF) at fixed velocities
+      Discret::Elements::add_internal_force_vector(
+          jacobian_mapping, strain_rate.deformation_gradient_rate, Y, factor, vector);
     }
   };
 

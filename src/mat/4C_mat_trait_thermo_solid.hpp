@@ -111,7 +111,7 @@ namespace Mat
       return strain_;
     }
 
-    //! Deformation gradient, only available for finite strains
+    //! Deformation gradient passed to the material, only available for finite strains
     [[nodiscard]] const Core::LinAlg::Tensor<double, 3, 3>& defgrad() const
     {
       if (!defgrad_.has_value())

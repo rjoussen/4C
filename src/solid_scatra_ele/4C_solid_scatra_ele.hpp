@@ -173,6 +173,29 @@ namespace Discret::Elements
         const Core::LinAlg::Tensor<double, 3>& n, const Core::LinAlg::Tensor<double, 3>& dir,
         SolidScatraCauchyNDirLinearizations<3>& linearizations);
 
+    /*!
+     * @brief Evaluate the mechanical heat source of a thermo-solid material for the thermal
+     * equation
+     *
+     * The rows of all outputs refer to the temperature dofs (second dofset). It has to be called
+     * after the evaluation of the stress at the same state.
+     *
+     * @param context (in) : evaluation context, the point-wise entries are set by the element
+     * @param d_velocity_d_displacement (in) : derivative of the velocities w.r.t. the
+     * displacements due to the time integration (required for @p d_heat_source_d_displacement)
+     * @param heat_source (out) : contribution to the thermal internal force
+     * @param d_heat_source_d_temperature (out) : its derivative w.r.t. the temperatures
+     * (optional)
+     * @param d_heat_source_d_displacement (out) : its derivative w.r.t. the displacements
+     * (optional)
+     */
+    void evaluate_mechanical_heat_source(const Core::FE::Discretization& discretization,
+        const Core::Elements::LocationArray& la, const Mat::EvaluationContext<dim>& context,
+        std::optional<double> d_velocity_d_displacement,
+        Core::LinAlg::SerialDenseVector& heat_source,
+        Core::LinAlg::SerialDenseMatrix* d_heat_source_d_temperature,
+        Core::LinAlg::SerialDenseMatrix* d_heat_source_d_displacement);
+
    private:
     //! cell type
     Core::FE::CellType celltype_ = Core::FE::CellType::dis_none;
