@@ -257,8 +257,7 @@ void TSI::Utils::set_material_pointers_matching_grid(
 
     Core::Elements::Element* sourceele = sourcedis.g_element(gid);
 
-    // for coupling we add the source material to the target element and vice versa
-    targetele->add_material(sourceele->material());
+    // the structural elements need the thermal material for thermal contact
     sourceele->add_material(targetele->material());
   }
 }
@@ -288,9 +287,8 @@ void TSI::Utils::TSIMaterialStrategy::assign_material1_to2(
   // if no corresponding element found -> leave
   if (ids_1.empty()) return;
 
-  // call default assignment
-  Coupling::VolMortar::Utils::DefaultMaterialStrategy::assign_material1_to2(
-      volmortar, ele2, ids_1, dis1, dis2);
+  // The thermal elements do not need the structural material, since the mechanical heat source
+  // is evaluated by the structural elements.
 
   // initialise kinematic type to geo_linear.
   // kintype is passed to the corresponding thermo element
