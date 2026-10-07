@@ -49,6 +49,7 @@ namespace Discret::Elements
     static constexpr bool has_condensed_contribution = false;
 
     using LinearizationContainer = FBarLinearizationContainer<celltype>;
+    using StrainRateContainer = FBarStrainRateContainer<celltype>;
     using PreparationData = FBarPreparationData<celltype>;
 
 
@@ -182,6 +183,91 @@ namespace Discret::Elements
       // additional stiffness matrix needed for fbar method
       add_fbar_stiffness_matrix(linearization.Bop, linearization.Hop, linearization.fbar_factor,
           integration_factor, linearization.cauchygreen, stress, stiffness_matrix);
+    }
+
+    // The modified strain is E_bar = 1/2 (phi^2 C - I) with the compatible right Cauchy-Green
+    // tensor C and d(phi) = phi/3 . Hop . dd.
+
+    static FBarStrainRateContainer<celltype> evaluate_strain_rate(
+        const JacobianMapping<celltype>& jacobian_mapping,
+        const Core::LinAlg::Tensor<double, Core::FE::dim<celltype>, Core::FE::dim<celltype>>& F_bar,
+        const FBarLinearizationContainer<celltype>& linearization,
+        const Core::LinAlg::Matrix<Core::FE::num_nodes(celltype) * Core::FE::dim<celltype>, 1>&
+            nodal_velocities,
+        const FBarPreparationData<celltype>& preparation_data)
+    {
+      FBarStrainRateContainer<celltype> strain_rate{};
+      const double phi = linearization.fbar_factor;
+      const auto F = (1.0 / phi) * F_bar;
+
+      strain_rate.deformation_gradient_rate =
+          evaluate_deformation_gradient_rate<celltype>(jacobian_mapping.N_XYZ, nodal_velocities);
+      strain_rate.fbar_h_operator_rate = linearization.Hop.dot(nodal_velocities);
+
+      // dE_bar/dt = phi^2 (sym(F^T . dF/dt) + 1/3 (Hop . v) C)
+      strain_rate.strain_rate =
+          phi * phi *
+          (evaluate_green_lagrange_strain_rate<celltype>(F, strain_rate.deformation_gradient_rate) +
+              strain_rate.fbar_h_operator_rate / 3.0 * linearization.cauchygreen);
+
+      // Hop . v = tr(F_0^-1 . dF_0/dt) - tr(F^-1 . dF/dt)
+      const auto& jacobian_mapping_centroid = preparation_data.jacobian_mapping_centroid;
+      add_d_trace_velocity_gradient_d_displacements<celltype>(
+          preparation_data.spatial_material_mapping_centroid.deformation_gradient_,
+          evaluate_deformation_gradient_rate<celltype>(
+              jacobian_mapping_centroid.N_XYZ, nodal_velocities),
+          jacobian_mapping_centroid.N_XYZ, 1.0, strain_rate.d_fbar_h_operator_rate_d_displacements);
+      add_d_trace_velocity_gradient_d_displacements<celltype>(F,
+          strain_rate.deformation_gradient_rate, jacobian_mapping.N_XYZ, -1.0,
+          strain_rate.d_fbar_h_operator_rate_d_displacements);
+
+      return strain_rate;
+    }
+
+    static void add_d_strain_d_displacements_contraction(
+        const JacobianMapping<celltype>& jacobian_mapping,
+        const Core::LinAlg::Tensor<double, Core::FE::dim<celltype>, Core::FE::dim<celltype>>& F_bar,
+        const FBarLinearizationContainer<celltype>& linearization,
+        const Core::LinAlg::SymmetricTensor<double, Core::FE::dim<celltype>,
+            Core::FE::dim<celltype>>& Y,
+        const double factor, const FBarPreparationData<celltype>& preparation_data,
+        Core::LinAlg::Matrix<Core::FE::num_nodes(celltype) * Core::FE::dim<celltype>, 1>& vector)
+    {
+      // dE_bar = phi^2 . (sym(F^T . dF) + 1/3 . C . Hop . dd)
+      const double phi = linearization.fbar_factor;
+      Discret::Elements::add_internal_force_vector(
+          jacobian_mapping, (1.0 / phi) * F_bar, Y, factor * phi * phi, vector);
+      vector.update(factor * phi * phi / 3.0 * Core::LinAlg::ddot(linearization.cauchygreen, Y),
+          linearization.Hop, 1.0);
+    }
+
+    static void add_d_strain_rate_d_displacements_at_fixed_velocities_contraction(
+        const JacobianMapping<celltype>& jacobian_mapping,
+        const Core::LinAlg::Tensor<double, Core::FE::dim<celltype>, Core::FE::dim<celltype>>& F_bar,
+        const FBarLinearizationContainer<celltype>& linearization,
+        const FBarStrainRateContainer<celltype>& strain_rate,
+        const Core::LinAlg::SymmetricTensor<double, Core::FE::dim<celltype>,
+            Core::FE::dim<celltype>>& Y,
+        const double factor, const FBarPreparationData<celltype>& preparation_data,
+        Core::LinAlg::Matrix<Core::FE::num_nodes(celltype) * Core::FE::dim<celltype>, 1>& vector)
+    {
+      // dE_bar/dt = phi^2 (sym(F^T . dF/dt) + 1/3 (Hop . v) C) with d(phi^2) = 2/3 phi^2 Hop . dd
+      const double phi = linearization.fbar_factor;
+      const double phi_squared = phi * phi;
+      const auto F = (1.0 / phi) * F_bar;
+
+      // derivative of phi^2
+      vector.update(factor * 2.0 / 3.0 * Core::LinAlg::ddot(strain_rate.strain_rate, Y),
+          linearization.Hop, 1.0);
+      // derivative of sym(F^T . dF/dt)
+      Discret::Elements::add_internal_force_vector(
+          jacobian_mapping, strain_rate.deformation_gradient_rate, Y, factor * phi_squared, vector);
+      // derivative of C
+      Discret::Elements::add_internal_force_vector(jacobian_mapping, F, Y,
+          factor * 2.0 / 3.0 * phi_squared * strain_rate.fbar_h_operator_rate, vector);
+      // derivative of Hop . v
+      vector.update(factor * phi_squared / 3.0 * Core::LinAlg::ddot(linearization.cauchygreen, Y),
+          strain_rate.d_fbar_h_operator_rate_d_displacements, 1.0);
     }
   };
 
