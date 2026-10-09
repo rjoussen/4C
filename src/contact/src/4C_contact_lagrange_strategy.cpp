@@ -42,6 +42,7 @@ CONTACT::LagrangeStrategy::LagrangeStrategy(
     : AbstractStrategy(data_ptr, dof_row_map, NodeRowMap, params, spatialDim, comm, alphaf, maxdof),
       interface_(interface),
       evalForceCalled_(false),
+      initial_active_set_used_(false),
       activesetssconv_(false),
       activesetconv_(false),
       activesetsteps_(1),
@@ -3362,16 +3363,7 @@ void CONTACT::LagrangeStrategy::evaluate_force(CONTACT::ParamsInterface& cparams
     assemble_mortar();                    // assemble mortar terms into global matrices
   }
 
-  // evaluate relative movement for friction
-  if (cparams.is_predictor())
-    predict_relative_movement();
-  else
-    evaluate_relative_movement();
-
-  // update active set
-  const bool firstTimeStepAndPredictor =
-      (cparams.is_predictor() and (cparams.get_step_np() == cparams.get_restart_step() + 1));
-  update_active_set_semi_smooth(firstTimeStepAndPredictor);
+  update_contact_state();
 
   // apply contact forces and stiffness
   initialize();  // init lin-matrices
@@ -4856,7 +4848,7 @@ void CONTACT::LagrangeStrategy::update_active_set()
 /*----------------------------------------------------------------------*
  |  Update active set and check for convergence (public)      popp 06/08|
  *----------------------------------------------------------------------*/
-void CONTACT::LagrangeStrategy::update_active_set_semi_smooth(const bool firstStepPredictor)
+void CONTACT::LagrangeStrategy::update_contact_state()
 {
   // FIXME: Here we do not consider zig-zagging yet!
   //  print_active_set();
@@ -4866,6 +4858,9 @@ void CONTACT::LagrangeStrategy::update_active_set_semi_smooth(const bool firstSt
   const bool semismooth = params().get<bool>("SEMI_SMOOTH_NEWTON");
   if (!semismooth)
   {
+    // evaluate relative movement for friction
+    evaluate_relative_movement();
+
     // loop over all interfaces
     for (const auto& interface : interface_)
     {
@@ -4898,22 +4893,29 @@ void CONTACT::LagrangeStrategy::update_active_set_semi_smooth(const bool firstSt
   // assume that active set has converged and check for opposite
   activesetconv_ = true;
 
-  // loop over all interfaces
-  for (const auto& interface : interface_)
+  // The active set from the input is only used in the first active set update (also after a
+  // restart), in which the Lagrange multipliers may not contain any information yet.
+  const bool use_initial_active_set = not initial_active_set_used_;
+  initial_active_set_used_ = true;
+
+  // update the active nodes of all interfaces
+  std::vector<std::vector<int>> remaining_active_nodes(interface_.size());
+  for (int i = 0; i < (int)interface_.size(); ++i)
   {
-    bool my_check = interface->update_active_set_semi_smooth();
+    const bool my_check = interface_[i]->update_active_nodes_semi_smooth(
+        remaining_active_nodes[i], use_initial_active_set);
     activesetconv_ = activesetconv_ and my_check;
   }  // loop over all interfaces
 
-  // Overwrite active set with input file information in predictor step of first time step
-  if (firstStepPredictor)
+  // evaluate relative movement for friction, which is required for the stick/slip decision
+  evaluate_relative_movement();
+
+  // update the stick/slip status of the nodes that stay active
+  for (int i = 0; i < (int)interface_.size(); ++i)
   {
-    // loop over all interfaces
-    for (const auto& interface : interface_)
-    {
-      interface->update_active_set_initial_status();
-    }  // loop over all interfaces
-  }
+    const bool my_check = interface_[i]->update_slip_nodes_semi_smooth(remaining_active_nodes[i]);
+    activesetconv_ = activesetconv_ and my_check;
+  }  // loop over all interfaces
 
   // broadcast convergence status among processors
   int convcheck = 0;
@@ -5082,13 +5084,6 @@ void CONTACT::LagrangeStrategy::update(std::shared_ptr<const Core::LinAlg::Vecto
   CONTACT::AbstractStrategy::update(dis);
 
   if (fconservation_ == nullptr) return;
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void CONTACT::LagrangeStrategy::predict_relative_movement()
-{
-  if (friction_) evaluate_relative_movement();
 }
 
 void CONTACT::LagrangeStrategy::condense_friction(

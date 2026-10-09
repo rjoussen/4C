@@ -111,17 +111,6 @@ namespace CONTACT
     void save_reference_state(std::shared_ptr<const Core::LinAlg::Vector<double>> dis) override;
 
     /*!
-    \brief Evaluate relative movement of contact bodies in predictor
-
-    This is a tiny control routine for evaluating the relative movement of
-    contact bodies in the predictor of an implicit time integration scheme.
-    This evaluation (resetting) is ONLY necessary for penalty strategy and
-    Uzawa augmented lagrange strategy, thus this tiny routine here.
-
-    */
-    void predict_relative_movement() override;
-
-    /*!
     \brief Initialize general contact variables for next Newton step
 
     For a penalty strategy this involves the derivative matrix for the regularized lagrange
@@ -291,7 +280,13 @@ namespace CONTACT
     }
     void evaluate_constr_rhs() override {}
     void update_active_set() override {}
-    void update_active_set_semi_smooth(const bool firstStepPredictor = false) override {}
+    /*!
+    \brief Update the contact state, i.e. evaluate the relative movement
+
+    The active set of the penalty strategy is updated during the assembly of the regularized
+    contact forces, see Interface::assemble_reg_normal_forces().
+    */
+    void update_contact_state() override { evaluate_relative_movement(); }
     bool is_penalty() const override { return true; };
     void reset_lagrange_multipliers(
         const CONTACT::ParamsInterface& cparams, const Core::LinAlg::Vector<double>& xnew) override

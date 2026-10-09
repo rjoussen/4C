@@ -914,7 +914,6 @@ namespace CONTACT
         std::shared_ptr<Core::LinAlg::Vector<double>>& feff) = 0;
     virtual void evaluate_friction(std::shared_ptr<Core::LinAlg::SparseOperator>& kteff,
         std::shared_ptr<Core::LinAlg::Vector<double>>& feff) = 0;
-    void predict_relative_movement() override = 0;
     double initial_penalty() const override = 0;
     void initialize() override = 0;
     void initialize_uzawa(std::shared_ptr<Core::LinAlg::SparseOperator>& kteff,
@@ -935,7 +934,13 @@ namespace CONTACT
     virtual void evaluate_constr_rhs() = 0;
     void save_reference_state(std::shared_ptr<const Core::LinAlg::Vector<double>> dis) override = 0;
     void update_active_set() override = 0;
-    void update_active_set_semi_smooth(const bool firstStepPredictor = false) override = 0;
+    /*!
+    \brief Update the contact state of all source nodes for the current displacement state
+
+    The contact state consists of the active set (active/inactive and stick/slip) and the relative
+    movement (jump) of the source nodes.
+    */
+    virtual void update_contact_state() = 0;
     void update_uzawa_augmented_lagrange() override = 0;
     void update_constraint_norm(int uzawaiter = 0) override = 0;
 
@@ -1166,7 +1171,7 @@ namespace CONTACT
      or regarding the change of mortar projection. The second possibility
      is definitely objective whereas the first possibility is objective
      only when the gap is zero. */
-    void evaluate_relative_movement() override;
+    void evaluate_relative_movement();
 
     /*! \brief Initialize Mortar stuff for the next Newton step
 

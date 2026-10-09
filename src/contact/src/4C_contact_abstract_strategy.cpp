@@ -873,16 +873,9 @@ void CONTACT::AbstractStrategy::apply_force_stiff_cmt(
     Core::Communication::barrier(get_comm());
     const double t_end2 = Teuchos::Time::wallTime() - t_start2;
 
-    // evaluate relative movement for friction
     Core::Communication::barrier(get_comm());
     const double t_start3 = Teuchos::Time::wallTime();
-    if (predictor)
-      predict_relative_movement();
-    else
-      evaluate_relative_movement();
-
-    // update active set
-    if (!predictor) update_active_set_semi_smooth();
+    update_contact_state();
 
     Core::Communication::barrier(get_comm());
     const double t_end3 = Teuchos::Time::wallTime() - t_start3;
@@ -929,14 +922,7 @@ void CONTACT::AbstractStrategy::apply_force_stiff_cmt(
       assemble_mortar();                    // assemble mortar terms into global matrices
     }
 
-    // evaluate relative movement for friction
-    if (predictor)
-      predict_relative_movement();
-    else
-      evaluate_relative_movement();
-
-    // update active set
-    if (!predictor) update_active_set_semi_smooth();
+    update_contact_state();
 
     // apply contact forces and stiffness
     initialize();           // init lin-matrices

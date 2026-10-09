@@ -472,15 +472,12 @@ namespace CONTACT
     void reset_active_set() override {}
     void save_reference_state(std::shared_ptr<const Core::LinAlg::Vector<double>> dis) override {}
     void update_active_set() override {}
-    void update_active_set_semi_smooth(const bool firstStepPredictor = false) override {}
     std::shared_ptr<Core::LinAlg::SparseMatrix> evaluate_normals(
         std::shared_ptr<Core::LinAlg::Vector<double>> dis) override
     {
       return nullptr;
     }
     void evaluate_reference_state() override {}
-    void evaluate_relative_movement() override {}
-    void predict_relative_movement() override {}
     std::shared_ptr<const Core::LinAlg::Map> source_row_nodes_ptr() const override
     {
       return gsnoderowmap_;

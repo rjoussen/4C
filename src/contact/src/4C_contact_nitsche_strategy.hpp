@@ -187,8 +187,10 @@ namespace CONTACT
     }
     void evaluate_constr_rhs() override {}
     void update_active_set() override {}
-    void update_active_set_semi_smooth(const bool firstStepPredictor) override {}
-    void predict_relative_movement() override {}
+    void update_contact_state() override
+    {
+      // contact and stick/slip are decided per Gauss point during the integration
+    }
     void modify_penalty() override {}
     void update_uzawa_augmented_lagrange() override {}
     void update_constraint_norm(int uzawaiter) override {}
