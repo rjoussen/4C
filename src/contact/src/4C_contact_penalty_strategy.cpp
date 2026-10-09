@@ -116,20 +116,6 @@ void CONTACT::PenaltyStrategy::save_reference_state(
 }
 
 /*----------------------------------------------------------------------*
- | evaluate relative movement in predictor step               popp 04/10|
- *----------------------------------------------------------------------*/
-void CONTACT::PenaltyStrategy::predict_relative_movement()
-{
-  // only for frictional contact
-  if (friction_ == false) return;
-
-  // call evaluation method of base class
-  evaluate_relative_movement();
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
  | initialize global contact variables for next Newton step   popp 06/09|
  *----------------------------------------------------------------------*/
 void CONTACT::PenaltyStrategy::initialize()
@@ -717,14 +703,7 @@ void CONTACT::PenaltyStrategy::evaluate_force(CONTACT::ParamsInterface& cparams)
     assemble_mortar();                    // assemble mortar terms into global matrices
   }
 
-  // evaluate relative movement for friction
-  if (cparams.is_predictor())
-    predict_relative_movement();
-  else
-    evaluate_relative_movement();
-
-  // update active set
-  update_active_set_semi_smooth();
+  update_contact_state();
 
   // apply contact forces and stiffness
   initialize();  // init lin-matrices

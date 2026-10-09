@@ -6272,7 +6272,10 @@ void CONTACT::Interface::evaluate_relative_movement(
 
 
   // parameters
-  double pp = interface_params().get<double>("PENALTYPARAM");
+  const auto contact_strategy =
+      Teuchos::getIntegralValue<CONTACT::SolvingStrategy>(interface_params(), "STRATEGY");
+  const bool semi_smooth = interface_params().get<bool>("SEMI_SMOOTH_NEWTON");
+  const double pp = interface_params().get<double>("PENALTYPARAM");
   const bool use_frictionless_first = interface_params().get<bool>("FRLESS_FIRST");
 
   // loop over all source row nodes on the current interface
@@ -6282,109 +6285,163 @@ void CONTACT::Interface::evaluate_relative_movement(
     Core::Nodes::Node* node = discret().g_node(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     auto* cnode = dynamic_cast<FriNode*>(node);
-    double cn = get_cn_ref().local_values_as_span()[get_cn_ref().get_map().lid(cnode->id())];
 
     // get some information form the node
     double gap = cnode->data().getg();
 
     const int dim = cnode->num_dof();
 
-    // compute normal part of Lagrange multiplier
-    double nz = 0.0;
-    for (int k = 0; k < 3; ++k)
-    {
-      nz += cnode->mo_data().n()[k] * cnode->mo_data().lm()[k];
-    }
-
     std::vector<double> jump(dim);
     for (int dim = 0; dim < n_dim(); dim++) jump[dim] = 0;
 
-    double lmuzawan = 0.0;
-    for (int k = 0; k < dim; ++k)
-      lmuzawan += cnode->mo_data().lmuzawa()[k] * cnode->mo_data().n()[k];
-
-    double kappa = cnode->data().kappa();
-
-    // evaluate jump (relative displacement) of this node
-    // only when the node is going to be active, otherwise,
-    // this value isn't needed.
-    bool activeinfuture = false;
-
-    const auto contact_strategy =
-        Teuchos::getIntegralValue<CONTACT::SolvingStrategy>(interface_params(), "STRATEGY");
-
-    if (contact_strategy == CONTACT::SolvingStrategy::penalty ||
-        contact_strategy == CONTACT::SolvingStrategy::multiscale ||
-        (contact_strategy == CONTACT::SolvingStrategy::lagmult and
-            not interface_params().get<bool>("SEMI_SMOOTH_NEWTON")))
+    // The jump is only required for nodes in contact according to the solution strategy.
+    bool is_in_contact = false;
+    switch (contact_strategy)
     {
-      if (-gap >= 0)
+      case CONTACT::SolvingStrategy::lagmult:
+        // With semi-smooth Newton, the active set has already been updated, see
+        // LagrangeStrategy::update_contact_state()
+        is_in_contact = semi_smooth ? cnode->active() : -gap >= 0;
+        break;
+      case CONTACT::SolvingStrategy::penalty:
+      case CONTACT::SolvingStrategy::multiscale:
+        is_in_contact = -gap >= 0;
+        break;
+      case CONTACT::SolvingStrategy::uzawa:
       {
-        activeinfuture = true;
+        double lmuzawan = 0.0;
+        for (int k = 0; k < dim; ++k)
+          lmuzawan += cnode->mo_data().lmuzawa()[k] * cnode->mo_data().n()[k];
+        is_in_contact = lmuzawan - cnode->data().kappa() * pp * gap >= 0;
+        break;
       }
-    }
-    else if (contact_strategy == CONTACT::SolvingStrategy::lagmult and
-             interface_params().get<bool>("SEMI_SMOOTH_NEWTON"))
-    {
-      // Besides the nodes that become active in the subsequent active set update, the currently
-      // active nodes are considered as well, since the active set is not always updated based on
-      // this criterion afterwards, e.g. in the predictor of the old structural time integration or
-      // in the first predictor step, where the initial active set from the input is used.
-      // Currently active nodes without mortar mappings are excluded. They have no projection onto
-      // the target surface, e.g. after sliding off its edge during the Newton iterations, and
-      // become inactive in the subsequent active set update.
-      if ((nz - cn * gap > 0) or (cnode->active() and not cnode->mo_data().get_m().empty()))
-      {
-        activeinfuture = true;
-      }
-    }
-    else if (contact_strategy == CONTACT::SolvingStrategy::uzawa)
-    {
-      if (lmuzawan - kappa * pp * gap >= 0)
-      {
-        activeinfuture = true;
-      }
-    }
-    else
-    {
-      FOUR_C_THROW(
-          "Error in Interface::evaluate_relative_movement(): Solution strategy not known!");
+      default:
+        FOUR_C_THROW(
+            "Error in Interface::evaluate_relative_movement(): Solution strategy not known!");
     }
 
-    if (activeinfuture)
+    if (not is_in_contact) continue;
+
+
+    const bool is_first_contact_step = not cnode->data().active_old();
+
+    // A node that was not active in the last converged time step has no meaningful old mortar
+    // mappings, which means that no jump can be calculated. However, if the first contact step is
+    // considered frictionless, the jump computation is not required.
+    const bool skip_jump_evaluation = (is_first_contact_step and use_frictionless_first);
+
+    // If the jump is not required, we can skip the computation and set the jump to zero.
+    if (skip_jump_evaluation)
     {
-      const bool is_first_contact_step = not cnode->data().active_old();
+      std::fill_n(cnode->fri_data().jump(), n_dim(), 0.0);
+      auto& deriv_jump = cnode->fri_data().get_deriv_jump();
+      deriv_jump.clear();
+      deriv_jump.resize(cnode->num_dof());
+      continue;
+    }
 
-      // A node that was not active in the last converged time step has no meaningful old mortar
-      // mappings, which means that no jump can be calculated. However, if the first contact step is
-      // considered frictionless, the jump computation is not required.
-      const bool skip_jump_evaluation = (is_first_contact_step and use_frictionless_first);
+    // if the jump is required, it must be computable, i.e. we need history of the mortar
+    // mappings:
+    FOUR_C_ASSERT_ALWAYS(not cnode->fri_data().get_d_old().empty(),
+        "Error in Interface::evaluate_relative_movement(): No old D-Map!");
 
-      // If the jump is not required, we can skip the computation and set the jump to zero.
-      if (skip_jump_evaluation)
+
+    Core::Gen::Pairedvector<int, double>& dmap = cnode->mo_data().get_d();
+    Core::Gen::Pairedvector<int, double>& dmapold = cnode->fri_data().get_d_old();
+
+    std::set<int> source_nodes = cnode->fri_data().get_source_nodes();
+
+    std::map<int, double>::iterator colcurr;
+    std::set<int>::iterator s_curr;
+
+    // loop over all source nodes with an entry adjacent to this node
+    for (s_curr = source_nodes.begin(); s_curr != source_nodes.end(); s_curr++)
+    {
+      int gid = *s_curr;
+      Core::Nodes::Node* source_node = idiscret_->g_node(gid);
+      if (!source_node) FOUR_C_THROW("Cannot find node with gid %", gid);
+      Node* c_source_node = dynamic_cast<Node*>(source_node);
+
+      double dik = dmap[c_source_node->id()];
+      double dikold = dmapold[c_source_node->id()];
+
+      std::map<int, double>::iterator t_curr;
+
+      for (int dim = 0; dim < c_source_node->num_dof(); ++dim)
       {
-        std::fill_n(cnode->fri_data().jump(), n_dim(), 0.0);
-        auto& deriv_jump = cnode->fri_data().get_deriv_jump();
-        deriv_jump.clear();
-        deriv_jump.resize(cnode->num_dof());
-        continue;
+        int locid = (xsmod->get_map()).lid(c_source_node->dofs()[dim]);
+        jump[dim] -= (dik - dikold) * xsmod->local_values_as_span()[locid];
       }
+    }  //  loop over adjacent source nodes
 
-      // if the jump is required, it must be computable, i.e. we need history of the mortar
-      // mappings:
-      FOUR_C_ASSERT_ALWAYS(not cnode->fri_data().get_d_old().empty(),
-          "Error in Interface::evaluate_relative_movement(): No old D-Map!");
+    std::map<int, double>& mmap = cnode->mo_data().get_m();
+    std::map<int, double>& mmapold = cnode->fri_data().get_m_old();
 
+    const std::set<int>& target_nodes_current = cnode->fri_data().get_target_nodes();
+    const std::set<int>& target_nodes_old = cnode->fri_data().get_target_nodes_old();
 
-      Core::Gen::Pairedvector<int, double>& dmap = cnode->mo_data().get_d();
-      Core::Gen::Pairedvector<int, double>& dmapold = cnode->fri_data().get_d_old();
+    // check if there are entries in the M map
+    if (mmap.size() < 1)
+    {
+      FOUR_C_THROW("Error in Interface::evaluate_relative_movement(): No M-Map!");
+    }
 
-      std::set<int> source_nodes = cnode->fri_data().get_source_nodes();
+    // check if there are entries in the old M map
+    if (mmapold.size() < 1)
+    {
+      FOUR_C_THROW("Error in Interface::evaluate_relative_movement(): No old M-Map!");
+    }
 
-      std::map<int, double>::iterator colcurr;
-      std::set<int>::iterator s_curr;
+    if (target_nodes_old.size() < 1)
+    {
+      FOUR_C_THROW("Error in Interface::evaluate_relative_movement(): No old M-Set!");
+    }
 
-      // loop over all source nodes with an entry adjacent to this node
+    std::set<int> target_nodes;
+    std::set<int>::iterator t_curr;
+
+    for (t_curr = target_nodes_current.begin(); t_curr != target_nodes_current.end(); t_curr++)
+    {
+      target_nodes.insert(*t_curr);
+    }
+
+    for (t_curr = target_nodes_old.begin(); t_curr != target_nodes_old.end(); t_curr++)
+      target_nodes.insert(*t_curr);
+
+    // loop over all target nodes (find adjacent ones to this slip node)
+    for (t_curr = target_nodes.begin(); t_curr != target_nodes.end(); t_curr++)
+    {
+      int gid = *t_curr;
+      Core::Nodes::Node* target_node = idiscret_->g_node(gid);
+      if (!target_node) FOUR_C_THROW("Cannot find node with gid %", gid);
+      Node* c_target_node = dynamic_cast<Node*>(target_node);
+
+      double mik = mmap[c_target_node->id()];
+      double mikold = mmapold[c_target_node->id()];
+
+      std::map<int, double>::iterator t_curr;
+
+      for (int dim = 0; dim < cnode->num_dof(); ++dim)
+      {
+        jump[dim] += (mik - mikold) * (c_target_node->xspatial()[dim]);
+      }
+    }  //  loop over target nodes
+
+    // write it to nodes
+    for (int dim = 0; dim < n_dim(); dim++) cnode->fri_data().jump()[dim] = jump[dim];
+
+    // linearization of jump vector
+
+    // reset derivative map of jump
+    auto& deriv_jump = cnode->fri_data().get_deriv_jump();
+    deriv_jump.clear();
+    deriv_jump.resize(cnode->num_dof());
+
+    /*** 01  **********************************************************/
+
+    if (dmatrixmod == nullptr)
+    {
+      // loop over according source nodes
       for (s_curr = source_nodes.begin(); s_curr != source_nodes.end(); s_curr++)
       {
         int gid = *s_curr;
@@ -6395,248 +6452,160 @@ void CONTACT::Interface::evaluate_relative_movement(
         double dik = dmap[c_source_node->id()];
         double dikold = dmapold[c_source_node->id()];
 
-        std::map<int, double>::iterator t_curr;
-
-        for (int dim = 0; dim < c_source_node->num_dof(); ++dim)
-        {
-          int locid = (xsmod->get_map()).lid(c_source_node->dofs()[dim]);
-          jump[dim] -= (dik - dikold) * xsmod->local_values_as_span()[locid];
-        }
-      }  //  loop over adjacent source nodes
-
-      std::map<int, double>& mmap = cnode->mo_data().get_m();
-      std::map<int, double>& mmapold = cnode->fri_data().get_m_old();
-
-      const std::set<int>& target_nodes_current = cnode->fri_data().get_target_nodes();
-      const std::set<int>& target_nodes_old = cnode->fri_data().get_target_nodes_old();
-
-      // check if there are entries in the M map
-      if (mmap.size() < 1)
-      {
-        FOUR_C_THROW("Error in Interface::evaluate_relative_movement(): No M-Map!");
-      }
-
-      // check if there are entries in the old M map
-      if (mmapold.size() < 1)
-      {
-        FOUR_C_THROW("Error in Interface::evaluate_relative_movement(): No old M-Map!");
-      }
-
-      if (target_nodes_old.size() < 1)
-      {
-        FOUR_C_THROW("Error in Interface::evaluate_relative_movement(): No old M-Set!");
-      }
-
-      std::set<int> target_nodes;
-      std::set<int>::iterator t_curr;
-
-      for (t_curr = target_nodes_current.begin(); t_curr != target_nodes_current.end(); t_curr++)
-      {
-        target_nodes.insert(*t_curr);
-      }
-
-      for (t_curr = target_nodes_old.begin(); t_curr != target_nodes_old.end(); t_curr++)
-        target_nodes.insert(*t_curr);
-
-      // loop over all target nodes (find adjacent ones to this slip node)
-      for (t_curr = target_nodes.begin(); t_curr != target_nodes.end(); t_curr++)
-      {
-        int gid = *t_curr;
-        Core::Nodes::Node* target_node = idiscret_->g_node(gid);
-        if (!target_node) FOUR_C_THROW("Cannot find node with gid %", gid);
-        Node* c_target_node = dynamic_cast<Node*>(target_node);
-
-        double mik = mmap[c_target_node->id()];
-        double mikold = mmapold[c_target_node->id()];
-
-        std::map<int, double>::iterator t_curr;
-
-        for (int dim = 0; dim < cnode->num_dof(); ++dim)
-        {
-          jump[dim] += (mik - mikold) * (c_target_node->xspatial()[dim]);
-        }
-      }  //  loop over target nodes
-
-      // write it to nodes
-      for (int dim = 0; dim < n_dim(); dim++) cnode->fri_data().jump()[dim] = jump[dim];
-
-      // linearization of jump vector
-
-      // reset derivative map of jump
-      auto& deriv_jump = cnode->fri_data().get_deriv_jump();
-      deriv_jump.clear();
-      deriv_jump.resize(cnode->num_dof());
-
-      /*** 01  **********************************************************/
-
-      if (dmatrixmod == nullptr)
-      {
-        // loop over according source nodes
-        for (s_curr = source_nodes.begin(); s_curr != source_nodes.end(); s_curr++)
-        {
-          int gid = *s_curr;
-          Core::Nodes::Node* source_node = idiscret_->g_node(gid);
-          if (!source_node) FOUR_C_THROW("Cannot find node with gid %", gid);
-          Node* c_source_node = dynamic_cast<Node*>(source_node);
-
-          double dik = dmap[c_source_node->id()];
-          double dikold = dmapold[c_source_node->id()];
-
-          for (int dimrow = 0; dimrow < cnode->num_dof(); ++dimrow)
-          {
-            int col = c_source_node->dofs()[dimrow];
-            double val = -(dik - dikold);
-            if (abs(val) > 1e-14) cnode->add_deriv_jump_value(dimrow, col, val);
-          }
-        }
-      }
-      // in the 3D quadratic case, the values are obtained from the
-      // global matrices Dmod and Doldmod
-      else
-      {
-        // loop over dimension of the node
-        for (int dim = 0; dim < cnode->num_dof(); ++dim)
-        {
-          int NumEntries = 0;
-          int NumEntriesOld = 0;
-          std::vector<double> Values((dmatrixmod->max_num_entries()));
-          std::vector<int> Indices((dmatrixmod->max_num_entries()));
-          std::vector<double> ValuesOld((dmatrixmod->max_num_entries()));
-          std::vector<int> IndicesOld((dmatrixmod->max_num_entries()));
-
-          // row
-          int row = cnode->dofs()[dim];
-
-          // extract entries of this row from matrix
-          dmatrixmod->extract_global_row_copy(
-              row, dmatrixmod->max_num_entries(), NumEntries, Values.data(), Indices.data());
-
-          doldmod->extract_global_row_copy(
-              row, doldmod->max_num_entries(), NumEntriesOld, ValuesOld.data(), IndicesOld.data());
-
-          // loop over entries of this vector
-          for (int j = 0; j < NumEntries; ++j)
-          {
-            double ValueOld = 0;
-            bool found = false;
-
-            // find value with the same index in vector of Dold
-            for (int k = 0; k < NumEntriesOld; ++k)
-            {
-              if (Indices[k] == Indices[j])
-              {
-                ValueOld = ValuesOld[k];
-                found = true;
-                break;
-              }
-            }
-
-            if (not found or abs(ValueOld) < 1e-12)
-            {
-              FOUR_C_THROW("Error in EvaluareRelMov(): No old D value exists");
-            }
-
-            // write to node
-            cnode->add_deriv_jump_value(dim, Indices[j], (Values[j] - ValueOld));
-          }
-        }
-      }
-
-      /*** 02  **********************************************************/
-      // loop over according target nodes
-      for (t_curr = target_nodes.begin(); t_curr != target_nodes.end(); t_curr++)
-      {
-        int gid = *t_curr;
-        Core::Nodes::Node* target_node = idiscret_->g_node(gid);
-        if (!target_node) FOUR_C_THROW("Cannot find node with gid %", gid);
-        Node* c_target_node = dynamic_cast<Node*>(target_node);
-
-        double mik = mmap[c_target_node->id()];
-        double mikold = mmapold[c_target_node->id()];
-
         for (int dimrow = 0; dimrow < cnode->num_dof(); ++dimrow)
         {
-          int col = c_target_node->dofs()[dimrow];
-          double val = (mik - mikold);
+          int col = c_source_node->dofs()[dimrow];
+          double val = -(dik - dikold);
           if (abs(val) > 1e-14) cnode->add_deriv_jump_value(dimrow, col, val);
         }
       }
-
-      /*** 03 ***********************************************************/
-      // we need the Lin(D-matrix) entries of this node
-      std::map<int, std::map<int, double>>& ddmap = cnode->data().get_deriv_d();
-      std::map<int, std::map<int, double>>::iterator dscurr;
-
-      // loop over all source nodes in the DerivM-map of the stick source node
-      for (dscurr = ddmap.begin(); dscurr != ddmap.end(); ++dscurr)
+    }
+    // in the 3D quadratic case, the values are obtained from the
+    // global matrices Dmod and Doldmod
+    else
+    {
+      // loop over dimension of the node
+      for (int dim = 0; dim < cnode->num_dof(); ++dim)
       {
-        int gid = dscurr->first;
-        Core::Nodes::Node* source_node = idiscret_->g_node(gid);
-        if (!source_node) FOUR_C_THROW("Cannot find node with gid %", gid);
-        Node* c_source_node = dynamic_cast<Node*>(source_node);
+        int NumEntries = 0;
+        int NumEntriesOld = 0;
+        std::vector<double> Values((dmatrixmod->max_num_entries()));
+        std::vector<int> Indices((dmatrixmod->max_num_entries()));
+        std::vector<double> ValuesOld((dmatrixmod->max_num_entries()));
+        std::vector<int> IndicesOld((dmatrixmod->max_num_entries()));
 
-        // compute entry of the current stick node / source node pair
-        std::map<int, double>& thisdmmap = cnode->data().get_deriv_d(gid);
+        // row
+        int row = cnode->dofs()[dim];
 
-        // loop over all entries of the current derivative map
-        for (colcurr = thisdmmap.begin(); colcurr != thisdmmap.end(); ++colcurr)
+        // extract entries of this row from matrix
+        dmatrixmod->extract_global_row_copy(
+            row, dmatrixmod->max_num_entries(), NumEntries, Values.data(), Indices.data());
+
+        doldmod->extract_global_row_copy(
+            row, doldmod->max_num_entries(), NumEntriesOld, ValuesOld.data(), IndicesOld.data());
+
+        // loop over entries of this vector
+        for (int j = 0; j < NumEntries; ++j)
         {
-          int col = colcurr->first;
+          double ValueOld = 0;
+          bool found = false;
 
-          // loop over dimensions
-          for (int dim = 0; dim < cnode->num_dof(); ++dim)
+          // find value with the same index in vector of Dold
+          for (int k = 0; k < NumEntriesOld; ++k)
           {
-            int locid = (xsmod->get_map()).lid(c_source_node->dofs()[dim]);
-            double val = -colcurr->second * xsmod->local_values_as_span()[locid];
-            if (abs(val) > 1e-14) cnode->add_deriv_jump_value(dim, col, val);
+            if (Indices[k] == Indices[j])
+            {
+              ValueOld = ValuesOld[k];
+              found = true;
+              break;
+            }
           }
+
+          if (not found or abs(ValueOld) < 1e-12)
+          {
+            FOUR_C_THROW("Error in EvaluareRelMov(): No old D value exists");
+          }
+
+          // write to node
+          cnode->add_deriv_jump_value(dim, Indices[j], (Values[j] - ValueOld));
         }
       }
+    }
 
-      /*** 04 ***********************************************************/
-      // we need the Lin(M-matrix) entries of this node
-      std::map<int, std::map<int, double>>& dmmap = cnode->data().get_deriv_m();
-      std::map<int, std::map<int, double>>::iterator dmcurr;
+    /*** 02  **********************************************************/
+    // loop over according target nodes
+    for (t_curr = target_nodes.begin(); t_curr != target_nodes.end(); t_curr++)
+    {
+      int gid = *t_curr;
+      Core::Nodes::Node* target_node = idiscret_->g_node(gid);
+      if (!target_node) FOUR_C_THROW("Cannot find node with gid %", gid);
+      Node* c_target_node = dynamic_cast<Node*>(target_node);
 
-      // loop over all target nodes in the DerivM-map of the stick source node
-      for (dmcurr = dmmap.begin(); dmcurr != dmmap.end(); ++dmcurr)
+      double mik = mmap[c_target_node->id()];
+      double mikold = mmapold[c_target_node->id()];
+
+      for (int dimrow = 0; dimrow < cnode->num_dof(); ++dimrow)
       {
-        int gid = dmcurr->first;
-        Core::Nodes::Node* target_node = idiscret_->g_node(gid);
-        if (!target_node) FOUR_C_THROW("Cannot find node with gid %", gid);
-        Node* c_target_node = dynamic_cast<Node*>(target_node);
-        double* target_xi = c_target_node->xspatial();
+        int col = c_target_node->dofs()[dimrow];
+        double val = (mik - mikold);
+        if (abs(val) > 1e-14) cnode->add_deriv_jump_value(dimrow, col, val);
+      }
+    }
 
-        // compute entry of the current stick node / target node pair
-        std::map<int, double>& thisdmmap = cnode->data().get_deriv_m(gid);
+    /*** 03 ***********************************************************/
+    // we need the Lin(D-matrix) entries of this node
+    std::map<int, std::map<int, double>>& ddmap = cnode->data().get_deriv_d();
+    std::map<int, std::map<int, double>>::iterator dscurr;
 
-        // loop over all entries of the current derivative map
-        for (colcurr = thisdmmap.begin(); colcurr != thisdmmap.end(); ++colcurr)
+    // loop over all source nodes in the DerivM-map of the stick source node
+    for (dscurr = ddmap.begin(); dscurr != ddmap.end(); ++dscurr)
+    {
+      int gid = dscurr->first;
+      Core::Nodes::Node* source_node = idiscret_->g_node(gid);
+      if (!source_node) FOUR_C_THROW("Cannot find node with gid %", gid);
+      Node* c_source_node = dynamic_cast<Node*>(source_node);
+
+      // compute entry of the current stick node / source node pair
+      std::map<int, double>& thisdmmap = cnode->data().get_deriv_d(gid);
+
+      // loop over all entries of the current derivative map
+      for (colcurr = thisdmmap.begin(); colcurr != thisdmmap.end(); ++colcurr)
+      {
+        int col = colcurr->first;
+
+        // loop over dimensions
+        for (int dim = 0; dim < cnode->num_dof(); ++dim)
         {
-          int col = colcurr->first;
-
-          // loop over dimensions
-          for (int dimrow = 0; dimrow < cnode->num_dof(); ++dimrow)
-          {
-            double val = colcurr->second * target_xi[dimrow];
-            if (abs(val) > 1e-14) cnode->add_deriv_jump_value(dimrow, col, val);
-          }
+          int locid = (xsmod->get_map()).lid(c_source_node->dofs()[dim]);
+          double val = -colcurr->second * xsmod->local_values_as_span()[locid];
+          if (abs(val) > 1e-14) cnode->add_deriv_jump_value(dim, col, val);
         }
       }
+    }
 
-      if (constr_direction_ == CONTACT::ConstraintDirection::xyz)
+    /*** 04 ***********************************************************/
+    // we need the Lin(M-matrix) entries of this node
+    std::map<int, std::map<int, double>>& dmmap = cnode->data().get_deriv_m();
+    std::map<int, std::map<int, double>>::iterator dmcurr;
+
+    // loop over all target nodes in the DerivM-map of the stick source node
+    for (dmcurr = dmmap.begin(); dmcurr != dmmap.end(); ++dmcurr)
+    {
+      int gid = dmcurr->first;
+      Core::Nodes::Node* target_node = idiscret_->g_node(gid);
+      if (!target_node) FOUR_C_THROW("Cannot find node with gid %", gid);
+      Node* c_target_node = dynamic_cast<Node*>(target_node);
+      double* target_xi = c_target_node->xspatial();
+
+      // compute entry of the current stick node / target node pair
+      std::map<int, double>& thisdmmap = cnode->data().get_deriv_m(gid);
+
+      // loop over all entries of the current derivative map
+      for (colcurr = thisdmmap.begin(); colcurr != thisdmmap.end(); ++colcurr)
       {
-        for (int j = 0; j < n_dim(); j++)
+        int col = colcurr->first;
+
+        // loop over dimensions
+        for (int dimrow = 0; dimrow < cnode->num_dof(); ++dimrow)
         {
-          if (cnode->dbc_dofs()[j])
-          {
-            cnode->fri_data().jump()[j] = 0.;
-            cnode->fri_data().get_deriv_jump()[j].clear();
-          }
+          double val = colcurr->second * target_xi[dimrow];
+          if (abs(val) > 1e-14) cnode->add_deriv_jump_value(dimrow, col, val);
         }
       }
+    }
 
-    }  // active nodes
+    if (constr_direction_ == CONTACT::ConstraintDirection::xyz)
+    {
+      for (int j = 0; j < n_dim(); j++)
+      {
+        if (cnode->dbc_dofs()[j])
+        {
+          cnode->fri_data().jump()[j] = 0.;
+          cnode->fri_data().get_deriv_jump()[j].clear();
+        }
+      }
+    }
+
   }  // loop over source nodes
 }
 
@@ -7025,18 +6994,19 @@ void CONTACT::Interface::evaluate_tangent_norm(double& cnormtan)
 /*----------------------------------------------------------------------*
  |  Update active set and check for convergence (public)      popp 06/08|
  *----------------------------------------------------------------------*/
-bool CONTACT::Interface::update_active_set_semi_smooth()
+bool CONTACT::Interface::update_active_nodes_semi_smooth(
+    std::vector<int>& remaining_active_nodes, const bool use_initial_active_set)
 {
-  // get input parameter ftype
-  auto ftype = Teuchos::getIntegralValue<CONTACT::FrictionType>(interface_params(), "FRICTION");
+  remaining_active_nodes.clear();
 
-  // this is the complementarity parameter we use for the decision.
-  // it might be scaled with a mesh-size dependent factor
-  double cn = 0.;
-  double ct = 0.;
+  // adhesion
+  double adhbound = 0.0;
+  if (Teuchos::getIntegralValue<CONTACT::AdhesionType>(interface_params(), "ADHESION") ==
+      CONTACT::AdhesionType::bounded)
+    adhbound = interface_params().get<double>("ADHESION_BOUND");
 
   // assume that active set has converged and check for opposite
-  int localcheck = true;
+  int converged = true;
 
   // loop over all source nodes on the current interface
   for (int j = 0; j < source_row_nodes()->num_my_elements(); ++j)
@@ -7047,9 +7017,9 @@ bool CONTACT::Interface::update_active_set_semi_smooth()
 
     Node* cnode = dynamic_cast<Node*>(node);
 
-    cn = get_cn_ref().local_values_as_span()[get_cn_ref().get_map().lid(cnode->id())];
-    if (friction_)
-      ct = get_ct_ref().local_values_as_span()[get_ct_ref().get_map().lid(cnode->id())];
+    // this is the complementarity parameter we use for the decision.
+    // it might be scaled with a mesh-size dependent factor
+    const double cn = get_cn_ref().local_values_as_span()[get_cn_ref().get_map().lid(cnode->id())];
 
     // get weighted gap
     double wgap = cnode->data().getg();
@@ -7061,17 +7031,105 @@ bool CONTACT::Interface::update_active_set_semi_smooth()
       nz += cnode->mo_data().n()[k] * cnode->mo_data().lm()[k];
     }
 
-    // friction
-    std::vector<double> tz(n_dim() - 1, 0);
-    std::vector<double> tjump(n_dim() - 1, 0);
-    double euclidean = 0.0;
-
-    if (friction_)
+    // check nodes of inactive set *************************************
+    if (not cnode->active())
     {
-      // static cast
-      auto* frinode = dynamic_cast<FriNode*>(cnode);
+      // check for penetration and/or tensile contact forces
+      if (nz - cn * wgap > 0)  // no averaging of Lagrange multipliers
+      // if ((0.5*nz+0.5*nzold) - cn*wgap > 0) // averaging of Lagrange multipliers
+      {
+        cnode->active() = true;
+        converged = false;
 
-      // compute tangential parts and of Lagrange multiplier and incremental jumps
+        // friction
+        if (friction_)
+        {
+          // nodes coming into contact
+          dynamic_cast<FriNode*>(cnode)->fri_data().slip() = true;
+        }
+      }
+    }
+
+    // check nodes of active set ***************************************
+    else
+    {
+      // adhesion modification
+      nz += adhbound;
+
+      // check for tensile contact forces and/or penetration
+      if (nz - cn * wgap <= 0)  // no averaging of Lagrange multipliers
+      // if ((0.5*nz+0.5*nzold) - cn*wgap <= 0) // averaging of Lagrange multipliers
+      {
+        cnode->active() = false;
+        converged = false;
+
+        // friction
+        if (friction_) dynamic_cast<FriNode*>(cnode)->fri_data().slip() = false;
+      }
+      else
+      {
+        remaining_active_nodes.push_back(j);
+      }
+    }
+
+    // nodes that are active according to the input stay active
+    if (use_initial_active_set) set_node_initially_active(*cnode);
+  }  // loop over all source nodes
+
+  // broadcast convergence status among processors
+  return Core::Communication::min_all(converged, get_comm());
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+bool CONTACT::Interface::update_slip_nodes_semi_smooth(
+    const std::vector<int>& remaining_active_nodes)
+{
+  // adhesion
+  double adhbound = 0.0;
+  if (Teuchos::getIntegralValue<CONTACT::AdhesionType>(interface_params(), "ADHESION") ==
+      CONTACT::AdhesionType::bounded)
+    adhbound = interface_params().get<double>("ADHESION_BOUND");
+
+  int converged = true;
+
+  if (friction_)
+  {
+    // get input parameter ftype
+    auto ftype = Teuchos::getIntegralValue<CONTACT::FrictionType>(interface_params(), "FRICTION");
+
+    // loop over the source nodes that were active before and are still active
+    for (const int j : remaining_active_nodes)
+    {
+      int gid = source_row_nodes()->gid(j);
+      Core::Nodes::Node* node = discret().g_node(gid);
+      if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
+
+      auto* frinode = dynamic_cast<FriNode*>(node);
+
+      // this is the complementarity parameter we use for the decision.
+      // it might be scaled with a mesh-size dependent factor
+      const double cn =
+          get_cn_ref().local_values_as_span()[get_cn_ref().get_map().lid(frinode->id())];
+      const double ct =
+          get_ct_ref().local_values_as_span()[get_ct_ref().get_map().lid(frinode->id())];
+
+      // get weighted gap
+      double wgap = frinode->data().getg();
+
+      // compute normal part of Lagrange multiplier
+      double nz = 0.0;
+      for (int k = 0; k < 3; ++k)
+      {
+        nz += frinode->mo_data().n()[k] * frinode->mo_data().lm()[k];
+      }
+
+      // adhesion modification
+      nz += adhbound;
+
+      // compute tangential parts of Lagrange multiplier and incremental jumps
+      std::vector<double> tz(n_dim() - 1, 0);
+      std::vector<double> tjump(n_dim() - 1, 0);
       for (int i = 0; i < n_dim(); ++i)
       {
         tz[0] += frinode->data().txi()[i] * frinode->mo_data().lm()[i];
@@ -7094,173 +7152,101 @@ bool CONTACT::Interface::update_active_set_semi_smooth()
       std::vector<double> sum(n_dim() - 1, 0);
       sum[0] = tz[0] + ct * tjump[0];
       if (n_dim() == 3) sum[1] = tz[1] + ct * tjump[1];
+      double euclidean = 0.0;
       if (n_dim() == 2) euclidean = abs(sum[0]);
       if (n_dim() == 3) euclidean = sqrt(sum[0] * sum[0] + sum[1] * sum[1]);
-    }
 
-    // adhesion
-    double adhbound = 0.0;
-    if (Teuchos::getIntegralValue<CONTACT::AdhesionType>(interface_params(), "ADHESION") ==
-        CONTACT::AdhesionType::bounded)
-      adhbound = interface_params().get<double>("ADHESION_BOUND");
-
-    // check nodes of inactive set *************************************
-    if (not cnode->active())
-    {
-      // check for penetration and/or tensile contact forces
-      if (nz - cn * wgap > 0)  // no averaging of Lagrange multipliers
-      // if ((0.5*nz+0.5*nzold) - cn*wgap > 0) // averaging of Lagrange multipliers
+      // friction tresca
+      if (ftype == CONTACT::FrictionType::tresca)
       {
-        cnode->active() = true;
-        localcheck = false;
+        // CAREFUL: friction bound is now interface-local (popp 08/2012)
+        double frbound = interface_params().get<double>("FRBOUND");
 
-        // friction
-        if (friction_)
+        if (not frinode->fri_data().slip())
         {
-          // nodes coming into contact
-          dynamic_cast<FriNode*>(cnode)->fri_data().slip() = true;
+          // check (euclidean)-frbound <= 0
+          if (euclidean - frbound <= 1e-10)
+          {
+          }
+          // do nothing (stick was correct)
+          else
+          {
+            frinode->fri_data().slip() = true;
+            converged = false;
+          }
         }
-      }
-    }
-
-    // check nodes of active set ***************************************
-    else
-    {
-      // adhesion modification
-      nz += adhbound;
-
-      // check for tensile contact forces and/or penetration
-      if (nz - cn * wgap <= 0)  // no averaging of Lagrange multipliers
-      // if ((0.5*nz+0.5*nzold) - cn*wgap <= 0) // averaging of Lagrange multipliers
-      {
-        cnode->active() = false;
-        localcheck = false;
-
-        // friction
-        if (friction_) dynamic_cast<FriNode*>(cnode)->fri_data().slip() = false;
-      }
-
-      // only do something for friction
-      else
-      {
-        // friction tresca
-        if (ftype == CONTACT::FrictionType::tresca)
+        else
         {
-          auto* frinode = dynamic_cast<FriNode*>(cnode);
-
-          // CAREFUL: friction bound is now interface-local (popp 08/2012)
-          double frbound = interface_params().get<double>("FRBOUND");
-
-          if (not frinode->fri_data().slip())
+          // check (euclidean)-frbound > 0
+          if (euclidean - frbound > -1e-10)
           {
-            // check (euclidean)-frbound <= 0
-            if (euclidean - frbound <= 1e-10)
-            {
-            }
-            // do nothing (stick was correct)
-            else
-            {
-              frinode->fri_data().slip() = true;
-              localcheck = false;
-            }
           }
+          // do nothing (slip was correct)
           else
           {
-            // check (euclidean)-frbound > 0
-            if (euclidean - frbound > -1e-10)
-            {
-            }
-            // do nothing (slip was correct)
-            else
-            {
-              frinode->fri_data().slip() = false;
-              localcheck = false;
-            }
+            frinode->fri_data().slip() = false;
+            converged = false;
           }
-        }  // if (fytpe=="tresca")
+        }
+      }  // if (fytpe=="tresca")
 
-        // friction coulomb
-        if (ftype == CONTACT::FrictionType::coulomb)
+      // friction coulomb
+      if (ftype == CONTACT::FrictionType::coulomb)
+      {
+        // CAREFUL: friction coefficient is now interface-local (popp 08/2012)
+        double frcoeff = frinode->fr_coeff(interface_params().get<double>("FRCOEFF"));
+        double frbound;
+        static const bool regularization =
+            interface_params().get<bool>("REGULARIZED_NORMAL_CONTACT");
+        if (!regularization)
+          frbound = frcoeff * (nz - cn * wgap);
+        else
         {
-          auto* frinode = dynamic_cast<FriNode*>(cnode);
+          static const double k = 1. / interface_params().get<double>("REGULARIZATION_STIFFNESS");
+          static const double gmax = interface_params().get<double>("REGULARIZATION_THICKNESS");
+          if (frinode->mo_data().get_d().size() != 1)
+          {
+            FOUR_C_THROW(
+                "we need to have a D-value for active contact nodes\nAnd exactly one due to "
+                "biorthogonality");
+          }
+          double dval = frinode->mo_data().get_d().at(frinode->id());
+          const double gLM = gmax * (1. - exp(-k / gmax * nz));
+          frbound = frcoeff * std::max(0., nz - cn * (wgap + dval * gLM));
+        }
 
-          // CAREFUL: friction coefficient is now interface-local (popp 08/2012)
-          double frcoeff = frinode->fr_coeff(interface_params().get<double>("FRCOEFF"));
-          double frbound;
-          static const bool regularization =
-              interface_params().get<bool>("REGULARIZED_NORMAL_CONTACT");
-          if (!regularization)
-            frbound = frcoeff * (nz - cn * wgap);
+        if (not frinode->fri_data().slip())
+        {
+          // check (euclidean)-frbound <= 0
+          if (euclidean - frbound <= 1e-10)
+          {
+          }
+          // do nothing (stick was correct)
           else
           {
-            static const double k = 1. / interface_params().get<double>("REGULARIZATION_STIFFNESS");
-            static const double gmax = interface_params().get<double>("REGULARIZATION_THICKNESS");
-            if (cnode->mo_data().get_d().size() != 1)
-            {
-              FOUR_C_THROW(
-                  "we need to have a D-value for active contact nodes\nAnd exactly one due to "
-                  "biorthogonality");
-            }
-            double dval = cnode->mo_data().get_d().at(cnode->id());
-            const double gLM = gmax * (1. - exp(-k / gmax * nz));
-            frbound = frcoeff * std::max(0., nz - cn * (wgap + dval * gLM));
+            frinode->fri_data().slip() = true;
+            converged = false;
           }
-
-          if (not frinode->fri_data().slip())
+        }
+        else
+        {
+          // check (euclidean)-frbound > 0
+          if (euclidean - frbound > -1e-10)
           {
-            // check (euclidean)-frbound <= 0
-            if (euclidean - frbound <= 1e-10)
-            {
-            }
-            // do nothing (stick was correct)
-            else
-            {
-              frinode->fri_data().slip() = true;
-              localcheck = false;
-            }
           }
+          // do nothing (slip was correct)
           else
           {
-            // check (euclidean)-frbound > 0
-            if (euclidean - frbound > -1e-10)
-            {
-            }
-            // do nothing (slip was correct)
-            else
-            {
-              frinode->fri_data().slip() = false;
-              localcheck = false;
-            }
+            frinode->fri_data().slip() = false;
+            converged = false;
           }
-        }  // if (ftype == CONTACT::FrictionType::coulomb)
-      }  // if (nz - cn*wgap <= 0)
-    }  // if (cnode->Active()==false)
-  }  // loop over all source nodes
+        }
+      }  // if (ftype == CONTACT::FrictionType::coulomb)
+    }  // loop over remaining active source nodes
+  }
 
   // broadcast convergence status among processors
-  int convcheck = 0;
-  convcheck = Core::Communication::min_all(localcheck, get_comm());
-
-  return convcheck;
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void CONTACT::Interface::update_active_set_initial_status() const
-{
-  // List of GIDs of all my source row nodes
-  int* my_source_row_node_gids = source_row_nodes()->my_global_elements();
-
-  // loop over all source nodes on the current interface
-  for (int j = 0; j < source_row_nodes()->num_my_elements(); ++j)
-  {
-    // Grab the current source node
-    const int gid = my_source_row_node_gids[j];
-    Node* cnode = dynamic_cast<Node*>(discret().g_node(gid));
-    if (!cnode) FOUR_C_THROW("Cannot find node with gid %", gid);
-
-    set_node_initially_active(*cnode);
-  }
+  return Core::Communication::min_all(converged, get_comm());
 }
 
 /*----------------------------------------------------------------------*

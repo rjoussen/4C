@@ -4955,10 +4955,10 @@ void Wear::LagrangeStrategyWear::do_read_restart(
 /*----------------------------------------------------------------------*
  |  Update active set and check for convergence (public)     farah 02/16|
  *----------------------------------------------------------------------*/
-void Wear::LagrangeStrategyWear::update_active_set_semi_smooth(const bool firstStepPredictor)
+void Wear::LagrangeStrategyWear::update_contact_state()
 {
   // call base routine
-  CONTACT::LagrangeStrategy::update_active_set_semi_smooth(firstStepPredictor);
+  CONTACT::LagrangeStrategy::update_contact_state();
 
   // for both-sided wear
   gminvolvednodes_ = nullptr;

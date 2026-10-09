@@ -274,8 +274,6 @@ namespace Mortar
     virtual std::shared_ptr<Core::LinAlg::SparseMatrix> evaluate_normals(
         std::shared_ptr<Core::LinAlg::Vector<double>> dis) = 0;
     virtual void evaluate_reference_state() = 0;
-    virtual void evaluate_relative_movement() = 0;
-    virtual void predict_relative_movement() = 0;
     virtual bool is_friction() const = 0;
     virtual void initialize_and_evaluate_interface() = 0;
     virtual void initialize_mortar() = 0;
@@ -338,7 +336,6 @@ namespace Mortar
     virtual void store_nodal_quantities(Mortar::StrategyBase::QuantityType type) = 0;
     virtual void update(std::shared_ptr<const Core::LinAlg::Vector<double>> dis) = 0;
     virtual void update_active_set() = 0;
-    virtual void update_active_set_semi_smooth(const bool firstStepPredictor = false) = 0;
     virtual void update_uzawa_augmented_lagrange() = 0;
     virtual void update_constraint_norm(int uzawaiter = 0) = 0;
     virtual bool was_in_contact() const = 0;

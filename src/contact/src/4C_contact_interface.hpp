@@ -1097,39 +1097,34 @@ namespace CONTACT
         Core::LinAlg::SparseMatrix& linslipLMglobal, Core::LinAlg::SparseMatrix& linslipDISglobal,
         Core::LinAlg::Vector<double>& linslipRHSglobal);
 
+    /*!
+    \brief Update the active status of all source nodes (semi-smooth Newton)
+
+    The active status depends on the normal Lagrange multiplier and the weighted gap. Newly active
+    nodes are set to slip. The stick/slip status of the nodes that stay active is updated
+    afterwards in update_slip_nodes_semi_smooth(), once their relative movement has been evaluated.
+
+    \param[out] remaining_active_nodes Local row indices of the nodes that were active before and
+    stay active
+    \param[in] use_initial_active_set Additionally set the nodes that are active according to the
+    input active
+
+    \return Whether no node changed its active status on any processor
+    */
+    bool update_active_nodes_semi_smooth(
+        std::vector<int>& remaining_active_nodes, bool use_initial_active_set);
 
     /*!
-    \brief Update active set and check for convergence
+    \brief Update the stick/slip status of the nodes that stay active (semi-smooth Newton)
 
-    In this function we loop over all  source nodes to check, whether the
-    assumption of them being active or inactive respectively has been correct.
-    If a single node changes state, the active set is adapted accordingly and the convergence
-    flag is kept on false.
+    The stick/slip status depends on the relative movement (jump), which has to be evaluated
+    before.
 
-    Here we have the semi-smooth Newton case
-    with one combined iteration loop for active set search and large
-    deformations. As a consequence this method is called AFTER each
-    (not yet converged) Newton step. If there is a change in the active
-    set or the residual and disp norm are still above their limits,
-    another Newton step has to be performed.
+    \param[in] remaining_active_nodes see update_active_nodes_semi_smooth()
 
-    \return Boolean flag indicating convergence of active set
+    \return Whether no node changed its stick/slip status on any processor
     */
-    virtual bool update_active_set_semi_smooth();
-
-    /*!
-    \brief Update active set to conform with given active set from input file
-
-    In this function we loop over all  source nodes to check, whether the
-    current active set decision for each node still conforms with the prescribed value
-    from the input file. If not, the input file overrules the current value.
-
-    Since this just enforces prescribed information from the input file,
-    this is not to be considered as a change in the active set and, thus,
-    does not affect the convergence of the active set. So, not convergence flag
-    on return.
-    */
-    virtual void update_active_set_initial_status() const;
+    bool update_slip_nodes_semi_smooth(const std::vector<int>& remaining_active_nodes);
 
     /*!
     \brief Build active set (nodes / dofs) of this interface
