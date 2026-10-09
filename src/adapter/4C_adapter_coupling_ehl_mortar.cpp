@@ -171,11 +171,15 @@ void Adapter::CouplingEhlMortar::condense_contact(
   // return if this state has already been evaluated
   if (not already_evaluated(disp)) integrate(disp, dt);
 
-  // get the relative movement for frictional contact
+  // update active set and get the relative movement for frictional contact, which is required
+  // for the stick/slip decision
+  std::vector<int> remaining_active_nodes;
+  const bool active_nodes_converged =
+      interface_->update_active_nodes_semi_smooth(remaining_active_nodes, false);
   evaluate_rel_mov();
-
-  // update active set
-  as_converged_ = interface_->update_active_set_semi_smooth();
+  const bool slip_nodes_converged =
+      interface_->update_slip_nodes_semi_smooth(remaining_active_nodes);
+  as_converged_ = active_nodes_converged and slip_nodes_converged;
   interface_->build_active_set();
 
   // assemble the constraint lines for the active contact nodes

@@ -341,28 +341,19 @@ namespace CONTACT
     void update_active_set() override;
 
     /*!
-    \brief Update active set and check for convergence
+    \brief Update the contact state (active set and relative movement) and check for convergence
 
-    In this function we loop over all interfaces and then over all
-    source nodes to check, whether the assumption of them being active
-    or inactive respectively has been correct. If a single node changes
-    state, the active set is adapted accordingly and the convergence
-    flag is kept on false.
+    With semi-smooth Newton, the contact state is updated in three steps:
+    1. update the active nodes,
+    2. evaluate the relative movement of the resulting active nodes,
+    3. update the stick/slip status of the nodes that stay active.
+    Without semi-smooth Newton, only the relative movement is evaluated and the active set is
+    checked, since it is updated in update_active_set().
 
-    Here we have the semi-smooth Newton case
-    with one combined iteration loop for active set search and large
-    deformations. As a consequence this method is called AFTER each
-    (not yet converged) Newton step. If there is a change in the active
-    set or the residual and displacement increment norm are still above their limits,
-    another Newton step has to be performed.
-
-    \note We use the flag \c firstStepPredictor to overwrite the active set status
-    for each node in the predictor of the first time step (or the first time step
-    after a restart).
-
-    \param[in] firstStepPredictor Boolean flag to indicate the predictor step in the first time step
+    \note In the first active set update (also after a restart), the initial active set from the
+    input is used, since the Lagrange multipliers may not contain any information yet.
     */
-    void update_active_set_semi_smooth(const bool firstStepPredictor = false) override;
+    void update_contact_state() override;
 
     /*!
     \brief Reset active set status for next time step
@@ -375,8 +366,6 @@ namespace CONTACT
       activesetsteps_ = 1;
       return;
     }
-
-    void predict_relative_movement() override;
 
     /*!
     \brief Return matrix T
@@ -500,10 +489,11 @@ namespace CONTACT
 
     std::vector<std::shared_ptr<CONTACT::Interface>> interface_;
 
-    bool evalForceCalled_;  //< flag for evaluate force call
-    bool activesetssconv_;  //< convergence flag for semi-smooth active set search
-    bool activesetconv_;    //< convergence flag for fixed-point active set search
-    int activesetsteps_;    //< number of fixed-point active set steps in this time step
+    bool evalForceCalled_;          //< flag for evaluate force call
+    bool initial_active_set_used_;  //< flag whether the initial active set from the input was used
+    bool activesetssconv_;          //< convergence flag for semi-smooth active set search
+    bool activesetconv_;            //< convergence flag for fixed-point active set search
+    int activesetsteps_;            //< number of fixed-point active set steps in this time step
 
     std::shared_ptr<Core::LinAlg::SparseMatrix>
         mhatmatrix_;  //< product of global Mortar matrices inv(D)*M

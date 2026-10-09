@@ -128,11 +128,7 @@ void CONTACT::LagrangeStrategyTsi::evaluate(
   initialize_and_evaluate_interface();  // evaluate mortar terms (integrate...)
   assemble_mortar();
 
-  // get the relative movement for frictional contact
-  evaluate_relative_movement();
-
-  // update active set
-  update_active_set_semi_smooth();
+  update_contact_state();
 
   // init lin-matrices
   initialize();
