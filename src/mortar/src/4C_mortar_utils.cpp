@@ -87,14 +87,13 @@ std::vector<int> Mortar::sort_convex_hull_points(
   // (2) remove points that form an almost straight line with their neighbors, starting with the
   // straightest one (if less than three points remain, there is no clip polygon)
 
-  // Currently not used:
   // distance of b from the straight line through a and c
-  // const auto distance_from_line = [&](int a, int b, int c)
-  // {
-  //   const double length_ac =
-  //       std::hypot(coordinates(0, c) - coordinates(0, a), coordinates(1, c) - coordinates(1, a));
-  //   return std::abs(clockwise_cross_product(a, b, c) / length_ac);
-  // };
+  const auto distance_from_line = [&](int a, int b, int c)
+  {
+    const double length_ac =
+        std::hypot(coordinates(0, c) - coordinates(0, a), coordinates(1, c) - coordinates(1, a));
+    return clockwise_cross_product(a, b, c) / length_ac;
+  };
 
   while (hull.size() >= 3)
   {
@@ -109,12 +108,8 @@ std::vector<int> Mortar::sort_convex_hull_points(
           (current_index == 0) ? number_of_hull_points - 1 : current_index - 1;
       const int next_index = (current_index == number_of_hull_points - 1) ? 0 : current_index + 1;
 
-      // TODO: the deviation from the straight line should rather use the distance_from_line
-      // function, since the cross product is an area which is later compared to clipping_tolerance,
-      // which is a length. Otherwise, small clip polygons (relative to the element size) can lose
-      // real corners or be dropped entirely, increasingly so for small elements
       const double current_deviation =
-          clockwise_cross_product(hull[previous_index], hull[current_index], hull[next_index]);
+          distance_from_line(hull[previous_index], hull[current_index], hull[next_index]);
       if (current_deviation < smallest_deviation)
       {
         straightest_point_index = current_index;

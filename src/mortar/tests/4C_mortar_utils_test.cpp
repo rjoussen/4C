@@ -81,13 +81,23 @@ namespace
   }
 
   // If several points are below the tolerance, the straightest one is removed first and the others
-  // are judged against their new neighbors. Here, twice the triangle areas are 1 at (3, 0) and 2
-  // at (4, 0). After removing (3, 0), the value at (4, 0) is 7, so this corner is kept.
+  // are judged against their new neighbors. Here, the distances from the line through the
+  // neighbors are 0.24 at (3, 0) and 1.0 at (4, 0). After removing (3, 0), the distance of (4, 0)
+  // is 2.2, so this corner is kept.
   TEST(SortConvexHullPoints, StraightestPointIsRemovedFirst)
   {
     const Points quadrilateral = {{0.0, 1.0}, {3.0, 2.0}, {4.0, 0.0}, {3.0, 0.0}};
 
-    EXPECT_EQ(sort_convex_hull(quadrilateral, 3.0), (Points{{0.0, 1.0}, {3.0, 2.0}, {4.0, 0.0}}));
+    EXPECT_EQ(sort_convex_hull(quadrilateral, 1.5), (Points{{0.0, 1.0}, {3.0, 2.0}, {4.0, 0.0}}));
+  }
+
+  // The tolerance is a length. The corners of a small square are 0.007 away from the line through
+  // their neighbors, which is above the tolerance, although twice the triangle areas are only 1e-4.
+  TEST(SortConvexHullPoints, SmallPolygonKeepsItsCorners)
+  {
+    const Points small_square = {{0.0, 0.0}, {0.0, 0.01}, {0.01, 0.01}, {0.01, 0.0}};
+
+    EXPECT_EQ(sort_convex_hull(small_square, 0.001), small_square);
   }
 
   // If less than three points remain, there is no clip polygon.
