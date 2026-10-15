@@ -421,14 +421,21 @@ void CONTACT::TSIInterface::assemble_lin_dm_x(Core::LinAlg::SparseMatrix* linD_X
           lm = 0.;
         else
         {
-          double dval = 1.;
-          if (cnode->mo_data().get_d().size() == 0)
-            continue;
-          else
-            cnode->mo_data().get_d()[cnode->id()];
+          if (cnode->mo_data().get_d().size() == 0) continue;
+          /// Diagonal element of the D-matrix for the current source node \f$ D_{jj}\f$
+          const double dval = cnode->mo_data().get_d()[cnode->id()];
+          /// contact Lagrange multiplier \f$ \boldsymbol{\lambda}_c = - \mathbf{t}\f$
           const Core::LinAlg::Matrix<3, 1> lmc(cnode->mo_data().lm(), true);
+          /// normal vector \f$\mathbf{n}\f$
           const Core::LinAlg::Matrix<3, 1> n(cnode->mo_data().n(), true);
+          /// weighted relative slip increment (jump) \f$\Delta\tilde{\mathbf{u}}\f$
           const Core::LinAlg::Matrix<3, 1> jump(frnode->fri_data().jump(), true);
+          /// Dissipation due to friction (cf. https://mediatum.ub.tum.de/?id=1454145
+          /// equation 4.57):
+          /// \f[ \texttt{diss} = \mathbf{t}_\tau \cdot \mathbf{v}_\tau = \mathbf{t}
+          /// \cdot\left(\mathbf{I} - \mathbf{n}\otimes\mathbf{n}\right)\cdot \frac{\Delta\tilde
+          /// {\mathbf{u}}}{\Delta t D_{jj}} = \left(\mathbf{t}\cdot\Delta\tilde{\mathbf{u}} -
+          /// t_n\cdot\Delta\tilde{u}_n\right)\frac{1}{\Delta t D_{jj}}\f]
           double diss = (-lmc.dot(jump) + lmc.dot(n) * jump.dot(n)) / (dt * dval);
           lm = diss;
         }
