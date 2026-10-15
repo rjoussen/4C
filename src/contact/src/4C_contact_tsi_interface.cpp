@@ -21,6 +21,8 @@
 #include "4C_mortar_input.hpp"
 #include "4C_mortar_node.hpp"
 
+#include <map>
+
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
@@ -613,17 +615,24 @@ void CONTACT::TSIInterface::assemble_dm_lin_diss(Core::LinAlg::SparseMatrix* d_L
       const std::vector<Core::Gen::Pairedvector<int, double>>& derivN = cnode->data().get_deriv_n();
 
       // calculate derivative of Dissipation *******************************
+      /// \f[\begin{aligned}\frac{\mathrm{d}}{\mathrm{d}u_k}\texttt{diss} &=
+      /// \frac{\mathrm{d}}{\mathrm{d}u_k}\left[\left(\mathbf{t} \cdot \Delta \tilde{\mathbf{u}} -
+      /// t_n \cdot \Delta \tilde{u}_n\right) \frac{1}{\Delta t D_{jj}} \right]\\&=
+      /// \left[\mathbf{t}_\tau \cdot  \frac{\mathrm{d}\Delta \tilde{\mathbf{u}}}{\mathrm{d}u_k}-
+      /// \left(t_n\Delta\tilde{\mathbf{u}} + \Delta \tilde{u}_n\mathbf{t}\right)\cdot
+      /// \frac{\mathrm{d}\mathbf{n}}{\mathrm{d}u_k}\right] \frac{1}{\Delta t D_{jj}} -
+      /// \left(\mathbf{t} \cdot \Delta \tilde{\mathbf{u}} - t_n \cdot \Delta \tilde{u}_n\right)
+      /// \frac{1}{\Delta t D_{jj}^2}\frac{\mathrm{d}D_{jj}}{\mathrm{d}u_k} \end{aligned}\f]
       std::map<int, double> derivDiss;
       for (int i = 0; i < 3; ++i)
       {
-        for (_cim p = derivJump[i].begin(); p != derivJump[i].end(); ++p)
-          derivDiss[p->first] -= ((lm(i) - lm_n * n(i)) * p->second) / (dt * dval);
-        for (_cip p = derivN[i].begin(); p != derivN[i].end(); ++p)
-          derivDiss[p->first] += ((lm_n * jump(i) + jump_n * lm(i)) * p->second) / (dt * dval);
-        for (_cim p = derivD.begin(); p != derivD.end(); ++p)
-          derivDiss[p->first] +=
-              (-lm.dot(jump) + lm.dot(n) * jump.dot(n)) / (dt * dval * dval) * (-p->second);
+        for (const auto& [k, jump_wrt_uk] : derivJump[i])
+          derivDiss[k] -= ((lm_t(i)) * jump_wrt_uk) / (dt * dval);
+        for (const auto& [k, n_wrt_uk] : derivN[i])
+          derivDiss[k] += ((lm_n * jump(i) + jump_n * lm(i)) * n_wrt_uk) / (dt * dval);
       }
+      for (const auto& [k, dval_wrt_uk] : derivD)
+        derivDiss[k] += (lm.dot(jump) - lm.dot(n) * jump.dot(n)) / (dt * dval * dval) * dval_wrt_uk;
 
       // put everything together*******************************************
       /**************************************************** D-matrix ******/
