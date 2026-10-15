@@ -421,14 +421,15 @@ void CONTACT::TSIInterface::assemble_lin_dm_x(Core::LinAlg::SparseMatrix* linD_X
           lm = 0.;
         else
         {
-          double dval = 1.;
-          if (cnode->mo_data().get_d().size() == 0)
-            continue;
-          else
-            cnode->mo_data().get_d()[cnode->id()];
+          if (cnode->mo_data().get_d().size() == 0) continue;
+          // diagonal entry D_jj of the D-matrix for the current source node
+          const double dval = cnode->mo_data().get_d()[cnode->id()];
+          // contact Lagrange multiplier (= negative traction)
           const Core::LinAlg::Matrix<3, 1> lmc(cnode->mo_data().lm(), true);
           const Core::LinAlg::Matrix<3, 1> n(cnode->mo_data().n(), true);
+          // weighted relative slip increment
           const Core::LinAlg::Matrix<3, 1> jump(frnode->fri_data().jump(), true);
+          // calculate frictional dissipation
           double diss = (-lmc.dot(jump) + lmc.dot(n) * jump.dot(n)) / (dt * dval);
           lm = diss;
         }
