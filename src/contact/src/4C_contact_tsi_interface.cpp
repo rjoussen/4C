@@ -185,8 +185,6 @@ void CONTACT::TSIInterface::assemble_lin_slip(Core::LinAlg::SparseMatrix& linsli
 
   double frcoeff_in =
       interface_params().get<double>("FRCOEFF");  // the friction coefficient from the input
-  double ct_input = interface_params().get<double>("SEMI_SMOOTH_CT");
-  double cn_input = interface_params().get<double>("SEMI_SMOOTH_CN");
 
   // some things that are not implemented
   const bool gp_slip = interface_params().get<bool>("GP_SLIP_INCR");
@@ -239,8 +237,9 @@ void CONTACT::TSIInterface::assemble_lin_slip(Core::LinAlg::SparseMatrix& linsli
     std::map<int, double> dfrdT, dfrdD;
     cnode->deriv_fr_coeff_temp(frcoeff_in, dfrdT, dfrdD);
 
-    double cn = cn_input;
-    double ct = ct_input;
+    const int local_id = cnValues_->get_map().lid(gid);
+    const double cn = cnValues_->get_values()[local_id];
+    const double ct = ctValues_->get_values()[local_id];
 
     double fac = lm_n - cn * wgap;
     for (CI p = dfrdT.begin(); p != dfrdT.end(); ++p)
