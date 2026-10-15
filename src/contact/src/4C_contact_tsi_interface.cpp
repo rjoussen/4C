@@ -21,6 +21,8 @@
 #include "4C_mortar_input.hpp"
 #include "4C_mortar_node.hpp"
 
+#include <map>
+
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
@@ -606,18 +608,17 @@ void CONTACT::TSIInterface::assemble_dm_lin_diss(Core::LinAlg::SparseMatrix* d_L
       const std::vector<std::map<int, double>>& derivJump = fnode->fri_data().get_deriv_jump();
       const std::vector<Core::Gen::Pairedvector<int, double>>& derivN = cnode->data().get_deriv_n();
 
-      // calculate derivative of Dissipation *******************************
+      // calculate derivative of the dissipation with respect to nodal displacements u_k
       std::map<int, double> derivDiss;
       for (int i = 0; i < 3; ++i)
       {
-        for (_cim p = derivJump[i].begin(); p != derivJump[i].end(); ++p)
-          derivDiss[p->first] -= ((lm(i) - lm_n * n(i)) * p->second) / (dt * dval);
-        for (_cip p = derivN[i].begin(); p != derivN[i].end(); ++p)
-          derivDiss[p->first] += ((lm_n * jump(i) + jump_n * lm(i)) * p->second) / (dt * dval);
-        for (_cim p = derivD.begin(); p != derivD.end(); ++p)
-          derivDiss[p->first] +=
-              (-lm.dot(jump) + lm.dot(n) * jump.dot(n)) / (dt * dval * dval) * (-p->second);
+        for (const auto& [k, jump_wrt_uk] : derivJump[i])
+          derivDiss[k] -= ((lm_t(i)) * jump_wrt_uk) / (dt * dval);
+        for (const auto& [k, n_wrt_uk] : derivN[i])
+          derivDiss[k] += ((lm_n * jump(i) + jump_n * lm(i)) * n_wrt_uk) / (dt * dval);
       }
+      for (const auto& [k, dval_wrt_uk] : derivD)
+        derivDiss[k] += (lm.dot(jump) - lm.dot(n) * jump.dot(n)) / (dt * dval * dval) * dval_wrt_uk;
 
       // put everything together*******************************************
       /**************************************************** D-matrix ******/

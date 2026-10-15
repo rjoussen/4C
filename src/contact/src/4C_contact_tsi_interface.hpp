@@ -127,7 +127,20 @@ namespace CONTACT
       \f]
       with the traction \f$\mathbf{t} = -\boldsymbol{\lambda}_j\f$, the normal \f$\mathbf{n}\f$
       and the weighted slip increment (jump) \f$\Delta\tilde{\mathbf{u}}\f$ (no summation over
-      \f$j\f$).
+      \f$j\f$). Its derivative w.r.t. a displacement dof is
+      \f[
+        \frac{\mathrm{d}\mathcal{P}_j}{\mathrm{d}u_c}
+        = \left[\mathbf{t}_\tau \cdot \frac{\mathrm{d}\Delta\tilde{\mathbf{u}}}{\mathrm{d}u_c}
+          - \left(t_n \Delta\tilde{\mathbf{u}} + \Delta\tilde{u}_n \mathbf{t}\right) \cdot
+            \frac{\mathrm{d}\mathbf{n}}{\mathrm{d}u_c}\right] \frac{1}{\Delta t D_{jj}}
+        - \frac{\mathcal{P}_j}{D_{jj}} \frac{\mathrm{d}D_{jj}}{\mathrm{d}u_c}
+      \f]
+      and w.r.t. the contact Lagrange multiplier
+      \f[
+        \frac{\mathrm{d}\mathcal{P}_j}{\mathrm{d}\boldsymbol{\lambda}_j}
+        = -\left(\mathbf{I} - \mathbf{n}\otimes\mathbf{n}\right) \cdot
+          \frac{\Delta\tilde{\mathbf{u}}}{\Delta t D_{jj}}
+      \f]
       */
     virtual void assemble_dm_lin_diss(Core::LinAlg::SparseMatrix* d_LinDissDISP,
         Core::LinAlg::SparseMatrix* m_LinDissDISP, Core::LinAlg::SparseMatrix* d_LinDissContactLM,
