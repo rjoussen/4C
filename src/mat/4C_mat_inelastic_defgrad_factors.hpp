@@ -1541,21 +1541,18 @@ namespace Mat
      * @brief Evaluate the Tayor-Quinney heat source and its linearizations introduced by
      * this inelastic factor.
      *
-     * @param[in] context Evaluation context, providing access to the current timestep and total
-     * time
-     * @param[in] gp Gauss point
-     * @param[in] eleGID global element ID
+     * As evaluate_od_stiff_mat(), this requires the current state, i.e., pre_evaluate() and
+     * evaluate_inverse_inelastic_def_grad() have to be called for the Gauss point first.
+     *
      * @param[in] defgrad Deformation gradient
      * @param[in] iFin_other Already computed inverse inelastic deformation gradient
      *              (from already computed inelastic factors in the multiplicative split material)
-     * @param[in] temperature Absolute current temperature
      * @return mechanical dissipation heat source and derivatives w.r.t. temperature and the
      *         Green-Lagrange strain
      */
     [[nodiscard]] HeatSource evaluate_taylor_quinney_heat_source(
-        const EvaluationContext<3>& context, const int gp, const int eleGID,
         const Core::LinAlg::Tensor<double, 3, 3>& defgrad,
-        const Core::LinAlg::Tensor<double, 3, 3>& iFin_other, const double temperature);
+        const Core::LinAlg::Tensor<double, 3, 3>& iFin_other);
 
     Mat::PAR::InelasticSource get_inelastic_source() override
     {
