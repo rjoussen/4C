@@ -1165,10 +1165,18 @@ Mat::MultiplicativeSplitDefgradElastHyper::evaluate_additional_heat_source(const
             std::dynamic_pointer_cast<Mat::InelasticDefgradTransvIsotropElastViscoplast>(
                 facdefgradin[0].second))
     {
-      heat_source = viscoplastic_factor->evaluate_taylor_quinney_heat_source(context, gp, eleGID,
-          deformation_state.defgrad(),
-          Core::LinAlg::get_full(Core::LinAlg::TensorGenerators::identity<double, 3, 3>),
-          temperature);
+      // set the current state at the Gauss point as for the evaluation of the stress
+      Teuchos::ParameterList params;
+      params.set<double>("temperature", temperature);
+      pre_evaluate(params, context, gp, eleGID);
+      const Core::LinAlg::Matrix<3, 3> defgrad =
+          Core::LinAlg::make_matrix_view(deformation_state.defgrad());
+      Core::LinAlg::Matrix<3, 3> inverse_inelastic_defgrad;
+      inelastic_->evaluate_inverse_inelastic_def_grad(&defgrad, inverse_inelastic_defgrad);
+
+      heat_source =
+          viscoplastic_factor->evaluate_taylor_quinney_heat_source(deformation_state.defgrad(),
+              Core::LinAlg::get_full(Core::LinAlg::TensorGenerators::identity<double, 3, 3>));
     }
   }
   else if (num_contributions > 1)
