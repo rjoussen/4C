@@ -1,0 +1,123 @@
+TITLE:
+  - "Adiabatic pure bending in plane strain (F-bar HEX8, 8x1x8 elements, u_y = 0) of a nearly"
+  - "incompressible beam (x in [0, 1], z in [-0.5, 0.5]). The end face x = 1 is loaded with the traction"
+  - "sigma_xx = c z, the face x = 0 is a symmetry plane. Due to the small conductivity, the problem is"
+  - "(almost) adiabatic and the temperature change is proportional to the pressure. Hence, it varies"
+  - "linearly over the height: dT = -1.153864e-03 at the top (z = 0.5) and dT = +1.153864e-03 at the"
+  - "bottom. The heat source has to be evaluated with the F-bar kinematics: with the unmodified"
+  - "deformation gradient, the temperature oscillates over the height (e.g., about three times the exact"
+  - "value at the top and almost zero at the next node below)."
+IO/RUNTIME VTK OUTPUT:
+  INTERVAL_STEPS: 1
+IO/RUNTIME VTK OUTPUT/STRUCTURE:
+  OUTPUT_STRUCTURE: true
+  DISPLACEMENT: true
+PROBLEM TYPE:
+  PROBLEMTYPE: "Thermo_Structure_Interaction"
+STRUCTURAL DYNAMIC:
+  DYNAMICTYPE: "Statics"
+  LINEAR_SOLVER: 1
+THERMAL DYNAMIC:
+  DYNAMICTYPE: "OneStepTheta"
+  INITIALFIELD: "field_by_function"
+  INITFUNCNO: 1
+  LINEAR_SOLVER: 1
+THERMAL DYNAMIC/ONESTEPTHETA:
+  THETA: 1
+THERMAL DYNAMIC/RUNTIME VTK OUTPUT:
+  OUTPUT_THERMO: true
+  TEMPERATURE: true
+TSI DYNAMIC:
+  NUMSTEP: 1
+  MAXTIME: 1
+  TIMESTEP: 1
+TSI DYNAMIC/MONOLITHIC:
+  CONVTOL: 1e-06
+  TOLINC: 1e-10
+  NORM_RESF: "Rel"
+  NORMCOMBI_RESFINC: "And"
+  LINEAR_SOLVER: 1
+  MERGE_TSI_BLOCK_MATRIX: true
+SOLVER 1:
+  SOLVER: "UMFPACK"
+MATERIALS:
+  - MAT: 1
+    MAT_Struct_ThermoStVenantK:
+      YOUNGNUM: 1
+      YOUNG: [2.1e11]
+      NUE: 0.49
+      DENS: 7850
+      THEXPANS: 1.2e-05
+      INITTEMP: 300.0
+  - MAT: 2
+    MAT_Fourier:
+      CAPA: 3.297e6
+      CONDUCT:
+        constant: [1e-06]
+CLONING MATERIAL MAP:
+  - SRC_FIELD: "structure"
+    SRC_MAT: 1
+    TAR_FIELD: "thermo"
+    TAR_MAT: 2
+FUNCT1:
+  - COMPONENT: 0
+    SYMBOLIC_FUNCTION_OF_SPACE_TIME: "300.0"
+FUNCT2:
+  - COMPONENT: 0
+    SYMBOLIC_FUNCTION_OF_SPACE_TIME: "2.0e6*z"
+DESIGN SURF NEUMANN CONDITIONS:
+  - NODE_SET_NAME: end
+    NUMDOF: 6
+    ONOFF: [1, 0, 0, 0, 0, 0]
+    VAL: [1, 0, 0, 0, 0, 0]
+    FUNCT: [2, 0, 0, 0, 0, 0]
+DESIGN POINT DIRICH CONDITIONS:
+  - NODE_SET_NAME: pin
+    NUMDOF: 3
+    ONOFF: [1, 1, 1]
+    VAL: [0, 0, 0]
+    FUNCT: [0, 0, 0]
+DESIGN SURF DIRICH CONDITIONS:
+  - NODE_SET_NAME: symmetry
+    NUMDOF: 3
+    ONOFF: [1, 1, 0]
+    VAL: [0, 0, 0]
+    FUNCT: [0, 0, 0]
+DESIGN VOL DIRICH CONDITIONS:
+  - NODE_SET_NAME: beam
+    NUMDOF: 3
+    ONOFF: [0, 1, 0]
+    VAL: [0, 0, 0]
+    FUNCT: [0, 0, 0]
+STRUCTURE GEOMETRY:
+  FILE: "tsi_geonln_pure_bending_adiabatic_fbar_monolithic.msh"
+  ELEMENT_BLOCKS:
+    - NAME: beam
+      SOLIDSCATRA:
+        HEX8:
+          MAT: 1
+          KINEM: nonlinear
+          TYPE: Undefined
+          TECH: fbar
+RESULT DESCRIPTION:
+  - THERMAL:
+      DIS: "thermo"
+      NODE: 39
+      QUANTITY: "temp"
+      VALUE: 2.99998911318385353e+02
+      TOLERANCE: 1e-09
+      NAME: "T(x=0.5,z=0.5)"
+  - THERMAL:
+      DIS: "thermo"
+      NODE: 117
+      QUANTITY: "temp"
+      VALUE: 2.99999105919305975e+02
+      TOLERANCE: 1e-09
+      NAME: "T(x=0.5,z=0.375)"
+  - THERMAL:
+      DIS: "thermo"
+      NODE: 16
+      QUANTITY: "temp"
+      VALUE: 3.00001088236671876e+02
+      TOLERANCE: 1e-09
+      NAME: "T(x=0.5,z=-0.5)"
