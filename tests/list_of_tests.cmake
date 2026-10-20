@@ -2435,6 +2435,7 @@ four_c_test(TEST_FILE tsi_geonln_lincompression_monolithic_hyperelast.4C.yaml NP
 four_c_test(TEST_FILE tsi_geonln_necking_fbar_thrplast.4C.yaml NP 2)
 four_c_test(TEST_FILE tsi_geonln_plexichannel_varyE_OST_monolithic.4C.yaml NP 2)
 four_c_test(TEST_FILE tsi_geonln_plexichannel_varyE_OST_monolithic_mergeTSImatrix.4C.yaml NP 2)
+four_c_test(TEST_FILE tsi_geonln_pure_bending_adiabatic_fbar_monolithic.4C.yaml NP 2 REQUIRED_DEPENDENCIES GMSH)
 four_c_test(TEST_FILE tsi_geonln_simplrocketnozzle_monolithic.4C.yaml NP 2)
 four_c_test(TEST_FILE tsi_geonln_tet4_heatflux_flexoutsurf_monolithic.4C.yaml NP 2)
 four_c_test(TEST_FILE tsi_geonln_tsiload_hex27_flexoutsurf_monolithic.4C.yaml NP 2)
