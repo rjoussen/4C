@@ -2893,26 +2893,12 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_od_stiff_mat(
 
 Mat::HeatSource
 Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_taylor_quinney_heat_source(
-    const Mat::EvaluationContext<3>& context, const int gp, const int eleGID,
     const Core::LinAlg::Tensor<double, 3, 3>& defgrad,
-    const Core::LinAlg::Tensor<double, 3, 3>& iFin_other, const double temperature)
+    const Core::LinAlg::Tensor<double, 3, 3>& iFin_other)
 {
   const ReducedKinematics reduced_kinematics =
       evaluate_reduced_kinematics(make_matrix_view(defgrad), make_matrix_view(iFin_other));
-
-  ViscoplastUtils::ErrorType err_status = ViscoplastUtils::ErrorType::no_errors;
-
-  const double tol = ViscoplastUtils::thermo_mechanical_state_equality_tolerance;
-
-  // First determine current state, then pre_evaluate, because pre_evaluate sets state.
-  const bool is_current_state =
-      defgrad_difference_norm(
-          reduced_kinematics.defgrad, time_step_quantities_.current_defgrad[gp]) < tol &&
-      std::abs(temperature - time_step_quantities_.current_temperature[gp]) < tol;
-
-  // set the new temperature and pre-evaluate
-  params_.set<double>("temperature", temperature);
-  pre_evaluate(params_, context, gp, eleGID);
+  const double temperature = time_step_quantities_.current_temperature[gp_];
 
   if (parameter()->linearization_type() == ViscoplastUtils::LinearizationType::perturbation_based)
   {
@@ -2920,17 +2906,7 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_taylor_quinney_heat_
         reduced_kinematics.defgrad, temperature);
   }
 
-  // Note: In monolithic tsi, the thermo-predictor comes in with the last state,
-  // so it would be possible to store the computed dissipation of the last step and
-  // return it instead of re-running returnmapping. This is probably a problem of the
-  // tsi predictor though, so not addressed here.
-
-  if (not is_current_state)
-  {
-    // recompute the current history variables for the incoming state. This also sets the new state.
-    constitutive_update(reduced_kinematics.defgrad, temperature);
-  }
-
+  ViscoplastUtils::ErrorType err_status = ViscoplastUtils::ErrorType::no_errors;
   auto local_integration_input =
       ViscoplastUtils::LocalIntegrationInput{{.defgrad = make_matrix_view(defgrad),
           .temperature = temperature,

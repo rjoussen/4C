@@ -3066,14 +3066,12 @@ namespace
 
     const Mat::HeatSource tq_heat_analytic =
         comparison.analytic_material.material->evaluate_taylor_quinney_heat_source(
-            comparison.context, 0, 0, make_tensor_view(comparison.FM),
-            get_full(Core::LinAlg::TensorGenerators::identity<double, 3, 3>),
-            comparison.temperature);
+            make_tensor_view(comparison.FM),
+            get_full(Core::LinAlg::TensorGenerators::identity<double, 3, 3>));
     const Mat::HeatSource tq_heat_fd =
-        comparison.fd_material.material->evaluate_taylor_quinney_heat_source(comparison.context, 0,
-            0, make_tensor_view(comparison.FM),
-            get_full(Core::LinAlg::TensorGenerators::identity<double, 3, 3>),
-            comparison.temperature);
+        comparison.fd_material.material->evaluate_taylor_quinney_heat_source(
+            make_tensor_view(comparison.FM),
+            get_full(Core::LinAlg::TensorGenerators::identity<double, 3, 3>));
 
     ASSERT_GT(std::abs(tq_heat_analytic.value), 0.0);
     ASSERT_GT(Core::LinAlg::ddot(
@@ -3092,8 +3090,8 @@ namespace
   {
     // The viscoplastic factor has two public evaluation paths: one from the solid field (through
     // pre_evaluate, evaluate_inverse_inelastic_def_grad, evaluate_additional_cmat and (for
-    // monolithic solvers) evaluate_od_stiff_mat) and one from the thermo field (through
-    // evaluate_mechanical_dissipation).
+    // monolithic solvers) evaluate_od_stiff_mat) and one for the heat source (through pre_evaluate,
+    // evaluate_inverse_inelastic_def_grad and evaluate_taylor_quinney_heat_source).
 
     // This test tests that both evaluation paths are independent of each other, i.e. they can be
     // called in arbitrary order.
@@ -3243,6 +3241,21 @@ namespace
       return results;
     };
 
+    // perform a thermo evaluation of the material as the multiplicative split material does it
+    const auto thermo_evaluation = [&context](const ViscoPlastMaterial& material, const int gp,
+                                       const Core::LinAlg::Matrix<3, 3>& defgrad,
+                                       const double temperature) -> Mat::HeatSource
+    {
+      Teuchos::ParameterList param_list;
+      param_list.set<double>("temperature", temperature);
+      material->pre_evaluate(param_list, context, gp, 0);
+      Core::LinAlg::Matrix<3, 3> iFin;
+      material->evaluate_inverse_inelastic_def_grad(
+          &defgrad, Core::LinAlg::identity_matrix<3>(), iFin);
+      return material->evaluate_taylor_quinney_heat_source(Core::LinAlg::make_tensor(defgrad),
+          get_full(Core::LinAlg::TensorGenerators::identity<double, 3, 3>));
+    };
+
 
     //************************* Actual test starts here *************************
 
@@ -3261,10 +3274,8 @@ namespace
         reference.solid_results =
             solid_evaluation(material, requested_gp, requested_FM, requested_temperature);
         // 2.: thermo evaluation
-        reference.thermo_results.heat_source = material->evaluate_taylor_quinney_heat_source(
-            context, requested_gp, 0, make_tensor_view(requested_FM),
-            get_full(Core::LinAlg::TensorGenerators::identity<double, 3, 3>),
-            requested_temperature);
+        reference.thermo_results.heat_source =
+            thermo_evaluation(material, requested_gp, requested_FM, requested_temperature);
 
         // Since we are using this result as reference,assert that all values are non-zero to ensure
         // full evaluation paths (no early returns due to no plastic strain)
@@ -3285,10 +3296,8 @@ namespace
         // 1.: solid evaluation with stale temperature
         solid_evaluation(material, requested_gp, requested_FM, stale_temperature);
         // 2.: thermo evaluation with the requested temperature
-        current.heat_source = material->evaluate_taylor_quinney_heat_source(context, requested_gp,
-            0, make_tensor_view(requested_FM),
-            get_full(Core::LinAlg::TensorGenerators::identity<double, 3, 3>),
-            requested_temperature);
+        current.heat_source =
+            thermo_evaluation(material, requested_gp, requested_FM, requested_temperature);
 
         ThermoEvaluationResults::assert_equal(current, reference.thermo_results);
       }
@@ -3301,10 +3310,8 @@ namespace
         // 1.: solid evaluation with stale deformation gradient
         solid_evaluation(material, requested_gp, stale_FM, requested_temperature);
         // 2.: thermo evaluation with the requested deformation gradient
-        current.heat_source = material->evaluate_taylor_quinney_heat_source(context, requested_gp,
-            0, make_tensor_view(requested_FM),
-            get_full(Core::LinAlg::TensorGenerators::identity<double, 3, 3>),
-            requested_temperature);
+        current.heat_source =
+            thermo_evaluation(material, requested_gp, requested_FM, requested_temperature);
         ThermoEvaluationResults::assert_equal(current, reference.thermo_results);
       }
       {
@@ -3322,10 +3329,8 @@ namespace
                                  // gauss point caches are not leaking into each other
         // 2.: thermo evaluation at the requested gauss point (should use the cache filled by the
         // first solid evaluation)
-        current.thermo_results.heat_source = material->evaluate_taylor_quinney_heat_source(context,
-            requested_gp, 0, make_tensor_view(requested_FM),
-            get_full(Core::LinAlg::TensorGenerators::identity<double, 3, 3>),
-            requested_temperature);
+        current.thermo_results.heat_source =
+            thermo_evaluation(material, requested_gp, requested_FM, requested_temperature);
         EvaluationResults::assert_equal(current, reference);
       }
     }
@@ -3340,10 +3345,8 @@ namespace
         auto material = make_material();
         EvaluationResults current;
         // 1.: thermo evaluation
-        current.thermo_results.heat_source = material->evaluate_taylor_quinney_heat_source(context,
-            requested_gp, 0, make_tensor_view(requested_FM),
-            get_full(Core::LinAlg::TensorGenerators::identity<double, 3, 3>),
-            requested_temperature);
+        current.thermo_results.heat_source =
+            thermo_evaluation(material, requested_gp, requested_FM, requested_temperature);
         // 2.: solid evaluation
         current.solid_results =
             solid_evaluation(material, requested_gp, requested_FM, requested_temperature);
@@ -3356,9 +3359,7 @@ namespace
             "evaluation.");
         auto material = make_material();
         // 1.: thermo evaluation with stale temperature
-        (void)material->evaluate_taylor_quinney_heat_source(context, requested_gp, 0,
-            make_tensor_view(requested_FM),
-            get_full(Core::LinAlg::TensorGenerators::identity<double, 3, 3>), stale_temperature);
+        (void)thermo_evaluation(material, requested_gp, requested_FM, stale_temperature);
         // 2.: solid evaluation with the requested temperature
         const auto current =
             solid_evaluation(material, requested_gp, requested_FM, requested_temperature);
@@ -3371,10 +3372,7 @@ namespace
             "evaluation.");
         auto material = make_material();
         // 1.: thermo evaluation with stale deformation gradient
-        (void)material->evaluate_taylor_quinney_heat_source(context, requested_gp, 0,
-            make_tensor_view(stale_FM),
-            get_full(Core::LinAlg::TensorGenerators::identity<double, 3, 3>),
-            requested_temperature);
+        (void)thermo_evaluation(material, requested_gp, stale_FM, requested_temperature);
         // 2.: solid evaluation with the requested deformation gradient
         const auto current =
             solid_evaluation(material, requested_gp, requested_FM, requested_temperature);
@@ -3388,13 +3386,9 @@ namespace
         EvaluationResults current;
         // 1.: thermo evaluation at two different gauss points, the most previous one with stale
         // values
-        current.thermo_results.heat_source = material->evaluate_taylor_quinney_heat_source(context,
-            requested_gp, 0, make_tensor_view(requested_FM),
-            get_full(Core::LinAlg::TensorGenerators::identity<double, 3, 3>),
-            requested_temperature);
-        (void)material->evaluate_taylor_quinney_heat_source(context, stale_gp, 0,
-            make_tensor_view(stale_FM),
-            get_full(Core::LinAlg::TensorGenerators::identity<double, 3, 3>),
+        current.thermo_results.heat_source =
+            thermo_evaluation(material, requested_gp, requested_FM, requested_temperature);
+        (void)thermo_evaluation(material, stale_gp, stale_FM,
             stale_temperature);  // evaluate the next gauss point with different values to test that
                                  // gauss point caches are not leaking into each other
         // 2.: solid evaluation at the requested gauss point (should use the cache filled by the
