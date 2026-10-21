@@ -3246,6 +3246,8 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::update()
     //  prior to updating the time step quantities
     if (is_plastic_gp_[gp] && adaptive_estimate_interp_manager_.has_value())
     {
+      // the state quantities are evaluated at the current Gauss point gp_
+      gp_ = gp;
       update_aei_starting_point(gp);
     }
 
