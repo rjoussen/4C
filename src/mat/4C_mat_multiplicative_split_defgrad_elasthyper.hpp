@@ -14,8 +14,6 @@
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_linalg_symmetric_tensor.hpp"
 #include "4C_linalg_tensor.hpp"
-#include "4C_mat_anisotropy.hpp"
-#include "4C_mat_elast_couptransverselyisotropic.hpp"
 #include "4C_mat_multiplicative_split_defgrad_elasthyper_service.hpp"
 #include "4C_mat_so3_material.hpp"
 #include "4C_mat_trait_thermo_solid.hpp"
@@ -31,13 +29,7 @@ FOUR_C_NAMESPACE_OPEN
 // forward declaration
 namespace Mat
 {
-  class Anisotropy;
   class InelasticDefgradFactors;
-
-  namespace Elastic
-  {
-    class Summand;
-  }
 
   namespace PAR
   {
@@ -56,11 +48,8 @@ namespace Mat
 
       std::shared_ptr<Core::Mat::Material> create_material() override;
 
-      /// length of elastic material list
-      const int nummat_elast_;
-
-      /// the list of elastic material IDs
-      const std::vector<int> matids_elast_;
+      /// ID of the hyperelastic material describing the elastic response
+      const int matid_elast_;
 
       /// number of factors of inelastic deformation gradient F_{in} = F_{in,1} . F_{in,2}. ... .
       /// F_{in,n} (n factors)
@@ -68,9 +57,6 @@ namespace Mat
 
       /// IDs of inelastic deformation gradient factors (i-th ID specifies calculation of F_{in,i})
       const std::vector<int> inel_defgradfacids_;
-
-      /// material mass density
-      const double density_;
 
       /// reference temperature for thermal expansion
       const double ref_temperature_;
@@ -134,7 +120,8 @@ namespace Mat
     int num_inelastic_def_grad() const { return static_cast<int>(facdefgradin_.size()); }
 
     /// Assigns the different inelastic factors to different sources
-    void assign_to_source(Mat::PAR::MultiplicativeSplitDefgradElastHyper* params);
+    void assign_to_source(
+        Mat::PAR::MultiplicativeSplitDefgradElastHyper* params, Mat::So3Material& elastic_material);
 
     /// Update the history variables for the different inelastic factors
     void update();
@@ -181,7 +168,8 @@ namespace Mat
 
     In this class the deformation gradient is modeled to be split multiplicatively
     in elastic and inelastic deformation gradients (F = F_{el} * F_{in}).
-    The elastic contribution can be any elastic material law provided in elast_summand.
+    The elastic response is evaluated by a hyperelastic material (MAT_ElastHyper) at the elastic
+    deformation gradient F_{el} = F * F_{in}^{-1} and pulled back to the reference configuration.
     Only elastic strains cause stresses!
     The inelastic deformation gradient itself can be a product of different inelastic
     deformation gradients, i.e. F_{in} = F_{in,1} * F_{in,2} * ... * F_{in,n}.
@@ -199,52 +187,19 @@ namespace Mat
     explicit MultiplicativeSplitDefgradElastHyper(
         Mat::PAR::MultiplicativeSplitDefgradElastHyper* params);
 
-    /// struct containing various kinematic quantities for the model evaluation
-    struct KinematicQuantities
+    /// stress and its derivatives, obtained by pulling back the response of the elastic material
+    struct StressAndDerivatives
     {
-      // ----- variables of kinetic quantities ----- //
-
-      /// inverse right Cauchy-Green tensor \f$ \mathbf{C}^{-1} \f$ stored as 6x1 vector
-      Core::LinAlg::Matrix<6, 1> iCV{Core::LinAlg::Initialization::zero};
-      /// inverse inelastic right Cauchy-Green tensor \f$\mathbf{C}_\text{in}^{-1}\f$ stored as 6x1
-      /// vector
-      Core::LinAlg::Matrix<6, 1> iCinV{Core::LinAlg::Initialization::zero};
-      /// \f$ \mathbf{C}_\text{in}^{-1} \cdot \mathbf{C} \cdot \mathbf{C}_\text{in}^{-1} \f$ stored
-      /// as 6x1 vector
-      Core::LinAlg::Matrix<6, 1> iCinCiCinV{Core::LinAlg::Initialization::zero};
-      /// \f$ \mathbf{C}_\text{in}^{-1} \cdot \mathbf{C} \f$
-      Core::LinAlg::Matrix<3, 3> iCinCM{Core::LinAlg::Initialization::zero};
-      ///\f$ \mathbf{F}_\text{in}^{-1} \cdot \mathbf{C}_\text{el} \f$
-      Core::LinAlg::Matrix<3, 3> iFinCeM{Core::LinAlg::Initialization::zero};
-      /// \f$ \mathbf{C} \cdot \mathbf{F}_\text{in}^{-1} \f$ stored as 9x1 vector
-      Core::LinAlg::Matrix<9, 1> CiFin9x1{Core::LinAlg::Initialization::zero};
-      ///\f$ \mathbf{C} \cdot \mathbf{F}_\text{in}^{-1} \cdot \mathbf{C}_\text{el} \f$ stored as 9x1
-      /// vector
-      Core::LinAlg::Matrix<9, 1> CiFinCe9x1{Core::LinAlg::Initialization::zero};
-      /// \f$ \mathbf{C} \cdot \mathbf{F}_\text{in}^{-1} \cdot \mathbf{C}_\text{el}^{-1} \f$ stored
-      /// as 9x1 vector
-      Core::LinAlg::Matrix<9, 1> CiFiniCe9x1{Core::LinAlg::Initialization::zero};
-      /// principal invariants of the elastic right Cauchy-Green tensor
-      Core::LinAlg::Matrix<3, 1> prinv{Core::LinAlg::Initialization::zero};
-      /// partial derivative of the elastic right Cauchy-Green tensor w.r.t. right Cauchy-Green
-      /// tensor \f$ \frac{\partial \boldsymbol{C}_\text{e}}{\partial \boldsymbol{C}} \f$ (Voigt
-      /// stress-stress notation)
-      Core::LinAlg::Matrix<6, 6> dCedC{Core::LinAlg::Initialization::zero};
-      /// partial derivative of the elastic right Cauchy-Green tensor w.r.t. inelastic deformation
-      /// gradient \f$ \frac{\partial \boldsymbol{C}_\text{e}}{\partial \boldsymbol{F} _\text{in} ^
-      /// { -1 }} \f$(Voigt stress notation)
-      Core::LinAlg::Matrix<6, 9> dCediFin{Core::LinAlg::Initialization::zero};
-      /// inverse inelastic deformation gradient
-      Core::LinAlg::Matrix<3, 3> iFinM{Core::LinAlg::Initialization::zero};
-      /// determinant of the inelastic deformation gradient
-      double detFin = 1.0;
-
-      // ----- derivatives of principal invariants ----- //
-
-      /// first derivatives of principle invariants
-      Core::LinAlg::Matrix<3, 1> dPIe{Core::LinAlg::Initialization::zero};
-      /// second derivatives of principle invariants
-      Core::LinAlg::Matrix<6, 1> ddPIIe{Core::LinAlg::Initialization::zero};
+      /// complete 2nd Piola-Kirchhoff stress \f$ \mathbf{S} \f$
+      Core::LinAlg::SymmetricTensor<double, 3, 3> stress{};
+      /// \f$ 2 \frac{\partial \mathbf{S}}{\partial \mathbf{C}} \f$ at fixed \f$
+      /// \mathbf{F}_\text{in}^{-1} \f$
+      Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3> cmat_at_fixed_iFin{};
+      /// \f$ \frac{\partial \mathbf{S}}{\partial \mathbf{F}_\text{in}^{-1}} \f$, where the first
+      /// index is in stress-like Voigt notation.
+      Core::LinAlg::Matrix<6, 9> dstress_diFin{Core::LinAlg::Initialization::zero};
+      /// \f$ \frac{\partial \mathbf{S}}{\partial T} \f$ at fixed \f$ \mathbf{F}_\text{in}^{-1} \f$.
+      Core::LinAlg::SymmetricTensor<double, 3, 3> dstress_dT{};
     };
 
     int unique_par_object_id() const override
@@ -272,7 +227,8 @@ namespace Mat
       return std::make_shared<MultiplicativeSplitDefgradElastHyper>(*this);
     }
 
-    double density() const override { return params_->density_; }
+    /// material mass density (defined by the elastic material)
+    double density() const override { return elastic_material_->density(); }
 
     Core::Mat::PAR::Parameter* parameter() const override { return params_; }
 
@@ -325,6 +281,8 @@ namespace Mat
     void setup(int numgp, const Discret::Elements::Fibers& fibers,
         const std::optional<Discret::Elements::CoordinateSystem>& coord_system) override;
 
+    void post_setup(const Teuchos::ParameterList& params, int eleGID) override;
+
     void update() override;
 
     void register_output_data_names(
@@ -370,117 +328,6 @@ namespace Mat
         const Core::LinAlg::Matrix<6, 1>& iCV, const Core::LinAlg::Matrix<6, 9>& dSdiFin);
 
     /*!
-     * @brief  Evaluate derivative of 2nd Piola Kirchhoff stresses w.r.t. the inelastic deformation
-     * gradient for the isotropic components
-     *
-     * @param[in] kinemat_quant struct containing kinematic quantities
-     * @param[in] stress_fact struct containing \f$ \gamma_i \f$ and \f$ \delta_i \f$ stress
-     * factors, as presented in Holzapfel - Nonlinear Solid Mechanics
-     * @param[in] SthetaT thermal part of the thermo-elastic stress (due to thermal expansion)
-     * @return derivative \f$ \frac{\partial \mathsymbol{S}}{\partial
-     * \mathsymbol{F}^{-1}_{\text{in}}} \f$
-     */
-    [[nodiscard]] Core::LinAlg::Matrix<6, 9> evaluate_d_stress_d_ifin(
-        const KinematicQuantities& kinemat_quant, const Mat::StressFactors& stress_factors,
-        const Core::LinAlg::SymmetricTensor<double, 3, 3>& SthetaT) const;
-
-    /*!
-     * @brief  Evaluate the stress and stiffness components of the transversely isotropic components
-     * separately
-     *
-     * @param[in] kinemat_quant struct containing kinematic quantities
-     * @param[in] CM Right CG deformation tensor
-     * \param[in]  params additional parameters for comp. of material properties
-     * \param[in]  gp       Gauss point
-     * \param[in]  eleGID element GID
-     * @param[out] stress   2nd Piola--Kirchhoff stress tensor
-     * @param[out] cmatiso  part of the elasticity tensor as shown in evaluate_stress_cmat_iso
-     * @param[out] dSdiFin derivative of 2nd Piola Kirchhoff stresses w.r.t. the inelastic
-     * deformation gradient
-     */
-    void evaluate_transv_iso_quantities(const KinematicQuantities& kinemat_quant,
-        const Core::LinAlg::Matrix<3, 3>& CM, const Teuchos::ParameterList& params, const int gp,
-        const int eleGID, Core::LinAlg::Matrix<6, 1>& stress, Core::LinAlg::Matrix<6, 6>& cmatiso,
-        Core::LinAlg::Matrix<6, 9>& dSdiFin) const;
-
-    /*!
-     * @brief Evaluates stress and cmat
-     *
-     * \f[
-     *   cmat = 2 \frac{\partial \mathbf{S}}{\partial \mathbf{C}}
-     * \f]
-     *
-     *  cf. Holzapfel [1], p. 216 (6.32) and p. 248
-     *  The formulation in Holzapfel is slightly changed as only the elastic strains cause stresses
-     *  with \f$\mathbf{C}_\text{in} = \mathbf{F}_\text{in}^T \cdot \mathbf{F}_\text{in}\f$
-     *  and \f$\mathbf{F}_\text{in}\f$ denoting the inelastic deformation gradient
-     * \f[
-     *   \mathbf{S} = 2 \det(\mathbf{F}_\text{in}) \mathbf{F}_\text{in}^{-1} \frac{\partial
-     *   \Psi_\text{e}}{\partial \mathbf{C}_\text{e}} \mathbf{F}_\text{in}^{-T}
-     * \f]
-     * \f[
-     * \mathbf{S} = \det(\mathbf{F}_\text{in}) \left(\gamma_1 \ \mathbf{C}_\text{in}^{-1} + \gamma_2
-     * \mathbf{C}_\text{in}^{-1} \cdot \mathbf{C} \cdot \mathbf{C}_\text{in}^{-1} + \gamma_3 \
-     * \mathbf{C}^{-1} \right)
-     * \f] with \f$\gamma_i\f$ as defined in Mat::CalculateGammaDelta()
-     *
-     * \f[
-     *   \mathbb{C} = \det(\mathbf{F}_\text{in}) \left( \delta_1 \left( \mathbf{C}_\text{in}^{-1}
-     *                \otimes \mathbf{C}_\text{in}^{-1} \right)
-     *              + \delta_2 \left( \mathbf{C}_\text{in}^{-1} \otimes \mathbf{C}_\text{in}^{-1}
-     *                \mathbf{C} \mathbf{C}_\text{in}^{-1}  + \mathbf{C}_\text{in}^{-1} \mathbf{C}
-     *                \mathbf{C}_\text{in}^{-1} \otimes \mathbf{C}_\text{in}^{-1} \right)
-     *              + \delta_3 \left( \mathbf{C}_\text{in}^{-1} \otimes \mathbf{C}^{-1} +
-     * \mathbf{C}^{-1} \otimes \mathbf{C}_\text{in}^{-1} \right)
-     *              + \delta_4 \left( \mathbf{C}_\text{in}^{-1} \mathbf{C} \mathbf{C}_\text{in}^{-1}
-     *                \otimes \mathbf{C}_\text{in}^{-1} \mathbf{C} \mathbf{C}_\text{in}^{-1} \right)
-     *              + \delta_5 \left( \mathbf{C}_\text{in}^{-1} \mathbf{C} \mathbf{C}_\text{in}^{-1}
-     *                \otimes \mathbf{C}^{-1} + \mathbf{C}^{-1} \otimes \mathbf{C}_\text{in}^{-1}
-     * \mathbf{C} \mathbf{C}_\text{in}^{-1} \right)
-     *              + \delta_6 \left( \mathbf{C}^{-1} \otimes \mathbf{C}^{-1} \right)
-     *              + \delta_7 \left( \mathbf{C}^{-1} \odot \mathbf{C}^{-1} \right)
-     *              + \delta_8 \left( \mathbf{C}_\text{in}^{-1} \odot \mathbf{C}_\text{in}^{-1}
-     * \right) \right) \f]
-     *
-     * \f$ \odot \f$ is defined as follows:
-     * \f[
-     *   - (A^{-1} \odot A^{-1})_{abcd} = 1/2 (A^{-1}_{ac} A^{-1}_{bd} +
-     *   A^{-1}_{ad} A^{-1}_{bc}); \text{ for } A_{ab} = A_{ba}
-     * \f] meaning a symmetric 2-tensor \f$A\f$
-     *
-     * @param[in] kinemat_quant struct containing kinematic quantities
-     * @param[in] stress_fact struct containing \f$ \gamma_i \f$ and \f$ \delta_i \f$ stress
-     * factors, as presented in Holzapfel - Nonlinear Solid Mechanics
-     * @param[out] stress   2nd Piola--Kirchhoff stress tensor
-     * @param[out] cmatiso  part of the elasticity tensor as shown above
-     */
-    void evaluate_stress_cmat_iso(const KinematicQuantities& kinemat_quant,
-        const Mat::StressFactors& stress_fact, Core::LinAlg::Matrix<6, 1>& stress,
-        Core::LinAlg::Matrix<6, 6>& cmatiso) const;
-
-    /*!
-     * @brief Evaluates some kinematic quantities that are used in stress and elasticity tensor
-     * calculation
-     *
-     * @param[in] defgrad  Deformation gradient
-     * @param[out] kinemat_quant struct containing kinematic quantities
-     */
-    void evaluate_kin_quant_elast(
-        const Core::LinAlg::Matrix<3, 3>* defgrad, KinematicQuantities& kinemat_quant) const;
-
-    /*!
-     * @brief calculates the derivatives of the hyper-elastic laws with respect to the invariants
-     *
-     * @param[in] prinv   Principal invariants of the elastic right Cauchy-Green tensor
-     * @param[in] gp      current gauss point
-     * @param[in] eleGID  Element ID
-     * @param[out] dPI    First derivative w.r.t. principle invariants
-     * @param[out] ddPII  Second derivative w.r.t. principle invariants
-     */
-    void evaluate_invariant_derivatives(const Core::LinAlg::Matrix<3, 1>& prinv, int gp, int eleGID,
-        Core::LinAlg::Matrix<3, 1>& dPI, Core::LinAlg::Matrix<6, 1>& ddPII) const;
-
-    /*!
      * @brief pre-evaluation, intended to be used for stuff that have to be done only once
      *
      * @param[in] params  parameter list as handed in from the element
@@ -499,8 +346,76 @@ namespace Mat
     void set_concentration_gp(double concentration);
 
    private:
-    /// Holder for anisotropy
-    Anisotropy anisotropy_;
+    /*!
+     * @brief Evaluate the 2nd Piola-Kirchhoff stress and its derivatives, while keeping the
+     * inelastic deformation gradient fixed.
+     *
+     * The complete 2nd Piola Kirchhoff stress is
+     * \f[
+     *   \mathbf{S} = \det(\mathbf{F}_\text{in}) \mathbf{F}_\text{in}^{-1} \cdot
+     *   (\mathbf{S}_\text{e} - \mathbf{S}_T) \cdot \mathbf{F}_\text{in}^{-T}
+     * \f]
+     * where \f$ \mathbf{S}_\text{e} \f$ is the hyperelastic 2nd Piola-Kirchhoff stress, obtained by
+     * evaluating the hyperelastic material at the elastic right Cauchy-Green tensor
+     * \f$ \mathbf{C}_\text{e} = \mathbf{F}_\text{in}^{-T} \cdot \mathbf{C} \cdot
+     * \mathbf{F}_\text{in}^{-1} \f$. Its hyperelastic stiffness
+     * \f$ \mathbb{C}_\text{e} = 2 \frac{\partial \mathbf{S}_\text{e}}{\partial \mathbf{C}_\text{e}}
+     * \f$ is also provided by the hyperelastic material.
+     * \f$ \mathbf{S}_T\f$ is the thermo-elastic stress, obtained by evaluating the hyperelastic
+     * material at the thermal right Cauchy-Green tensor
+     * \f$ \mathbf{C}_T = (1 + 2 \alpha_T \Delta T) \mathbf{I} \f$.
+     *
+     * This yields the temperature derivative at fixed \f$ \mathbf{F}_\text{in}^{-1} \f$:
+     * \f[
+     * \frac{\partial \mathbf{S}}{\partial T} = -\det(\mathbf{F}_\text{in})
+     *   \mathbf{F}_\text{in}^{-1} \cdot \frac{\partial \mathbf{S}_T}{\partial T}
+     *   \cdot \mathbf{F}_\text{in}^{-T}
+     * \f]
+     * The tangent stiffness tensor at fixed \f$ \mathbf{F}_\text{in}^{-1} \f$ is given by the
+     * hyperelastic stiffness tensor pulled back in its first index pair and applying the chain
+     * rule:
+     * \f[
+     *   \mathbb{C}_{ijkl} = 2 \frac{\partial S_{ij}}{\partial C_{kl}}
+     *    = \det(\mathbf{F}_\text{in}) \underbrace{F^{-1}_{\text{in},ia}
+     *   F^{-1}_{\text{in},jb} \mathbb{C}_{\text{e},abcd} }_{=: \mathbb{X}_{ijcd}}
+     *   \frac{\partial C_{\text{e},cd}}{\partial C_{kl}}
+     * \f]
+     * and the derivative of the stress wrt. \f$ \mathbf{F}_\text{in}^{-1} \f$ is given by
+     * \f[
+     *   \frac{\partial S_{ij}}{\partial F^{-1}_{\text{in},kl}}
+     *   = \det(\mathbf{F}_\text{in}) \left(
+     *     \delta_{ik} \left[ \mathbf{F}_\text{in}^{-1} \cdot
+     *     \left(\mathbf{S}_\text{e} - \mathbf{S}_T \right) \right]_{jl}
+     *   + \delta_{jk} \left[ \mathbf{F}_\text{in}^{-1} \cdot
+     *     \left(\mathbf{S}_\text{e} - \mathbf{S}_T \right) \right]_{il} \right)
+     *   + \det(\mathbf{F}_\text{in}) \frac{1}{2}  \mathbb{X}_{ijab}
+     *     \frac{\partial C_{\text{e},ab}}{\partial F^{-1}_{\text{in},kl}}
+     *   - S_{ij} F^T_{\text{in},kl}
+     * \f]
+     * where the last term stems from the derivative of the determinant.
+     *
+     * The derivatives of the elastic Cauchy-Green tensor \f$ \mathbf{C}_\text{e} \f$ w.r.t. the
+     * right Cauchy-Green tensor \f$ \mathbf{C} \f$ and the inverse inelastic deformation gradient
+     * \f$ \mathbf{F}_\text{in}^{-1} \f$ are given by
+     * \f[ \frac{\partial C_{\text{e},cd}}{\partial C_{kl}} = F^{-1}_{\text{in},kc}
+     *   F^{-1}_{\text{in},ld} \f]
+     *
+     * and
+     * \f[ \frac{\partial C_{\text{e},ab}}{\partial F^{-1}_{\text{in},kl}}
+     *   = \delta_{al} \left[ \mathbf{C} \cdot \mathbf{F}_\text{in}^{-1} \right]_{kb}
+     *   + \delta_{bl} \left[ \mathbf{C} \cdot \mathbf{F}_\text{in}^{-1} \right]_{ka} \f]
+     *
+     * @param[in] defgrad  Deformation gradient
+     * @param[in] iFin     Inverse inelastic deformation gradient
+     * @param[in] params   Parameter list as handed in from the element
+     * @param[in] context  Evaluation context as handed in from the element
+     * @param[in] gp       Gauss point
+     * @param[in] eleGID   Element ID
+     */
+    [[nodiscard]] StressAndDerivatives evaluate_stress_and_derivatives(
+        const Core::LinAlg::Tensor<double, 3, 3>& defgrad,
+        const Core::LinAlg::Tensor<double, 3, 3>& iFin, const Teuchos::ParameterList& params,
+        const EvaluationContext<3>& context, int gp, int eleGID);
 
     /// Holds and classifies all inelastic factors
     std::shared_ptr<InelasticFactorsHandler> inelastic_;
@@ -508,16 +423,8 @@ namespace Mat
     /// My material parameters
     Mat::PAR::MultiplicativeSplitDefgradElastHyper* params_;
 
-    /// map to elastic materials/potential summands (only isotropic)
-    std::vector<std::shared_ptr<Mat::Elastic::Summand>> potsumel_;
-
-    /// map to elastic materials/potential summands (only transversely isotropic)
-    std::vector<std::shared_ptr<Mat::Elastic::CoupTransverselyIsotropic>> potsumel_transviso_;
-
-    KinematicQuantities evaluate_kinematic_quantities(
-        const Mat::MultiplicativeSplitDefgradElastHyper& splitdefgrd,
-        Mat::InelasticFactorsHandler& inelastic_factors_handler,
-        const Core::LinAlg::Matrix<3, 3>& defgrad, const int gp, const int eleGID);
+    /// hyperelastic material describing the elastic response
+    std::shared_ptr<Mat::So3Material> elastic_material_;
   };
 
 }  // namespace Mat

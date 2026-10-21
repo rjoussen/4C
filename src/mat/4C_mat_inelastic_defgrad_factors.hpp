@@ -607,9 +607,13 @@ namespace Mat
      * @brief create object by input parameter ID
      *
      * @param[in] matnum  material ID
+     * @param[in] elastic_material hyperelastic material describing the elastic response of the
+     *                             parent material (only used by factors that evaluate the
+     *                             elastic response themselves)
      * @return pointer to material that is defined by material ID
      */
-    static std::shared_ptr<InelasticDefgradFactors> factory(int matnum);
+    static std::shared_ptr<InelasticDefgradFactors> factory(
+        int matnum, Mat::So3Material& elastic_material);
 
     /// provide material type
     [[nodiscard]] virtual Core::Materials::MaterialType material_type() const = 0;
@@ -1497,9 +1501,8 @@ namespace Mat
      *                             model
      * @param[in] fiber_reader dummy hyperelastic model utilized to read the fiber direction for
      * transverse isotropy
-     * @param[in] pot_sum_el elastic components / potential summands (only isotropic)
-     * @param[in] pot_sum_el_transv_iso elastic components / potential summands (only transversely
-     * isotropic)
+     * @param[in] elastic_material hyperelastic material describing the elastic response (provided
+     * by the parent material)
      * @param[in] thermal_expansion_coefficient Isotropic thermal expansion coefficient (provided by
      * the parent material)
      * @param[in] ref_temperature Reference temperature for thermal expansion (provided by the
@@ -1508,9 +1511,7 @@ namespace Mat
 
     explicit InelasticDefgradTransvIsotropElastViscoplast(Core::Mat::PAR::Parameter* params,
         std::shared_ptr<Mat::Viscoplastic::Law> viscoplastic_law,
-        Mat::Elastic::CoupTransverselyIsotropic fiber_reader,
-        std::vector<std::shared_ptr<Mat::Elastic::Summand>> pot_sum_el,
-        std::vector<std::shared_ptr<Mat::Elastic::CoupTransverselyIsotropic>> pot_sum_el_transv_iso,
+        Mat::Elastic::CoupTransverselyIsotropic fiber_reader, Mat::So3Material& elastic_material,
         const double thermal_expansion_coefficient, const double ref_temperature);
 
     [[nodiscard]] Core::Materials::MaterialType material_type() const override
@@ -1659,11 +1660,8 @@ namespace Mat
     const double ref_temperature_;
 
 
-    //! map to elastic materials/potential summands (only isotropic)
-    std::vector<std::shared_ptr<Mat::Elastic::Summand>> potsumel_;
-
-    //! map to elastic materials/potential summands (only transversely isotropic)
-    std::vector<std::shared_ptr<Mat::Elastic::CoupTransverselyIsotropic>> potsumel_transviso_;
+    //! hyperelastic material describing the elastic response (owned by the parent material)
+    Mat::So3Material& elastic_material_;
 
     //! viscoplastic law
     std::shared_ptr<Mat::Viscoplastic::Law> viscoplastic_law_;
@@ -1716,19 +1714,6 @@ namespace Mat
     std::optional<InelasticDefgradTransvIsotropElastViscoplastUtils::AdaptiveEstimateInterpolation::
             AEIManager>
         adaptive_estimate_interp_manager_;
-
-    /*!
-     * @brief Calculate the Holzapfel gamma and delta values of the isotropic elastic material
-     * components
-     * @param[in] CeM elastic right Cauchy_Green deformation tensor \f$ \boldsymbol{C}_\text{e}
-     * \f$ in matrix form
-     * @param[out] gamma stress factors for the isotropic elasticity case, as derived in
-     *                   Holzapfel - Nonlinear Solid Mechanics(2000)
-     * @param[out] delta constitutive tensor factors for the isotropic elasticity case, as derived
-     *                   in Holzapfel - Nonlinear Solid Mechanics(2000)
-     */
-    void calculate_gamma_delta(const Core::LinAlg::Matrix<3, 3>& CeM,
-        Core::LinAlg::Matrix<3, 1>& gamma, Core::LinAlg::Matrix<8, 1>& delta) const;
 
     /*!
      * @brief Check if the elastic predictor provides the solution for the current time step,

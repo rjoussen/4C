@@ -91,11 +91,9 @@ MATERIALS:
           X_MAX: 0.9825
   - MAT: 2
     MAT_MultiplicativeSplitDefgradElastHyper:
-      NUMMATEL: 1
-      MATIDSEL: [3]
+      MATID_ELAST: 31
       NUMFACINEL: 2
       INELDEFGRADFACIDS: [4, 5]
-      DENS: 4700
   - MAT: 3
     ELAST_CoupNeoHooke:
       YOUNG: 8e+10
@@ -135,11 +133,9 @@ MATERIALS:
       COND: 34.0
   - MAT: 10
     MAT_MultiplicativeSplitDefgradElastHyper:
-      NUMMATEL: 1
-      MATIDSEL: [11]
+      MATID_ELAST: 32
       NUMFACINEL: 2
       INELDEFGRADFACIDS: [12, 13]
-      DENS: 1880
   - MAT: 11
     ELAST_CoupNeoHooke:
       YOUNG: 2.4e+10
@@ -166,11 +162,9 @@ MATERIALS:
           OCP_FUNCT_NUM: 8
   - MAT: 16
     MAT_MultiplicativeSplitDefgradElastHyper:
-      NUMMATEL: 1
-      MATIDSEL: [17]
+      MATID_ELAST: 33
       NUMFACINEL: 2
       INELDEFGRADFACIDS: [18, 19]
-      DENS: 534
   - MAT: 17
     ELAST_CoupNeoHooke:
       YOUNG: 1.11e+10
@@ -201,11 +195,9 @@ MATERIALS:
           OCP_FUNCT_NUM: 8
   - MAT: 22
     MAT_MultiplicativeSplitDefgradElastHyper:
-      NUMMATEL: 1
-      MATIDSEL: [23]
+      MATID_ELAST: 34
       NUMFACINEL: 1
       INELDEFGRADFACIDS: [12]
-      DENS: 8920
   - MAT: 23
     ELAST_CoupNeoHooke:
       YOUNG: 1.15e+11
@@ -226,11 +218,9 @@ MATERIALS:
           OCP_FUNCT_NUM: 8
   - MAT: 28
     MAT_MultiplicativeSplitDefgradElastHyper:
-      NUMMATEL: 1
-      MATIDSEL: [29]
+      MATID_ELAST: 35
       NUMFACINEL: 1
       INELDEFGRADFACIDS: [12]
-      DENS: 2700
   - MAT: 29
     ELAST_CoupNeoHooke:
       YOUNG: 6.9e+10
@@ -240,6 +230,31 @@ MATERIALS:
       CAPA: 2.42e+06
       CONDUCT:
         constant: [235000]
+  - MAT: 31
+    MAT_ElastHyper:
+      NUMMAT: 1
+      MATIDS: [3]
+      DENS: 4700
+  - MAT: 32
+    MAT_ElastHyper:
+      NUMMAT: 1
+      MATIDS: [11]
+      DENS: 1880
+  - MAT: 33
+    MAT_ElastHyper:
+      NUMMAT: 1
+      MATIDS: [17]
+      DENS: 534
+  - MAT: 34
+    MAT_ElastHyper:
+      NUMMAT: 1
+      MATIDS: [23]
+      DENS: 8920
+  - MAT: 35
+    MAT_ElastHyper:
+      NUMMAT: 1
+      MATIDS: [29]
+      DENS: 2700
 CLONING MATERIAL MAP:
   - SRC_FIELD: "structure"
     SRC_MAT: 2
@@ -320,91 +335,91 @@ RESULT DESCRIPTION:
       DIS: "scatra"
       NODE: 4
       QUANTITY: "phi1"
-      VALUE: 3.65054117665196287e+01
+      VALUE: 3.65055593963357978e+01
       TOLERANCE: 3.7e-07
   - SCATRA:
       DIS: "scatra"
       NODE: 4
       QUANTITY: "phi2"
-      VALUE: 6.85349389904629791e-03
+      VALUE: 6.85349015943608614e-03
       TOLERANCE: 6.9e-11
   - STRUCTURE:
       DIS: "structure"
       NODE: 4
       QUANTITY: "dispx"
-      VALUE: -3.06912700676419866e-08
+      VALUE: -3.06913977173141569e-08
       TOLERANCE: 3.1e-16
   - STRUCTURE:
       DIS: "structure"
       NODE: 4
       QUANTITY: "dispy"
-      VALUE: -1.99930025794690803e-10
+      VALUE: -1.99930858653192960e-10
       TOLERANCE: 1.0e-16
   - STRUCTURE:
       DIS: "structure"
       NODE: 4
       QUANTITY: "dispz"
-      VALUE: 5.21229276159177456e-10
+      VALUE: 5.21231450490334588e-10
       TOLERANCE: 1.0e-16
   - SCATRA:
       DIS: "thermo"
       NODE: 4
       QUANTITY: "phi"
-      VALUE: 2.99915297696379184e+02
+      VALUE: 2.99915297727849122e+02
       TOLERANCE: 3.0e-06
   - SCATRA:
       DIS: "scatra"
       NODE: 634
       QUANTITY: "phi1"
-      VALUE: 4.55219882458209686e+04
+      VALUE: 4.55219882511389151e+04
       TOLERANCE: 4.6e-04
   - SCATRA:
       DIS: "scatra"
       NODE: 634
       QUANTITY: "phi2"
-      VALUE: 3.50901268514186837e+00
+      VALUE: 3.50901267817723728e+00
       TOLERANCE: 3.5e-08
   - STRUCTURE:
       DIS: "structure"
       NODE: 634
       QUANTITY: "dispx"
-      VALUE: -5.85806660629739876e-08
+      VALUE: -5.85809097543139028e-08
       TOLERANCE: 5.9e-16
   - STRUCTURE:
       DIS: "structure"
       NODE: 634
       QUANTITY: "dispy"
-      VALUE: -1.83181460945558324e-10
+      VALUE: -1.83182207609143295e-10
       TOLERANCE: 1.0e-16
   - STRUCTURE:
       DIS: "structure"
       NODE: 634
       QUANTITY: "dispz"
-      VALUE: 2.58915958902941803e-10
+      VALUE: 2.58917036243926196e-10
       TOLERANCE: 1.0e-16
   - SCATRA:
       DIS: "thermo"
       NODE: 634
       QUANTITY: "phi"
-      VALUE: 3.00010941363558629e+02
+      VALUE: 3.00010941359486480e+02
       TOLERANCE: 3.0e-06
   - SCATRA:
       DIS: "scatra"
       NODE: 767
       QUANTITY: "phi1"
-      VALUE: 4.52339844731180710e+04
+      VALUE: 4.52339831535420672e+04
       TOLERANCE: 4.5e-04
   - SCATRA:
       DIS: "scatra"
       NODE: 767
       QUANTITY: "phi2"
-      VALUE: 3.53934661232620096e+00
+      VALUE: 3.53934664209695038e+00
       TOLERANCE: 3.5e-08
   - STRUCTURE:
       DIS: "structure"
       NODE: 767
       QUANTITY: "dispx"
-      VALUE: -7.83726482374832164e-09
+      VALUE: -7.83729785525703136e-09
       TOLERANCE: 1.0e-16
   - STRUCTURE:
       DIS: "structure"
@@ -416,25 +431,25 @@ RESULT DESCRIPTION:
       DIS: "structure"
       NODE: 767
       QUANTITY: "dispz"
-      VALUE: -2.02428470436371461e-09
+      VALUE: -2.02429360299709100e-09
       TOLERANCE: 1.0e-16
   - SCATRA:
       DIS: "thermo"
       NODE: 767
       QUANTITY: "phi"
-      VALUE: 3.00043730244926849e+02
+      VALUE: 3.00043730223013370e+02
       TOLERANCE: 3.0e-06
   - SCATRA:
       DIS: "scatra"
       SPECIAL: true
       QUANTITY: "soc1"
-      VALUE: 5.58744241914892106e-04
+      VALUE: 5.58746565842654138e-04
       TOLERANCE: 5.6e-12
   - SCATRA:
       DIS: "scatra"
       SPECIAL: true
       QUANTITY: "cellvoltage"
-      VALUE: 3.54036626863872694e+00
+      VALUE: 3.54036626935637644e+00
       TOLERANCE: 3.5e-08
   - SSTI:
       SPECIAL: true

@@ -54,11 +54,9 @@ MATERIALS:
           OCP_FUNCT_NUM: 3
   - MAT: 2
     MAT_MultiplicativeSplitDefgradElastHyper:
-      NUMMATEL: 1
-      MATIDSEL: [3]
+      MATID_ELAST: 5
       NUMFACINEL: 1
       INELDEFGRADFACIDS: [4]
-      DENS: 1
   - MAT: 3
     ELAST_CoupNeoHooke:
       YOUNG: 10000
@@ -66,6 +64,11 @@ MATERIALS:
   - MAT: 4
     MAT_InelasticDefgradTimeFunctIso:
       FUNCT_NUM: 2
+  - MAT: 5
+    MAT_ElastHyper:
+      NUMMAT: 1
+      MATIDS: [3]
+      DENS: 1
 CLONING MATERIAL MAP:
   - SRC_FIELD: "structure"
     SRC_MAT: 2

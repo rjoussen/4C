@@ -67,6 +67,7 @@ namespace
     FOUR_C_EXPECT_NEAR(CeM, CeM_target, 1.0e-10);
   }
 
+
   TEST_F(MultiplicativeSplitDefgradElastHyperServiceTest, TestEvaluateiCinCiCin)
   {
     Core::LinAlg::Matrix<3, 3> iCinCiCinM_target(Core::LinAlg::Initialization::uninitialized);
@@ -82,7 +83,6 @@ namespace
 
     FOUR_C_EXPECT_NEAR(iCinCiCinM, iCinCiCinM_target, 1.0e-10);
   }
-
 
   TEST_F(MultiplicativeSplitDefgradElastHyperServiceTest, TestElastHyperEvaluateElasticPart)
   {
@@ -157,71 +157,5 @@ namespace
 
     FOUR_C_EXPECT_NEAR(S_stress, S_stress_target, 1.0e-9);
     FOUR_C_EXPECT_NEAR(cmat, cmat_target, 1.0e-9);
-  }
-
-  TEST_F(MultiplicativeSplitDefgradElastHyperServiceTest,
-      TestEvaluateThermalQuantitiesStressAndStiffness)
-  {
-    //**************************************************
-    double delta_temperature = 100.0000000000000000;
-    //**************************************************
-    Core::LinAlg::Matrix<3, 3> iFinM{Core::LinAlg::Initialization::zero};
-    iFinM(0, 0) = 1.0026809779767947;
-    iFinM(0, 1) = 0.2005361955953590;
-    iFinM(0, 2) = 0.0000000000000000;
-    iFinM(1, 0) = 0.3008042933930384;
-    iFinM(1, 1) = 1.3034852713698331;
-    iFinM(1, 2) = 0.0000000000000000;
-    iFinM(2, 0) = 0.0000000000000000;
-    iFinM(2, 1) = 0.0000000000000000;
-    iFinM(2, 2) = 0.8021447823814358;
-    //**************************************************
-    Core::LinAlg::SymmetricTensor<double, 3, 3> thermal_contribution_to_2pk_stress_ref_{};
-    thermal_contribution_to_2pk_stress_ref_(0, 0) = 60.3191058810404357;
-    thermal_contribution_to_2pk_stress_ref_(0, 1) = 32.4795185513294626;
-    thermal_contribution_to_2pk_stress_ref_(0, 2) = 0.0000000000000000;
-    thermal_contribution_to_2pk_stress_ref_(1, 0) = 32.4795185513294626;
-    thermal_contribution_to_2pk_stress_ref_(1, 1) = 103.2384696810115088;
-    thermal_contribution_to_2pk_stress_ref_(1, 2) = 0.0000000000000000;
-    thermal_contribution_to_2pk_stress_ref_(2, 0) = 0.0000000000000000;
-    thermal_contribution_to_2pk_stress_ref_(2, 1) = 0.0000000000000000;
-    thermal_contribution_to_2pk_stress_ref_(2, 2) = 37.1194497729479664;
-    //**************************************************
-    Core::LinAlg::SymmetricTensor<double, 3, 3>
-        p_thermal_contribution_to_2pk_stress_p_temperature_ref_{};
-    p_thermal_contribution_to_2pk_stress_p_temperature_ref_(0, 0) = 0.0000941798851085;
-    p_thermal_contribution_to_2pk_stress_p_temperature_ref_(0, 1) = 0.0000507122458277;
-    p_thermal_contribution_to_2pk_stress_p_temperature_ref_(0, 2) = 0.0000000000000000;
-    p_thermal_contribution_to_2pk_stress_p_temperature_ref_(1, 0) = 0.0000507122458277;
-    p_thermal_contribution_to_2pk_stress_p_temperature_ref_(1, 1) = 0.0001611924956665;
-    p_thermal_contribution_to_2pk_stress_p_temperature_ref_(1, 2) = 0.0000000000000000;
-    p_thermal_contribution_to_2pk_stress_p_temperature_ref_(2, 0) = 0.0000000000000000;
-    p_thermal_contribution_to_2pk_stress_p_temperature_ref_(2, 1) = 0.0000000000000000;
-    p_thermal_contribution_to_2pk_stress_p_temperature_ref_(2, 2) = 0.0000579568523745;
-
-    // set thermal info
-    const double thermal_expansion_fac = 0.1;
-
-    // Create summand vector
-    std::vector<std::shared_ptr<Mat::Elastic::Summand>> potsum;
-    Core::IO::InputParameterContainer elast_pot_coup_neo_hooke_data;
-    elast_pot_coup_neo_hooke_data.add("YOUNG", 1.5e2);
-    elast_pot_coup_neo_hooke_data.add("NUE", 0.3);
-    auto coup_neo_hooke_params = Mat::make_parameter(
-        200, Core::Materials::MaterialType::mes_coupneohooke, elast_pot_coup_neo_hooke_data);
-    potsum.emplace_back(std::make_shared<Mat::Elastic::CoupNeoHooke>(
-        dynamic_cast<Mat::Elastic::PAR::CoupNeoHooke*>(coup_neo_hooke_params.get())));
-
-
-    auto thermoelastic_stress_contribution =
-        Mat::ThermalExpansion::compute_thermoelastic_stress_contribution(
-            delta_temperature, thermal_expansion_fac, potsum, 0, 0);
-
-    const auto pk2_stress_contribution = Mat::ThermalExpansion::compute_pk2_stress_contribution(
-        thermoelastic_stress_contribution, iFinM);
-    FOUR_C_EXPECT_NEAR(
-        pk2_stress_contribution.value, thermal_contribution_to_2pk_stress_ref_, 1.0e-10);
-    FOUR_C_EXPECT_NEAR(pk2_stress_contribution.temperature_derivative,
-        p_thermal_contribution_to_2pk_stress_p_temperature_ref_, 1.0e-10);
   }
 }  // namespace

@@ -256,8 +256,7 @@ namespace
       problem.set_parameter_list(parameter_list_pointer);
 
       Core::IO::InputParameterContainer multiplicative_split_data;
-      multiplicative_split_data.add("NUMMATEL", static_cast<int>(elastic_matids.size()));
-      multiplicative_split_data.add("MATIDSEL", elastic_matids);
+      multiplicative_split_data.add("MATID_ELAST", matid_elast_hyper);
       const std::vector<int> inelastic_matids = std::invoke(
           [&]() -> std::vector<int>
           {
@@ -274,7 +273,6 @@ namespace
           });
       multiplicative_split_data.add("NUMFACINEL", static_cast<int>(inelastic_matids.size()));
       multiplicative_split_data.add("INELDEFGRADFACIDS", inelastic_matids);
-      multiplicative_split_data.add("DENS", 1.0);
       multiplicative_split_data.add("REF_TEMPERATURE", 293.0);
       multiplicative_split_data.add("THERMAL_EXPANSION_COEFFICIENT", 0.0);
       multiplicative_split_params_ =
@@ -625,12 +623,10 @@ namespace
 
       // the viscoplastic factor finds its parent material in the material bundle
       Core::IO::InputParameterContainer multiplicative_split_data;
-      multiplicative_split_data.add("NUMMATEL", static_cast<int>(elastic_matids.size()));
-      multiplicative_split_data.add("MATIDSEL", elastic_matids);
+      multiplicative_split_data.add("MATID_ELAST", vp_matid_elast_hyper);
       multiplicative_split_data.add("NUMFACINEL", 1);
       multiplicative_split_data.add(
           "INELDEFGRADFACIDS", std::vector<int>{vp_matid_viscoplastic_factor});
-      multiplicative_split_data.add("DENS", 1.0);
       multiplicative_split_data.add("REF_TEMPERATURE", ref_temperature_);
       multiplicative_split_data.add(
           "THERMAL_EXPANSION_COEFFICIENT", thermal_expansion_coefficient_);

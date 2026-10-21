@@ -30,11 +30,9 @@ IO/MONITOR STRUCTURE DBC:
 MATERIALS:
   - MAT: 1
     MAT_MultiplicativeSplitDefgradElastHyper:
-      NUMMATEL: 1
-      MATIDSEL: [2]
+      MATID_ELAST: 301
       NUMFACINEL: 1
       INELDEFGRADFACIDS: [3]
-      DENS: 7830
   - MAT: 2
     ELAST_CoupNeoHooke:
       YOUNG: 200000
@@ -81,6 +79,11 @@ MATERIALS:
       STRATEGY: Standard
   - MAT: 300
     MAT_InelasticDefgradNoGrowth: {}
+  - MAT: 301
+    MAT_ElastHyper:
+      NUMMAT: 1
+      MATIDS: [2]
+      DENS: 7830
 SOLVER 1:
   SOLVER: MUMPS
   NAME: direct_solver

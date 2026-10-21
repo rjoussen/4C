@@ -57,11 +57,9 @@ SOLVER 1:
 MATERIALS:
   - MAT: 1
     MAT_MultiplicativeSplitDefgradElastHyper:
-      NUMMATEL: 1
-      MATIDSEL: [2]
+      MATID_ELAST: 101
       NUMFACINEL: 1
       INELDEFGRADFACIDS: [3]
-      DENS: 7830e-12 # [t/mm^3 = N*s^2/mm^4]
       REF_TEMPERATURE: 293.0 # [K]
       THERMAL_EXPANSION_COEFFICIENT: 11e-6 # [1/K]
   - MAT: 2
@@ -112,6 +110,11 @@ MATERIALS:
       CONDUCT:
         constant: [37] # [mW/(mm*K) = N/s/K]
 
+  - MAT: 101
+    MAT_ElastHyper:
+      NUMMAT: 1
+      MATIDS: [2]
+      DENS: 7830e-12 # [t/mm^3 = N*s^2/mm^4]
 CLONING MATERIAL MAP:
   - SRC_FIELD: structure
     SRC_MAT: 1
@@ -137,25 +140,25 @@ RESULT DESCRIPTION:
       DIS: "structure"
       NODE: 4
       QUANTITY: "dispy"
-      VALUE: -0.00394895027488
+      VALUE: -3.94895027487800112e-03
       TOLERANCE: 1e-14
   - STRUCTURE:
       DIS: "structure"
       NODE: 5
       QUANTITY: "dispx"
-      VALUE: -0.00394895027488
+      VALUE: -3.94895027487783719e-03
       TOLERANCE: 1e-14
   - STRUCTURE:
       DIS: "structure"
       NODE: 8
       QUANTITY: "dispx"
-      VALUE: -0.00394895027488
+      VALUE: -3.94895027487796382e-03
       TOLERANCE: 1e-14
   - STRUCTURE:
       DIS: "structure"
       NODE: 8
       QUANTITY: "dispy"
-      VALUE: -0.00394895027488
+      VALUE: -3.94895027487787882e-03
       TOLERANCE: 1e-14
   - STRUCTURE:
       DIS: "structure"
@@ -167,68 +170,68 @@ RESULT DESCRIPTION:
       DIS: "structure"
       NODE: 6
       QUANTITY: "dispx"
-      VALUE: -0.00394895027488
+      VALUE: -3.94895027487723004e-03
       TOLERANCE: 1e-14
   - STRUCTURE:
       DIS: "structure"
       NODE: 4
       QUANTITY: "stress_zz"
-      VALUE: 977.652620618
+      VALUE: 9.77652620618699189e+02
       TOLERANCE: 1e-8
   - STRUCTURE:
       DIS: "structure"
       NODE: 8
       QUANTITY: "stress_zz"
-      VALUE: 977.652620618
+      VALUE: 9.77652620618923720e+02
       TOLERANCE: 1e-8
   - THERMAL:
       DIS: thermo
       NODE: 1
       QUANTITY: temp
-      VALUE: 294.095019277192
-      TOLERANCE: 1e-11
+      VALUE: 2.94095019277203562e+02
+      TOLERANCE: 1e-10
   - THERMAL:
       DIS: thermo
       NODE: 2
       QUANTITY: temp
-      VALUE: 294.095019277192
-      TOLERANCE: 1e-11
+      VALUE: 2.94095019277182132e+02
+      TOLERANCE: 1e-10
   - THERMAL:
       DIS: thermo
       NODE: 3
       QUANTITY: temp
-      VALUE: 294.095019277192
-      TOLERANCE: 1e-11
+      VALUE: 2.94095019277197252e+02
+      TOLERANCE: 1e-10
   - THERMAL:
       DIS: thermo
       NODE: 4
       QUANTITY: temp
-      VALUE: 294.095019277192
-      TOLERANCE: 1e-11
+      VALUE: 2.94095019277186680e+02
+      TOLERANCE: 1e-10
   - THERMAL:
       DIS: thermo
       NODE: 5
       QUANTITY: temp
-      VALUE: 294.095019277192
-      TOLERANCE: 1e-11
+      VALUE: 2.94095019277186736e+02
+      TOLERANCE: 1e-10
   - THERMAL:
       DIS: thermo
       NODE: 6
       QUANTITY: temp
-      VALUE: 294.095019277192
-      TOLERANCE: 1e-11
+      VALUE: 2.94095019277201231e+02
+      TOLERANCE: 1e-10
   - THERMAL:
       DIS: thermo
       NODE: 7
       QUANTITY: temp
-      VALUE: 294.095019277192
-      TOLERANCE: 1e-11
+      VALUE: 2.94095019277184292e+02
+      TOLERANCE: 1e-10
   - THERMAL:
       DIS: thermo
       NODE: 8
       QUANTITY: temp
-      VALUE: 294.095019277192
-      TOLERANCE: 1e-11
+      VALUE: 2.94095019277192478e+02
+      TOLERANCE: 1e-10
 DESIGN POINT DIRICH CONDITIONS:
   - E: 1
     NUMDOF: 3
