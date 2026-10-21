@@ -296,18 +296,8 @@ namespace Core::LinAlg
   Core::LinAlg::Matrix<6, 6, T> make_6x6_voigt_matrix_from_tensor(
       const Core::LinAlg::SymmetricTensor<T, 3, 3, 3, 3>& tensor)
   {
-    constexpr std::array<std::array<std::size_t, 2>, 6> vi = {
-        {{0, 0}, {1, 1}, {2, 2}, {0, 1}, {1, 2}, {0, 2}}};
-
-    Core::LinAlg::Matrix<6, 6, T> result;
-    for (std::size_t r = 0; r < 6; ++r)
-    {
-      for (std::size_t c = 0; c < 6; ++c)
-      {
-        result(r, c) = tensor(vi[r][0], vi[r][1], vi[c][0], vi[c][1]);
-      }
-    }
-    return result;
+    // the symmetric tensor already stores its components in stress-like Voigt order
+    return Core::LinAlg::Matrix<6, 6, T>(tensor.data());
   }
 
   /*!
