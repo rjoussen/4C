@@ -46,15 +46,14 @@ MATERIALS:
       DIFFUSIVITY: 1
   - MAT: 2
     MAT_MultiplicativeSplitDefgradElastHyper:
-      NUMMATEL: 1
-      MATIDSEL: [3]
+      MATID_ELAST: 3
       NUMFACINEL: 2
       INELDEFGRADFACIDS: [4, 5]
-      DENS: 0.001
   - MAT: 3
-    ELAST_CoupSVK:
+    MAT_Struct_StVenantKirchhoff:
       YOUNG: 1
       NUE: 0.3
+      DENS: 0.001
   - MAT: 4
     MAT_InelasticDefgradLinScalarIso:
       SCALAR1: 1
