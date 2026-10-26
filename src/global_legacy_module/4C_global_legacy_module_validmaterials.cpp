@@ -2531,19 +2531,15 @@ std::unordered_map<Core::Materials::MaterialType, Core::IO::InputSpec> Global::v
     known_materials[Core::Materials::m_multiplicative_split_defgrad_elasthyper] =
         group("MAT_MultiplicativeSplitDefgradElastHyper",
             {
-                parameter<int>(
-                    "NUMMATEL", {.description = "number of elastic materials/potentials in list"}),
-                parameter<std::vector<int>>(
-                    "MATIDSEL", {.description = "the list of elastic material/potential IDs",
-                                    .default_value = std::vector{-1},
-                                    .size = from_parameter<int>("NUMMATEL")}),
+                parameter<int>("MATID_ELAST",
+                    {.description = "ID of the hyperelastic material (MAT_ElastHyper) describing "
+                                    "the elastic response, it also defines the mass density"}),
                 parameter<int>("NUMFACINEL",
                     {.description = "number of factors of inelastic deformation gradient"}),
                 parameter<std::vector<int>>("INELDEFGRADFACIDS",
                     {.description = "the list of inelastic deformation gradient factor IDs",
                         .default_value = std::vector{0},
                         .size = from_parameter<int>("NUMFACINEL")}),
-                parameter<double>("DENS", {.description = "material mass density"}),
                 parameter<double>("REF_TEMPERATURE",
                     {.description = "reference temperature for thermoelastic expansion.",
                         .default_value = 0.0,

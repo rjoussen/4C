@@ -37,11 +37,9 @@ FUNCT1:
 MATERIALS:
   - MAT: 1
     MAT_MultiplicativeSplitDefgradElastHyper:
-      NUMMATEL: 1
-      MATIDSEL: [2]
+      MATID_ELAST: 101
       NUMFACINEL: 1
       INELDEFGRADFACIDS: [3]
-      DENS: 7830
   - MAT: 2
     ELAST_CoupSVK:
       YOUNG: 2.0e5
@@ -102,6 +100,11 @@ MATERIALS:
   - MAT: 100
     ELAST_StructuralTensor:
       STRATEGY: "Standard"
+  - MAT: 101
+    MAT_ElastHyper:
+      NUMMAT: 1
+      MATIDS: [2]
+      DENS: 7830
 RESULT DESCRIPTION:
   - STRUCTURE:
       DIS: "structure"

@@ -135,7 +135,7 @@ namespace
             Core::Materials::MaterialType::mfi_transv_isotrop_elast_viscoplast,
             viscoplastic_factor_data));
 
-    MultSplitTestUtils::set_up_multiplicative_split(matid_multiplicative_split, elastic_summands,
+    MultSplitTestUtils::set_up_multiplicative_split(matid_multiplicative_split,
         {matid_viscoplastic_factor}, ref_temperature,
         temperature_coupling == TemperatureCoupling::with_temperature ? 1.0e-5 : 0.0);
 

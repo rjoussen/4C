@@ -76,11 +76,9 @@ MATERIALS:
           X_MAX: 0.9825
   - MAT: 2
     MAT_MultiplicativeSplitDefgradElastHyper:
-      NUMMATEL: 1
-      MATIDSEL: [3]
+      MATID_ELAST: 22
       NUMFACINEL: 1
       INELDEFGRADFACIDS: [4]
-      DENS: 4700
   - MAT: 3
     ELAST_CoupNeoHooke:
       YOUNG: 8e+10
@@ -111,11 +109,9 @@ MATERIALS:
       COND: 34.0
   - MAT: 8
     MAT_MultiplicativeSplitDefgradElastHyper:
-      NUMMATEL: 1
-      MATIDSEL: [9]
+      MATID_ELAST: 23
       NUMFACINEL: 1
       INELDEFGRADFACIDS: [10]
-      DENS: 1880
   - MAT: 9
     ELAST_CoupNeoHooke:
       YOUNG: 2.4e+10
@@ -133,11 +129,9 @@ MATERIALS:
           OCP_FUNCT_NUM: 7
   - MAT: 12
     MAT_MultiplicativeSplitDefgradElastHyper:
-      NUMMATEL: 1
-      MATIDSEL: [13]
+      MATID_ELAST: 24
       NUMFACINEL: 1
       INELDEFGRADFACIDS: [14]
-      DENS: 534
   - MAT: 13
     ELAST_CoupNeoHooke:
       YOUNG: 1.11e+10
@@ -159,11 +153,9 @@ MATERIALS:
           OCP_FUNCT_NUM: 7
   - MAT: 16
     MAT_MultiplicativeSplitDefgradElastHyper:
-      NUMMATEL: 1
-      MATIDSEL: [17]
+      MATID_ELAST: 25
       NUMFACINEL: 1
       INELDEFGRADFACIDS: [10]
-      DENS: 8920
   - MAT: 17
     ELAST_CoupNeoHooke:
       YOUNG: 1.15e+11
@@ -179,15 +171,38 @@ MATERIALS:
           OCP_FUNCT_NUM: 7
   - MAT: 20
     MAT_MultiplicativeSplitDefgradElastHyper:
-      NUMMATEL: 1
-      MATIDSEL: [21]
+      MATID_ELAST: 26
       NUMFACINEL: 1
       INELDEFGRADFACIDS: [10]
-      DENS: 2700
   - MAT: 21
     ELAST_CoupNeoHooke:
       YOUNG: 6.9e+10
       NUE: 0.34
+  - MAT: 22
+    MAT_ElastHyper:
+      NUMMAT: 1
+      MATIDS: [3]
+      DENS: 4700
+  - MAT: 23
+    MAT_ElastHyper:
+      NUMMAT: 1
+      MATIDS: [9]
+      DENS: 1880
+  - MAT: 24
+    MAT_ElastHyper:
+      NUMMAT: 1
+      MATIDS: [13]
+      DENS: 534
+  - MAT: 25
+    MAT_ElastHyper:
+      NUMMAT: 1
+      MATIDS: [17]
+      DENS: 8920
+  - MAT: 26
+    MAT_ElastHyper:
+      NUMMAT: 1
+      MATIDS: [21]
+      DENS: 2700
 CLONING MATERIAL MAP:
   - SRC_FIELD: "structure"
     SRC_MAT: 2

@@ -57,11 +57,9 @@ SOLVER 1:
 MATERIALS:
   - MAT: 1
     MAT_MultiplicativeSplitDefgradElastHyper:
-      NUMMATEL: 1
-      MATIDSEL: [2]
+      MATID_ELAST: 101
       NUMFACINEL: 1
       INELDEFGRADFACIDS: [3]
-      DENS: 7830e-12 # [t/mm^3 = N*s^2/mm^4]
       REF_TEMPERATURE: 293.0 # [K]
       THERMAL_EXPANSION_COEFFICIENT: 11e-6 # [1/K]
   - MAT: 2
@@ -112,6 +110,11 @@ MATERIALS:
       CONDUCT:
         constant: [37] # [mW/(mm*K) = N/s/K]
 
+  - MAT: 101
+    MAT_ElastHyper:
+      NUMMAT: 1
+      MATIDS: [2]
+      DENS: 7830e-12 # [t/mm^3 = N*s^2/mm^4]
 CLONING MATERIAL MAP:
   - SRC_FIELD: structure
     SRC_MAT: 1

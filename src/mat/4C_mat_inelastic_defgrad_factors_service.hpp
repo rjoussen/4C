@@ -12,6 +12,7 @@
 
 #include "4C_comm_utils.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
+#include "4C_linalg_symmetric_tensor.hpp"
 #include "4C_linalg_utils_scalar_interpolation.hpp"
 #include "4C_mat_multiplicative_split_defgrad_elasthyper_service.hpp"
 #include "4C_utils_exceptions.hpp"
@@ -483,22 +484,22 @@ namespace Mat
       // ----- current state quantities (for the evaluated Gauss points) ----- //
 
       //! elastic right Cauchy-Green deformation tensor
-      Core::LinAlg::Matrix<3, 3> curr_CeM{Core::LinAlg::Initialization::zero};
+      Core::LinAlg::SymmetricTensor<double, 3, 3> curr_Ce{};
 
-      //! isotropic stress factors
-      Core::LinAlg::Matrix<3, 1> curr_gamma{Core::LinAlg::Initialization::zero};
-
-      //! isotropic constitutive tensor factors
-      Core::LinAlg::Matrix<8, 1> curr_delta{Core::LinAlg::Initialization::zero};
-
-      //! thermal contribution due to thermal expansion to the thermo-elastic 2PK stress
+      //! thermo-elastic stress \f$ \mathbf{S}_T = \mathbf{S}_\text{e}(\mathbf{C}_T) \f$, i.e., the
+      //! hyperelastic stress at the thermal right Cauchy-Green tensor
+      //! \f$ \mathbf{C}_T = (1 + 2 \alpha_T \Delta T) \mathbf{I} \f$, and its derivative
+      //! \f$ \frac{\partial \mathbf{S}_T}{\partial T} \f$
       TensorAndTemperatureDerivative curr_ST{};
 
-      //! elastic 2nd PK stress tensors (specifically only transversely-isotropic components)
-      Core::LinAlg::Matrix<3, 3> curr_SeM{Core::LinAlg::Initialization::zero};
+      //! hyperelastic 2nd Piola-Kirchhoff stress \f$ \mathbf{S}_\text{e} \f$ at the elastic right
+      //! Cauchy-Green tensor \f$ \mathbf{C}_\text{e} \f$
+      Core::LinAlg::SymmetricTensor<double, 3, 3> curr_Se{};
 
-      //! elastic stiffness tensor (specifically only transversely-isotropic components)
-      Core::LinAlg::Matrix<6, 6> curr_dSedCe{Core::LinAlg::Initialization::zero};
+      //! hyperelastic stiffness tensor
+      //! \f$ \mathbb{C}_\text{e} = 2 \frac{\partial \mathbf{S}_\text{e}}{\partial
+      //! \mathbf{C}_\text{e}} \f$
+      Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3> curr_cmat_e{};
 
       //! deviatoric, symmetric part of the thermo-elastic Mandel stress tensor
       Core::LinAlg::Matrix<3, 3> curr_Mtheta_dev_sym_M{Core::LinAlg::Initialization::zero};
@@ -548,13 +549,6 @@ namespace Mat
     struct StateQuantityDerivatives
     {
       // ----- current state variable derivatives (for the evaluated Gauss points)----- //
-
-      //! derivative of the elastic right Cauchy_Green deformation tensor w.r.t. the inverse
-      //! inelastic deformation gradient (Voigt stress form)
-      Core::LinAlg::Matrix<6, 9> curr_dCediFin{Core::LinAlg::Initialization::zero};
-      //! derivative of the elastic right Cauchy_Green deformation tensor w.r.t. the right
-      //! Cauchy-Green deformation tensor (Voigt stress-stress form)
-      Core::LinAlg::Matrix<6, 6> curr_dCedC{Core::LinAlg::Initialization::zero};
 
       //! derivatives of the equivalent tensile stress w.r.t. the inverse inelastic deformation
       //! gradient (Voigt notation)

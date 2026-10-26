@@ -20,6 +20,10 @@
 #include "4C_linalg_utils_densematrix_determinant.hpp"
 #include "4C_mat_elasthyper_service.hpp"
 #include "4C_mat_service.hpp"
+#include "4C_mat_so3_material.hpp"
+#include "4C_utils_exceptions.hpp"
+
+#include <Teuchos_ParameterList.hpp>
 
 #include <vector>
 
@@ -56,15 +60,6 @@ namespace Mat
   };
 
 
-  /// Free-energy related stress factors, as presented in Holzapfel - Nonlinear Solid Mechanics.
-  struct StressFactors
-  {
-    /// 2nd Piola-Kirchhoff stress factors, cf. Holzapfel p. 216.
-    Core::LinAlg::Matrix<3, 1> gamma{Core::LinAlg::Initialization::zero};
-    /// Constitutive tensor factors, cf. Holzapfel p. 261.
-    Core::LinAlg::Matrix<8, 1> delta{Core::LinAlg::Initialization::zero};
-  };
-
   /// helper to store a second order tensor and its derivative w.r.t. temperature
   struct TensorAndTemperatureDerivative
   {
@@ -74,92 +69,67 @@ namespace Mat
     Core::LinAlg::SymmetricTensor<double, 3, 3> temperature_derivative{};
   };
 
-  /// Thermal stretch quantities used by multiplicative-split thermoelastic stress evaluation.
-  namespace ThermalExpansion
+  /*!
+   * @brief Evaluate the thermo-elastic stress of a hyperelastic material due to isotropic thermal
+   * expansion and its derivative w.r.t. temperature
+   *
+   * The thermal expansion is described by the thermal right Cauchy-Green tensor
+   * \f[
+   *   \mathbf{C}_T = \left( 1 + 2 \alpha_T \Delta T \right) \mathbf{I}
+   *   \quad \Leftrightarrow \quad
+   *   \mathbf{E}_T = \alpha_T \Delta T \, \mathbf{I}
+   * \f]
+   * at which the hyperelastic material is evaluated:
+   * \f[
+   *   \mathbf{S}_T = \mathbf{S}_\text{e}(\mathbf{C}_T), \qquad
+   *   \frac{\partial \mathbf{S}_T}{\partial T}
+   *   = \frac{1}{2} \mathbb{C}_\text{e}(\mathbf{C}_T) : \frac{\partial \mathbf{C}_T}{\partial T}
+   *   = \alpha_T \, \mathbb{C}_\text{e}(\mathbf{C}_T) : \mathbf{I}
+   * \f]
+   * The material only depends on \f$ \mathbf{E}_T \f$; the thermal deformation gradient
+   * \f$ \mathbf{F}_T = \sqrt{1 + 2 \alpha_T \Delta T} \, \mathbf{I} \f$ is only passed since the
+   * So3Material interface requires it.
+   *
+   * @param[in] material                       Hyperelastic material
+   * @param[in] thermal_expansion_coefficient  \f$ \alpha_T \f$ (no thermal stress if zero)
+   * @param[in] delta_temperature              \f$ \Delta T \f$, temperature difference to the
+   *                                           reference temperature
+   * @param[in] params                         Parameter list as handed in from the element
+   * @param[in] context                        Evaluation context
+   * @param[in] gp                             Gauss point
+   * @param[in] eleGID                         Element ID
+   * @return \f$ \mathbf{S}_T \f$ and \f$ \partial \mathbf{S}_T / \partial T \f$
+   */
+  inline TensorAndTemperatureDerivative evaluate_thermal_expansion_stress(
+      Mat::So3Material& material, const double thermal_expansion_coefficient,
+      const double delta_temperature, const Teuchos::ParameterList& params,
+      const EvaluationContext<3>& context, const int gp, const int eleGID)
   {
+    TensorAndTemperatureDerivative thermal_stress{};
+    if (thermal_expansion_coefficient == 0.0) return thermal_stress;
 
-    /*!
-     * @brief compute contribution to the thermo-elastic stress due to thermal expansion,
-     * \f$\boldsymbol{S}_T = S_\mathrm{he}(\boldsymbol{C}_T)\f$, and its partial derivative w.r.t.
-     * temperature:
-     * \f$\frac{\partial \mathbf{S}_T}{\partial T} =
-     * \frac{1}{2}\left.\mathbb{C}_\text{he}\right|_{\boldsymbol{C}_T} : \frac{\partial
-     * \boldsymbol{C}_T}{\partial T}\f$
-     *
-     * @param[in] delta_temperature current absolute temperature minus reference temperature
-     * @param[in] expansion_coefficient isotropic thermal expansion coefficient
-     * @param[in] gp Gauss point
-     * @param[in] eleGID element global ID
-     * @param[in] potsumel isotropic elastic summands used to evaluate invariant derivatives
-     */
-    inline TensorAndTemperatureDerivative compute_thermoelastic_stress_contribution(
-        const double delta_temperature, const double expansion_coefficient,
-        const std::vector<std::shared_ptr<Mat::Elastic::Summand>>& potsumel, const int gp,
-        const int eleGID)
-    {
-      auto thermoelastic_stress_contribution = TensorAndTemperatureDerivative{};
-      if (expansion_coefficient == 0.0)
-      {
-        // no thermal expansion, default initialized zero values are correct
-        return thermoelastic_stress_contribution;
-      }
+    const auto& id = Core::LinAlg::TensorGenerators::identity<double, 3, 3>;
+    const double thermal_stretch_squared =
+        1.0 + 2.0 * thermal_expansion_coefficient * delta_temperature;
+    FOUR_C_ASSERT(thermal_stretch_squared > 0.0,
+        "Thermal expansion must result in a positive thermal stretch, got lambda_T^2 = {}.",
+        thermal_stretch_squared);
 
-      /// thermal right Cauchy-Green deformation tensor due to thermal expansion,
-      /// \f$\mathbf{C}_T = (1 + 2 \alpha_T \Delta T)\mathbf{I}\f$, and its derivative w.r.t.
-      /// temperature, \f$\frac{\partial \mathbf{C}_T}{\partial T} = 2 \alpha_T \mathbf{I}\f$
-      const TensorAndTemperatureDerivative thermal_cauchy_green{
-          .value = (1 + 2 * expansion_coefficient * delta_temperature) *
-                   Core::LinAlg::TensorGenerators::identity<double, 3, 3>,
-          .temperature_derivative =
-              2 * expansion_coefficient * Core::LinAlg::TensorGenerators::identity<double, 3, 3>};
+    // thermal Green-Lagrange strain E_T and deformation gradient F_T
+    const Core::LinAlg::SymmetricTensor<double, 3, 3> ET =
+        thermal_expansion_coefficient * delta_temperature * id;
+    const Core::LinAlg::Tensor<double, 3, 3> FT =
+        std::sqrt(thermal_stretch_squared) * Core::LinAlg::get_full(id);
 
-      // compute principal invariants of the thermal stretch
-      Core::LinAlg::Matrix<3, 1> prinv_of_thermal_cauchy_green{Core::LinAlg::Initialization::zero};
-      Core::LinAlg::Voigt::Stresses::invariants_principal(
-          prinv_of_thermal_cauchy_green, make_stress_like_voigt_view(thermal_cauchy_green.value));
+    // S_T and cmat_e at C_T
+    Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3> cmat_T{};
+    material.evaluate(&FT, ET, params, context, thermal_stress.value, cmat_T, gp, eleGID);
 
-      // compute derivatives of the thermal stretch principal invariants
-      Core::LinAlg::Matrix<3, 1> dPI{Core::LinAlg::Initialization::zero};
-      Core::LinAlg::Matrix<6, 1> ddPII{Core::LinAlg::Initialization::zero};
-      for (const auto& p : potsumel)  // only for isotropic components
-      {
-        p->add_derivatives_principal(dPI, ddPII, prinv_of_thermal_cauchy_green, gp, eleGID);
-      }
-
-      /// \f$\left.\mathbb{C}_\text{he}\right|_{\boldsymbol{C}_T}\f$
-      Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3> hyperelast_stiffness{};
-      elast_hyper_add_isotropic_stress_cmat(thermoelastic_stress_contribution.value,
-          hyperelast_stiffness, thermal_cauchy_green.value, inv(thermal_cauchy_green.value),
-          prinv_of_thermal_cauchy_green, dPI, ddPII);
-
-      thermoelastic_stress_contribution.temperature_derivative =
-          0.5 * ddot(hyperelast_stiffness, thermal_cauchy_green.temperature_derivative);
-
-      return thermoelastic_stress_contribution;
-    }
-
-    /// contribution to the 2nd Piola-Kirchhoff stress due to thermal expansion,
-    /// \f$\det(\boldsymbol{F}_\text{in}) \boldsymbol{F}_\text{in}^{-1} \boldsymbol{S}_T
-    /// \boldsymbol{F}_\text{in}^{-T}\f$, and its partial derivative w.r.t. temperature,
-    /// \f$\det(\boldsymbol{F}_\text{in}) \boldsymbol{F}_\text{in}^{-1} \cdot \frac{\partial
-    /// \mathbf{S}_T}{\partial T} \cdot \boldsymbol{F}_\text{in}^{-T}\f$
-    [[nodiscard]] inline TensorAndTemperatureDerivative compute_pk2_stress_contribution(
-        const TensorAndTemperatureDerivative& thermoelastic_stress_contribution,
-        const Core::LinAlg::Matrix<3, 3>& iFinM)
-    {
-      const auto iFin = make_tensor_view(iFinM);
-      const double detFin = 1.0 / det(iFin);
-
-      return {
-          .value = detFin * assume_symmetry(dot(dot(iFin, thermoelastic_stress_contribution.value),
-                                transpose(iFin))),
-          .temperature_derivative =
-              detFin *
-              assume_symmetry(
-                  dot(dot(iFin, get_full(thermoelastic_stress_contribution.temperature_derivative)),
-                      transpose(iFin)))};
-    }
-  };  // namespace ThermalExpansion
+    // dS_T/dT = alpha_T cmat_e(C_T) : I
+    thermal_stress.temperature_derivative =
+        thermal_expansion_coefficient * Core::LinAlg::ddot(cmat_T, id);
+    return thermal_stress;
+  }
 
   inline void evaluate_ce(const Core::LinAlg::Matrix<3, 3>& F,
       const Core::LinAlg::Matrix<3, 3>& iFin, Core::LinAlg::Matrix<3, 3>& Ce)
