@@ -88,13 +88,9 @@ namespace
     // only reference the factors of the current test
     const std::vector<int> factor_ids = inelastic_factor_ids(inelastic_factors);
     Core::IO::InputParameterContainer multiplicative_split_data;
-    const std::vector<int> elastic_summand_ids =
-        MultSplitTestUtils::elastic_summand_ids(elastic_summands);
-    multiplicative_split_data.add("NUMMATEL", static_cast<int>(elastic_summand_ids.size()));
-    multiplicative_split_data.add("MATIDSEL", elastic_summand_ids);
+    multiplicative_split_data.add("MATID_ELAST", MultSplitTestUtils::matid_elast_hyper);
     multiplicative_split_data.add("NUMFACINEL", static_cast<int>(factor_ids.size()));
     multiplicative_split_data.add("INELDEFGRADFACIDS", factor_ids);
-    multiplicative_split_data.add("DENS", 1.0);
     multiplicative_split_data.add("REF_TEMPERATURE", 293.0);
     multiplicative_split_data.add("THERMAL_EXPANSION_COEFFICIENT", 0.0);
     Global::Problem::instance()->materials()->insert(matid_multiplicative_split,

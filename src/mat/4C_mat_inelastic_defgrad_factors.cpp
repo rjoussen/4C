@@ -22,12 +22,12 @@
 #include "4C_linalg_symmetric_tensor.hpp"
 #include "4C_linalg_tensor.hpp"
 #include "4C_linalg_tensor_conversion.hpp"
+#include "4C_linalg_tensor_einstein.hpp"
 #include "4C_linalg_tensor_generators.hpp"
 #include "4C_linalg_utils_densematrix_funct.hpp"
 #include "4C_linalg_utils_scalar_interpolation.hpp"
 #include "4C_linalg_utils_tensor_interpolation.hpp"
 #include "4C_mat_elast_couptransverselyisotropic.hpp"
-#include "4C_mat_elasthyper_service.hpp"
 #include "4C_mat_electrode.hpp"
 #include "4C_mat_inelastic_defgrad_factors_service.hpp"
 #include "4C_mat_multiplicative_split_defgrad_elasthyper.hpp"
@@ -404,7 +404,7 @@ namespace
    * @param SOL Solution arising from the linear system of equations in
    evaluate_history_variables_wrt_cauchy_green
    * @return Core::LinAlg::Matrix<1, 6> \f[ \frac{\mathrm{d} \varepsilon_p}{\mathrm{d}
-   \boldsymbol{C}}
+   \mathbf{C}}
    \f] in Voigt Notation
    */
   Core::LinAlg::Matrix<1, 6> extract_derivative_of_plastic_strain(
@@ -732,7 +732,8 @@ Mat::InelasticDefgradFactors::InelasticDefgradFactors(Core::Mat::PAR::Parameter*
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-std::shared_ptr<Mat::InelasticDefgradFactors> Mat::InelasticDefgradFactors::factory(int matnum)
+std::shared_ptr<Mat::InelasticDefgradFactors> Mat::InelasticDefgradFactors::factory(
+    int matnum, Mat::So3Material& elastic_material)
 {
   // for the sake of safety
   if (Global::Problem::instance()->materials() == nullptr)
@@ -844,26 +845,6 @@ std::shared_ptr<Mat::InelasticDefgradFactors> Mat::InelasticDefgradFactors::fact
       Mat::Elastic::CoupTransverselyIsotropic fiber_reader{
           dynamic_cast<Mat::Elastic::PAR::CoupTransverselyIsotropic*>(fiber_reader_params)};
 
-      // retrieve elastic materials
-      std::vector<std::shared_ptr<Mat::Elastic::Summand>> potsumel;
-      std::vector<std::shared_ptr<Mat::Elastic::CoupTransverselyIsotropic>> potsumel_transviso;
-      for (const int matid_elastic : parentmat_input_params.get<std::vector<int>>("MATIDSEL"))
-      {
-        // create elastic component
-        auto elastic_summand = Mat::Elastic::Summand::factory(matid_elastic);
-        FOUR_C_ASSERT_ALWAYS(elastic_summand != nullptr, "Failed to allocate");
-        // add to the list of elastic components
-        if (elastic_summand->material_type() == Core::Materials::mes_couptransverselyisotropic)
-        {
-          potsumel_transviso.push_back(
-              std::dynamic_pointer_cast<Mat::Elastic::CoupTransverselyIsotropic>(elastic_summand));
-        }
-        else
-        {
-          potsumel.push_back(elastic_summand);
-        }
-      }
-
       const double thermal_expansion_coefficient =
           parentmat_input_params.get<double>("THERMAL_EXPANSION_COEFFICIENT");
 
@@ -871,8 +852,8 @@ std::shared_ptr<Mat::InelasticDefgradFactors> Mat::InelasticDefgradFactors::fact
 
       // return shared pointer to the inelastic factor
       return std::make_shared<InelasticDefgradTransvIsotropElastViscoplast>(params,
-          viscoplastic_law, fiber_reader, potsumel, potsumel_transviso,
-          thermal_expansion_coefficient, ref_temperature);
+          viscoplastic_law, fiber_reader, elastic_material, thermal_expansion_coefficient,
+          ref_temperature);
     }
 
     default:
@@ -1772,15 +1753,12 @@ Mat::InelasticDefgradTimeFunctIso::InelasticDefgradTimeFunctIso(Core::Mat::PAR::
  *--------------------------------------------------------------------*/
 Mat::InelasticDefgradTransvIsotropElastViscoplast::InelasticDefgradTransvIsotropElastViscoplast(
     Core::Mat::PAR::Parameter* params, std::shared_ptr<Mat::Viscoplastic::Law> viscoplastic_law,
-    Mat::Elastic::CoupTransverselyIsotropic fiber_reader,
-    std::vector<std::shared_ptr<Mat::Elastic::Summand>> pot_sum_el,
-    std::vector<std::shared_ptr<Mat::Elastic::CoupTransverselyIsotropic>> pot_sum_el_transv_iso,
+    Mat::Elastic::CoupTransverselyIsotropic fiber_reader, Mat::So3Material& elastic_material,
     const double thermal_expansion_coefficient, const double ref_temperature)
     : InelasticDefgradFactors(params),
       thermal_expansion_coefficient_(thermal_expansion_coefficient),
       ref_temperature_(ref_temperature),
-      potsumel_(std::move(pot_sum_el)),
-      potsumel_transviso_(std::move(pot_sum_el_transv_iso)),
+      elastic_material_(elastic_material),
       fiber_reader_(std::move(fiber_reader)),
       state_quantities_(),
       state_quantity_derivatives_(),
@@ -1871,36 +1849,6 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::pre_evaluate(
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void Mat::InelasticDefgradTransvIsotropElastViscoplast::calculate_gamma_delta(
-    const Core::LinAlg::Matrix<3, 3>& CeM, Core::LinAlg::Matrix<3, 1>& gamma,
-    Core::LinAlg::Matrix<8, 1>& delta) const
-{
-  // compute principal values
-  Core::LinAlg::Matrix<3, 1> prinv(Core::LinAlg::Initialization::zero);
-  Core::LinAlg::Matrix<6, 1> CeV_strain(Core::LinAlg::Initialization::zero);
-  Core::LinAlg::Voigt::Strains::matrix_to_vector(CeM, CeV_strain);
-  Core::LinAlg::Voigt::Strains::invariants_principal(prinv, CeV_strain);
-
-  // compute derivatives of principle invariants
-  Core::LinAlg::Matrix<3, 1> dPIe(Core::LinAlg::Initialization::zero);
-  Core::LinAlg::Matrix<6, 1> ddPIIe(Core::LinAlg::Initialization::zero);
-  // clear variables
-  dPIe.clear();
-  ddPIIe.clear();
-
-  // loop over map of associated potential summands
-  // derivatives of strain energy function w.r.t. principal invariants
-  for (const auto& p : potsumel_)  // only isotropic
-  {
-    p->add_derivatives_principal(dPIe, ddPIIe, prinv, gp_, ele_gid_);
-  }
-
-  // compose coefficients
-  Mat::calculate_gamma_delta(gamma, delta, prinv, dPIe, ddPIIe);
-}
-
-/*--------------------------------------------------------------------*
- *--------------------------------------------------------------------*/
 ViscoplastUtils::StateQuantities
 Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_state_quantities(
     const InelasticDefgradTransvIsotropElastViscoplastUtils::LocalIntegrationInput&
@@ -1926,74 +1874,44 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_state_quantities(
   Core::LinAlg::Matrix<3, 3> temp3x3;
 
   // compute right elastic CG tensor
-  temp3x3.multiply_nn(1.0, right_cg, iFinM, 0.0);
-  state_quantities.curr_CeM.multiply_tn(1.0, iFinM, temp3x3, 0.0);
-  Core::LinAlg::SymmetricTensor<double, 3, 3> CeV =
-      Core::LinAlg::assume_symmetry(Core::LinAlg::make_tensor(state_quantities.curr_CeM));
+  state_quantities.curr_Ce = Core::LinAlg::assume_symmetry(Core::LinAlg::dot(
+      Core::LinAlg::dot(Core::LinAlg::transpose(Core::LinAlg::make_tensor_view(iFinM)),
+          Core::LinAlg::make_tensor_view(right_cg)),
+      Core::LinAlg::make_tensor_view(iFinM)));
 
-  // compose isotropic elastic coefficients (Holzapfel, Nonlinear Solid Mechanics, 2000)
-  calculate_gamma_delta(
-      state_quantities.curr_CeM, state_quantities.curr_gamma, state_quantities.curr_delta);
-  state_quantities.curr_SeM.clear();
-  state_quantities.curr_dSedCe.clear();
-  // compute additional 2nd elastic PK stress and elastic stiffness for the transversely
-  // isotropic components (additive split assumed, as for CoupTransverselyIsotropic)
-  if (parameter()->mat_behavior() == ViscoplastUtils::MatBehavior::transv_isotropic)
-  {
-    // initialize empty parameter list
-    Teuchos::ParameterList param_list{};
+  // elastic stress and elasticity tensor at E_e = 1/2 (C_e - I); F_e = F F_in^{-1} is only passed
+  // since the So3Material interface requires it. The elastic material is evaluated without
+  // evaluation context, since the factor also evaluates it outside of an evaluation call of the
+  // element (e.g. in update()); elastic materials that require a non-empty context are not
+  // supported.
+  const Core::LinAlg::Tensor<double, 3, 3> Fe =
+      Core::LinAlg::dot(Core::LinAlg::make_tensor_view(local_integration_input.defgrad),
+          Core::LinAlg::make_tensor_view(iFinM));
+  const Core::LinAlg::SymmetricTensor<double, 3, 3> Ee =
+      0.5 * (state_quantities.curr_Ce - Core::LinAlg::TensorGenerators::identity<double, 3, 3>);
+  elastic_material_.evaluate(
+      &Fe, Ee, params_, {}, state_quantities.curr_Se, state_quantities.curr_cmat_e, gp_, ele_gid_);
 
-    // loop through all transversely isotropic parts, and compute the additional elastic
-    // stress and elastic stiffness
-    Core::LinAlg::SymmetricTensor<double, 3, 3> SeV{};
-
-    Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3> dSedCe{};
-    for (const auto& p : potsumel_transviso_)
-    {
-      FOUR_C_ASSERT_ALWAYS(std::abs(temperature - ref_temperature_) <= 1.0e-16,
-          "Thermoelastic coupling with transversely isotropic elastic summands is not supported "
-          "yet. Use isotropic elastic summands only.");
-      p->add_stress_aniso_principal(CeV, dSedCe, SeV, param_list, gp_, ele_gid_);
-    }
-    state_quantities.curr_dSedCe.clear();
-    state_quantities.curr_dSedCe += Core::LinAlg::make_stress_like_voigt_view(dSedCe);
-    state_quantities.curr_SeM = Core::LinAlg::make_matrix(Core::LinAlg::get_full(SeV));
-  }
-
-  // Ce * Ce tensor
-  Core::LinAlg::Matrix<3, 3> CeCeM(Core::LinAlg::Initialization::zero);
-  CeCeM.multiply_nn(1.0, state_quantities.curr_CeM, state_quantities.curr_CeM, 0.0);
-
-  state_quantities.curr_ST = Mat::ThermalExpansion::compute_thermoelastic_stress_contribution(
-      temperature - ref_temperature_, thermal_expansion_coefficient_, potsumel_, gp_, ele_gid_);
+  // thermal expansion: S_T = S_e(C_T) with C_T = (1 + 2 alpha_T dT) I
+  state_quantities.curr_ST = evaluate_thermal_expansion_stress(elastic_material_,
+      thermal_expansion_coefficient_, temperature - ref_temperature_, params_, {}, gp_, ele_gid_);
 
   /**
   compute symmetric part of thermo-elastic Mandel stress tensor
-  \f[\boldsymbol{M}_{\theta,\text{sym}}  = \boldsymbol{C}_e \cdot \left( \boldsymbol{S}_{e} -
-  \boldsymbol{S}_T \right)\f]
+  \f[\mathbf{M}_{\theta,\text{sym}}  = \text{sym}\left[\mathbf{C}_e \cdot \left(
+  \mathbf{S}_{e} - \mathbf{S}_T \right)\right] = \frac{1}{2} \left[ \mathbf{C}_e \cdot \left(
+  \mathbf{S}_{e} - \mathbf{S}_T \right) + \left( \mathbf{S}_{e} - \mathbf{S}_T \right) \cdot
+  \mathbf{C}_e \right] \f]
    */
-  Core::LinAlg::Matrix<3, 3> Mtheta_sym_M(Core::LinAlg::Initialization::zero);
-  Mtheta_sym_M.update(state_quantities.curr_gamma(0), state_quantities.curr_CeM,
-      state_quantities.curr_gamma(1), CeCeM, 0.0);
-  Mtheta_sym_M.update(state_quantities.curr_gamma(2), const_non_mat_tensors.id3x3, 1.0);
-  const auto& CeS_T =
-      dot(make_tensor_view(state_quantities.curr_CeM), state_quantities.curr_ST.value);
-  Mtheta_sym_M.update(-1.0, make_matrix_view(CeS_T), 1.0);
-  if (parameter()->mat_behavior() == ViscoplastUtils::MatBehavior::transv_isotropic)
-  {
-    Core::LinAlg::Matrix<3, 3> addMeM(Core::LinAlg::Initialization::zero);
-    temp3x3.multiply_nn(1.0, state_quantities.curr_CeM, state_quantities.curr_SeM, 0.0);
-    addMeM.update(1.0 / 2.0, temp3x3, 0.0);
-    temp3x3.multiply_tn(1.0, state_quantities.curr_SeM, state_quantities.curr_CeM, 0.0);
-    addMeM.update(1.0 / 2.0, temp3x3, 1.0);
-    Mtheta_sym_M.update(1.0, addMeM, 1.0);
-  }
+  const Core::LinAlg::Tensor<double, 3, 3> CeStheta = Core::LinAlg::dot(
+      state_quantities.curr_Ce, state_quantities.curr_Se - state_quantities.curr_ST.value);
+  const Core::LinAlg::SymmetricTensor<double, 3, 3> Mtheta_sym =
+      Core::LinAlg::assume_symmetry(0.5 * (CeStheta + Core::LinAlg::transpose(CeStheta)));
 
   // calculate deviatoric part of the symmetric Mandel stress
-  double trMtheta = 0.0;
-  for (int i = 0; i < 3; ++i) trMtheta += Mtheta_sym_M(i, i);
-  state_quantities.curr_Mtheta_dev_sym_M.update(
-      1.0, Mtheta_sym_M, -1.0 / 3.0 * trMtheta, const_non_mat_tensors.id3x3, 0.0);
+  state_quantities.curr_Mtheta_dev_sym_M = Core::LinAlg::make_matrix(Core::LinAlg::get_full(
+      Mtheta_sym - (1.0 / 3.0 * Core::LinAlg::trace(Mtheta_sym)) *
+                       Core::LinAlg::TensorGenerators::identity<double, 3, 3>));
 
   // for transverse isotropy: we use the Hill 1949 yield condition, adapted for transversely
   // isotropic materials --> get yield function parameters A, B, F
@@ -2188,258 +2106,122 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_state_quantity_deriv
 
 
   // auxiliaries
-  Core::LinAlg::Matrix<3, 3> temp3x3(Core::LinAlg::Initialization::zero);
   Core::LinAlg::Matrix<6, 6> temp6x6(Core::LinAlg::Initialization::zero);
-  Core::LinAlg::Matrix<6, 9> temp6x9(Core::LinAlg::Initialization::zero);
   Core::LinAlg::Matrix<9, 6> temp9x6(Core::LinAlg::Initialization::zero);
   Core::LinAlg::Matrix<9, 9> temp9x9(Core::LinAlg::Initialization::zero);
-  Core::LinAlg::FourTensor<3> temp_four_tensor(true);
 
-  // check whether to reevaluate the state or to keep the available state quantity values
-  ViscoplastUtils::StateQuantities relevant_state_quantities =
-      state_quantities.has_value()
-          ? state_quantities.value()
-          : evaluate_state_quantities(local_integration_input, iFinM, plastic_strain, err_status,
-                ViscoplastUtils::StateQuantityEvalType::full_eval);
+  // check whether to reevaluate the state or to keep the available state quantity values (both
+  // branches are lvalues, so the state quantities are not copied)
+  std::optional<ViscoplastUtils::StateQuantities> evaluated_state_quantities;
+  const ViscoplastUtils::StateQuantities& relevant_state_quantities =
+      state_quantities.has_value() ? state_quantities.value()
+                                   : evaluated_state_quantities.emplace(evaluate_state_quantities(
+                                         local_integration_input, iFinM, plastic_strain, err_status,
+                                         ViscoplastUtils::StateQuantityEvalType::full_eval));
+
 
   // get the state quantities
-  const Core::LinAlg::Matrix<3, 3> CeM = relevant_state_quantities.curr_CeM;
-  const Core::LinAlg::Matrix<3, 1> gamma = relevant_state_quantities.curr_gamma;
-  const Core::LinAlg::Matrix<8, 1> delta = relevant_state_quantities.curr_delta;
-  const Core::LinAlg::Matrix<3, 3> SeM = relevant_state_quantities.curr_SeM;
-  const Core::LinAlg::Matrix<6, 6> dSedCe = relevant_state_quantities.curr_dSedCe;
-  const Core::LinAlg::Matrix<3, 3> Mtheta_dev_sym_M =
-      relevant_state_quantities.curr_Mtheta_dev_sym_M;
-  const double equiv_stress = relevant_state_quantities.curr_equiv_stress;
-  const double equiv_plastic_strain_rate = relevant_state_quantities.curr_equiv_plastic_strain_rate;
-  const Core::LinAlg::Matrix<3, 3> NpM = relevant_state_quantities.curr_NpM;
-  const Core::LinAlg::Matrix<3, 3> dpM = relevant_state_quantities.curr_dpM;
-  const Core::LinAlg::Matrix<3, 3> lpM = relevant_state_quantities.curr_lpM;
-  const Core::LinAlg::Matrix<3, 3> EpM = relevant_state_quantities.curr_EpM;
-  const TensorAndTemperatureDerivative ST = relevant_state_quantities.curr_ST;
+  const Core::LinAlg::SymmetricTensor<double, 3, 3>& Ce = relevant_state_quantities.curr_Ce;
+  const double& equiv_stress = relevant_state_quantities.curr_equiv_stress;
+  const double& equiv_plastic_strain_rate =
+      relevant_state_quantities.curr_equiv_plastic_strain_rate;
+  const Core::LinAlg::Matrix<3, 3>& NpM = relevant_state_quantities.curr_NpM;
+  const Core::LinAlg::Matrix<3, 3>& lpM = relevant_state_quantities.curr_lpM;
+  const TensorAndTemperatureDerivative& ST = relevant_state_quantities.curr_ST;
+  const Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& cmat_e =
+      relevant_state_quantities.curr_cmat_e;
 
-
-  // compute the relevant derivatives of the elastic right Cauchy-Green deformation tensor
-  Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3> dCedC_tensor;
-  Core::LinAlg::Tensor<double, 3, 3, 3, 3> dCediFin_tensor;
-  Mat::elast_hyper_get_derivs_of_elastic_right_cg_tensor(Core::LinAlg::make_tensor(iFinM),
-      Core::LinAlg::assume_symmetry(Core::LinAlg::make_tensor(right_cg)), dCedC_tensor,
-      dCediFin_tensor);
-  state_quantity_derivatives.curr_dCedC =
-      Core::LinAlg::make_6x6_voigt_matrix_from_tensor(dCedC_tensor);
-  state_quantity_derivatives.curr_dCediFin =
-      Core::LinAlg::make_6x9_voigt_matrix_from_tensor(dCediFin_tensor);
-  // save these also as four tensors
-  Core::LinAlg::FourTensor<3> dCediFin_FourTensor(true);
-  Core::LinAlg::Voigt::setup_four_tensor_from_6x9_voigt_matrix(
-      dCediFin_FourTensor, state_quantity_derivatives.curr_dCediFin);
-  Core::LinAlg::FourTensor<3> dCedC_FourTensor(true);
-  Core::LinAlg::Voigt::setup_four_tensor_from_6x6_voigt_matrix(
-      dCedC_FourTensor, state_quantity_derivatives.curr_dCedC);
-
-  // inverse inelastic right Cauchy-Green deformation tensor
-  Core::LinAlg::Matrix<3, 3> iCinM(Core::LinAlg::Initialization::zero);
-  iCinM.multiply_nt(1.0, iFinM, iFinM, 0.0);
-  Core::LinAlg::Matrix<6, 1> iCinV(Core::LinAlg::Initialization::zero);
-  Core::LinAlg::Voigt::Stresses::matrix_to_vector(iCinM, iCinV);
-
-  // elastic right Cauchy-Green tensor in stress form
-  Core::LinAlg::Matrix<6, 1> CeV(Core::LinAlg::Initialization::zero);  // stress-form
-  Core::LinAlg::Voigt::Stresses::matrix_to_vector(CeM, CeV);
-
-  // inverse elastic right Cauchy-Green tensor
-  Core::LinAlg::Matrix<3, 3> iCeM(Core::LinAlg::Initialization::zero);
-  iCeM.invert(CeM);
-  Core::LinAlg::Matrix<6, 1> iCeV(Core::LinAlg::Initialization::zero);  // stress-form
-  Core::LinAlg::Voigt::Stresses::matrix_to_vector(iCeM, iCeV);
-
-  // inverse transposed inelastic defgrad
-  Core::LinAlg::Matrix<3, 3> iFinTM(Core::LinAlg::Initialization::zero);
-  iFinTM.multiply_tn(1.0, iFinM, const_non_mat_tensors.id3x3, 0.0);
-
-  // calculate various other helper tensors required for subsequent computation
-  Core::LinAlg::Matrix<3, 3> CiFinM(Core::LinAlg::Initialization::zero);
-  CiFinM.multiply_nn(1.0, right_cg, iFinM, 0.0);
-  Core::LinAlg::Matrix<9, 1> CiFinV(Core::LinAlg::Initialization::zero);
-  Core::LinAlg::Voigt::matrix_3x3_to_9x1(CiFinM, CiFinV);
-
-  Core::LinAlg::Matrix<3, 3> iFinTCM(Core::LinAlg::Initialization::zero);
-  iFinTCM.multiply_tn(1.0, iFinM, right_cg, 0.0);
-
-  Core::LinAlg::Matrix<3, 3> CeiFinTCM(Core::LinAlg::Initialization::zero);
-  temp3x3.multiply_nt(1.0, CeM, iFinM, 0.0);
-  CeiFinTCM.multiply_nn(1.0, temp3x3, right_cg, 0.0);
-
-  Core::LinAlg::Matrix<3, 3> CiFinCeM(Core::LinAlg::Initialization::zero);
-  CiFinCeM.multiply_nn(1.0, CiFinM, CeM, 0.0);
-  Core::LinAlg::Matrix<9, 1> CiFinCeV(Core::LinAlg::Initialization::zero);
-  Core::LinAlg::Voigt::matrix_3x3_to_9x1(CiFinCeM, CiFinCeV);
-
-  Core::LinAlg::Matrix<3, 3> CeCeM(Core::LinAlg::Initialization::zero);
-  CeCeM.multiply_nn(1.0, CeM, CeM, 0.0);
-  Core::LinAlg::Matrix<6, 1> CeCeV(Core::LinAlg::Initialization::zero);  // stress-form
-  Core::LinAlg::Voigt::Stresses::matrix_to_vector(CeCeM, CeCeV);
-
-  Core::LinAlg::Matrix<3, 3> CiFiniCeM(Core::LinAlg::Initialization::zero);
-  CiFiniCeM.multiply_nn(1.0, CiFinM, iCeM, 0.0);
-  Core::LinAlg::Matrix<9, 1> CiFiniCeV(Core::LinAlg::Initialization::zero);
-  Core::LinAlg::Voigt::matrix_3x3_to_9x1(CiFiniCeM, CiFiniCeV);
-
-  Core::LinAlg::Matrix<3, 3> CeiFinTM(Core::LinAlg::Initialization::zero);
-  CeiFinTM.multiply_nn(1.0, CeM, iFinTM, 0.0);
-
-  Core::LinAlg::Matrix<3, 3> iCinCiCinM(Core::LinAlg::Initialization::zero);
-  temp3x3.multiply_nn(1.0, right_cg, iCinM, 0.0);
-  iCinCiCinM.multiply_nn(1.0, iCinM, temp3x3, 0.0);
-  Core::LinAlg::Matrix<6, 1> iCinCiCinV(Core::LinAlg::Initialization::zero);
-  Core::LinAlg::Voigt::Stresses::matrix_to_vector(iCinCiCinM, iCinCiCinV);
-
-  Core::LinAlg::Matrix<3, 3> iCM(Core::LinAlg::Initialization::zero);
-  iCM.invert(right_cg);
-  Core::LinAlg::Matrix<6, 1> iCV(Core::LinAlg::Initialization::zero);
-  Core::LinAlg::Voigt::Stresses::matrix_to_vector(iCM, iCV);
-
-  const auto S_T = make_matrix(get_full(ST.value));
-  // compute the relevant derivatives of the symmetric part of the Mandel stress
+  // helpers
+  const auto& id = Core::LinAlg::TensorGenerators::identity<double, 3, 3>;
+  const auto& iFin = Core::LinAlg::make_tensor_view(iFinM);
+  const Core::LinAlg::SymmetricTensor<double, 3, 3> Se_minus_ST =
+      relevant_state_quantities.curr_Se - ST.value;
 
   /**
-   \f$ \frac{\partial \boldsymbol{M}_{\theta, \text{sym}} }{\partial
-   \boldsymbol{F}_{\text{in}}^{-1}}  =
-   \frac{\partial}{\partial \boldsymbol{F}_{\text{in}}^{-1}}\left(\boldsymbol{C}_e \cdot
-   \boldsymbol{S}_{e}\right)
-   - \frac{\partial}{\partial \boldsymbol{F}_{\text{in}}^{-1}}\left(\boldsymbol{C}_e \cdot
-   \boldsymbol{S}_{T}\right)\f$ (Voigt stress-form)
-  */
-  Core::LinAlg::Matrix<6, 9> dMtheta_sym_diFin(Core::LinAlg::Initialization::zero);
-  dMtheta_sym_diFin.clear();
-  Core::LinAlg::FourTensorOperations::add_right_non_symmetric_holzapfel_product(
-      dMtheta_sym_diFin, iFinTCM, const_non_mat_tensors.id3x3, gamma(0));
-  Core::LinAlg::FourTensorOperations::add_right_non_symmetric_holzapfel_product(
-      dMtheta_sym_diFin, iFinTCM, CeM, gamma(1));
-  Core::LinAlg::FourTensorOperations::add_right_non_symmetric_holzapfel_product(
-      dMtheta_sym_diFin, CeiFinTCM, const_non_mat_tensors.id3x3, gamma(1));
-  dMtheta_sym_diFin.multiply_nt(delta(0), CeV, CiFinV, 1.0);
-  dMtheta_sym_diFin.multiply_nt(delta(1), CeV, CiFinCeV, 1.0);
-  dMtheta_sym_diFin.multiply_nt(delta(1), CeCeV, CiFinV, 1.0);
-  dMtheta_sym_diFin.multiply_nt(delta(2), CeV, CiFiniCeV, 1.0);
-  dMtheta_sym_diFin.multiply_nt(delta(2), const_non_mat_tensors.id6x1, CiFinV, 1.0);
-  dMtheta_sym_diFin.multiply_nt(delta(3), CeCeV, CiFinCeV, 1.0);
-  dMtheta_sym_diFin.multiply_nt(delta(4), CeCeV, CiFiniCeV, 1.0);
-  dMtheta_sym_diFin.multiply_nt(delta(4), const_non_mat_tensors.id6x1, CiFinCeV, 1.0);
-  dMtheta_sym_diFin.multiply_nt(delta(5), const_non_mat_tensors.id6x1, CiFiniCeV, 1.0);
-  // thermal contribution
-  temp_four_tensor.clear();
-  Core::LinAlg::FourTensorOperations::multiply_matrix_four_tensor_by_second_index<3>(
-      temp_four_tensor, S_T, dCediFin_FourTensor, true);
-  Core::LinAlg::Matrix<6, 9> dMT_sym_dFin{Core::LinAlg::Initialization::zero};
-  Core::LinAlg::Voigt::setup_6x9_voigt_matrix_from_four_tensor(dMT_sym_dFin, temp_four_tensor);
-  dMtheta_sym_diFin.update(-1.0, dMT_sym_dFin, 1.0);
+   Derivatives of the thermo-elastic Mandel stress
+   \f[
+     \mathbf{M}_{\theta,\text{sym}} = \text{sym} \left[ \mathbf{C}_\text{e} \cdot
+     \left( \mathbf{S}_\text{e} - \mathbf{S}_T \right) \right]
+   \f]
+
+   First, build the tangent stiffness of the thermo-elastic Mandel stress, symmetrized in its last
+   two indices:
+   \f[
+     \mathbb{K}_{abcd} = \frac{\partial M_{\theta,\text{sym},ab}}{\partial C_{\text{e},cd}}
+     = \text{sym}_{ab} \text{sym}_{cd} \left( \delta_{ac}
+       \left[ \mathbf{S}_\text{e} - \mathbf{S}_T \right]_{db} \right)
+     + \text{sym}_{ab} \text{sym}_{cd} \left( \left[ \mathbf{C}_\text{e} \cdot
+       \frac{1}{2} \mathbb{C}_\text{e} \right]_{abcd} \right)
+   \f]
+
+   Note: \f$ \mathbb{C}_\text{e} \f$ is already symmetric in its last two indices. Enforcing this
+   symmetry for the whole \f$ \mathbb{K} \f$ allows for less computational effort in the
+   following steps.
+   */
+  const Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3> K =
+      0.25 * Core::LinAlg::assume_symmetry(Core::LinAlg::einsum<"ac", "db">(id, Se_minus_ST) +
+                                           Core::LinAlg::einsum<"ad", "cb">(id, Se_minus_ST) +
+                                           Core::LinAlg::einsum<"ac", "bd">(Se_minus_ST, id) +
+                                           Core::LinAlg::einsum<"ad", "bc">(Se_minus_ST, id) +
+                                           Core::LinAlg::einsum<"ai", "ibcd">(Ce, cmat_e) +
+                                           Core::LinAlg::einsum<"bi", "iacd">(Ce, cmat_e));
 
   /**
-   \f$ \frac{\partial \boldsymbol{M}_{\theta, \text{sym}} }{\partial
-   \boldsymbol{C}}  =
-   \frac{\partial}{\partial \boldsymbol{C}}\left(\boldsymbol{C}_e \cdot \boldsymbol{S}_{e}\right)
-   - \frac{\partial}{\partial \boldsymbol{C}}\left(\boldsymbol{C}_e \cdot
-   \boldsymbol{S}_{T}\right)\f$ (Voigt stress-stress form)
-  */
-  Core::LinAlg::Matrix<6, 6> dMtheta_sym_dC(Core::LinAlg::Initialization::zero);
-  Core::LinAlg::FourTensorOperations::add_kronecker_tensor_product(
-      dMtheta_sym_dC, gamma(0), iFinTM, iFinTM, 0.0);
-  Core::LinAlg::FourTensorOperations::add_kronecker_tensor_product(
-      dMtheta_sym_dC, gamma(1), iFinTM, CeiFinTM, 1.0);
-  Core::LinAlg::FourTensorOperations::add_kronecker_tensor_product(
-      dMtheta_sym_dC, gamma(1), CeiFinTM, iFinTM, 1.0);
-  dMtheta_sym_dC.multiply_nt(delta(0) / 2.0, CeV, iCinV, 1.0);
-  dMtheta_sym_dC.multiply_nt(delta(1) / 2.0, CeV, iCinCiCinV, 1.0);
-  dMtheta_sym_dC.multiply_nt(delta(1) / 2.0, CeCeV, iCinV, 1.0);
-  dMtheta_sym_dC.multiply_nt(delta(2) / 2.0, CeV, iCV, 1.0);
-  dMtheta_sym_dC.multiply_nt(delta(2) / 2.0, const_non_mat_tensors.id6x1, iCinV, 1.0);
-  dMtheta_sym_dC.multiply_nt(delta(3) / 2.0, CeCeV, iCinCiCinV, 1.0);
-  dMtheta_sym_dC.multiply_nt(delta(4) / 2.0, CeCeV, iCV, 1.0);
-  dMtheta_sym_dC.multiply_nt(delta(4) / 2.0, const_non_mat_tensors.id6x1, iCinCiCinV, 1.0);
-  dMtheta_sym_dC.multiply_nt(delta(5) / 2.0, const_non_mat_tensors.id6x1, iCV, 1.0);
-  // thermal contribution
-  Core::LinAlg::FourTensorOperations::multiply_matrix_four_tensor_by_second_index<3>(
-      temp_four_tensor, S_T, dCedC_FourTensor, true);
-  Core::LinAlg::Matrix<6, 6> dMT_sym_dC{Core::LinAlg::Initialization::zero};
-  Core::LinAlg::Voigt::setup_6x6_voigt_matrix_from_four_tensor(dMT_sym_dC, temp_four_tensor);
-  dMtheta_sym_dC.update(-1.0, dMT_sym_dC, 1.0);
+   Derivatives w.r.t. \f$ \mathbf{F}_\text{in}^{-1} \f$ and \f$ \mathbf{C} \f$ via the chain rule,
+   using
+   \f[
+     \frac{\partial C_{\text{e},cd}}{\partial F^{-1}_{\text{in},ij}}
+     = \delta_{cj} \left[ \mathbf{C} \cdot \mathbf{F}_\text{in}^{-1} \right]_{id}
+     + \delta_{dj} \left[ \mathbf{C} \cdot \mathbf{F}_\text{in}^{-1} \right]_{ic}
+   \f]
+   and
+   \f[
+     \frac{\partial C_{\text{e},cd}}{\partial C_{ij}}
+     = F^{-1}_{\text{in},ic} F^{-1}_{\text{in},jd}
+   \f]
+   */
+  const Core::LinAlg::Tensor<double, 3, 3> CiFin =
+      Core::LinAlg::dot(Core::LinAlg::make_tensor_view(right_cg), iFin);
 
   /**
-   \f$ \frac{\partial \boldsymbol{M}_{\theta, \text{sym}} }{\partial T}  =
-   - \boldsymbol{C}_e \cdot \frac{\partial\boldsymbol{S}_{T}}{\partial T}\f$ (Voigt stress-form)
+   \f[
+     \left[ \frac{\partial \mathbf{M}_{\theta,\text{sym}}}{\partial \mathbf{F}^{-1}_\text{in}}
+     \right]_{abij}
+     = \mathbb{K}_{abcd} \frac{\partial C_{\text{e},cd}}{\partial F^{-1}_{\text{in},ij}}
+     = 2 \mathbb{K}_{abjd} \left[ \mathbf{C} \cdot \mathbf{F}_\text{in}^{-1} \right]_{id}
+   \f]
+   (stress-like Voigt notation in the first index pair)
+   */
+  const Core::LinAlg::Matrix<6, 9> dMtheta_sym_diFin =
+      Core::LinAlg::make_6x9_voigt_matrix_from_tensor(
+          2.0 * Core::LinAlg::einsum<"abjd", "id">(K, CiFin));
+
+  /**
+   \f[
+     \left[ \frac{\partial \mathbf{M}_{\theta,\text{sym}}}{\partial \mathbf{C}} \right]_{abij}
+     = \mathbb{K}_{abcd} \frac{\partial C_{\text{e},cd}}{\partial C_{ij}}
+     = \mathbb{K}_{abcd} F^{-1}_{\text{in},ic} F^{-1}_{\text{in},jd}
+   \f]
+   pulled back one index at a time (cheaper than both at once; Voigt stress-stress form)
+   */
+  const Core::LinAlg::Tensor<double, 3, 3, 3, 3> K_index_4_pulled_back =
+      Core::LinAlg::einsum<"abcd", "jd">(K, iFin);
+  const Core::LinAlg::Tensor<double, 3, 3, 3, 3> K_index_34_pulled_back =
+      Core::LinAlg::einsum<"abcj", "ic">(K_index_4_pulled_back, iFin);
+  const Core::LinAlg::Matrix<6, 6> dMtheta_sym_dC = Core::LinAlg::make_6x6_voigt_matrix_from_tensor(
+      Core::LinAlg::assume_symmetry(K_index_34_pulled_back));
+
+
+  /**
+  \f[
+  \frac{\partial \mathbf{M}_{\theta, \text{sym}} }{\partial T} =
+  - \text{sym}\left(\mathbf{C}_\text{e} \cdot \frac{\partial\mathbf{S}_{T}}{\partial T}\right)
+  \f]
   */
-  const auto dST_dT_M = make_matrix(get_full(ST.temperature_derivative));
-  Core::LinAlg::Matrix<3, 3> dMtheta_sym_dT_M(Core::LinAlg::Initialization::zero);
-  dMtheta_sym_dT_M.multiply_nn(-1.0, CeM, dST_dT_M, 0.0);
-  Core::LinAlg::Matrix<6, 1> dMtheta_sym_dT_V(Core::LinAlg::Initialization::zero);
-  Core::LinAlg::Voigt::Stresses::matrix_to_vector(dMtheta_sym_dT_M, dMtheta_sym_dT_V);
-
-
-  // compute derivative of the additional transversely isotropic stress (w.r.t. right
-  // elastic Cauchy-Green deformation tensor) in stress-strain notation
-  temp6x6.update(1.0, dSedCe, 0.0);
-  Core::LinAlg::Matrix<6, 6> dSedCe_stress_strain =
-      Core::LinAlg::Voigt::modify_voigt_representation(temp6x6, 1.0, 2.0);
-
-  // \f$ \frac{\partial \boldsymbol{S}^{\text{e}}_{\text{trn}} }{\partial
-  // \boldsymbol{F}^{\text{in}^{-1}}_{}} \f$ (Voigt stress-form)
-  Core::LinAlg::Matrix<6, 9> dSediFin(Core::LinAlg::Initialization::zero);
-  dSediFin.multiply_nn(1.0, dSedCe_stress_strain, state_quantity_derivatives.curr_dCediFin, 0.0);
-  Core::LinAlg::FourTensor<3> dSediFin_FourTensor(true);
-  Core::LinAlg::Voigt::setup_four_tensor_from_6x9_voigt_matrix(dSediFin_FourTensor, dSediFin);
-
-  // \f$ \frac{\partial \boldsymbol{S}^{\text{e}}_{\text{trn}} }{\partial
-  // \boldsymbol{C}^{}_{}} \f$ (Voigt stress-stress form)
-  Core::LinAlg::Matrix<6, 6> dSedC(Core::LinAlg::Initialization::zero);
-  dSedC.multiply_nn(1.0, dSedCe_stress_strain, state_quantity_derivatives.curr_dCedC, 0.0);
-  Core::LinAlg::FourTensor<3> dSedC_FourTensor(true);
-  Core::LinAlg::Voigt::setup_four_tensor_from_6x6_voigt_matrix(dSedC_FourTensor, dSedC);
-
-  // compute additional components of the elastic transversely isotropic components for the
-  // derivatives of the symmetric Mandel stress
-  if (parameter()->mat_behavior() == ViscoplastUtils::MatBehavior::transv_isotropic)
-  {
-    Core::LinAlg::FourTensor<3> CedSediFin_FourTensor(true);
-    Core::LinAlg::FourTensorOperations::multiply_matrix_four_tensor<3>(
-        CedSediFin_FourTensor, CeM, dSediFin_FourTensor, true);
-    Core::LinAlg::FourTensor<3> CedSediFin_T12_FourTensor(true);
-    CedSediFin_T12_FourTensor.transpose_12(CedSediFin_FourTensor);
-    Core::LinAlg::Voigt::setup_6x9_voigt_matrix_from_four_tensor(temp6x9, CedSediFin_FourTensor);
-    dMtheta_sym_diFin.update(1.0 / 2.0, temp6x9, 1.0);
-    Core::LinAlg::Voigt::setup_6x9_voigt_matrix_from_four_tensor(
-        temp6x9, CedSediFin_T12_FourTensor);
-    dMtheta_sym_diFin.update(1.0 / 2.0, temp6x9, 1.0);
-    Core::LinAlg::FourTensor<3> SedCediFin_FourTensor(true);
-    Core::LinAlg::FourTensorOperations::multiply_matrix_four_tensor<3>(
-        SedCediFin_FourTensor, SeM, dCediFin_FourTensor, true);
-    Core::LinAlg::FourTensor<3> SedCediFin_T12_FourTensor(true);
-    SedCediFin_T12_FourTensor.transpose_12(SedCediFin_FourTensor);
-    Core::LinAlg::Voigt::setup_6x9_voigt_matrix_from_four_tensor(temp6x9, SedCediFin_FourTensor);
-    dMtheta_sym_diFin.update(1.0 / 2.0, temp6x9, 1.0);
-    Core::LinAlg::Voigt::setup_6x9_voigt_matrix_from_four_tensor(
-        temp6x9, SedCediFin_T12_FourTensor);
-    dMtheta_sym_diFin.update(1.0 / 2.0, temp6x9, 1.0);
-
-    Core::LinAlg::FourTensor<3> CedSedC_FourTensor(true);
-    Core::LinAlg::FourTensorOperations::multiply_matrix_four_tensor<3>(
-        CedSedC_FourTensor, CeM, dSedC_FourTensor, true);
-    Core::LinAlg::FourTensor<3> CedSedC_T12_FourTensor(true);
-    CedSedC_T12_FourTensor.transpose_12(CedSedC_FourTensor);
-    Core::LinAlg::Voigt::setup_6x6_voigt_matrix_from_four_tensor(temp6x6, CedSedC_FourTensor);
-    dMtheta_sym_dC.update(1.0 / 2.0, temp6x6, 1.0);
-    Core::LinAlg::Voigt::setup_6x6_voigt_matrix_from_four_tensor(temp6x6, CedSedC_T12_FourTensor);
-    dMtheta_sym_dC.update(1.0 / 2.0, temp6x6, 1.0);
-    Core::LinAlg::FourTensor<3> SedCedC_FourTensor(true);
-    Core::LinAlg::FourTensorOperations::multiply_matrix_four_tensor<3>(
-        SedCedC_FourTensor, SeM, dCedC_FourTensor, true);
-    Core::LinAlg::FourTensor<3> SedCedC_T12_FourTensor(true);
-    SedCedC_T12_FourTensor.transpose_12(SedCedC_FourTensor);
-    Core::LinAlg::Voigt::setup_6x6_voigt_matrix_from_four_tensor(temp6x6, SedCedC_FourTensor);
-    dMtheta_sym_dC.update(1.0 / 2.0, temp6x6, 1.0);
-    Core::LinAlg::Voigt::setup_6x6_voigt_matrix_from_four_tensor(temp6x6, SedCedC_T12_FourTensor);
-    dMtheta_sym_dC.update(1.0 / 2.0, temp6x6, 1.0);
-  }
+  const Core::LinAlg::Tensor<double, 3, 3> CedSTdT =
+      Core::LinAlg::dot(Ce, ST.temperature_derivative);
+  const Core::LinAlg::SymmetricTensor<double, 3, 3> dMtheta_sym_dT =
+      Core::LinAlg::assume_symmetry(-0.5 * (CedSTdT + Core::LinAlg::transpose(CedSTdT)));
 
   // compute derivatives of the deviatoric, symmetric part of the Mandel stress
 
@@ -2459,8 +2241,8 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_state_quantity_deriv
   \f$ \frac{\partial \boldsymbol{M}^{\theta}_{\text{dev,sym}} }{\partial
   T} \f$ (Voigt stress form)
   */
-  state_quantity_derivatives.curr_dMtheta_dev_sym_dT.multiply_nn(
-      1.0, const_non_mat_tensors.dev_op, dMtheta_sym_dT_V, 0.0);
+  state_quantity_derivatives.curr_dMtheta_dev_sym_dT.multiply_nn(1.0, const_non_mat_tensors.dev_op,
+      Core::LinAlg::make_stress_like_voigt_view(dMtheta_sym_dT), 0.0);
 
   // plastic flow direction in Voigt strain notation
   Core::LinAlg::Matrix<6, 1> NpVstrainform(Core::LinAlg::Initialization::zero);
@@ -3295,10 +3077,6 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::setup(const int numgp,
       viscoplastic_laws_at_gp_[gp] = viscoplastic_laws_at_gp_[0]->clone();
     }
   }
-
-  // setup the elastic summands, e.g., read the fibers of the transversely isotropic summands
-  for (const auto& summand : potsumel_) summand->setup(numgp, fibers, coord_system);
-  for (const auto& summand : potsumel_transviso_) summand->setup(numgp, fibers, coord_system);
 
   // setup the Local Newton data tracker with the correct number
   // of Gauss points

@@ -27,11 +27,9 @@ IO/RUNTIME VTK OUTPUT/STRUCTURE:
 MATERIALS:
   - MAT: 1
     MAT_MultiplicativeSplitDefgradElastHyper:
-      NUMMATEL: 1
-      MATIDSEL: [2]
+      MATID_ELAST: 6
       NUMFACINEL: 1
       INELDEFGRADFACIDS: [3]
-      DENS: 7830
   - MAT: 2
     ELAST_CoupNeoHooke:
       YOUNG: 200000
@@ -73,6 +71,11 @@ MATERIALS:
       GAMMA: 1
       ANGLE: 0
       STR_TENS_ID: 100
+  - MAT: 6
+    MAT_ElastHyper:
+      NUMMAT: 1
+      MATIDS: [2]
+      DENS: 7830
   - MAT: 100
     ELAST_StructuralTensor:
       STRATEGY: Standard

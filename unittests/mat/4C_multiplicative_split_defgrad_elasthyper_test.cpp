@@ -12,12 +12,12 @@
 #include "4C_linalg_fixedsizematrix_voigt_notation.hpp"
 #include "4C_linalg_symmetric_tensor.hpp"
 #include "4C_linalg_tensor.hpp"
-#include "4C_mat_elasthyper_service.hpp"
 #include "4C_mat_material_factory.hpp"
 #include "4C_mat_multiplicative_split_defgrad_elasthyper.hpp"
 #include "4C_mat_multiplicative_split_defgrad_elasthyper_service.hpp"
 #include "4C_mat_par_bundle.hpp"
 #include "4C_material_parameter_base.hpp"
+#include "4C_solid_ele_fibers.hpp"
 #include "4C_ssi_input.hpp"
 #include "4C_unittest_utils_assertions_test.hpp"
 #include "4C_utils_singleton_owner.hpp"
@@ -44,28 +44,9 @@ namespace
       FM_(2, 1) = 0.05;
       FM_(2, 2) = 1.3;
 
-      // set up the inverse inelastic deformation gradient
-      iFinM_(0, 0) = 0.988;
-      iFinM_(0, 1) = 0.006;
-      iFinM_(0, 2) = 0.008;
-      iFinM_(1, 0) = -0.005;
-      iFinM_(1, 1) = 0.997;
-      iFinM_(1, 2) = -0.004;
-      iFinM_(2, 0) = -0.003;
-      iFinM_(2, 1) = -0.002;
-      iFinM_(2, 2) = 0.999;
-
-      // set corresponding determinant of inelastic deformation gradient
-      detFin_ = 1.016159878774565;
-
-      set_ref_values_evaluate_kin_quant_elast();
-
-      set_ref_values_evaluate_invariants_derivative();
+      set_ref_values_inverse_right_cauchy_green();
 
       set_ref_values_evaluated_sdi_fin();
-
-      // this method is tested in unit_elasthyper_service.H
-      Mat::calculate_gamma_delta(gamma_ref_, delta_ref_, prinv_ref_, dPIe_ref_, ddPIIe_ref_);
 
       set_up_multiplicative_split_object_with_requirements();
     }
@@ -91,6 +72,17 @@ namespace
       problem.materials()->insert(
           matid_elastic, Mat::make_parameter(1, Core::Materials::MaterialType::mes_coupneohooke,
                              mat_elastic_neo_hooke_data));
+
+      // set up hyperelastic material describing the elastic response
+      const int matid_elast_hyper(4);
+      Core::IO::InputParameterContainer mat_elast_hyper_data;
+      mat_elast_hyper_data.add("NUMMAT", 1);
+      mat_elast_hyper_data.add("MATIDS", std::vector<int>{matid_elastic});
+      mat_elast_hyper_data.add("DENS", 1.32e1);
+      mat_elast_hyper_data.add("POLYCONVEX", 0);
+      problem.materials()->insert(matid_elast_hyper,
+          Mat::make_parameter(matid_elast_hyper, Core::Materials::MaterialType::m_elasthyper,
+              mat_elast_hyper_data));
 
       // set up inelastic material to be added to problem instance
       const int inelastic_defgrad_id(2);
@@ -118,13 +110,10 @@ namespace
       // initialize container for material parameters first
       Core::IO::InputParameterContainer multiplicativeSplitDefgradData;
 
-      multiplicativeSplitDefgradData.add("NUMMATEL", 1);
-      std::vector<int> matids_elastic = {matid_elastic};
-      multiplicativeSplitDefgradData.add("MATIDSEL", matids_elastic);
+      multiplicativeSplitDefgradData.add("MATID_ELAST", matid_elast_hyper);
       multiplicativeSplitDefgradData.add("NUMFACINEL", 1);
       std::vector<int> inelastic_defgrad_factor_ids = {inelastic_defgrad_id};
       multiplicativeSplitDefgradData.add("INELDEFGRADFACIDS", inelastic_defgrad_factor_ids);
-      multiplicativeSplitDefgradData.add("DENS", 1.32e1);
       multiplicativeSplitDefgradData.add("REF_TEMPERATURE", 293.0);
       multiplicativeSplitDefgradData.add("THERMAL_EXPANSION_COEFFICIENT", 0.1);
 
@@ -136,186 +125,17 @@ namespace
       // setup pointer to MultiplicativeSplitDefgrad_ElastHyper object
       multiplicative_split_defgrad_ = std::make_shared<Mat::MultiplicativeSplitDefgradElastHyper>(
           parameters_multiplicative_split_defgrad_.get());
+      multiplicative_split_defgrad_->setup(1, Discret::Elements::Fibers{}, std::nullopt);
     }
 
-    void set_ref_values_evaluate_kin_quant_elast()
+    void set_ref_values_inverse_right_cauchy_green()
     {
-      iCinV_ref_(0) = 0.976244;
-      iCinV_ref_(1) = 0.99405;
-      iCinV_ref_(2) = 0.998014;
-      iCinV_ref_(3) = 0.00101;
-      iCinV_ref_(4) = -0.005975;
-      iCinV_ref_(5) = 0.005016;
-
-      iCinCM_ref_(0, 0) = 1.1869551176;
-      iCinCM_ref_(0, 1) = 0.0624320828;
-      iCinCM_ref_(0, 2) = 0.117717833;
-      iCinCM_ref_(1, 0) = 0.062190447;
-      iCinCM_ref_(1, 1) = 1.4335455825;
-      iCinCM_ref_(1, 2) = 0.0787760655;
-      iCinCM_ref_(2, 0) = 0.1173029584;
-      iCinCM_ref_(2, 1) = 0.0808141072;
-      iCinCM_ref_(2, 2) = 1.6879682995;
-
-      iCinCiCinV_ref_(0) = 1.159411340880251;
-      iCinCiCinV_ref_(1) = 1.424608111644232;
-      iCinCiCinV_ref_(2) = 1.684721521806007;
-      iCinCiCinV_ref_(3) = 0.062556072523941;
-      iCinCiCinV_ref_(4) = 0.070366128660632;
-      iCinCiCinV_ref_(5) = 0.123064780558814;
-
       iCV_ref_(0) = 0.82944796303475;
       iCV_ref_(1) = 0.696728380339461;
       iCV_ref_(2) = 0.596601975917312;
       iCV_ref_(3) = -0.032359712004713;
       iCV_ref_(4) = -0.034647920866899;
       iCV_ref_(5) = -0.053120416239144;
-
-      iFinCeM_ref_(0, 0) = 1.1720463422758;
-      iFinCeM_ref_(0, 1) = 0.0691310815912;
-      iFinCeM_ref_(0, 2) = 0.1268460277766;
-      iFinCeM_ref_(1, 0) = 0.054040105527;
-      iFinCeM_ref_(1, 1) = 1.4294605363035;
-      iFinCeM_ref_(1, 2) = 0.0734606306805;
-      iFinCeM_ref_(2, 0) = 0.1104273474647;
-      iFinCeM_ref_(2, 1) = 0.0778995460298;
-      iFinCeM_ref_(2, 2) = 1.6868954984389;
-
-      CiFin9x1_ref_(0) = 1.1999722;
-      CiFin9x1_ref_(1) = 1.4384656;
-      CiFin9x1_ref_(2) = 1.6901459;
-      CiFin9x1_ref_(3) = 0.0688816;
-      CiFin9x1_ref_(4) = 0.0839363;
-      CiFin9x1_ref_(5) = 0.1211618;
-      CiFin9x1_ref_(6) = 0.0537751;
-      CiFin9x1_ref_(7) = 0.0863203;
-      CiFin9x1_ref_(8) = 0.104938;
-
-      CiFinCe9x1_ref_(0) = 1.43996697912278;
-      CiFinCe9x1_ref_(1) = 2.073382326190544;
-      CiFinCe9x1_ref_(2) = 2.873787776734904;
-      CiFinCe9x1_ref_(3) = 0.181343812846575;
-      CiFinCe9x1_ref_(4) = 0.264478527552432;
-      CiFinCe9x1_ref_(5) = 0.347292768781784;
-      CiFinCe9x1_ref_(6) = 0.160486291582948;
-      CiFinCe9x1_ref_(7) = 0.267131183013999;
-      CiFinCe9x1_ref_(8) = 0.322626335257043;
-
-      CiFiniCe9x1_ref_(0) = 1.012090158460073;
-      CiFiniCe9x1_ref_(1) = 1.002986382106132;
-      CiFiniCe9x1_ref_(2) = 1.000984547144946;
-      CiFiniCe9x1_ref_(3) = 0.005087912513024;
-      CiFiniCe9x1_ref_(4) = 0.001989641042641;
-      CiFiniCe9x1_ref_(5) = 0.003049495796202;
-      CiFiniCe9x1_ref_(6) = -0.006107120871435;
-      CiFiniCe9x1_ref_(7) = 0.003975217445766;
-      CiFiniCe9x1_ref_(8) = -0.008129279030197;
-
-      prinv_ref_(0) = 4.3084689996;
-      prinv_ref_(1) = 6.100818829441683;
-      prinv_ref_(2) = 2.839432625034153;
-
-      dCedC_ref_(0, 0) = 0.9761440000;
-      dCedC_ref_(0, 1) = 0.0000250000;
-      dCedC_ref_(0, 2) = 0.0000090000;
-      dCedC_ref_(0, 3) = -0.0049400000;
-      dCedC_ref_(0, 4) = 0.0000150000;
-      dCedC_ref_(0, 5) = -0.0029640000;
-      dCedC_ref_(1, 0) = 0.0000360000;
-      dCedC_ref_(1, 1) = 0.9940090000;
-      dCedC_ref_(1, 2) = 0.0000040000;
-      dCedC_ref_(1, 3) = 0.0059820000;
-      dCedC_ref_(1, 4) = -0.0019940000;
-      dCedC_ref_(1, 5) = -0.0000120000;
-      dCedC_ref_(2, 0) = 0.0000640000;
-      dCedC_ref_(2, 1) = 0.0000160000;
-      dCedC_ref_(2, 2) = 0.9980010000;
-      dCedC_ref_(2, 3) = -0.0000320000;
-      dCedC_ref_(2, 4) = -0.0039960000;
-      dCedC_ref_(2, 5) = 0.0079920000;
-      dCedC_ref_(3, 0) = 0.0059280000;
-      dCedC_ref_(3, 1) = -0.0049850000;
-      dCedC_ref_(3, 2) = 0.0000060000;
-      dCedC_ref_(3, 3) = 0.4925030000;
-      dCedC_ref_(3, 4) = -0.0014905000;
-      dCedC_ref_(3, 5) = -0.0009970000;
-      dCedC_ref_(4, 0) = 0.0000480000;
-      dCedC_ref_(4, 1) = -0.0039880000;
-      dCedC_ref_(4, 2) = -0.0019980000;
-      dCedC_ref_(4, 3) = 0.0039760000;
-      dCedC_ref_(4, 4) = 0.4980055000;
-      dCedC_ref_(4, 5) = 0.0029890000;
-      dCedC_ref_(5, 0) = 0.0079040000;
-      dCedC_ref_(5, 1) = 0.0000200000;
-      dCedC_ref_(5, 2) = -0.0029970000;
-      dCedC_ref_(5, 3) = -0.0019960000;
-      dCedC_ref_(5, 4) = -0.0024915000;
-      dCedC_ref_(5, 5) = 0.4934940000;
-
-      dCediFin_ref_(0, 0) = 2.3999444000;
-      dCediFin_ref_(0, 1) = 0.0000000000;
-      dCediFin_ref_(0, 2) = 0.0000000000;
-      dCediFin_ref_(0, 3) = 0.0000000000;
-      dCediFin_ref_(0, 4) = 0.0000000000;
-      dCediFin_ref_(0, 5) = 0.0000000000;
-      dCediFin_ref_(0, 6) = 0.1075502000;
-      dCediFin_ref_(0, 7) = 0.0000000000;
-      dCediFin_ref_(0, 8) = 0.2098760000;
-      dCediFin_ref_(1, 0) = 0.0000000000;
-      dCediFin_ref_(1, 1) = 2.8769312000;
-      dCediFin_ref_(1, 2) = 0.0000000000;
-      dCediFin_ref_(1, 3) = 0.1377632000;
-      dCediFin_ref_(1, 4) = 0.0000000000;
-      dCediFin_ref_(1, 5) = 0.0000000000;
-      dCediFin_ref_(1, 6) = 0.0000000000;
-      dCediFin_ref_(1, 7) = 0.1726406000;
-      dCediFin_ref_(1, 8) = 0.0000000000;
-      dCediFin_ref_(2, 0) = 0.0000000000;
-      dCediFin_ref_(2, 1) = 0.0000000000;
-      dCediFin_ref_(2, 2) = 3.3802918000;
-      dCediFin_ref_(2, 3) = 0.0000000000;
-      dCediFin_ref_(2, 4) = 0.1678726000;
-      dCediFin_ref_(2, 5) = 0.2423236000;
-      dCediFin_ref_(2, 6) = 0.0000000000;
-      dCediFin_ref_(2, 7) = 0.0000000000;
-      dCediFin_ref_(2, 8) = 0.0000000000;
-      dCediFin_ref_(3, 0) = 0.0688816000;
-      dCediFin_ref_(3, 1) = 0.0537751000;
-      dCediFin_ref_(3, 2) = 0.0000000000;
-      dCediFin_ref_(3, 3) = 1.1999722000;
-      dCediFin_ref_(3, 4) = 0.0000000000;
-      dCediFin_ref_(3, 5) = 0.0000000000;
-      dCediFin_ref_(3, 6) = 1.4384656000;
-      dCediFin_ref_(3, 7) = 0.1049380000;
-      dCediFin_ref_(3, 8) = 0.0863203000;
-      dCediFin_ref_(4, 0) = 0.0000000000;
-      dCediFin_ref_(4, 1) = 0.0839363000;
-      dCediFin_ref_(4, 2) = 0.0863203000;
-      dCediFin_ref_(4, 3) = 0.1211618000;
-      dCediFin_ref_(4, 4) = 1.4384656000;
-      dCediFin_ref_(4, 5) = 0.0688816000;
-      dCediFin_ref_(4, 6) = 0.0000000000;
-      dCediFin_ref_(4, 7) = 1.6901459000;
-      dCediFin_ref_(4, 8) = 0.0000000000;
-      dCediFin_ref_(5, 0) = 0.1211618000;
-      dCediFin_ref_(5, 1) = 0.0000000000;
-      dCediFin_ref_(5, 2) = 0.1049380000;
-      dCediFin_ref_(5, 3) = 0.0000000000;
-      dCediFin_ref_(5, 4) = 0.0537751000;
-      dCediFin_ref_(5, 5) = 1.1999722000;
-      dCediFin_ref_(5, 6) = 0.0839363000;
-      dCediFin_ref_(5, 7) = 0.0000000000;
-      dCediFin_ref_(5, 8) = 1.6901459000;
-    }
-
-    void set_ref_values_evaluate_invariants_derivative()
-    {
-      dPIe_ref_.clear();
-      dPIe_ref_(0) = 28.846153846153847;
-      dPIe_ref_(2) = -4.644432669839725;
-
-      ddPIIe_ref_.clear();
-      ddPIIe_ref_(2) = 2.862458189907485;
     }
 
     void set_concentration_to_inelastic_material(const double concentration) const
@@ -394,25 +214,9 @@ namespace
     // defined input quantities
     Core::LinAlg::Tensor<double, 3, 3> F_;
     Core::LinAlg::Matrix<3, 3> FM_;
-    Core::LinAlg::Matrix<3, 3> iFinM_;
-    double detFin_;
     // reference solutions
-    Core::LinAlg::Matrix<6, 1> iCinV_ref_;
-    Core::LinAlg::Matrix<6, 1> iCinCiCinV_ref_;
     Core::LinAlg::Matrix<6, 1> iCV_ref_;
-    Core::LinAlg::Matrix<3, 3> iCinCM_ref_;
-    Core::LinAlg::Matrix<3, 3> iFinCeM_ref_;
-    Core::LinAlg::Matrix<9, 1> CiFin9x1_ref_;
-    Core::LinAlg::Matrix<9, 1> CiFinCe9x1_ref_;
-    Core::LinAlg::Matrix<9, 1> CiFiniCe9x1_ref_;
-    Core::LinAlg::Matrix<3, 1> prinv_ref_;
-    Core::LinAlg::Matrix<3, 1> dPIe_ref_;
-    Core::LinAlg::Matrix<6, 1> ddPIIe_ref_;
     Core::LinAlg::Matrix<6, 9> dSdiFin_ref_;
-    Core::LinAlg::Matrix<3, 1> gamma_ref_;
-    Core::LinAlg::Matrix<8, 1> delta_ref_;
-    Core::LinAlg::Matrix<6, 6> dCedC_ref_;
-    Core::LinAlg::Matrix<6, 9> dCediFin_ref_;
 
     // pointer to material parameters
     std::shared_ptr<Mat::PAR::MultiplicativeSplitDefgradElastHyper>
@@ -535,68 +339,6 @@ namespace
     FOUR_C_EXPECT_NEAR(d_cauchyndir_dF, d_cauchyndir_dF_ref, 1.0e-10);
   }
 
-  TEST_F(MultiplicativeSplitDefgradElastHyperTest, TestEvaluatedSdiFin)
-  {
-    Mat::MultiplicativeSplitDefgradElastHyper::KinematicQuantities kinemat_quant;
-    kinemat_quant.iFinM = iFinM_;
-    kinemat_quant.iCinCM = iCinCM_ref_;
-    kinemat_quant.iCinV = iCinV_ref_;
-    kinemat_quant.CiFin9x1 = CiFin9x1_ref_;
-    kinemat_quant.CiFinCe9x1 = CiFinCe9x1_ref_;
-    kinemat_quant.iCinCiCinV = iCinCiCinV_ref_;
-    kinemat_quant.CiFiniCe9x1 = CiFiniCe9x1_ref_;
-    kinemat_quant.iCV = iCV_ref_;
-    kinemat_quant.iFinCeM = iFinCeM_ref_;
-    kinemat_quant.detFin = detFin_;
-
-    Mat::StressFactors stress_fact;
-    stress_fact.gamma = gamma_ref_;
-    stress_fact.delta = delta_ref_;
-
-    const Core::LinAlg::SymmetricTensor<double, 3, 3> ST{};  // no stress due to thermal expansion
-    Core::LinAlg::Matrix<6, 9> dSdiFin =
-        multiplicative_split_defgrad_->evaluate_d_stress_d_ifin(kinemat_quant, stress_fact, ST);
-
-    FOUR_C_EXPECT_NEAR(dSdiFin, dSdiFin_ref_, 1.0e-10);
-  }
-
-  TEST_F(MultiplicativeSplitDefgradElastHyperTest, TestEvaluateInvariantDerivatives)
-  {
-    // derivatives of principle invariants
-    const int gp(0);
-    const int eleGID(0);
-    Core::LinAlg::Matrix<3, 1> dPIe(Core::LinAlg::Initialization::zero);
-    Core::LinAlg::Matrix<6, 1> ddPIIe(Core::LinAlg::Initialization::zero);
-    multiplicative_split_defgrad_->evaluate_invariant_derivatives(
-        prinv_ref_, gp, eleGID, dPIe, ddPIIe);
-
-    FOUR_C_EXPECT_NEAR(dPIe, dPIe_ref_, 1.0e-10);
-    FOUR_C_EXPECT_NEAR(ddPIIe, ddPIIe_ref_, 1.0e-10);
-  }
-
-  TEST_F(MultiplicativeSplitDefgradElastHyperTest, TestEvaluateKinQuantElast)
-  {
-    Mat::MultiplicativeSplitDefgradElastHyper::KinematicQuantities kinemat_quant;
-    // set known values
-    kinemat_quant.iFinM = iFinM_;
-    kinemat_quant.detFin = detFin_;
-
-
-    multiplicative_split_defgrad_->evaluate_kin_quant_elast(&FM_, kinemat_quant);
-
-    FOUR_C_EXPECT_NEAR(kinemat_quant.iCinV, iCinV_ref_, 1.0e-10);
-    FOUR_C_EXPECT_NEAR(kinemat_quant.iCinCiCinV, iCinCiCinV_ref_, 1.0e-10);
-    FOUR_C_EXPECT_NEAR(kinemat_quant.iCV, iCV_ref_, 1.0e-10);
-    FOUR_C_EXPECT_NEAR(kinemat_quant.iCinCM, iCinCM_ref_, 1.0e-10);
-    FOUR_C_EXPECT_NEAR(kinemat_quant.iFinCeM, iFinCeM_ref_, 1.0e-10);
-    FOUR_C_EXPECT_NEAR(kinemat_quant.CiFin9x1, CiFin9x1_ref_, 1.0e-10);
-    FOUR_C_EXPECT_NEAR(kinemat_quant.CiFinCe9x1, CiFinCe9x1_ref_, 1.0e-10);
-    FOUR_C_EXPECT_NEAR(kinemat_quant.CiFiniCe9x1, CiFiniCe9x1_ref_, 1.0e-10);
-    FOUR_C_EXPECT_NEAR(kinemat_quant.prinv, prinv_ref_, 1.0e-10);
-    FOUR_C_EXPECT_NEAR(kinemat_quant.dCedC, dCedC_ref_, 1.0e-10);
-    FOUR_C_EXPECT_NEAR(kinemat_quant.dCediFin, dCediFin_ref_, 1.0e-10);
-  }
-
   TEST_F(MultiplicativeSplitDefgradElastHyperTest, TestEvaluateLinearizationOD)
   {
     // we need to first set this dummy concentration. otherwise the call below results in a
@@ -659,11 +401,9 @@ namespace
         no_growth_id, Mat::make_parameter(1, Core::Materials::MaterialType::mfi_no_growth, {}));
 
     Core::IO::InputParameterContainer no_growth_material_data;
-    no_growth_material_data.add("NUMMATEL", 1);
-    no_growth_material_data.add("MATIDSEL", std::vector<int>{1});
+    no_growth_material_data.add("MATID_ELAST", 4);
     no_growth_material_data.add("NUMFACINEL", 1);
     no_growth_material_data.add("INELDEFGRADFACIDS", std::vector<int>{no_growth_id});
-    no_growth_material_data.add("DENS", 1.32e1);
     no_growth_material_data.add("REF_TEMPERATURE", 293.0);
     no_growth_material_data.add("THERMAL_EXPANSION_COEFFICIENT", 0.1);
     Mat::PAR::MultiplicativeSplitDefgradElastHyper no_growth_parameters(
@@ -706,73 +446,5 @@ namespace
         multiplicative_split_defgrad_->evaluate_od_stiff_mat(source, &FM_, dSdiFin_ref_);
 
     FOUR_C_EXPECT_NEAR(dSdx, dSdx_ref, 1.0e-10);
-  }
-
-  TEST_F(MultiplicativeSplitDefgradElastHyperTest, TestEvaluateStressCmatIso)
-  {
-    // second Piola-Kirchhoff stress
-    Core::LinAlg::Matrix<6, 1> S(Core::LinAlg::Initialization::zero);
-    // reference solution
-    Core::LinAlg::Matrix<6, 1> S_ref(Core::LinAlg::Initialization::zero);
-    S_ref(0) = 35.001617076265632;
-    S_ref(1) = 39.602547633321855;
-    S_ref(2) = 42.518455970246585;
-    S_ref(3) = 0.926494039729434;
-    S_ref(4) = 0.578328181405601;
-    S_ref(5) = 1.717758619623368;
-
-    // reference solution
-    Core::LinAlg::Matrix<6, 6> cMatIso_ref;
-    cMatIso_ref(0, 0) = 64.536084541141619;
-    cMatIso_ref(0, 1) = 23.288856786802732;
-    cMatIso_ref(0, 2) = 20.045220754159409;
-    cMatIso_ref(0, 3) = -2.517781949843259;
-    cMatIso_ref(0, 4) = -1.063209891248748;
-    cMatIso_ref(0, 5) = -4.133090713403081;
-    cMatIso_ref(1, 0) = 23.288856786802729;
-    cMatIso_ref(1, 1) = 45.535627490549523;
-    cMatIso_ref(1, 2) = 16.775090529489887;
-    cMatIso_ref(1, 3) = -2.114912831353509;
-    cMatIso_ref(1, 4) = -2.264461822480193;
-    cMatIso_ref(1, 5) = -1.427796649278471;
-    cMatIso_ref(2, 0) = 20.045220754159409;
-    cMatIso_ref(2, 1) = 16.775090529489891;
-    cMatIso_ref(2, 2) = 33.388253156810187;
-    cMatIso_ref(2, 3) = -0.677477970551063;
-    cMatIso_ref(2, 4) = -1.939037415158507;
-    cMatIso_ref(2, 5) = -2.972832770894956;
-    cMatIso_ref(3, 0) = -2.517781949843259;
-    cMatIso_ref(3, 1) = -2.114912831353509;
-    cMatIso_ref(3, 2) = -0.677477970551063;
-    cMatIso_ref(3, 3) = 15.558647064320079;
-    cMatIso_ref(3, 4) = -0.916806613818434;
-    cMatIso_ref(3, 5) = -0.655057743068236;
-    cMatIso_ref(4, 0) = -1.063209891248748;
-    cMatIso_ref(4, 1) = -2.264461822480193;
-    cMatIso_ref(4, 2) = -1.939037415158507;
-    cMatIso_ref(4, 3) = -0.916806613818434;
-    cMatIso_ref(4, 4) = 11.220930501841977;
-    cMatIso_ref(4, 5) = -0.394102458936374;
-    cMatIso_ref(5, 0) = -4.133090713403081;
-    cMatIso_ref(5, 1) = -1.427796649278471;
-    cMatIso_ref(5, 2) = -2.972832770894956;
-    cMatIso_ref(5, 3) = -0.655057743068236;
-    cMatIso_ref(5, 4) = -0.394102458936374;
-    cMatIso_ref(5, 5) = 13.451712479073098;
-
-    Mat::MultiplicativeSplitDefgradElastHyper::KinematicQuantities kinemat_quant;
-    kinemat_quant.iCV = iCV_ref_;
-    kinemat_quant.iCinV = iCinV_ref_;
-    kinemat_quant.iCinCiCinV = iCinCiCinV_ref_;
-    kinemat_quant.detFin = detFin_;
-    Mat::StressFactors stress_fact;
-    stress_fact.gamma = gamma_ref_;
-    stress_fact.delta = delta_ref_;
-
-    Core::LinAlg::Matrix<6, 6> cMatIso{Core::LinAlg::Initialization::zero};
-    multiplicative_split_defgrad_->evaluate_stress_cmat_iso(kinemat_quant, stress_fact, S, cMatIso);
-
-    FOUR_C_EXPECT_NEAR(S, S_ref, 1.0e-10);
-    FOUR_C_EXPECT_NEAR(cMatIso, cMatIso_ref, 1.0e-10);
   }
 }  // namespace

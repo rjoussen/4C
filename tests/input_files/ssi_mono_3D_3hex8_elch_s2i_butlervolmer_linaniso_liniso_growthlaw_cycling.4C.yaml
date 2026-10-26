@@ -72,11 +72,9 @@ MATERIALS:
           X_MAX: 0.96
   - MAT: 2
     MAT_MultiplicativeSplitDefgradElastHyper:
-      NUMMATEL: 1
-      MATIDSEL: [3]
+      MATID_ELAST: 15
       NUMFACINEL: 1
       INELDEFGRADFACIDS: [4]
-      DENS: 4700
   - MAT: 3
     ELAST_CoupSVK:
       YOUNG: 8e+10
@@ -107,11 +105,9 @@ MATERIALS:
       COND: 0.23
   - MAT: 8
     MAT_MultiplicativeSplitDefgradElastHyper:
-      NUMMATEL: 1
-      MATIDSEL: [9]
+      MATID_ELAST: 16
       NUMFACINEL: 1
       INELDEFGRADFACIDS: [10]
-      DENS: 2400
   - MAT: 9
     ELAST_CoupSVK:
       YOUNG: 7.7e+10
@@ -129,11 +125,9 @@ MATERIALS:
           OCP_FUNCT_NUM: 5
   - MAT: 12
     MAT_MultiplicativeSplitDefgradElastHyper:
-      NUMMATEL: 1
-      MATIDSEL: [13]
+      MATID_ELAST: 17
       NUMFACINEL: 1
       INELDEFGRADFACIDS: [14]
-      DENS: 534
   - MAT: 13
     ELAST_CoupSVK:
       YOUNG: 1.11e+10
@@ -144,6 +138,21 @@ MATERIALS:
       SCALAR1_MolarGrowthFac: 1.3e-05
       SCALAR1_RefConc: 1e-10
       GrowthDirection: [1, 0, 0]
+  - MAT: 15
+    MAT_ElastHyper:
+      NUMMAT: 1
+      MATIDS: [3]
+      DENS: 4700
+  - MAT: 16
+    MAT_ElastHyper:
+      NUMMAT: 1
+      MATIDS: [9]
+      DENS: 2400
+  - MAT: 17
+    MAT_ElastHyper:
+      NUMMAT: 1
+      MATIDS: [13]
+      DENS: 534
 CLONING MATERIAL MAP:
   - SRC_FIELD: "structure"
     SRC_MAT: 2

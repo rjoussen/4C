@@ -133,13 +133,9 @@ namespace
             viscoplastic_factor_data));
 
     Core::IO::InputParameterContainer multiplicative_split_data;
-    const std::vector<int> elastic_summand_ids =
-        MultSplitTestUtils::elastic_summand_ids(elastic_summands);
-    multiplicative_split_data.add("NUMMATEL", static_cast<int>(elastic_summand_ids.size()));
-    multiplicative_split_data.add("MATIDSEL", elastic_summand_ids);
+    multiplicative_split_data.add("MATID_ELAST", MultSplitTestUtils::matid_elast_hyper);
     multiplicative_split_data.add("NUMFACINEL", 1);
     multiplicative_split_data.add("INELDEFGRADFACIDS", std::vector<int>{matid_viscoplastic_factor});
-    multiplicative_split_data.add("DENS", 1.0);
     multiplicative_split_data.add("REF_TEMPERATURE", ref_temperature);
     multiplicative_split_data.add("THERMAL_EXPANSION_COEFFICIENT",
         temperature_coupling == TemperatureCoupling::with_temperature ? 1.0e-5 : 0.0);

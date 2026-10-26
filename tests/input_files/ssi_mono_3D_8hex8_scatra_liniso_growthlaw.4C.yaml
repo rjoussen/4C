@@ -46,11 +46,9 @@ MATERIALS:
       DIFFUSIVITY: 1
   - MAT: 2
     MAT_MultiplicativeSplitDefgradElastHyper:
-      NUMMATEL: 1
-      MATIDSEL: [3]
+      MATID_ELAST: 6
       NUMFACINEL: 2
       INELDEFGRADFACIDS: [4, 5]
-      DENS: 0.001
   - MAT: 3
     ELAST_CoupSVK:
       YOUNG: 1
@@ -64,6 +62,11 @@ MATERIALS:
     MAT_InelasticDefgradLinTempIso:
       Temp_GrowthFac: 0.1
       RefTemp: 300
+  - MAT: 6
+    MAT_ElastHyper:
+      NUMMAT: 1
+      MATIDS: [3]
+      DENS: 0.001
 CLONING MATERIAL MAP:
   - SRC_FIELD: "structure"
     SRC_MAT: 2
