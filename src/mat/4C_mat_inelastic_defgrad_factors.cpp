@@ -3291,6 +3291,10 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::setup(const int numgp,
     }
   }
 
+  // setup the elastic summands, e.g., read the fibers of the transversely isotropic summands
+  for (const auto& summand : potsumel_) summand->setup(numgp, fibers, coord_system);
+  for (const auto& summand : potsumel_transviso_) summand->setup(numgp, fibers, coord_system);
+
   // setup the Local Newton data tracker with the correct number
   // of Gauss points
   local_newton_manager_.resize(numgp);
