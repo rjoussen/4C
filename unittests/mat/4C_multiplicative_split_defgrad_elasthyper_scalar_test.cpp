@@ -86,8 +86,8 @@ namespace
         Mat::make_parameter(matid_no_growth, Core::Materials::MaterialType::mfi_no_growth, {}));
 
     // only reference the factors of the current test
-    MultSplitTestUtils::set_up_multiplicative_split(matid_multiplicative_split, elastic_summands,
-        inelastic_factor_ids(inelastic_factors), 293.0, 0.0);
+    MultSplitTestUtils::set_up_multiplicative_split(
+        matid_multiplicative_split, inelastic_factor_ids(inelastic_factors), 293.0, 0.0);
 
     MultSplitTestUtils::set_up_generic_parameters();
   }

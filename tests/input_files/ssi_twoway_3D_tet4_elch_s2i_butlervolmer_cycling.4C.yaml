@@ -49,29 +49,24 @@ SOLVER 1:
 MATERIALS:
   - MAT: 1
     MAT_MultiplicativeSplitDefgradElastHyper:
-      NUMMATEL: 1
-      MATIDSEL: [4]
+      MATID_ELAST: 4
       NUMFACINEL: 1
       INELDEFGRADFACIDS: [5]
-      DENS: 1
   - MAT: 2
     MAT_MultiplicativeSplitDefgradElastHyper:
-      NUMMATEL: 1
-      MATIDSEL: [4]
+      MATID_ELAST: 4
       NUMFACINEL: 1
       INELDEFGRADFACIDS: [5]
-      DENS: 1
   - MAT: 3
     MAT_MultiplicativeSplitDefgradElastHyper:
-      NUMMATEL: 1
-      MATIDSEL: [4]
+      MATID_ELAST: 4
       NUMFACINEL: 1
       INELDEFGRADFACIDS: [5]
-      DENS: 1
   - MAT: 4
-    ELAST_CoupSVK:
+    MAT_Struct_StVenantKirchhoff:
       YOUNG: 1
       NUE: 0.3
+      DENS: 1
   - MAT: 5
     MAT_InelasticDefgradNoGrowth: {}
   - MAT: 6

@@ -37,15 +37,14 @@ FUNCT1:
 MATERIALS:
   - MAT: 1
     MAT_MultiplicativeSplitDefgradElastHyper:
-      NUMMATEL: 1
-      MATIDSEL: [2]
+      MATID_ELAST: 2
       NUMFACINEL: 1
       INELDEFGRADFACIDS: [3]
-      DENS: 7830
   - MAT: 2
-    ELAST_CoupSVK:
+    MAT_Struct_StVenantKirchhoff:
       YOUNG: 2.0e5
       NUE: 0.29
+      DENS: 7830
   - MAT: 3
     MAT_InelasticDefgradTransvIsotropElastViscoplast:
       VISCOPLAST_LAW_ID: 4

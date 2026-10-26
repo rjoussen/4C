@@ -75,6 +75,7 @@ namespace
   constexpr int matid_viscoplastic_law = 4;
   constexpr int matid_viscoplastic_factor = 5;
   constexpr int matid_multiplicative_split = 6;
+  constexpr int matid_elast_hyper = 7;
 
   constexpr double ref_temperature = 293.0;
   constexpr double time_step_size = 1.0e-6;
@@ -207,12 +208,19 @@ namespace
             Core::Materials::MaterialType::mfi_transv_isotrop_elast_viscoplast,
             viscoplastic_factor_data));
 
+    Core::IO::InputParameterContainer elast_hyper_data;
+    elast_hyper_data.add("NUMMAT", 1);
+    elast_hyper_data.add("MATIDS", std::vector<int>{matid_coup_neo_hooke});
+    elast_hyper_data.add("DENS", 1.0);
+    elast_hyper_data.add("POLYCONVEX", 0);
+    problem.materials()->insert(
+        matid_elast_hyper, Mat::make_parameter(matid_elast_hyper,
+                               Core::Materials::MaterialType::m_elasthyper, elast_hyper_data));
+
     Core::IO::InputParameterContainer multiplicative_split_data;
-    multiplicative_split_data.add("NUMMATEL", 1);
-    multiplicative_split_data.add("MATIDSEL", std::vector<int>{matid_coup_neo_hooke});
+    multiplicative_split_data.add("MATID_ELAST", matid_elast_hyper);
     multiplicative_split_data.add("NUMFACINEL", 1);
     multiplicative_split_data.add("INELDEFGRADFACIDS", std::vector<int>{matid_viscoplastic_factor});
-    multiplicative_split_data.add("DENS", 1.0);
     multiplicative_split_data.add("REF_TEMPERATURE", ref_temperature);
     multiplicative_split_data.add("THERMAL_EXPANSION_COEFFICIENT",
         temperature_coupling == TemperatureCoupling::on ? 1.0e-5 : 0.0);
