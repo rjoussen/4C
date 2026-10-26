@@ -93,15 +93,14 @@ MATERIALS:
           OCP_FUNCT_NUM: 6
   - MAT: 2
     MAT_MultiplicativeSplitDefgradElastHyper:
-      NUMMATEL: 1
-      MATIDSEL: [3]
+      MATID_ELAST: 3
       NUMFACINEL: 1
       INELDEFGRADFACIDS: [4]
-      DENS: 1
   - MAT: 3
-    ELAST_CoupSVK:
+    MAT_Struct_StVenantKirchhoff:
       YOUNG: 1e+08
       NUE: 0.3
+      DENS: 1
   - MAT: 4
     MAT_InelasticDefgradNoGrowth: {}
   - MAT: 5
@@ -125,15 +124,14 @@ MATERIALS:
       COND: 100.0
   - MAT: 8
     MAT_MultiplicativeSplitDefgradElastHyper:
-      NUMMATEL: 1
-      MATIDSEL: [9]
+      MATID_ELAST: 9
       NUMFACINEL: 1
       INELDEFGRADFACIDS: [10]
-      DENS: 1
   - MAT: 9
-    ELAST_CoupSVK:
+    MAT_Struct_StVenantKirchhoff:
       YOUNG: 1e+08
       NUE: 0.3
+      DENS: 1
   - MAT: 10
     MAT_InelasticDefgradNoGrowth: {}
   - MAT: 15
@@ -147,15 +145,14 @@ MATERIALS:
           OCP_FUNCT_NUM: 6
   - MAT: 16
     MAT_MultiplicativeSplitDefgradElastHyper:
-      NUMMATEL: 1
-      MATIDSEL: [17]
+      MATID_ELAST: 17
       NUMFACINEL: 1
       INELDEFGRADFACIDS: [18]
-      DENS: 1
   - MAT: 17
-    ELAST_CoupSVK:
+    MAT_Struct_StVenantKirchhoff:
       YOUNG: 1e+08
       NUE: 0.3
+      DENS: 1
   - MAT: 18
     MAT_InelasticDefgradNoGrowth: {}
   - MAT: 19

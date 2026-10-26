@@ -62,11 +62,9 @@ MATERIALS:
           OCP_FUNCT_NUM: 8
   - MAT: 2
     MAT_MultiplicativeSplitDefgradElastHyper:
-      NUMMATEL: 1
-      MATIDSEL: [3]
+      MATID_ELAST: 21
       NUMFACINEL: 2
       INELDEFGRADFACIDS: [4, 5]
-      DENS: 5000
   - MAT: 3
     ELAST_CoupNeoHooke:
       YOUNG: 1e+10
@@ -106,11 +104,9 @@ MATERIALS:
       COND: 100.0
   - MAT: 10
     MAT_MultiplicativeSplitDefgradElastHyper:
-      NUMMATEL: 1
-      MATIDSEL: [11]
+      MATID_ELAST: 22
       NUMFACINEL: 1
       INELDEFGRADFACIDS: [12]
-      DENS: 2000
   - MAT: 11
     ELAST_CoupNeoHooke:
       YOUNG: 1e+10
@@ -133,11 +129,9 @@ MATERIALS:
           OCP_FUNCT_NUM: 9
   - MAT: 16
     MAT_MultiplicativeSplitDefgradElastHyper:
-      NUMMATEL: 1
-      MATIDSEL: [17]
+      MATID_ELAST: 23
       NUMFACINEL: 2
       INELDEFGRADFACIDS: [18, 19]
-      DENS: 1000
   - MAT: 17
     ELAST_CoupNeoHooke:
       YOUNG: 1e+10
@@ -157,6 +151,21 @@ MATERIALS:
       CAPA: 500
       CONDUCT:
         constant: [1e-07]
+  - MAT: 21
+    MAT_ElastHyper:
+      NUMMAT: 1
+      MATIDS: [3]
+      DENS: 5000
+  - MAT: 22
+    MAT_ElastHyper:
+      NUMMAT: 1
+      MATIDS: [11]
+      DENS: 2000
+  - MAT: 23
+    MAT_ElastHyper:
+      NUMMAT: 1
+      MATIDS: [17]
+      DENS: 1000
 CLONING MATERIAL MAP:
   - SRC_FIELD: "structure"
     SRC_MAT: 2

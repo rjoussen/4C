@@ -143,19 +143,16 @@ namespace FourC::MultiplicativeSplitDefgradElastHyperTestUtils
                                Core::Materials::MaterialType::m_elasthyper, elast_hyper_data));
   }
 
-  /// insert the multiplicative split with id @p matid, the elastic part with the given elastic
-  /// summands, the inelastic factors with the given ids and the given thermal expansion
-  inline void set_up_multiplicative_split(const int matid, const ElasticSummands elastic_summands,
+  /// insert the multiplicative split with id @p matid, the ElastHyper material as elastic part, the
+  /// inelastic factors with the given ids and the given thermal expansion
+  inline void set_up_multiplicative_split(const int matid,
       const std::vector<int>& inelastic_factor_ids, const double ref_temperature,
       const double thermal_expansion_coefficient)
   {
     Core::IO::InputParameterContainer multiplicative_split_data;
-    const std::vector<int> summand_ids = elastic_summand_ids(elastic_summands);
-    multiplicative_split_data.add("NUMMATEL", static_cast<int>(summand_ids.size()));
-    multiplicative_split_data.add("MATIDSEL", summand_ids);
+    multiplicative_split_data.add("MATID_ELAST", matid_elast_hyper);
     multiplicative_split_data.add("NUMFACINEL", static_cast<int>(inelastic_factor_ids.size()));
     multiplicative_split_data.add("INELDEFGRADFACIDS", inelastic_factor_ids);
-    multiplicative_split_data.add("DENS", 1.0);
     multiplicative_split_data.add("REF_TEMPERATURE", ref_temperature);
     multiplicative_split_data.add("THERMAL_EXPANSION_COEFFICIENT", thermal_expansion_coefficient);
     Global::Problem::instance()->materials()->insert(
