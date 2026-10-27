@@ -7,17 +7,17 @@
 
 #include <gtest/gtest.h>
 
-#include "4C_linear_solver_method_direct.hpp"
-
 #include "4C_linalg_map.hpp"
 #include "4C_linalg_multi_vector.hpp"
 #include "4C_linalg_sparsematrix.hpp"
 #include "4C_linear_solver_method.hpp"
+#include "4C_linear_solver_method_direct.hpp"
 
 #include <mpi.h>
 #include <Teuchos_ParameterList.hpp>
 
 #include <memory>
+#include <string>
 
 namespace
 {
@@ -58,17 +58,36 @@ namespace
     return residual_norm / rhs_norm;
   }
 
+  // Name under which Amesos2 knows the solver
+  std::string amesos2_name(Core::LinearSolver::SolverType type)
+  {
+    switch (type)
+    {
+      case Core::LinearSolver::SolverType::KLU2:
+        return "KLU2";
+      case Core::LinearSolver::SolverType::UMFPACK:
+        return "Umfpack";
+      case Core::LinearSolver::SolverType::MUMPS:
+        return "MUMPS";
+      default:
+        FOUR_C_THROW("Solver type not used in this test.");
+    }
+  }
+
   class DirectSolverSymbolicReuse : public ::testing::TestWithParam<Core::LinearSolver::SolverType>
   {
    protected:
     void SetUp() override
     {
-      if (GetParam() == Core::LinearSolver::SolverType::MUMPS && !Amesos2::query("MUMPS"))
-        GTEST_SKIP() << "Amesos2 is built without MUMPS";
+      const std::string name = amesos2_name(GetParam());
+      if (!Amesos2::query(name)) GTEST_SKIP() << "Amesos2 is built without " << name;
     }
     DirectSolverSymbolicReuse()
         : map_(num_rows, 0, MPI_COMM_WORLD),
-          matrix_(std::make_shared<Core::LinAlg::SparseMatrix>(map_, 3)),
+          // Without explicit Dirichlet, zero() keeps the Epetra matrix, which the solver needs to
+          // find again. Otherwise, it only does so if the new matrix gets the same address.
+          matrix_(
+              std::make_shared<Core::LinAlg::SparseMatrix>(map_, 3, /*explicitdirichlet=*/false)),
           b_(std::make_shared<Core::LinAlg::MultiVector<double>>(map_, 1, true)),
           x_(map_, 1, true)
     {
