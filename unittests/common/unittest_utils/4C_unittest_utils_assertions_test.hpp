@@ -18,7 +18,10 @@
 #include "4C_linalg_tensor.hpp"
 #include "4C_linalg_tensor_internals.hpp"
 
+#include <algorithm>
+#include <cmath>
 #include <type_traits>
+#include <vector>
 
 namespace TESTING::INTERNAL
 {
@@ -78,7 +81,7 @@ namespace TESTING::INTERNAL
           {
             const auto value1 = *(iter1 + i);
             const auto value2 = *(iter2 + i);
-            if (std::fabs(value1 - value2) > tolerance)
+            if (not(std::fabs(value1 - value2) <= tolerance))
             {
               ss << "[" << i << "]: " << value1 << " vs. " << value2 << std::endl;
             }
@@ -139,7 +142,7 @@ namespace TESTING::INTERNAL
           {
             for (unsigned j = 0; j < n; ++j)
             {
-              if (std::fabs(mat1(i, j) - mat2(i, j)) > tolerance)
+              if (not(std::fabs(mat1(i, j) - mat2(i, j)) <= tolerance))
               {
                 ss << "(" << i << "," << j << "): " << mat1(i, j) << " vs. " << mat2(i, j)
                    << std::endl;
@@ -178,7 +181,7 @@ namespace TESTING::INTERNAL
             for (unsigned j = 0; j < n; ++j)
             {
               const std::size_t arr_index = i * n + j;
-              if (std::fabs(mat(i, j) - array[arr_index]) > tolerance)
+              if (not(std::fabs(mat(i, j) - array[arr_index]) <= tolerance))
               {
                 ss << "(" << i << "," << j << ") vs. [" << arr_index << "]: " << mat(i, j)
                    << " vs. " << array[arr_index] << std::endl;
@@ -224,7 +227,7 @@ namespace TESTING::INTERNAL
           {
             for (int j = 0; j < mat1.numCols(); ++j)
             {
-              if (std::fabs(mat1(i, j) - mat2(i, j)) > tolerance)
+              if (not(std::fabs(mat1(i, j) - mat2(i, j)) <= tolerance))
               {
                 ss << "(" << i << "," << j << "): " << mat1(i, j) << " vs. " << mat2(i, j)
                    << std::endl;
@@ -265,7 +268,7 @@ namespace TESTING::INTERNAL
           ss << std::fixed << std::setprecision(precision_for_printing(tolerance));
           for (int i = 0; i < vec1.length(); ++i)
           {
-            if (std::fabs(vec1(i) - vec2(i)) > tolerance)
+            if (not(std::fabs(vec1(i) - vec2(i)) <= tolerance))
             {
               ss << "[" << i << "]: " << vec1(i) << " vs. " << vec2(i) << std::endl;
             }
@@ -324,7 +327,7 @@ namespace TESTING::INTERNAL
             const auto value2 =
                 std::apply([&t2](const auto&... index) { return t2(index...); }, item);
 
-            if (std::abs(value1 - value2) > tolerance)
+            if (not(std::abs(value1 - value2) <= tolerance))
             {
               ss << "(" << get_index_string(item) << "): " << value1 << " vs. " << value2
                  << std::endl;
@@ -334,6 +337,72 @@ namespace TESTING::INTERNAL
         });
 
     return result_based_on_non_matching_entries(nonMatchingEntries, tolerance, mat1Expr, t2Expr);
+  }
+
+  //! Largest absolute entry of the objects supported by FOUR_C_EXPECT_NEAR_RELATIVE. If an entry is
+  //! not finite, its magnitude is returned instead.
+  template <typename T>
+  inline double max_abs(const std::vector<T>& vec)
+  {
+    double result = 0.0;
+    for (const auto& value : vec)
+    {
+      const double magnitude = static_cast<double>(std::abs(value));
+      if (!std::isfinite(magnitude)) return magnitude;
+      result = std::max(result, magnitude);
+    }
+    return result;
+  }
+
+  template <unsigned int m, unsigned int n, typename T>
+  inline double max_abs(const Core::LinAlg::Matrix<m, n, T>& mat)
+  {
+    double result = 0.0;
+    for (unsigned int i = 0; i < m * n; ++i)
+    {
+      const double magnitude = static_cast<double>(std::abs(mat.data()[i]));
+      if (!std::isfinite(magnitude)) return magnitude;
+      result = std::max(result, magnitude);
+    }
+    return result;
+  }
+
+  template <typename T, Core::LinAlg::TensorStorageType storage_type, typename Compression,
+      std::size_t... n>
+  inline double max_abs(const Core::LinAlg::TensorInternal<T, storage_type, Compression, n...>& t)
+  {
+    double result = 0.0;
+    for (const auto& value : t.container())
+    {
+      const double magnitude = static_cast<double>(std::abs(value));
+      if (!std::isfinite(magnitude)) return magnitude;
+      result = std::max(result, magnitude);
+    }
+    return result;
+  }
+
+  /**
+   * Compare two containers up to a tolerance relative to the largest expected entry. The
+   * signature is mandated by GoogleTest's EXPECT_PRED_FORMAT3 macro.
+   *
+   * @note This function is not intended to be used directly. Use FOUR_C_EXPECT_NEAR_RELATIVE.
+   */
+  template <typename T>
+  inline ::testing::AssertionResult assert_near_relative(const char* actualExpr,
+      const char* expectedExpr, const char* /*relTolExpr*/, const T& actual, const T& expected,
+      const double rel_tol)
+  {
+    const double expected_scale = max_abs(expected);
+    if (!std::isfinite(expected_scale))
+      return ::testing::AssertionFailure() << "Expected finite entries in " << expectedExpr;
+    if (expected_scale == 0.0)
+    {
+      return ::testing::AssertionFailure()
+             << "Expected " << expectedExpr
+             << " has all-zero entries; use FOUR_C_EXPECT_NEAR with an absolute tolerance.";
+    }
+    const double tolerance = rel_tol * expected_scale;
+    return assert_near(actualExpr, expectedExpr, "", actual, expected, tolerance);
   }
 
 }  // namespace TESTING::INTERNAL
@@ -354,6 +423,26 @@ namespace TESTING::INTERNAL
  */
 #define FOUR_C_EXPECT_NEAR(actual, expected, tolerance) \
   EXPECT_PRED_FORMAT3(TESTING::INTERNAL::assert_near, actual, expected, tolerance)
+
+/**
+ * @brief Compare containers using a tolerance relative to the largest expected entry.
+ *
+ * This macro tests two containers @p actual and @p expected for entry-wise equality up to the
+ * absolute tolerance
+ *
+ *   rel_tol * max_j(|expected_j|),
+ *
+ * i.e., all entries are compared relative to the largest expected entry. This is appropriate for
+ * computed quantities like derivatives compared against finite differences, whose round-off and
+ * truncation errors scale with the largest entry, not with the entry itself. Use FOUR_C_EXPECT_NEAR
+ * if the expected values vanish, i.e., if an absolute tolerance is required. Overloads are provided
+ * for
+ * - std::vector<T>
+ * - Core::LinAlg::Matrix
+ * - Core::LinAlg::Tensor and Core::LinAlg::SymmetricTensor
+ */
+#define FOUR_C_EXPECT_NEAR_RELATIVE(actual, expected, rel_tol) \
+  EXPECT_PRED_FORMAT3(TESTING::INTERNAL::assert_near_relative, actual, expected, rel_tol)
 
 /**
  * @brief Custom assertion to test for equality up to a tolerance.

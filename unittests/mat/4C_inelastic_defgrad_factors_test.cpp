@@ -114,42 +114,6 @@ namespace
     return next_structural_tensor_strategy_id++;
   }
 
-  static void expect_near_relative(
-      const double actual, const double expected, const double rel_tol, const double abs_floor)
-  {
-    const double scale = std::max(std::abs(actual), std::abs(expected));
-    EXPECT_LE(std::abs(actual - expected), abs_floor + rel_tol * scale)
-        << "actual: " << actual << ", expected: " << expected;
-  }
-
-  static void expect_near_relative(const Core::LinAlg::Matrix<1, 6>& actual,
-      const Core::LinAlg::Matrix<1, 6>& expected, const double rel_tol, const double abs_floor)
-  {
-    for (int i = 0; i < 6; ++i)
-    {
-      const double scale = std::max(std::abs(actual(0, i)), std::abs(expected(0, i)));
-      EXPECT_LE(std::abs(actual(0, i) - expected(0, i)), abs_floor + rel_tol * scale)
-          << "entry (" << i << ",0), actual: " << actual(0, i) << ", expected: " << expected(0, i);
-    }
-  }
-
-  template <unsigned int rows, unsigned int cols>
-  static void expect_near_relative(const Core::LinAlg::Matrix<rows, cols>& actual,
-      const Core::LinAlg::Matrix<rows, cols>& expected, const double rel_tol,
-      const double abs_floor)
-  {
-    for (unsigned int row = 0; row < rows; ++row)
-    {
-      for (unsigned int col = 0; col < cols; ++col)
-      {
-        const double scale = std::max(std::abs(actual(row, col)), std::abs(expected(row, col)));
-        EXPECT_LE(std::abs(actual(row, col) - expected(row, col)), abs_floor + rel_tol * scale)
-            << "entry (" << row << "," << col << "), actual: " << actual(row, col)
-            << ", expected: " << expected(row, col);
-      }
-    }
-  }
-
   ViscoplasticTestMaterial set_up_viscoplastic_material(const ViscoplasticMaterialSetup& setup = {})
   {
     Global::Problem& problem = (*Global::Problem::instance(problem_id));
@@ -3031,7 +2995,7 @@ namespace
         cmatadd_fd);
 
     ASSERT_GT(cmatadd_analytic.norm2(), 0.0);
-    expect_near_relative(cmatadd_analytic, cmatadd_fd, 1.0e-6, 1.0e-9);
+    FOUR_C_EXPECT_NEAR_RELATIVE(cmatadd_analytic, cmatadd_fd, 1.0e-6);
   }
 
   TEST_F(InelasticDefgradFactorsTest, ThermoViscoplastODStiffMatLinearizationMatchesFD)
@@ -3047,7 +3011,7 @@ namespace
         Core::LinAlg::identity_matrix<3>(), comparison.iFin_fd, dSdiFin_, dstressdT_fd);
 
     ASSERT_GT(dstressdT_analytic.norm2(), 0.0);
-    expect_near_relative(dstressdT_analytic, dstressdT_fd, 1.0e-6, 1.0e-9);
+    FOUR_C_EXPECT_NEAR_RELATIVE(dstressdT_analytic, dstressdT_fd, 1.0e-6);
   }
 
   TEST_F(InelasticDefgradFactorsTest, ThermoViscoplastTaylorQuinneyHeatSourceLinearizationMatchesFD)
@@ -3068,10 +3032,11 @@ namespace
     ASSERT_GT(std::abs(tq_heat_analytic.derivative_wrt_temperature), 0.0);
 
     ASSERT_DOUBLE_EQ(tq_heat_analytic.value, tq_heat_fd.value);
-    expect_near_relative(tq_heat_analytic.derivative_wrt_cauchy_green,
-        tq_heat_fd.derivative_wrt_cauchy_green, 1.0e-7, 1.0e-16);
-    expect_near_relative(tq_heat_analytic.derivative_wrt_temperature,
-        tq_heat_fd.derivative_wrt_temperature, 1.0e-8, 1.0e-16);
+    FOUR_C_EXPECT_NEAR_RELATIVE(tq_heat_analytic.derivative_wrt_cauchy_green,
+        tq_heat_fd.derivative_wrt_cauchy_green, 1.0e-7);
+    const double dQdT_analytic = tq_heat_analytic.derivative_wrt_temperature;
+    const double dQdT_fd = tq_heat_fd.derivative_wrt_temperature;
+    EXPECT_NEAR(dQdT_analytic, dQdT_fd, 1.0e-8 * std::abs(dQdT_fd));
   }
 
   TEST_F(InelasticDefgradFactorsTest, ThermoViscoplastPublicEvaluationsCanBeCalledInAnyOrder)
