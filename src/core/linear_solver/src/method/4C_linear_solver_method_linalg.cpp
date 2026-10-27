@@ -411,6 +411,12 @@ Teuchos::ParameterList Core::LinAlg::Solver::translate_solver_parameters(
         "auto_detect_contiguous_dof_ids", inparams.get<bool>("AUTO_DETECT_CONTIGUOUS_DOF_IDS"));
   }
 
+  if (inparams.isParameter("REUSE_SYMBOLIC_FACTORIZATION"))
+  {
+    outparams.set<bool>(
+        "reuse_symbolic_factorization", inparams.get<bool>("REUSE_SYMBOLIC_FACTORIZATION"));
+  }
+
   return outparams;
 }
 

@@ -7,6 +7,7 @@
 
 #include "4C_linear_solver_method_direct.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_linalg_blocksparsematrix.hpp"
 #include "4C_linalg_multi_vector.hpp"
 #include "4C_linalg_sparseoperator.hpp"
@@ -28,10 +29,11 @@ Core::LinearSolver::DirectSolver::DirectSolver(
     : solvertype_(solvertype),
       auto_detect_contiguous_dof_ids_(!params.isParameter("auto_detect_contiguous_dof_ids") ||
                                       params.get<bool>("auto_detect_contiguous_dof_ids")),
+      reuse_symbolic_((solvertype != SolverType::Superlu) &&
+                      (!params.isParameter("reuse_symbolic_factorization") ||
+                          params.get<bool>("reuse_symbolic_factorization"))),
       factored_(false),
       solver_(nullptr),
-      created_matrix_(nullptr),
-      created_rhs_(nullptr),
       projector_(nullptr)
 {
 }
@@ -60,15 +62,51 @@ bool Core::LinearSolver::DirectSolver::has_contiguous_dof_ids() const
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
+bool Core::LinearSolver::DirectSolver::can_reuse_amesos2_solver() const
+{
+  // These conditions are identical on all ranks.
+  if (!reuse_symbolic_ || solver_.is_null() || projector_ != nullptr || !a_->filled()) return false;
+
+  FOUR_C_ASSERT(created_system_.graph.has_value(),
+      "The system the Amesos2 solver was created on is unknown.");
+
+  // Amesos2 holds on to the matrix it was created on.
+  const bool same_matrix = created_system_.matrix_ == &a_->epetra_matrix();
+
+  // Comparing maps can be collective, so all comparisons are done unconditionally on every rank.
+  const bool same_graph = created_system_.graph->is_identical_to(a_->get_current_graph());
+  const bool same_rhs_map = created_system_.rhs_map->same_as(b_->get_map());
+
+  const bool same = same_matrix && same_graph && same_rhs_map;
+
+  // Factorizations are collective, so all ranks have to take the same decision.
+  return Core::Communication::min_all(same ? 1 : 0, a_->get_comm()) == 1;
+}
+
+//----------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------
+void Core::LinearSolver::DirectSolver::record_created_system()
+{
+  created_system_.matrix_ = &a_->epetra_matrix();
+  created_system_.rhs_ = &b_->get_epetra_multi_vector();
+  created_system_.graph.emplace(a_->get_current_graph());
+  created_system_.rhs_map = b_->get_map();
+}
+
+//----------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------
 void Core::LinearSolver::DirectSolver::reset()
 {
   a_ = nullptr;
   b_ = nullptr;
   projector_ = nullptr;
   factored_ = false;
+
+  if (reuse_symbolic_) return;
+
   solver_ = Teuchos::null;
-  created_matrix_ = nullptr;
-  created_rhs_ = nullptr;
+  created_system_ = CreatedSystem{};
+  symbolic_done_ = false;
 }
 
 //----------------------------------------------------------------------------------
@@ -110,9 +148,20 @@ void Core::LinearSolver::DirectSolver::setup(std::shared_ptr<Core::LinAlg::Spars
   a_ = crsA;
 
   // 3. create linear solver
-  if (refactor or not is_factored() or created_matrix_ != &a_->epetra_matrix() or
-      created_rhs_ != &b_->get_epetra_multi_vector())
+  if (refactor or not is_factored() or created_system_.matrix_ != &a_->epetra_matrix() or
+      created_system_.rhs_ != &b_->get_epetra_multi_vector())
   {
+    if (can_reuse_amesos2_solver())
+    {
+      // Keep the Amesos2 solver with its symbolic factorization. Only the right-hand side vector
+      // may differ, and the values are read again in the numeric factorization.
+      solver_->setB(Teuchos::rcpFromRef(b_->get_epetra_multi_vector()));
+      created_system_.rhs_ = &b_->get_epetra_multi_vector();
+
+      factored_ = false;
+      return;
+    }
+
     std::string solver_type;
     Teuchos::ParameterList params("Amesos2");
 
@@ -166,9 +215,9 @@ void Core::LinearSolver::DirectSolver::setup(std::shared_ptr<Core::LinAlg::Spars
 
     solver_->setParameters(Teuchos::make_rcp<Teuchos::ParameterList>(std::move(params)));
 
-    created_matrix_ = &a_->epetra_matrix();
-    created_rhs_ = &b_->get_epetra_multi_vector();
+    record_created_system();
 
+    symbolic_done_ = false;
     factored_ = false;
   }
 }
@@ -196,7 +245,12 @@ int Core::LinearSolver::DirectSolver::solve(Core::LinAlg::MultiVector<double>& x
 
   if (not is_factored())
   {
-    solver_->symbolicFactorization();
+    if (not symbolic_done_)
+    {
+      solver_->symbolicFactorization();
+      symbolic_done_ = true;
+      ++num_symbolic_factorizations_;
+    }
     solver_->numericFactorization();
 
     factored_ = true;
