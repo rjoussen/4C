@@ -109,6 +109,11 @@ jobs:
         run: |
           echo "tests"
           ctest  --test-dir build/ -j `sysctl -n hw.physicalcpu` --output-on-failure --output-junit $GITHUB_WORKSPACE/macos_assertions_test_report.xml
+        env:
+          # Single-threaded BLAS for reproducible results and no oversubscription with ctest -j
+          OMP_NUM_THREADS: "1"
+          OPENBLAS_NUM_THREADS: "1"
+          VECLIB_MAXIMUM_THREADS: "1"
       - name: Upload test report
         if: success() || failure()
         uses: actions/upload-artifact@v7
