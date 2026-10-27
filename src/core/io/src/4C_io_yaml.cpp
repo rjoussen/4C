@@ -7,6 +7,8 @@
 
 #include "4C_io_yaml.hpp"
 
+#include <format>
+
 FOUR_C_NAMESPACE_OPEN
 
 namespace
@@ -29,7 +31,14 @@ ryml::Tree Core::IO::init_yaml_tree_with_exceptions()
 
 void Core::IO::emit_value_as_yaml(YamlNodeRef node, const int& value) { node.node << value; }
 
-void Core::IO::emit_value_as_yaml(YamlNodeRef node, const double& value) { node.node << value; }
+void Core::IO::emit_value_as_yaml(YamlNodeRef node, const double& value)
+{
+  // ryml only formats doubles with std::to_chars if the feature-test macro __cpp_lib_to_chars is
+  // defined. libc++ (macOS) does not define it since its std::from_chars for floating-point types
+  // is incomplete, so ryml falls back to printf("%g"), which keeps only six significant digits.
+  // std::format always writes the shortest representation that reads back exactly.
+  node.node << std::format("{}", value);
+}
 
 void Core::IO::emit_value_as_yaml(YamlNodeRef node, const std::string& value)
 {
