@@ -386,7 +386,6 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::TimeStepQuantities:
 
   // update last_ and current_ values of the temperature
   last_temperature.resize(1, ref_temperature);
-  current_temperature.resize(1, ref_temperature);  // value irrelevant at this point
 
   // update last_ and current_ values of the equivalent stress
   last_equiv_stress.resize(1, 0.0);
@@ -394,12 +393,13 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::TimeStepQuantities:
 
   // default values of the right CG tensor: unit tensor
   last_rightCG.resize(1, id3x3);
-  current_rightCG.resize(1, id3x3);  // value irrelevant at this point
 
-  // default value for the current deformation gradient: zero tensor \f$ \boldsymbol{0} f$ (to make
-  // sure that the inverse inelastic deformation gradient is evaluated in the first method call)
+  // default value for the deformation gradient
   last_defgrad.resize(1, Core::LinAlg::Matrix<3, 3>{id3x3});
-  current_defgrad.resize(1, Core::LinAlg::Matrix<3, 3>{Core::LinAlg::Initialization::zero});
+
+  // no current values computed yet (to make sure that the inverse inelastic deformation gradient
+  // is evaluated in the first method call)
+  current_integration_input.resize(1, std::nullopt);
 }
 
 
@@ -427,7 +427,6 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::TimeStepQuantities:
 
   // default values of the right CG deformation tensor for ALL Gauss Points
   last_rightCG.resize(numgp, last_rightCG[0]);
-  current_rightCG.resize(numgp, last_rightCG[0]);  // value irrelevant at this point
 
   // default values of the equivalent stress for ALL Gauss Points
   last_equiv_stress.resize(numgp, last_equiv_stress[0]);
@@ -435,11 +434,10 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::TimeStepQuantities:
 
   // default values of the deformation gradient
   last_defgrad.resize(numgp, last_defgrad[0]);
-  current_defgrad.resize(numgp, current_defgrad[0]);
+  current_integration_input.resize(numgp, std::nullopt);
 
   // default values of the temperature for ALL Gauss Points
-  last_temperature.resize(numgp, last_temperature[0]);        // value irrelevant at this point
-  current_temperature.resize(numgp, current_temperature[0]);  // value irrelevant at this point
+  last_temperature.resize(numgp, last_temperature[0]);  // value irrelevant at this point
 
   resize_called = true;
 }
@@ -469,15 +467,20 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::TimeStepQuantities:
       "points",
       gp, last_plastic_defgrad_inverse.size());
 
+  FOUR_C_ASSERT_ALWAYS(current_integration_input[gp].has_value(),
+      "You try to update the time step quantities at GP {}, but no current values have been "
+      "computed",
+      gp);
+
   // update history variables for the next time step
-  last_defgrad[gp] = current_defgrad[gp];
-  last_rightCG[gp] = current_rightCG[gp];
+  last_defgrad[gp] = current_integration_input[gp]->defgrad;
+  last_rightCG[gp] = current_integration_input[gp]->right_cg;
   last_plastic_defgrad_inverse[gp] = current_plastic_defgrad_inverse[gp];
   last_substep_plastic_defgrad_inverse[gp] = current_plastic_defgrad_inverse[gp];
   last_plastic_strain[gp] = current_plastic_strain[gp];
   last_substep_plastic_strain[gp] = current_plastic_strain[gp];
   last_equiv_stress[gp] = current_equiv_stress[gp];
-  last_temperature[gp] = current_temperature[gp];
+  last_temperature[gp] = current_integration_input[gp]->temperature;
 }
 
 
@@ -512,21 +515,50 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::TimeStepQuantities:
   extract_from_pack(buffer, last_temperature);
 
   // fill current_ values with the last_ values
-  current_rightCG.resize(last_rightCG.size(),
-      last_rightCG[0]);  // value irrelevant
   current_plastic_defgrad_inverse.resize(last_plastic_defgrad_inverse.size(),
       last_plastic_defgrad_inverse[0]);  // value irrelevant
   current_plastic_strain.resize(last_plastic_strain.size(),
       last_plastic_strain[0]);  // value irrelevant
   current_equiv_stress.resize(last_equiv_stress.size(),
       last_equiv_stress[0]);  // value irrelevant
-  current_temperature.resize(last_temperature.size(),
-      0.0);  // value irrelevant
 
-  // set evaluated deformation gradient to 0, to make sure that the inverse inelastic deformation
-  // gradient is evaluated fully after the restart
-  current_defgrad.resize(last_substep_plastic_defgrad_inverse.size(),
-      Core::LinAlg::Matrix<3, 3>{Core::LinAlg::Initialization::zero});
+  // no current values computed yet, to make sure that the inverse inelastic deformation gradient
+  // is evaluated fully after the restart
+  current_integration_input.resize(last_substep_plastic_defgrad_inverse.size(), std::nullopt);
+}
+
+/*--------------------------------------------------------------------*
+ *--------------------------------------------------------------------*/
+Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::LocalIntegrationInput
+Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::TimeStepQuantities::
+    make_local_integration_input(const unsigned int gp, const Core::LinAlg::Matrix<3, 3>& defgrad,
+        const double temperature, const double step) const
+{
+  return LocalIntegrationInput{{.defgrad = defgrad,
+      .temperature = temperature,
+      .last_inv_inelastic_defgrad = last_plastic_defgrad_inverse[gp],
+      .last_plastic_strain = last_plastic_strain[gp],
+      .step = step}};
+}
+
+/*--------------------------------------------------------------------*
+ *--------------------------------------------------------------------*/
+bool Mat::InelasticDefgradTransvIsotropElastViscoplastUtils::TimeStepQuantities::is_current_state(
+    const unsigned int gp, const LocalIntegrationInput& input, const double defgrad_tolerance) const
+{
+  if (!current_integration_input[gp].has_value()) return false;
+  const LocalIntegrationInput& current_input = *current_integration_input[gp];
+
+  Core::LinAlg::Matrix<3, 3> defgrad_difference{Core::LinAlg::Initialization::zero};
+  defgrad_difference.update(1.0, input.defgrad, -1.0, current_input.defgrad, 0.0);
+
+  return defgrad_difference.norm2() <= defgrad_tolerance &&
+         std::abs(input.temperature - current_input.temperature) <=
+             thermo_mechanical_state_equality_tolerance &&
+         input.elastic_predictor_inverse_plastic_defgrad ==
+             current_input.elastic_predictor_inverse_plastic_defgrad &&
+         input.last_plastic_strain == current_input.last_plastic_strain &&
+         input.step == current_input.step;
 }
 
 Core::LinAlg::Matrix<1, 6>

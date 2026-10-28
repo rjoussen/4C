@@ -18,6 +18,7 @@
 
 #include <cstdint>
 #include <format>
+#include <optional>
 #include <string>
 #include <tuple>
 #include <vector>
@@ -239,6 +240,61 @@ namespace Mat
     };
 
 
+    //! helper struct containing relevant input for the local time integration via the Local
+    //! Newton-Raphson scheme
+    struct LocalIntegrationInput
+    {
+      //! configuration struct to be used for the construction of the integration input
+      struct Config
+      {
+        //! deformation gradient \f$ \boldsymbol{F}_{n+1} \f$
+        Core::LinAlg::Matrix<3, 3> defgrad;
+
+        //! absolute temperature \f$ T_{n+1} \f$
+        double temperature;
+
+        //! previous inverse inelastic/plastic deformation gradient \f$ \mathbf{F}_{\text{p},n}^{-1}
+        //! \f$
+        Core::LinAlg::Matrix<3, 3> last_inv_inelastic_defgrad;
+
+        //! previous plastic strain \f$ \varepsilon_{\text{p},n} \f$
+        double last_plastic_strain;
+
+        //! timestep / substep size \f$ \Delta t \f$ / \f$ \Delta \tilde{t} \f$
+        double step;
+      };
+
+      LocalIntegrationInput() = delete;
+      //! constructor based on a given config
+      explicit LocalIntegrationInput(const Config& cfg);
+
+      //! deformation gradient \f$ \mathbf{F}_{n+1} \f$
+      Core::LinAlg::Matrix<3, 3> defgrad;
+
+      //! inverse deformation gradient \f$ \mathbf{F}_{n+1}^{-1} \f$
+      Core::LinAlg::Matrix<3, 3> inv_defgrad;
+
+      //! right Cauchy-Green deformation tensor \f$ \mathbf{C}_{n+1} \f$
+      Core::LinAlg::Matrix<3, 3> right_cg;
+
+      //! inverse plastic deformation gradient within the elastic predictor \f$
+      //! \left[ \mathbf{F}_{\mathrm{p},n+1}^{(\mathrm{E})} \right]^{-1} \f$
+      Core::LinAlg::Matrix<3, 3> elastic_predictor_inverse_plastic_defgrad;
+
+      //! elastic deformation gradient within the elastic predictor \f$
+      //! \mathbf{F}_{\mathrm{e},n+1}^{(\mathrm{E})} \f$
+      Core::LinAlg::Matrix<3, 3> elastic_predictor_elastic_defgrad;
+
+      //! absolute temperature \f$ T_{n+1} \f$
+      double temperature;
+
+      //! accumulated plastic strain at the previous time instant \f$ \varepsilon_{\mathrm{P},n} \f$
+      double last_plastic_strain;
+
+      //! timestep / substep size \f$ \Delta t \f$ / \f$ \Delta \tilde{t} \f$
+      double step;
+    };
+
     //! struct containing quantities at the last and current time points (i.e., at \f[ t_n \f] and
     //! \f[ t_{n+1} \f], respectively). The quantities are tracked at all Gauss points, in order to
     //! update them simultaneously during the update method call
@@ -263,14 +319,10 @@ namespace Mat
       //! absolute temperature at the last time instant (for all Gauss points)
       std::vector<double> last_temperature;
 
-      //! temporary variable, for which we store the right Cauchy-Green deformation tensor at each
-      //! evaluation (used in order to update last_rightCG_ once outer NR converges) (for all Gauss
-      //! points)
-      std::vector<Core::LinAlg::Matrix<3, 3>> current_rightCG;
-
-      //! current (reduced) deformation gradient: used to check whether the inverse inelastic
-      //! deformation gradient has already been evaluated (to improve the computation performance)
-      std::vector<Core::LinAlg::Matrix<3, 3>> current_defgrad;
+      //! input of the local integration from which the current values were computed (empty if
+      //! nothing has been computed yet): used to check whether the current values can be reused
+      //! for an incoming state (for all Gauss points)
+      std::vector<std::optional<LocalIntegrationInput>> current_integration_input;
 
       //! current inverse plastic deformation gradient (for all Gauss points)
       std::vector<Core::LinAlg::Matrix<3, 3>> current_plastic_defgrad_inverse;
@@ -281,9 +333,6 @@ namespace Mat
       //! current equivalent stress (for all Gauss points)
       std::vector<double> current_equiv_stress;
 
-
-      //! absolute temperature at the current time instant (for all Gauss points)
-      std::vector<double> current_temperature;
 
 
       //! inverse plastic deformation gradient at the last computed time instant (after the last
@@ -320,6 +369,31 @@ namespace Mat
 
       //!  Update values between time steps: last <- current, at a given Gauss points
       void update(const unsigned int gp);
+
+      /*!
+       * @brief Combine the given state with the last converged history variables at a given Gauss
+       * point into the input of the local integration
+       *
+       * @param[in] gp Gauss point index
+       * @param[in] defgrad (reduced) deformation gradient
+       * @param[in] temperature absolute temperature
+       * @param[in] step time step size
+       * @return input of the local integration
+       */
+      [[nodiscard]] LocalIntegrationInput make_local_integration_input(unsigned int gp,
+          const Core::LinAlg::Matrix<3, 3>& defgrad, double temperature, double step) const;
+
+      /*!
+       * @brief Check whether the current values at a given Gauss point were computed from the
+       * given input of the local integration
+       *
+       * @param[in] gp Gauss point index
+       * @param[in] input input of the local integration
+       * @param[in] defgrad_tolerance tolerance for the norm of the deformation gradient difference
+       * @return true if the current values can be reused
+       */
+      [[nodiscard]] bool is_current_state(
+          unsigned int gp, const LocalIntegrationInput& input, double defgrad_tolerance) const;
 
       //! Pack values
       void pack(Core::Communication::PackBuffer& data) const;
@@ -1031,61 +1105,6 @@ namespace Mat
       //! tracks whether the resizing function has been called, to set the current number of
       //! Gauss points exactly once!
       bool resize_called_{false};
-    };
-
-    //! helper struct containing relevant input for the local time integration via the Local
-    //! Newton-Raphson scheme
-    struct LocalIntegrationInput
-    {
-      //! configuration struct to be used for the construction of the integration input
-      struct Config
-      {
-        //! deformation gradient \f$ \boldsymbol{F}_{n+1} \f$
-        Core::LinAlg::Matrix<3, 3> defgrad;
-
-        //! absolute temperature \f$ T_{n+1} \f$
-        double temperature;
-
-        //! previous inverse inelastic/plastic deformation gradient \f$ \mathbf{F}_{\text{p},n}^{-1}
-        //! \f$
-        Core::LinAlg::Matrix<3, 3> last_inv_inelastic_defgrad;
-
-        //! previous plastic strain \f$ \varepsilon_{\text{p},n} \f$
-        double last_plastic_strain;
-
-        //! timestep / substep size \f$ \Delta t \f$ / \f$ \Delta \tilde{t} \f$
-        double step;
-      };
-
-      LocalIntegrationInput() = delete;
-      //! constructor based on a given config
-      explicit LocalIntegrationInput(const Config& cfg);
-
-      //! deformation gradient \f$ \mathbf{F}_{n+1} \f$
-      Core::LinAlg::Matrix<3, 3> defgrad;
-
-      //! inverse deformation gradient \f$ \mathbf{F}_{n+1}^{-1} \f$
-      Core::LinAlg::Matrix<3, 3> inv_defgrad;
-
-      //! right Cauchy-Green deformation tensor \f$ \mathbf{C}_{n+1} \f$
-      Core::LinAlg::Matrix<3, 3> right_cg;
-
-      //! inverse plastic deformation gradient within the elastic predictor \f$
-      //! \left[ \mathbf{F}_{\mathrm{p},n+1}^{(\mathrm{E})} \right]^{-1} \f$
-      Core::LinAlg::Matrix<3, 3> elastic_predictor_inverse_plastic_defgrad;
-
-      //! elastic deformation gradient within the elastic predictor \f$
-      //! \mathbf{F}_{\mathrm{e},n+1}^{(\mathrm{E})} \f$
-      Core::LinAlg::Matrix<3, 3> elastic_predictor_elastic_defgrad;
-
-      //! absolute temperature \f$ T_{n+1} \f$
-      double temperature;
-
-      //! accumulated plastic strain at the previous time instant \f$ \varepsilon_{\mathrm{P},n} \f$
-      double last_plastic_strain;
-
-      //! timestep / substep size \f$ \Delta t \f$ / \f$ \Delta \tilde{t} \f$
-      double step;
     };
 
     //! namespace containing utilities dedicated to the Adaptive Estimate Interpolation (AEI)

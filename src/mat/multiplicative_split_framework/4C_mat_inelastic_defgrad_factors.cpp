@@ -65,14 +65,6 @@ namespace
   static ViscoplastUtils::ConstNonMatTensors const_non_mat_tensors =
       ViscoplastUtils::ConstNonMatTensors::instance();
 
-  double defgrad_difference_norm(
-      const Core::LinAlg::Matrix<3, 3>& lhs, const Core::LinAlg::Matrix<3, 3>& rhs)
-  {
-    Core::LinAlg::Matrix<3, 3> diff{Core::LinAlg::Initialization::zero};
-    diff.update(1.0, lhs, -1.0, rhs, 0.0);
-    return diff.norm2();
-  }
-
   /// Holds Kinematic quantities reduced by the preceding inelastic factors
   struct ReducedKinematics
   {
@@ -1828,29 +1820,6 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::pre_evaluate(
   // set element ID
   ele_gid_ = eleGID;
 
-
-  const double previous_temperature = time_step_quantities_.current_temperature[gp];
-
-  // set current absolute temperature
-  time_step_quantities_.current_temperature[gp] = ref_temperature_;
-  if (params.isParameter("temperature"))
-  {
-    time_step_quantities_.current_temperature[gp] = params.get<double>("temperature");
-  }
-
-  // invalidate the caches if the temperature changed
-  if (std::abs(time_step_quantities_.current_temperature[gp] - previous_temperature) >
-      ViscoplastUtils::thermo_mechanical_state_equality_tolerance)
-  {
-    thermo_mechanical_coupling_cache_.reset(gp);
-
-    // We use the current defgrad stored in time_step_quantities in
-    // evalate_inverse_inelastic_defgrad to determine whether or not there is a new state. Since a
-    // changed temperature alone is enough to have a new state, we invalidate the stored current
-    // defgrad here by setting it to a physically meaningless value.
-    time_step_quantities_.current_defgrad[gp].clear();
-  }
-
   // set time step
   FOUR_C_ASSERT_ALWAYS(context.time_step_size, "Time step size not given in evaluation context.");
   time_step_tracker_.dt = *context.time_step_size;
@@ -2701,7 +2670,8 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_additional_cmat
     const Core::LinAlg::Matrix<6, 9>& dSdiFinj, Core::LinAlg::Matrix<6, 6>& cmatadd)
 {
   const ReducedKinematics reduced_kinematics = evaluate_reduced_kinematics(*defgrad, iFin_other);
-  const double temperature = time_step_quantities_.current_temperature[gp_];
+  const double temperature =
+      time_step_quantities_.current_integration_input[gp_].value().temperature;
   // calculate linearization term only if we have plastic flow
   if (!is_plastic_gp_[gp_]) return;
 
@@ -2871,7 +2841,8 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_od_stiff_mat(
     Core::LinAlg::Matrix<6, 1>& dstressdT)
 {
   const ReducedKinematics reduced_kinematics = evaluate_reduced_kinematics(*defgrad, iFin_other);
-  const double temperature = time_step_quantities_.current_temperature[gp_];
+  const double temperature =
+      time_step_quantities_.current_integration_input[gp_].value().temperature;
 
   if (parameter()->linearization_type() == ViscoplastUtils::LinearizationType::perturbation_based)
   {
@@ -2913,17 +2884,16 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_taylor_quinney_heat_
 
   ViscoplastUtils::ErrorType err_status = ViscoplastUtils::ErrorType::no_errors;
 
-  const double tol = ViscoplastUtils::thermo_mechanical_state_equality_tolerance;
-
-  // First determine current state, then pre_evaluate, because pre_evaluate sets state.
-  const bool is_current_state =
-      defgrad_difference_norm(
-          reduced_kinematics.defgrad, time_step_quantities_.current_defgrad[gp]) < tol &&
-      std::abs(temperature - time_step_quantities_.current_temperature[gp]) < tol;
-
   // set the new temperature and pre-evaluate
   params_.set<double>("temperature", temperature);
   pre_evaluate(params_, context, gp, eleGID);
+
+  // the deformation gradient of the thermo element may differ from the one of the solid element
+  // by round-off
+  const auto incoming_integration_input = time_step_quantities_.make_local_integration_input(
+      gp, reduced_kinematics.defgrad, temperature, time_step_tracker_.dt);
+  const bool is_current_state = time_step_quantities_.is_current_state(
+      gp, incoming_integration_input, ViscoplastUtils::thermo_mechanical_state_equality_tolerance);
 
   if (parameter()->linearization_type() == ViscoplastUtils::LinearizationType::perturbation_based)
   {
@@ -2939,7 +2909,7 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_taylor_quinney_heat_
   if (not is_current_state)
   {
     // recompute the current history variables for the incoming state. This also sets the new state.
-    constitutive_update(reduced_kinematics.defgrad, temperature);
+    constitutive_update(incoming_integration_input);
   }
 
   auto local_integration_input = ViscoplastUtils::LocalIntegrationInput{{.defgrad = *defgrad,
@@ -3010,25 +2980,26 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_inverse_inelast
 {
   const ReducedKinematics reduced_kinematics = evaluate_reduced_kinematics(*defgrad, iFin_other);
 
+  // temperature from the parameters stored in pre_evaluate
+  const double temperature =
+      params_.isParameter("temperature") ? params_.get<double>("temperature") : ref_temperature_;
+
   // check whether we have already evaluated the inverse inelastic deformation gradient for
-  // the given reduced deformation gradient (this check should only be
+  // the given state (this check should only be
   // performed for the first repetition, since we want to repeat the
   // return mapping under the same conditions, and not simply return the
   // computed value)
-  if (defgrad_difference_norm(
-          reduced_kinematics.defgrad, time_step_quantities_.current_defgrad[gp_]) <= 1.0e-16)
+  const auto local_integration_input = time_step_quantities_.make_local_integration_input(
+      gp_, reduced_kinematics.defgrad, temperature, time_step_tracker_.dt);
+  if (time_step_quantities_.is_current_state(gp_, local_integration_input, 1.0e-16))
   {
     // just set the already computed value, no further computation
     iFinM = time_step_quantities_.current_plastic_defgrad_inverse[gp_];
     return;
   }
-  // If this is a "new" deformation gradient, evaluate the inverse inelastic deformation gradient
-  // via return mapping.
-
-  // temperature was set by pre_evaluate
-  const double temperature =
-      params_.isParameter("temperature") ? params_.get<double>("temperature") : ref_temperature_;
-  iFinM = constitutive_update(reduced_kinematics.defgrad, temperature).inv_plastic_defgrad;
+  // If this is a new state, evaluate the inverse inelastic deformation gradient via return
+  // mapping.
+  iFinM = constitutive_update(local_integration_input).inv_plastic_defgrad;
 }
 
 /*--------------------------------------------------------------------*
@@ -3200,17 +3171,11 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_history_variables_wr
 
 Mat::InelasticDefgradTransvIsotropElastViscoplast::HistoryVariables
 Mat::InelasticDefgradTransvIsotropElastViscoplast::constitutive_update(
-    const Core::LinAlg::Matrix<3, 3>& FredM, const double temperature)
+    const InelasticDefgradTransvIsotropElastViscoplastUtils::LocalIntegrationInput&
+        local_integration_input)
 {
   // declare output: history variables (after the constitutive update)
   HistoryVariables result;
-
-  // construct struct containing deformation tensors used for local integration
-  auto local_integration_input = ViscoplastUtils::LocalIntegrationInput{{.defgrad = FredM,
-      .temperature = temperature,
-      .last_inv_inelastic_defgrad = time_step_quantities_.last_plastic_defgrad_inverse[gp_],
-      .last_plastic_strain = time_step_quantities_.last_plastic_strain[gp_],
-      .step = time_step_tracker_.dt}};
 
 
   // perform non-repeatable pre-evaluation tasks (non-repeatable: not
@@ -3226,9 +3191,7 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::constitutive_update(
   ViscoplastUtils::ErrorType err_status = ViscoplastUtils::ErrorType::no_errors;
 
   // set current defgrad and current right CG tensor
-  time_step_quantities_.current_defgrad[gp_] = local_integration_input.defgrad;
-  time_step_quantities_.current_rightCG[gp_] = local_integration_input.right_cg;
-  time_step_quantities_.current_temperature[gp_] = temperature;
+  time_step_quantities_.current_integration_input[gp_] = local_integration_input;
   thermo_mechanical_coupling_cache_.reset(gp_);
   // check whether the predictor is the solution (no plastic strain during this time step)
   bool pred_is_sol = check_elastic_predictor(local_integration_input, err_status);
@@ -3256,8 +3219,6 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::constitutive_update(
     time_step_quantities_.current_plastic_defgrad_inverse[gp_] = result.inv_plastic_defgrad;
     time_step_quantities_.current_plastic_strain[gp_] = result.plastic_strain;
     time_step_quantities_.current_equiv_stress[gp_] = state_quantities_.curr_equiv_stress;
-    time_step_quantities_.current_rightCG[gp_] = local_integration_input.right_cg;
-    time_step_quantities_.current_defgrad[gp_] = local_integration_input.defgrad;
   }
 
   return result;
@@ -4321,7 +4282,9 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_additional_cmat
       perturbed_CM.multiply_tn(1.0, perturbed_FM, perturbed_FM, 0.0);
 
       // get corresponding inverse inelastic defgrad
-      perturbed_iFinM = constitutive_update(perturbed_FM, temperature).inv_plastic_defgrad;
+      const auto perturbed_integration_input = time_step_quantities_.make_local_integration_input(
+          gp_, perturbed_FM, temperature, time_step_tracker_.dt);
+      perturbed_iFinM = constitutive_update(perturbed_integration_input).inv_plastic_defgrad;
       Core::LinAlg::Matrix<9, 1> perturbed_iFinV(Core::LinAlg::Initialization::zero);
       Core::LinAlg::Voigt::matrix_3x3_to_9x1(perturbed_iFinM, perturbed_iFinV);
 
@@ -4375,7 +4338,8 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_od_stiff_mat_pe
 
     // run return-mapping with the perturbed temperature
     const HistoryVariables perturbed_history_variables =
-        constitutive_update(FredM, perturbed_temperature);
+        constitutive_update(time_step_quantities_.make_local_integration_input(
+            gp_, FredM, perturbed_temperature, time_step_tracker_.dt));
 
     Core::LinAlg::Matrix<9, 1> perturbed_iFinV(Core::LinAlg::Initialization::zero);
     Core::LinAlg::Voigt::matrix_3x3_to_9x1(
@@ -4414,7 +4378,8 @@ Mat::HeatSource Mat::InelasticDefgradTransvIsotropElastViscoplast::
   // Evaluate the incoming state
   params_.set<double>("temperature", temperature);
   viscoplastic_laws_at_gp_[gp_]->pre_evaluate(params_);
-  constitutive_update(FredM, temperature);
+  constitutive_update(time_step_quantities_.make_local_integration_input(
+      gp_, FredM, temperature, time_step_tracker_.dt));
 
   update_hist_var_ = false;  // no update of the current values during perturbed evaluations
   const auto unperturbed_state_quantities = state_quantities_;
@@ -4462,7 +4427,8 @@ Mat::HeatSource Mat::InelasticDefgradTransvIsotropElastViscoplast::
 
         // run return-mapping with the perturbed deformation gradient. This populates the
         // state_quantities_
-        constitutive_update(perturbed_FM, temperature);
+        constitutive_update(time_step_quantities_.make_local_integration_input(
+            gp_, perturbed_FM, temperature, time_step_tracker_.dt));
 
         result.derivative_wrt_cauchy_green(i) +=
             delta_sign / (4.0 * pert_fact) * evaluate_taylor_quinney(state_quantities_);
@@ -4485,7 +4451,8 @@ Mat::HeatSource Mat::InelasticDefgradTransvIsotropElastViscoplast::
       viscoplastic_laws_at_gp_[gp_]->pre_evaluate(params_);
 
       // run return-mapping with the perturbed temperature. This populates the state_quantities_
-      constitutive_update(FredM, perturbed_temperature);
+      constitutive_update(time_step_quantities_.make_local_integration_input(
+          gp_, FredM, perturbed_temperature, time_step_tracker_.dt));
 
       result.derivative_wrt_temperature +=
           delta_sign / (2 * delta_T_perturbation) * evaluate_taylor_quinney(state_quantities_);
@@ -4631,19 +4598,23 @@ std::string Mat::InelasticDefgradTransvIsotropElastViscoplast::get_error_warning
   temp_ostream.str("");
   // add the current values
   extended_error_string += "CURRENT_ VALUES: \n";
-  extended_error_string += "current_defgrad: \n";
-  time_step_quantities_.current_defgrad[gp_].print(temp_ostream);
-  extended_error_string += temp_ostream.str();
-  temp_ostream.str("");
-  extended_error_string += "current_rightCG: \n";
-  time_step_quantities_.current_rightCG[gp_].print(temp_ostream);
-  extended_error_string += temp_ostream.str();
-  temp_ostream.str("");
-  extended_error_string += "current_temperature: \n";
-  extended_error_string += "Double<1,1> \n";
-  temp_ostream << time_step_quantities_.current_temperature[gp_] << std::endl;
-  extended_error_string += temp_ostream.str();
-  temp_ostream.str("");
+  if (const auto& current_input = time_step_quantities_.current_integration_input[gp_];
+      current_input.has_value())
+  {
+    extended_error_string += "current_defgrad: \n";
+    current_input->defgrad.print(temp_ostream);
+    extended_error_string += temp_ostream.str();
+    temp_ostream.str("");
+    extended_error_string += "current_rightCG: \n";
+    current_input->right_cg.print(temp_ostream);
+    extended_error_string += temp_ostream.str();
+    temp_ostream.str("");
+    extended_error_string += "current_temperature: \n";
+    extended_error_string += "Double<1,1> \n";
+    temp_ostream << current_input->temperature << std::endl;
+    extended_error_string += temp_ostream.str();
+    temp_ostream.str("");
+  }
 
   extended_error_string += std::string(10, '.');
 
@@ -4731,9 +4702,15 @@ bool Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_output_data(
   }
   else if (name == "defgrad")
   {
-    for (int gp = 0; gp < static_cast<int>(time_step_quantities_.current_defgrad.size()); ++gp)
+    for (int gp = 0; gp < static_cast<int>(time_step_quantities_.current_integration_input.size());
+        ++gp)
     {
-      Core::LinAlg::Voigt::matrix_3x3_to_9x1(time_step_quantities_.current_defgrad[gp], temp9x1);
+      // current values (the output runs before the update), or the last ones if nothing has been
+      // computed yet
+      const auto& current_input = time_step_quantities_.current_integration_input[gp];
+      const auto& defgrad = current_input.has_value() ? current_input->defgrad
+                                                      : time_step_quantities_.last_defgrad[gp];
+      Core::LinAlg::Voigt::matrix_3x3_to_9x1(defgrad, temp9x1);
 
       for (int col = 0; col < 9; ++col)
       {
@@ -4744,9 +4721,15 @@ bool Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_output_data(
   }
   else if (name == "rightCG")
   {
-    for (int gp = 0; gp < static_cast<int>(time_step_quantities_.current_rightCG.size()); ++gp)
+    for (int gp = 0; gp < static_cast<int>(time_step_quantities_.current_integration_input.size());
+        ++gp)
     {
-      Core::LinAlg::Voigt::matrix_3x3_to_9x1(time_step_quantities_.current_rightCG[gp], temp9x1);
+      // current values (the output runs before the update), or the last ones if nothing has been
+      // computed yet
+      const auto& current_input = time_step_quantities_.current_integration_input[gp];
+      const auto& right_cg = current_input.has_value() ? current_input->right_cg
+                                                       : time_step_quantities_.last_rightCG[gp];
+      Core::LinAlg::Voigt::matrix_3x3_to_9x1(right_cg, temp9x1);
 
 
       for (int col = 0; col < 9; ++col)
@@ -5395,13 +5378,8 @@ AEI::InputEquivStressStartingPoint
 Mat::InelasticDefgradTransvIsotropElastViscoplast::get_input_equiv_stress_starting_point(
     const unsigned int gp) const
 {
-  // get deformation gradient components
-  const auto local_integration_input =
-      ViscoplastUtils::LocalIntegrationInput{{.defgrad = time_step_quantities_.current_defgrad[gp],
-          .temperature = time_step_quantities_.current_temperature[gp],
-          .last_inv_inelastic_defgrad = time_step_quantities_.last_plastic_defgrad_inverse[gp],
-          .last_plastic_strain = time_step_quantities_.last_plastic_strain[gp],
-          .step = time_step_tracker_.dt}};
+  // get the input from which the current values were computed
+  const auto& local_integration_input = time_step_quantities_.current_integration_input[gp].value();
 
   // get solution stress at the considered Gauss point
   const double equiv_stress_sol = time_step_quantities_.current_equiv_stress[gp];

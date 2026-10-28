@@ -1860,17 +1860,18 @@ namespace Mat
      * solution, and performs the local time integration (Local Newton Loop) afterwards if that is
      * not the case.
      *
-     * @param[in] FredM reduced deformation gradient \f$ \boldsymbol{F}_{\text{red}} =
-     * \boldsymbol{F} \boldsymbol{F_{\text{in,other}}^{-1}} \f$ accounting for all the already
-     * computed inelastic defgrad factors. Stored in time_step_quantities_.
-     * @param[in] temperature current absolute temperature. Stored in time_step_quantities_.
+     * @param[in] local_integration_input input of the local integration, built from the reduced
+     * deformation gradient \f$ \boldsymbol{F}_{\text{red}} = \boldsymbol{F}
+     * \boldsymbol{F_{\text{in,other}}^{-1}} \f$ accounting for all the already computed
+     * inelastic defgrad factors. Stored in time_step_quantities_.
      * @return the history variables
      *
      * @note After a constitutive_update, the state_quantitities_ are valid for the current GP and
-     * state defined by FredM and temperature.
+     * the given input.
      */
     HistoryVariables constitutive_update(
-        const Core::LinAlg::Matrix<3, 3>& FredM, const double temperature);
+        const InelasticDefgradTransvIsotropElastViscoplastUtils::LocalIntegrationInput&
+            local_integration_input);
 
     /**
      * @brief Evaluates the analytical derivatives of the history variables with respect to

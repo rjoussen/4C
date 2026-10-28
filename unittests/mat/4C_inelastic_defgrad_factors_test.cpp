@@ -2267,6 +2267,82 @@ namespace
     FOUR_C_EXPECT_NEAR(iFin_result, iFin_result_ref, 1.0e-10);
   }
 
+  TEST_F(InelasticDefgradFactorsTest, ViscoplasticFlowContinuesInNextTimeStepAtUnchangedDefgrad)
+  {
+    auto material = set_up_viscoplastic_material().material;
+
+    Teuchos::ParameterList params_list;
+    const double time_step_size = 1.0e-3;
+    const double first_step_time = 1.0e-3;
+    const Mat::EvaluationContext<3> first_step_context{.total_time = &first_step_time,
+        .time_step_size = &time_step_size,
+        .xi = {},
+        .ref_coords = nullptr};
+    const double second_step_time = 2.0e-3;
+    const Mat::EvaluationContext<3> second_step_context{.total_time = &second_step_time,
+        .time_step_size = &time_step_size,
+        .xi = {},
+        .ref_coords = nullptr};
+    const Core::LinAlg::Matrix<3, 3> iFin_other = Core::LinAlg::identity_matrix<3>();
+
+    material->pre_evaluate(params_list, first_step_context, 0, 0);
+    Core::LinAlg::Matrix<3, 3> iFin_first_step(Core::LinAlg::Initialization::zero);
+    material->evaluate_inverse_inelastic_def_grad(&FM_, iFin_other, iFin_first_step);
+
+    // the next time step at the same deformation gradient
+    material->update();
+    material->pre_evaluate(params_list, second_step_context, 0, 0);
+    Core::LinAlg::Matrix<3, 3> iFin_second_step(Core::LinAlg::Initialization::zero);
+    material->evaluate_inverse_inelastic_def_grad(&FM_, iFin_other, iFin_second_step);
+
+    // Assert no internal cache hit for the second step by checking that the two iFin differ
+    Core::LinAlg::Matrix<3, 3> iFin_difference(iFin_second_step);
+    iFin_difference.update(-1.0, iFin_first_step, 1.0);
+    EXPECT_GT(iFin_difference.norm2(), 0.0);
+  }
+
+  TEST_F(InelasticDefgradFactorsTest, ViscoplasticRetryAtReducedTimeStepReintegrates)
+  {
+    auto material = set_up_viscoplastic_material().material;
+
+    Teuchos::ParameterList params_list;
+    // both attempts start at t = 0, the retry with half the time step size
+    const double first_attempt_time = 1.0e-3;
+    const double first_attempt_time_step_size = 1.0e-3;
+    const Mat::EvaluationContext<3> first_attempt_context{.total_time = &first_attempt_time,
+        .time_step_size = &first_attempt_time_step_size,
+        .xi = {},
+        .ref_coords = nullptr};
+    const double retry_time = 0.5e-3;
+    const double retry_time_step_size = 0.5e-3;
+    const Mat::EvaluationContext<3> retry_context{.total_time = &retry_time,
+        .time_step_size = &retry_time_step_size,
+        .xi = {},
+        .ref_coords = nullptr};
+    const Core::LinAlg::Matrix<3, 3> iFin_other = Core::LinAlg::identity_matrix<3>();
+
+    material->pre_evaluate(params_list, first_attempt_context, 0, 0);
+    Core::LinAlg::Matrix<3, 3> iFin_first_attempt(Core::LinAlg::Initialization::zero);
+    material->evaluate_inverse_inelastic_def_grad(&FM_, iFin_other, iFin_first_attempt);
+
+    // retry the time step with half the step size at the same deformation gradient (no update)
+    material->pre_evaluate(params_list, retry_context, 0, 0);
+    Core::LinAlg::Matrix<3, 3> iFin_retry(Core::LinAlg::Initialization::zero);
+    material->evaluate_inverse_inelastic_def_grad(&FM_, iFin_other, iFin_retry);
+
+    // Assert no internal cache hit for the retry by checking that the two iFin differ
+    Core::LinAlg::Matrix<3, 3> iFin_difference(iFin_retry);
+    iFin_difference.update(-1.0, iFin_first_attempt, 1.0);
+    EXPECT_GT(iFin_difference.norm2(), 0.0);
+
+    // the retry gives the same result as a first attempt with the reduced time step
+    auto fresh_material = set_up_viscoplastic_material().material;
+    fresh_material->pre_evaluate(params_list, retry_context, 0, 0);
+    Core::LinAlg::Matrix<3, 3> iFin_fresh(Core::LinAlg::Initialization::zero);
+    fresh_material->evaluate_inverse_inelastic_def_grad(&FM_, iFin_other, iFin_fresh);
+    FOUR_C_EXPECT_NEAR(iFin_retry, iFin_fresh, 1.0e-10);
+  }
+
   TEST_F(InelasticDefgradFactorsTest, TestViscoplasticCorrectionSubstepping)
   {
     // tests a challenging scenario, where the material formulation without substepping (one single
@@ -3097,6 +3173,57 @@ namespace
         tq_heat_fd.derivative_wrt_cauchy_green, 1.0e-7, 1.0e-16);
     expect_near_relative(tq_heat_analytic.derivative_wrt_temperature,
         tq_heat_fd.derivative_wrt_temperature, 1.0e-8, 1.0e-16);
+  }
+
+  TEST_F(InelasticDefgradFactorsTest, ThermoViscoplastHeatSourceReintegratesOnTimeStepRetry)
+  {
+    const ViscoplasticMaterialSetup setup{.taylor_quinney_coefficient = 0.85,
+        .viscoplastic_law_params = {.strain_rate_exp_fac = 0.014,
+            .init_yield_strength = 792.0,
+            .isotrop_harden_prefac = 510.0,
+            .isotrop_harden_exp = 0.26}};
+    auto material = set_up_viscoplastic_material(setup).material;
+
+    // both attempts start at t = 0, the retry with half the time step size
+    const double first_attempt_time = 1.0e-6;
+    const double first_attempt_time_step_size = 1.0e-6;
+    const Mat::EvaluationContext<3> first_attempt_context{.total_time = &first_attempt_time,
+        .time_step_size = &first_attempt_time_step_size,
+        .xi = {},
+        .ref_coords = nullptr};
+    const double retry_time = 0.5e-6;
+    const double retry_time_step_size = 0.5e-6;
+    const Mat::EvaluationContext<3> retry_context{.total_time = &retry_time,
+        .time_step_size = &retry_time_step_size,
+        .xi = {},
+        .ref_coords = nullptr};
+    const Core::LinAlg::Matrix<3, 3> iFin_other = Core::LinAlg::identity_matrix<3>();
+    const double temperature = 313.0;
+    Core::LinAlg::Matrix<3, 3> FM(Core::LinAlg::Initialization::zero);
+    FM(0, 0) = 1.55;
+    FM(0, 1) = 0.15;
+    FM(1, 1) = 1.0;
+    FM(2, 2) = 1.0;
+
+    const Mat::HeatSource heat_source_first_attempt = material->evaluate_taylor_quinney_heat_source(
+        first_attempt_context, 0, 0, &FM, iFin_other, temperature);
+
+    // retry the time step with half the step size at the same deformation gradient (no update)
+    const Mat::HeatSource heat_source_retry = material->evaluate_taylor_quinney_heat_source(
+        retry_context, 0, 0, &FM, iFin_other, temperature);
+
+    // Assert no internal cache hit for the retry by checking that the two heat sources differ
+    EXPECT_GT(std::abs(heat_source_retry.value - heat_source_first_attempt.value), 0.0);
+
+    // the retry gives the same result as a first attempt with the reduced time step
+    auto fresh_material = set_up_viscoplastic_material(setup).material;
+    const Mat::HeatSource heat_source_fresh = fresh_material->evaluate_taylor_quinney_heat_source(
+        retry_context, 0, 0, &FM, iFin_other, temperature);
+    expect_near_relative(heat_source_retry.value, heat_source_fresh.value, 1.0e-8, 1.0e-12);
+    expect_near_relative(heat_source_retry.derivative_wrt_cauchy_green,
+        heat_source_fresh.derivative_wrt_cauchy_green, 1.0e-8, 1.0e-12);
+    expect_near_relative(heat_source_retry.derivative_wrt_temperature,
+        heat_source_fresh.derivative_wrt_temperature, 1.0e-8, 1.0e-12);
   }
 
   TEST_F(InelasticDefgradFactorsTest, ThermoViscoplastPublicEvaluationsCanBeCalledInAnyOrder)
