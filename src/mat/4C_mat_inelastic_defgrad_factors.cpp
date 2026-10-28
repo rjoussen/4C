@@ -3254,6 +3254,11 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::update()
 
     // update history variables for the next time step
     time_step_quantities_.update(gp);
+    // invalidate the stored current state: the next time step starts from the updated history
+    // variables, i.e., the evaluation must be repeated even for an unchanged deformation gradient
+    // and temperature
+    time_step_quantities_.current_defgrad[gp].clear();
+    thermo_mechanical_coupling_cache_.reset(gp);
     // reset saved number of iterations at each Gauss point within Local Newton-Raphson manager
     local_newton_manager_.reset_curr_num_iters(gp);
     if (is_plastic_gp_[gp])
