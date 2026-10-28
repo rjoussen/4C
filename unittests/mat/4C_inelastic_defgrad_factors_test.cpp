@@ -2267,6 +2267,37 @@ namespace
     FOUR_C_EXPECT_NEAR(iFin_result, iFin_result_ref, 1.0e-10);
   }
 
+  TEST_F(InelasticDefgradFactorsTest, ViscoplasticFlowContinuesInNextTimeStepAtUnchangedDefgrad)
+  {
+    auto material = set_up_viscoplastic_material().material;
+
+    Teuchos::ParameterList params_list;
+    double total_time = 1.0e-3;
+    double time_step_size = 1.0e-3;
+    Mat::EvaluationContext<3> context{.total_time = &total_time,
+        .time_step_size = &time_step_size,
+        .xi = {},
+        .ref_coords = nullptr};
+    const Core::LinAlg::Matrix<3, 3> iFin_other = Core::LinAlg::identity_matrix<3>();
+
+    material->pre_evaluate(params_list, context, 0, 0);
+    Core::LinAlg::Matrix<3, 3> iFin_first_step(Core::LinAlg::Initialization::zero);
+    material->evaluate_inverse_inelastic_def_grad(&FM_, iFin_other, iFin_first_step);
+
+    // the next time step at the same deformation gradient
+    material->update();
+    // update time (context contains a pointer)
+    total_time += time_step_size;
+    material->pre_evaluate(params_list, context, 0, 0);
+    Core::LinAlg::Matrix<3, 3> iFin_second_step(Core::LinAlg::Initialization::zero);
+    material->evaluate_inverse_inelastic_def_grad(&FM_, iFin_other, iFin_second_step);
+
+    // Assert no internal cache hit for the second step by checking that the two iFin differ
+    Core::LinAlg::Matrix<3, 3> iFin_difference(iFin_second_step);
+    iFin_difference.update(-1.0, iFin_first_step, 1.0);
+    EXPECT_GT(iFin_difference.norm2(), 0.0);
+  }
+
   TEST_F(InelasticDefgradFactorsTest, TestViscoplasticCorrectionSubstepping)
   {
     // tests a challenging scenario, where the material formulation without substepping (one single

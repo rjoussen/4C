@@ -1828,29 +1828,6 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::pre_evaluate(
   // set element ID
   ele_gid_ = eleGID;
 
-
-  const double previous_temperature = time_step_quantities_.current_temperature[gp];
-
-  // set current absolute temperature
-  time_step_quantities_.current_temperature[gp] = ref_temperature_;
-  if (params.isParameter("temperature"))
-  {
-    time_step_quantities_.current_temperature[gp] = params.get<double>("temperature");
-  }
-
-  // invalidate the caches if the temperature changed
-  if (std::abs(time_step_quantities_.current_temperature[gp] - previous_temperature) >
-      ViscoplastUtils::thermo_mechanical_state_equality_tolerance)
-  {
-    thermo_mechanical_coupling_cache_.reset(gp);
-
-    // We use the current defgrad stored in time_step_quantities in
-    // evalate_inverse_inelastic_defgrad to determine whether or not there is a new state. Since a
-    // changed temperature alone is enough to have a new state, we invalidate the stored current
-    // defgrad here by setting it to a physically meaningless value.
-    time_step_quantities_.current_defgrad[gp].clear();
-  }
-
   // set time step
   FOUR_C_ASSERT_ALWAYS(context.time_step_size, "Time step size not given in evaluation context.");
   time_step_tracker_.dt = *context.time_step_size;
@@ -2915,7 +2892,7 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_taylor_quinney_heat_
 
   const double tol = ViscoplastUtils::thermo_mechanical_state_equality_tolerance;
 
-  // First determine current state, then pre_evaluate, because pre_evaluate sets state.
+  // check whether the incoming state is the one evaluated last
   const bool is_current_state =
       defgrad_difference_norm(
           reduced_kinematics.defgrad, time_step_quantities_.current_defgrad[gp]) < tol &&
@@ -3010,24 +2987,26 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_inverse_inelast
 {
   const ReducedKinematics reduced_kinematics = evaluate_reduced_kinematics(*defgrad, iFin_other);
 
+  // temperature was set by pre_evaluate
+  const double temperature =
+      params_.isParameter("temperature") ? params_.get<double>("temperature") : ref_temperature_;
+
   // check whether we have already evaluated the inverse inelastic deformation gradient for
-  // the given reduced deformation gradient (this check should only be
+  // the given reduced deformation gradient and temperature (this check should only be
   // performed for the first repetition, since we want to repeat the
   // return mapping under the same conditions, and not simply return the
   // computed value)
   if (defgrad_difference_norm(
-          reduced_kinematics.defgrad, time_step_quantities_.current_defgrad[gp_]) <= 1.0e-16)
+          reduced_kinematics.defgrad, time_step_quantities_.current_defgrad[gp_]) <= 1.0e-16 &&
+      std::abs(temperature - time_step_quantities_.current_temperature[gp_]) <=
+          ViscoplastUtils::thermo_mechanical_state_equality_tolerance)
   {
     // just set the already computed value, no further computation
     iFinM = time_step_quantities_.current_plastic_defgrad_inverse[gp_];
     return;
   }
-  // If this is a "new" deformation gradient, evaluate the inverse inelastic deformation gradient
-  // via return mapping.
-
-  // temperature was set by pre_evaluate
-  const double temperature =
-      params_.isParameter("temperature") ? params_.get<double>("temperature") : ref_temperature_;
+  // If this is a new state, evaluate the inverse inelastic deformation gradient via return
+  // mapping.
   iFinM = constitutive_update(reduced_kinematics.defgrad, temperature).inv_plastic_defgrad;
 }
 
@@ -3281,6 +3260,11 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::update()
 
     // update history variables for the next time step
     time_step_quantities_.update(gp);
+    // invalidate the stored current state: the next time step starts from the updated history
+    // variables, i.e., the evaluation must be repeated even for an unchanged deformation gradient
+    // and temperature
+    time_step_quantities_.current_defgrad[gp].clear();
+    thermo_mechanical_coupling_cache_.reset(gp);
     // reset saved number of iterations at each Gauss point within Local Newton-Raphson manager
     local_newton_manager_.reset_curr_num_iters(gp);
     if (is_plastic_gp_[gp])
