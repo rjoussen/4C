@@ -85,9 +85,8 @@ namespace Core::LinearSolver
      */
     [[nodiscard]] bool can_reuse_amesos2_solver() const;
 
-    //! Store the graph and the right-hand side map of the current system a_ and b_ for later
-    //! comparison
-    void record_created_system();
+    //! Store a snapshot of the current system a_ and b_ for later comparison
+    void record_system_snapshot();
 
     //! type/implementation of Amesos solver to be used
     const Core::LinearSolver::SolverType solvertype_;
@@ -116,8 +115,8 @@ namespace Core::LinearSolver
     //! an abstract Amesos2 solver that can be any of the concrete implementations
     Teuchos::RCP<Amesos2::Solver<Epetra_CrsMatrix, Epetra_MultiVector>> solver_;
 
-    //! System the Amesos2 solver was created on
-    struct CreatedSystem
+    //! Snapshot of the linear system the Amesos2 solver was created on
+    struct LinearSystemSnapshot
     {
       //! identity of the Epetra matrix (non-owning)
       const Epetra_CrsMatrix* matrix_ = nullptr;
@@ -128,7 +127,7 @@ namespace Core::LinearSolver
       std::optional<Core::LinAlg::Graph> graph;
       std::optional<Core::LinAlg::Map> rhs_map;
     };
-    CreatedSystem created_system_;
+    LinearSystemSnapshot system_snapshot_;
 
     /*! \brief A projector applied before solving the linear systems
      *

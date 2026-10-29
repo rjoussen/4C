@@ -67,15 +67,15 @@ bool Core::LinearSolver::DirectSolver::can_reuse_amesos2_solver() const
   // These conditions are identical on all ranks.
   if (!reuse_symbolic_ || solver_.is_null() || projector_ != nullptr || !a_->filled()) return false;
 
-  FOUR_C_ASSERT(created_system_.graph.has_value(),
+  FOUR_C_ASSERT(system_snapshot_.graph.has_value(),
       "The system the Amesos2 solver was created on is unknown.");
 
   // Amesos2 holds on to the matrix it was created on.
-  const bool same_matrix = created_system_.matrix_ == &a_->epetra_matrix();
+  const bool same_matrix = system_snapshot_.matrix_ == &a_->epetra_matrix();
 
   // Comparing maps can be collective, so all comparisons are done unconditionally on every rank.
-  const bool same_graph = created_system_.graph->is_identical_to(a_->get_current_graph());
-  const bool same_rhs_map = created_system_.rhs_map->same_as(b_->get_map());
+  const bool same_graph = system_snapshot_.graph->is_identical_to(a_->get_current_graph());
+  const bool same_rhs_map = system_snapshot_.rhs_map->same_as(b_->get_map());
 
   const bool same = same_matrix && same_graph && same_rhs_map;
 
@@ -85,12 +85,12 @@ bool Core::LinearSolver::DirectSolver::can_reuse_amesos2_solver() const
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-void Core::LinearSolver::DirectSolver::record_created_system()
+void Core::LinearSolver::DirectSolver::record_system_snapshot()
 {
-  created_system_.matrix_ = &a_->epetra_matrix();
-  created_system_.rhs_ = &b_->get_epetra_multi_vector();
-  created_system_.graph.emplace(a_->get_current_graph());
-  created_system_.rhs_map = b_->get_map();
+  system_snapshot_.matrix_ = &a_->epetra_matrix();
+  system_snapshot_.rhs_ = &b_->get_epetra_multi_vector();
+  system_snapshot_.graph.emplace(a_->get_current_graph());
+  system_snapshot_.rhs_map = b_->get_map();
 }
 
 //----------------------------------------------------------------------------------
@@ -105,7 +105,7 @@ void Core::LinearSolver::DirectSolver::reset()
   if (reuse_symbolic_) return;
 
   solver_ = Teuchos::null;
-  created_system_ = CreatedSystem{};
+  system_snapshot_ = LinearSystemSnapshot{};
   symbolic_done_ = false;
 }
 
@@ -148,15 +148,15 @@ void Core::LinearSolver::DirectSolver::setup(std::shared_ptr<Core::LinAlg::Spars
   a_ = crsA;
 
   // 3. create linear solver
-  if (refactor or not is_factored() or created_system_.matrix_ != &a_->epetra_matrix() or
-      created_system_.rhs_ != &b_->get_epetra_multi_vector())
+  if (refactor or not is_factored() or system_snapshot_.matrix_ != &a_->epetra_matrix() or
+      system_snapshot_.rhs_ != &b_->get_epetra_multi_vector())
   {
     if (can_reuse_amesos2_solver())
     {
       // Keep the Amesos2 solver with its symbolic factorization. Only the right-hand side vector
       // may differ, and the values are read again in the numeric factorization.
       solver_->setB(Teuchos::rcpFromRef(b_->get_epetra_multi_vector()));
-      created_system_.rhs_ = &b_->get_epetra_multi_vector();
+      system_snapshot_.rhs_ = &b_->get_epetra_multi_vector();
 
       factored_ = false;
       return;
@@ -215,7 +215,7 @@ void Core::LinearSolver::DirectSolver::setup(std::shared_ptr<Core::LinAlg::Spars
 
     solver_->setParameters(Teuchos::make_rcp<Teuchos::ParameterList>(std::move(params)));
 
-    record_created_system();
+    record_system_snapshot();
 
     symbolic_done_ = false;
     factored_ = false;
