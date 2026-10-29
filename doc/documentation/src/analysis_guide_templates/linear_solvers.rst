@@ -244,6 +244,32 @@ To opt out of the automatic detection, set ``AUTO_DETECT_CONTIGUOUS_DOF_IDS`` to
       SOLVER: "UMFPACK"
       AUTO_DETECT_CONTIGUOUS_DOF_IDS: false
 
+Advanced: reuse of the symbolic factorization
+"""""""""""""""""""""""""""""""""""""""""""""
+
+The factorization of a sparse matrix consists of a symbolic part, which depends only on the sparsity pattern, and a numeric part, which depends on the values.
+For ``KLU2``, ``UMFPACK`` and ``MUMPS``, |FOURC| keeps the Amesos2 solver as long as the sparsity pattern of the matrix and its maps are unchanged
+and skips the symbolic step of Amesos2. This applies, e.g., to the Newton iterations and the time steps of a nonlinear problem.
+The pattern is compared at every solve, so a changed pattern always leads to a new symbolic step.
+The reuse is not applied if a Krylov projector is used.
+
+The benefit depends on the solver:
+
+- ``KLU2`` keeps its symbolic factorization (ordering and analysis), so only the numeric factorization is repeated.
+- ``MUMPS`` keeps its analysis, so only the numeric factorization is repeated. The analysis uses the values of the first matrix,
+  so strongly changing values can require more working memory than estimated; opt out in case of MUMPS errors.
+- ``UMFPACK``: Amesos2 releases the symbolic factorization of UMFPACK after every solve, so UMFPACK repeats its analysis in every numeric factorization.
+  Only the work of Amesos2 in its symbolic step, i.e., reading the matrix structure, is saved.
+  This gain is small if the contiguous GIDs are detected (see above), since this step is then cheap.
+
+To opt out, set ``REUSE_SYMBOLIC_FACTORIZATION`` to ``false``:
+
+.. code-block:: yaml
+
+    SOLVER 1:
+      SOLVER: "UMFPACK"
+      REUSE_SYMBOLIC_FACTORIZATION: false
+
 Iterative solver
 ^^^^^^^^^^^^^^^^^^
 

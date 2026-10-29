@@ -84,6 +84,16 @@ namespace Core::LinearSolver
                             "path, i.e., to opt out of this automatic detection.",
                 .default_value = true}),
 
+        parameter<bool>("REUSE_SYMBOLIC_FACTORIZATION",
+            {.description = "Direct solvers KLU2, UMFPACK and MUMPS only: If true, the symbolic "
+                            "step of Amesos2 is skipped across solves as long as the sparsity "
+                            "pattern of the matrix is unchanged. KLU2 and MUMPS then repeat only "
+                            "the numeric factorization. UMFPACK still repeats its analysis in "
+                            "every solve, since Amesos2 releases it, only the reading of the "
+                            "matrix structure is saved. The pattern is verified at every solve. "
+                            "Set to false to always redo the symbolic step.",
+                .default_value = true}),
+
         // user-given name of solver block (just for beauty)
         parameter<std::string>("NAME",
             {.description = "User specified name for solver block", .default_value = "No_name"}),
