@@ -1,0 +1,165 @@
+TITLE:
+  - "Plane strain variant of tsi_plastic_heating_monolithic_pseudo_3d: heating due to plastic"
+  - "dissipation and thermoelastic coupling under tension. The pseudo-3D test fixes the"
+  - "z-displacements of all nodes. Here, the same problem is solved with 2D elements in plane strain,"
+  - "whose thickness is the extent of the 3D test in z. The line load is a force per length, i.e.,"
+  - "the traction of the 3D test times the thickness. The surfaces with homogeneous Neumann"
+  - "conditions of the 3D test are left out. Results coincide with the pseudo-3D test up to the"
+  - "solver tolerance."
+PROBLEM SIZE:
+  DIM: 2
+IO:
+  STRUCT_STRESS: "Cauchy"
+  STRUCT_STRAIN: "GL"
+PROBLEM TYPE:
+  PROBLEMTYPE: "Thermo_Structure_Interaction"
+STRUCTURAL DYNAMIC:
+  RESULTSEVERY: 0
+  RESTARTEVERY: 0
+  INT_STRATEGY: "Standard"
+  DYNAMICTYPE: "OneStepTheta"
+  TIMESTEP: 1
+  NUMSTEP: 10
+  MAXTIME: 10
+  TOLDISP: 1e-08
+  TOLRES: 1e-06
+  NORM_RESF: "Rel"
+  LINEAR_SOLVER: 1
+STRUCTURAL DYNAMIC/ONESTEPTHETA:
+  THETA: 1
+IO/RUNTIME VTK OUTPUT:
+  OUTPUT_DATA_FORMAT: ascii
+  INTERVAL_STEPS: 3
+IO/RUNTIME VTK OUTPUT/STRUCTURE:
+  OUTPUT_STRUCTURE: true
+  DISPLACEMENT: true
+  STRESS_STRAIN: true
+  GAUSS_POINT_DATA_OUTPUT_TYPE: nodes
+THERMAL DYNAMIC:
+  RESTARTEVERY: 0
+  RESULTSEVERY: 0
+  INITIALFIELD: "field_by_function"
+  INITFUNCNO: 1
+  TIMESTEP: 0.01
+  MAXTIME: 1
+  TOLTEMP: 1e-08
+  TOLRES: 1e-05
+  ITERNORM: "Rms"
+  LINEAR_SOLVER: 1
+THERMAL DYNAMIC/ONESTEPTHETA:
+  THETA: 1
+THERMAL DYNAMIC/RUNTIME VTK OUTPUT:
+  OUTPUT_THERMO: true
+  TEMPERATURE: true
+TSI DYNAMIC:
+  RESTARTEVERY: 0
+  RESULTSEVERY: 3
+  NUMSTEP: 3
+  MAXTIME: 90
+  TIMESTEP: 30
+TSI DYNAMIC/MONOLITHIC:
+  CONVTOL: 1e-07
+  TOLINC: 1e-08
+  NORM_RESF: "Rel"
+  NORMCOMBI_RESFINC: "And"
+  LINEAR_SOLVER: 1
+  MERGE_TSI_BLOCK_MATRIX: true
+SOLVER 1:
+  SOLVER: "UMFPACK"
+MATERIALS:
+  - MAT: 1
+    MAT_Struct_ThermoPlasticLinElast:
+      YOUNG: 6000.0
+      NUE: 0.3
+      DENS: 1e-06
+      THEXPANS: 1.1e-05
+      INITTEMP: 300
+      YIELD: 250
+      ISOHARD: 0
+      KINHARD: 0
+      SAMPLENUM: 4
+      SIGMA_Y: [250, 500, 750, 1000]
+      EPSBAR_P: [0.0, 0.01, 0.1, 1.0]
+      TOL: 0.0001
+  - MAT: 2
+    MAT_Fourier:
+      CAPA: 6.445
+      CONDUCT:
+        constant: [1031.2]
+CLONING MATERIAL MAP:
+  - SRC_FIELD: "structure"
+    SRC_MAT: 1
+    TAR_FIELD: "thermo"
+    TAR_MAT: 2
+FUNCT1:
+  - COMPONENT: 0
+    SYMBOLIC_FUNCTION_OF_SPACE_TIME: "300.0"
+FUNCT2:
+  - COMPONENT: 0
+    SYMBOLIC_FUNCTION_OF_SPACE_TIME: "10*t"
+DESIGN LINE NEUMANN CONDITIONS:
+  # positive x direction
+  - E: 1
+    NUMDOF: 6
+    ONOFF: [1, 0, 0, 0, 0, 0]
+    VAL: [2, 0, 0, 0, 0, 0]
+    FUNCT: [2, 2, 2, 2, 2, 2]
+DESIGN LINE DIRICH CONDITIONS:
+  # negative x direction
+  - E: 2
+    NUMDOF: 2
+    ONOFF: [1, 0]
+    VAL: [0, 0]
+    FUNCT: [0, 0]
+  # negative y direction
+  - E: 3
+    NUMDOF: 2
+    ONOFF: [0, 1]
+    VAL: [0, 0]
+    FUNCT: [0, 0]
+DLINE-NODE TOPOLOGY:
+  # X+
+  - "NODE 5 DLINE 1"
+  - "NODE 6 DLINE 1"
+  # X-
+  - "NODE 1 DLINE 2"
+  - "NODE 4 DLINE 2"
+  # Y-
+  - "NODE 1 DLINE 3"
+  - "NODE 2 DLINE 3"
+  - "NODE 5 DLINE 3"
+NODE COORDS:
+  - "NODE 1 COORD 0.00000000e+00 0.00000000e+00 0.00000000e+00"
+  - "NODE 2 COORD 2.00000000e+00 0.00000000e+00 0.00000000e+00"
+  - "NODE 3 COORD 2.00000000e+00 2.00000000e+00 0.00000000e+00"
+  - "NODE 4 COORD 0.00000000e+00 2.00000000e+00 0.00000000e+00"
+  - "NODE 5 COORD 4.00000000e+00 0.00000000e+00 0.00000000e+00"
+  - "NODE 6 COORD 4.00000000e+00 2.00000000e+00 0.00000000e+00"
+STRUCTURE ELEMENTS:
+  - "1 SOLIDSCATRA QUAD4 1 2 3 4 MAT 1 KINEM linear THICKNESS 2 PLANE_ASSUMPTION plane_strain TYPE Undefined"
+  - "2 SOLIDSCATRA QUAD4 2 5 6 3 MAT 1 KINEM linear THICKNESS 2 PLANE_ASSUMPTION plane_strain TYPE Undefined"
+RESULT DESCRIPTION:
+  - STRUCTURE:
+      DIS: "structure"
+      NODE: 5
+      QUANTITY: "dispx"
+      VALUE: 1.3039555706016117
+      TOLERANCE: 1e-06
+  - STRUCTURE:
+      DIS: "structure"
+      NODE: 6
+      QUANTITY: "accumulated_plastic_strain"
+      VALUE: 0.21515644266471984
+      TOLERANCE: 1e-06
+  - STRUCTURE:
+      DIS: "structure"
+      NODE: 5
+      QUANTITY: "dissipation"
+      VALUE: -48.70906396762254
+      TOLERANCE: 1e-06
+  - THERMAL:
+      DIS: "thermo"
+      NODE: 5
+      QUANTITY: "temp"
+      VALUE: 307.67855010098003
+      TOLERANCE: 1e-06
