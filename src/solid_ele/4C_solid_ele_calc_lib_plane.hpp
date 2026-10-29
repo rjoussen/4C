@@ -19,6 +19,24 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Discret::Elements
 {
+  //! 3D tensor with the in-plane components of @p tensor_2d and the out-of-plane diagonal
+  //! component @p diagonal_value
+  Core::LinAlg::Tensor<double, 3, 3> make_3d_tensor(
+      const Core::LinAlg::Tensor<double, 2, 2>& tensor_2d, double diagonal_value = 0.0);
+
+  //! 3D tensor with the in-plane components of @p tensor_2d and the out-of-plane diagonal
+  //! component @p diagonal_value
+  Core::LinAlg::SymmetricTensor<double, 3, 3> make_3d_tensor(
+      const Core::LinAlg::SymmetricTensor<double, 2, 2>& tensor_2d, double diagonal_value = 0.0);
+
+  //! in-plane components of @p tensor_3d
+  Core::LinAlg::SymmetricTensor<double, 2, 2> extract_2d_part(
+      const Core::LinAlg::SymmetricTensor<double, 3, 3>& tensor_3d);
+
+  //! in-plane components of @p tensor_3d
+  Core::LinAlg::SymmetricTensor<double, 2, 2, 2, 2> extract_2d_part(
+      const Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& tensor_3d);
+
   template <Core::FE::CellType celltype>
     requires(Core::FE::dim<celltype> == 2)
   void transform_to_3d(Mat::So3Material& material,
