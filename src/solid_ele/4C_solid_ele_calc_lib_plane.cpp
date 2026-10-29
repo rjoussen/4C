@@ -27,8 +27,51 @@
 
 FOUR_C_NAMESPACE_OPEN
 
+Core::LinAlg::SymmetricTensor<double, 2, 2> Discret::Elements::extract_2d_part(
+    const Core::LinAlg::SymmetricTensor<double, 3, 3>& tensor_3d)
+{
+  return Core::LinAlg::assume_symmetry(Core::LinAlg::Tensor<double, 2, 2>{
+      {{tensor_3d(0, 0), tensor_3d(0, 1)}, {tensor_3d(1, 0), tensor_3d(1, 1)}}});
+}
+
+Core::LinAlg::SymmetricTensor<double, 2, 2, 2, 2> Discret::Elements::extract_2d_part(
+    const Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& tensor_3d)
+{
+  Core::LinAlg::SymmetricTensor<double, 2, 2, 2, 2> result{};
+
+  for (int i = 0; i < 2; ++i)
+    for (int j = i; j < 2; ++j)
+      for (int k = 0; k < 2; ++k)
+        for (int l = k; l < 2; ++l) result(i, j, k, l) = tensor_3d(i, j, k, l);
+
+  return result;
+}
+
+Core::LinAlg::Tensor<double, 3, 3> Discret::Elements::make_3d_tensor(
+    const Core::LinAlg::Tensor<double, 2, 2>& tensor_2d, double diagonal_value)
+{
+  return Core::LinAlg::Tensor<double, 3, 3>{{
+      {tensor_2d(0, 0), tensor_2d(0, 1), 0},
+      {tensor_2d(1, 0), tensor_2d(1, 1), 0},
+      {0, 0, diagonal_value},
+  }};
+}
+
+Core::LinAlg::SymmetricTensor<double, 3, 3> Discret::Elements::make_3d_tensor(
+    const Core::LinAlg::SymmetricTensor<double, 2, 2>& tensor_2d, double diagonal_value)
+{
+  return Core::LinAlg::assume_symmetry(Core::LinAlg::Tensor<double, 3, 3>{{
+      {tensor_2d(0, 0), tensor_2d(0, 1), 0},
+      {tensor_2d(1, 0), tensor_2d(1, 1), 0},
+      {0, 0, diagonal_value},
+  }});
+}
+
 namespace
 {
+  using Discret::Elements::extract_2d_part;
+  using Discret::Elements::make_3d_tensor;
+
   Mat::EvaluationContext<3> translate_context(const Mat::EvaluationContext<2>& context,
       Core::LinAlg::Tensor<double, 3>& xi, Core::LinAlg::Tensor<double, 3>& ref_coords)
   {
@@ -50,46 +93,6 @@ namespace
         .xi = context.xi ? &xi : nullptr,
         .ref_coords = context.ref_coords ? &ref_coords : nullptr,
     };
-  }
-
-  Core::LinAlg::SymmetricTensor<double, 2, 2> extract_2d_part(
-      const Core::LinAlg::SymmetricTensor<double, 3, 3>& tensor_3d)
-  {
-    return Core::LinAlg::assume_symmetry(Core::LinAlg::Tensor<double, 2, 2>{
-        {{tensor_3d(0, 0), tensor_3d(0, 1)}, {tensor_3d(1, 0), tensor_3d(1, 1)}}});
-  }
-
-  Core::LinAlg::SymmetricTensor<double, 2, 2, 2, 2> extract_2d_part(
-      const Core::LinAlg::SymmetricTensor<double, 3, 3, 3, 3>& tensor_3d)
-  {
-    Core::LinAlg::SymmetricTensor<double, 2, 2, 2, 2> result{};
-
-    for (int i = 0; i < 2; ++i)
-      for (int j = i; j < 2; ++j)
-        for (int k = 0; k < 2; ++k)
-          for (int l = k; l < 2; ++l) result(i, j, k, l) = tensor_3d(i, j, k, l);
-
-    return result;
-  }
-
-  Core::LinAlg::Tensor<double, 3, 3> make_3d_tensor(
-      const Core::LinAlg::Tensor<double, 2, 2>& tensor_2d, double diagonal_value = 0.0)
-  {
-    return Core::LinAlg::Tensor<double, 3, 3>{{
-        {tensor_2d(0, 0), tensor_2d(0, 1), 0},
-        {tensor_2d(1, 0), tensor_2d(1, 1), 0},
-        {0, 0, diagonal_value},
-    }};
-  }
-
-  Core::LinAlg::SymmetricTensor<double, 3, 3> make_3d_tensor(
-      const Core::LinAlg::SymmetricTensor<double, 2, 2>& tensor_2d, double diagonal_value = 0.0)
-  {
-    return Core::LinAlg::assume_symmetry(Core::LinAlg::Tensor<double, 3, 3>{{
-        {tensor_2d(0, 0), tensor_2d(0, 1), 0},
-        {tensor_2d(1, 0), tensor_2d(1, 1), 0},
-        {0, 0, diagonal_value},
-    }});
   }
 
 

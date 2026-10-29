@@ -89,6 +89,32 @@ namespace
         305.0, 296.0, 309.0, 292.0, 301.0, 307.0, 294.0, 299.0};
   };
 
+  //! nodal data of a slightly distorted quad4 element, the in-plane part of the bottom face of the
+  //! hex8 element
+  struct Quad4Data
+  {
+    static constexpr Core::FE::CellType celltype = Core::FE::CellType::quad4;
+    static constexpr std::array<std::array<double, 2>, 4> reference_coordinates = {{
+        {-1.02, -0.97},
+        {1.03, -1.01},
+        {0.98, 1.04},
+        {-0.96, 0.99},
+    }};
+    static constexpr std::array<std::array<double, 2>, 4> displacements = {{
+        {0.03, -0.02},
+        {-0.01, 0.05},
+        {0.04, 0.01},
+        {-0.05, -0.04},
+    }};
+    static constexpr std::array<std::array<double, 2>, 4> velocities = {{
+        {0.2, -0.1},
+        {-0.4, 0.2},
+        {0.1, 0.3},
+        {0.3, -0.2},
+    }};
+    static constexpr std::array<double, 4> temperatures = {305.0, 296.0, 309.0, 292.0};
+  };
+
   /*!
    * @brief A single, slightly distorted solid-scatra element with a thermo-elastic material
    *
@@ -169,7 +195,7 @@ namespace
     using SolidFormulation = Formulation<ElementData::celltype>;
   };
 
-  //! evaluation of the element with the given solid formulation
+  //! evaluation of the element with the given solid formulation, 2D elements in plane strain
   template <typename TestCase>
   class SolidScatraEleCalcTest : public SolidScatraElementTest<typename TestCase::Data>
   {
@@ -198,8 +224,17 @@ namespace
         .xi = nullptr,
         .ref_coords = nullptr};
 
+    //! calculation class of the element, 2D elements with the given reference thickness
+    static ElementCalc create_element_calc(const double reference_thickness)
+    {
+      if constexpr (Base::num_dim == 3)
+        return ElementCalc{};
+      else
+        return ElementCalc{reference_thickness, Discret::Elements::PlaneAssumption::plane_strain};
+    }
+
     // the calculation class for the solid-scatra element with the given solid formulation
-    ElementCalc element_calc_;
+    ElementCalc element_calc_ = create_element_calc(2.0);
 
     void SetUp() override
     {
@@ -262,7 +297,9 @@ namespace
   using TestCases =
       ::testing::Types<TestCase<Hex8Data, Discret::Elements::DisplacementBasedFormulation>,
           TestCase<Hex8Data, Discret::Elements::DisplacementBasedLinearKinematicsFormulation>,
-          TestCase<Hex8Data, Discret::Elements::FBarFormulation>>;
+          TestCase<Hex8Data, Discret::Elements::FBarFormulation>,
+          TestCase<Quad4Data, Discret::Elements::DisplacementBasedFormulation>,
+          TestCase<Quad4Data, Discret::Elements::DisplacementBasedLinearKinematicsFormulation>>;
   TYPED_TEST_SUITE(SolidScatraEleCalcTest, TestCases);
 
   TYPED_TEST(SolidScatraEleCalcTest, InternalForceWrtTemperatureMatchesFiniteDifferences)
@@ -360,5 +397,23 @@ namespace
 
     FOUR_C_EXPECT_NEAR(heat_source.d_displacements, d_displacements_FD,
         1.0e-6 * TestFixture::max_abs(d_displacements_FD));
+  }
+
+  using PlaneStrainEleCalcTest =
+      SolidScatraEleCalcTest<TestCase<Quad4Data, Discret::Elements::DisplacementBasedFormulation>>;
+
+  TEST_F(PlaneStrainEleCalcTest, HeatSourceIsIndependentOfReferenceThickness)
+  {
+    // the thermal elements integrate per unit thickness, hence also the heat source
+    auto element_calc_unit_thickness = create_element_calc(1.0);
+    element_calc_unit_thickness.setup(*material_, Core::IO::InputParameterContainer{});
+
+    const auto heat_source =
+        this->heat_source(element_calc_, Data::displacements, Data::velocities, Data::temperatures);
+    const auto heat_source_unit_thickness = this->heat_source(
+        element_calc_unit_thickness, Data::displacements, Data::velocities, Data::temperatures);
+
+    FOUR_C_EXPECT_NEAR(heat_source.value, heat_source_unit_thickness.value,
+        1.0e-14 * heat_source_unit_thickness.value.normInf());
   }
 }  // namespace

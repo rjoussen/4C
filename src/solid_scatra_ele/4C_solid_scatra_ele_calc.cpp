@@ -102,6 +102,83 @@ namespace
     }
   }
 
+  //! mechanical heat source and its derivatives w.r.t. the kinematics of the element
+  template <Core::FE::CellType celltype>
+  struct MechanicalHeatSource
+  {
+    double value = 0.0;
+    double derivative_wrt_temperature = 0.0;
+    //! derivative w.r.t. the (Green-Lagrange) strain
+    Core::LinAlg::SymmetricTensor<double, Core::FE::dim<celltype>, Core::FE::dim<celltype>>
+        derivative_wrt_strain{};
+    //! derivative w.r.t. the (Green-Lagrange) strain rate
+    Core::LinAlg::SymmetricTensor<double, Core::FE::dim<celltype>, Core::FE::dim<celltype>>
+        derivative_wrt_strain_rate{};
+  };
+
+  /*!
+   * @brief Evaluate the mechanical heat source of the material at the kinematics of the element
+   *
+   * 2D elements are only supported for plane strain, i.e., the out-of-plane strain and its rate
+   * vanish. For plane stress, the out-of-plane strain rate would follow from the plane stress
+   * condition and depend on the temperature rate.
+   */
+  template <Core::FE::CellType celltype>
+  MechanicalHeatSource<celltype> evaluate_material_mechanical_heat_source(
+      Mat::So3Material& solid_material, Mat::Trait::ThermoSolid& thermo_solid,
+      const Discret::Elements::ElementProperties<celltype>& element_properties,
+      const double temperature,
+      const Core::LinAlg::Tensor<double, Core::FE::dim<celltype>, Core::FE::dim<celltype>>&
+          deformation_gradient,
+      const Core::LinAlg::SymmetricTensor<double, Core::FE::dim<celltype>, Core::FE::dim<celltype>>&
+          gl_strain,
+      const Core::LinAlg::SymmetricTensor<double, Core::FE::dim<celltype>, Core::FE::dim<celltype>>&
+          strain_rate,
+      const Mat::EvaluationContext<Core::FE::dim<celltype>>& context, const int gp,
+      const int eleGID)
+  {
+    if constexpr (Core::FE::dim<celltype> == 3)
+    {
+      const Mat::HeatSource source = thermo_solid.evaluate_mechanical_heat_source(temperature,
+          {.strain = gl_strain, .strain_rate = strain_rate, .defgrad = deformation_gradient},
+          context, gp, eleGID);
+      return {.value = source.value,
+          .derivative_wrt_temperature = source.derivative_wrt_temperature,
+          .derivative_wrt_strain = source.derivative_wrt_strain,
+          .derivative_wrt_strain_rate = source.derivative_wrt_strain_rate};
+    }
+    else
+    {
+      FOUR_C_ASSERT_ALWAYS(
+          element_properties.plane_assumption == Discret::Elements::PlaneAssumption::plane_strain,
+          "The mechanical heat source of 2D elements is only implemented for plane strain.");
+
+      // plane strain does not need any parameters for the transformation to 3D
+      Teuchos::ParameterList params;
+      Mat::HeatSource source_3d;
+      Discret::Elements::transform_to_3d(solid_material, element_properties, deformation_gradient,
+          gl_strain, params, context, gp, eleGID,
+          [&](const Core::LinAlg::Tensor<double, 3, 3>& defgrd_3d,
+              const Core::LinAlg::SymmetricTensor<double, 3, 3>& gl_strain_3d,
+              const Mat::EvaluationContext<3>& context_3d)
+          {
+            source_3d = thermo_solid.evaluate_mechanical_heat_source(temperature,
+                {.strain = gl_strain_3d,
+                    .strain_rate = Discret::Elements::make_3d_tensor(strain_rate),
+                    .defgrad = defgrd_3d},
+                context_3d, gp, eleGID);
+          });
+
+      // only return the 2D part of the derivatives
+      return {.value = source_3d.value,
+          .derivative_wrt_temperature = source_3d.derivative_wrt_temperature,
+          .derivative_wrt_strain =
+              Discret::Elements::extract_2d_part(source_3d.derivative_wrt_strain),
+          .derivative_wrt_strain_rate =
+              Discret::Elements::extract_2d_part(source_3d.derivative_wrt_strain_rate)};
+    }
+  }
+
   template <Core::FE::CellType celltype>
   auto interpolate_quantity_to_point(
       const Discret::Elements::ShapeFunctionsAndDerivatives<celltype>& shape_functions,
@@ -577,12 +654,11 @@ void Discret::Elements::SolidScatraEleCalc<celltype,
   if (thermo_solid == nullptr) return;
 
   // The heat source requires the rate of the strain passed to the material and its
-  // linearization, which the solid formulation has to provide. The material is 3D.
-  if constexpr (num_dim_ != 3 || !has_strain_rate<SolidFormulation>)
+  // linearization, which the solid formulation has to provide.
+  if constexpr (!has_strain_rate<SolidFormulation>)
   {
     FOUR_C_THROW(
-        "The mechanical heat source is not implemented for the element technology or dimension of "
-        "element {}.",
+        "The mechanical heat source is not implemented for the element technology of element {}.",
         ele.id());
   }
   else
@@ -621,7 +697,13 @@ void Discret::Elements::SolidScatraEleCalc<celltype,
     const PreparationData<SolidFormulation> preparation_data =
         prepare(ele, nodal_coordinates, history_data_);
 
-    for_each_gauss_point(nodal_coordinates, element_properties_, stiffness_matrix_integration_,
+    // The thermal elements integrate per unit thickness, hence also the heat source of 2D
+    // elements.
+    ElementProperties<celltype> unit_thickness_properties = element_properties_;
+    if constexpr (num_dim_ == 2) unit_thickness_properties.reference_thickness = 1.0;
+
+    for_each_gauss_point(nodal_coordinates, unit_thickness_properties,
+        stiffness_matrix_integration_,
         [&](const Core::LinAlg::Tensor<double, num_dim_>& xi,
             const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
             const JacobianMapping<celltype>& jacobian_mapping, double integration_factor, int gp)
@@ -646,12 +728,10 @@ void Discret::Elements::SolidScatraEleCalc<celltype,
                     .xi = &xi,
                     .ref_coords = &gp_ref_coord};
 
-                const Mat::HeatSource source =
-                    thermo_solid->evaluate_mechanical_heat_source(temperature,
-                        {.strain = gl_strain,
-                            .strain_rate = strain_rate.strain_rate,
-                            .defgrad = deformation_gradient},
-                        gp_context, gp, ele.id());
+                const MechanicalHeatSource<celltype> source =
+                    evaluate_material_mechanical_heat_source<celltype>(solid_material,
+                        *thermo_solid, element_properties_, temperature, deformation_gradient,
+                        gl_strain, strain_rate.strain_rate, gp_context, gp, ele.id());
 
                 const auto& N = shape_functions.shapefunctions_;
 

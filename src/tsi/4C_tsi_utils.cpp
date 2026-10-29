@@ -24,6 +24,22 @@
 
 FOUR_C_NAMESPACE_OPEN
 
+namespace
+{
+  //! kinematic type of a SOLIDSCATRA element, which is passed to the cloned thermal element
+  Solid::KinemType kinematic_type_of_solid_scatra_element(const Core::Elements::Element& element)
+  {
+    if (const auto* const solid_ele =
+            dynamic_cast<const Discret::Elements::SolidScatra<3>*>(&element))
+      return solid_ele->get_solid_element_properties().kintype;
+    if (const auto* const solid_ele =
+            dynamic_cast<const Discret::Elements::SolidScatra<2>*>(&element))
+      return solid_ele->get_solid_element_properties().kintype;
+
+    FOUR_C_THROW("Unsupported solid element type!");
+  }
+}  // namespace
+
 /*----------------------------------------------------------------------*
  | remove flag thermo from condition                         dano 12/11 |
  *----------------------------------------------------------------------*/
@@ -64,18 +80,8 @@ void TSI::Utils::ThermoStructureCloneStrategy::set_element_data(
   // This is again really ugly as we have to extract the actual
   // element type in order to access the material property
 
-  // initialise kinematic type to geo_linear.
   // kintype is passed to the cloned thermo element
-  Solid::KinemType kintype = Solid::KinemType::linear;
-  // if oldele is a so3_base element or a so3_Plast element
-  if (const auto* const solid_ele = dynamic_cast<Discret::Elements::SolidScatra<3>*>(oldele))
-  {
-    kintype = solid_ele->get_solid_element_properties().kintype;
-  }
-  else
-  {
-    FOUR_C_THROW("Unsupported solid element type!");
-  }
+  const Solid::KinemType kintype = kinematic_type_of_solid_scatra_element(*oldele);
 
   // note: set_material() was reimplemented by the thermo element!
 
@@ -317,15 +323,7 @@ void TSI::Utils::TSIMaterialStrategy::assign_material1_to2(
     }
   }
 
-  // if Aele is a so3_base element
-  if (const auto* const so_base = dynamic_cast<Discret::Elements::SolidScatra<3>*>(ele1))
-  {
-    kintype = so_base->get_solid_element_properties().kintype;
-  }
-  else
-  {
-    FOUR_C_THROW("Unsupported solid element type!");
-  }
+  kintype = kinematic_type_of_solid_scatra_element(*ele1);
 
   Thermo::Element* therm = dynamic_cast<Thermo::Element*>(ele2);
   if (therm != nullptr)

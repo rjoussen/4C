@@ -46,11 +46,12 @@ namespace
   };
 
   //! assemble the heat source at the states set on @p structure_discretization
+  template <unsigned dim>
   AssembledHeatSource assemble_mechanical_heat_source(
       Core::FE::Discretization& structure_discretization, const double total_time,
       const double time_step_size, const std::optional<double> d_velocity_d_displacement)
   {
-    const Mat::EvaluationContext<3> context{.total_time = &total_time,
+    const Mat::EvaluationContext<dim> context{.total_time = &total_time,
         .time_step_size = &time_step_size,
         .xi = nullptr,
         .ref_coords = nullptr};
@@ -78,7 +79,7 @@ namespace
     Core::LinAlg::SerialDenseMatrix element_d_heat_source_d_displacement;
     for (auto ele : structure_discretization.my_col_element_range())
     {
-      auto& element = dynamic_cast<Discret::Elements::SolidScatra<3>&>(*ele.user_element());
+      auto& element = dynamic_cast<Discret::Elements::SolidScatra<dim>&>(*ele.user_element());
       element.location_vector(structure_discretization, la);
 
       element_heat_source.size(la[1].size());
@@ -112,6 +113,19 @@ namespace
     }
 
     return assembled;
+  }
+
+  bool is_solid_scatra_element(const Core::Elements::Element& element, const int dim)
+  {
+    switch (dim)
+    {
+      case 2:
+        return dynamic_cast<const Discret::Elements::SolidScatra<2>*>(&element) != nullptr;
+      case 3:
+        return dynamic_cast<const Discret::Elements::SolidScatra<3>*>(&element) != nullptr;
+      default:
+        return false;
+    }
   }
 }  // namespace
 
@@ -195,10 +209,10 @@ TSI::Algorithm::Algorithm(MPI_Comm comm)
     for (auto ele : structdis->my_col_element_range())
     {
       const Core::Elements::Element& element = *ele.user_element();
-      FOUR_C_ASSERT_ALWAYS(
-          dynamic_cast<const Discret::Elements::SolidScatra<3>*>(&element) != nullptr,
-          "TSI is only implemented for 3D SOLIDSCATRA elements, but element {} is a {}.",
-          element.id(), Core::Utils::get_dynamic_type_name(element));
+      FOUR_C_ASSERT_ALWAYS(is_solid_scatra_element(element, problem_->n_dim()),
+          "TSI is only implemented for SOLIDSCATRA elements of the problem dimension {}, but "
+          "element {} is a {}.",
+          problem_->n_dim(), element.id(), Core::Utils::get_dynamic_type_name(element));
     }
 
     if (restart &&
@@ -381,8 +395,10 @@ std::shared_ptr<Core::LinAlg::SparseMatrix> TSI::Algorithm::evaluate_mechanical_
                     : *volcoupl_->apply_vector_mapping12(*structure_temperature_));
 
   auto [heat_source, d_heat_source_d_temperature, d_heat_source_d_displacement] =
-      assemble_mechanical_heat_source(
-          structure_discretization, time(), dt(), d_velocity_d_displacement);
+      problem_->n_dim() == 3 ? assemble_mechanical_heat_source<3>(structure_discretization, time(),
+                                   dt(), d_velocity_d_displacement)
+                             : assemble_mechanical_heat_source<2>(structure_discretization, time(),
+                                   dt(), d_velocity_d_displacement);
 
   if (!matchinggrid_)
   {

@@ -1,0 +1,168 @@
+TITLE:
+  - "Plane strain variant of tsi_lincompression_monolithic: heating due to nodal velocities."
+  - "Compression of the body due to a traction force that increases with t"
+  - "The 3D test fixes the y- and z-displacements of all nodes, i.e., it is a pseudo-3D plane strain"
+  - "problem. Here, the same problem is solved with 2D elements in plane strain, whose thickness is"
+  - "the extent of the 3D test in z. The line load is a force per length, i.e., the traction of the"
+  - "3D test times the thickness. Displacements and temperatures coincide with the 3D test up to"
+  - "the solver tolerance."
+  - "dynamic, geometrically linear analysis with THETA=1.0 (implicit Euler)"
+  - "material parameters of steel"
+PROBLEM SIZE:
+  DIM: 2
+IO:
+  STRUCT_STRESS: "2PK"
+  STRUCT_STRAIN: "GL"
+PROBLEM TYPE:
+  PROBLEMTYPE: "Thermo_Structure_Interaction"
+STRUCTURAL DYNAMIC:
+  DYNAMICTYPE: "OneStepTheta"
+  TIMESTEP: 1
+  MAXTIME: 1
+  TOLDISP: 1e-08
+  TOLRES: 0.001
+  LINEAR_SOLVER: 1
+STRUCTURAL DYNAMIC/ONESTEPTHETA:
+  THETA: 1
+THERMAL DYNAMIC:
+  INITIALFIELD: "field_by_function"
+  INITFUNCNO: 1
+  TIMESTEP: 0.01
+  MAXTIME: 1
+  TOLTEMP: 1e-07
+  TOLRES: 1e-05
+  LINEAR_SOLVER: 1
+THERMAL DYNAMIC/ONESTEPTHETA:
+  THETA: 1
+TSI DYNAMIC:
+  NUMSTEP: 2000
+  MAXTIME: 1
+  TIMESTEP: 0.1
+TSI DYNAMIC/MONOLITHIC:
+  TOLINC: 1e-07
+  NORM_RESF: "Rel"
+  LINEAR_SOLVER: 1
+  MERGE_TSI_BLOCK_MATRIX: true
+SOLVER 1:
+  SOLVER: "UMFPACK"
+MATERIALS:
+  - MAT: 1
+    MAT_Struct_ThermoStVenantK:
+      YOUNGNUM: 1
+      YOUNG: [2.1e+11]
+      NUE: 0
+      DENS: 7850
+      THEXPANS: 1.2e-05
+      INITTEMP: 300
+  - MAT: 2
+    MAT_Fourier:
+      CAPA: 3.297e+06
+      CONDUCT:
+        constant: [52]
+CLONING MATERIAL MAP:
+  - SRC_FIELD: "structure"
+    SRC_MAT: 1
+    TAR_FIELD: "thermo"
+    TAR_MAT: 2
+FUNCT1:
+  - COMPONENT: 0
+    SYMBOLIC_FUNCTION_OF_SPACE_TIME: "300.0"
+FUNCT2:
+  - COMPONENT: 0
+    SYMBOLIC_FUNCTION_OF_SPACE_TIME: "a"
+  - VARIABLE: 0
+    NAME: "a"
+    TYPE: "multifunction"
+    NUMPOINTS: 3
+    TIMES: [0, 1, 500000]
+    DESCRIPTION: ["(-4.0e10*t)", "(-4.0e10*1)"]
+DESIGN LINE NEUMANN CONDITIONS:
+  - E: 1
+    NUMDOF: 6
+    ONOFF: [1, 0, 0, 0, 0, 0]
+    VAL: [2, 0, 0, 0, 0, 0]
+    FUNCT: [2, 2, 2, 2, 2, 2]
+DESIGN LINE DIRICH CONDITIONS:
+  - E: 2
+    NUMDOF: 2
+    ONOFF: [1, 1]
+    VAL: [0, 0]
+    FUNCT: [0, 0]
+DESIGN SURF DIRICH CONDITIONS:
+  - E: 1
+    NUMDOF: 2
+    ONOFF: [0, 1]
+    VAL: [0, 0]
+    FUNCT: [0, 0]
+DLINE-NODE TOPOLOGY:
+  - "NODE 5 DLINE 1"
+  - "NODE 6 DLINE 1"
+  - "NODE 1 DLINE 2"
+  - "NODE 4 DLINE 2"
+DSURF-NODE TOPOLOGY:
+  - "NODE 1 DSURFACE 1"
+  - "NODE 2 DSURFACE 1"
+  - "NODE 3 DSURFACE 1"
+  - "NODE 4 DSURFACE 1"
+  - "NODE 5 DSURFACE 1"
+  - "NODE 6 DSURFACE 1"
+NODE COORDS:
+  - "NODE 1 COORD 0.00000000e+00 0.00000000e+00 0.00000000e+00"
+  - "NODE 2 COORD 2.00000000e+00 0.00000000e+00 0.00000000e+00"
+  - "NODE 3 COORD 2.00000000e+00 2.00000000e+00 0.00000000e+00"
+  - "NODE 4 COORD 0.00000000e+00 2.00000000e+00 0.00000000e+00"
+  - "NODE 5 COORD 4.00000000e+00 0.00000000e+00 0.00000000e+00"
+  - "NODE 6 COORD 4.00000000e+00 2.00000000e+00 0.00000000e+00"
+STRUCTURE ELEMENTS:
+  - "1 SOLIDSCATRA QUAD4 1 2 3 4 MAT 1 KINEM linear THICKNESS 2 PLANE_ASSUMPTION plane_strain TYPE Undefined"
+  - "2 SOLIDSCATRA QUAD4 2 5 6 3 MAT 1 KINEM linear THICKNESS 2 PLANE_ASSUMPTION plane_strain TYPE Undefined"
+RESULT DESCRIPTION:
+  - STRUCTURE:
+      DIS: "structure"
+      NODE: 1
+      QUANTITY: "dispx"
+      VALUE: 0
+      TOLERANCE: 1e-09
+      NAME: "ux(x=0)"
+  - STRUCTURE:
+      DIS: "structure"
+      NODE: 1
+      QUANTITY: "dispy"
+      VALUE: 0
+      TOLERANCE: 1e-09
+      NAME: "uy(x=0)"
+  - STRUCTURE:
+      DIS: "structure"
+      NODE: 2
+      QUANTITY: "dispx"
+      VALUE: -0.3798187564888277
+      TOLERANCE: 1e-09
+      NAME: "ux(x=2)"
+  - STRUCTURE:
+      DIS: "structure"
+      NODE: 5
+      QUANTITY: "dispx"
+      VALUE: -0.7596375129515585
+      TOLERANCE: 1e-09
+      NAME: "ux(x=4)"
+  - THERMAL:
+      DIS: "thermo"
+      NODE: 1
+      QUANTITY: "temp"
+      VALUE: 347.2343546478706
+      TOLERANCE: 1e-08
+      NAME: "T(x=0)"
+  - THERMAL:
+      DIS: "thermo"
+      NODE: 2
+      QUANTITY: "temp"
+      VALUE: 347.2343546451599
+      TOLERANCE: 1e-08
+      NAME: "T(x=2)"
+  - THERMAL:
+      DIS: "thermo"
+      NODE: 5
+      QUANTITY: "temp"
+      VALUE: 347.2343546424642
+      TOLERANCE: 1e-08
+      NAME: "T(x=4)"
