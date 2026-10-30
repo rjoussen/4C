@@ -39,7 +39,7 @@ void Core::IO::emit_value_as_yaml(YamlNodeRef node, const double& value)
   // defined. libc++ (macOS) does not define it since its std::from_chars for floating-point types
   // is incomplete, so ryml falls back to printf("%g"), which keeps only six significant digits.
   // std::format always writes the shortest representation that reads back exactly.
-  node.node.set_serialized(std::format("{}", value));
+  node.node.set_serialized(value);
 }
 
 void Core::IO::emit_value_as_yaml(YamlNodeRef node, const std::string& value)
