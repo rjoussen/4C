@@ -140,25 +140,25 @@ RESULT DESCRIPTION:
       DIS: "structure"
       NODE: 4
       QUANTITY: "dispy"
-      VALUE: -0.00394895027488
+      VALUE: -0.00396281288475278
       TOLERANCE: 1e-14
   - STRUCTURE:
       DIS: "structure"
       NODE: 5
       QUANTITY: "dispx"
-      VALUE: -0.00394895027488
+      VALUE: -0.00396281288475293
       TOLERANCE: 1e-14
   - STRUCTURE:
       DIS: "structure"
       NODE: 8
       QUANTITY: "dispx"
-      VALUE: -0.00394895027488
+      VALUE: -0.00396281288475214
       TOLERANCE: 1e-14
   - STRUCTURE:
       DIS: "structure"
       NODE: 8
       QUANTITY: "dispy"
-      VALUE: -0.00394895027488
+      VALUE: -0.00396281288475216
       TOLERANCE: 1e-14
   - STRUCTURE:
       DIS: "structure"
@@ -170,67 +170,67 @@ RESULT DESCRIPTION:
       DIS: "structure"
       NODE: 6
       QUANTITY: "dispx"
-      VALUE: -0.00394895027488
+      VALUE: -0.00396281288475284
       TOLERANCE: 1e-14
   - STRUCTURE:
       DIS: "structure"
       NODE: 4
       QUANTITY: "stress_zz"
-      VALUE: 977.652620618
+      VALUE: 978.28317044929
       TOLERANCE: 1e-8
   - STRUCTURE:
       DIS: "structure"
       NODE: 8
       QUANTITY: "stress_zz"
-      VALUE: 977.652620618
+      VALUE: 978.283170448871
       TOLERANCE: 1e-8
   - THERMAL:
       DIS: thermo
       NODE: 1
       QUANTITY: temp
-      VALUE: 294.095019277192
+      VALUE: 293.215785170888
       TOLERANCE: 1e-11
   - THERMAL:
       DIS: thermo
       NODE: 2
       QUANTITY: temp
-      VALUE: 294.095019277192
+      VALUE: 293.215785170878
       TOLERANCE: 1e-11
   - THERMAL:
       DIS: thermo
       NODE: 3
       QUANTITY: temp
-      VALUE: 294.095019277192
+      VALUE: 293.215785170884
       TOLERANCE: 1e-11
   - THERMAL:
       DIS: thermo
       NODE: 4
       QUANTITY: temp
-      VALUE: 294.095019277192
+      VALUE: 293.215785170882
       TOLERANCE: 1e-11
   - THERMAL:
       DIS: thermo
       NODE: 5
       QUANTITY: temp
-      VALUE: 294.095019277192
+      VALUE: 293.215785170887
       TOLERANCE: 1e-11
   - THERMAL:
       DIS: thermo
       NODE: 6
       QUANTITY: temp
-      VALUE: 294.095019277192
+      VALUE: 293.215785170885
       TOLERANCE: 1e-11
   - THERMAL:
       DIS: thermo
       NODE: 7
       QUANTITY: temp
-      VALUE: 294.095019277192
+      VALUE: 293.215785170885
       TOLERANCE: 1e-11
   - THERMAL:
       DIS: thermo
       NODE: 8
       QUANTITY: temp
-      VALUE: 294.095019277192
+      VALUE: 293.215785170879
       TOLERANCE: 1e-11
 DESIGN POINT DIRICH CONDITIONS:
   - E: 1

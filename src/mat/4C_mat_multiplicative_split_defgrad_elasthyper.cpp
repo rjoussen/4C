@@ -635,8 +635,73 @@ Mat::MultiplicativeSplitDefgradElastHyper::evaluate_stress_temperature_modulus(d
     const DeformationState& deformation_state, const EvaluationContext<3>& context, const int gp,
     const int eleGID)
 {
-  // this contribution is intentionally neglected so far.
-  return {};
+  // without thermal expansion, the stress does not depend on temperature at fixed internal
+  // variables. Note: temperature-dependent inelastic factors (e.g. LinTempIso) are neglected here,
+  // only their dependence of F_in on temperature enters the derivatives below.
+  if (params_->thermal_expansion_coefficient_ == 0.0) return {};
+
+  for (const auto& [source, factor] : inelastic_->fac_def_grad_in())
+  {
+    FOUR_C_ASSERT_ALWAYS(source != PAR::InelasticSource::concentration,
+        "The stress-temperature modulus of the multiplicative split is not implemented for "
+        "concentration-dependent inelastic factors.");
+  }
+
+  const auto& id = Core::LinAlg::TensorGenerators::identity<double, 3, 3>;
+  const Core::LinAlg::Tensor<double, 3, 3>& defgrad = deformation_state.defgrad();
+  const Core::LinAlg::Matrix<3, 3> defgrad_mat = Core::LinAlg::make_matrix_view(defgrad);
+
+  // the inelastic factors evaluate the current state (and reuse it if it did not change)
+  Teuchos::ParameterList params;
+  params.set<double>("temperature", temperature);
+  pre_evaluate(params, context, gp, eleGID);
+
+  Core::LinAlg::Tensor<double, 3, 3> iFin{};
+  Core::LinAlg::Matrix<3, 3> iFinM = Core::LinAlg::make_matrix_view(iFin);
+  inelastic_->evaluate_inverse_inelastic_def_grad(&defgrad_mat, iFinM);
+  const double detFin = 1.0 / Core::LinAlg::det(iFin);
+  const Core::LinAlg::Tensor<double, 3, 3> iFinT = Core::LinAlg::transpose(iFin);
+
+  const double delta_temperature = temperature - params_->ref_temperature_;
+  const Core::LinAlg::SymmetricTensor<double, 3, 3> dST_dT =
+      evaluate_thermal_expansion_stress(*elastic_material_, params_->thermal_expansion_coefficient_,
+          delta_temperature, params, context, gp, eleGID)
+          .temperature_derivative;
+  const Core::LinAlg::SymmetricTensor<double, 3, 3> d2ST_dT2 =
+      evaluate_thermal_expansion_stress_second_temperature_derivative(*elastic_material_,
+          params_->thermal_expansion_coefficient_, delta_temperature, params, context, gp, eleGID);
+
+  // stm = dS/dT = -det(F_in) F_in^{-1} dS_T/dT F_in^{-T} at fixed F_in
+  StressTemperatureModulus stm;
+  stm.value = -detFin * Core::LinAlg::assume_symmetry(
+                            Core::LinAlg::dot(Core::LinAlg::dot(iFin, dST_dT), iFinT));
+
+  // derivative of stm w.r.t. F_in^{-1} (same structure as dS/dF_in^{-1} without the elasticity
+  // tensor, since dS_T/dT does not depend on C_e)
+  const Core::LinAlg::Tensor<double, 3, 3> iFin_dST_dT = Core::LinAlg::dot(iFin, dST_dT);
+  const Core::LinAlg::Tensor<double, 3, 3, 3, 3> dstm_diFin =
+      -detFin * (Core::LinAlg::einsum<"ik", "jl">(id, iFin_dST_dT) +
+                    Core::LinAlg::einsum<"jk", "il">(id, iFin_dST_dT)) -
+      Core::LinAlg::einsum<"ij", "kl">(stm.value, Core::LinAlg::inv(iFinT));
+  const Core::LinAlg::Matrix<6, 9> dstm_diFin_voigt =
+      Core::LinAlg::make_6x9_voigt_matrix_from_tensor(dstm_diFin);
+
+  // d stm/dT = -det(F_in) F_in^{-1} d^2 S_T/dT^2 F_in^{-T} + d stm/dF_in^{-1} : dF_in^{-1}/dT
+  stm.derivative_wrt_temperature =
+      -detFin * Core::LinAlg::assume_symmetry(
+                    Core::LinAlg::dot(Core::LinAlg::dot(iFin, d2ST_dT2), iFinT)) +
+      Core::LinAlg::make_symmetric_tensor_from_stress_like_voigt_matrix(
+          evaluate_od_stiff_mat(PAR::InelasticSource::temperature, &defgrad_mat, dstm_diFin_voigt));
+
+  // d stm/dE = 2 d stm/dF_in^{-1} : dF_in^{-1}/dC
+  const Core::LinAlg::SymmetricTensor<double, 3, 3> iC = Core::LinAlg::inv(
+      Core::LinAlg::assume_symmetry(Core::LinAlg::dot(Core::LinAlg::transpose(defgrad), defgrad)));
+  const Core::LinAlg::Matrix<6, 1> iCV = Core::LinAlg::make_stress_like_voigt_view(iC);
+  Core::LinAlg::Matrix<6, 6> dstm_dE_view =
+      Core::LinAlg::make_stress_like_voigt_view(stm.derivative_wrt_strain);
+  dstm_dE_view.update(1.0, evaluate_additional_cmat(&defgrad_mat, iCV, dstm_diFin_voigt), 0.0);
+
+  return stm;
 }
 
 Mat::AdditionalHeatSource

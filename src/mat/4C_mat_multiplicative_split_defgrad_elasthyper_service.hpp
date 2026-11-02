@@ -25,6 +25,8 @@
 
 #include <Teuchos_ParameterList.hpp>
 
+#include <cmath>
+#include <limits>
 #include <vector>
 
 FOUR_C_NAMESPACE_OPEN
@@ -100,6 +102,53 @@ namespace Mat
     thermal_stress.temperature_derivative =
         thermal_expansion_coefficient * Core::LinAlg::ddot(cmat_T, id);
     return thermal_stress;
+  }
+
+  /*!
+   * @brief Evaluate the second derivative of the thermo-elastic stress w.r.t. temperature
+   *
+   * \f[
+   *   \frac{\partial^2 \mathbf{S}_T}{\partial T^2}
+   *   = 2 \alpha_T^2 \frac{\partial \mathbb{C}_\text{e}}{\partial \mathbf{C}}(\mathbf{C}_T)
+   *   : \mathbf{I} : \mathbf{I}
+   * \f]
+   * requires the derivative of the elasticity tensor, which the hyperelastic material does not
+   * provide. Hence, it is approximated by central differences of the analytic first derivative
+   * \f$ \partial \mathbf{S}_T / \partial T \f$ (see evaluate_thermal_expansion_stress()). The
+   * step size is chosen relative to \f$ \lambda_T^2 = 1 + 2 \alpha_T \Delta T \f$.
+   *
+   * @param[in] material                       Hyperelastic material
+   * @param[in] thermal_expansion_coefficient  \f$ \alpha_T \f$ (no thermal stress if zero)
+   * @param[in] delta_temperature              \f$ \Delta T \f$, temperature difference to the
+   *                                           reference temperature
+   * @param[in] params                         Parameter list as handed in from the element
+   * @param[in] context                        Evaluation context
+   * @param[in] gp                             Gauss point
+   * @param[in] eleGID                         Element ID
+   * @return \f$ \partial^2 \mathbf{S}_T / \partial T^2 \f$
+   */
+  inline Core::LinAlg::SymmetricTensor<double, 3, 3>
+  evaluate_thermal_expansion_stress_second_temperature_derivative(Mat::So3Material& material,
+      const double thermal_expansion_coefficient, const double delta_temperature,
+      const Teuchos::ParameterList& params, const EvaluationContext<3>& context, const int gp,
+      const int eleGID)
+  {
+    if (thermal_expansion_coefficient == 0.0) return {};
+
+    const double thermal_stretch_squared =
+        1.0 + 2.0 * thermal_expansion_coefficient * delta_temperature;
+    const double step = std::cbrt(std::numeric_limits<double>::epsilon()) *
+                        thermal_stretch_squared / (2.0 * std::abs(thermal_expansion_coefficient));
+
+    const auto temperature_derivative = [&](const double perturbed_delta_temperature)
+    {
+      return evaluate_thermal_expansion_stress(material, thermal_expansion_coefficient,
+          perturbed_delta_temperature, params, context, gp, eleGID)
+          .temperature_derivative;
+    };
+    return (temperature_derivative(delta_temperature + step) -
+               temperature_derivative(delta_temperature - step)) /
+           (2.0 * step);
   }
 
   inline void evaluate_ce(const Core::LinAlg::Matrix<3, 3>& F,

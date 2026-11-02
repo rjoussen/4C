@@ -368,6 +368,108 @@ namespace
     }
   }
 
+  /// thermoelastic part T stm : dE/dt of the mechanical heat source and its derivatives, i.e., the
+  /// heat source at the given strain rate minus the heat source at vanishing strain rate
+  Mat::ThermoMechanicalHeatSource evaluate_thermoelastic_heat_source(
+      Mat::Trait::ThermoSolid& material, const Core::LinAlg::Tensor<double, 3, 3>& F,
+      const double T, const Core::LinAlg::SymmetricTensor<double, 3, 3>& strain_rate,
+      const Mat::EvaluationContext<3>& context)
+  {
+    const auto heat_source = [&](const Core::LinAlg::SymmetricTensor<double, 3, 3>& rate)
+    {
+      return material.evaluate_mechanical_heat_source(T,
+          Mat::DeformationState(MultSplitTestUtils::green_lagrange(F), F), rate, context,
+          MultSplitTestUtils::gp, MultSplitTestUtils::ele_gid);
+    };
+    const Mat::ThermoMechanicalHeatSource Q = heat_source(strain_rate);
+    const Mat::ThermoMechanicalHeatSource Q_without_rate = heat_source({});
+    return {.value = Q.value - Q_without_rate.value,
+        .derivative_wrt_temperature =
+            Q.derivative_wrt_temperature - Q_without_rate.derivative_wrt_temperature,
+        .derivative_wrt_strain = Q.derivative_wrt_strain - Q_without_rate.derivative_wrt_strain,
+        // only the thermoelastic heating depends on the strain rate
+        .derivative_wrt_strain_rate = Q.derivative_wrt_strain_rate};
+  }
+
+  const Core::LinAlg::SymmetricTensor<double, 3, 3> strain_rate = Core::LinAlg::assume_symmetry(
+      Core::LinAlg::Tensor<double, 3, 3>{{{1.0, 0.2, 0.1}, {0.2, -0.5, 0.3}, {0.1, 0.3, 0.8}}});
+
+  TEST_P(MultiplicativeSplitDefgradElastHyperViscoplastWithTemperatureTest,
+      ThermoelasticHeatSourceEqualsTemperatureTimesStressTemperatureModulus)
+  {
+    const Mat::ThermoMechanicalHeatSource Q_te = evaluate_thermoelastic_heat_source(
+        *multiplicative_split_, F_, *temperature_, strain_rate, context_);
+    const Core::LinAlg::SymmetricTensor<double, 3, 3> stm =
+        Q_te.derivative_wrt_strain_rate / *temperature_;
+
+    ASSERT_GT(MultSplitTestUtils::max_abs(stm), 0.0) << "the stress-temperature modulus vanishes";
+    EXPECT_NEAR(Q_te.value, *temperature_ * Core::LinAlg::ddot(stm, strain_rate),
+        1.0e-12 * std::abs(Q_te.value));
+
+    // without plastic flow, the inelastic deformation gradient does not change and the
+    // stress-temperature modulus is the derivative of the stress w.r.t. temperature
+    if (plastic_state_ == PlasticState::elastic)
+    {
+      constexpr double h = 1.0e-3;
+      const Core::LinAlg::SymmetricTensor<double, 3, 3> dSdT_fd =
+          (evaluate_stress(F_, *temperature_ + h) - evaluate_stress(F_, *temperature_ - h)) /
+          (2.0 * h);
+      FOUR_C_EXPECT_NEAR(stm, dSdT_fd, 1.0e-6 * MultSplitTestUtils::max_abs(dSdT_fd));
+    }
+  }
+
+  TEST_P(MultiplicativeSplitDefgradElastHyperViscoplastWithTemperatureTest,
+      ThermoelasticHeatSourceDerivativesEqualFiniteDifference)
+  {
+    const auto thermoelastic_heat_source =
+        [&](const Core::LinAlg::Tensor<double, 3, 3>& F, const double T)
+    {
+      return evaluate_thermoelastic_heat_source(
+          *multiplicative_split_, F, T, strain_rate, context_);
+    };
+    const Mat::ThermoMechanicalHeatSource Q_te = thermoelastic_heat_source(F_, *temperature_);
+
+    // analytic: dQ/dF_kl = dQ/dE_mn dE_mn/dF_kl = F_km dQ/dE_ml (at fixed strain rate)
+    const Core::LinAlg::Tensor<double, 3, 3> dQdF =
+        Core::LinAlg::einsum<"km", "ml">(F_, Q_te.derivative_wrt_strain);
+
+    constexpr double h = 1.0e-7;
+    Core::LinAlg::Tensor<double, 3, 3> dQdF_fd{};
+    for (std::size_t k = 0; k < 3; ++k)
+    {
+      for (std::size_t l = 0; l < 3; ++l)
+      {
+        Core::LinAlg::Tensor<double, 3, 3> F_plus = F_;
+        Core::LinAlg::Tensor<double, 3, 3> F_minus = F_;
+        F_plus(k, l) += h;
+        F_minus(k, l) -= h;
+        dQdF_fd(k, l) = (thermoelastic_heat_source(F_plus, *temperature_).value -
+                            thermoelastic_heat_source(F_minus, *temperature_).value) /
+                        (2.0 * h);
+      }
+    }
+
+    constexpr double h_T = 1.0e-3;
+    const double dQdT_fd = (thermoelastic_heat_source(F_, *temperature_ + h_T).value -
+                               thermoelastic_heat_source(F_, *temperature_ - h_T).value) /
+                           (2.0 * h_T);
+
+    ASSERT_GT(std::abs(dQdT_fd), 0.0) << "the finite difference reference vanishes";
+    EXPECT_NEAR(Q_te.derivative_wrt_temperature, dQdT_fd, 1.0e-6 * std::abs(dQdT_fd));
+
+    // without plastic flow, the stress-temperature modulus does not depend on the deformation
+    if (plastic_state_ == PlasticState::elastic)
+    {
+      FOUR_C_EXPECT_NEAR(dQdF, dQdF_fd, 1.0e-12);
+    }
+    else
+    {
+      ASSERT_GT(MultSplitTestUtils::max_abs(dQdF_fd), 0.0)
+          << "the finite difference reference vanishes";
+      FOUR_C_EXPECT_NEAR(dQdF, dQdF_fd, 1.0e-6 * MultSplitTestUtils::max_abs(dQdF_fd));
+    }
+  }
+
   INSTANTIATE_TEST_SUITE_P(ElasticSummandsMatBehaviorsAndStates,
       MultiplicativeSplitDefgradElastHyperViscoplastWithTemperatureTest,
       ::testing::Combine(
