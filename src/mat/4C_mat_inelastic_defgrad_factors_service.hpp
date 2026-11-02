@@ -777,7 +777,7 @@ namespace Mat
      * +\frac{\partial \dot{\varepsilon}_\mathrm{p}}{\partial \bar{\sigma}}
      * \frac{\mathrm{d}\bar{\sigma}}{\mathrm{d}\mathbf{C}}\f]
      */
-    Core::LinAlg::Matrix<1, 6> compute_taylor_quinney_wrt_cauchygreen(
+    Core::LinAlg::SymmetricTensor<double, 3, 3> compute_taylor_quinney_wrt_cauchygreen(
         const double taylor_quinney_coefficient, const ThermoMechanicalCouplingState& state,
         const ThermoMechanicalCouplingStateDerivatives& state_derivatives,
         const HistoryVariablesDerivativesWrtCauchyGreen& history_variables_derivatives);

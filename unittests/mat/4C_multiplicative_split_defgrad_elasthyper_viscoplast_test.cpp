@@ -314,20 +314,19 @@ namespace
   TEST_P(MultiplicativeSplitDefgradElastHyperViscoplastWithTemperatureTest,
       HeatSourceDerivativesEqualFiniteDifference)
   {
+    // a vanishing strain rate isolates the dissipative heat source
     const auto heat_source = [&](const Core::LinAlg::Tensor<double, 3, 3>& F, const double T)
     {
-      const Core::LinAlg::Matrix<3, 3> FM = Core::LinAlg::make_matrix(F);
-      return multiplicative_split_->evaluate_additional_heat_source(
-          context_, MultSplitTestUtils::gp, MultSplitTestUtils::ele_gid, &FM, T);
+      return multiplicative_split_->evaluate_mechanical_heat_source(T,
+          Mat::DeformationState(MultSplitTestUtils::green_lagrange(F), F),
+          Core::LinAlg::SymmetricTensor<double, 3, 3>{}, context_, MultSplitTestUtils::gp,
+          MultSplitTestUtils::ele_gid);
     };
-    const Mat::HeatSource Q = heat_source(F_, *temperature_);
+    const Mat::ThermoMechanicalHeatSource Q = heat_source(F_, *temperature_);
 
-    // analytic: dQ/dF_kl = dQ/dC_mn dC_mn/dF_kl = 2 F_km dQ/dC_ml
-    Core::LinAlg::Matrix<6, 1> dQdC_voigt;
-    dQdC_voigt.update_t(Q.derivative_wrt_cauchy_green);
+    // analytic: dQ/dF_kl = dQ/dE_mn dE_mn/dF_kl = F_km dQ/dE_ml
     const Core::LinAlg::Tensor<double, 3, 3> dQdF =
-        2.0 * Core::LinAlg::einsum<"km", "ml">(F_,
-                  Core::LinAlg::make_symmetric_tensor_from_stress_like_voigt_matrix(dQdC_voigt));
+        Core::LinAlg::einsum<"km", "ml">(F_, Q.derivative_wrt_strain);
 
     // finite difference, the heat source is strongly nonlinear, a small step keeps the truncation
     // error low

@@ -244,28 +244,6 @@ namespace Mat
         const Teuchos::ParameterList& params, const EvaluationContext<3>& context, int gp,
         int eleGID) override;
 
-    void reinit(double temperature, unsigned gp) override { /* do nothing */ };
-
-    void stress_temperature_modulus_and_deriv(Core::LinAlg::SymmetricTensor<double, 3, 3>& stm,
-        Core::LinAlg::SymmetricTensor<double, 3, 3>& stm_dT, const int gp) override;
-
-    /*!
-     * @brief Evaluate the heat source produced by this material. Currently, this is only
-     * enabled for the viscoplastic factor.
-     *
-     * @param[in] context Evaluation context, providing access to the current timestep and total
-     * time
-     * @param[in] gp Gauss point
-     * @param[in] eleGID global element ID
-     * @param[in] defgrad Deformation gradient
-     * @param[in] current_temperature Absolute current temperature
-     * @return mechanical dissipation heat source and derivatives w.r.t. temperature and the right
-     *         Cauchy-Green tensor
-     */
-    [[nodiscard]] HeatSource evaluate_additional_heat_source(const EvaluationContext<3>& context,
-        const int gp, const int eleGID, const Core::LinAlg::Matrix<3, 3>* current_defgrad,
-        const double current_temperature);
-
     /*!
      * @brief Evaluate the Cauchy stress contracted with n and dir and its derivatives
      *
@@ -350,6 +328,15 @@ namespace Mat
      * @param[in]  concentration concentration at gauss point
      */
     void set_concentration_gp(double concentration);
+
+   protected:
+    [[nodiscard]] StressTemperatureModulus evaluate_stress_temperature_modulus(double temperature,
+        const DeformationState& deformation_state, const EvaluationContext<3>& context,
+        const int gp, const int eleGID) override;
+
+    [[nodiscard]] AdditionalHeatSource evaluate_additional_heat_source(const double temperature,
+        const DeformationState& deformation_state, const EvaluationContext<3>& context,
+        const int gp, const int eleGID) override;
 
    private:
     /*!
