@@ -257,7 +257,7 @@ namespace Core::Elements
     Core::FE::Discretization (evaluate(), evaluate_neumann(), evaluate_condition(),
     evaluate_scalars()), i.e., they do not contribute to any global system anymore.
     */
-    virtual bool is_active() const { return is_active_; }
+    [[nodiscard]] virtual bool is_active() const { return is_active_; }
 
     /*!
     \brief Get shape type of element
@@ -1281,7 +1281,7 @@ might become invalid after a redistribution of the discretization.
     A face element is inactive if it was deactivated itself or if its parent element (if assigned)
     is inactive, e.g., loads on the surface of an eroded element are not applied anymore.
     */
-    bool is_active() const override
+    [[nodiscard]] bool is_active() const override
     {
       return Element::is_active() and
              (parent_element() == nullptr or parent_element()->is_active());
@@ -1375,6 +1375,15 @@ might become invalid after a redistribution of the discretization.
       parent_target_ = target;
       lface_target_ = lface_target;
       if (target != nullptr) parent_id_ = target->id();
+    }
+
+    /// Like \ref set_parent_target_element, but only sets the parent id and local face number, not
+    /// the pointer to the parent element.
+    void set_parent_target_element_id(const int parent_id, const int lface_target)
+    {
+      parent_target_ = nullptr;
+      parent_id_ = parent_id;
+      lface_target_ = lface_target;
     }
 
     /*!

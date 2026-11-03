@@ -7,6 +7,7 @@
 
 #include "4C_structure_new_model_evaluator_contact.hpp"
 
+#include "4C_contact_interface.hpp"
 #include "4C_contact_lagrange_strategy_poro.hpp"
 #include "4C_contact_strategy_factory.hpp"
 #include "4C_global_data.hpp"
@@ -24,6 +25,7 @@
 #include "4C_structure_new_model_evaluator_manager.hpp"
 #include "4C_structure_new_timint_base.hpp"
 #include "4C_structure_new_timint_basedataio_runtime_vtk_output.hpp"
+#include "4C_structure_new_timint_basedatasdyn.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -377,6 +379,10 @@ void Solid::ModelEvaluator::Contact::read_restart(Core::IO::DiscretizationReader
  *----------------------------------------------------------------------*/
 void Solid::ModelEvaluator::Contact::update_step_state(const double& timefac_n)
 {
+  // Structural elements may have eroded before the model evaluators update their step state.
+  if (tim_int().get_data_sdyn().get_element_erosion_parameters().enabled())
+    strategy().copy_parent_element_active_flags_to_faces(discret());
+
   // add the contact forces to the old structural residual state vector
   std::shared_ptr<const Core::LinAlg::Vector<double>> strcontactrhs_ptr =
       strategy().get_rhs_block_ptr(CONTACT::VecBlockType::displ);

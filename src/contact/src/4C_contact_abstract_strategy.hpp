@@ -581,6 +581,10 @@ namespace CONTACT
       return interfaces();
     }
 
+    /// Copy parent volume element activity to the contact faces on all interfaces.
+    void copy_parent_element_active_flags_to_faces(
+        const Core::FE::Discretization& parent_discretization);
+
     /*!
     \brief Get dual quadratic 3d source element flag
 

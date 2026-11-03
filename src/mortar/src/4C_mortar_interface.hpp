@@ -730,6 +730,14 @@ namespace Mortar
     */
     Core::FE::Discretization& discret() const { return *idiscret_; }
 
+    /*! \brief Match interface element activity to the activity of its parent volume element.
+     *
+     * The interface may have a different parallel distribution from @p parent_discretization.
+     * This is a collective call. Interface elements without a parent ID are left unchanged.
+     */
+    void copy_parent_element_active_flags_to_faces(
+        const Core::FE::Discretization& parent_discretization);
+
     /*!
     \brief Get problem dimension
 

@@ -686,7 +686,6 @@ void CONTACT::STRATEGY::Factory::build_interfaces(const Teuchos::ParameterList& 
       Teuchos::getIntegralValue<CONTACT::ConstraintDirection>(params, "CONSTRAINT_DIRECTIONS");
   auto ftype = Teuchos::getIntegralValue<CONTACT::FrictionType>(params, "FRICTION");
   auto ad = Teuchos::getIntegralValue<CONTACT::AdhesionType>(params, "ADHESION");
-  auto algo = Teuchos::getIntegralValue<Mortar::AlgorithmType>(params, "ALGORITHM");
 
   bool friplus = false;
   if ((wlaw != Wear::wear_none) ||
@@ -1102,22 +1101,21 @@ void CONTACT::STRATEGY::Factory::build_interfaces(const Teuchos::ParameterList& 
               "unsupported.");
         }
 
+        const auto faceele = std::dynamic_pointer_cast<Core::Elements::FaceElement>(ele);
+        if (faceele == nullptr)
+          FOUR_C_THROW("Contact condition element {} is not a FaceElement", ele->id());
+
         std::shared_ptr<CONTACT::Element> cele =
             std::make_shared<CONTACT::Element>(ele->id() + ggsize, ele->owner(), ele->shape(),
                 ele->num_node(), ele->node_ids(), issource[j], nurbs);
 
-        if (isporo) set_poro_parent_element(sourcetype, targettype, *cele, ele, discret());
+        // Preserve the parent ID and local face number across interface redistribution.
+        // Algorithms that need the direct access to the parent element connect pointers after
+        // redistribution by ID.
+        cele->set_parent_target_element_id(
+            faceele->parent_element_id(), faceele->face_parent_number());
 
-        if (algo == Mortar::algorithm_gpts)
-        {
-          std::shared_ptr<Core::Elements::FaceElement> faceele =
-              std::dynamic_pointer_cast<Core::Elements::FaceElement>(ele);
-          if (faceele == nullptr) FOUR_C_THROW("Cast to FaceElement failed!");
-          if (faceele->parent_element() == nullptr) FOUR_C_THROW("face parent does not exist");
-          if (discret().element_col_map()->lid(faceele->parent_element()->id()) == -1)
-            FOUR_C_THROW("vol dis does not have parent ele");
-          cele->set_parent_target_element(faceele->parent_element(), faceele->face_parent_number());
-        }
+        if (isporo) set_poro_parent_element(sourcetype, targettype, *cele, ele, discret());
 
         //------------------------------------------------------------------
         // get knotvector, normal factor and zero-size information for nurbs
@@ -1137,6 +1135,9 @@ void CONTACT::STRATEGY::Factory::build_interfaces(const Teuchos::ParameterList& 
         Global::Problem::instance()->binning_strategy_params(),
         Global::Problem::instance()->output_control_file(),
         Global::Problem::instance()->spatial_approximation_type(), true, maxdof);
+
+    // Update the active flags of the interface from the parent discretization
+    interface->copy_parent_element_active_flags_to_faces(discret());
 
     if (isporo)
       find_poro_interface_types(
@@ -1414,9 +1415,6 @@ void CONTACT::STRATEGY::Factory::set_poro_parent_element(Mortar::Element::Physic
       sourcetype = Mortar::Element::structure;
     }
   }
-  // store information about parent for porous contact (required for calculation of deformation
-  // gradient!) in every contact element although only really needed for phystype poro
-  cele.set_parent_target_element(faceele->parent_element(), faceele->face_parent_number());
 }
 
 /*----------------------------------------------------------------------------*

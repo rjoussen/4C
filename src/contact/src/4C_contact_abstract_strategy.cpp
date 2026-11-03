@@ -318,6 +318,13 @@ bool CONTACT::AbstractStrategy::redistribute_contact(
   return redistributed;
 }
 
+void CONTACT::AbstractStrategy::copy_parent_element_active_flags_to_faces(
+    const Core::FE::Discretization& parent_discretization)
+{
+  for (const auto& interface : interfaces())
+    interface->copy_parent_element_active_flags_to_faces(parent_discretization);
+}
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 bool CONTACT::AbstractStrategy::redistribute_with_safe_ghosting(
