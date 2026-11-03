@@ -21,6 +21,7 @@ namespace CONTACT
 {
   class Manager;
   class AbstractStrategy;
+  class Interface;
 }  // namespace CONTACT
 
 namespace Mortar
@@ -45,6 +46,9 @@ namespace Solid
 
       //! [derived]
       [[nodiscard]] Solid::ModelType type() const override { return Solid::model_contact; }
+
+      //! [derived]
+      [[nodiscard]] bool supports_inactive_elements() const override { return true; }
 
       //! reset class variables (without jacobian) [derived]
       void reset(const Core::LinAlg::Vector<double>& x) override;

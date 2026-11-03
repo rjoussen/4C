@@ -5279,6 +5279,7 @@ void CONTACT::Interface::evaluate_stl()
     Core::Elements::Element* ele1 = idiscret_->g_element(gid1);
     if (!ele1) FOUR_C_THROW("Cannot find source element with gid %", gid1);
     auto* source_element = dynamic_cast<Element*>(ele1);
+    if (!source_element->is_active()) continue;
 
     // guarantee uniqueness
     std::set<std::pair<int, int>> donebefore;
@@ -5290,6 +5291,7 @@ void CONTACT::Interface::evaluate_stl()
       Core::Elements::Element* ele2 = idiscret_->g_element(gid2);
       if (!ele2) FOUR_C_THROW("Cannot find target element with gid %", gid2);
       auto* target_element = dynamic_cast<Element*>(ele2);
+      if (!target_element->is_active()) continue;
 
       if (target_element->shape() == Core::FE::CellType::quad4)
       {
@@ -5397,6 +5399,7 @@ void CONTACT::Interface::evaluate_lts()
     Core::Elements::Element* ele1 = idiscret_->g_element(gid1);
     if (!ele1) FOUR_C_THROW("Cannot find source element with gid %", gid1);
     auto* source_element = dynamic_cast<Element*>(ele1);
+    if (!source_element->is_active()) continue;
 
     // ele check
     if (source_element->shape() != Core::FE::CellType::quad4 and
@@ -5439,6 +5442,7 @@ void CONTACT::Interface::evaluate_lts()
       Core::Elements::Element* ele2 = idiscret_->g_element(gid2);
       if (!ele2) FOUR_C_THROW("Cannot find target element with gid %", gid2);
       auto* target_element = dynamic_cast<Element*>(ele2);
+      if (!target_element->is_active()) continue;
 
       // check orientation
       // compute source normal
@@ -5628,6 +5632,7 @@ void CONTACT::Interface::evaluate_ltl()
     Core::Elements::Element* ele1 = idiscret_->g_element(gid1);
     if (!ele1) FOUR_C_THROW("Cannot find source element with gid %", gid1);
     auto* source_element = dynamic_cast<Element*>(ele1);
+    if (!source_element->is_active()) continue;
 
     // empty vector of source element pointers
     std::vector<std::shared_ptr<Mortar::Element>> lineElementsS;
@@ -5803,6 +5808,7 @@ void CONTACT::Interface::evaluate_ltl()
       Core::Elements::Element* ele2 = idiscret_->g_element(gid2);
       if (!ele2) FOUR_C_THROW("Cannot find target element with gid %", gid2);
       auto* target_element = dynamic_cast<Element*>(ele2);
+      if (!target_element->is_active()) continue;
 
       if (target_element->shape() == Core::FE::CellType::quad4)
       {
@@ -6603,6 +6609,7 @@ void CONTACT::Interface::evaluate_distances(
     Core::Elements::Element* ele1 = idiscret_->g_element(gid1);
     if (!ele1) FOUR_C_THROW("Cannot find source element with gid %", gid1);
     auto* source_element = dynamic_cast<CONTACT::Element*>(ele1);
+    if (!source_element->is_active()) continue;
 
     if (source_element->mo_data().num_search_elements() < 1)
     {
@@ -6624,6 +6631,7 @@ void CONTACT::Interface::evaluate_distances(
       Core::Elements::Element* ele2 = idiscret_->g_element(gid2);
       if (!ele2) FOUR_C_THROW("Cannot find target element with gid %", gid2);
       auto* target_element = dynamic_cast<CONTACT::Element*>(ele2);
+      if (!target_element->is_active()) continue;
 
       // skip zero-sized nurbs elements (target)
       if (target_element->zero_sized()) continue;
