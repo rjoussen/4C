@@ -206,7 +206,9 @@ void Discret::Elements::SolidEleCalc<celltype,
               Mat::EvaluationContext<Core::FE::dim<celltype>> context{.total_time = total_time,
                   .time_step_size = time_step_size,
                   .xi = &xi,
-                  .ref_coords = &gp_ref_coord};
+                  .ref_coords = &gp_ref_coord,
+                  .reference_nodal_coordinates =
+                      get_reference_nodal_coordinates(nodal_coordinates)};
               const Stress<celltype> stress =
                   evaluate_material_stress<celltype>(solid_material, element_properties_,
                       deformation_gradient, gl_strain, params, context, gp, ele.id());
@@ -354,7 +356,9 @@ void Discret::Elements::SolidEleCalc<celltype, ElementFormulation>::update(
               Mat::EvaluationContext<Core::FE::dim<celltype>> context{.total_time = total_time,
                   .time_step_size = time_step_size,
                   .xi = &xi,
-                  .ref_coords = &gp_ref_coord};
+                  .ref_coords = &gp_ref_coord,
+                  .reference_nodal_coordinates =
+                      get_reference_nodal_coordinates(nodal_coordinates)};
               update_material<celltype>(solid_material, element_properties_, deformation_gradient,
                   params, context, gp, ele.id());
             });
@@ -402,7 +406,9 @@ double Discret::Elements::SolidEleCalc<celltype, ElementFormulation>::calculate_
               Mat::EvaluationContext<Core::FE::dim<celltype>> context{.total_time = total_time,
                   .time_step_size = time_step_size,
                   .xi = &xi,
-                  .ref_coords = &gp_ref_coord};
+                  .ref_coords = &gp_ref_coord,
+                  .reference_nodal_coordinates =
+                      get_reference_nodal_coordinates(nodal_coordinates)};
 
               double psi = evaluate_material_strain_energy<celltype>(
                   solid_material, element_properties_, gl_strain, params, context, gp, ele.id());
@@ -460,7 +466,9 @@ void Discret::Elements::SolidEleCalc<celltype, ElementFormulation>::calculate_st
               Mat::EvaluationContext<Core::FE::dim<celltype>> context{.total_time = total_time,
                   .time_step_size = time_step_size,
                   .xi = &xi,
-                  .ref_coords = &gp_ref_coord};
+                  .ref_coords = &gp_ref_coord,
+                  .reference_nodal_coordinates =
+                      get_reference_nodal_coordinates(nodal_coordinates)};
               const Stress<celltype> stress =
                   evaluate_material_stress<celltype>(solid_material, element_properties_,
                       deformation_gradient, gl_strain, params, context, gp, ele.id());
