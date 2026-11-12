@@ -404,14 +404,6 @@ namespace Coupling::VolMortar
         Core::Elements::Element* target_ele, bool switched_conf = false);
 
     /*!
-     \brief perform 2D polygon clipping
-
-     */
-    virtual bool polygon_clipping_convex_hull(std::vector<Mortar::Vertex>& poly1,
-        std::vector<Mortar::Vertex>& poly2, std::vector<Mortar::Vertex>& respoly,
-        Core::Elements::Element& source_ele, Core::Elements::Element& target_ele, double& tol);
-
-    /*!
      \brief Output for evaluation status -- progress
 
      */

@@ -12,6 +12,7 @@
 
 #include "4C_fem_discretization.hpp"
 #include "4C_linalg_vector.hpp"
+#include "4C_mortar_coupling3d_classes.hpp"
 #include "4C_mortar_element.hpp"
 
 #include <memory>
@@ -30,6 +31,19 @@ namespace Mortar
 {
   namespace Utils
   {
+    /*!
+    \brief Clip two convex polygons, which lie in a plane
+
+    \param source_polygon (in): vertices of the source polygon
+    \param target_polygon (in): vertices of the target polygon
+    \param normal (in): normal of the plane
+    \param tolerance (in): distance below which vertices are treated as identical
+    \return vertices of the clip polygon (empty if one of the polygons is not convex or if the
+    clip polygon has no area)
+    */
+    std::vector<Vertex> clip_polygons(const std::vector<Vertex>& source_polygon,
+        const std::vector<Vertex>& target_polygon, const double* normal, double tolerance);
+
     /*!
     \brief copy the ghosting of dis_src to all discretizations with names in
            vector voldis. Material pointers can be added according to
