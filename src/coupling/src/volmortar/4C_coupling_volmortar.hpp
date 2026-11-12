@@ -203,13 +203,6 @@ namespace Coupling::VolMortar
     virtual Core::LinAlg::Matrix<9, 2> calc_dop(Core::Elements::Element& ele);
 
     /*!
-     \brief center triangulation (if delaunay fails)
-
-     */
-    virtual bool center_triangulation(std::vector<std::shared_ptr<Mortar::IntCell>>& cells,
-        std::vector<Mortar::Vertex>& clip, double tol);
-
-    /*!
      \brief check if we need cut (3D)
 
      */
@@ -266,7 +259,7 @@ namespace Coupling::VolMortar
      \brief create integration cells for 2D volmortar
 
      */
-    virtual bool delaunay_triangulation(std::vector<std::shared_ptr<Mortar::IntCell>>& cells,
+    virtual void delaunay_triangulation(std::vector<std::shared_ptr<Mortar::IntCell>>& cells,
         std::vector<Mortar::Vertex>& clip, double tol);
 
     /*!

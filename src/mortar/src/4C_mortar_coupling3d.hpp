@@ -317,7 +317,7 @@ namespace Mortar
 
      */
     virtual bool triangulation(std::map<int, double>& projpar, double tol);
-    virtual bool delaunay_triangulation(
+    virtual void delaunay_triangulation(
         std::vector<std::vector<Core::Gen::Pairedvector<int, double>>>& linvertex, double tol);
     virtual bool center_triangulation(
         std::vector<std::vector<Core::Gen::Pairedvector<int, double>>>& linvertex, double tol);

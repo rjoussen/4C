@@ -24,43 +24,62 @@
 
 FOUR_C_NAMESPACE_OPEN
 
+Mortar::Utils::PlaneCoordinateSystem::PlaneCoordinateSystem(
+    const std::vector<Vertex>& polygon, const double* normal)
+{
+  for (int k = 0; k < 3; ++k)
+  {
+    origin_[k] = polygon[0].coord()[k];
+    x_axis_[k] = polygon[1].coord()[k] - origin_[k];
+  }
+  y_axis_ = {normal[1] * x_axis_[2] - normal[2] * x_axis_[1],
+      normal[2] * x_axis_[0] - normal[0] * x_axis_[2],
+      normal[0] * x_axis_[1] - normal[1] * x_axis_[0]};
+
+  const double x_length = std::hypot(x_axis_[0], x_axis_[1], x_axis_[2]);
+  const double y_length = std::hypot(y_axis_[0], y_axis_[1], y_axis_[2]);
+  for (int k = 0; k < 3; ++k)
+  {
+    x_axis_[k] /= x_length;
+    y_axis_[k] /= y_length;
+  }
+}
+
+std::vector<std::array<double, 2>> Mortar::Utils::PlaneCoordinateSystem::to_plane(
+    const std::vector<Vertex>& polygon) const
+{
+  std::vector<std::array<double, 2>> plane_coordinates;
+  for (const Vertex& vertex : polygon)
+  {
+    std::array<double, 2> coordinates = {0.0, 0.0};
+    for (int k = 0; k < 3; ++k)
+    {
+      coordinates[0] += x_axis_[k] * (vertex.coord()[k] - origin_[k]);
+      coordinates[1] += y_axis_[k] * (vertex.coord()[k] - origin_[k]);
+    }
+    plane_coordinates.push_back(coordinates);
+  }
+  return plane_coordinates;
+}
+
+std::vector<double> Mortar::Utils::PlaneCoordinateSystem::to_space(
+    const std::array<double, 2>& point) const
+{
+  std::vector<double> coordinates(3);
+  for (int k = 0; k < 3; ++k)
+    coordinates[k] = origin_[k] + point[0] * x_axis_[k] + point[1] * y_axis_[k];
+  return coordinates;
+}
+
 std::vector<Mortar::Vertex> Mortar::Utils::clip_polygons(const std::vector<Vertex>& source_polygon,
     const std::vector<Vertex>& target_polygon, const double* normal, double tolerance)
 {
-  // orthonormal basis of the plane with its origin at the first source vertex
-  const std::vector<double>& origin = source_polygon[0].coord();
-  std::array<double, 3> xaxis = {0.0, 0.0, 0.0};
-  for (int k = 0; k < 3; ++k) xaxis[k] = source_polygon[1].coord()[k] - origin[k];
-  std::array<double, 3> yaxis = {normal[1] * xaxis[2] - normal[2] * xaxis[1],
-      normal[2] * xaxis[0] - normal[0] * xaxis[2], normal[0] * xaxis[1] - normal[1] * xaxis[0]};
-  const double xlength = std::sqrt(xaxis[0] * xaxis[0] + xaxis[1] * xaxis[1] + xaxis[2] * xaxis[2]);
-  const double ylength = std::sqrt(yaxis[0] * yaxis[0] + yaxis[1] * yaxis[1] + yaxis[2] * yaxis[2]);
-  for (int k = 0; k < 3; ++k)
-  {
-    xaxis[k] /= xlength;
-    yaxis[k] /= ylength;
-  }
-
-  const auto to_plane = [&](const std::vector<Vertex>& polygon)
-  {
-    std::vector<std::array<double, 2>> plane_coordinates;
-    for (const Vertex& vertex : polygon)
-    {
-      std::array<double, 2> coordinates = {0.0, 0.0};
-      for (int k = 0; k < 3; ++k)
-      {
-        coordinates[0] += xaxis[k] * (vertex.coord()[k] - origin[k]);
-        coordinates[1] += yaxis[k] * (vertex.coord()[k] - origin[k]);
-      }
-      plane_coordinates.push_back(coordinates);
-    }
-    return plane_coordinates;
-  };
+  const PlaneCoordinateSystem plane(source_polygon, normal);
 
   std::vector<Vertex> clip_polygon;
   using Origin = Core::Geo::PolygonIntersectionPoint::Origin;
   for (const auto& point : Core::Geo::intersect_convex_polygons_2d(
-           to_plane(source_polygon), to_plane(target_polygon), tolerance))
+           plane.to_plane(source_polygon), plane.to_plane(target_polygon), tolerance))
   {
     if (point.origin == Origin::corner_a)
       clip_polygon.push_back(source_polygon[point.index_a]);
@@ -68,10 +87,6 @@ std::vector<Mortar::Vertex> Mortar::Utils::clip_polygons(const std::vector<Verte
       clip_polygon.push_back(target_polygon[point.index_b]);
     else
     {
-      std::vector<double> coord(3);
-      for (int k = 0; k < 3; ++k)
-        coord[k] = origin[k] + point.coordinates[0] * xaxis[k] + point.coordinates[1] * yaxis[k];
-
       // node ids of the intersecting source and target edges
       const int source_edge_end = (point.index_a + 1) % source_polygon.size();
       const int target_edge_end = (point.index_b + 1) % target_polygon.size();
@@ -79,7 +94,8 @@ std::vector<Mortar::Vertex> Mortar::Utils::clip_polygons(const std::vector<Verte
           source_polygon[source_edge_end].nodeids()[0], target_polygon[point.index_b].nodeids()[0],
           target_polygon[target_edge_end].nodeids()[0]};
 
-      clip_polygon.emplace_back(coord, Vertex::lineclip, lcids, nullptr);
+      clip_polygon.emplace_back(
+          plane.to_space(point.coordinates), Vertex::lineclip, lcids, nullptr);
     }
   }
 

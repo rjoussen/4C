@@ -15,6 +15,7 @@
 #include "4C_mortar_coupling3d_classes.hpp"
 #include "4C_mortar_element.hpp"
 
+#include <array>
 #include <memory>
 
 FOUR_C_NAMESPACE_OPEN
@@ -31,6 +32,28 @@ namespace Mortar
 {
   namespace Utils
   {
+    /*!
+    \brief Orthonormal coordinate system in a plane
+
+    The origin is the first vertex of a polygon and the x-axis points to its second vertex.
+    */
+    class PlaneCoordinateSystem
+    {
+     public:
+      PlaneCoordinateSystem(const std::vector<Vertex>& polygon, const double* normal);
+
+      //! coordinates of the vertices of a polygon in the plane
+      std::vector<std::array<double, 2>> to_plane(const std::vector<Vertex>& polygon) const;
+
+      //! coordinates of a point of the plane in space
+      std::vector<double> to_space(const std::array<double, 2>& point) const;
+
+     private:
+      std::array<double, 3> origin_;
+      std::array<double, 3> x_axis_;
+      std::array<double, 3> y_axis_;
+    };
+
     /*!
     \brief Clip two convex polygons, which lie in a plane
 
