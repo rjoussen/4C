@@ -1291,8 +1291,13 @@ bool CONTACT::Coupling3dManager::evaluate_coupling(
 
   // interpolate temperatures in TSI case
   if (imortar_.get<CONTACT::Problemtype>("PROBTYPE") == CONTACT::Problemtype::tsi)
-    NTS::Interpolator(imortar_, dim_)
-        .interpolate_target_temp_3d(source_element(), target_elements());
+  {
+    if (imortar_.get<bool>("COUPLED_TSI_CONTACT"))
+    {
+      NTS::Interpolator(imortar_, dim_)
+          .interpolate_target_temp_3d(source_element(), target_elements());
+    }
+  }
 
   return true;
 }
