@@ -1253,8 +1253,6 @@ void TSI::Partitioned::update()
 {
   structure_field()->update();
   thermo_field()->update();
-  if (contact_strategy_lagrange_ != nullptr)
-    contact_strategy_lagrange_->update((structure_field()->dispnp()));
 }
 
 /*----------------------------------------------------------------------*/

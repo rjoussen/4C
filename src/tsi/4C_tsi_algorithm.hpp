@@ -37,7 +37,6 @@ namespace Global
 namespace CONTACT
 {
   class LagrangeStrategyTsi;
-  class NitscheStrategyTsi;
 }  // namespace CONTACT
 
 namespace Adapter
@@ -142,10 +141,6 @@ namespace TSI
     //! store it in tsi and hand it to the thermal field
     void prepare_contact_strategy();
 
-    //! Access to the dof coupling for matching grid TSI
-    Coupling::Adapter::Coupling& structure_thermo_coupling() { return *structure_thermo_coupling_; }
-    //@}
-
     //! @name Access methods
 
     //! velocity calculation given the displacements (like in FSI)
@@ -182,11 +177,6 @@ namespace TSI
     const bool matchinggrid_;
     //! volume coupling (using mortar) adapter
     std::shared_ptr<Coupling::Adapter::MortarVolCoupl> volcoupl_;
-
-    std::shared_ptr<Coupling::Adapter::Coupling>
-        structure_thermo_coupling_;  //! structure (target), thermo (source)
-    //@}
-
 
     //! @name Surface Mortar stuff
     std::shared_ptr<Mortar::MultiFieldCoupling> mortar_coupling_;

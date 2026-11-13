@@ -169,9 +169,16 @@ std::vector<Core::IO::InputSpec> TSI::valid_parameters()
   /*----------------------------------------------------------------------*/
   /* parameters for tsi contact */
   specs.push_back(group("TSI CONTACT",
-      {parameter<double>("HEATTRANSSLAVE",
-           {.description = "Heat transfer parameter for slave side in thermal contact",
-               .default_value = 0.0}),
+      {
+          parameter<bool>("ENABLE_COUPLED_CONTACT",
+              {.description =
+                      "enable thermo-structurally coupled contact; if disabled, contact is handled "
+                      "entirely by the structural field",
+                  .default_value = true}),
+
+          parameter<double>("HEATTRANSSLAVE",
+              {.description = "Heat transfer parameter for slave side in thermal contact",
+                  .default_value = 0.0}),
           parameter<double>("HEATTRANSMASTER",
               {.description = "Heat transfer parameter for master side in thermal contact",
                   .default_value = 0.0}),
@@ -180,26 +187,18 @@ std::vector<Core::IO::InputSpec> TSI::valid_parameters()
                       "damage temperature at contact interface: friction coefficient zero there",
                   .default_value = 1.0e12}),
 
-          parameter<double>(
-              "TEMP_REF", {.description = "reference temperature at contact interface: "
-                                          "friction coefficient equals the given value",
-                              .default_value = 0.0}),
-
-          parameter<double>("NITSCHE_THETA_TSI",
-              {.description = "+1: symmetric, 0: non-symmetric, -1: skew-symmetric",
-                  .default_value = 0.0}),
-
-          parameter<CONTACT::NitscheWeighting>("NITSCHE_WEIGHTING_TSI",
-              {.description = "how to weight consistency terms in Nitsche contact formulation",
-                  .default_value = CONTACT::NitscheWeighting::harmonic}),
-
-          parameter<bool>("NITSCHE_PENALTY_ADAPTIVE_TSI",
-              {.description = "adapt penalty parameter after each converged time step",
-                  .default_value = true}),
-
-          parameter<double>("PENALTYPARAM_THERMO",
-              {.description = "Penalty parameter for Nitsche solution strategy",
-                  .default_value = 0.0})},
+          parameter<double>("TEMP_REF",
+              {.description = "reference temperature at contact interface: "
+                              "friction coefficient equals the given value",
+                  .default_value = 0.0,
+                  .on_parse_callback =
+                      [](Core::IO::InputParameterContainer& container)
+                  {
+                    FOUR_C_ASSERT_ALWAYS(
+                        container.get<double>("TEMP_DAMAGE") > container.get<double>("TEMP_REF"),
+                        "TEMP_DAMAGE must be greater than TEMP_REF");
+                  }}),
+      },
       {.required = false}));
   return specs;
 }
