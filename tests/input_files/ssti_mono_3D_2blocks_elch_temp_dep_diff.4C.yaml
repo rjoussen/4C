@@ -49,11 +49,9 @@ SOLVER 1:
 MATERIALS:
   - MAT: 1
     MAT_MultiplicativeSplitDefgradElastHyper:
-      NUMMATEL: 1
-      MATIDSEL: [2]
+      MATID_ELAST: 10
       NUMFACINEL: 1
       INELDEFGRADFACIDS: [3]
-      DENS: 0.001
   - MAT: 2
     ELAST_CoupNeoHooke:
       YOUNG: 10000
@@ -98,10 +96,13 @@ MATERIALS:
       COND: 0.01
   - MAT: 9
     MAT_MultiplicativeSplitDefgradElastHyper:
-      NUMMATEL: 1
-      MATIDSEL: [2]
+      MATID_ELAST: 10
       NUMFACINEL: 1
       INELDEFGRADFACIDS: [3]
+  - MAT: 10
+    MAT_ElastHyper:
+      NUMMAT: 1
+      MATIDS: [2]
       DENS: 0.001
 CLONING MATERIAL MAP:
   - SRC_FIELD: "structure"

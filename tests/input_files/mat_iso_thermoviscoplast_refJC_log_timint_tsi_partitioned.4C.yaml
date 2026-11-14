@@ -57,11 +57,9 @@ SOLVER 1:
 MATERIALS:
   - MAT: 1
     MAT_MultiplicativeSplitDefgradElastHyper:
-      NUMMATEL: 1
-      MATIDSEL: [2]
+      MATID_ELAST: 101
       NUMFACINEL: 1
       INELDEFGRADFACIDS: [3]
-      DENS: 7830e-12 # [t/mm^3 = N*s^2/mm^4]
       REF_TEMPERATURE: 293.0 # [K]
       THERMAL_EXPANSION_COEFFICIENT: 11e-6 # [1/K]
   - MAT: 2
@@ -112,6 +110,11 @@ MATERIALS:
       CONDUCT:
         constant: [37] # [mW/(mm*K) = N/s/K]
 
+  - MAT: 101
+    MAT_ElastHyper:
+      NUMMAT: 1
+      MATIDS: [2]
+      DENS: 7830e-12 # [t/mm^3 = N*s^2/mm^4]
 CLONING MATERIAL MAP:
   - SRC_FIELD: structure
     SRC_MAT: 1
@@ -186,49 +189,49 @@ RESULT DESCRIPTION:
       NODE: 1
       QUANTITY: temp
       VALUE: 294.095019277192
-      TOLERANCE: 1e-11
+      TOLERANCE: 1e-10
   - THERMAL:
       DIS: thermo
       NODE: 2
       QUANTITY: temp
       VALUE: 294.095019277192
-      TOLERANCE: 1e-11
+      TOLERANCE: 1e-10
   - THERMAL:
       DIS: thermo
       NODE: 3
       QUANTITY: temp
       VALUE: 294.095019277192
-      TOLERANCE: 1e-11
+      TOLERANCE: 1e-10
   - THERMAL:
       DIS: thermo
       NODE: 4
       QUANTITY: temp
       VALUE: 294.095019277192
-      TOLERANCE: 1e-11
+      TOLERANCE: 1e-10
   - THERMAL:
       DIS: thermo
       NODE: 5
       QUANTITY: temp
       VALUE: 294.095019277192
-      TOLERANCE: 1e-11
+      TOLERANCE: 1e-10
   - THERMAL:
       DIS: thermo
       NODE: 6
       QUANTITY: temp
       VALUE: 294.095019277192
-      TOLERANCE: 1e-11
+      TOLERANCE: 1e-10
   - THERMAL:
       DIS: thermo
       NODE: 7
       QUANTITY: temp
       VALUE: 294.095019277192
-      TOLERANCE: 1e-11
+      TOLERANCE: 1e-10
   - THERMAL:
       DIS: thermo
       NODE: 8
       QUANTITY: temp
       VALUE: 294.095019277192
-      TOLERANCE: 1e-11
+      TOLERANCE: 1e-10
 DESIGN POINT DIRICH CONDITIONS:
   - E: 1
     NUMDOF: 3

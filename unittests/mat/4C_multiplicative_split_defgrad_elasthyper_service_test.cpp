@@ -15,7 +15,13 @@
 #include "4C_mat_elasthyper_service.hpp"
 #include "4C_mat_material_factory.hpp"
 #include "4C_mat_multiplicative_split_defgrad_elasthyper_service.hpp"
+#include "4C_multiplicative_split_defgrad_elasthyper_test_utils.hpp"
 #include "4C_unittest_utils_assertions_test.hpp"
+#include "4C_utils_enum.hpp"
+#include "4C_utils_singleton_owner.hpp"
+
+#include <format>
+#include <memory>
 
 namespace
 {
@@ -67,6 +73,7 @@ namespace
     FOUR_C_EXPECT_NEAR(CeM, CeM_target, 1.0e-10);
   }
 
+
   TEST_F(MultiplicativeSplitDefgradElastHyperServiceTest, TestEvaluateiCinCiCin)
   {
     Core::LinAlg::Matrix<3, 3> iCinCiCinM_target(Core::LinAlg::Initialization::uninitialized);
@@ -82,7 +89,6 @@ namespace
 
     FOUR_C_EXPECT_NEAR(iCinCiCinM, iCinCiCinM_target, 1.0e-10);
   }
-
 
   TEST_F(MultiplicativeSplitDefgradElastHyperServiceTest, TestElastHyperEvaluateElasticPart)
   {
@@ -159,69 +165,65 @@ namespace
     FOUR_C_EXPECT_NEAR(cmat, cmat_target, 1.0e-9);
   }
 
-  TEST_F(MultiplicativeSplitDefgradElastHyperServiceTest,
-      TestEvaluateThermalQuantitiesStressAndStiffness)
+  /// Checks the thermal expansion stress of an ElastHyper material with the given elastic summands:
+  /// its first and second derivative w.r.t. temperature equal finite differences of the stress and
+  /// of the first derivative, respectively.
+  class ThermalExpansionStressTest
+      : public ::testing::TestWithParam<
+            MultiplicativeSplitDefgradElastHyperTestUtils::ElasticSummands>
   {
-    //**************************************************
-    double delta_temperature = 100.0000000000000000;
-    //**************************************************
-    Core::LinAlg::Matrix<3, 3> iFinM{Core::LinAlg::Initialization::zero};
-    iFinM(0, 0) = 1.0026809779767947;
-    iFinM(0, 1) = 0.2005361955953590;
-    iFinM(0, 2) = 0.0000000000000000;
-    iFinM(1, 0) = 0.3008042933930384;
-    iFinM(1, 1) = 1.3034852713698331;
-    iFinM(1, 2) = 0.0000000000000000;
-    iFinM(2, 0) = 0.0000000000000000;
-    iFinM(2, 1) = 0.0000000000000000;
-    iFinM(2, 2) = 0.8021447823814358;
-    //**************************************************
-    Core::LinAlg::SymmetricTensor<double, 3, 3> thermal_contribution_to_2pk_stress_ref_{};
-    thermal_contribution_to_2pk_stress_ref_(0, 0) = 60.3191058810404357;
-    thermal_contribution_to_2pk_stress_ref_(0, 1) = 32.4795185513294626;
-    thermal_contribution_to_2pk_stress_ref_(0, 2) = 0.0000000000000000;
-    thermal_contribution_to_2pk_stress_ref_(1, 0) = 32.4795185513294626;
-    thermal_contribution_to_2pk_stress_ref_(1, 1) = 103.2384696810115088;
-    thermal_contribution_to_2pk_stress_ref_(1, 2) = 0.0000000000000000;
-    thermal_contribution_to_2pk_stress_ref_(2, 0) = 0.0000000000000000;
-    thermal_contribution_to_2pk_stress_ref_(2, 1) = 0.0000000000000000;
-    thermal_contribution_to_2pk_stress_ref_(2, 2) = 37.1194497729479664;
-    //**************************************************
-    Core::LinAlg::SymmetricTensor<double, 3, 3>
-        p_thermal_contribution_to_2pk_stress_p_temperature_ref_{};
-    p_thermal_contribution_to_2pk_stress_p_temperature_ref_(0, 0) = 0.0000941798851085;
-    p_thermal_contribution_to_2pk_stress_p_temperature_ref_(0, 1) = 0.0000507122458277;
-    p_thermal_contribution_to_2pk_stress_p_temperature_ref_(0, 2) = 0.0000000000000000;
-    p_thermal_contribution_to_2pk_stress_p_temperature_ref_(1, 0) = 0.0000507122458277;
-    p_thermal_contribution_to_2pk_stress_p_temperature_ref_(1, 1) = 0.0001611924956665;
-    p_thermal_contribution_to_2pk_stress_p_temperature_ref_(1, 2) = 0.0000000000000000;
-    p_thermal_contribution_to_2pk_stress_p_temperature_ref_(2, 0) = 0.0000000000000000;
-    p_thermal_contribution_to_2pk_stress_p_temperature_ref_(2, 1) = 0.0000000000000000;
-    p_thermal_contribution_to_2pk_stress_p_temperature_ref_(2, 2) = 0.0000579568523745;
+   protected:
+    Core::Utils::SingletonOwnerRegistry::ScopeGuard guard_;
 
-    // set thermal info
-    const double thermal_expansion_fac = 0.1;
+    void SetUp() override
+    {
+      MultiplicativeSplitDefgradElastHyperTestUtils::set_up_elast_hyper(GetParam());
+      elast_hyper_ =
+          MultiplicativeSplitDefgradElastHyperTestUtils::create_material<Mat::So3Material>(
+              MultiplicativeSplitDefgradElastHyperTestUtils::matid_elast_hyper);
+    }
 
-    // Create summand vector
-    std::vector<std::shared_ptr<Mat::Elastic::Summand>> potsum;
-    Core::IO::InputParameterContainer elast_pot_coup_neo_hooke_data;
-    elast_pot_coup_neo_hooke_data.add("YOUNG", 1.5e2);
-    elast_pot_coup_neo_hooke_data.add("NUE", 0.3);
-    auto coup_neo_hooke_params = Mat::make_parameter(
-        200, Core::Materials::MaterialType::mes_coupneohooke, elast_pot_coup_neo_hooke_data);
-    potsum.emplace_back(std::make_shared<Mat::Elastic::CoupNeoHooke>(
-        dynamic_cast<Mat::Elastic::PAR::CoupNeoHooke*>(coup_neo_hooke_params.get())));
+    [[nodiscard]] Mat::ThermalExpansionStress evaluate(
+        const double delta_temperature, const int max_temperature_derivative_order) const
+    {
+      return Mat::evaluate_thermal_expansion_stress(*elast_hyper_, 1.0e-5, delta_temperature,
+          context_, MultiplicativeSplitDefgradElastHyperTestUtils::gp,
+          MultiplicativeSplitDefgradElastHyperTestUtils::ele_gid, max_temperature_derivative_order);
+    }
 
+    const Mat::EvaluationContext<3> context_{
+        .total_time = nullptr, .time_step_size = nullptr, .xi = nullptr, .ref_coords = nullptr};
+    std::shared_ptr<Mat::So3Material> elast_hyper_;
+  };
 
-    auto thermoelastic_stress_contribution =
-        Mat::ThermalExpansion::compute_thermoelastic_stress_contribution(
-            delta_temperature, thermal_expansion_fac, potsum, 0, 0);
+  TEST_P(ThermalExpansionStressTest, TemperatureDerivativesEqualFiniteDifference)
+  {
+    constexpr double delta_temperature = 20.0;
+    const Mat::ThermalExpansionStress ST = evaluate(delta_temperature, 2);
+    ASSERT_TRUE(ST.second_temperature_derivative.has_value());
 
-    const auto pk2_stress_contribution = Mat::ThermalExpansion::compute_pk2_stress_contribution(
-        thermoelastic_stress_contribution, iFinM);
-    FOUR_C_EXPECT_NEAR(
-        pk2_stress_contribution.value, thermal_contribution_to_2pk_stress_ref_, 1.0e-10);
-    FOUR_C_EXPECT_NEAR(pk2_stress_contribution.temperature_derivative,
-        p_thermal_contribution_to_2pk_stress_p_temperature_ref_, 1.0e-10);
+    // finite differences with a step that differs from the one used internally for the second
+    // derivative
+    constexpr double h = 1.0;
+    const Mat::ThermalExpansionStress ST_plus = evaluate(delta_temperature + h, 1);
+    const Mat::ThermalExpansionStress ST_minus = evaluate(delta_temperature - h, 1);
+    const Core::LinAlg::SymmetricTensor<double, 3, 3> dST_dT_fd =
+        (ST_plus.value - ST_minus.value) / (2.0 * h);
+    const Core::LinAlg::SymmetricTensor<double, 3, 3> d2ST_dT2_fd =
+        (ST_plus.temperature_derivative - ST_minus.temperature_derivative) / (2.0 * h);
+
+    ASSERT_GT(MultiplicativeSplitDefgradElastHyperTestUtils::max_abs(dST_dT_fd), 0.0)
+        << "the finite difference reference vanishes";
+    FOUR_C_EXPECT_NEAR(ST.temperature_derivative, dST_dT_fd,
+        1.0e-6 * MultiplicativeSplitDefgradElastHyperTestUtils::max_abs(dST_dT_fd));
+    ASSERT_GT(MultiplicativeSplitDefgradElastHyperTestUtils::max_abs(d2ST_dT2_fd), 0.0)
+        << "the finite difference reference vanishes";
+    FOUR_C_EXPECT_NEAR(*ST.second_temperature_derivative, d2ST_dT2_fd,
+        1.0e-6 * MultiplicativeSplitDefgradElastHyperTestUtils::max_abs(d2ST_dT2_fd));
   }
+
+  INSTANTIATE_TEST_SUITE_P(ElasticSummands, ThermalExpansionStressTest,
+      ::testing::ValuesIn(
+          EnumTools::enum_values<MultiplicativeSplitDefgradElastHyperTestUtils::ElasticSummands>()),
+      [](const auto& info) { return std::format("{}", EnumTools::enum_name(info.param)); });
 }  // namespace
