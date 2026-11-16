@@ -37,6 +37,7 @@
 #include "4C_solid_ele.hpp"
 #include "4C_solver_nonlin_nox_group.hpp"
 #include "4C_solver_nonlin_nox_group_prepostoperator.hpp"
+#include "4C_structure_new_mesh_regularization_ghosting.hpp"
 #include "4C_structure_new_solver_factory.hpp"
 #include "4C_structure_new_timint_base.hpp"
 #include "4C_structure_new_timint_factory.hpp"
@@ -288,6 +289,12 @@ void Adapter::StructureBaseAlgorithmNew::setup_tim_int()
   std::shared_ptr<Solid::TimeInt::BaseDataSDyn> datasdyn = Solid::TimeInt::build_data_sdyn(*sdyn_);
   datasdyn->init(actdis_, *sdyn_, *xparams, modeltypes, eletechs, linsolvers);
   datasdyn->setup();
+
+  // the state transfer of the mesh regularization interpolates from the patches of the old
+  // elements, which need one more layer of ghosted elements
+  if (datasdyn->get_mesh_regularization_config().has_value())
+    Solid::MeshRegularization::extend_ghosting(
+        *actdis_, Solid::MeshRegularization::num_ghost_layers);
 
   // ---------------------------------------------------------------------------
   // initialize/setup the global state data container

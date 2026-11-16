@@ -155,6 +155,7 @@ void Adapter::AleBaseAlgorithm::setup_ale(
   switch (probtype)
   {
     case Core::ProblemType::ale:
+    case Core::ProblemType::structure:
     {
       ale_ = ale;
       break;

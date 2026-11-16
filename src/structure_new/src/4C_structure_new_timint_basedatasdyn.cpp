@@ -295,6 +295,12 @@ void Solid::TimeInt::BaseDataSDyn::setup()
     dynamic_rebalance_config_ = std::nullopt;
   }
 
+  if (get_sdyn_params().isParameter("MESH REGULARIZATION"))
+  {
+    const auto config = get_sdyn_params().get<MeshRegularizationConfig>("MESH REGULARIZATION");
+    if (config.enabled) mesh_regularization_config_ = config;
+  }
+
   if (dynamic_rebalance_config_.has_value() &&
       (modeltypes_->size() != 1 || !modeltypes_->contains(Solid::model_structure)))
   {

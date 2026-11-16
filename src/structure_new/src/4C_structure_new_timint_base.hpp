@@ -30,6 +30,11 @@ namespace Core::LinAlg
 
 FOUR_C_NAMESPACE_OPEN
 
+namespace Solid::MeshRegularization
+{
+  class MeshMovement;
+}
+
 namespace Core::LinAlg
 {
   class BlockSparseMatrixBase;
@@ -78,6 +83,15 @@ namespace Solid
 
       /// Redistribute a pure structure discretization using measured evaluation times.
       bool perform_dynamic_rebalance();
+
+      /*!
+       * @brief Regularize the mesh and transfer the state if due after the last converged step
+       *
+       * Called before the predictor of the next step, such that the output, the restart and the
+       * final state of a step are its converged state, and a step starts from the regularized
+       * mesh. A step that is retried does not regularize again.
+       */
+      void regularize_mesh_if_due();
 
       /// tests if there are more time steps to do
       [[nodiscard]] bool not_finished() const override;
@@ -833,6 +847,12 @@ namespace Solid
       std::deque<double> dynamic_rebalance_imbalance_history_;
       double dynamic_rebalance_averaged_imbalance_ = 0.0;
       int last_dynamic_rebalance_step_;
+
+      //! movement of the nodes for the mesh regularization (if enabled)
+      std::shared_ptr<Solid::MeshRegularization::MeshMovement> mesh_movement_;
+
+      //! last step whose converged state was regularized (a retried step must not regularize again)
+      int last_regularized_step_ = -1;
     };  // class Base
   }  // namespace TimeInt
 }  // namespace Solid
