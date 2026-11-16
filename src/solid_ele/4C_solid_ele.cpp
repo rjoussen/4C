@@ -404,6 +404,74 @@ void Discret::Elements::Solid<dim>::for_each_gauss_point(Core::FE::Discretizatio
       *solid_calc_variant_);
 }
 
+template <unsigned dim>
+void Discret::Elements::Solid<dim>::receive_transferred_state(
+    const Core::FE::Discretization& discretization,
+    const std::function<TransferredGaussPointState(int, const Core::LinAlg::Tensor<double, 3>&)>&
+        transferred_state)
+{
+  FOUR_C_ASSERT(solid_calc_variant_.has_value(),
+      "The solid calculation interface is not initialized for element id {}.", id());
+
+  std::vector<int> lm;
+  std::vector<int> lmowner;
+  std::vector<int> lmstride;
+  location_vector(discretization, lm, lmowner, lmstride);
+
+  std::visit(
+      [&](auto& interface)
+      {
+        if constexpr (requires {
+                        interface->receive_transferred_state(
+                            *this, *solid_material(), discretization, lm, transferred_state);
+                      })
+        {
+          interface->receive_transferred_state(
+              *this, *solid_material(), discretization, lm, transferred_state);
+        }
+        else
+        {
+          FOUR_C_THROW(
+              "The transfer of the state is not implemented for the technology of element {}.",
+              id());
+        }
+      },
+      *solid_calc_variant_);
+}
+
+template <unsigned dim>
+std::vector<Core::LinAlg::Tensor<double, 3, 3>>
+Discret::Elements::Solid<dim>::evaluate_material_deformation_gradients(
+    const Core::FE::Discretization& discretization)
+{
+  FOUR_C_ASSERT(solid_calc_variant_.has_value(),
+      "The solid calculation interface is not initialized for element id {}.", id());
+
+  std::vector<int> lm;
+  std::vector<int> lmowner;
+  std::vector<int> lmstride;
+  location_vector(discretization, lm, lmowner, lmstride);
+
+  return std::visit(
+      [&](auto& interface) -> std::vector<Core::LinAlg::Tensor<double, 3, 3>>
+      {
+        if constexpr (requires {
+                        interface->evaluate_material_deformation_gradients(
+                            *this, discretization, lm);
+                      })
+        {
+          return interface->evaluate_material_deformation_gradients(*this, discretization, lm);
+        }
+        else
+        {
+          FOUR_C_THROW(
+              "The transfer of the state is not implemented for the technology of element {}.",
+              id());
+        }
+      },
+      *solid_calc_variant_);
+}
+
 template class Discret::Elements::SolidType<2>;
 template class Discret::Elements::Solid<2>;
 template class Discret::Elements::SolidType<3>;

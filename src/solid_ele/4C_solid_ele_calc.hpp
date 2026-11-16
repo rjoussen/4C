@@ -18,12 +18,15 @@
 #include "4C_solid_ele_calc_lib_integration.hpp"
 #include "4C_solid_ele_calc_lib_io.hpp"
 #include "4C_solid_ele_calc_lib_nitsche.hpp"
+#include "4C_solid_ele_calc_lib_reference_correction.hpp"
 #include "4C_solid_ele_formulation.hpp"
 
+#include <functional>
 #include <memory>
 #include <string>
 #include <type_traits>
 #include <unordered_map>
+#include <vector>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -134,6 +137,28 @@ namespace Discret::Elements
       mass_matrix_integration_ = integration_rule;
     }
 
+    /*!
+     * @brief Set the state at all Gauss points from transferred data
+     *
+     * The correction of the reference configuration is set such that the deformation gradient of
+     * the material is the transferred one, and the material receives its transferred history.
+     *
+     * @param transferred_state Function returning the transferred state at a Gauss point given
+     * its index and its position in the current configuration
+     */
+    void receive_transferred_state(const Core::Elements::Element& ele,
+        Mat::So3Material& solid_material, const Core::FE::Discretization& discretization,
+        const std::vector<int>& lm,
+        const std::function<TransferredGaussPointState(
+            int, const Core::LinAlg::Tensor<double, 3>&)>& transferred_state)
+      requires(Core::FE::dim<celltype> == 3);
+
+    //! Deformation gradients of the material at all Gauss points
+    std::vector<Core::LinAlg::Tensor<double, 3, 3>> evaluate_material_deformation_gradients(
+        const Core::Elements::Element& ele, const Core::FE::Discretization& discretization,
+        const std::vector<int>& lm)
+      requires(Core::FE::dim<celltype> == 3);
+
     const Core::FE::GaussIntegration& get_gauss_rule_stiffness_integration() const
     {
       return stiffness_matrix_integration_;
@@ -153,6 +178,23 @@ namespace Discret::Elements
 
     SolidFormulationHistory<ElementFormulation> history_data_{};
     SolidFormulationHistory<ElementFormulation> old_history_data_{};
+
+    //! correction of the reference configuration at a Gauss point (nullptr if not corrected)
+    [[nodiscard]] const Core::LinAlg::Tensor<double, num_dim_, num_dim_>* reference_correction(
+        int gp) const
+    {
+      return reference_correction_.empty() ? nullptr : &reference_correction_[gp];
+    }
+
+    /*!
+     * @brief Corrections of the reference configuration at the Gauss points, which map the
+     * reference configuration of the material to the one of the element
+     *
+     * Empty unless the element was moved by a mesh regularization.
+     *
+     * @see corrected_deformation_gradient()
+     */
+    std::vector<Core::LinAlg::Tensor<double, num_dim_, num_dim_>> reference_correction_{};
 
   };  // class SolidEleCalc
 }  // namespace Discret::Elements
