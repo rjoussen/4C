@@ -350,10 +350,10 @@ namespace CONTACT
     Without semi-smooth Newton, only the relative movement is evaluated and the active set is
     checked, since it is updated in update_active_set().
 
-    \note In the first active set update (also after a restart), the initial active set from the
-    input is used, since the Lagrange multipliers may not contain any information yet.
+    \note The initial active set from the input is used during the first-step predictor,
+    when the Lagrange multipliers may not contain any information yet.
     */
-    void update_contact_state() override;
+    void update_contact_state(bool is_predictor) override;
 
     /*!
     \brief Reset active set status for next time step
@@ -489,11 +489,10 @@ namespace CONTACT
 
     std::vector<std::shared_ptr<CONTACT::Interface>> interface_;
 
-    bool evalForceCalled_;          //< flag for evaluate force call
-    bool initial_active_set_used_;  //< flag whether the initial active set from the input was used
-    bool activesetssconv_;          //< convergence flag for semi-smooth active set search
-    bool activesetconv_;            //< convergence flag for fixed-point active set search
-    int activesetsteps_;            //< number of fixed-point active set steps in this time step
+    bool evalForceCalled_;  //< flag for evaluate force call
+    bool activesetssconv_;  //< convergence flag for semi-smooth active set search
+    bool activesetconv_;    //< convergence flag for fixed-point active set search
+    int activesetsteps_;    //< number of fixed-point active set steps in this time step
 
     std::shared_ptr<Core::LinAlg::SparseMatrix>
         mhatmatrix_;  //< product of global Mortar matrices inv(D)*M

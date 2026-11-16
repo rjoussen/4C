@@ -128,7 +128,7 @@ void CONTACT::LagrangeStrategyTsi::evaluate(
   initialize_and_evaluate_interface();  // evaluate mortar terms (integrate...)
   assemble_mortar();
 
-  update_contact_state();
+  update_contact_state(false);
 
   // init lin-matrices
   initialize();

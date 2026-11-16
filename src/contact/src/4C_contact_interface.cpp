@@ -6214,7 +6214,7 @@ void CONTACT::Interface::evaluate_relative_movement(
   const auto contact_strategy =
       Teuchos::getIntegralValue<CONTACT::SolvingStrategy>(interface_params(), "STRATEGY");
   const bool semi_smooth = interface_params().get<bool>("SEMI_SMOOTH_NEWTON");
-  const double pp = interface_params().get<double>("PENALTYPARAM");
+  const double penalty_param = interface_params().get<double>("PENALTYPARAM");
   const bool use_frictionless_first = interface_params().get<bool>("FRLESS_FIRST");
 
   // loop over all source row nodes on the current interface
@@ -6251,7 +6251,7 @@ void CONTACT::Interface::evaluate_relative_movement(
         double lmuzawan = 0.0;
         for (int k = 0; k < dim; ++k)
           lmuzawan += cnode->mo_data().lmuzawa()[k] * cnode->mo_data().n()[k];
-        is_in_contact = lmuzawan - cnode->data().kappa() * pp * gap >= 0;
+        is_in_contact = lmuzawan - cnode->data().kappa() * penalty_param * gap >= 0;
         break;
       }
       default:

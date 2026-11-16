@@ -187,7 +187,7 @@ namespace CONTACT
     }
     void evaluate_constr_rhs() override {}
     void update_active_set() override {}
-    void update_contact_state() override
+    void update_contact_state(bool /*is_predictor*/) override
     {
       // contact and stick/slip are decided per Gauss point during the integration
     }

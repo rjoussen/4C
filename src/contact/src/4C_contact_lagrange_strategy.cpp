@@ -42,7 +42,6 @@ CONTACT::LagrangeStrategy::LagrangeStrategy(
     : AbstractStrategy(data_ptr, dof_row_map, NodeRowMap, params, spatialDim, comm, alphaf, maxdof),
       interface_(interface),
       evalForceCalled_(false),
-      initial_active_set_used_(false),
       activesetssconv_(false),
       activesetconv_(false),
       activesetsteps_(1),
@@ -3318,7 +3317,7 @@ void CONTACT::LagrangeStrategy::evaluate_force(CONTACT::ParamsInterface& cparams
     assemble_mortar();                    // assemble mortar terms into global matrices
   }
 
-  update_contact_state();
+  update_contact_state(cparams.is_predictor());
 
   // apply contact forces and stiffness
   initialize();  // init lin-matrices
@@ -4803,7 +4802,7 @@ void CONTACT::LagrangeStrategy::update_active_set()
 /*----------------------------------------------------------------------*
  |  Update active set and check for convergence (public)      popp 06/08|
  *----------------------------------------------------------------------*/
-void CONTACT::LagrangeStrategy::update_contact_state()
+void CONTACT::LagrangeStrategy::update_contact_state(bool is_predictor)
 {
   // FIXME: Here we do not consider zig-zagging yet!
   //  print_active_set();
@@ -4848,10 +4847,8 @@ void CONTACT::LagrangeStrategy::update_contact_state()
   // assume that active set has converged and check for opposite
   activesetconv_ = true;
 
-  // The active set from the input is only used in the first active set update (also after a
-  // restart), in which the Lagrange multipliers may not contain any information yet.
-  const bool use_initial_active_set = not initial_active_set_used_;
-  initial_active_set_used_ = true;
+  // The input active set is only used during the first-step predictor.
+  const bool use_initial_active_set = is_predictor and step_ == 1;
 
   // update the active nodes of all interfaces
   std::vector<std::vector<int>> remaining_active_nodes(interface_.size());

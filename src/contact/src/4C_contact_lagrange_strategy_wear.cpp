@@ -5071,10 +5071,10 @@ void Wear::LagrangeStrategyWear::do_read_restart(
 /*----------------------------------------------------------------------*
  |  Update active set and check for convergence (public)     farah 02/16|
  *----------------------------------------------------------------------*/
-void Wear::LagrangeStrategyWear::update_contact_state()
+void Wear::LagrangeStrategyWear::update_contact_state(bool is_predictor)
 {
   // call base routine
-  CONTACT::LagrangeStrategy::update_contact_state();
+  CONTACT::LagrangeStrategy::update_contact_state(is_predictor);
 
   // for both-sided wear
   gminvolvednodes_ = nullptr;

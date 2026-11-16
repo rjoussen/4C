@@ -286,7 +286,7 @@ namespace CONTACT
     The active set of the penalty strategy is updated during the assembly of the regularized
     contact forces, see Interface::assemble_reg_normal_forces().
     */
-    void update_contact_state() override { evaluate_relative_movement(); }
+    void update_contact_state(bool /*is_predictor*/) override { evaluate_relative_movement(); }
     bool is_penalty() const override { return true; };
     void reset_lagrange_multipliers(
         const CONTACT::ParamsInterface& cparams, const Core::LinAlg::Vector<double>& xnew) override

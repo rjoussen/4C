@@ -875,7 +875,7 @@ void CONTACT::AbstractStrategy::apply_force_stiff_cmt(
 
     Core::Communication::barrier(get_comm());
     const double t_start3 = Teuchos::Time::wallTime();
-    update_contact_state();
+    update_contact_state(predictor);
 
     Core::Communication::barrier(get_comm());
     const double t_end3 = Teuchos::Time::wallTime() - t_start3;
@@ -922,7 +922,7 @@ void CONTACT::AbstractStrategy::apply_force_stiff_cmt(
       assemble_mortar();                    // assemble mortar terms into global matrices
     }
 
-    update_contact_state();
+    update_contact_state(predictor);
 
     // apply contact forces and stiffness
     initialize();           // init lin-matrices

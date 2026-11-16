@@ -694,7 +694,7 @@ void CONTACT::PenaltyStrategy::evaluate_force(CONTACT::ParamsInterface& cparams)
     assemble_mortar();                    // assemble mortar terms into global matrices
   }
 
-  update_contact_state();
+  update_contact_state(cparams.is_predictor());
 
   // apply contact forces and stiffness
   initialize();  // init lin-matrices

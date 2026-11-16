@@ -941,8 +941,10 @@ namespace CONTACT
 
     The contact state consists of the active set (active/inactive and stick/slip) and the relative
     movement (jump) of the source nodes.
+
+    \param[in] is_predictor Whether this update is part of a predictor evaluation.
     */
-    virtual void update_contact_state() = 0;
+    virtual void update_contact_state(bool is_predictor) = 0;
     void update_uzawa_augmented_lagrange() override = 0;
     void update_constraint_norm(int uzawaiter = 0) override = 0;
 

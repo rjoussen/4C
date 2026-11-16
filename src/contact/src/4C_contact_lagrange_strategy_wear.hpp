@@ -162,9 +162,9 @@ namespace Wear
     /*!
     \brief Update the contact state and the wear-specific active and slip maps
 
-    See LagrangeStrategy::update_contact_state().
+    See LagrangeStrategy::update_contact_state(bool).
     */
-    void update_contact_state() override;
+    void update_contact_state(bool is_predictor) override;
 
     /*!
     \brief Store/Reset nodal wear quantities for pv approach
