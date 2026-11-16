@@ -35,7 +35,8 @@ namespace ALE
     springs_material,  ///< use a spring analogy based on material configuration
     springs_spatial,   ///< use a spring analogy based on spatial configuration
     solid,             ///< nonlinear pseudo-structure approach
-    solid_linear       ///< linear pseudo-structure approach
+    solid_linear,      ///< linear pseudo-structure approach
+    mesh_quality       ///< minimize a potential of the element distortion
   };
   /// Handling of non-converged nonlinear solver
   enum DivContAct

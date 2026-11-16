@@ -6,6 +6,7 @@
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
 #include "4C_ale_ale3.hpp"
+#include "4C_ale_mesh_quality.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_general_extract_values.hpp"
 #include "4C_fem_general_utils_fem_shapefunctions.hpp"
@@ -120,6 +121,8 @@ int Discret::Elements::Ale3::evaluate(Teuchos::ParameterList& params,
     act = Ale3::calc_ale_springs_material;
   else if (action == "calc_ale_springs_spatial")
     act = Ale3::calc_ale_springs_spatial;
+  else if (action == "calc_ale_mesh_quality")
+    act = Ale3::calc_ale_mesh_quality;
   else if (action == "calc_ale_node_normal")
     act = Ale3::calc_ale_node_normal;
   else if (action == "setup_material")
@@ -175,6 +178,37 @@ int Discret::Elements::Ale3::evaluate(Teuchos::ParameterList& params,
 
       Ale3ImplInterface::impl(this)->static_ke_nonlinear(
           this, discretization, lm, elemat1, elevec1, my_dispnp, params, false);
+
+      break;
+    }
+    case calc_ale_mesh_quality:
+    {
+      std::shared_ptr<const Core::LinAlg::Vector<double>> dispnp =
+          discretization.get_state("dispnp");
+      std::vector<double> my_dispnp = Core::FE::extract_values(*dispnp, lm);
+
+      std::vector<double> reference_coordinates(3 * num_node());
+      for (int i = 0; i < num_node(); ++i)
+        for (int d = 0; d < 3; ++d) reference_coordinates[3 * i + d] = nodes()[i]->x()[d];
+
+      // optional target configuration (e.g., the initial mesh), given as displacement from the
+      // reference configuration
+      std::vector<double> target_coordinates;
+      if (discretization.has_state("mesh quality target"))
+      {
+        target_coordinates =
+            Core::FE::extract_values(*discretization.get_state("mesh quality target"), lm);
+        for (std::size_t i = 0; i < target_coordinates.size(); ++i)
+          target_coordinates[i] += reference_coordinates[i];
+      }
+
+      const ALE::MeshQualityParameters parameters{
+          .size_weight = params.get<double>("mesh quality size weight"),
+          .motion_weight = params.get<double>("mesh quality motion weight"),
+          .size_growth_only = params.get<bool>("mesh quality size growth only"),
+          .shape_exponent = params.get<double>("mesh quality shape exponent")};
+      ALE::evaluate_mesh_quality_potential(shape(), reference_coordinates, my_dispnp, parameters,
+          &elevec1, &elemat1, target_coordinates);
 
       break;
     }

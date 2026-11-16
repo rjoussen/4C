@@ -346,6 +346,14 @@ void ALE::Ale::evaluate_elements()
   // action for elements
   eleparams.set<std::string>("action", element_action_string(aletype_));
   eleparams.set<bool>("use spatial configuration", update_sys_mat_every_step());
+  eleparams.set<double>(
+      "mesh quality size weight", params_->get<double>("MESH_QUALITY_SIZE_WEIGHT"));
+  eleparams.set<double>(
+      "mesh quality motion weight", params_->get<double>("MESH_QUALITY_MOTION_WEIGHT"));
+  eleparams.set<bool>(
+      "mesh quality size growth only", params_->get<bool>("MESH_QUALITY_SIZE_GROWTH_ONLY"));
+  eleparams.set<double>(
+      "mesh quality shape exponent", params_->get<double>("MESH_QUALITY_SHAPE_EXPONENT"));
 
   discret_->set_state("dispnp", *dispnp_);
 
@@ -378,6 +386,9 @@ std::string ALE::Ale::element_action_string(const ALE::AleDynamic name)
       break;
     case ALE::springs_spatial:
       return "calc_ale_springs_spatial";
+      break;
+    case ALE::mesh_quality:
+      return "calc_ale_mesh_quality";
       break;
     default:
       FOUR_C_THROW("Cannot make std::string for ALE type {}", name);

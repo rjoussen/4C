@@ -125,6 +125,7 @@ void Adapter::AleBaseAlgorithm::setup_ale(
   {
     // catch all nonlinear cases
     case ALE::solid:
+    case ALE::mesh_quality:
     case ALE::laplace_spatial:
     case ALE::springs_spatial:
     {

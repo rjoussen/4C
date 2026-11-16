@@ -31,6 +31,53 @@ Core::IO::InputSpec ALE::valid_parameters()
           parameter<ALE::AleDynamic>(
               "ALE_TYPE", {.description = "ale mesh movement algorithm", .default_value = solid}),
 
+          parameter<double>("MESH_QUALITY_SIZE_WEIGHT",
+              {.description =
+                      "Weight w of the element size term relative to the element shape term in the "
+                      "mesh quality potential (ALE_TYPE mesh_quality). For small deviations from "
+                      "the "
+                      "target, the potential acts like a linear elastic material with the Poisson "
+                      "ratio (9w - 2) / (2 (9w + 1)), e.g., 0 for w = 2/9 and 0.35 for w = 1; "
+                      "larger "
+                      "values keep the element sizes more firmly. The size term or the motion "
+                      "term (MESH_QUALITY_MOTION_WEIGHT) has to be active: the shape term alone "
+                      "does not determine the sizes of the elements and the positions of nodes on "
+                      "sliding boundaries.",
+                  .default_value = 1.0}),
+
+          parameter<double>("MESH_QUALITY_MOTION_WEIGHT",
+              {.description =
+                      "Weight of the motion term relative to the element shape term in the mesh "
+                      "quality potential (ALE_TYPE mesh_quality): the squared displacement of the "
+                      "nodes relative to the element size. It keeps the nodes close to the "
+                      "reference configuration of the mesh movement, which is the current "
+                      "configuration for the mesh regularization of solids, so that the mesh "
+                      "stays close to the material and is only moved where its quality requires "
+                      "it. A small weight (e.g., 0.001) without the size term makes each mesh "
+                      "movement unique while the element sizes adapt to the shapes, e.g., become "
+                      "small around tool edges.",
+                  .default_value = 0.0}),
+
+          parameter<double>("MESH_QUALITY_SHAPE_EXPONENT",
+              {.description =
+                      "Exponent p >= 1 of the shape term of the mesh quality potential (ALE_TYPE "
+                      "mesh_quality): (mu^p - 1) / p of the mean ratio measure mu >= 1 at each "
+                      "element corner. It equals the plain shape term mu - 1 for p = 1 and near "
+                      "ideal shapes, and penalizes strongly distorted elements more for p > 1, so "
+                      "that a few bad elements are not traded for many slightly better ones.",
+                  .default_value = 1.0}),
+
+          parameter<bool>("MESH_QUALITY_SIZE_GROWTH_ONLY",
+              {.description =
+                      "Restrict the size term of the mesh quality potential (ALE_TYPE "
+                      "mesh_quality) to elements that are larger than their target, as (v - 1)^3 / "
+                      "v^2 of the volume ratio v > 1: elements may shrink freely, but do not grow "
+                      "much beyond the target size, e.g., the initial "
+                      "element size for the mesh regularization of solids. The motion term "
+                      "(MESH_QUALITY_MOTION_WEIGHT) is then needed to make the mesh movement "
+                      "unique.",
+                  .default_value = false}),
+
           parameter<bool>("ASSESSMESHQUALITY",
               {.description = "Evaluate element quality measure according to [Oddy et al. 1988]",
                   .default_value = false}),
