@@ -33,6 +33,7 @@
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
+#include <format>
 #include <memory>
 
 FOUR_C_NAMESPACE_OPEN
@@ -1047,6 +1048,31 @@ void Mat::MultiplicativeSplitDefgradElastHyper::update()
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
+std::optional<std::vector<Mat::HistoryTransferQuantity>>
+Mat::MultiplicativeSplitDefgradElastHyper::history_transfer_quantities() const
+{
+  if (!potsumel_transviso_.empty()) return std::nullopt;
+  return inelastic_->history_transfer_quantities();
+}
+
+/*--------------------------------------------------------------------*
+ *--------------------------------------------------------------------*/
+void Mat::MultiplicativeSplitDefgradElastHyper::gather_history_for_transfer(
+    const int gp, std::vector<double>& data) const
+{
+  inelastic_->gather_history_for_transfer(gp, data);
+}
+
+/*--------------------------------------------------------------------*
+ *--------------------------------------------------------------------*/
+void Mat::MultiplicativeSplitDefgradElastHyper::receive_transferred_history(
+    const int gp, std::span<const double> data, const Core::LinAlg::Tensor<double, 3, 3>& defgrd)
+{
+  inelastic_->receive_transferred_history(gp, data, Core::LinAlg::make_matrix_view(defgrd));
+}
+
+/*--------------------------------------------------------------------*
+ *--------------------------------------------------------------------*/
 Core::LinAlg::Matrix<6, 1> Mat::MultiplicativeSplitDefgradElastHyper::evaluate_od_stiff_mat(
     const PAR::InelasticSource source, const Core::LinAlg::Matrix<3, 3>* const defgrad,
     const Core::LinAlg::Matrix<6, 9>& dSdiFin)
@@ -1300,6 +1326,50 @@ void Mat::InelasticFactorsHandler::update()
   {
     inelastic_defgrad_factor->update();
   }
+}
+
+/*--------------------------------------------------------------------*
+ *--------------------------------------------------------------------*/
+std::optional<std::vector<Mat::HistoryTransferQuantity>>
+Mat::InelasticFactorsHandler::history_transfer_quantities() const
+{
+  // each factor derives its inelastic deformation gradient from the total one of the new mesh,
+  // which is only consistent for a single factor
+  if (facdefgradin_.size() != 1) return std::nullopt;
+
+  std::vector<HistoryTransferQuantity> quantities;
+  for (std::size_t i = 0; i < facdefgradin_.size(); ++i)
+  {
+    const auto factor_quantities = facdefgradin_[i].second->history_transfer_quantities();
+    if (!factor_quantities) return std::nullopt;
+    for (const auto& quantity : *factor_quantities)
+      quantities.push_back({std::format("factor_{}_{}", i, quantity.name), quantity.kind});
+  }
+  return quantities;
+}
+
+/*--------------------------------------------------------------------*
+ *--------------------------------------------------------------------*/
+void Mat::InelasticFactorsHandler::gather_history_for_transfer(
+    const int gp, std::vector<double>& data) const
+{
+  for (const auto& [_, factor] : facdefgradin_) factor->gather_history_for_transfer(gp, data);
+}
+
+/*--------------------------------------------------------------------*
+ *--------------------------------------------------------------------*/
+void Mat::InelasticFactorsHandler::receive_transferred_history(
+    const int gp, std::span<const double> data, const Core::LinAlg::Matrix<3, 3>& defgrad)
+{
+  std::size_t offset = 0;
+  for (const auto& [_, factor] : facdefgradin_)
+  {
+    const int size = history_transfer_size(*factor->history_transfer_quantities());
+    factor->receive_transferred_history(gp, data.subspan(offset, size), defgrad);
+    offset += size;
+  }
+  FOUR_C_ASSERT_ALWAYS(offset == data.size(), "Transferred history has {} values, expected {}.",
+      data.size(), offset);
 }
 
 /*--------------------------------------------------------------------*

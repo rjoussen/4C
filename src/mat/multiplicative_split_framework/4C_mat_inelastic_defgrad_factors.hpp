@@ -28,6 +28,7 @@
 
 #include <memory>
 #include <optional>
+#include <span>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -720,6 +721,36 @@ namespace Mat
     virtual void unpack_inelastic(Core::Communication::UnpackBuffer& data) = 0;
 
     /*!
+     * @brief History quantities of this factor that are transferred between meshes
+     *
+     * @return std::nullopt if the factor does not support the transfer of its history (default),
+     * otherwise the (possibly empty) list of history quantities
+     *
+     * @see Mat::So3Material::history_transfer_quantities()
+     */
+    virtual std::optional<std::vector<HistoryTransferQuantity>> history_transfer_quantities() const
+    {
+      return std::nullopt;
+    }
+
+    /*!
+     * @brief Gather the converged history at a Gauss point for the transfer to another mesh
+     *
+     * @see Mat::So3Material::gather_history_for_transfer()
+     */
+    virtual void gather_history_for_transfer(int gp, std::vector<double>& data) const {}
+
+    /*!
+     * @brief Set the converged history at a Gauss point from transferred data
+     *
+     * @see Mat::So3Material::receive_transferred_history()
+     */
+    virtual void receive_transferred_history(
+        int gp, std::span<const double> data, const Core::LinAlg::Matrix<3, 3>& defgrad)
+    {
+    }
+
+    /*!
      * @brief Register names of the internal data that should be saved during runtime output
      *
      * @param[out] names_and_size Unordered map of names of the data with the respective vector size
@@ -800,6 +831,12 @@ namespace Mat
     }
 
     void pack_inelastic(Core::Communication::PackBuffer& data) const override {}
+
+    /// This factor has no history
+    std::optional<std::vector<HistoryTransferQuantity>> history_transfer_quantities() const override
+    {
+      return std::vector<HistoryTransferQuantity>{};
+    }
 
     void unpack_inelastic(Core::Communication::UnpackBuffer& data) override {}
 
@@ -924,6 +961,12 @@ namespace Mat
 
     void pack_inelastic(Core::Communication::PackBuffer& data) const override {}
 
+    /// This factor has no history
+    std::optional<std::vector<HistoryTransferQuantity>> history_transfer_quantities() const override
+    {
+      return std::vector<HistoryTransferQuantity>{};
+    }
+
     void unpack_inelastic(Core::Communication::UnpackBuffer& data) override {}
 
    private:
@@ -986,6 +1029,12 @@ namespace Mat
     }
 
     void pack_inelastic(Core::Communication::PackBuffer& data) const override {}
+
+    /// This factor has no history
+    std::optional<std::vector<HistoryTransferQuantity>> history_transfer_quantities() const override
+    {
+      return std::vector<HistoryTransferQuantity>{};
+    }
 
     void unpack_inelastic(Core::Communication::UnpackBuffer& data) override {}
 
@@ -1191,6 +1240,12 @@ namespace Mat
 
     void pack_inelastic(Core::Communication::PackBuffer& data) const override {}
 
+    /// This factor has no history
+    std::optional<std::vector<HistoryTransferQuantity>> history_transfer_quantities() const override
+    {
+      return std::vector<HistoryTransferQuantity>{};
+    }
+
     void unpack_inelastic(Core::Communication::UnpackBuffer& data) override {}
 
    private:
@@ -1262,6 +1317,12 @@ namespace Mat
 
     void pack_inelastic(Core::Communication::PackBuffer& data) const override {}
 
+    /// This factor has no history
+    std::optional<std::vector<HistoryTransferQuantity>> history_transfer_quantities() const override
+    {
+      return std::vector<HistoryTransferQuantity>{};
+    }
+
     void unpack_inelastic(Core::Communication::UnpackBuffer& data) override {}
 
    private:
@@ -1325,6 +1386,12 @@ namespace Mat
     }
 
     void pack_inelastic(Core::Communication::PackBuffer& data) const override {}
+
+    /// This factor has no history
+    std::optional<std::vector<HistoryTransferQuantity>> history_transfer_quantities() const override
+    {
+      return std::vector<HistoryTransferQuantity>{};
+    }
 
     void unpack_inelastic(Core::Communication::UnpackBuffer& data) override {}
   };
@@ -1391,6 +1458,12 @@ namespace Mat
 
     void pack_inelastic(Core::Communication::PackBuffer& data) const override {}
 
+    /// This factor has no history
+    std::optional<std::vector<HistoryTransferQuantity>> history_transfer_quantities() const override
+    {
+      return std::vector<HistoryTransferQuantity>{};
+    }
+
     void unpack_inelastic(Core::Communication::UnpackBuffer& data) override {}
   };
 
@@ -1446,6 +1519,12 @@ namespace Mat
     }
 
     void pack_inelastic(Core::Communication::PackBuffer& data) const override {}
+
+    /// This factor has no history
+    std::optional<std::vector<HistoryTransferQuantity>> history_transfer_quantities() const override
+    {
+      return std::vector<HistoryTransferQuantity>{};
+    }
 
     void unpack_inelastic(Core::Communication::UnpackBuffer& data) override {}
 
@@ -1576,6 +1655,22 @@ namespace Mat
     void update() override;
 
     void pack_inelastic(Core::Communication::PackBuffer& data) const override;
+
+    /*!
+     * @brief The elastic deformation gradient, the plastic strain, the equivalent stress and the
+     * temperature are transferred
+     *
+     * The deformation of the last time step is recomputed from the new mesh and the inverse plastic
+     * deformation gradient follows from the transferred elastic deformation gradient, such that the
+     * stress field stays continuous.
+     */
+    std::optional<std::vector<HistoryTransferQuantity>> history_transfer_quantities()
+        const override;
+
+    void gather_history_for_transfer(int gp, std::vector<double>& data) const override;
+
+    void receive_transferred_history(
+        int gp, std::span<const double> data, const Core::LinAlg::Matrix<3, 3>& defgrad) override;
 
     void unpack_inelastic(Core::Communication::UnpackBuffer& buffer) override;
 
