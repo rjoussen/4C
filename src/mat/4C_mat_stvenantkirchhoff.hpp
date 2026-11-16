@@ -111,6 +111,12 @@ namespace Mat
 
     [[nodiscard]] double density() const override { return params_->density_; }
 
+    /// The material is history-free
+    std::optional<std::vector<HistoryTransferQuantity>> history_transfer_quantities() const override
+    {
+      return std::vector<HistoryTransferQuantity>{};
+    }
+
     /// shear modulus
     [[nodiscard]] double shear_mod() const
     {

@@ -13,13 +13,17 @@
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_linalg_symmetric_tensor.hpp"
 #include "4C_linalg_tensor.hpp"
+#include "4C_mat_history_transfer.hpp"
 #include "4C_material_base.hpp"
 #include "4C_solid_ele_fibers.hpp"
 #include "4C_structure_new_input.hpp"
 
 #include <Teuchos_ParameterList.hpp>
 
+#include <optional>
+#include <span>
 #include <unordered_map>
+#include <vector>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -224,6 +228,50 @@ namespace Mat
      * @param[in] timestep Timestep
      */
     virtual void set_history(int timestep) {}
+    //@}
+
+    //! @name Transfer of history between meshes
+    //@{
+    /*!
+     * @brief History quantities of the material that are transferred between meshes
+     *
+     * The transfer is used if the nodes of a mesh are moved (mesh regularization). The history at
+     * the Gauss points of the new mesh is interpolated from the history of the old mesh according
+     * to the kind of each quantity.
+     *
+     * The deformation gradient of the material is transferred by the element, so materials without
+     * history support the transfer with an empty list.
+     *
+     * @return std::nullopt if the material does not support the transfer of its history (default),
+     * otherwise the (possibly empty) list of history quantities
+     */
+    virtual std::optional<std::vector<HistoryTransferQuantity>> history_transfer_quantities() const
+    {
+      return std::nullopt;
+    }
+
+    /*!
+     * @brief Gather the converged history at a Gauss point for the transfer to another mesh
+     *
+     * @param[in] gp Gauss point
+     * @param[out] data Values of all quantities in the order of history_transfer_quantities()
+     */
+    virtual void gather_history_for_transfer(int gp, std::vector<double>& data) const {}
+
+    /*!
+     * @brief Set the converged history at a Gauss point from transferred data
+     *
+     * Similar to unpacking after a restart, the material rebuilds all derived quantities from the
+     * transferred data such that the next time step starts from a consistent state.
+     *
+     * @param[in] gp Gauss point
+     * @param[in] data Values of all quantities in the order of history_transfer_quantities()
+     * @param[in] defgrd Converged deformation gradient at the Gauss point of the new mesh
+     */
+    virtual void receive_transferred_history(
+        int gp, std::span<const double> data, const Core::LinAlg::Tensor<double, 3, 3>& defgrd)
+    {
+    }
     //@}
 
 
