@@ -479,6 +479,45 @@ namespace Solid
                             .store = in_struct(&Solid::TimeInt::DynamicRebalanceConfig::
                                     mesh_partitioning_parameters)}),
                 },
+                {.required = false}),
+
+            group<Solid::TimeInt::MeshRegularizationConfig>("MESH REGULARIZATION",
+                {
+                    parameter<bool>("ENABLED",
+                        {.description = "Regularize the mesh by moving its nodes in the current "
+                                        "configuration and transfer the state to the new mesh.",
+                            .default_value = false,
+                            .store =
+                                in_struct(&Solid::TimeInt::MeshRegularizationConfig::enabled)}),
+                    parameter<int>("INTERVAL",
+                        {.description = "Regularize the mesh after every n-th time step.",
+                            .default_value = 1,
+                            .store =
+                                in_struct(&Solid::TimeInt::MeshRegularizationConfig::interval)}),
+                    parameter<int>("START_STEP",
+                        {.description = "First time step after which the mesh is regularized.",
+                            .default_value = 1,
+                            .store =
+                                in_struct(&Solid::TimeInt::MeshRegularizationConfig::start_step)}),
+                    parameter<double>("FEATURE_ANGLE",
+                        {.description = "Angle in degrees between adjacent boundary faces of the "
+                                        "initial mesh above which they form a feature edge or "
+                                        "corner. Boundary nodes slide along the boundary, nodes at "
+                                        "feature edges along the edge, nodes at corners are "
+                                        "fixed, as well as dofs with Dirichlet conditions of the "
+                                        "solid or ALE Dirichlet conditions.",
+                            .default_value = 30.0,
+                            .store = in_struct(
+                                &Solid::TimeInt::MeshRegularizationConfig::feature_angle)}),
+                    parameter<double>("HISTORY_WEIGHT_DECAY",
+                        {.description = "Decay c of the weights exp(-c d^2) of the moving least "
+                                        "squares interpolation of the material history from the "
+                                        "Gauss points of an element patch, with distances d in "
+                                        "units of the element size.",
+                            .default_value = 10.0,
+                            .store = in_struct(
+                                &Solid::TimeInt::MeshRegularizationConfig::history_weight_decay)}),
+                },
                 {.required = false})},
         {.required = false}));
 

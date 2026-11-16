@@ -24,8 +24,11 @@
 #include "4C_structure_new_enum_lists.hpp"
 #include "4C_structure_new_factory.hpp"
 #include "4C_structure_new_integrator.hpp"
+#include "4C_structure_new_mesh_regularization.hpp"
+#include "4C_structure_new_mesh_regularization_transfer.hpp"
 #include "4C_structure_new_model_evaluator_data.hpp"
 #include "4C_structure_new_model_evaluator_factory.hpp"
+#include "4C_structure_new_model_evaluator_structure.hpp"
 #include "4C_structure_new_resulttest.hpp"
 #include "4C_structure_new_timint_basedataio_runtime_vtp_output.hpp"
 #include "4C_utils_enum.hpp"
@@ -108,6 +111,14 @@ void Solid::TimeInt::Base::setup()
   int_ptr_->init(data_s_dyn_ptr(), data_global_state_ptr(), data_io_ptr(), dbc_ptr_,
       Core::Utils::shared_ptr_from_ref(*this));
   int_ptr_->setup();
+
+  if (const auto& config = datasdyn_->get_mesh_regularization_config(); config.has_value())
+  {
+    FOUR_C_ASSERT_ALWAYS(datasdyn_->get_dynamic_type() == Solid::DynamicType::Statics,
+        "The mesh regularization is only implemented for statics.");
+    mesh_movement_ = std::make_shared<Solid::MeshRegularization::MeshMovement>(
+        *problem_, *discret_ptr, problem_->structural_dynamic_params(), *config);
+  }
 
   // Initialize the output of system energy
   if (dataio_->get_write_energy_every_n_step())
@@ -238,6 +249,42 @@ void Solid::TimeInt::Base::finalize_successful_step()
   Adapter::StructureNew::finalize_successful_step();
 
   if (should_perform_dynamic_rebalance()) perform_dynamic_rebalance();
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void Solid::TimeInt::Base::regularize_mesh_if_due()
+{
+  check_init_setup();
+  if (!mesh_movement_) return;
+
+  const auto& config = *datasdyn_->get_mesh_regularization_config();
+  const int step = dataglobalstate_->get_step_n();
+  if (step < config.start_step || (step - config.start_step) % config.interval != 0) return;
+  if (step == last_regularized_step_) return;
+  last_regularized_step_ = step;
+
+  if (dataglobalstate_->get_my_rank() == 0)
+    Core::IO::cout << "====== Mesh regularization before step " << step + 1 << Core::IO::endl;
+
+  Solid::TimeInt::BaseDataGlobalState& global_state = *dataglobalstate_;
+  const std::optional<Core::LinAlg::Vector<double>> movement = mesh_movement_->compute(
+      *global_state.get_dis_n(), *dbc_ptr_->get_dbc_map_extractor()->cond_map());
+  if (!movement)
+  {
+    if (dataglobalstate_->get_my_rank() == 0)
+      Core::IO::cout << "Mesh regularization skipped: the mesh movement did not converge"
+                     << Core::IO::endl;
+    return;
+  }
+
+  Solid::MeshRegularization::move_nodes_and_transfer_state(*global_state.get_discret(), *movement,
+      *global_state.get_dis_n(), {global_state.get_vel_n().get(), global_state.get_acc_n().get()},
+      {.history_weight_decay = config.history_weight_decay});
+
+  global_state.get_dis_np()->update(1.0, *global_state.get_dis_n(), 0.0);
+  global_state.get_vel_np()->update(1.0, *global_state.get_vel_n(), 0.0);
+  global_state.get_acc_np()->update(1.0, *global_state.get_acc_n(), 0.0);
 }
 
 /*----------------------------------------------------------------------------*

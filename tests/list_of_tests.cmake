@@ -1847,6 +1847,8 @@ __four_c_test_vtk(BASED_ON ${current} PVD_RESULT_FILE xxx-structure-beams.pvd PV
 __four_c_test_vtk(BASED_ON ${current} PVD_RESULT_FILE xxx-structure.pvd PVD_REFERENCE_FILE ref/solid_beam_runtime_stress_strain_output-vtk/structure.pvd TOLERANCE 1e-08 TIME_STEPS 1e-08 1.0)
 four_c_test(TEST_FILE solid_custom_integration.4C.yaml NP 2 RETURN_AS current REQUIRED_DEPENDENCIES VTK)
 __four_c_test_restart(BASED_ON ${current} SAME_FILE NP 2 RESTART_STEP 5 REQUIRED_DEPENDENCIES VTK)
+four_c_test(TEST_FILE solid_mesh_regularization_punch_viscoplastic.4C.yaml NP 2 RETURN_AS current)
+__four_c_test_restart(BASED_ON ${current} SAME_FILE NP 2 RESTART_STEP 4)
 four_c_test(TEST_FILE solid_ele_hex18_Old_dynamic.4C.yaml NP 2 RETURN_AS current)
 __four_c_test_restart(BASED_ON ${current} SAME_FILE NP 2 RESTART_STEP 1)
 four_c_test(TEST_FILE solid_ele_hex18_Old_element_fibers.4C.yaml NP 2 RETURN_AS current)

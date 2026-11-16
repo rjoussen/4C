@@ -57,6 +57,21 @@ namespace Solid
       double edge_weight_multiplier = 1.0;
     };
 
+    /// Parameters of the mesh regularization
+    struct MeshRegularizationConfig
+    {
+      bool enabled = false;
+      //! the mesh is regularized after every interval-th time step
+      int interval = 1;
+      //! the first time step after which the mesh is regularized
+      int start_step = 1;
+      //! angle in degrees between boundary faces above which they form a feature edge or corner
+      double feature_angle = 30.0;
+      //! decay of the weights of the moving least squares interpolation of the material history
+      //! (distances in units of the element size)
+      double history_weight_decay = 10.0;
+    };
+
     /** \brief Structural dynamics data container for the structural (time) integration
      *
      * This data container holds everything, which refers directly to the
@@ -495,6 +510,13 @@ namespace Solid
         check_init_setup();
         return dynamic_rebalance_config_;
       }
+
+      [[nodiscard]] const std::optional<MeshRegularizationConfig>& get_mesh_regularization_config()
+          const
+      {
+        check_init_setup();
+        return mesh_regularization_config_;
+      }
       ///@}
 
      protected:
@@ -799,6 +821,8 @@ namespace Solid
 
       /// Dynamic rebalance settings used by the structural time integrator.
       std::optional<DynamicRebalanceConfig> dynamic_rebalance_config_;
+
+      std::optional<MeshRegularizationConfig> mesh_regularization_config_;
     };  // class BaseDataSDyn
 
     /** \brief Generalized alpha structural dynamics data container

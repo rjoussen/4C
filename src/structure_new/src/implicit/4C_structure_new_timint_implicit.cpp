@@ -117,6 +117,8 @@ Solid::StepStatus Solid::TimeInt::Implicit::prepare_time_step_with_status()
 {
   check_init_setup();
 
+  regularize_mesh_if_due();
+
   ::NOX::Abstract::Group& grp = nln_solver().get_solution_group();
 
   const auto predict = [&] { predictor().predict(grp); };
