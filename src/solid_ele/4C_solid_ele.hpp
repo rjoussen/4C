@@ -16,12 +16,15 @@
 #include "4C_solid_ele_calc_eas.hpp"
 #include "4C_solid_ele_calc_lib_integration.hpp"
 #include "4C_solid_ele_calc_lib_nitsche.hpp"
+#include "4C_solid_ele_calc_lib_reference_correction.hpp"
 #include "4C_solid_ele_factory.hpp"
 #include "4C_structure_new_elements_paramsinterface.hpp"
 #include "4C_structure_new_input.hpp"
 #include "4C_utils_exceptions.hpp"
 
+#include <functional>
 #include <memory>
+#include <vector>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -116,6 +119,28 @@ namespace Discret::Elements
     std::vector<std::shared_ptr<Core::Elements::Element>> surfaces() override;
 
     [[nodiscard]] const Core::FE::GaussIntegration& get_gauss_rule() const;
+
+    /*!
+     * @brief Set the state at all Gauss points from transferred data
+     *
+     * The deformation is evaluated with the state "displacement" of the discretization. The
+     * element corrects its reference configuration such that the deformation gradient of the
+     * material is the transferred one, and the material receives its transferred history.
+     *
+     * @param transferred_state Function returning the transferred state at a Gauss point given
+     * its index and its position in the current configuration
+     */
+    void receive_transferred_state(const Core::FE::Discretization& discretization,
+        const std::function<TransferredGaussPointState(
+            int, const Core::LinAlg::Tensor<double, 3>&)>& transferred_state);
+
+    /*!
+     * @brief Deformation gradients of the material at all Gauss points
+     *
+     * The deformation is evaluated with the state "displacement" of the discretization.
+     */
+    [[nodiscard]] std::vector<Core::LinAlg::Tensor<double, 3, 3>>
+    evaluate_material_deformation_gradients(const Core::FE::Discretization& discretization);
 
     [[nodiscard]] const SolidCalcVariant<dim>& get_solid_element_evaluator() const
     {

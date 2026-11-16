@@ -88,6 +88,81 @@ namespace
 
     return cauchy_n_dir;
   }
+
+  template <Core::FE::CellType celltype>
+  using DeformationGradient =
+      Core::LinAlg::Tensor<double, Core::FE::dim<celltype>, Core::FE::dim<celltype>>;
+
+  template <Core::FE::CellType celltype>
+  using Strain =
+      Core::LinAlg::SymmetricTensor<double, Core::FE::dim<celltype>, Core::FE::dim<celltype>>;
+
+  //! deformation gradient and Green-Lagrange strain of the material
+  template <Core::FE::CellType celltype>
+  struct MaterialKinematics
+  {
+    DeformationGradient<celltype> deformation_gradient;
+    Strain<celltype> gl_strain;
+  };
+
+  /*!
+   * @brief Kinematics of the material from the ones of the element, corrected if the reference
+   * configuration of the element is corrected
+   */
+  template <Core::FE::CellType celltype>
+  MaterialKinematics<celltype> material_kinematics(
+      const DeformationGradient<celltype>& deformation_gradient, const Strain<celltype>& gl_strain,
+      const DeformationGradient<celltype>* correction)
+  {
+    if constexpr (Core::FE::dim<celltype> == 3)
+    {
+      if (correction != nullptr)
+      {
+        return {
+            Discret::Elements::corrected_deformation_gradient(deformation_gradient, *correction),
+            Discret::Elements::corrected_green_lagrange_strain(gl_strain, *correction)};
+      }
+    }
+    return {deformation_gradient, gl_strain};
+  }
+
+  //! ratio of the reference volume of the material to the one of the element
+  template <Core::FE::CellType celltype>
+  double material_volume_fraction(const DeformationGradient<celltype>* correction)
+  {
+    if constexpr (Core::FE::dim<celltype> == 3)
+    {
+      if (correction != nullptr)
+        return 1.0 / Discret::Elements::reference_volume_ratio(*correction);
+    }
+    return 1.0;
+  }
+
+  /*!
+   * @brief Evaluate the material and return its stress response with respect to the strain of the
+   * element in its reference configuration
+   */
+  template <Core::FE::CellType celltype>
+  Discret::Elements::Stress<celltype> evaluate_material_stress_for_element(
+      Mat::So3Material& material,
+      const Discret::Elements::ElementProperties<celltype>& element_properties,
+      const DeformationGradient<celltype>& deformation_gradient, const Strain<celltype>& gl_strain,
+      Teuchos::ParameterList& params,
+      const Mat::EvaluationContext<Core::FE::dim<celltype>>& context, const int gp,
+      const int ele_id, const DeformationGradient<celltype>* correction)
+  {
+    const MaterialKinematics<celltype> kinematics =
+        material_kinematics<celltype>(deformation_gradient, gl_strain, correction);
+    Discret::Elements::Stress<celltype> stress =
+        Discret::Elements::evaluate_material_stress<celltype>(material, element_properties,
+            kinematics.deformation_gradient, kinematics.gl_strain, params, context, gp, ele_id);
+    if constexpr (Core::FE::dim<celltype> == 3)
+    {
+      if (correction != nullptr)
+        Discret::Elements::transform_stress_to_element_reference(stress, *correction);
+    }
+    return stress;
+  }
 }  // namespace
 
 template <Core::FE::CellType celltype, typename ElementFormulation>
@@ -124,6 +199,7 @@ void Discret::Elements::SolidEleCalc<celltype, ElementFormulation>::pack(
     Core::Communication::PackBuffer& data) const
 {
   Discret::Elements::pack<ElementFormulation>(data, history_data_);
+  add_to_pack(data, reference_correction_);
 }
 
 template <Core::FE::CellType celltype, typename ElementFormulation>
@@ -131,6 +207,7 @@ void Discret::Elements::SolidEleCalc<celltype, ElementFormulation>::unpack(
     Core::Communication::UnpackBuffer& buffer)
 {
   Discret::Elements::unpack<ElementFormulation>(buffer, history_data_);
+  extract_from_pack(buffer, reference_correction_);
 }
 
 template <Core::FE::CellType celltype, typename ElementFormulation>
@@ -205,9 +282,9 @@ void Discret::Elements::SolidEleCalc<celltype,
                   .time_step_size = time_step_size,
                   .xi = &xi,
                   .ref_coords = &gp_ref_coord};
-              const Stress<celltype> stress =
-                  evaluate_material_stress<celltype>(solid_material, element_properties_,
-                      deformation_gradient, gl_strain, params, context, gp, ele.id());
+              const Stress<celltype> stress = evaluate_material_stress_for_element<celltype>(
+                  solid_material, element_properties_, deformation_gradient, gl_strain, params,
+                  context, gp, ele.id(), reference_correction(gp));
 
               if constexpr (has_condensed_contribution<ElementFormulation>)
               {
@@ -231,14 +308,16 @@ void Discret::Elements::SolidEleCalc<celltype,
 
               if (mass.has_value())
               {
+                // density per reference volume of the element
+                const double density = solid_material.density(gp) *
+                                       material_volume_fraction<celltype>(reference_correction(gp));
                 if (equal_integration_mass_stiffness)
                 {
-                  add_mass_matrix(
-                      shape_functions, integration_factor, solid_material.density(gp), *mass);
+                  add_mass_matrix(shape_functions, integration_factor, density, *mass);
                 }
                 else
                 {
-                  element_mass += solid_material.density(gp) * integration_factor;
+                  element_mass += density * integration_factor;
                   element_volume += integration_factor;
                 }
               }
@@ -353,12 +432,105 @@ void Discret::Elements::SolidEleCalc<celltype, ElementFormulation>::update(
                   .time_step_size = time_step_size,
                   .xi = &xi,
                   .ref_coords = &gp_ref_coord};
-              update_material<celltype>(solid_material, element_properties_, deformation_gradient,
+              update_material<celltype>(solid_material, element_properties_,
+                  material_kinematics<celltype>(
+                      deformation_gradient, gl_strain, reference_correction(gp))
+                      .deformation_gradient,
                   params, context, gp, ele.id());
             });
       });
 
   solid_material.update();
+}
+
+template <Core::FE::CellType celltype, typename ElementFormulation>
+void Discret::Elements::SolidEleCalc<celltype, ElementFormulation>::receive_transferred_state(
+    const Core::Elements::Element& ele, Mat::So3Material& solid_material,
+    const Core::FE::Discretization& discretization, const std::vector<int>& lm,
+    const std::function<TransferredGaussPointState(int, const Core::LinAlg::Tensor<double, 3>&)>&
+        transferred_state)
+  requires(Core::FE::dim<celltype> == 3)
+{
+  // these formulations compose the deformation gradient differently
+  constexpr bool supports_reference_correction =
+      !is_prestress_updatable<ElementFormulation> &&
+      !std::is_same_v<ElementFormulation, DisplacementBasedLinearKinematicsFormulation<celltype>>;
+  FOUR_C_ASSERT_ALWAYS(supports_reference_correction,
+      "The kinematics of element {} do not support moving its nodes in a mesh regularization.",
+      ele.id());
+
+  if (reference_correction_.empty())
+  {
+    reference_correction_.assign(stiffness_matrix_integration_.num_points(),
+        Core::LinAlg::get_full(Core::LinAlg::TensorGenerators::identity<double, 3, 3>));
+  }
+
+  const ElementNodes<celltype> nodal_coordinates =
+      evaluate_element_nodes<celltype>(ele, discretization, lm);
+
+  const PreparationData<ElementFormulation> preparation_data =
+      prepare(ele, nodal_coordinates, history_data_);
+
+  Discret::Elements::for_each_gauss_point(nodal_coordinates, element_properties_,
+      stiffness_matrix_integration_,
+      [&](const Core::LinAlg::Tensor<double, Core::FE::dim<celltype>>& xi,
+          const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
+          const JacobianMapping<celltype>& jacobian_mapping, double integration_factor, int gp)
+      {
+        evaluate(ele, nodal_coordinates, xi, shape_functions, jacobian_mapping, preparation_data,
+            history_data_, gp,
+            [&](const Core::LinAlg::Tensor<double, Core::FE::dim<celltype>,
+                    Core::FE::dim<celltype>>& deformation_gradient,
+                const Core::LinAlg::SymmetricTensor<double, Core::FE::dim<celltype>,
+                    Core::FE::dim<celltype>>& gl_strain,
+                const auto& linearization)
+            {
+              const auto current_position = evaluate_reference_coordinate<celltype>(
+                  nodal_coordinates.current_coordinates, shape_functions.shapefunctions_);
+
+              const TransferredGaussPointState state = transferred_state(gp, current_position);
+              reference_correction_[gp] =
+                  Core::LinAlg::inv(deformation_gradient) * state.deformation_gradient;
+              solid_material.receive_transferred_history(
+                  gp, state.material_history, state.deformation_gradient);
+            });
+      });
+}
+
+template <Core::FE::CellType celltype, typename ElementFormulation>
+std::vector<Core::LinAlg::Tensor<double, 3, 3>> Discret::Elements::SolidEleCalc<celltype,
+    ElementFormulation>::evaluate_material_deformation_gradients(const Core::Elements::Element& ele,
+    const Core::FE::Discretization& discretization, const std::vector<int>& lm)
+  requires(Core::FE::dim<celltype> == 3)
+{
+  const ElementNodes<celltype> nodal_coordinates =
+      evaluate_element_nodes<celltype>(ele, discretization, lm);
+
+  const PreparationData<ElementFormulation> preparation_data =
+      prepare(ele, nodal_coordinates, history_data_);
+
+  std::vector<Core::LinAlg::Tensor<double, 3, 3>> deformation_gradients(
+      stiffness_matrix_integration_.num_points());
+  Discret::Elements::for_each_gauss_point(nodal_coordinates, element_properties_,
+      stiffness_matrix_integration_,
+      [&](const Core::LinAlg::Tensor<double, Core::FE::dim<celltype>>& xi,
+          const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
+          const JacobianMapping<celltype>& jacobian_mapping, double integration_factor, int gp)
+      {
+        evaluate(ele, nodal_coordinates, xi, shape_functions, jacobian_mapping, preparation_data,
+            history_data_, gp,
+            [&](const Core::LinAlg::Tensor<double, Core::FE::dim<celltype>,
+                    Core::FE::dim<celltype>>& deformation_gradient,
+                const Core::LinAlg::SymmetricTensor<double, Core::FE::dim<celltype>,
+                    Core::FE::dim<celltype>>& gl_strain,
+                const auto& linearization)
+            {
+              deformation_gradients[gp] = material_kinematics<celltype>(
+                  deformation_gradient, gl_strain, reference_correction(gp))
+                                              .deformation_gradient;
+            });
+      });
+  return deformation_gradients;
 }
 
 template <Core::FE::CellType celltype, typename ElementFormulation>
@@ -402,10 +574,15 @@ double Discret::Elements::SolidEleCalc<celltype, ElementFormulation>::calculate_
                   .xi = &xi,
                   .ref_coords = &gp_ref_coord};
 
-              double psi = evaluate_material_strain_energy<celltype>(
-                  solid_material, element_properties_, gl_strain, params, context, gp, ele.id());
+              const double psi =
+                  evaluate_material_strain_energy<celltype>(solid_material, element_properties_,
+                      material_kinematics<celltype>(
+                          deformation_gradient, gl_strain, reference_correction(gp))
+                          .gl_strain,
+                      params, context, gp, ele.id());
 
-              intenergy += psi * integration_factor;
+              intenergy += psi * material_volume_fraction<celltype>(reference_correction(gp)) *
+                           integration_factor;
             });
       });
 
@@ -459,14 +636,18 @@ void Discret::Elements::SolidEleCalc<celltype, ElementFormulation>::calculate_st
                   .time_step_size = time_step_size,
                   .xi = &xi,
                   .ref_coords = &gp_ref_coord};
-              const Stress<celltype> stress =
-                  evaluate_material_stress<celltype>(solid_material, element_properties_,
-                      deformation_gradient, gl_strain, params, context, gp, ele.id());
+              // the stress and strain of the material
+              const MaterialKinematics<celltype> kinematics = material_kinematics<celltype>(
+                  deformation_gradient, gl_strain, reference_correction(gp));
+              const Stress<celltype> stress = evaluate_material_stress<celltype>(solid_material,
+                  element_properties_, kinematics.deformation_gradient, kinematics.gl_strain,
+                  params, context, gp, ele.id());
 
-              assemble_strain_type_to_matrix_row<celltype>(element_properties_, gl_strain, stress,
-                  deformation_gradient, strainIO.type, strain_data, gp);
-              assemble_stress_type_to_matrix_row(element_properties_, deformation_gradient, stress,
-                  stressIO.type, stress_data, gp);
+              assemble_strain_type_to_matrix_row<celltype>(element_properties_,
+                  kinematics.gl_strain, stress, kinematics.deformation_gradient, strainIO.type,
+                  strain_data, gp);
+              assemble_stress_type_to_matrix_row(element_properties_,
+                  kinematics.deformation_gradient, stress, stressIO.type, stress_data, gp);
             });
       });
 
@@ -581,6 +762,11 @@ Discret::Elements::SolidEleCalc<celltype, ElementFormulation>::get_normal_cauchy
     const Core::LinAlg::Tensor<double, 3>& n, const Core::LinAlg::Tensor<double, 3>& dir,
     CauchyNDirLinearizations<3>& linearizations)
 {
+  FOUR_C_ASSERT_ALWAYS(reference_correction_.empty(),
+      "The Cauchy stress of element {} is not implemented for a corrected reference configuration "
+      "after a mesh regularization.",
+      ele.id());
+
   if constexpr (has_gauss_point_history<ElementFormulation>)
   {
     FOUR_C_THROW(
