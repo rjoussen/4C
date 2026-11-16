@@ -23,6 +23,7 @@
 #include "4C_utils_exceptions.hpp"
 
 #include <memory>
+#include <span>
 #include <vector>
 
 FOUR_C_NAMESPACE_OPEN
@@ -148,6 +149,16 @@ namespace Mat
 
     /// Unpack
     void unpack_inelastic(Core::Communication::UnpackBuffer& buffer);
+
+    /// History quantities of all factors (std::nullopt if any factor does not support transfer)
+    std::optional<std::vector<HistoryTransferQuantity>> history_transfer_quantities() const;
+
+    /// Gather the history of all factors at a Gauss point
+    void gather_history_for_transfer(int gp, std::vector<double>& data) const;
+
+    /// Set the history of all factors at a Gauss point from transferred data
+    void receive_transferred_history(
+        int gp, std::span<const double> data, const Core::LinAlg::Matrix<3, 3>& defgrad);
 
     /*!
      * @brief Register names of the internal data that should be saved during runtime output
@@ -325,6 +336,18 @@ namespace Mat
         const std::optional<Discret::Elements::CoordinateSystem>& coord_system) override;
 
     void update() override;
+
+    /*!
+     * The history of the inelastic factors is transferred. The elastic summands are assumed to be
+     * history-free.
+     */
+    std::optional<std::vector<HistoryTransferQuantity>> history_transfer_quantities()
+        const override;
+
+    void gather_history_for_transfer(int gp, std::vector<double>& data) const override;
+
+    void receive_transferred_history(int gp, std::span<const double> data,
+        const Core::LinAlg::Tensor<double, 3, 3>& defgrd) override;
 
     void register_output_data_names(
         std::unordered_map<std::string, int>& names_and_size) const override;

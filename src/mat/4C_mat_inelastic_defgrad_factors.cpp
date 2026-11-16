@@ -3385,6 +3385,99 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::pack_inelastic(
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
+std::optional<std::vector<Mat::HistoryTransferQuantity>>
+Mat::InelasticDefgradTransvIsotropElastViscoplast::history_transfer_quantities() const
+{
+  // the fiber direction is stored per element, so it cannot follow the material points of a new
+  // element originating from old elements with different fibers
+  if (parameter()->mat_behavior() == ViscoplastUtils::MatBehavior::transv_isotropic)
+    return std::nullopt;
+
+  return std::vector<HistoryTransferQuantity>{
+      {.name = "elastic_defgrad", .kind = HistoryTransferKind::invertible_tensor},
+      {.name = "plastic_strain", .kind = HistoryTransferKind::nonnegative_scalar},
+      {.name = "equiv_stress", .kind = HistoryTransferKind::nonnegative_scalar},
+      {.name = "temperature", .kind = HistoryTransferKind::scalar},
+      {.name = "is_plastic", .kind = HistoryTransferKind::nearest},
+  };
+}
+
+/*--------------------------------------------------------------------*
+ *--------------------------------------------------------------------*/
+void Mat::InelasticDefgradTransvIsotropElastViscoplast::gather_history_for_transfer(
+    const int gp, std::vector<double>& data) const
+{
+  // the elastic deformation gradient determines the stress and is transferred instead of the
+  // plastic deformation, such that the stress field stays continuous
+  Core::LinAlg::Matrix<3, 3> Fe;
+  Fe.multiply(time_step_quantities_.last_defgrad[gp],
+      time_step_quantities_.last_plastic_defgrad_inverse[gp]);
+  for (int r = 0; r < 3; ++r)
+    for (int c = 0; c < 3; ++c) data.push_back(Fe(r, c));
+  data.push_back(time_step_quantities_.last_plastic_strain[gp]);
+  data.push_back(time_step_quantities_.last_equiv_stress[gp]);
+  data.push_back(time_step_quantities_.last_temperature[gp]);
+  data.push_back(is_plastic_gp_[gp] ? 1.0 : 0.0);
+}
+
+/*--------------------------------------------------------------------*
+ *--------------------------------------------------------------------*/
+void Mat::InelasticDefgradTransvIsotropElastViscoplast::receive_transferred_history(
+    const int gp, std::span<const double> data, const Core::LinAlg::Matrix<3, 3>& defgrad)
+{
+  FOUR_C_ASSERT_ALWAYS(data.size() == 13, "Expected 13 history values, got {}.", data.size());
+  FOUR_C_ASSERT_ALWAYS(std::ranges::all_of(data, [](double v) { return std::isfinite(v); }),
+      "Received non-finite history at Gauss point {} of element {}.", gp, ele_gid_);
+  for (int r = 0; r < 3; ++r)
+    for (int c = 0; c < 3; ++c)
+      FOUR_C_ASSERT_ALWAYS(std::isfinite(defgrad(r, c)),
+          "Received a non-finite deformation gradient at Gauss point {}.", gp);
+
+  auto& quantities = time_step_quantities_;
+
+  // the inelastic deformation follows from the transferred elastic deformation and the
+  // transferred deformation, such that the stress is preserved (its determinant deviates from
+  // one by the transfer error)
+  Core::LinAlg::Matrix<3, 3> Fe;
+  for (int r = 0; r < 3; ++r)
+    for (int c = 0; c < 3; ++c) Fe(r, c) = data[3 * r + c];
+
+  Core::LinAlg::Matrix<3, 3> inverse_defgrad;
+  inverse_defgrad.invert(defgrad);
+  Core::LinAlg::Matrix<3, 3> iFp;
+  iFp.multiply(inverse_defgrad, Fe);
+
+  quantities.last_plastic_defgrad_inverse[gp] = iFp;
+  quantities.current_plastic_defgrad_inverse[gp] = iFp;
+  quantities.last_substep_plastic_defgrad_inverse[gp] = iFp;
+
+  quantities.last_plastic_strain[gp] = data[9];
+  quantities.current_plastic_strain[gp] = data[9];
+  quantities.last_substep_plastic_strain[gp] = data[9];
+
+  quantities.last_equiv_stress[gp] = data[10];
+  quantities.current_equiv_stress[gp] = data[10];
+
+  quantities.last_temperature[gp] = data[11];
+  quantities.current_temperature[gp] = data[11];
+
+  is_plastic_gp_[gp] = data[12] > 0.5;
+
+  // the deformation of the last time step is that of the new mesh
+  Core::LinAlg::Matrix<3, 3> rightCG;
+  rightCG.multiply_tn(defgrad, defgrad);
+  quantities.last_defgrad[gp] = defgrad;
+  quantities.last_rightCG[gp] = rightCG;
+  quantities.current_rightCG[gp] = rightCG;
+
+  // invalidate the cached evaluation of the current state (see pre_evaluate())
+  quantities.current_defgrad[gp].clear();
+  thermo_mechanical_coupling_cache_.reset(gp);
+  local_newton_manager_.reset_curr_num_iters(gp);
+}
+
+/*--------------------------------------------------------------------*
+ *--------------------------------------------------------------------*/
 void Mat::InelasticDefgradTransvIsotropElastViscoplast::unpack_inelastic(
     Core::Communication::UnpackBuffer& buffer)
 {
