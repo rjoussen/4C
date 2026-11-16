@@ -39,8 +39,11 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace
 {
-  //! tolerance in parameter space for new node positions, which lie on the old boundary
-  constexpr double node_location_tolerance = 1.0e-6;
+  //! tolerance in parameter space for new node positions: the weighted gaps of the boundary
+  //! sliding keep the boundary only in an averaged sense, at bends the new faces cut the old ones
+  //! by a fraction of the element size, so that boundary nodes may lie slightly outside the old
+  //! mesh
+  constexpr double node_location_tolerance = 1.0;
 
   //! tolerance in parameter space for new Gauss points: where the boundary is concave (e.g.,
   //! wrapped around a tool edge), the straight edges between sliding boundary nodes cut across it,
@@ -253,9 +256,9 @@ namespace
   };
 
   //! evaluation of the old state in the old element containing a point
-  using OldStateEvaluator = std::function<std::vector<double>(
-      const Core::Elements::Element& old_element, const Core::LinAlg::Matrix<3, 1>& xi,
-      const OldStatePoint& point)>;
+  using OldStateEvaluator =
+      std::function<std::vector<double>(const Core::Elements::Element& old_element,
+          const Core::LinAlg::Matrix<3, 1>& xi, const OldStatePoint& point)>;
 
   /*!
    * @brief Evaluate the old state at points, which are located among the old elements of all
@@ -337,17 +340,14 @@ namespace
         if (material_id(*element) == point.material) elements.push_back(element);
       }
 
-      const double tolerance = point.kind == PointKind::node ? node_location_tolerance
-                                                             : gauss_point_location_tolerance;
-      const auto location =
-          Core::Geo::locate_points_in_elements(elements,
-              std::span<const Core::LinAlg::Matrix<3, 1>>(&point.position, 1), old_position,
-              tolerance)
-              .front();
+      const double tolerance =
+          point.kind == PointKind::node ? node_location_tolerance : gauss_point_location_tolerance;
+      const auto location = Core::Geo::locate_points_in_elements(elements,
+          std::span<const Core::LinAlg::Matrix<3, 1>>(&point.position, 1), old_position, tolerance)
+                                .front();
       if (!location) return {};
 
-      std::vector<double> result{
-          location->violation, static_cast<double>(location->element->id())};
+      std::vector<double> result{location->violation, static_cast<double>(location->element->id())};
       const std::vector<double> values = evaluate(*location->element, location->xi, point);
       result.insert(result.end(), values.begin(), values.end());
       return result;
@@ -458,8 +458,8 @@ void Solid::MeshRegularization::move_nodes_and_transfer_state(
       {
         Core::LinAlg::Matrix<3, 1> value(Core::LinAlg::Initialization::zero);
         for (std::size_t i = 0; i < N.size(); ++i)
-          value.update(N[i], old_state.fields[f][node_col_map.lid(old_element.nodes()[i]->id())],
-              1.0);
+          value.update(
+              N[i], old_state.fields[f][node_col_map.lid(old_element.nodes()[i]->id())], 1.0);
         for (int d = 0; d < 3; ++d) values.push_back(value(d));
       }
       return values;
@@ -468,8 +468,7 @@ void Solid::MeshRegularization::move_nodes_and_transfer_state(
     const auto& old_solid = cast_to_solid(old_element);
     const auto quantities = history_quantities(old_solid);
     FOUR_C_ASSERT_ALWAYS(quantities.has_value(),
-        "The material of element {} does not support the transfer of its history.",
-        old_solid.id());
+        "The material of element {} does not support the transfer of its history.", old_solid.id());
     const int size = Mat::history_transfer_size(*quantities);
     const double h = element_size(old_solid, old_position);
 
