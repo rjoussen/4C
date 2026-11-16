@@ -264,6 +264,16 @@ namespace Mat
     /// update
     void update() override;
 
+    /*!
+     * Isotropic summands are history-free. Anisotropic summands store fiber directions, whose
+     * transfer is not implemented.
+     */
+    std::optional<std::vector<HistoryTransferQuantity>> history_transfer_quantities() const override
+    {
+      if (anisotropic_principal() || anisotropic_modified()) return std::nullopt;
+      return std::vector<HistoryTransferQuantity>{};
+    }
+
     /// return if anisotropic not split formulation
     virtual bool anisotropic_principal() const { return summandProperties_.anisoprinc; }
 

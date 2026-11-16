@@ -230,6 +230,12 @@ namespace Mat
     /// Advance active viscoelastic histories after a converged time step.
     void update() override;
 
+    /// The transfer of viscoelastic histories is not implemented
+    std::optional<std::vector<HistoryTransferQuantity>> history_transfer_quantities() const override
+    {
+      return std::nullopt;
+    }
+
    protected:
     /// @name Active viscous formulation flags detected from the visco summand set.
     //@{
