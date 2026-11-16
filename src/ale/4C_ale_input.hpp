@@ -35,8 +35,17 @@ namespace ALE
     springs_material,  ///< use a spring analogy based on material configuration
     springs_spatial,   ///< use a spring analogy based on spatial configuration
     solid,             ///< nonlinear pseudo-structure approach
-    solid_linear       ///< linear pseudo-structure approach
+    solid_linear,      ///< linear pseudo-structure approach
+    mesh_quality       ///< minimize a potential of the element distortion
   };
+  /// target of the element size in the mesh quality potential
+  enum class MeshQualitySizeTarget
+  {
+    initial_mesh,  ///< each element keeps its size in the initial mesh
+    function       ///< the size in the initial mesh changes by the ratio of a function of the
+                   ///< position
+  };
+
   /// Handling of non-converged nonlinear solver
   enum DivContAct
   {

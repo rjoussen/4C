@@ -372,7 +372,8 @@ namespace Discret
                                     ///< material configuration
         calc_ale_laplace_spatial,   ///< compute stiffness based on laplacian smoothing based on
                                     ///< spatial configuration
-        calc_ale_node_normal,       ///< Calculate boundary node normal
+        calc_ale_mesh_quality,  ///< compute residual and stiffness of the mesh quality potential
+        calc_ale_node_normal,   ///< Calculate boundary node normal
         boundary_calc_ale_node_normal,  ///< Calculate boundary node normal
         setup_material,                 ///< Setup material in case of ElastHyper Tool Box
         calc_det_jac  ///< calculate Jacobian determinant and mesh quality measure according to
