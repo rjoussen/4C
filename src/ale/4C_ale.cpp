@@ -226,6 +226,7 @@ void ALE::Ale::evaluate(std::shared_ptr<const Core::LinAlg::Vector<double>> step
 
   evaluate_elements();
   evaluate_element_quality();
+  if (hooks_.modify_system) hooks_.modify_system(*sysmat_, *residual_, *dispnp_);
 
   // prepare meshtying system
   if (msht_ != ALE::no_meshtying)
@@ -308,6 +309,37 @@ void ALE::Ale::update() { dispn_->update(1.0, *dispnp_, 0.0); }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
+bool ALE::Ale::update_iter_with_step_halving()
+{
+  constexpr int max_step_halvings = 20;
+
+  const Core::LinAlg::Vector<double> previous(*dispnp_);
+  double step = 1.0;
+  for (int halvings = 0; halvings <= max_step_halvings; ++halvings)
+  {
+    dispnp_->update(1.0, previous, step, *disi_, 0.0);
+    if (hooks_.accept_update(*dispnp_))
+    {
+      // the convergence check uses the update that was actually applied
+      disi_->update(1.0, *dispnp_, -1.0, previous, 0.0);
+      disi_->norm_2(&normdisi_);
+      normdisi_ /= sqrt(disi_->global_length());
+      return true;
+    }
+    step *= 0.5;
+  }
+
+  dispnp_->update(1.0, previous, 0.0);
+  if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
+  {
+    Core::IO::cout << "No admissible ALE update found after " << max_step_halvings
+                   << " step halvings." << Core::IO::endl;
+  }
+  return false;
+}
+
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 bool ALE::Ale::converged(const int iter)
 {
   if (iter == 0) normdisi_ = 0.0;
@@ -315,7 +347,16 @@ bool ALE::Ale::converged(const int iter)
   bool converged = false;
   // determine norms
   double res_norm;
-  residual_->norm_2(&res_norm);
+  if (hooks_.filter_residual)
+  {
+    Core::LinAlg::Vector<double> residual(*residual_);
+    hooks_.filter_residual(residual);
+    residual.norm_2(&res_norm);
+  }
+  else
+  {
+    residual_->norm_2(&res_norm);
+  }
   res_norm /= sqrt(residual_->global_length());
   if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
     std::cout << "ITER: " << iter << "  RES NORM: " << res_norm << " DISP NORM: " << normdisi_
@@ -350,8 +391,10 @@ void ALE::Ale::evaluate_elements()
       "mesh quality size weight", params_->get<double>("MESH_QUALITY_SIZE_WEIGHT"));
   eleparams.set<double>(
       "mesh quality motion weight", params_->get<double>("MESH_QUALITY_MOTION_WEIGHT"));
+  if (hooks_.set_element_parameters) hooks_.set_element_parameters(eleparams);
 
   discret_->set_state("dispnp", *dispnp_);
+  if (hooks_.set_states) hooks_.set_states(*discret_);
 
   discret_->evaluate(eleparams, sysmat_, residual_);
   discret_->clear_state();
@@ -553,6 +596,7 @@ void ALE::Ale::prepare_time_step()
 void ALE::Ale::time_step(ALE::Utils::MapExtractor::AleDBCSetType dbc_type)
 {
   bool is_converged = false;
+  bool no_admissible_update = false;
   int iter = 0;
 
   // Newton loop to deal with possible non-linearities
@@ -566,12 +610,31 @@ void ALE::Ale::time_step(ALE::Utils::MapExtractor::AleDBCSetType dbc_type)
       continue;
     }
     solve();
-    update_iter();
+    if (hooks_.accept_update)
+    {
+      if (!update_iter_with_step_halving())
+      {
+        no_admissible_update = true;
+        break;
+      }
+    }
+    else
+      update_iter();
     ++iter;
   }
 
-  if (!is_converged)
+  if (no_admissible_update)
   {
+    if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
+    {
+      Core::IO::cout << "ALE Newton iteration stopped after " << iter
+                     << " iterations at the last admissible displacement." << Core::IO::endl;
+    }
+  }
+  else if (!is_converged)
+  {
+    FOUR_C_ASSERT_ALWAYS(!hooks_.require_convergence,
+        "The ALE Newton iteration did not converge within {} iterations (MAXITER).", maxiter_);
     switch (divercont_)
     {
       case ALE::divcont_stop:

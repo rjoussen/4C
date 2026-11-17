@@ -17,6 +17,7 @@
 #include "4C_utils_parameter_list.fwd.hpp"
 #include "4C_utils_result_test.hpp"
 
+#include <functional>
 #include <memory>
 
 FOUR_C_NAMESPACE_OPEN
@@ -35,6 +36,7 @@ namespace Core::LinAlg
 {
   class Solver;
   class SparseMatrix;
+  class SparseOperator;
   class BlockSparseMatrixBase;
   class MapExtractor;
   class MultiMapExtractor;
@@ -59,6 +61,39 @@ namespace Global
 
 namespace Adapter
 {
+  /*!
+   * @brief Hooks to extend the nonlinear solution of an ALE field in its time step
+   *
+   * All hooks are optional.
+   */
+  struct AleNonlinearSolverHooks
+  {
+    //! set further states of the discretization for the evaluation of the elements
+    std::function<void(Core::FE::Discretization& discretization)> set_states;
+
+    //! set further parameters for the evaluation of the elements
+    std::function<void(Teuchos::ParameterList& element_parameters)> set_element_parameters;
+
+    //! modify the linearized system (e.g., add contributions or restrict it to a constraint) after
+    //! the evaluation of the elements, before the Dirichlet conditions are applied
+    std::function<void(Core::LinAlg::SparseOperator& system_matrix,
+        Core::LinAlg::Vector<double>& residual, const Core::LinAlg::Vector<double>& dispnp)>
+        modify_system;
+
+    //! modify the displacement after a Newton update (e.g., project it onto a constraint) and
+    //! return whether it is admissible, otherwise the Newton step is halved (the Newton iteration
+    //! stops at the last admissible displacement if no halved step is admissible)
+    std::function<bool(Core::LinAlg::Vector<double>& dispnp)> accept_update;
+
+    //! remove components of the residual that are not considered in the convergence check
+    //! (e.g., components balanced by constraints)
+    std::function<void(Core::LinAlg::Vector<double>& residual)> filter_residual;
+
+    //! throw if the Newton iteration does not converge within the maximum number of iterations,
+    //! regardless of DIVERCONT
+    bool require_convergence = false;
+  };
+
   /*! \brief General ALE field interface
    *
    *  Base class for ALE field implementations. A pure ALE problem just needs the
@@ -180,6 +215,9 @@ namespace Adapter
 
     //! iterative update of solution after solving the linear system
     virtual void update_iter() = 0;
+
+    //! set the hooks of the nonlinear solution in the time step
+    virtual void set_nonlinear_solver_hooks(AleNonlinearSolverHooks hooks) = 0;
 
     //! update at time step end
     virtual void update() = 0;
