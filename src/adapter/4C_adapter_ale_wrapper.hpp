@@ -185,6 +185,11 @@ namespace Adapter
     //! update at time step end
     void update_iter() override { ale_->update_iter(); }
 
+    void set_nonlinear_solver_hooks(AleNonlinearSolverHooks hooks) override
+    {
+      ale_->set_nonlinear_solver_hooks(std::move(hooks));
+    }
+
     //! output results
     void output() override { return ale_->output(); }
 

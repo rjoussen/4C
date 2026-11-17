@@ -149,6 +149,12 @@ namespace ALE
     /// linear solve
     int solve() override;
 
+    //! set the hooks of the nonlinear solution in time_step()
+    void set_nonlinear_solver_hooks(Adapter::AleNonlinearSolverHooks hooks) override
+    {
+      hooks_ = std::move(hooks);
+    }
+
     /// get the linear solver object used for this field
     std::shared_ptr<Core::LinAlg::Solver> linear_solver() override { return solver_; }
 
@@ -359,6 +365,15 @@ namespace ALE
 
    private:
     virtual bool update_sys_mat_every_step() const { return true; }
+
+    //! update the displacement with the iterative increment, halved until the hook accepts the
+    //! displacement and the norm of the residual decreases sufficiently (backtracking line search),
+    //! and evaluate the system there; return false and keep the displacement if no halved
+    //! increment is accepted
+    bool update_iter_with_line_search(ALE::Utils::MapExtractor::AleDBCSetType dbc_type);
+
+    //! hooks of the nonlinear solution
+    Adapter::AleNonlinearSolverHooks hooks_;
 
     //! @name Misc
 

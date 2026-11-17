@@ -226,6 +226,7 @@ void ALE::Ale::evaluate(std::shared_ptr<const Core::LinAlg::Vector<double>> step
 
   evaluate_elements();
   evaluate_element_quality();
+  if (hooks_.modify_system) hooks_.modify_system(*sysmat_, *residual_, *dispnp_);
 
   // prepare meshtying system
   if (msht_ != ALE::no_meshtying)
@@ -308,6 +309,50 @@ void ALE::Ale::update() { dispn_->update(1.0, *dispnp_, 0.0); }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
+bool ALE::Ale::update_iter_with_line_search(const ALE::Utils::MapExtractor::AleDBCSetType dbc_type)
+{
+  constexpr int max_step_halvings = 20;
+  // Armijo constant: the residual norm has to decrease at least by this fraction of the decrease
+  // predicted by the linearization
+  constexpr double sufficient_decrease = 1.0e-4;
+
+  double previous_norm = 0.0;
+  residual_->norm_2(&previous_norm);
+  const Core::LinAlg::Vector<double> previous(*dispnp_);
+  const Core::LinAlg::Vector<double> direction(*disi_);
+  double step = 1.0;
+  for (int halvings = 0; halvings <= max_step_halvings; ++halvings)
+  {
+    dispnp_->update(1.0, previous, step, direction, 0.0);
+    if (hooks_.accept_update(*dispnp_))
+    {
+      evaluate(nullptr, dbc_type);
+      double norm = 0.0;
+      residual_->norm_2(&norm);
+      if (norm <= (1.0 - sufficient_decrease * step) * previous_norm)
+      {
+        // the convergence check uses the update that was actually applied
+        disi_->update(step, direction, 0.0);
+        disi_->norm_2(&normdisi_);
+        normdisi_ /= sqrt(disi_->global_length());
+        return true;
+      }
+    }
+    step *= 0.5;
+  }
+
+  dispnp_->update(1.0, previous, 0.0);
+  evaluate(nullptr, dbc_type);
+  if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
+  {
+    Core::IO::cout << "No admissible ALE update that decreases the residual found after "
+                   << max_step_halvings << " step halvings." << Core::IO::endl;
+  }
+  return false;
+}
+
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 bool ALE::Ale::converged(const int iter)
 {
   if (iter == 0) normdisi_ = 0.0;
@@ -356,6 +401,7 @@ void ALE::Ale::evaluate_elements()
       "mesh quality shape exponent", params_->get<double>("MESH_QUALITY_SHAPE_EXPONENT"));
 
   discret_->set_state("dispnp", *dispnp_);
+  if (hooks_.set_states) hooks_.set_states(*discret_);
 
   discret_->evaluate(eleparams, sysmat_, residual_);
   discret_->clear_state();
@@ -557,12 +603,15 @@ void ALE::Ale::prepare_time_step()
 void ALE::Ale::time_step(ALE::Utils::MapExtractor::AleDBCSetType dbc_type)
 {
   bool is_converged = false;
+  bool no_admissible_update = false;
+  bool evaluated = false;
   int iter = 0;
 
   // Newton loop to deal with possible non-linearities
   while (!is_converged && iter < maxiter_)
   {
-    evaluate(nullptr, dbc_type);
+    if (!evaluated) evaluate(nullptr, dbc_type);
+    evaluated = false;
 
     if (converged(iter))
     {
@@ -570,11 +619,39 @@ void ALE::Ale::time_step(ALE::Utils::MapExtractor::AleDBCSetType dbc_type)
       continue;
     }
     solve();
-    update_iter();
+    if (hooks_.accept_update)
+    {
+      if (!update_iter_with_line_search(dbc_type))
+      {
+        no_admissible_update = true;
+        break;
+      }
+      // the line search has evaluated the system at the new displacement
+      evaluated = true;
+    }
+    else
+      update_iter();
     ++iter;
   }
 
-  if (!is_converged)
+  if (!is_converged && hooks_.on_failure)
+  {
+    if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
+    {
+      Core::IO::cout << "ALE Newton iteration not converged after " << iter << " iterations."
+                     << Core::IO::endl;
+    }
+    hooks_.on_failure();
+  }
+  else if (no_admissible_update)
+  {
+    if (Core::Communication::my_mpi_rank(discret_->get_comm()) == 0)
+    {
+      Core::IO::cout << "ALE Newton iteration stopped after " << iter
+                     << " iterations at the last admissible displacement." << Core::IO::endl;
+    }
+  }
+  else if (!is_converged)
   {
     switch (divercont_)
     {
