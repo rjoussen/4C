@@ -2002,21 +2002,23 @@ namespace Mat
      *
      * @param[in] FredM reduced deformation gradient \f$ \boldsymbol{F}_{\text{red}} =
      * \boldsymbol{F} \boldsymbol{F_{\text{in,other}}^{-1}} \f$ accounting for all the already
-     * computed inelastic defgrad factors
+     * computed inelastic defgrad factors (by value, since the perturbed evaluations overwrite the
+     * stored integration input, to which it may refer)
      * @param[in] temperature absolute temperature
      * @param[out] cmatadd Additional elasticity stiffness
      * @param[in] dSdiFinj Derivative of 2nd Piola Kirchhoff stresses w.r.t. the inverse inelastic
      *                     deformation gradient of current inelastic contribution
      *
      */
-    void evaluate_additional_cmat_perturb_based(const Core::LinAlg::Matrix<3, 3>& FredM,
+    void evaluate_additional_cmat_perturb_based(const Core::LinAlg::Matrix<3, 3> FredM,
         const double temperature, Core::LinAlg::Matrix<6, 6>& cmatadd,
         const Core::LinAlg::Matrix<6, 9>& dSdiFinj);
 
     /*!
      * @brief Evaluate the off-diagonal stiffness contribution using a temperature perturbation.
      *
-     * @param[in] FredM reduced deformation gradient
+     * @param[in] FredM reduced deformation gradient (by value, since the perturbed
+     * evaluations overwrite the stored integration input, to which it may refer)
      * @param[in] temperature absolute temperature
      * @param[in,out] dstressdT contains already the partial derivative of the second
      * Piola-Kirchhoff stresses w.r.t. temperature. This method adds the contribution of the history
@@ -2024,7 +2026,7 @@ namespace Mat
      * @param[in] dSdiFinj derivative of 2nd Piola Kirchhoff stresses w.r.t. the inverse inelastic
      *                     deformation gradient of current inelastic contribution
      */
-    void evaluate_od_stiff_mat_perturb_based(const Core::LinAlg::Matrix<3, 3>& FredM,
+    void evaluate_od_stiff_mat_perturb_based(const Core::LinAlg::Matrix<3, 3> FredM,
         const double temperature, Core::LinAlg::Matrix<6, 1>& dstressdT,
         const Core::LinAlg::Matrix<6, 9>& dSdiFinj);
 
@@ -2032,11 +2034,12 @@ namespace Mat
      * @brief Evaluate derivatives of the Taylor-Quinney heat source by perturbing the reduced
      * deformation gradient and the temperature.
      *
-     * @param[in] FredM reduced deformation gradient
+     * @param[in] FredM reduced deformation gradient (by value, since the perturbed
+     * evaluations overwrite the stored integration input, to which it may refer)
      * @param[in] temperature absolute temperature
      */
     HeatSource evaluate_taylor_quinney_heat_source_perturb_based(
-        const Core::LinAlg::Matrix<3, 3>& FredM, const double temperature);
+        const Core::LinAlg::Matrix<3, 3> FredM, const double temperature);
 
     /*!
      * @brief Gets extensive error / warning message to be displayed, which is useful for debugging

@@ -2669,27 +2669,20 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_additional_cmat
     const Core::LinAlg::Matrix<3, 3>& iFinjM, const Core::LinAlg::Matrix<6, 1>& iCV,
     const Core::LinAlg::Matrix<6, 9>& dSdiFinj, Core::LinAlg::Matrix<6, 6>& cmatadd)
 {
-  const ReducedKinematics reduced_kinematics = evaluate_reduced_kinematics(*defgrad, iFin_other);
-  const double temperature =
-      time_step_quantities_.current_integration_input[gp_].value().temperature;
   // calculate linearization term only if we have plastic flow
   if (!is_plastic_gp_[gp_]) return;
 
+  // linearize at the input from which the current values were computed
+  const auto& local_integration_input =
+      time_step_quantities_.current_integration_input[gp_].value();
 
   if (parameter()->linearization_type() == ViscoplastUtils::LinearizationType::perturbation_based)
   {
     // compute additional stiffness contribution using perturbation-based approach
     evaluate_additional_cmat_perturb_based(
-        reduced_kinematics.defgrad, temperature, cmatadd, dSdiFinj);
+        local_integration_input.defgrad, local_integration_input.temperature, cmatadd, dSdiFinj);
     return;
   }
-
-  auto local_integration_input = ViscoplastUtils::LocalIntegrationInput{{.defgrad = *defgrad,
-      .temperature = temperature,
-      .last_inv_inelastic_defgrad = time_step_quantities_.last_plastic_defgrad_inverse[gp_],
-      .last_plastic_strain = time_step_quantities_.last_plastic_strain[gp_],
-      .step = time_step_tracker_.dt}};
-
 
   // declare error status (no errors)
   ViscoplastUtils::ErrorType err_status = ViscoplastUtils::ErrorType::no_errors;
@@ -2840,23 +2833,17 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_od_stiff_mat(
     const Core::LinAlg::Matrix<3, 3>& iFinjM, const Core::LinAlg::Matrix<6, 9>& dSdiFinj,
     Core::LinAlg::Matrix<6, 1>& dstressdT)
 {
-  const ReducedKinematics reduced_kinematics = evaluate_reduced_kinematics(*defgrad, iFin_other);
-  const double temperature =
-      time_step_quantities_.current_integration_input[gp_].value().temperature;
+  // linearize at the input from which the current values were computed
+  const auto& local_integration_input =
+      time_step_quantities_.current_integration_input[gp_].value();
 
   if (parameter()->linearization_type() == ViscoplastUtils::LinearizationType::perturbation_based)
   {
     // compute additional stiffness contribution using perturbation-based approach
     evaluate_od_stiff_mat_perturb_based(
-        reduced_kinematics.defgrad, temperature, dstressdT, dSdiFinj);
+        local_integration_input.defgrad, local_integration_input.temperature, dstressdT, dSdiFinj);
     return;
   }
-
-  auto local_integration_input = ViscoplastUtils::LocalIntegrationInput{{.defgrad = *defgrad,
-      .temperature = temperature,
-      .last_inv_inelastic_defgrad = time_step_quantities_.last_plastic_defgrad_inverse[gp_],
-      .last_plastic_strain = time_step_quantities_.last_plastic_strain[gp_],
-      .step = time_step_tracker_.dt}};
 
   ViscoplastUtils::ErrorType err_status = ViscoplastUtils::ErrorType::no_errors;
   const auto& diFinjTV =
@@ -2912,11 +2899,9 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_taylor_quinney_heat_
     constitutive_update(incoming_integration_input);
   }
 
-  auto local_integration_input = ViscoplastUtils::LocalIntegrationInput{{.defgrad = *defgrad,
-      .temperature = temperature,
-      .last_inv_inelastic_defgrad = time_step_quantities_.last_plastic_defgrad_inverse[gp_],
-      .last_plastic_strain = time_step_quantities_.last_plastic_strain[gp_],
-      .step = time_step_tracker_.dt}};
+  // linearize at the input from which the current values were computed
+  const auto& local_integration_input =
+      time_step_quantities_.current_integration_input[gp_].value();
 
   // evaluate the relevant linearizations, using cached values when available
   const auto history_variables_wrt_cauchy_green =
@@ -4220,7 +4205,7 @@ Mat::InelasticDefgradTransvIsotropElastViscoplast::halve_and_prepare_new_substep
 }
 
 void Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_additional_cmat_perturb_based(
-    const Core::LinAlg::Matrix<3, 3>& FredM, const double temperature,
+    const Core::LinAlg::Matrix<3, 3> FredM, const double temperature,
     Core::LinAlg::Matrix<6, 6>& cmatadd, const Core::LinAlg::Matrix<6, 9>& dSdiFinj)
 {
   // ----- FD-based linearization ----- //
@@ -4307,7 +4292,7 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_additional_cmat
 }
 
 void Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_od_stiff_mat_perturb_based(
-    const Core::LinAlg::Matrix<3, 3>& FredM, const double temperature,
+    const Core::LinAlg::Matrix<3, 3> FredM, const double temperature,
     Core::LinAlg::Matrix<6, 1>& dstressdT, const Core::LinAlg::Matrix<6, 9>& dSdiFinj)
 {
   update_hist_var_ = false;
@@ -4362,7 +4347,7 @@ void Mat::InelasticDefgradTransvIsotropElastViscoplast::evaluate_od_stiff_mat_pe
 
 Mat::HeatSource Mat::InelasticDefgradTransvIsotropElastViscoplast::
     evaluate_taylor_quinney_heat_source_perturb_based(
-        const Core::LinAlg::Matrix<3, 3>& FredM, const double temperature)
+        const Core::LinAlg::Matrix<3, 3> FredM, const double temperature)
 {
   Core::LinAlg::Matrix<3, 3> CredM{Core::LinAlg::Initialization::zero};
   CredM.multiply_tn(1.0, FredM, FredM, 0.0);
