@@ -716,6 +716,16 @@ namespace Mortar
     const Teuchos::ParameterList& interface_params() const { return imortar_; };
 
     /*!
+    \brief Parameters of the geometric search of this interface
+
+    They are initialized from the section GEOMETRIC SEARCH and may be adapted for this interface.
+    */
+    Core::GeometricSearch::GeometricSearchParams& geometric_search_params()
+    {
+      return *geometric_search_params_ptr_;
+    }
+
+    /*!
     \brief Get quadratic 2d/3d slave element flag
 
     Returns TRUE if at least one higher-order 2d/3d slave element in interface.

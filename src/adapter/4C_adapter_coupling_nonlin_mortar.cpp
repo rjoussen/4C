@@ -441,13 +441,22 @@ void Adapter::CouplingNonLinMortar::init_matrices()
   T_ = std::make_shared<Core::LinAlg::SparseMatrix>(*source_dof_row_map_, 81, false, false);
   N_ = std::make_shared<Core::LinAlg::SparseMatrix>(*source_dof_row_map_, 81, false, false);
 
-  gap_ = std::make_shared<Core::LinAlg::Vector<double>>(*source_node_row_map_, true);
+  // the weighted gaps are nodal values, or their products with the normals in Cartesian directions
+  gap_ = std::make_shared<Core::LinAlg::Vector<double>>(
+      gap_per_dof() ? *source_dof_row_map_ : *source_node_row_map_, true);
 
   // init as fe matrix --> nonlocal assembly
   DLin_ = std::make_shared<Core::LinAlg::SparseMatrix>(
       *source_dof_row_map_, 81, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX);
   MLin_ = std::make_shared<Core::LinAlg::SparseMatrix>(
       *target_dof_row_map_, 81, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX);
+}
+
+
+bool Adapter::CouplingNonLinMortar::gap_per_dof() const
+{
+  return Teuchos::getIntegralValue<CONTACT::ConstraintDirection>(interface_->interface_params(),
+             "CONSTRAINT_DIRECTIONS") == CONTACT::ConstraintDirection::xyz;
 }
 
 
@@ -460,8 +469,9 @@ void Adapter::CouplingNonLinMortar::complete_interface(
 {
   auto* problem = &problem_;
 
+  // the parameters of this coupling decide on the redistribution
   const Teuchos::ParameterList& input =
-      problem->mortar_coupling_params().sublist("PARALLEL REDISTRIBUTION");
+      interface->interface_params().sublist("PARALLEL REDISTRIBUTION");
   const Mortar::ParallelRedist parallelRedist =
       Teuchos::getIntegralValue<Mortar::ParallelRedist>(input, "PARALLEL_REDIST");
 
@@ -489,7 +499,7 @@ void Adapter::CouplingNonLinMortar::complete_interface(
       Core::LinAlg::merge_map(psource_dof_row_map_, ptarget_dof_row_map_, false);
 
   // print parallel distribution
-  interface->print_parallel_distribution();
+  if (print_parallel_distribution_) interface->print_parallel_distribution();
 
   //**********************************************************************
   // PARALLEL REDISTRIBUTION OF INTERFACE
@@ -505,7 +515,7 @@ void Adapter::CouplingNonLinMortar::complete_interface(
         problem->output_control_file(), problem->spatial_approximation_type(), true);
 
     // print parallel distribution again
-    interface->print_parallel_distribution();
+    if (print_parallel_distribution_) interface->print_parallel_distribution();
   }
 
   // store row maps (after parallel redistribution)
@@ -729,8 +739,6 @@ void Adapter::CouplingNonLinMortar::integrate_lin_d(const std::string& statename
     const std::shared_ptr<Core::LinAlg::Vector<double>> vec,
     const std::shared_ptr<Core::LinAlg::Vector<double>> veclm)
 {
-  auto* problem = &problem_;
-
   // safety check
   check_setup();
 
@@ -769,7 +777,7 @@ void Adapter::CouplingNonLinMortar::integrate_lin_d(const std::string& statename
   // check for parallel redistribution
   bool parredist = false;
   const Teuchos::ParameterList& input =
-      problem->mortar_coupling_params().sublist("PARALLEL REDISTRIBUTION");
+      interface_->interface_params().sublist("PARALLEL REDISTRIBUTION");
   if (Teuchos::getIntegralValue<Mortar::ParallelRedist>(input, "PARALLEL_REDIST") !=
       Mortar::ParallelRedist::redist_none)
     parredist = true;
@@ -839,8 +847,6 @@ void Adapter::CouplingNonLinMortar::integrate_lin_dm(const std::string& statenam
  *----------------------------------------------------------------------*/
 void Adapter::CouplingNonLinMortar::matrix_row_col_transform()
 {
-  auto* problem = &problem_;
-
   // call base function
   Coupling::Adapter::CouplingMortar::matrix_row_col_transform();
 
@@ -850,7 +856,7 @@ void Adapter::CouplingNonLinMortar::matrix_row_col_transform()
   // check for parallel redistribution
   bool parredist = false;
   const Teuchos::ParameterList& input =
-      problem->mortar_coupling_params().sublist("PARALLEL REDISTRIBUTION");
+      interface_->interface_params().sublist("PARALLEL REDISTRIBUTION");
   if (Teuchos::getIntegralValue<Mortar::ParallelRedist>(input, "PARALLEL_REDIST") !=
       Mortar::ParallelRedist::redist_none)
     parredist = true;
@@ -886,7 +892,8 @@ void Adapter::CouplingNonLinMortar::matrix_row_col_transform()
     if (gap_ != nullptr)
     {
       std::shared_ptr<Core::LinAlg::Vector<double>> pgap =
-          std::make_shared<Core::LinAlg::Vector<double>>(*p_source_node_row_map_, true);
+          std::make_shared<Core::LinAlg::Vector<double>>(
+              gap_per_dof() ? *psource_dof_row_map_ : *p_source_node_row_map_, true);
       Core::LinAlg::export_to(*gap_, *pgap);
       gap_ = pgap;
     }

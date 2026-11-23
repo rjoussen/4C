@@ -207,6 +207,10 @@ namespace Adapter
     */
     virtual void matrix_row_col_transform();
 
+    /// whether the gap vector holds the weighted gaps times the normals at the source dofs
+    /// (constraints in Cartesian directions) instead of the weighted gaps at the source nodes
+    bool gap_per_dof() const;
+
     /// check setup call
     const bool& is_setup() const { return issetup_; };
 
@@ -222,9 +226,10 @@ namespace Adapter
 
     Global::Problem& problem_;
 
-    bool issetup_;   ///< check for setup
-    MPI_Comm comm_;  ///< communicator
-    int myrank_;     ///< my proc id
+    bool issetup_;                             ///< check for setup
+    bool print_parallel_distribution_ = true;  ///< print the distribution of the interface
+    MPI_Comm comm_;                            ///< communicator
+    int myrank_;                               ///< my proc id
 
     std::shared_ptr<Core::LinAlg::Map>
         source_node_row_map_;  ///< map of source row nodes (after parallel redist.)
